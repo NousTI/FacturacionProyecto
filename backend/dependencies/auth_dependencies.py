@@ -5,6 +5,8 @@ from fastapi.security import OAuth2PasswordBearer
 
 from database.connection import get_db_connection
 from services.session_service import validate_session
+from services.superadmin_session_service import SuperadminSessionService
+from services.vendedor_session_service import VendedorSessionService
 from utils.jwt_utils import decode_access_token
 from utils.responses import error_response
 
@@ -26,6 +28,7 @@ def get_current_user(
 
     user_id = payload.get("sub")
     session_id = payload.get("sid")
+    role = payload.get("role") # "superadmin" or None (regular user)
 
     if not session_id:
         raise HTTPException(
@@ -33,34 +36,14 @@ def get_current_user(
             detail=error_response(status.HTTP_401_UNAUTHORIZED, "Token sin sesión válida"),
         )
 
-    # 2. Validar sesión en base de datos
-    if not validate_session(conn, session_id):
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail=error_response(status.HTTP_401_UNAUTHORIZED, "Sesión expirada o cerrada"),
-        )
-
-    # Guardar payload para logout (se usa en auth_router)
+    # 2. Get Strategy
+    from auth.factory import AuthFactory
+    strategy = AuthFactory.get_strategy(role)
+    
+    # 3. Authenticate using Strategy
+    user = strategy.authenticate(conn, user_id, session_id)
+    
     request.state.jwt_payload = payload
-
-    # 3. Obtener datos de usuario
-    with conn.cursor() as cur:
-        cur.execute(
-            """
-            SELECT ID, FK_ROL, FK_SUSCRIPCION, USUARIO, CORREO
-            FROM USUARIO
-            WHERE ID = %s
-            """,
-            (user_id,),
-        )
-        user = cur.fetchone()
-
-    if not user:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=error_response(status.HTTP_404_NOT_FOUND, "Usuario no encontrado"),
-        )
-
     return user
 
 
@@ -73,7 +56,11 @@ def require_role(role_id: int):
     """
 
     def dependency(current_user: dict = Depends(get_current_user)):
-        if current_user["fk_rol"] != role_id:
+        # Bypass for Superadmin
+        if current_user.get("is_superadmin"):
+            return current_user
+            
+        if current_user.get("fk_rol") != role_id: # Note: schema change might affect this comparison if role_id is UUID now
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail=error_response(status.HTTP_403_FORBIDDEN, "No tienes permisos suficientes"),
@@ -91,6 +78,10 @@ def require_permission(permission_code: str):
         current_user: dict = Depends(get_current_user),
         perm_repo: PermissionRepository = Depends()
     ):
+        # Bypass for Superadmin
+        if current_user.get("is_superadmin"):
+            return current_user
+
         user_role_id = current_user["fk_rol"]
         permissions = perm_repo.get_permissions_by_role_id(user_role_id)
         

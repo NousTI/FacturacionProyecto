@@ -10,6 +10,8 @@ from api.routes.auth_router import router as auth_router
 from api.routes.user_routes import router as user_router
 from api.routes.proveedor_routes import router as proveedor_router
 from api.routes.producto_routes import router as producto_router
+from api.routes.superadmin_routes import router as superadmin_router
+from api.routes.vendedor_routes import router as vendedor_router
 from settings import get_settings
 from utils.logger import get_logger
 from utils.responses import error_response
@@ -102,6 +104,8 @@ app.include_router(cliente_router, prefix="/api/clientes")
 app.include_router(user_router)
 app.include_router(proveedor_router, prefix="/api/proveedores")
 app.include_router(producto_router, prefix="/api/productos")
+app.include_router(superadmin_router)
+app.include_router(vendedor_router, prefix="/api/vendedores", tags=["Vendedores"])
 
 
 if __name__ == "__main__":

@@ -1,11 +1,19 @@
+from uuid import UUID
+from typing import Optional
 from pydantic import BaseModel
 
 class PermisoBase(BaseModel):
+    codigo: str
     nombre: str
-    codigo: str = None  # Optional initially, as DB migration might not have it populated yet
+    modulo: Optional[str] = None
+    descripcion: Optional[str] = None
+    tipo: Optional[str] = None
+
+class PermisoCreate(PermisoBase):
+    pass
 
 class PermisoRead(PermisoBase):
-    id: int
+    id: UUID
 
     class Config:
         from_attributes = True

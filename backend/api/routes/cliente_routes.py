@@ -14,7 +14,6 @@ router = APIRouter(
 # ─────────── Endpoints ───────────
 
 # Listar todos los clientes (Requiere permiso)
-# Listar todos los clientes (Requiere permiso)
 @router.get("/", response_model=List[ClienteResponse], dependencies=[Depends(require_permission("clients:read"))])
 def listar(
     nombre: str = None, 

@@ -16,10 +16,4 @@ def propietario_cliente(cliente_id: int, current_user: dict = Depends(get_curren
             detail=error_response(status.HTTP_404_NOT_FOUND, "Cliente no encontrado")
         )
     
-    if cliente['fk_usuario'] != current_user['id']:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail=error_response(status.HTTP_403_FORBIDDEN, "No tienes permiso para acceder a este cliente")
-        )
-    
     return cliente
