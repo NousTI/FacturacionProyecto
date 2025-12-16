@@ -4,26 +4,37 @@ from typing import Optional
 from pydantic import BaseModel, EmailStr
 
 class UserBase(BaseModel):
-    fk_suscripcion: int
-    fk_rol: int
-    correo: EmailStr
-    usuario: str
+    empresa_id: UUID
+    rol_id: UUID
+    email: EmailStr
+    nombres: str
+    apellidos: str
     activo: bool = True
 
 class UserCreate(UserBase):
-    contrasena: str
+    password: str
 
-class UserRegister(UserBase):
-    contrasena: str
+class UserUpdate(BaseModel):
+    empresa_id: Optional[UUID] = None
+    rol_id: Optional[UUID] = None
+    email: Optional[EmailStr] = None
+    nombres: Optional[str] = None
+    apellidos: Optional[str] = None
+    activo: Optional[bool] = None
+    password: Optional[str] = None
 
 class UserRead(UserBase):
-    id: int
-    ultimo_acceso: Optional[datetime] = None
-    created_at: Optional[datetime] = None
+    id: UUID
+    created_at: datetime
+    updated_at: datetime
+    last_login: Optional[datetime] = None
 
     class Config:
         from_attributes = True
 
 class UserLogin(BaseModel):
-    correo: EmailStr
-    contrasena: str
+    email: EmailStr
+    password: str
+
+class PasswordReset(BaseModel):
+    new_password: str

@@ -7,11 +7,12 @@ from fastapi.responses import JSONResponse
 
 from api.routes.cliente_routes import router as cliente_router
 from api.routes.auth_router import router as auth_router
-from api.routes.user_routes import router as user_router
+from api.routes.usuarios_routes import router as user_router
 from api.routes.proveedor_routes import router as proveedor_router
 from api.routes.producto_routes import router as producto_router
 from api.routes.superadmin_routes import router as superadmin_router
 from api.routes.vendedor_routes import router as vendedor_router
+from api.routes.empresa_routes import router as empresa_router
 from settings import get_settings
 from utils.logger import get_logger
 from utils.responses import error_response
@@ -101,11 +102,12 @@ app.add_middleware(
 
 app.include_router(auth_router, prefix="/api/auth")
 app.include_router(cliente_router, prefix="/api/clientes")
-app.include_router(user_router)
+app.include_router(user_router, prefix="/api/usuarios")
 app.include_router(proveedor_router, prefix="/api/proveedores")
 app.include_router(producto_router, prefix="/api/productos")
 app.include_router(superadmin_router)
 app.include_router(vendedor_router, prefix="/api/vendedores", tags=["Vendedores"])
+app.include_router(empresa_router, prefix="/api/empresas", tags=["Empresas"])
 
 
 if __name__ == "__main__":

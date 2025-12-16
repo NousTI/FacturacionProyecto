@@ -12,6 +12,8 @@ class AuthStrategy(ABC):
     def authenticate(self, conn, user_id: str, session_id: str) -> dict:
         pass
 
+from utils.constants import RoleKeys
+
 class SuperadminAuthStrategy(AuthStrategy):
     def authenticate(self, conn, user_id: str, session_id: str) -> dict:
         # Validate Session
@@ -33,9 +35,10 @@ class SuperadminAuthStrategy(AuthStrategy):
                 detail=error_response(status.HTTP_401_UNAUTHORIZED, "Superadmin no encontrado"),
             )
             
-        superadmin["is_superadmin"] = True
-        superadmin["is_vendedor"] = False
-        superadmin["fk_rol"] = -1
+        superadmin[RoleKeys.IS_SUPERADMIN] = True
+        superadmin[RoleKeys.IS_VENDEDOR] = False
+        superadmin[RoleKeys.IS_USUARIO] = False
+        superadmin[RoleKeys.ROL_ID] = -1 # Dummy ID for logic compatibility
         return superadmin
 
 class VendedorAuthStrategy(AuthStrategy):
@@ -65,9 +68,10 @@ class VendedorAuthStrategy(AuthStrategy):
                 detail=error_response(status.HTTP_401_UNAUTHORIZED, "Vendedor no encontrado"),
             )
         
-        vendedor["is_superadmin"] = False
-        vendedor["is_vendedor"] = True
-        vendedor["fk_rol"] = -2
+        vendedor[RoleKeys.IS_SUPERADMIN] = False
+        vendedor[RoleKeys.IS_VENDEDOR] = True
+        vendedor[RoleKeys.IS_USUARIO] = False
+        vendedor[RoleKeys.ROL_ID] = -2 # Dummy ID
         return vendedor
 
 class UsuarioAuthStrategy(AuthStrategy):
@@ -80,10 +84,11 @@ class UsuarioAuthStrategy(AuthStrategy):
             )
 
         # Fetch User
+        # UPDATED SCHEMA: rol_id, empresa_id, email (no usuario, no fk_suscripcion, no fk_rol)
         with conn.cursor() as cur:
             cur.execute(
                 """
-                SELECT id, fk_rol, fk_suscripcion, usuario, correo 
+                SELECT * 
                 FROM usuario
                 WHERE id = %s
                 """,
@@ -97,6 +102,8 @@ class UsuarioAuthStrategy(AuthStrategy):
                 detail=error_response(status.HTTP_404_NOT_FOUND, "Usuario no encontrado"),
             )
             
-        user["is_superadmin"] = False
-        user["is_vendedor"] = False
+        user[RoleKeys.IS_SUPERADMIN] = False
+        user[RoleKeys.IS_VENDEDOR] = False
+        user[RoleKeys.IS_USUARIO] = True
+        # user has 'rol_id' effectively
         return user

@@ -9,12 +9,12 @@ def create_session(conn, user_id, jti, user_agent=None, ip_address=None, duratio
     """
     Crea una nueva sesión en la base de datos.
     """
-    expires_at = datetime.now(timezone.utc) + timedelta(minutes=duration_minutes)
+    expires_at = (datetime.now(timezone.utc) + timedelta(minutes=duration_minutes)).replace(tzinfo=None)
 
     with db_transaction(conn) as cur:
         cur.execute(
             """
-            INSERT INTO user_sessions (id, user_id, is_valid, expires_at, user_agent, ip_address)
+            INSERT INTO usuario_sesiones (id, usuario_id, is_valid, expires_at, user_agent, ip_address)
             VALUES (%s, %s, TRUE, %s, %s, %s)
             """,
             (jti, user_id, expires_at, user_agent, ip_address),
@@ -30,7 +30,7 @@ def invalidate_session(conn, jti: str):
     with db_transaction(conn) as cur:
         cur.execute(
             """
-            UPDATE user_sessions
+            UPDATE usuario_sesiones
             SET is_valid = FALSE
             WHERE id = %s
             """,
@@ -46,11 +46,11 @@ def invalidate_all_sessions_for_user(conn, user_id: int):
     with db_transaction(conn) as cur:
         cur.execute(
             """
-            UPDATE user_sessions
+            UPDATE usuario_sesiones
             SET is_valid = FALSE
-            WHERE user_id = %s AND is_valid = TRUE
+            WHERE usuario_id = %s AND is_valid = TRUE
             """,
-            (user_id,),
+            (str(user_id),), # Ensure UUID string if user_id is UUID object
         )
 
 
@@ -61,8 +61,8 @@ def get_session(conn, jti: str):
     with conn.cursor() as cur:
         cur.execute(
             """
-            SELECT id, user_id, is_valid, expires_at
-            FROM user_sessions
+            SELECT id, usuario_id as user_id, is_valid, expires_at
+            FROM usuario_sesiones
             WHERE id = %s
             """,
             (jti,),
@@ -79,11 +79,11 @@ def get_active_session_for_user(conn, user_id: int):
         cur.execute(
             """
             SELECT id, is_valid, expires_at
-            FROM user_sessions
-            WHERE user_id = %s AND is_valid = TRUE
-            ORDER BY expires_at DESC
+            FROM usuario_sesiones
+            WHERE usuario_id = %s AND is_valid = TRUE
+            ORDER BY created_at DESC
             LIMIT 1
             """,
-            (user_id,),
+            (str(user_id),),
         )
         return cur.fetchone()

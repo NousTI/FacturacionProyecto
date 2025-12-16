@@ -1,32 +1,27 @@
-# backend/models/Cliente.py
-from typing import Literal
-
-from pydantic import BaseModel
-
-from schemas.common import (
-    Address,
-    Identification,
-    NullableEmail,
-    Phone,
-)
-
+from uuid import UUID
+from typing import Optional
+from pydantic import BaseModel, EmailStr
 
 class ClienteBase(BaseModel):
-    nombre: str
-    num_identificacion: Identification
-    celular: Phone = None
-    direccion: Address = None
-    correo: NullableEmail = None
-    tipo_cliente: Literal["NATURAL", "JURIDICA"]  # NATURAL / JURIDICA
-
+    identificacion: str
+    tipo_identificacion: Optional[str] = None
+    razon_social: str
+    email: Optional[EmailStr] = None
+    activo: bool = True
 
 class ClienteCreate(ClienteBase):
-    pass  # No necesita fk_usuario
+    empresa_id: UUID
 
+class ClienteUpdate(BaseModel):
+    identificacion: Optional[str] = None
+    tipo_identificacion: Optional[str] = None
+    razon_social: Optional[str] = None
+    email: Optional[EmailStr] = None
+    activo: Optional[bool] = None
 
-class ClienteResponse(ClienteBase):
-    id: int
-    # fk_usuario removed
+class ClienteRead(ClienteBase):
+    id: UUID
+    empresa_id: UUID
 
     class Config:
         from_attributes = True

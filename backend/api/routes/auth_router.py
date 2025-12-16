@@ -6,7 +6,7 @@ from fastapi.security import OAuth2PasswordBearer
 
 from database.connection import get_db_connection
 from dependencies.auth_dependencies import get_current_user
-from models.Usuario import UserLogin, UserRead, UserRegister
+from models.Usuario import UserLogin, UserRead
 from models.Vendedor import VendedorLogin, VendedorRead
 from services.session_service import end_user_session, start_user_session
 from services.user_service import UserService
@@ -18,15 +18,17 @@ from utils.responses import success_response, error_response
 router = APIRouter()
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/login")
 
-@router.post("/register", response_model=UserRead)
-def register(user: UserRegister, service: UserService = Depends()):
-    new_user = service.create_user(user)
-    return new_user
+# Register endpoint moved to user_routes to handle permissions better
+# @router.post("/register", response_model=UserRead)
+# def register(user: UserRegister, service: UserService = Depends()):
+#     new_user = service.create_user(user)
+#     return new_user
 
 
 @router.post("/login")
 def login(request: Request, user: UserLogin, service: UserService = Depends(), conn=Depends(get_db_connection)):
-    db_user = service.authenticate_user(user.correo, user.contrasena)
+    # Authenticate using email and password
+    db_user = service.authenticate_user(user.email, user.password)
     if not db_user:
         raise HTTPException(
             status_code=401,
@@ -35,7 +37,6 @@ def login(request: Request, user: UserLogin, service: UserService = Depends(), c
 
     user_id = db_user["id"]
     
-    # Rest of the login logic involving session...
     # Generar identificador único y reusarlo como sid y jti
     session_id = uuid.uuid4().hex
 

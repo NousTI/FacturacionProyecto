@@ -22,15 +22,15 @@ class PermissionRepository:
             # Se busca el CODIGO
             cursor.execute(
                 """
-                SELECT p.CODIGO
-                FROM PERMISO p
-                JOIN ROL_PERMISO rp ON p.ID = rp.FK_PERMISO
-                WHERE rp.FK_ROL = %s
+                SELECT p.codigo
+                FROM permiso p
+                JOIN rol_permiso rp ON p.id = rp.permiso_id
+                WHERE rp.rol_id = %s
                 """,
-                (role_id,)
+                (str(role_id),) # Cast UUID to string
             )
             rows = cursor.fetchall()
-            # Retornamos una lista de CODIGOS (ej: 'clients:read'), no nombres.
+            # Retornamos una lista de CODIGOS (ej: 'CLIENTE_VER'), no nombres.
             permissions = [row['codigo'] for row in rows]
             return permissions
         except Exception as e:

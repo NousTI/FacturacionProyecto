@@ -64,77 +64,102 @@ CREATE TABLE plan (
 -- =========================================
 -- EMPRESA
 -- =========================================
-CREATE TABLE empresa (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    vendedor_id UUID REFERENCES vendedor(id),
-    plan_id UUID REFERENCES plan(id),
-    ruc TEXT UNIQUE NOT NULL,
+CREATE TABLE IF NOT EXISTS public.empresa (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    vendedor_id UUID REFERENCES public.vendedor(id) ON DELETE SET NULL,
+    ruc TEXT NOT NULL UNIQUE,
     razon_social TEXT NOT NULL,
     nombre_comercial TEXT,
     email TEXT,
     telefono TEXT,
     direccion TEXT,
     logo_url TEXT,
-    activo BOOLEAN DEFAULT TRUE,
-    fecha_registro DATE DEFAULT CURRENT_DATE,
+    activo BOOLEAN NOT NULL DEFAULT TRUE,
+    fecha_registro DATE NOT NULL DEFAULT CURRENT_DATE,
     fecha_activacion DATE,
     fecha_vencimiento DATE,
-    estado_suscripcion TEXT,
+    estado_suscripcion TEXT NOT NULL DEFAULT 'pendiente',
     tipo_contribuyente TEXT,
-    obligado_contabilidad BOOLEAN DEFAULT FALSE
+    obligado_contabilidad BOOLEAN NOT NULL DEFAULT FALSE,
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
+
 
 -- =========================================
 -- ROL
 -- =========================================
-CREATE TABLE rol (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    empresa_id UUID REFERENCES empresa(id),
-    codigo TEXT UNIQUE NOT NULL,
+CREATE TABLE IF NOT EXISTS public.rol (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+
+    empresa_id UUID
+        REFERENCES public.empresa(id)
+        ON DELETE CASCADE,
+
+    codigo TEXT NOT NULL,
     nombre TEXT NOT NULL,
     descripcion TEXT,
-    es_sistema BOOLEAN DEFAULT FALSE,
-    activo BOOLEAN DEFAULT TRUE,
-    created_at TIMESTAMP DEFAULT NOW()
+
+    es_sistema BOOLEAN NOT NULL DEFAULT FALSE,
+    activo BOOLEAN NOT NULL DEFAULT TRUE,
+
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    -- Un rol no se repite dentro de la misma empresa
+    CONSTRAINT uq_rol_empresa_codigo UNIQUE (empresa_id, codigo)
 );
 
 -- =========================================
 -- PERMISO
 -- =========================================
-CREATE TABLE permiso (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    codigo TEXT UNIQUE NOT NULL,
+CREATE TABLE IF NOT EXISTS public.permiso (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+
+    codigo TEXT NOT NULL UNIQUE,
     nombre TEXT NOT NULL,
-    modulo TEXT,
+    modulo TEXT NOT NULL,
     descripcion TEXT,
-    tipo TEXT
+    tipo TEXT NOT NULL
 );
 
 -- =========================================
 -- ROL_PERMISO
 -- =========================================
-CREATE TABLE rol_permiso (
-    rol_id UUID REFERENCES rol(id) ON DELETE CASCADE,
-    permiso_id UUID REFERENCES permiso(id) ON DELETE CASCADE,
-    activo BOOLEAN DEFAULT TRUE,
+CREATE TABLE IF NOT EXISTS public.rol_permiso (
+    rol_id UUID NOT null REFERENCES public.rol(id) ON DELETE CASCADE,
+
+    permiso_id UUID NOT null REFERENCES public.permiso(id) ON DELETE CASCADE,
+
+    activo BOOLEAN NOT NULL DEFAULT TRUE,
+
+    -- Clave primaria compuesta
     PRIMARY KEY (rol_id, permiso_id)
 );
+
 
 -- =========================================
 -- USUARIO
 -- =========================================
-CREATE TABLE usuario (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    empresa_id UUID REFERENCES empresa(id) ON DELETE CASCADE,
-    rol_id UUID REFERENCES rol(id),
-    email TEXT UNIQUE NOT NULL,
+CREATE TABLE IF NOT EXISTS public.usuario (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+
+    empresa_id UUID NOT NULL REFERENCES public.empresa(id) ON DELETE CASCADE,
+
+    rol_id UUID NOT NULL REFERENCES public.rol(id) ON DELETE RESTRICT,
+
+    email TEXT NOT NULL UNIQUE,
     password_hash TEXT NOT NULL,
+
     nombres TEXT NOT NULL,
     apellidos TEXT NOT NULL,
-    activo BOOLEAN DEFAULT TRUE,
-    ultimo_acceso TIMESTAMP,
-    created_at TIMESTAMP DEFAULT NOW()
+
+    activo BOOLEAN NOT NULL DEFAULT TRUE,
+
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    last_login TIMESTAMP
 );
+
+
 
 -- =========================================
 -- CLIENTE
@@ -214,6 +239,19 @@ CREATE TABLE IF NOT EXISTS superadmin_sessions (
 CREATE TABLE IF NOT EXISTS vendedor_sessions (
     id TEXT PRIMARY KEY,
     vendedor_id UUID REFERENCES vendedor(id) ON DELETE CASCADE,
+    is_valid BOOLEAN DEFAULT TRUE,
+    expires_at TIMESTAMPTZ NOT NULL,
+    user_agent TEXT,
+    ip_address TEXT,
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- =========================================
+-- USER SESSIONS (Usuarios)
+-- =========================================
+CREATE TABLE IF NOT EXISTS user_sessions (
+    id TEXT PRIMARY KEY,
+    user_id UUID REFERENCES usuario(id) ON DELETE CASCADE,
     is_valid BOOLEAN DEFAULT TRUE,
     expires_at TIMESTAMPTZ NOT NULL,
     user_agent TEXT,

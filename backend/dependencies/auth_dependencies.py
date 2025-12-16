@@ -12,6 +12,9 @@ from utils.responses import error_response
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/login")
 
+from utils.constants import RoleKeys
+
+# ... (rest of imports)
 
 def get_current_user(
     request: Request,
@@ -39,7 +42,7 @@ def get_current_user(
     # 2. Get Strategy
     from auth.factory import AuthFactory
     strategy = AuthFactory.get_strategy(role)
-    
+
     # 3. Authenticate using Strategy
     user = strategy.authenticate(conn, user_id, session_id)
     
@@ -47,20 +50,24 @@ def get_current_user(
     return user
 
 
-
 from repositories.permission_repository import PermissionRepository
 
-def require_role(role_id: int):
+def require_role(role_id): # role_id could be UUID or Int depending on schema transition
     """
     Dependencia para roles específicos.
     """
 
     def dependency(current_user: dict = Depends(get_current_user)):
         # Bypass for Superadmin
-        if current_user.get("is_superadmin"):
+        if current_user.get(RoleKeys.IS_SUPERADMIN):
             return current_user
             
-        if current_user.get("fk_rol") != role_id: # Note: schema change might affect this comparison if role_id is UUID now
+        # Using ROL_ID constant. Note: User dict now has "rol_id" from strategies.
+        # Ensure we are comparing compatible types (UUID vs String UUID)
+        user_rol_id = current_user.get(RoleKeys.ROL_ID)
+        
+        # Casting to string if necessary for safe comparison
+        if str(user_rol_id) != str(role_id): 
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail=error_response(status.HTTP_403_FORBIDDEN, "No tienes permisos suficientes"),
@@ -79,10 +86,11 @@ def require_permission(permission_code: str):
         perm_repo: PermissionRepository = Depends()
     ):
         # Bypass for Superadmin
-        if current_user.get("is_superadmin"):
+        if current_user.get(RoleKeys.IS_SUPERADMIN):
             return current_user
 
-        user_role_id = current_user["fk_rol"]
+        user_role_id = current_user.get(RoleKeys.ROL_ID)
+        # Assuming Permission Repository expects UUID or handled gracefully
         permissions = perm_repo.get_permissions_by_role_id(user_role_id)
         
         # TODO: Asegurar que permiso.CODIGO exista o usar NOMBRE por ahora
