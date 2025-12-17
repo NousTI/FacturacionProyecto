@@ -12,7 +12,7 @@ class AuthStrategy(ABC):
     def authenticate(self, conn, user_id: str, session_id: str) -> dict:
         pass
 
-from utils.constants import RoleKeys
+from utils.enums import AuthKeys
 
 class SuperadminAuthStrategy(AuthStrategy):
     def authenticate(self, conn, user_id: str, session_id: str) -> dict:
@@ -35,10 +35,10 @@ class SuperadminAuthStrategy(AuthStrategy):
                 detail=error_response(status.HTTP_401_UNAUTHORIZED, "Superadmin no encontrado"),
             )
             
-        superadmin[RoleKeys.IS_SUPERADMIN] = True
-        superadmin[RoleKeys.IS_VENDEDOR] = False
-        superadmin[RoleKeys.IS_USUARIO] = False
-        superadmin[RoleKeys.ROL_ID] = -1 # Dummy ID for logic compatibility
+        superadmin[AuthKeys.IS_SUPERADMIN] = True
+        superadmin[AuthKeys.IS_VENDEDOR] = False
+        superadmin[AuthKeys.IS_USUARIO] = False
+        superadmin[AuthKeys.ROL_ID] = -1 # Dummy ID for logic compatibility
         return superadmin
 
 class VendedorAuthStrategy(AuthStrategy):
@@ -68,10 +68,10 @@ class VendedorAuthStrategy(AuthStrategy):
                 detail=error_response(status.HTTP_401_UNAUTHORIZED, "Vendedor no encontrado"),
             )
         
-        vendedor[RoleKeys.IS_SUPERADMIN] = False
-        vendedor[RoleKeys.IS_VENDEDOR] = True
-        vendedor[RoleKeys.IS_USUARIO] = False
-        vendedor[RoleKeys.ROL_ID] = -2 # Dummy ID
+        vendedor[AuthKeys.IS_SUPERADMIN] = False
+        vendedor[AuthKeys.IS_VENDEDOR] = True
+        vendedor[AuthKeys.IS_USUARIO] = False
+        vendedor[AuthKeys.ROL_ID] = -2 # Dummy ID
         return vendedor
 
 class UsuarioAuthStrategy(AuthStrategy):
@@ -102,8 +102,8 @@ class UsuarioAuthStrategy(AuthStrategy):
                 detail=error_response(status.HTTP_404_NOT_FOUND, "Usuario no encontrado"),
             )
             
-        user[RoleKeys.IS_SUPERADMIN] = False
-        user[RoleKeys.IS_VENDEDOR] = False
-        user[RoleKeys.IS_USUARIO] = True
+        user[AuthKeys.IS_SUPERADMIN] = False
+        user[AuthKeys.IS_VENDEDOR] = False
+        user[AuthKeys.IS_USUARIO] = True
         # user has 'rol_id' effectively
         return user

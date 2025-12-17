@@ -14,9 +14,13 @@ class RolBase(BaseModel):
 class RolCreate(RolBase):
     pass
 
+from models.Permiso import PermisoRead
+from typing import List
+
 class RolRead(RolBase):
     id: UUID
     created_at: datetime
+    permisos: Optional[List[PermisoRead]] = []
 
     class Config:
         from_attributes = True

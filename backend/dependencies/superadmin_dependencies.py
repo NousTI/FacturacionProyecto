@@ -21,6 +21,14 @@ def get_current_superadmin(
 
     user_id = payload.get("sub")
     session_id = payload.get("sid")
+    role = payload.get("role")
+
+    # Si el token es válido pero no tiene el rol de superadmin, es un usuario/vendedor sin permisos
+    if role != "superadmin":
+         raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=error_response(status.HTTP_403_FORBIDDEN, "No tienes permisos de superadministrador"),
+        )
     
     # Validate session
     session_service = SuperadminSessionService(conn)

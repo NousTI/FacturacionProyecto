@@ -6,7 +6,7 @@ from models.Cliente import ClienteCreate, ClienteRead, ClienteUpdate
 from services.cliente_service import ClienteService
 from services.empresa_service import EmpresaService
 from dependencies.auth_dependencies import get_current_user, require_permission
-from utils.constants import RoleKeys
+from utils.enums import AuthKeys
 from utils.responses import success_response, error_response
 
 router = APIRouter()
@@ -19,9 +19,9 @@ def create_cliente(
     empresa_service: EmpresaService = Depends()
 ):
     # Determine context
-    is_superadmin = current_user.get(RoleKeys.IS_SUPERADMIN, False)
-    is_vendedor = current_user.get(RoleKeys.IS_VENDEDOR, False)
-    is_usuario = current_user.get(RoleKeys.IS_USUARIO, False)
+    is_superadmin = current_user.get(AuthKeys.IS_SUPERADMIN, False)
+    is_vendedor = current_user.get(AuthKeys.IS_VENDEDOR, False)
+    is_usuario = current_user.get(AuthKeys.IS_USUARIO, False)
     user_empresa_id = current_user.get("empresa_id")
     user_id = current_user.get("id")
 
@@ -56,9 +56,9 @@ def list_clientes(
     service: ClienteService = Depends(),
     empresa_service: EmpresaService = Depends()
 ):
-    is_superadmin = current_user.get(RoleKeys.IS_SUPERADMIN, False)
-    is_vendedor = current_user.get(RoleKeys.IS_VENDEDOR, False)
-    is_usuario = current_user.get(RoleKeys.IS_USUARIO, False)
+    is_superadmin = current_user.get(AuthKeys.IS_SUPERADMIN, False)
+    is_vendedor = current_user.get(AuthKeys.IS_VENDEDOR, False)
+    is_usuario = current_user.get(AuthKeys.IS_USUARIO, False)
     user_empresa_id = current_user.get("empresa_id")
     user_id = current_user.get("id")
 
@@ -68,9 +68,8 @@ def list_clientes(
         if empresa_id:
             target_empresa_id = empresa_id
         else:
-            # Maybe list all globally? Or empty? Or require param?
-            # For strictness, let's require param or return empty if not provided for now
-            return [] 
+            # List all globally for Superadmin
+            return service.list_clientes(None) 
     elif is_vendedor:
         if not empresa_id:
              raise HTTPException(status_code=400, detail="Vendedor debe especificar empresa_id")
@@ -98,9 +97,9 @@ def get_cliente(
 ):
     cliente = service.get_cliente(cliente_id)
     
-    is_superadmin = current_user.get(RoleKeys.IS_SUPERADMIN, False)
-    is_vendedor = current_user.get(RoleKeys.IS_VENDEDOR, False)
-    is_usuario = current_user.get(RoleKeys.IS_USUARIO, False)
+    is_superadmin = current_user.get(AuthKeys.IS_SUPERADMIN, False)
+    is_vendedor = current_user.get(AuthKeys.IS_VENDEDOR, False)
+    is_usuario = current_user.get(AuthKeys.IS_USUARIO, False)
     user_empresa_id = current_user.get("empresa_id")
     user_id = current_user.get("id")
 
@@ -132,9 +131,9 @@ def update_cliente(
     # Verify existence and access first (Reuse get logic essentially)
     cliente = service.get_cliente(cliente_id)
     
-    is_superadmin = current_user.get(RoleKeys.IS_SUPERADMIN, False)
-    is_vendedor = current_user.get(RoleKeys.IS_VENDEDOR, False)
-    is_usuario = current_user.get(RoleKeys.IS_USUARIO, False)
+    is_superadmin = current_user.get(AuthKeys.IS_SUPERADMIN, False)
+    is_vendedor = current_user.get(AuthKeys.IS_VENDEDOR, False)
+    is_usuario = current_user.get(AuthKeys.IS_USUARIO, False)
     user_empresa_id = current_user.get("empresa_id")
     user_id = current_user.get("id")
 
@@ -161,9 +160,9 @@ def delete_cliente(
     # Verify existence and access
     cliente = service.get_cliente(cliente_id)
     
-    is_superadmin = current_user.get(RoleKeys.IS_SUPERADMIN, False)
-    is_vendedor = current_user.get(RoleKeys.IS_VENDEDOR, False)
-    is_usuario = current_user.get(RoleKeys.IS_USUARIO, False)
+    is_superadmin = current_user.get(AuthKeys.IS_SUPERADMIN, False)
+    is_vendedor = current_user.get(AuthKeys.IS_VENDEDOR, False)
+    is_usuario = current_user.get(AuthKeys.IS_USUARIO, False)
     user_empresa_id = current_user.get("empresa_id")
     user_id = current_user.get("id")
 

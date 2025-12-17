@@ -14,33 +14,56 @@ CREATE TABLE IF NOT EXISTS MODULO_SUSCRIPCION (
     CONSTRAINT UNIQUE_SUSCRIPCION_MODULO UNIQUE (FK_SUSCRIPCION, NOMBRE_MODULO)
 );
 
-CREATE TABLE IF NOT EXISTS CLIENTE (
-    ID SERIAL PRIMARY KEY,
-    NOMBRE VARCHAR(100) NOT NULL,
-    NUM_IDENTIFICACION VARCHAR(13) NOT NULL UNIQUE,
-    CELULAR VARCHAR(13),
-    DIRECCION VARCHAR(250),
-    CORREO VARCHAR(100),
-    TIPO_CLIENTE VARCHAR(10) CHECK (TIPO_CLIENTE IN ('NATURAL', 'JURIDICA'))
+-- =========================================
+-- TABLA: proveedor
+-- =========================================
+CREATE TABLE IF NOT EXISTS public.proveedor (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+
+    -- Relación con empresa
+    empresa_id UUID NOT null REFERENCES public.empresa(id) ON DELETE CASCADE,
+
+    nombre TEXT NOT NULL,
+    ruc VARCHAR(13) NOT NULL,
+
+    direccion TEXT,
+    telefono VARCHAR(13),
+    email TEXT,
+
+    activo BOOLEAN NOT NULL DEFAULT TRUE,
+
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
-CREATE TABLE IF NOT EXISTS PROVEEDOR (
-    ID SERIAL PRIMARY KEY,
-    NOMBRE VARCHAR(100) NOT NULL,
-    RUC VARCHAR(13) NOT NULL UNIQUE,
-    DIRECCION VARCHAR(250),
-    TELEFONO VARCHAR(13)
+-- =========================================
+-- TABLA: producto
+-- =========================================
+CREATE TABLE IF NOT EXISTS public.producto (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+
+    empresa_id UUID NOT NULL
+        REFERENCES public.empresa(id)
+        ON DELETE CASCADE,
+
+    proveedor_id UUID NOT NULL
+        REFERENCES public.proveedor(id)
+        ON DELETE RESTRICT,
+
+    nombre TEXT NOT NULL,
+    descripcion TEXT,
+
+    costo_unitario NUMERIC(10,2) NOT NULL CHECK (costo_unitario >= 0),
+    stock INTEGER NOT NULL DEFAULT 0 CHECK (stock >= 0),
+
+    codigo_producto TEXT NOT NULL,
+
+    activo BOOLEAN NOT NULL DEFAULT TRUE,
+
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
-CREATE TABLE IF NOT EXISTS PRODUCTO (
-    ID SERIAL PRIMARY KEY,
-    FK_PROVEEDOR INT REFERENCES PROVEEDOR (ID),
-    NOMBRE_PRODUCTO VARCHAR(50) NOT NULL,
-    DESCRIPCION VARCHAR(200),
-    COSTO_UNITARIO NUMERIC(10, 2) NOT NULL,
-    STOCK INT NOT NULL DEFAULT 0,
-    CODIGO_PRODUCTO VARCHAR(50) NOT NULL UNIQUE
-);
 
 CREATE TABLE IF NOT EXISTS TIPO_MOVIMIENTO (
     ID SERIAL PRIMARY KEY,

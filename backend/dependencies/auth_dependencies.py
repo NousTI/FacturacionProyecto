@@ -12,7 +12,7 @@ from utils.responses import error_response
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/login")
 
-from utils.constants import RoleKeys
+from utils.enums import AuthKeys
 
 # ... (rest of imports)
 
@@ -59,12 +59,12 @@ def require_role(role_id): # role_id could be UUID or Int depending on schema tr
 
     def dependency(current_user: dict = Depends(get_current_user)):
         # Bypass for Superadmin
-        if current_user.get(RoleKeys.IS_SUPERADMIN):
+        if current_user.get(AuthKeys.IS_SUPERADMIN):
             return current_user
             
         # Using ROL_ID constant. Note: User dict now has "rol_id" from strategies.
         # Ensure we are comparing compatible types (UUID vs String UUID)
-        user_rol_id = current_user.get(RoleKeys.ROL_ID)
+        user_rol_id = current_user.get(AuthKeys.ROL_ID)
         
         # Casting to string if necessary for safe comparison
         if str(user_rol_id) != str(role_id): 
@@ -86,10 +86,10 @@ def require_permission(permission_code: str):
         perm_repo: PermissionRepository = Depends()
     ):
         # Bypass for Superadmin
-        if current_user.get(RoleKeys.IS_SUPERADMIN):
+        if current_user.get(AuthKeys.IS_SUPERADMIN):
             return current_user
 
-        user_role_id = current_user.get(RoleKeys.ROL_ID)
+        user_role_id = current_user.get(AuthKeys.ROL_ID)
         # Assuming Permission Repository expects UUID or handled gracefully
         permissions = perm_repo.get_permissions_by_role_id(user_role_id)
         

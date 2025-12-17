@@ -13,6 +13,11 @@ from api.routes.producto_routes import router as producto_router
 from api.routes.superadmin_routes import router as superadmin_router
 from api.routes.vendedor_routes import router as vendedor_router
 from api.routes.empresa_routes import router as empresa_router
+from api.routes.plan_routes import router as plan_router
+from api.routes.suscripcion_routes import router as suscripcion_router
+from api.routes.comision_routes import router as comision_router
+from api.routes.rol_routes import router as rol_router
+from api.routes.permiso_routes import router as permiso_router
 from settings import get_settings
 from utils.logger import get_logger
 from utils.responses import error_response
@@ -108,6 +113,11 @@ app.include_router(producto_router, prefix="/api/productos")
 app.include_router(superadmin_router)
 app.include_router(vendedor_router, prefix="/api/vendedores", tags=["Vendedores"])
 app.include_router(empresa_router, prefix="/api/empresas", tags=["Empresas"])
+app.include_router(plan_router, prefix="/api/planes", tags=["Planes"])
+app.include_router(suscripcion_router, prefix="/api/suscripciones", tags=["Suscripciones"])
+app.include_router(comision_router, prefix="/api/comisiones", tags=["Comisiones"])
+app.include_router(rol_router, prefix="/api/roles", tags=["Roles"])
+app.include_router(permiso_router, prefix="/api/permisos", tags=["Permisos"])
 
 
 if __name__ == "__main__":

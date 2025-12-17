@@ -1,5 +1,5 @@
 from uuid import UUID
-from datetime import date
+from datetime import date, datetime
 from typing import Optional, List
 from pydantic import BaseModel, EmailStr
 
@@ -17,8 +17,7 @@ class EmpresaBase(BaseModel):
     obligado_contabilidad: bool = False
 
 class EmpresaCreate(EmpresaBase):
-    vendedor_id: Optional[UUID] = None
-    plan_id: Optional[UUID] = None
+    vendedor_id: UUID
     fecha_activacion: Optional[date] = None
     fecha_vencimiento: Optional[date] = None
 
@@ -34,17 +33,16 @@ class EmpresaUpdate(BaseModel):
     estado_suscripcion: Optional[str] = None
     tipo_contribuyente: Optional[str] = None
     obligado_contabilidad: Optional[bool] = None
-    plan_id: Optional[UUID] = None
     fecha_activacion: Optional[date] = None
     fecha_vencimiento: Optional[date] = None
 
 class EmpresaRead(EmpresaBase):
     id: UUID
-    vendedor_id: Optional[UUID] = None
-    plan_id: Optional[UUID] = None
+    vendedor_id: UUID
     fecha_registro: date
     fecha_activacion: Optional[date] = None
     fecha_vencimiento: Optional[date] = None
+    updated_at: datetime
 
     class Config:
         from_attributes = True

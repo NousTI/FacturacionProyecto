@@ -6,7 +6,7 @@ from services.user_service import UserService
 from services.empresa_service import EmpresaService
 from models.Usuario import UserCreate, UserRead, UserUpdate, PasswordReset
 from utils.responses import error_response
-from utils.constants import RoleKeys
+from utils.enums import AuthKeys
 
 router = APIRouter()
 
@@ -17,9 +17,9 @@ def register_user(
     user_service: UserService = Depends(),
     empresa_service: EmpresaService = Depends()
 ):
-    is_superadmin = current_user.get(RoleKeys.IS_SUPERADMIN, False)
-    is_vendedor = current_user.get(RoleKeys.IS_VENDEDOR, False)
-    is_usuario = current_user.get(RoleKeys.IS_USUARIO, False)
+    is_superadmin = current_user.get(AuthKeys.IS_SUPERADMIN, False)
+    is_vendedor = current_user.get(AuthKeys.IS_VENDEDOR, False)
+    is_usuario = current_user.get(AuthKeys.IS_USUARIO, False)
     user_id = current_user.get("id")
 
     if is_usuario:
@@ -40,8 +40,8 @@ def list_users(
     service: UserService = Depends(),
     empresa_service: EmpresaService = Depends()
 ):
-    is_superadmin = current_user.get(RoleKeys.IS_SUPERADMIN, False)
-    is_vendedor = current_user.get(RoleKeys.IS_VENDEDOR, False)
+    is_superadmin = current_user.get(AuthKeys.IS_SUPERADMIN, False)
+    is_vendedor = current_user.get(AuthKeys.IS_VENDEDOR, False)
     user_id = current_user.get("id")
 
     if is_superadmin:
@@ -73,8 +73,8 @@ def get_user(
     if not target_user:
         raise HTTPException(status_code=404, detail="Usuario no encontrado")
 
-    is_superadmin = current_user.get(RoleKeys.IS_SUPERADMIN, False)
-    is_vendedor = current_user.get(RoleKeys.IS_VENDEDOR, False)
+    is_superadmin = current_user.get(AuthKeys.IS_SUPERADMIN, False)
+    is_vendedor = current_user.get(AuthKeys.IS_VENDEDOR, False)
     current_id = current_user.get("id")
 
     # 1. Superadmin can see all
@@ -104,9 +104,9 @@ def update_user(
     service: UserService = Depends(),
     empresa_service: EmpresaService = Depends()
 ):
-    is_superadmin = current_user.get(RoleKeys.IS_SUPERADMIN, False)
-    is_vendedor = current_user.get(RoleKeys.IS_VENDEDOR, False)
-    is_usuario = current_user.get(RoleKeys.IS_USUARIO, False)
+    is_superadmin = current_user.get(AuthKeys.IS_SUPERADMIN, False)
+    is_vendedor = current_user.get(AuthKeys.IS_VENDEDOR, False)
+    is_usuario = current_user.get(AuthKeys.IS_USUARIO, False)
     current_id = current_user.get("id")
     
     # Regular users cannot update themselves (except password via reset)
@@ -136,9 +136,9 @@ def delete_user(
     service: UserService = Depends(),
     empresa_service: EmpresaService = Depends()
 ):
-    is_superadmin = current_user.get(RoleKeys.IS_SUPERADMIN, False)
-    is_vendedor = current_user.get(RoleKeys.IS_VENDEDOR, False)
-    is_usuario = current_user.get(RoleKeys.IS_USUARIO, False)
+    is_superadmin = current_user.get(AuthKeys.IS_SUPERADMIN, False)
+    is_vendedor = current_user.get(AuthKeys.IS_VENDEDOR, False)
+    is_usuario = current_user.get(AuthKeys.IS_USUARIO, False)
     current_id = current_user.get("id")
 
     if is_usuario:
@@ -163,7 +163,7 @@ def reset_password(
 ):
     user_id = current_user.get("id")
     
-    if current_user.get(RoleKeys.IS_VENDEDOR) or current_user.get(RoleKeys.IS_SUPERADMIN):
+    if current_user.get(AuthKeys.IS_VENDEDOR) or current_user.get(AuthKeys.IS_SUPERADMIN):
          # Role check to prevent non-User table entities from checking this 
          # (or you could allow them if they share logic, but for now blocking as per requirements)
          pass

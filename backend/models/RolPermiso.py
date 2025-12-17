@@ -1,9 +1,10 @@
 from pydantic import BaseModel
+from uuid import UUID
 
 class RolPermisoBase(BaseModel):
-    fk_rol: int
-    fk_permiso: int
+    rol_id: UUID
+    permiso_id: UUID
+    activo: bool = True
 
 class RolPermisoRead(RolPermisoBase):
-    class Config:
-        from_attributes = True
+    pass

@@ -40,10 +40,18 @@ class ClienteRepository:
             row = cur.fetchone()
             return dict(row) if row else None
 
-    def list_clientes(self, empresa_id: UUID):
+    def list_clientes(self, empresa_id: UUID = None):
         if not self.db: return []
+        
+        query = "SELECT * FROM cliente"
+        params = []
+        
+        if empresa_id:
+            query += " WHERE empresa_id = %s"
+            params.append(str(empresa_id))
+            
         with self.db.cursor() as cur:
-            cur.execute("SELECT * FROM cliente WHERE empresa_id = %s", (str(empresa_id),))
+            cur.execute(query, tuple(params))
             rows = cur.fetchall()
             return [dict(row) for row in rows]
 

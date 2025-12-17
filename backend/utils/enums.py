@@ -1,0 +1,79 @@
+from enum import Enum
+
+class SubscriptionStatus(str, Enum):
+    ACTIVA = "ACTIVA"
+    PENDIENTE = "PENDIENTE"
+    VENCIDA = "VENCIDA"
+    CANCELADA = "CANCELADA"
+
+class PaymentStatus(str, Enum):
+    COMPLETED = "COMPLETED"
+    PENDING = "PENDING"
+    FAILED = "FAILED"
+    REFUNDED = "REFUNDED"
+
+class CommissionStatus(str, Enum):
+    PENDIENTE = "PENDIENTE"
+    PAGADA = "PAGADA"
+    CANCELADA = "CANCELADA"
+
+class PaymentMethod(str, Enum):
+    TRANSFERENCIA = "TRANSFERENCIA"
+    EFECTIVO = "EFECTIVO"
+    CHEQUE = "CHEQUE"
+    MANUAL = "MANUAL"
+    STRIPE = "STRIPE"
+    PAYPAL = "PAYPAL"
+
+class RolCodigo(str, Enum):
+    ADMIN = "ADMIN"
+    OWNER = "OWNER"
+    VENDEDOR = "VENDEDOR"
+    SUPERADMIN = "SUPERADMIN"
+    USUARIO = "USUARIO"
+
+class AuthKeys(str, Enum):
+    IS_SUPERADMIN = "is_superadmin"
+    IS_VENDEDOR = "is_vendedor"
+    IS_USUARIO = "is_usuario"
+    IS_CLIENTE = "is_cliente"
+    ROL_ID = "rol_id"
+    ROLE_ID_KEY = "fk_rol"
+
+class PermissionCodes(str, Enum):
+    # Roles
+    ROL_VER = "ROL_VER"
+    ROL_CREAR = "ROL_CREAR"
+    ROL_EDITAR = "ROL_EDITAR"
+    ROL_ELIMINAR = "ROL_ELIMINAR"
+    
+    # Permisos
+    PERMISO_VER = "PERMISO_VER"
+    PERMISO_CREAR = "PERMISO_CREAR"
+    PERMISO_EDITAR = "PERMISO_EDITAR"
+    PERMISO_ELIMINAR = "PERMISO_ELIMINAR"
+    
+    # Usuarios
+    USUARIO_VER = "USUARIO_VER"
+    USUARIO_CREAR = "USUARIO_CREAR"
+    USUARIO_EDITAR = "USUARIO_EDITAR"
+    USUARIO_ELIMINAR = "USUARIO_ELIMINAR"
+    
+    # Clientes
+    CLIENTE_VER = "CLIENTE_VER"
+    CLIENTE_CREAR = "CLIENTE_CREAR"
+    CLIENTE_EDITAR = "CLIENTE_EDITAR"
+    CLIENTE_ELIMINAR = "CLIENTE_ELIMINAR"
+    
+    # Productos
+    PRODUCTO_VER = "PRODUCTO_VER"
+    PRODUCTO_CREAR = "PRODUCTO_CREAR"
+    PRODUCTO_EDITAR = "PRODUCTO_EDITAR"
+    PRODUCTO_ELIMINAR = "PRODUCTO_ELIMINAR"
+    
+    # Proveedores
+    PROVEEDOR_VER = "PROVEEDOR_VER"
+    PROVEEDOR_CREAR = "PROVEEDOR_CREAR"
+    PROVEEDOR_EDITAR = "PROVEEDOR_EDITAR"
+    PROVEEDOR_ELIMINAR = "PROVEEDOR_ELIMINAR"
+
