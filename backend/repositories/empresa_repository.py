@@ -10,7 +10,9 @@ class EmpresaRepository:
     def create_empresa(self, empresa_data: dict):
         if not self.db: return None
         fields = list(empresa_data.keys())
-        values = list(empresa_data.values())
+        fields = list(empresa_data.keys())
+        # Convert UUIDs to strings to avoid adapter errors
+        values = [str(v) if isinstance(v, UUID) else v for v in empresa_data.values()]
         placeholders = ["%s"] * len(fields)
         
         query = f"""
@@ -25,8 +27,8 @@ class EmpresaRepository:
                 row = cur.fetchone()
                 return dict(row) if row else None
         except Exception as e:
-            print(f"Error creating empresa: {e}")
-            return None
+            # Propagate error to service for handling (e.g. FK violations)
+            raise e
 
     def get_empresa_by_id(self, empresa_id: UUID):
         if not self.db: return None
@@ -42,14 +44,22 @@ class EmpresaRepository:
             row = cur.fetchone()
             return dict(row) if row else None
 
-    def list_empresas(self, vendedor_id: UUID = None):
+    def list_empresas(self, vendedor_id: UUID = None, empresa_id: UUID = None):
         if not self.db: return []
         query = "SELECT * FROM empresa"
         params = []
+        conditions = []
         
         if vendedor_id:
-            query += " WHERE vendedor_id = %s"
+            conditions.append("vendedor_id = %s")
             params.append(str(vendedor_id))
+            
+        if empresa_id:
+            conditions.append("id = %s")
+            params.append(str(empresa_id))
+            
+        if conditions:
+            query += " WHERE " + " AND ".join(conditions)
             
         query += " ORDER BY fecha_registro DESC"
         
@@ -62,7 +72,9 @@ class EmpresaRepository:
         if not self.db or not empresa_data: return None
         
         set_clauses = [f"{key} = %s" for key in empresa_data.keys()]
-        values = list(empresa_data.values())
+        set_clauses = [f"{key} = %s" for key in empresa_data.keys()]
+        # Convert UUIDs to strings to avoid adapter errors
+        values = [str(v) if isinstance(v, UUID) else v for v in empresa_data.values()]
         values.append(str(empresa_id))
         
         query = f"""
@@ -78,16 +90,38 @@ class EmpresaRepository:
                 row = cur.fetchone()
                 return dict(row) if row else None
         except Exception as e:
-            print(f"Error updating empresa: {e}")
-            return None
+            # Propagate error to service for handling (e.g. FK violations)
+            raise e
 
-    def delete_empresa(self, empresa_id: UUID):
-        # Hard delete
-        query = "DELETE FROM empresa WHERE id = %s RETURNING id"
+    def update_expired_subscriptions(self) -> int:
+        """
+        Actualiza el estado de las empresas cuya fecha de vencimiento ha pasado.
+        Retorna el número de registros actualizados.
+        """
+        if not self.db: return 0
+        
+        # Import here or at top if generic
+        from utils.enums import SubscriptionStatus
+        
+        # Using pago_suscripcion as source of truth for expiration date
+        query = """
+            UPDATE empresa e
+            SET estado_suscripcion = %s, updated_at = NOW()
+            WHERE e.estado_suscripcion = %s
+            AND (
+                SELECT MAX(fecha_fin_periodo)
+                FROM pago_suscripcion p
+                WHERE p.empresa_id = e.id
+                -- Assuming 'ACTIVA' or 'PAGADO' are valid paid states. 
+                -- Based on DB check, 'ACTIVA' is used.
+                AND p.estado IN ('ACTIVA', 'PAGADO', 'COMPLETED')
+            ) < CURRENT_DATE
+        """
+        
         try:
             with db_transaction(self.db) as cur:
-                cur.execute(query, (str(empresa_id),))
-                return cur.fetchone() is not None
+                cur.execute(query, (SubscriptionStatus.VENCIDA.value, SubscriptionStatus.ACTIVA.value))
+                return cur.rowcount
         except Exception as e:
-            print(f"Error deleting empresa: {e}")
-            return False
+            print(f"Error updating expired subscriptions: {e}")
+            return 0

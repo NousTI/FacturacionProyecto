@@ -27,6 +27,13 @@ class SuscripcionService:
         user_id = current_user.get("id")
         rol_id = current_user.get("rol_id")
 
+        # 0. Strict Check: Vendedores cannot register payments
+        if current_user.get(AuthKeys.IS_VENDEDOR):
+             raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Los vendedores no tienen permiso para registrar pagos manualmente"
+            )
+
         # 1. Validation
         is_superadmin = current_user.get(AuthKeys.IS_SUPERADMIN, False)
         # Fallback check
@@ -77,7 +84,7 @@ class SuscripcionService:
 
             # 2. Verify Role
             rol_codigo = self.suscripcion_repo.get_rol_codigo(rol_id)
-            if rol_codigo not in [RolCodigo.ADMIN.value, RolCodigo.OWNER.value]:
+            if rol_codigo not in [RolCodigo.ADMIN.value]:
                  raise HTTPException(status_code=403, detail=ErrorMessages.PAYMENT_ADMIN_REQUIRED)
 
         # 3. Validate Plan
@@ -91,7 +98,7 @@ class SuscripcionService:
         if pago.fecha_inicio_periodo >= pago.fecha_fin_periodo:
              raise HTTPException(status_code=400, detail=ErrorMessages.INVALID_DATE_RANGE)
 
-    def list_pagos(self, current_user: dict):
+    def list_pagos(self, current_user: dict, estado: str = None):
         # Superadmin sees all (pass None).
         # Enterprise User sees own (pass empresa_id).
         # We need to detect role.
@@ -103,7 +110,7 @@ class SuscripcionService:
             is_superadmin = True
             
         if is_superadmin:
-            return self.suscripcion_repo.list_pagos(None)
+            return self.suscripcion_repo.list_pagos(None, estado=estado)
         
         # If not superadmin, restrict to empresa_id AND Admin/Owner role
         empresa_id = current_user.get("empresa_id")
@@ -112,12 +119,12 @@ class SuscripcionService:
 
         rol_id = current_user.get("rol_id")
         rol_codigo = self.suscripcion_repo.get_rol_codigo(rol_id)
-        if rol_codigo not in [RolCodigo.ADMIN.value, RolCodigo.OWNER.value]:
+        if rol_codigo not in [RolCodigo.ADMIN.value]:
              # Raise 403 or return empty list? Usually 403 for clear restriction.
              # User asked "only admin u owner can see".
              raise HTTPException(status_code=403, detail=ErrorMessages.PAYMENT_VIEW_ADMIN_REQUIRED)
              
-        return self.suscripcion_repo.list_pagos(empresa_id)
+        return self.suscripcion_repo.list_pagos(empresa_id, estado=estado)
 
     def get_pago(self, pago_id: UUID, current_user: dict):
         pago = self.suscripcion_repo.get_pago_by_id(pago_id)
@@ -139,7 +146,7 @@ class SuscripcionService:
         # Verify Role (Admin/Owner)
         rol_id = current_user.get("rol_id")
         rol_codigo = self.suscripcion_repo.get_rol_codigo(rol_id)
-        if rol_codigo not in [RolCodigo.ADMIN.value, RolCodigo.OWNER.value]:
+        if rol_codigo not in [RolCodigo.ADMIN.value]:
              raise HTTPException(status_code=403, detail=ErrorMessages.PAYMENT_DETAIL_ADMIN_REQUIRED)
               
         return pago

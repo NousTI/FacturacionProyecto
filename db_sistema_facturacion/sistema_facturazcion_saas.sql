@@ -84,7 +84,7 @@ CREATE TABLE IF NOT EXISTS public.plan (
 CREATE TABLE IF NOT EXISTS public.empresa (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
 
-    vendedor_id UUID NOT null REFERENCES public.vendedor(id) ON DELETE SET NULL,
+    vendedor_id UUID REFERENCES public.vendedor(id) ON DELETE SET NULL,
 
     ruc TEXT NOT NULL UNIQUE,
     razon_social TEXT NOT NULL,
@@ -107,7 +107,6 @@ CREATE TABLE IF NOT EXISTS public.empresa (
 
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
-
 
 -- =========================================
 -- ROL
@@ -246,7 +245,7 @@ CREATE TABLE IF NOT EXISTS public.pago_suscripcion (
     fecha_fin_periodo DATE NOT NULL,
 
     metodo_pago TEXT NOT NULL,
-    estado TEXT NOT NULL DEFAULT 'PAGADO',
+    estado TEXT NOT NULL DEFAULT 'PENDIENTE',
 
     comprobante_url TEXT,
     observaciones TEXT,

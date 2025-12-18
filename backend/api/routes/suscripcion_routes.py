@@ -15,12 +15,15 @@ def registrar_pago(
 ):
     return service.registrar_pago(pago, current_user)
 
+from typing import List, Optional
+
 @router.get("/", response_model=List[PagoSuscripcionRead])
 def list_pagos(
+    estado: Optional[str] = None,
     current_user: dict = Depends(get_current_user),
     service: SuscripcionService = Depends()
 ):
-    return service.list_pagos(current_user)
+    return service.list_pagos(current_user, estado)
 
 @router.get("/{pago_id}", response_model=PagoSuscripcionRead)
 def get_pago(

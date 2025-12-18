@@ -17,15 +17,23 @@ class SuscripcionRepository:
 
     # ... previously defined registration method ...
 
-    def list_pagos(self, empresa_id: UUID = None):
+    def list_pagos(self, empresa_id: UUID = None, estado: str = None):
         if not self.db: return []
         
         query = "SELECT * FROM pago_suscripcion"
         params = []
+        conditions = []
         
         if empresa_id:
-            query += " WHERE empresa_id = %s"
+            conditions.append("empresa_id = %s")
             params.append(str(empresa_id))
+            
+        if estado:
+            conditions.append("estado = %s")
+            params.append(estado)
+            
+        if conditions:
+             query += " WHERE " + " AND ".join(conditions)
             
         query += " ORDER BY fecha_pago DESC"
         
@@ -82,6 +90,18 @@ class SuscripcionRepository:
         
         try:
             with db_transaction(self.db) as cur:
+                # 0. Cancel previous active subscriptions to cleanly switch plan/period
+                cancel_previous_query = """
+                    UPDATE pago_suscripcion
+                    SET estado = %s, updated_at = NOW()
+                    WHERE empresa_id = %s AND estado = %s
+                """
+                cur.execute(cancel_previous_query, (
+                    SubscriptionStatus.CANCELADA.value, 
+                    str(empresa_id), 
+                    SubscriptionStatus.ACTIVA.value
+                ))
+
                 # 1. Insert Pago
                 cur.execute(insert_pago_query, tuple(p_clean_values))
                 pago_row = cur.fetchone()

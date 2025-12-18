@@ -17,11 +17,12 @@ class EmpresaBase(BaseModel):
     obligado_contabilidad: bool = False
 
 class EmpresaCreate(EmpresaBase):
-    vendedor_id: UUID
+    vendedor_id: Optional[UUID] = None
     fecha_activacion: Optional[date] = None
     fecha_vencimiento: Optional[date] = None
 
 class EmpresaUpdate(BaseModel):
+    vendedor_id: Optional[UUID] = None
     ruc: Optional[str] = None
     razon_social: Optional[str] = None
     nombre_comercial: Optional[str] = None
@@ -38,7 +39,7 @@ class EmpresaUpdate(BaseModel):
 
 class EmpresaRead(EmpresaBase):
     id: UUID
-    vendedor_id: UUID
+    vendedor_id: Optional[UUID] = None
     fecha_registro: date
     fecha_activacion: Optional[date] = None
     fecha_vencimiento: Optional[date] = None

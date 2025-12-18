@@ -7,6 +7,7 @@ from services.empresa_service import EmpresaService
 from models.Usuario import UserCreate, UserRead, UserUpdate, PasswordReset
 from utils.responses import error_response
 from utils.enums import AuthKeys
+from utils.messages import UserMessages
 
 router = APIRouter()
 
@@ -21,9 +22,15 @@ def register_user(
     is_vendedor = current_user.get(AuthKeys.IS_VENDEDOR, False)
     is_usuario = current_user.get(AuthKeys.IS_USUARIO, False)
     user_id = current_user.get("id")
+    user_empresa_id = current_user.get("empresa_id")
 
+    # Access Control: Superadmin OR Vendedor OR Company Admin
+    
     if is_usuario:
-        raise HTTPException(status_code=403, detail="No tienes permisos para registrar usuarios")
+        # Check if they are defining the correct company
+        if str(user.empresa_id) != str(user_empresa_id):
+             raise HTTPException(status_code=403, detail=UserMessages.COMPANY_MISMATCH)
+
 
     # If Vendedor, verify they own the empresa
     if not is_superadmin and is_vendedor:
@@ -42,6 +49,7 @@ def list_users(
 ):
     is_superadmin = current_user.get(AuthKeys.IS_SUPERADMIN, False)
     is_vendedor = current_user.get(AuthKeys.IS_VENDEDOR, False)
+    is_usuario = current_user.get(AuthKeys.IS_USUARIO, False)
     user_id = current_user.get("id")
 
     if is_superadmin:
@@ -57,7 +65,12 @@ def list_users(
             all_users.extend(service.list_users(empresa_id=emp['id']))
         return all_users
 
-    # Regular user cannot list users? Or only their own company?
+
+    if is_usuario:
+        # List users for their own company only
+        # Assuming the service supports filtering by empresa_id
+        return service.list_users(empresa_id=current_user.get("empresa_id"))
+
     raise HTTPException(status_code=403, detail="No tienes permisos para listar usuarios")
 
 
@@ -109,9 +122,12 @@ def update_user(
     is_usuario = current_user.get(AuthKeys.IS_USUARIO, False)
     current_id = current_user.get("id")
     
-    # Regular users cannot update themselves (except password via reset)
+    # Regular users cannot update themselves (except password via reset) -> Actually Admins CAN update users
     if is_usuario:
-         raise HTTPException(status_code=403, detail="No tienes permisos para actualizar usuarios")
+         # Check if target user belongs to same company
+         if not target_user or str(target_user.get('empresa_id')) != str(current_user.get('empresa_id')):
+             raise HTTPException(status_code=403, detail="No tienes permisos para actualizar este usuario")
+
 
     # Validate target existence and Vendedor ownership
     target_user = service.get_user(user_id)
@@ -142,7 +158,11 @@ def delete_user(
     current_id = current_user.get("id")
 
     if is_usuario:
-        raise HTTPException(status_code=403, detail="No tienes permisos para eliminar usuarios")
+        # Check ownership validation inside service or here
+        target_check = service.get_user(user_id)
+        if not target_check or str(target_check.get('empresa_id')) != str(current_user.get('empresa_id')):
+             raise HTTPException(status_code=403, detail="No tienes permisos para eliminar este usuario")
+
 
     target_user = service.get_user(user_id)
     if not target_user:

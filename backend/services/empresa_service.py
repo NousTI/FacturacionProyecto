@@ -19,13 +19,23 @@ class EmpresaService:
         # Assuming permissions are checked in layout, but logic here ensures consistency
         data = empresa.model_dump(exclude_unset=True)
         
-        # If caller is not superadmin, force assignment to themselves (if they did not provide it or provided another)
-        if not is_superadmin and user_id:
-            # We assume the user_id passed IS the vendedor_id if they are a vendedor
-            # This logic depends on the assumption that Vendedores create companies assigned to themselves.
+        # If caller is not superadmin, force assignment to themselves
+        if not is_superadmin:
+            if not user_id:
+                  # Should not happen given auth dependencies but safety check
+                  raise HTTPException(status_code=400, detail="Vendedor ID requerido")
             data['vendedor_id'] = user_id
+        # Else (Superadmin): allow whatever is in data['vendedor_id'] (UUID or None)
+
             
-        new_empresa = self.repository.create_empresa(data)
+        try:
+             new_empresa = self.repository.create_empresa(data)
+        except Exception as e:
+             error_str = str(e)
+             if "vendedor_id" in error_str and "viol" in error_str:
+                  raise HTTPException(status_code=400, detail="El Vendedor ID especificado no existe")
+             raise HTTPException(status_code=500, detail=f"Error al crear la empresa: {error_str}")
+             
         if not new_empresa:
              raise HTTPException(status_code=500, detail="Error al crear la empresa")
         return new_empresa
@@ -50,11 +60,12 @@ class EmpresaService:
                 
         return empresa
 
-    def list_empresas(self, user_id: UUID = None, is_superadmin: bool = False):
-        # If superadmin, list all (vendedor_id=None filter).
-        # If vendedor, list only theirs.
-        filter_vendedor_id = None if is_superadmin else user_id
-        return self.repository.list_empresas(vendedor_id=filter_vendedor_id)
+    def list_empresas(self, vendedor_id: UUID = None, empresa_id: UUID = None):
+        """
+        Listar empresas con filtros opcionales.
+        La lógica de permisos (quién puede ver qué) debe manejarse en el controlador/ruta.
+        """
+        return self.repository.list_empresas(vendedor_id=vendedor_id, empresa_id=empresa_id)
 
     def update_empresa(self, empresa_id: UUID, empresa_update: EmpresaUpdate, user_id: UUID = None, is_superadmin: bool = False):
         # Check permissions first by fetching
@@ -67,8 +78,24 @@ class EmpresaService:
                     status_code=status.HTTP_400_BAD_REQUEST,
                     detail="El RUC ya está en uso"
                 )
+        
+        # STRICT Check: Vendedores cannot change 'activo' status
+        if not is_superadmin:
+            # Check if active status is being modified
+            if empresa_update.activo is not None and empresa_update.activo != current['activo']:
+                 raise HTTPException(
+                    status_code=status.HTTP_403_FORBIDDEN, 
+                    detail="Solo el Superadmin puede cambiar el estado activo de una empresa"
+                )
 
-        updated = self.repository.update_empresa(empresa_id, empresa_update.model_dump(exclude_unset=True))
+        try:
+            updated = self.repository.update_empresa(empresa_id, empresa_update.model_dump(exclude_unset=True))
+        except Exception as e:
+            error_str = str(e)
+            if "vendedor_id" in error_str and "viol" in error_str:
+                  raise HTTPException(status_code=400, detail="El Vendedor ID especificado no existe")
+            raise HTTPException(status_code=500, detail=f"Error al actualizar empresa: {error_str}")
+
         if not updated:
              raise HTTPException(status_code=500, detail="Error al actualizar empresa")
         return updated
