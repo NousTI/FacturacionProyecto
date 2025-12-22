@@ -12,14 +12,14 @@ class EmpresaBase(BaseModel):
     direccion: Optional[str] = None
     logo_url: Optional[str] = None
     activo: bool = True
-    estado_suscripcion: Optional[str] = None
+    estado_suscripcion: str = "PENDIENTE"
     tipo_contribuyente: Optional[str] = None
     obligado_contabilidad: bool = False
 
 class EmpresaCreate(EmpresaBase):
     vendedor_id: Optional[UUID] = None
-    fecha_activacion: Optional[date] = None
-    fecha_vencimiento: Optional[date] = None
+    fecha_activacion: Optional[datetime] = None
+    fecha_vencimiento: Optional[datetime] = None
 
 class EmpresaUpdate(BaseModel):
     vendedor_id: Optional[UUID] = None
@@ -34,15 +34,16 @@ class EmpresaUpdate(BaseModel):
     estado_suscripcion: Optional[str] = None
     tipo_contribuyente: Optional[str] = None
     obligado_contabilidad: Optional[bool] = None
-    fecha_activacion: Optional[date] = None
-    fecha_vencimiento: Optional[date] = None
+    fecha_activacion: Optional[datetime] = None
+    fecha_vencimiento: Optional[datetime] = None
 
 class EmpresaRead(EmpresaBase):
     id: UUID
     vendedor_id: Optional[UUID] = None
-    fecha_registro: date
-    fecha_activacion: Optional[date] = None
-    fecha_vencimiento: Optional[date] = None
+    fecha_registro: datetime
+    fecha_activacion: Optional[datetime] = None
+    fecha_vencimiento: Optional[datetime] = None
+    created_at: datetime
     updated_at: datetime
 
     class Config:

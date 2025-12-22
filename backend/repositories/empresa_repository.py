@@ -1,18 +1,21 @@
 from fastapi import Depends
+from typing import List, Optional
+from datetime import datetime
+from uuid import UUID
 from database.connection import get_db_connection
 from database.transaction import db_transaction
-from uuid import UUID
 
 class EmpresaRepository:
     def __init__(self, db=Depends(get_db_connection)):
         self.db = db
 
-    def create_empresa(self, empresa_data: dict):
+    def _serialize_uuids(self, values: list) -> list:
+        return [str(v) if isinstance(v, UUID) else v for v in values]
+
+    def create_empresa(self, empresa_data: dict) -> Optional[dict]:
         if not self.db: return None
         fields = list(empresa_data.keys())
-        fields = list(empresa_data.keys())
-        # Convert UUIDs to strings to avoid adapter errors
-        values = [str(v) if isinstance(v, UUID) else v for v in empresa_data.values()]
+        clean_values = self._serialize_uuids(list(empresa_data.values()))
         placeholders = ["%s"] * len(fields)
         
         query = f"""
@@ -21,30 +24,26 @@ class EmpresaRepository:
             RETURNING *
         """
         
-        try:
-            with db_transaction(self.db) as cur:
-                cur.execute(query, tuple(values))
-                row = cur.fetchone()
-                return dict(row) if row else None
-        except Exception as e:
-            # Propagate error to service for handling (e.g. FK violations)
-            raise e
+        with db_transaction(self.db) as cur:
+            cur.execute(query, tuple(clean_values))
+            row = cur.fetchone()
+            return dict(row) if row else None
 
-    def get_empresa_by_id(self, empresa_id: UUID):
+    def get_empresa_by_id(self, empresa_id: UUID) -> Optional[dict]:
         if not self.db: return None
         with self.db.cursor() as cur:
             cur.execute("SELECT * FROM empresa WHERE id=%s", (str(empresa_id),))
             row = cur.fetchone()
             return dict(row) if row else None
 
-    def get_empresa_by_ruc(self, ruc: str):
+    def get_empresa_by_ruc(self, ruc: str) -> Optional[dict]:
         if not self.db: return None
         with self.db.cursor() as cur:
             cur.execute("SELECT * FROM empresa WHERE ruc=%s", (ruc,))
             row = cur.fetchone()
             return dict(row) if row else None
 
-    def list_empresas(self, vendedor_id: UUID = None, empresa_id: UUID = None):
+    def list_empresas(self, vendedor_id: Optional[UUID] = None, empresa_id: Optional[UUID] = None) -> List[dict]:
         if not self.db: return []
         query = "SELECT * FROM empresa"
         params = []
@@ -68,14 +67,12 @@ class EmpresaRepository:
             rows = cur.fetchall()
             return [dict(row) for row in rows]
 
-    def update_empresa(self, empresa_id: UUID, empresa_data: dict):
+    def update_empresa(self, empresa_id: UUID, empresa_data: dict) -> Optional[dict]:
         if not self.db or not empresa_data: return None
         
         set_clauses = [f"{key} = %s" for key in empresa_data.keys()]
-        set_clauses = [f"{key} = %s" for key in empresa_data.keys()]
-        # Convert UUIDs to strings to avoid adapter errors
-        values = [str(v) if isinstance(v, UUID) else v for v in empresa_data.values()]
-        values.append(str(empresa_id))
+        clean_values = self._serialize_uuids(list(empresa_data.values()))
+        clean_values.append(str(empresa_id))
         
         query = f"""
             UPDATE empresa 
@@ -84,44 +81,38 @@ class EmpresaRepository:
             RETURNING *
         """
         
-        try:
-            with db_transaction(self.db) as cur:
-                cur.execute(query, tuple(values))
-                row = cur.fetchone()
-                return dict(row) if row else None
-        except Exception as e:
-            # Propagate error to service for handling (e.g. FK violations)
-            raise e
+        with db_transaction(self.db) as cur:
+            cur.execute(query, tuple(clean_values))
+            row = cur.fetchone()
+            return dict(row) if row else None
 
-    def update_expired_subscriptions(self) -> int:
+    def get_companies_with_expired_subscription(self, cutoff_date: datetime) -> List[UUID]:
         """
-        Actualiza el estado de las empresas cuya fecha de vencimiento ha pasado.
-        Retorna el número de registros actualizados.
+        Retorna las IDs de las empresas cuya suscripción ha vencido respecto a la fecha de corte.
         """
-        if not self.db: return 0
+        if not self.db: return []
         
-        # Import here or at top if generic
-        from utils.enums import SubscriptionStatus
-        
-        # Using pago_suscripcion as source of truth for expiration date
+        # Logic: Status is 'ACTIVA' BUT (max end date of valid payments) < cutoff_date
+        # We need to assume 'ACTIVA' is the DB value for SubscriptionStatus.ACTIVA
         query = """
-            UPDATE empresa e
-            SET estado_suscripcion = %s, updated_at = NOW()
-            WHERE e.estado_suscripcion = %s
+            SELECT e.id
+            FROM empresa e
+            WHERE e.estado_suscripcion = 'ACTIVA'
             AND (
                 SELECT MAX(fecha_fin_periodo)
                 FROM pago_suscripcion p
                 WHERE p.empresa_id = e.id
-                -- Assuming 'ACTIVA' or 'PAGADO' are valid paid states. 
-                -- Based on DB check, 'ACTIVA' is used.
                 AND p.estado IN ('ACTIVA', 'PAGADO', 'COMPLETED')
-            ) < CURRENT_DATE
+            ) < %s
         """
         
-        try:
-            with db_transaction(self.db) as cur:
-                cur.execute(query, (SubscriptionStatus.VENCIDA.value, SubscriptionStatus.ACTIVA.value))
-                return cur.rowcount
-        except Exception as e:
-            print(f"Error updating expired subscriptions: {e}")
-            return 0
+        with self.db.cursor() as cur:
+            cur.execute(query, (cutoff_date,))
+            rows = cur.fetchall()
+            return [row[0] for row in rows] # Return list of UUIDs
+
+    def update_company_status(self, empresa_id: UUID, new_status: str) -> bool:
+        query = "UPDATE empresa SET estado_suscripcion = %s, updated_at = NOW() WHERE id = %s"
+        with db_transaction(self.db) as cur:
+            cur.execute(query, (new_status, str(empresa_id)))
+            return cur.rowcount > 0

@@ -1,37 +1,33 @@
-from fastapi import APIRouter, Depends, HTTPException, Body
+from fastapi import APIRouter, Depends, Body, HTTPException
 from typing import List
 from uuid import UUID
 from services.permiso_service import PermisoService
 from models.Permiso import PermisoRead, PermisoCreate
-from dependencies.auth_dependencies import require_permission, get_current_user
+from dependencies.auth_dependencies import get_current_user
 from utils.responses import success_response
 from utils.messages import ErrorMessages
-from utils.enums import PermissionCodes
 
 router = APIRouter()
 
 @router.get("/", response_model=List[PermisoRead])
 def list_permissions(
-    current_user: dict = Depends(require_permission(PermissionCodes.PERMISO_VER)),
+    current_user: dict = Depends(get_current_user),
     service: PermisoService = Depends()
 ):
-    return service.list_permissions()
+    return service.list_permissions(current_user)
 
 @router.get("/{permiso_id}", response_model=PermisoRead)
 def get_permission(
     permiso_id: UUID,
-    current_user: dict = Depends(require_permission(PermissionCodes.PERMISO_VER)),
+    current_user: dict = Depends(get_current_user),
     service: PermisoService = Depends()
 ):
-    result = service.get_permission(permiso_id)
-    if not result:
-         raise HTTPException(status_code=404, detail=ErrorMessages.PERMISSION_NOT_FOUND)
-    return result
+    return service.get_permission(permiso_id, current_user)
 
 @router.post("/", response_model=PermisoRead)
 def create_permission(
     permiso: PermisoCreate,
-    current_user: dict = Depends(get_current_user), # Superadmin check in Service
+    current_user: dict = Depends(get_current_user),
     service: PermisoService = Depends()
 ):
     result = service.create_permission(permiso.model_dump(), current_user)
@@ -43,7 +39,7 @@ def create_permission(
 def update_permission(
     permiso_id: UUID,
     permiso_update: dict = Body(...), 
-    current_user: dict = Depends(get_current_user), # Superadmin check in Service
+    current_user: dict = Depends(get_current_user),
     service: PermisoService = Depends()
 ):
     result = service.update_permission(permiso_id, permiso_update, current_user)
@@ -54,7 +50,7 @@ def update_permission(
 @router.delete("/{permiso_id}")
 def delete_permission(
     permiso_id: UUID,
-    current_user: dict = Depends(get_current_user), # Superadmin check in Service
+    current_user: dict = Depends(get_current_user),
     service: PermisoService = Depends()
 ):
     result = service.delete_permission(permiso_id, current_user)

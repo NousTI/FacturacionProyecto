@@ -2,12 +2,14 @@ from datetime import datetime, timedelta, timezone
 from database.transaction import db_transaction
 from fastapi import Depends
 from database.connection import get_db_connection
+from typing import Optional
+from uuid import UUID
 
 class VendedorSessionRepository:
     def __init__(self, db=Depends(get_db_connection)):
         self.db = db
 
-    def create_session(self, vendedor_id, jti, user_agent=None, ip_address=None, duration_minutes=60):
+    def create_session(self, vendedor_id: UUID, jti: str, user_agent: Optional[str]=None, ip_address: Optional[str]=None, duration_minutes: int=60) -> str:
         expires_at = datetime.now(timezone.utc) + timedelta(minutes=duration_minutes)
         with db_transaction(self.db) as cur:
             cur.execute(
@@ -19,7 +21,7 @@ class VendedorSessionRepository:
             )
         return jti
 
-    def invalidate_session(self, jti: str):
+    def invalidate_session(self, jti: str) -> None:
         with db_transaction(self.db) as cur:
             cur.execute(
                 """
@@ -30,7 +32,8 @@ class VendedorSessionRepository:
                 (jti,),
             )
 
-    def get_session(self, jti: str):
+    def get_session(self, jti: str) -> Optional[dict]:
+        if not self.db: return None
         with self.db.cursor() as cur:
             cur.execute(
                 """
@@ -42,7 +45,8 @@ class VendedorSessionRepository:
             )
             return cur.fetchone()
 
-    def get_active_session_for_vendedor(self, vendedor_id):
+    def get_active_session_for_vendedor(self, vendedor_id: UUID) -> Optional[dict]:
+        if not self.db: return None
         with self.db.cursor() as cur:
             cur.execute(
                 """

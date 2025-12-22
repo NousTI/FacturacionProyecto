@@ -5,6 +5,7 @@ from services.producto_service import ProductoService
 from models.Producto import ProductoCreate, ProductoUpdate, ProductoResponse
 from dependencies.auth_dependencies import require_permission
 from utils.responses import error_response, success_response
+from utils.enums import PermissionCodes
 
 router = APIRouter()
 
@@ -12,7 +13,7 @@ router = APIRouter()
 def list_products(
     nombre: str = None, 
     codigo: str = None, 
-    current_user: dict = Depends(require_permission("PRODUCTO_VER")),
+    current_user: dict = Depends(require_permission(PermissionCodes.PRODUCTO_VER)),
     service: ProductoService = Depends()
 ):
     return service.listar_productos(current_user, nombre, codigo)
@@ -20,7 +21,7 @@ def list_products(
 @router.get("/{product_id}", response_model=ProductoResponse)
 def get_product(
     product_id: UUID,
-    current_user: dict = Depends(require_permission("PRODUCTO_VER")), 
+    current_user: dict = Depends(require_permission(PermissionCodes.PRODUCTO_VER)), 
     service: ProductoService = Depends()
 ):
     product = service.obtener_producto(product_id, current_user)
@@ -31,7 +32,7 @@ def get_product(
 @router.post("/", response_model=ProductoResponse)
 def create_product(
     product: ProductoCreate,
-    current_user: dict = Depends(require_permission("PRODUCTO_CREAR")),
+    current_user: dict = Depends(require_permission(PermissionCodes.PRODUCTO_CREAR)),
     service: ProductoService = Depends()
 ):
     result = service.crear_producto(product, current_user)
@@ -45,7 +46,7 @@ def create_product(
 def update_product(
     product_id: UUID,
     product: ProductoUpdate,
-    current_user: dict = Depends(require_permission("PRODUCTO_EDITAR")),
+    current_user: dict = Depends(require_permission(PermissionCodes.PRODUCTO_EDITAR)),
     service: ProductoService = Depends()
 ):
     result = service.actualizar_producto(product_id, product, current_user)
@@ -60,7 +61,7 @@ def update_product(
 @router.delete("/{product_id}")
 def delete_product(
     product_id: UUID,
-    current_user: dict = Depends(require_permission("PRODUCTO_ELIMINAR")),
+    current_user: dict = Depends(require_permission(PermissionCodes.PRODUCTO_ELIMINAR)),
     service: ProductoService = Depends()
 ):
     result = service.eliminar_producto(product_id, current_user)

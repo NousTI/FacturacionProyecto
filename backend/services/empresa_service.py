@@ -2,12 +2,32 @@ from fastapi import Depends, HTTPException, status
 from repositories.empresa_repository import EmpresaRepository
 from models.Empresa import EmpresaCreate, EmpresaUpdate
 from uuid import UUID
+from typing import List, Optional
+from utils.enums import AuthKeys
 
 class EmpresaService:
     def __init__(self, repository: EmpresaRepository = Depends()):
         self.repository = repository
 
-    def create_empresa(self, empresa: EmpresaCreate, user_id: UUID = None, is_superadmin: bool = False):
+    def _get_user_context(self, current_user: dict):
+        return {
+            "is_superadmin": current_user.get(AuthKeys.IS_SUPERADMIN, False),
+            "is_vendedor": current_user.get(AuthKeys.IS_VENDEDOR, False),
+            "is_usuario": current_user.get(AuthKeys.IS_USUARIO, False),
+            "user_id": current_user.get("id"),
+            "empresa_id": current_user.get("empresa_id")
+        }
+
+    def create_empresa(self, empresa: EmpresaCreate, current_user: dict):
+        ctx = self._get_user_context(current_user)
+
+        # Permission Check: Only Superadmin or Vendedor can create/manage companies
+        if not ctx["is_superadmin"] and not ctx["is_vendedor"]:
+             raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="No tienes permisos suficientes para realizar esta acción"
+            )
+
         # Validate RUC uniqueness
         if self.repository.get_empresa_by_ruc(empresa.ruc):
             raise HTTPException(
@@ -15,18 +35,14 @@ class EmpresaService:
                 detail="El RUC ya está registrado para otra empresa"
             )
         
-        # If created by Vendedor (not superadmin), assign vendedor_id automatically
-        # Assuming permissions are checked in layout, but logic here ensures consistency
         data = empresa.model_dump(exclude_unset=True)
         
         # If caller is not superadmin, force assignment to themselves
-        if not is_superadmin:
-            if not user_id:
-                  # Should not happen given auth dependencies but safety check
+        if not ctx["is_superadmin"]:
+            if not ctx["user_id"]:
                   raise HTTPException(status_code=400, detail="Vendedor ID requerido")
-            data['vendedor_id'] = user_id
-        # Else (Superadmin): allow whatever is in data['vendedor_id'] (UUID or None)
-
+            data['vendedor_id'] = ctx["user_id"]
+        # Else (Superadmin): allow whatever is in data['vendedor_id'] or implicitly None
             
         try:
              new_empresa = self.repository.create_empresa(data)
@@ -40,7 +56,7 @@ class EmpresaService:
              raise HTTPException(status_code=500, detail="Error al crear la empresa")
         return new_empresa
 
-    def get_empresa(self, empresa_id: UUID, user_id: UUID = None, is_superadmin: bool = False):
+    def get_empresa(self, empresa_id: UUID, current_user: dict) -> dict:
         empresa = self.repository.get_empresa_by_id(empresa_id)
         if not empresa:
             raise HTTPException(
@@ -48,28 +64,53 @@ class EmpresaService:
                 detail="Empresa no encontrada"
             )
         
+        ctx = self._get_user_context(current_user)
+
         # Permission Check
-        if not is_superadmin:
-            # If not superadmin, must be the owner Vendedor
-            # Note: stored UUIDs might be strings or UUID objects in dict, so we str() comparison
-            if str(empresa.get('vendedor_id')) != str(user_id):
-                 raise HTTPException(
-                    status_code=status.HTTP_403_FORBIDDEN,
-                    detail="No tienes permiso para ver esta empresa"
-                )
-                
-        return empresa
+        if ctx["is_superadmin"]:
+            return empresa
+        
+        if ctx["is_vendedor"]:
+            if str(empresa.get('vendedor_id')) != str(ctx["user_id"]):
+                 raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="No tienes permiso para ver esta empresa")
+            return empresa
 
-    def list_empresas(self, vendedor_id: UUID = None, empresa_id: UUID = None):
-        """
-        Listar empresas con filtros opcionales.
-        La lógica de permisos (quién puede ver qué) debe manejarse en el controlador/ruta.
-        """
-        return self.repository.list_empresas(vendedor_id=vendedor_id, empresa_id=empresa_id)
+        if ctx["is_usuario"]:
+             # User can only see their own empresa
+             if str(empresa_id) != str(ctx["empresa_id"]):
+                  raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="No tienes permiso para ver esta empresa")
+             return empresa
 
-    def update_empresa(self, empresa_id: UUID, empresa_update: EmpresaUpdate, user_id: UUID = None, is_superadmin: bool = False):
-        # Check permissions first by fetching
-        current = self.get_empresa(empresa_id, user_id, is_superadmin)
+        # Fallback
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Rol no autorizado")
+
+    def list_empresas(self, current_user: dict, vendedor_id: Optional[UUID] = None) -> List[dict]:
+        ctx = self._get_user_context(current_user)
+        
+        # 1. Superadmin: Can see all or filter by passed vendedor_id
+        if ctx["is_superadmin"]:
+            return self.repository.list_empresas(vendedor_id=vendedor_id)
+
+        # 2. Vendedor: Only see their assigned companies
+        if ctx["is_vendedor"]:
+             # If they tried to filter by another vendor, deny or ignore. Let's ignore/override.
+             if vendedor_id and str(vendedor_id) != str(ctx["user_id"]):
+                  raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="No puedes ver empresas de otros vendedores")
+             return self.repository.list_empresas(vendedor_id=ctx["user_id"])
+
+        # 3. Usuario: Only see their own specific company (as a list of one)
+        if ctx["is_usuario"]:
+            if not ctx["empresa_id"]:
+                 return []
+            return self.repository.list_empresas(empresa_id=ctx["empresa_id"])
+            
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="No tienes permisos para listar empresas")
+
+    def update_empresa(self, empresa_id: UUID, empresa_update: EmpresaUpdate, current_user: dict):
+        ctx = self._get_user_context(current_user)
+
+        # Check permissions first by fetching (this reuses the get_empresa logic)
+        current = self.get_empresa(empresa_id, current_user)
         
         # RUC check if changing
         if empresa_update.ruc and empresa_update.ruc != current['ruc']:
@@ -80,8 +121,10 @@ class EmpresaService:
                 )
         
         # STRICT Check: Vendedores cannot change 'activo' status
-        if not is_superadmin:
+        if not ctx["is_superadmin"]:
             # Check if active status is being modified
+            # Note: Pydantic model dump with exclude_unset=True might not have 'activo' key.
+            # We access the update object directly or the dumped dict.
             if empresa_update.activo is not None and empresa_update.activo != current['activo']:
                  raise HTTPException(
                     status_code=status.HTTP_403_FORBIDDEN, 
@@ -100,10 +143,16 @@ class EmpresaService:
              raise HTTPException(status_code=500, detail="Error al actualizar empresa")
         return updated
 
-    def delete_empresa(self, empresa_id: UUID, user_id: UUID = None, is_superadmin: bool = False):
+    def delete_empresa(self, empresa_id: UUID, current_user: dict):
         # Use get_empresa to verify existence and permissions implicitly
-        self.get_empresa(empresa_id, user_id, is_superadmin)
+        self.get_empresa(empresa_id, current_user)
         
+        ctx = self._get_user_context(current_user)
+        # Additional check: Maybe Users cannot delete, even if they can 'get'.
+        # Assuming only Admin/Vendedor can delete. User (if they had access) shouldn't.
+        if ctx["is_usuario"]:
+             raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="No tienes permisos para eliminar empresas")
+
         # Proceed to delete
         success = self.repository.delete_empresa(empresa_id)
         if not success:

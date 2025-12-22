@@ -10,6 +10,8 @@ class VendedorBase(BaseModel):
     telefono: Optional[str] = None
     documento_identidad: Optional[str] = None
     porcentaje_comision: Optional[float] = None
+    porcentaje_comision_inicial: Optional[float] = None
+    porcentaje_comision_recurrente: Optional[float] = None
     tipo_comision: Optional[str] = None
     puede_crear_empresas: bool = False
     puede_gestionar_planes: bool = False
@@ -27,6 +29,8 @@ class VendedorUpdate(BaseModel):
     telefono: Optional[str] = None
     documento_identidad: Optional[str] = None
     porcentaje_comision: Optional[float] = None
+    porcentaje_comision_inicial: Optional[float] = None
+    porcentaje_comision_recurrente: Optional[float] = None
     tipo_comision: Optional[str] = None
     puede_crear_empresas: Optional[bool] = None
     puede_gestionar_planes: Optional[bool] = None
@@ -38,6 +42,7 @@ class VendedorUpdate(BaseModel):
 class VendedorRead(VendedorBase):
     id: UUID
     fecha_registro: datetime
+    created_at: datetime
     updated_at: datetime
     last_login: Optional[datetime] = None
 

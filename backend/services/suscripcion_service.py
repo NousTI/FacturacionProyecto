@@ -5,7 +5,7 @@ from datetime import date
 from models.Suscripcion import PagoSuscripcionCreate
 from repositories.suscripcion_repository import SuscripcionRepository
 from repositories.plan_repository import PlanRepository
-from utils.enums import PaymentStatus, RolCodigo, AuthKeys
+from utils.enums import PaymentStatus, RolCodigo, AuthKeys, SubscriptionStatus
 from utils.payment_factory import PaymentFactory
 from services.comision_service import ComisionService
 
@@ -40,6 +40,19 @@ class SuscripcionService:
         if current_user.get("role") == "superadmin":
             is_superadmin = True
 
+        # logic for registrado_por
+        if is_superadmin:
+            if not pago.registrado_por:
+                raise HTTPException(status_code=400, detail="Superadmins deben especificar 'registrado_por' (ID de usuario)")
+        else:
+            if pago.registrado_por:
+                 raise HTTPException(
+                    status_code=status.HTTP_403_FORBIDDEN, 
+                    detail="No tienes permisos para asignar manualmente est campo 'registrado_por'. Se asigna automáticamente."
+                )
+            # Auto-assign
+            pago.registrado_por = user_id
+
         self._validate_registration_request(pago, user_empresa_id, rol_id, is_superadmin)
         
         # 2. Process Payment via Gateway (Interface)
@@ -58,12 +71,19 @@ class SuscripcionService:
 
         # 4. Persistence (DB Transaction)
         pago_data = pago.model_dump()
-        result = self.suscripcion_repo.registrar_suscripcion(
+        # pago_data["registrado_por"] is already in model_dump
+        
+        # Business Logic: Determine statuses
+        # When registering a new payment/subscription, we activate the company
+        # and cancel any previously active "pago_suscripcion" to ensure only one is active.
+        result = self.suscripcion_repo.create_subscription_atomic(
             pago_data=pago_data,
             empresa_id=pago.empresa_id,
-            plan_id=pago.plan_id,
+            new_empresa_status=SubscriptionStatus.ACTIVA.value,
             fecha_activacion=pago.fecha_inicio_periodo,
             fecha_vencimiento=pago.fecha_fin_periodo,
+            cancel_previous_status=SubscriptionStatus.CANCELADA.value,
+            target_previous_status=SubscriptionStatus.ACTIVA.value,
             comision_data=comision_data
         )
         
@@ -94,15 +114,76 @@ class SuscripcionService:
         if not plan['activo']:
              raise HTTPException(status_code=400, detail=ErrorMessages.PLAN_NOT_ACTIVE)
 
+        if pago.monto < 0:
+             raise HTTPException(status_code=400, detail="El monto del pago no puede ser negativo")
+
         # 4. Dates
         if pago.fecha_inicio_periodo >= pago.fecha_fin_periodo:
              raise HTTPException(status_code=400, detail=ErrorMessages.INVALID_DATE_RANGE)
 
+        # 5. Method Validation
+        from utils.enums import PaymentMethod
+        try:
+            method_enum = PaymentMethod(pago.metodo_pago.upper())
+        except ValueError:
+             raise HTTPException(status_code=400, detail=f"Método de pago inválido. Permitidos: {[m.value for m in PaymentMethod]}")
+
+        # 6. Idempotency Check (Financial Hardening)
+        if pago.numero_comprobante:
+             if self.suscripcion_repo.exists_payment_with_comprobante(pago.numero_comprobante, pago.empresa_id):
+                  raise HTTPException(status_code=409, detail="Ya existe un pago registrado con este número de comprobante para esta empresa.")
+
+        # 7. Payment Flow (Financial Hardening)
+        # If Manual -> PENDING, No Activation.
+        # If Automatic -> PAGADO, Activate.
+        
+        is_manual = method_enum in [PaymentMethod.TRANSFERENCIA, PaymentMethod.EFECTIVO, PaymentMethod.CHEQUE, PaymentMethod.MANUAL]
+        
+        initial_pago_status = PaymentStatus.PENDING.value if is_manual else PaymentStatus.COMPLETED.value
+        
+        # If manual, we DO NOT activate the company yet. We keep current status or set to PENDING?
+        # Ideally, we leave it as is (probably PENDIENTE or SUSPENDIDA) until approved.
+        # If automatic, we set to ACTIVA.
+        
+        if is_manual:
+             new_empresa_status = SubscriptionStatus.PENDIENTE.value # Or keep previous? Safe to set PENDIENTE.
+             # We should NOT update dates yet? Or update them but knowing it's not active?
+             # Better: Do NOT update dates or status if pending.
+             # But 'create_subscription_atomic' updates DB. We need to tell it WHAT to update.
+             # Let's assume for PENDING payment, we assume Suscription is PENDING.
+             pass
+        else:
+             new_empresa_status = SubscriptionStatus.ACTIVA.value
+
+        # 3. Calculate Commission (Delegated)
+        # Logic: Should we generate commission for PENDING payments?
+        # Usually NO. Commission is earned when payment is CONFIRMED.
+        # So if manual, comision_data should be None?
+        # Yes, safe approach: Create Commission only when approved.
+        
+        comision_data = None
+        if not is_manual:
+            comision_data = self.comision_service.calculate_potential_commission(pago.empresa_id, pago.monto)
+
+        # 4. Persistence (DB Transaction)
+        pago_data = pago.model_dump()
+        # pago_data["registrado_por"] is already in model_dump
+        
+        pago_data["estado"] = initial_pago_status
+        
+        # Business Logic: Determine statuses
+        result = self.suscripcion_repo.create_subscription_atomic(
+            pago_data=pago_data,
+            empresa_id=pago.empresa_id,
+            new_empresa_status=new_empresa_status, # PENDIENTE vs ACTIVA
+            fecha_activacion=pago.fecha_inicio_periodo,
+            fecha_vencimiento=pago.fecha_fin_periodo,
+            cancel_previous_status=SubscriptionStatus.CANCELADA.value) if not is_manual else None, # Do not cancel old one if this is just a request
+        return result
+
     def list_pagos(self, current_user: dict, estado: str = None):
         # Superadmin sees all (pass None).
         # Enterprise User sees own (pass empresa_id).
-        # We need to detect role.
-        # "is_superadmin" key usually set by middleware/auth.
         
         is_superadmin = current_user.get(AuthKeys.IS_SUPERADMIN, False)
         # Fallback check
@@ -120,11 +201,54 @@ class SuscripcionService:
         rol_id = current_user.get("rol_id")
         rol_codigo = self.suscripcion_repo.get_rol_codigo(rol_id)
         if rol_codigo not in [RolCodigo.ADMIN.value]:
-             # Raise 403 or return empty list? Usually 403 for clear restriction.
-             # User asked "only admin u owner can see".
              raise HTTPException(status_code=403, detail=ErrorMessages.PAYMENT_VIEW_ADMIN_REQUIRED)
              
         return self.suscripcion_repo.list_pagos(empresa_id, estado=estado)
+
+    def approve_pago(self, pago_id: UUID, current_user: dict):
+        # 1. Access Control: Only Superadmin
+        is_superadmin = current_user.get(AuthKeys.IS_SUPERADMIN, False)
+        if current_user.get("role") == "superadmin": is_superadmin = True
+        
+        if not is_superadmin:
+             raise HTTPException(status_code=403, detail="Solo superadministradores pueden aprobar pagos")
+
+        # 2. Retrieve Payment
+        pago = self.suscripcion_repo.get_pago_by_id(pago_id)
+        if not pago:
+             raise HTTPException(status_code=404, detail="Pago no encontrado")
+             
+        if pago['estado'] == PaymentStatus.COMPLETED.value:
+             return {"message": "El pago ya está aprobado"}
+             
+        if pago['estado'] != PaymentStatus.PENDING.value:
+             raise HTTPException(status_code=400, detail="Solo se pueden aprobar pagos en estado PENDIENTE")
+
+        # 3. Validation
+        # Ensure we have start/end dates. They should be in the payment record ideally.
+        # But 'pago' dict from DB has them.
+        
+        # 4. Calculate Commission
+        # Now we definitely calculate commission
+        monto = float(pago['monto']) # Convert Decimal to float for calc if needed, or keep Decimal if service handles it. Service uses float or decimal? 
+        # ComisionService uses float usually but let's check. 
+        # Our ComisionBase uses Decimal now. But 'calculate_potential_commission' returns dict with 'monto' as float/rounded.
+        
+        comision_data = self.comision_service.calculate_potential_commission(pago['empresa_id'], monto)
+        
+        # 5. Execute Approval
+        success = self.suscripcion_repo.approve_subscription(
+            pago_id=pago_id, 
+            empresa_id=pago['empresa_id'],
+            fecha_activacion=pago['fecha_inicio_periodo'],
+            fecha_vencimiento=pago['fecha_fin_periodo'],
+            comision_data=comision_data
+        )
+        
+        if not success:
+             raise HTTPException(status_code=500, detail="Error al aprobar el pago")
+             
+        return {"message": "Pago aprobado y suscripción activada correctamente"}
 
     def get_pago(self, pago_id: UUID, current_user: dict):
         pago = self.suscripcion_repo.get_pago_by_id(pago_id)

@@ -1,4 +1,5 @@
 from uuid import UUID
+from datetime import datetime
 from typing import Optional
 from pydantic import BaseModel
 
@@ -14,6 +15,8 @@ class PermisoCreate(PermisoBase):
 
 class PermisoRead(PermisoBase):
     id: UUID
+    created_at: datetime
+    updated_at: datetime
 
     class Config:
         from_attributes = True

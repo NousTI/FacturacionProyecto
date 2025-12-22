@@ -1,9 +1,9 @@
 from abc import ABC, abstractmethod
 from fastapi import HTTPException, status
 from services.superadmin_session_service import SuperadminSessionService
-from services.session_service import validate_session
-from repositories.vendedor_session_repository import VendedorSessionRepository
+from services.user_session_service import validate_session
 from repositories.vendedor_repository import VendedorRepository
+from repositories.user_sessions_repository import get_session
 from utils.responses import error_response
 from datetime import datetime, timezone
 

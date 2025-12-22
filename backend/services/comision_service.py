@@ -4,12 +4,11 @@ from typing import List, Optional
 
 from repositories.comision_repository import ComisionRepository
 from utils.enums import AuthKeys
-from models.Comision import ComisionUpdate
+from models.Comision import ComisionUpdate, ComisionCreate
 
 from repositories.empresa_repository import EmpresaRepository
 from repositories.vendedor_repository import VendedorRepository
 from datetime import date
-
 from utils.enums import CommissionStatus
 
 class ComisionService:
@@ -46,25 +45,19 @@ class ComisionService:
             "fecha_generacion": date.today()
         }
 
+    def create_manual(self, datos: ComisionCreate, current_user: dict):
+        is_superadmin = current_user.get(AuthKeys.IS_SUPERADMIN, False)
+        if not is_superadmin:
+            raise HTTPException(status_code=403, detail="Solo administradores pueden crear comisiones manualmente")
+        
+        # We could add validations here (e.g. check if pago_suscripcion_id exists, or if vendor exists)
+        # For now, let DB constraints handle FK integrity to avoid extra queries, or add simple checks if requested.
+        # But user asked for "json to work". The structure matches.
+        
+        return self.repo.create(datos.model_dump())
 
     def list_comisiones(self, current_user: dict):
         is_superadmin = current_user.get(AuthKeys.IS_SUPERADMIN, False)
-        # Note: 'is_superadmin' in existing code usually means global admin. 
-        # But request says "ADMIN / OWNER" which are role codes within an enterprise, 
-        # OR "Admin" meaning the detailed Role code?
-        # Re-reading request: "🧠 MODELO DE ROLES (BASE) ... OWNER / ADMIN ... VENDEDOR"
-        # Since Vendedores are global entities (managed by Superadmin), but assigned to Empresas?
-        # Actually in this system, Vendedor is a distinct entity from Usuario.
-        # Usuario belongs to Empresa and has rol (ADMIN/OWNER/USER).
-        # Vendedor is its own table.
-        # So "VENDEDOR" refers to the entity logged in via `vendedor_id` (or `is_vendedor` flag).
-        # "ADMIN / OWNER" likely refers to Superadmin OR Enterprise Admin?
-        # Request says: "El admin puede: listar todas... El vendedor solo puede: listar sus comisiones...".
-        # This usually implies Superadmin vs Vendedor.
-        # BUT wait, commissions are for Vendedores. Who pays them? The Platform Owner (Superadmin)? Or the Enterprise?
-        # "SaaS": usually Platform Owner pays Commission to Vendedor who brought the credentials.
-        # So "ADMIN" likely means Superadmin.
-        
         is_vendedor = current_user.get(AuthKeys.IS_VENDEDOR, False)
         user_id = current_user.get("id")
 
@@ -75,14 +68,7 @@ class ComisionService:
             # List own
             return self.repo.list_comisiones(vendedor_id=user_id)
         else:
-            # If it's a regular enterprise user (even Admin/Owner of an empresa), they probably shouldn't see Vendedor commissions?
-            # Or maybe they should if they pay it?
-            # Request says "ADMIN / OWNER -> control total".
-            # If this refers to Superadmin, then OK.
-            # If it refers to Enterprise Admin, then we need to know context.
-            # Given "Vendedor assigned to company", and "backend automatic generation", 
-            # likely Vendedor gets commission from the System Owner (SaaS).
-            # So I will assume "ADMIN" = Superadmin.
+            # Regular users cannot see commissions
             raise HTTPException(status_code=403, detail="No autorizado para ver comisiones")
 
     def get_comision(self, comision_id: UUID, current_user: dict):
@@ -115,6 +101,7 @@ class ComisionService:
         if not existing:
              raise HTTPException(status_code=404, detail="Comisión no encontrada")
 
+        # Use model_dump for Pydantic V2
         data = update_data.model_dump(exclude_unset=True)
         return self.repo.update(comision_id, data)
 

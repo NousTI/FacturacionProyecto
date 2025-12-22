@@ -1,5 +1,3 @@
-# backend/api/routes/auth_router.py
-
 import uuid
 from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.security import OAuth2PasswordBearer
@@ -8,11 +6,10 @@ from database.connection import get_db_connection
 from dependencies.auth_dependencies import get_current_user
 from models.Usuario import UserLogin, UserRead
 from models.Vendedor import VendedorLogin, VendedorRead
-from services.session_service import end_user_session, start_user_session
+from services.user_session_service import end_user_session
 from services.user_service import UserService
 from services.vendedor_session_service import VendedorSessionService
 from services.vendedor_service import VendedorService
-from utils.jwt_utils import create_access_token
 from utils.responses import success_response, error_response
 
 router = APIRouter()
@@ -26,48 +23,10 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/login")
 
 
 @router.post("/login")
-def login(request: Request, user: UserLogin, service: UserService = Depends(), conn=Depends(get_db_connection)):
-    # Authenticate using email and password
-    db_user = service.authenticate_user(user.email, user.password)
-    if not db_user:
-        raise HTTPException(
-            status_code=401,
-            detail=error_response(401, "Credenciales incorrectas"),
-        )
-
-    user_id = db_user["id"]
-    
-    # Generar identificador único y reusarlo como sid y jti
-    session_id = uuid.uuid4().hex
-
-    # Intentar crear sesión
-    session_id = start_user_session(
-        conn,
-        user_id=user_id,
-        jti=session_id,
-        user_agent=request.headers.get("User-Agent"),
-        ip_address=request.client.host,
-    )
-
-    # Si devuelve None => usuario ya tiene una sesión activa
-    if session_id is None:
-        raise HTTPException(
-            status_code=403,
-            detail=error_response(
-                403, "Ya existe una sesión activa. Cierra sesión antes de iniciar una nueva."
-            ),
-        )
-
-    # Crear token final con session_id como jti
-    token, _ = create_access_token(
-        {
-            "sub": str(user_id),
-            "sid": session_id,
-            "jti": session_id,
-        }
-    )
-
-    return {"access_token": token, "token_type": "bearer"}
+def login(request: Request, user: UserLogin, service: UserService = Depends()):
+    ip_address = request.client.host
+    user_agent = request.headers.get("User-Agent")
+    return service.login_user(user.model_dump(), user_agent=user_agent, ip_address=ip_address)
 
 
 @router.post("/logout")

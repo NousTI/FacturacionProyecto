@@ -1,3 +1,4 @@
+from decimal import Decimal
 from uuid import UUID
 from datetime import date, datetime
 from typing import Optional
@@ -6,14 +7,16 @@ from pydantic import BaseModel
 class PagoSuscripcionBase(BaseModel):
     empresa_id: UUID
     plan_id: UUID
-    monto: float
-    fecha_pago: date
-    fecha_inicio_periodo: date
-    fecha_fin_periodo: date
+    monto: Decimal
+    fecha_pago: datetime
+    fecha_inicio_periodo: datetime
+    fecha_fin_periodo: datetime
     metodo_pago: str
     estado: str = "PAGADO"
+    numero_comprobante: Optional[str] = None
     comprobante_url: Optional[str] = None
     observaciones: Optional[str] = None
+    registrado_por: Optional[UUID] = None
 
 class PagoSuscripcionCreate(PagoSuscripcionBase):
     pass

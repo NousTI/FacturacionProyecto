@@ -10,10 +10,11 @@ class PlanBase(BaseModel):
     max_usuarios: int
     max_facturas_mes: int
     max_establecimientos: int
-    facturacion_programada: bool = False
+    max_programaciones: int
     caracteristicas: Optional[Dict[str, Any]] = None
     visible_publico: bool = True
     activo: bool = True
+    orden: int = 0
 
 class PlanCreate(PlanBase):
     pass
@@ -25,10 +26,11 @@ class PlanUpdate(BaseModel):
     max_usuarios: Optional[int] = None
     max_facturas_mes: Optional[int] = None
     max_establecimientos: Optional[int] = None
-    facturacion_programada: Optional[bool] = None
+    max_programaciones: Optional[int] = None
     caracteristicas: Optional[Dict[str, Any]] = None
     visible_publico: Optional[bool] = None
     activo: Optional[bool] = None
+    orden: Optional[int] = None
 
 class PlanRead(PlanBase):
     id: UUID

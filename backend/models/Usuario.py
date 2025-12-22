@@ -9,6 +9,9 @@ class UserBase(BaseModel):
     email: EmailStr
     nombres: str
     apellidos: str
+    telefono: str
+    avatar_url: Optional[str] = None
+    requiere_cambio_password: bool = False
     activo: bool = True
 
 class UserCreate(UserBase):
@@ -20,6 +23,9 @@ class UserUpdate(BaseModel):
     email: Optional[EmailStr] = None
     nombres: Optional[str] = None
     apellidos: Optional[str] = None
+    telefono: Optional[str] = None
+    avatar_url: Optional[str] = None
+    requiere_cambio_password: Optional[bool] = None
     activo: Optional[bool] = None
     password: Optional[str] = None
 

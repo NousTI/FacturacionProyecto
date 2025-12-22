@@ -4,22 +4,36 @@ from uuid import UUID
 from datetime import datetime
 
 class ProveedorBase(BaseModel):
-    nombre: str
-    ruc: str
-    direccion: Optional[str] = None
-    telefono: Optional[str] = None
+    identificacion: str
+    tipo_identificacion: str # RUC | CEDULA | PASAPORTE
+    razon_social: str
+    nombre_comercial: Optional[str] = None
+    
     email: Optional[EmailStr] = None
-    activo: Optional[bool] = True
+    telefono: Optional[str] = None
+    direccion: Optional[str] = None
+    ciudad: Optional[str] = None
+    provincia: Optional[str] = None
+    
+    dias_credito: int = 0
+    activo: bool = True
 
 class ProveedorCreate(ProveedorBase):
     empresa_id: Optional[UUID] = None # Injected by Service
 
 class ProveedorUpdate(BaseModel):
-    nombre: Optional[str] = None
-    ruc: Optional[str] = None
-    direccion: Optional[str] = None
-    telefono: Optional[str] = None
+    identificacion: Optional[str] = None
+    tipo_identificacion: Optional[str] = None
+    razon_social: Optional[str] = None
+    nombre_comercial: Optional[str] = None
+    
     email: Optional[EmailStr] = None
+    telefono: Optional[str] = None
+    direccion: Optional[str] = None
+    ciudad: Optional[str] = None
+    provincia: Optional[str] = None
+    
+    dias_credito: Optional[int] = None
     activo: Optional[bool] = None
 
 class ProveedorResponse(ProveedorBase):

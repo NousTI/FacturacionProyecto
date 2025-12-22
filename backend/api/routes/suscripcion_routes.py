@@ -32,3 +32,15 @@ def get_pago(
     service: SuscripcionService = Depends()
 ):
     return service.get_pago(pago_id, current_user)
+
+@router.post("/{pago_id}/approve", status_code=status.HTTP_200_OK)
+def approve_pago(
+    pago_id: UUID,
+    current_user: dict = Depends(get_current_user),
+    service: SuscripcionService = Depends()
+):
+    """
+    Aprueba un pago manual pendiente. Activa la empresa y genera la comisión.
+    Solo Superadmin.
+    """
+    return service.approve_pago(pago_id, current_user)

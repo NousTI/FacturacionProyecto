@@ -8,16 +8,30 @@ class ClienteBase(BaseModel):
     tipo_identificacion: str  # SQL is NOT NULL
     razon_social: str
     email: Optional[EmailStr] = None
+    telefono: Optional[str] = None
+    direccion: Optional[str] = None
+    ciudad: Optional[str] = None
+    provincia: Optional[str] = None
+    pais: Optional[str] = None
+    avatar_url: Optional[str] = None
+    observaciones: Optional[str] = None
     activo: bool = True
 
 class ClienteCreate(ClienteBase):
-    empresa_id: UUID
+    empresa_id: Optional[UUID] = None
 
 class ClienteUpdate(BaseModel):
     identificacion: Optional[str] = None
     tipo_identificacion: Optional[str] = None
     razon_social: Optional[str] = None
     email: Optional[EmailStr] = None
+    telefono: Optional[str] = None
+    direccion: Optional[str] = None
+    ciudad: Optional[str] = None
+    provincia: Optional[str] = None
+    pais: Optional[str] = None
+    avatar_url: Optional[str] = None
+    observaciones: Optional[str] = None
     activo: Optional[bool] = None
 
 class ClienteRead(ClienteBase):

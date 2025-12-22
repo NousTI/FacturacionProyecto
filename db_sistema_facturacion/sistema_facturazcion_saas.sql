@@ -37,6 +37,8 @@ CREATE TABLE IF NOT EXISTS public.vendedor (
     documento_identidad TEXT,
 
     porcentaje_comision NUMERIC(5,2),
+    porcentaje_comision_inicial NUMERIC(5,2),
+    porcentaje_comision_recurrente NUMERIC(5,2),
     tipo_comision TEXT,
 
     puede_crear_empresas BOOLEAN NOT NULL DEFAULT FALSE,
@@ -45,11 +47,12 @@ CREATE TABLE IF NOT EXISTS public.vendedor (
 
     activo BOOLEAN NOT NULL DEFAULT TRUE,
 
+    configuracion JSONB
+
     fecha_registro TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     last_login TIMESTAMPTZ,
-
-    configuracion JSONB
 );
 
 -- =========================================
@@ -60,19 +63,22 @@ CREATE TABLE IF NOT EXISTS public.plan (
 
     codigo TEXT NOT NULL UNIQUE,
     nombre TEXT NOT NULL,
+    descripcion TEXT NOT NULL,
 
     precio_mensual NUMERIC(10,2) NOT NULL DEFAULT 0.00,
 
     max_usuarios INT NOT NULL,
     max_facturas_mes INT NOT NULL,
     max_establecimientos INT NOT NULL,
-
-    facturacion_programada BOOLEAN NOT NULL DEFAULT FALSE,
+    max_programaciones INT NOT NULL,
 
     caracteristicas JSONB,
 
     visible_publico BOOLEAN NOT NULL DEFAULT TRUE,
+
     activo BOOLEAN NOT NULL DEFAULT TRUE,
+
+    orden INT NOT NULL DEFAULT 0,
 
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
@@ -97,14 +103,15 @@ CREATE TABLE IF NOT EXISTS public.empresa (
 
     activo BOOLEAN NOT NULL DEFAULT TRUE,
 
-    fecha_registro DATE NOT NULL DEFAULT CURRENT_DATE,
-    fecha_activacion DATE,
-    fecha_vencimiento DATE,
+    fecha_registro TIMESTAMPTZ NOT NULL DEFAULT CURRENT_DATE,
+    fecha_activacion TIMESTAMPTZ,
+    fecha_vencimiento TIMESTAMPTZ,
 
-    estado_suscripcion TEXT NOT NULL DEFAULT 'pendiente',
+    estado_suscripcion TEXT NOT NULL DEFAULT 'PENDIENTE',
     tipo_contribuyente TEXT,
     obligado_contabilidad BOOLEAN NOT NULL DEFAULT FALSE,
 
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
@@ -114,7 +121,7 @@ CREATE TABLE IF NOT EXISTS public.empresa (
 CREATE TABLE IF NOT EXISTS public.rol (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
 
-    empresa_id UUID REFERENCES public.empresa(id) ON DELETE CASCADE,
+    empresa_id UUID NOT NULL REFERENCES public.empresa(id) ON DELETE CASCADE,
 
     codigo TEXT NOT NULL,
     nombre TEXT NOT NULL,
@@ -124,6 +131,7 @@ CREATE TABLE IF NOT EXISTS public.rol (
     activo BOOLEAN NOT NULL DEFAULT TRUE,
 
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
 
     -- Un rol no se repite dentro de la misma empresa
     CONSTRAINT uq_rol_empresa_codigo UNIQUE (empresa_id, codigo)
@@ -140,18 +148,24 @@ CREATE TABLE IF NOT EXISTS public.permiso (
     nombre TEXT NOT NULL,
     modulo TEXT NOT NULL,
     descripcion TEXT,
-    tipo TEXT NOT NULL
+    tipo TEXT NOT NULL,
+    
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
 -- =========================================
 -- ROL_PERMISO
 -- =========================================
 CREATE TABLE IF NOT EXISTS public.rol_permiso (
-    rol_id UUID NOT null REFERENCES public.rol(id) ON DELETE CASCADE,
+    rol_id UUID NOT NULL REFERENCES public.rol(id) ON DELETE CASCADE,
 
-    permiso_id UUID NOT null REFERENCES public.permiso(id) ON DELETE CASCADE,
+    permiso_id UUID NOT NULL REFERENCES public.permiso(id) ON DELETE CASCADE,
 
     activo BOOLEAN NOT NULL DEFAULT TRUE,
+
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 
     -- Clave primaria compuesta
     PRIMARY KEY (rol_id, permiso_id)
@@ -173,8 +187,13 @@ CREATE TABLE IF NOT EXISTS public.usuario (
 
     nombres TEXT NOT NULL,
     apellidos TEXT NOT NULL,
+    telefono TEXT NOT NULL,
+
+    avatar_url TEXT,
 
     activo BOOLEAN NOT NULL DEFAULT TRUE,
+
+    requiere_cambio_password BOOLEAN NOT NULL DEFAULT FALSE,
 	
 	created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
 	updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
@@ -193,7 +212,17 @@ CREATE TABLE IF NOT EXISTS public.cliente (
     identificacion TEXT NOT NULL,
     tipo_identificacion TEXT NOT NULL, -- CEDULA | RUC | PASAPORTE
     razon_social TEXT NOT NULL,
+
     email TEXT,
+    telefono TEXT,
+
+    direccion TEXT,
+    ciudad TEXT,
+    provincia TEXT,
+    pais TEXT,
+
+    avatar_url TEXT,
+    observaciones TEXT,
 
     activo BOOLEAN NOT NULL DEFAULT TRUE,
 
@@ -205,55 +234,103 @@ CREATE TABLE IF NOT EXISTS public.cliente (
 );
 
 -- =========================================
--- Revisar si esta bien asi, no lo implementare aun
--- FACTURA 
+-- TABLA: proveedor
 -- =========================================
-CREATE TABLE IF NOT EXISTS public.factura (
+CREATE TABLE IF NOT EXISTS public.proveedor (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
 
     empresa_id UUID NOT null REFERENCES public.empresa(id) ON DELETE CASCADE,
 
-    cliente_id UUID NOT null REFERENCES public.cliente(id) ON DELETE RESTRICT,
+    identificacion TEXT NOT NULL,
+    tipo_identificacion TEXT NOT NULL, -- RUC | CEDULA | PASAPORTE
 
-    numero_factura TEXT NOT NULL UNIQUE,
+    razon_social TEXT NOT NULL,
+    nombre_comercial TEXT,
 
-    fecha_emision DATE NOT NULL DEFAULT CURRENT_DATE,
+    email TEXT,
+    telefono TEXT,
+    direccion TEXT,
+    ciudad TEXT,
+    provincia TEXT,
 
-    total NUMERIC(10,2) NOT NULL,
+    dias_credito INT NOT NULL DEFAULT 0,
 
-    estado TEXT NOT NULL DEFAULT 'EMITIDA',
+    activo BOOLEAN NOT NULL DEFAULT TRUE,
+
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+
+    -- Un proveedor no se repite dentro de la misma empresa
+    CONSTRAINT uq_proveedor_empresa_identificacion UNIQUE (empresa_id, identificacion)
+);
+
+
+-- =========================================
+-- TABLA: producto
+-- =========================================
+CREATE TABLE IF NOT EXISTS public.producto (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+
+    empresa_id UUID NOT NULL
+        REFERENCES public.empresa(id) ON DELETE CASCADE,
+
+    codigo TEXT NOT NULL UNIQUE,
+    nombre TEXT NOT NULL,
+    descripcion TEXT,
+
+    precio NUMERIC(10,2) NOT NULL CHECK (precio >= 0),
+    costo NUMERIC(10,2) NOT NULL CHECK (costo >= 0),
+
+    stock_actual INTEGER NOT NULL DEFAULT 0 CHECK (stock_actual >= 0),
+    stock_minimo INTEGER NOT NULL DEFAULT 0 CHECK (stock_minimo >= 0),
+
+    tipo_iva TEXT NOT NULL,
+    porcentaje_iva NUMERIC(5,2) NOT NULL CHECK (porcentaje_iva >= 0),
+
+    maneja_inventario BOOLEAN NOT NULL DEFAULT TRUE,
+
+    tipo TEXT,
+    unidad_medida TEXT,
+
+    activo BOOLEAN NOT NULL DEFAULT TRUE,
 
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
--- =========================================
+
+-- ==================================================================================
+
 -- PAGO_SUSCRIPCION
 -- =========================================
 CREATE TABLE IF NOT EXISTS public.pago_suscripcion (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
 
-    empresa_id UUID NOT null REFERENCES public.empresa(id) ON DELETE CASCADE,
+    empresa_id UUID NOT NULL REFERENCES public.empresa(id) ON DELETE CASCADE,
 
-    plan_id UUID NOT null REFERENCES public.plan(id) ON DELETE RESTRICT,
+    plan_id UUID NOT NULL REFERENCES public.plan(id) ON DELETE RESTRICT,
 
-    monto NUMERIC(10,2) NOT NULL,
+    monto NUMERIC(10,2) NOT NULL CHECK (monto >= 0),
 
-    -- Fechas de negocio (contables)
-    fecha_pago DATE NOT NULL,
-    fecha_inicio_periodo DATE NOT NULL,
-    fecha_fin_periodo DATE NOT NULL,
+    -- Fechas de negocio (todas con zona horaria)
+    fecha_pago TIMESTAMPTZ NOT NULL,
+    fecha_inicio_periodo TIMESTAMPTZ NOT NULL,
+    fecha_fin_periodo TIMESTAMPTZ NOT NULL,
 
     metodo_pago TEXT NOT NULL,
     estado TEXT NOT NULL DEFAULT 'PENDIENTE',
 
+    numero_comprobante TEXT,
     comprobante_url TEXT,
     observaciones TEXT,
 
-    -- Auditoría (UTC)
+    registrado_por UUID REFERENCES public.usuario(id) ON DELETE SET NULL,
+
+    -- Auditoría
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
+
 -- =========================================
 -- COMISION
 -- =========================================
@@ -344,3 +421,179 @@ CREATE TABLE IF NOT EXISTS public.usuario_sesiones (
     user_agent TEXT,
     ip_address TEXT
 );
+
+-- =========================================
+-- FACTURACION PROGRAMADA 
+-- ==================================================================================
+CREATE TABLE IF NOT EXISTS public.facturacion_programada (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+
+    empresa_id UUID NOT NULL
+        REFERENCES public.empresa(id) ON DELETE CASCADE,
+
+    cliente_id UUID NOT NULL
+        REFERENCES public.cliente(id) ON DELETE RESTRICT,
+
+    usuario_id UUID NOT NULL
+        REFERENCES public.usuario(id) ON DELETE RESTRICT,
+
+    tipo_frecuencia TEXT NOT NULL
+        CHECK (tipo_frecuencia IN ('MENSUAL', 'TRIMESTRAL', 'ANUAL')),
+
+    dia_emision INT
+        CHECK (dia_emision BETWEEN 1 AND 31),
+
+    monto NUMERIC(12,2) NOT NULL
+        CHECK (monto >= 0),
+
+    concepto TEXT NOT NULL,
+
+    fecha_inicio DATE NOT NULL,
+    fecha_fin DATE,
+
+    ultima_emision DATE,
+    proxima_emision DATE,
+
+    total_emisiones INT NOT NULL DEFAULT 0,
+    emisiones_exitosas INT NOT NULL DEFAULT 0,
+    emisiones_fallidas INT NOT NULL DEFAULT 0,
+
+    activo BOOLEAN NOT NULL DEFAULT TRUE,
+    enviar_email BOOLEAN NOT NULL DEFAULT TRUE,
+
+    configuracion JSONB,
+
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+
+    CHECK (fecha_fin IS NULL OR fecha_fin >= fecha_inicio)
+);
+
+-- =========================================
+-- ESTABLECIMIENTO 
+-- ==================================================================================
+CREATE TABLE IF NOT EXISTS public.establecimiento (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+
+    empresa_id UUID NOT NULL
+        REFERENCES public.empresa(id) ON DELETE CASCADE,
+
+    codigo TEXT NOT NULL,
+    nombre TEXT NOT NULL,
+    direccion TEXT,
+
+    activo BOOLEAN NOT NULL DEFAULT TRUE,
+
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+
+    CONSTRAINT uq_establecimiento_empresa_codigo
+        UNIQUE (empresa_id, codigo)
+);
+
+-- =========================================
+-- PUNTO EMISION 
+-- ==================================================================================
+CREATE TABLE IF NOT EXISTS public.punto_emision (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+
+    establecimiento_id UUID NOT NULL
+        REFERENCES public.establecimiento(id) ON DELETE CASCADE,
+
+    codigo TEXT NOT NULL,
+    nombre TEXT NOT NULL,
+
+    secuencial_actual INT NOT NULL DEFAULT 1,
+
+    activo BOOLEAN NOT NULL DEFAULT TRUE,
+
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+
+    CONSTRAINT uq_punto_emision_establecimiento_codigo
+        UNIQUE (establecimiento_id, codigo)
+);
+
+-- =========================================
+-- FACTURA 
+-- ==================================================================================
+CREATE TABLE IF NOT EXISTS public.factura (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+
+    empresa_id UUID NOT NULL
+        REFERENCES public.empresa(id) ON DELETE CASCADE,
+
+    establecimiento_id UUID NOT NULL
+        REFERENCES public.establecimiento(id) ON DELETE RESTRICT,
+
+    punto_emision_id UUID NOT NULL
+        REFERENCES public.punto_emision(id) ON DELETE RESTRICT,
+
+    cliente_id UUID NOT NULL
+        REFERENCES public.cliente(id) ON DELETE RESTRICT,
+
+    usuario_id UUID NOT NULL
+        REFERENCES public.usuario(id) ON DELETE RESTRICT,
+
+    facturacion_programada_id UUID
+        REFERENCES public.facturacion_programada(id) ON DELETE SET NULL,
+
+    numero_factura TEXT NOT NULL UNIQUE,
+    clave_acceso TEXT UNIQUE,
+
+    fecha_emision DATE NOT NULL,
+    fecha_vencimiento DATE,
+
+    subtotal_sin_iva NUMERIC(12,2) NOT NULL DEFAULT 0,
+    subtotal_con_iva NUMERIC(12,2) NOT NULL DEFAULT 0,
+    iva NUMERIC(12,2) NOT NULL DEFAULT 0,
+    descuento NUMERIC(12,2) NOT NULL DEFAULT 0,
+    propina NUMERIC(12,2) NOT NULL DEFAULT 0,
+    total NUMERIC(12,2) NOT NULL,
+
+    estado TEXT NOT NULL DEFAULT 'EMITIDA',
+    estado_pago TEXT NOT NULL DEFAULT 'PENDIENTE',
+    origen TEXT,
+    observaciones TEXT,
+
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- =========================================
+-- FACTURA DETALLE
+-- ==================================================================================
+CREATE TABLE IF NOT EXISTS public.factura_detalle (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+
+    factura_id UUID NOT NULL
+        REFERENCES public.factura(id) ON DELETE CASCADE,
+
+    producto_id UUID
+        REFERENCES public.producto(id) ON DELETE SET NULL,
+
+    codigo_producto TEXT NOT NULL,
+    descripcion TEXT NOT NULL,
+
+    cantidad INT NOT NULL
+        CHECK (cantidad > 0),
+
+    precio_unitario NUMERIC(12,2) NOT NULL
+        CHECK (precio_unitario >= 0),
+
+    descuento NUMERIC(12,2) NOT NULL DEFAULT 0
+        CHECK (descuento >= 0),
+
+    subtotal NUMERIC(12,2) NOT NULL
+        CHECK (subtotal >= 0),
+
+    tipo_iva TEXT NOT NULL,
+    valor_iva NUMERIC(12,2) NOT NULL DEFAULT 0
+        CHECK (valor_iva >= 0),
+
+    costo_unitario NUMERIC(12,2),
+
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+

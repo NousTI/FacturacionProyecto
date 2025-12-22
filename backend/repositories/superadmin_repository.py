@@ -1,15 +1,15 @@
 from fastapi import Depends
 from database.connection import get_db_connection
 from database.transaction import db_transaction
-from utils.security import get_password_hash
+from database.transaction import db_transaction
 
 class SuperadminRepository:
     def __init__(self, db=Depends(get_db_connection)):
         self.db = db
 
-    def create_superadmin(self, email, password, nombres, apellidos):
+    def create_superadmin(self, email, password_hash, nombres, apellidos):
         if not self.db: return None
-        hashed_password = get_password_hash(password)
+        # Removed internal hashing. Service must provide hash.
         try:
             with db_transaction(self.db) as cur:
                 cur.execute(
@@ -18,7 +18,7 @@ class SuperadminRepository:
                     VALUES (%s, %s, %s, %s)
                     RETURNING id, email, nombres, apellidos, created_at, updated_at, last_login
                     """,
-                    (email, hashed_password, nombres, apellidos),
+                    (email, password_hash, nombres, apellidos),
                 )
                 return cur.fetchone()
         except Exception as e:

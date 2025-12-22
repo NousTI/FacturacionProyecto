@@ -5,20 +5,22 @@ from services.proveedor_service import ProveedorService
 from models.Proveedor import ProveedorCreate, ProveedorUpdate, ProveedorResponse
 from dependencies.auth_dependencies import require_permission
 from utils.responses import error_response, success_response
+from utils.enums import PermissionCodes
 
 router = APIRouter()
 
 @router.get("/", response_model=List[ProveedorResponse])
 def list_providers(
-    current_user: dict = Depends(require_permission("PROVEEDOR_VER")),
+    empresa_id: UUID = None,
+    current_user: dict = Depends(require_permission(PermissionCodes.PROVEEDOR_VER)),
     service: ProveedorService = Depends()
 ):
-    return service.listar_proveedores(current_user)
+    return service.listar_proveedores(current_user, empresa_id)
 
 @router.get("/{provider_id}", response_model=ProveedorResponse)
 def get_provider(
     provider_id: UUID,
-    current_user: dict = Depends(require_permission("PROVEEDOR_VER")),
+    current_user: dict = Depends(require_permission(PermissionCodes.PROVEEDOR_VER)),
     service: ProveedorService = Depends()
 ):
     provider = service.obtener_proveedor(provider_id, current_user)
@@ -29,7 +31,7 @@ def get_provider(
 @router.post("/", response_model=ProveedorResponse)
 def create_provider(
     provider: ProveedorCreate,
-    current_user: dict = Depends(require_permission("PROVEEDOR_CREAR")),
+    current_user: dict = Depends(require_permission(PermissionCodes.PROVEEDOR_CREAR)),
     service: ProveedorService = Depends()
 ):
     result = service.crear_proveedor(provider, current_user)
@@ -43,7 +45,7 @@ def create_provider(
 def update_provider(
     provider_id: UUID,
     provider: ProveedorUpdate,
-    current_user: dict = Depends(require_permission("PROVEEDOR_EDITAR")),
+    current_user: dict = Depends(require_permission(PermissionCodes.PROVEEDOR_EDITAR)),
     service: ProveedorService = Depends()
 ):
     result = service.actualizar_proveedor(provider_id, provider, current_user)
@@ -59,7 +61,7 @@ def update_provider(
 @router.delete("/{provider_id}")
 def delete_provider(
     provider_id: UUID,
-    current_user: dict = Depends(require_permission("PROVEEDOR_ELIMINAR")),
+    current_user: dict = Depends(require_permission(PermissionCodes.PROVEEDOR_ELIMINAR)),
     service: ProveedorService = Depends()
 ):
     result = service.eliminar_proveedor(provider_id, current_user)

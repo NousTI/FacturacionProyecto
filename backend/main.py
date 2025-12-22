@@ -18,6 +18,7 @@ from api.routes.suscripcion_routes import router as suscripcion_router
 from api.routes.comision_routes import router as comision_router
 from api.routes.rol_routes import router as rol_router
 from api.routes.permiso_routes import router as permiso_router
+from api.routes.facturacion_programada_routes import router as facturacion_programada_router
 from settings import get_settings
 from utils.logger import get_logger
 from utils.responses import error_response
@@ -105,6 +106,14 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+from api.routes.establecimiento_routes import router as establecimiento_router
+
+from api.routes.punto_emision_routes import router as punto_emision_router
+
+from api.routes.factura_routes import router as factura_router
+
+from api.routes.factura_detalle_routes import router as factura_detalle_router
+
 app.include_router(auth_router, prefix="/api/auth")
 app.include_router(cliente_router, prefix="/api/clientes")
 app.include_router(user_router, prefix="/api/usuarios")
@@ -118,6 +127,11 @@ app.include_router(suscripcion_router, prefix="/api/suscripciones", tags=["Suscr
 app.include_router(comision_router, prefix="/api/comisiones", tags=["Comisiones"])
 app.include_router(rol_router, prefix="/api/roles", tags=["Roles"])
 app.include_router(permiso_router, prefix="/api/permisos", tags=["Permisos"])
+app.include_router(factura_router, prefix="/api/facturas", tags=["Facturas"])
+app.include_router(factura_detalle_router, prefix="/api/facturas-detalle", tags=["Factura Detalle"])
+app.include_router(facturacion_programada_router, prefix="/api/facturacion-programada", tags=["Facturación Programada"])
+app.include_router(establecimiento_router, prefix="/api/establecimientos", tags=["Establecimientos"])
+app.include_router(punto_emision_router, prefix="/api/puntos-emision", tags=["Puntos de Emisión"])
 
 
 if __name__ == "__main__":

@@ -17,10 +17,16 @@ class RolCreate(RolBase):
 from models.Permiso import PermisoRead
 from typing import List
 
+class RolPermisoRead(PermisoRead):
+    assigned_at: datetime
+    assigned_updated_at: datetime
+    activo: bool = True
+
 class RolRead(RolBase):
     id: UUID
     created_at: datetime
-    permisos: Optional[List[PermisoRead]] = []
+    updated_at: datetime
+    permisos: Optional[List[RolPermisoRead]] = []
 
     class Config:
         from_attributes = True

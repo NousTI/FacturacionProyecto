@@ -10,53 +10,50 @@ class VendedorRepository:
     def __init__(self, db=Depends(get_db_connection)):
         self.db = db
 
-    def create(self, vendedor: VendedorCreate, password_hash: str):
+    def create(self, vendedor: VendedorCreate, password_hash: str) -> Optional[dict]:
         if not self.db: return None
-        try:
-            with db_transaction(self.db) as cur:
-                cur.execute(
-                    """
-                    INSERT INTO vendedor (
-                        email, password_hash, nombres, apellidos, telefono, 
-                        documento_identidad, porcentaje_comision, tipo_comision, 
-                        puede_crear_empresas, puede_gestionar_planes, puede_ver_reportes, 
-                        activo, configuracion
-                    )
-                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-                    RETURNING *
-                    """,
-                    (
-                        vendedor.email, password_hash, vendedor.nombres, vendedor.apellidos, 
-                        vendedor.telefono, vendedor.documento_identidad, vendedor.porcentaje_comision, 
-                        vendedor.tipo_comision, vendedor.puede_crear_empresas, vendedor.puede_gestionar_planes, 
-                        vendedor.puede_ver_reportes, vendedor.activo, 
-                        json.dumps(vendedor.configuracion) if vendedor.configuracion else None
-                    ),
+        with db_transaction(self.db) as cur:
+            cur.execute(
+                """
+                INSERT INTO vendedor (
+                    email, password_hash, nombres, apellidos, telefono, 
+                    documento_identidad, porcentaje_comision, porcentaje_comision_inicial, porcentaje_comision_recurrente,
+                    tipo_comision, puede_crear_empresas, puede_gestionar_planes, puede_ver_reportes, 
+                    activo, configuracion
                 )
-                return cur.fetchone()
-        except Exception as e:
-            print(f"Error creating vendedor: {e}")
-            raise e
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                RETURNING *
+                """,
+                (
+                    vendedor.email, password_hash, vendedor.nombres, vendedor.apellidos, 
+                    vendedor.telefono, vendedor.documento_identidad, vendedor.porcentaje_comision,
+                    vendedor.porcentaje_comision_inicial, vendedor.porcentaje_comision_recurrente,
+                    vendedor.tipo_comision, vendedor.puede_crear_empresas, vendedor.puede_gestionar_planes, 
+                    vendedor.puede_ver_reportes, vendedor.activo, 
+                    json.dumps(vendedor.configuracion) if vendedor.configuracion else None
+                ),
+            )
+            return cur.fetchone()
 
-    def get_by_id(self, vendedor_id: UUID):
+    def get_by_id(self, vendedor_id: UUID) -> Optional[dict]:
         if not self.db: return None
         with self.db.cursor() as cur:
             cur.execute("SELECT * FROM vendedor WHERE id = %s", (str(vendedor_id),))
             return cur.fetchone()
 
-    def get_by_email(self, email: str):
+    def get_by_email(self, email: str) -> Optional[dict]:
         if not self.db: return None
         with self.db.cursor() as cur:
             cur.execute("SELECT * FROM vendedor WHERE email = %s", (email,))
             return cur.fetchone()
 
-    def get_all(self, skip: int = 0, limit: int = 100):
+    def get_all(self, skip: int = 0, limit: int = 100) -> List[dict]:
         if not self.db: return []
         with self.db.cursor() as cur:
             cur.execute("SELECT * FROM vendedor OFFSET %s LIMIT %s", (skip, limit))
             return cur.fetchall()
 
-    def update(self, vendedor_id: UUID, vendedor: VendedorUpdate, password_hash: Optional[str] = None):
+    def update(self, vendedor_id: UUID, vendedor: VendedorUpdate, password_hash: Optional[str] = None) -> Optional[dict]:
         if not self.db: return None
         
         # Build dynamic query
@@ -81,6 +78,12 @@ class VendedorRepository:
         if vendedor.porcentaje_comision is not None:
             fields.append("porcentaje_comision = %s")
             values.append(vendedor.porcentaje_comision)
+        if vendedor.porcentaje_comision_inicial is not None:
+            fields.append("porcentaje_comision_inicial = %s")
+            values.append(vendedor.porcentaje_comision_inicial)
+        if vendedor.porcentaje_comision_recurrente is not None:
+            fields.append("porcentaje_comision_recurrente = %s")
+            values.append(vendedor.porcentaje_comision_recurrente)
         if vendedor.tipo_comision is not None:
             fields.append("tipo_comision = %s")
             values.append(vendedor.tipo_comision)
@@ -98,7 +101,8 @@ class VendedorRepository:
             values.append(vendedor.activo)
         if vendedor.configuracion is not None:
             fields.append("configuracion = %s")
-            values.append(json.dumps(vendedor.configuracion)) # Serialize dict to JSON string
+            # Serialize dict to JSON string if not None, but VendedorUpdate.configuracion is typically optional dict.
+            values.append(json.dumps(vendedor.configuracion)) 
         if password_hash is not None:
             fields.append("password_hash = %s")
             values.append(password_hash)
@@ -111,20 +115,12 @@ class VendedorRepository:
         query = f"UPDATE vendedor SET {', '.join(fields)} WHERE id = %s RETURNING *"
         values.append(str(vendedor_id))
 
-        try:
-            with db_transaction(self.db) as cur:
-                cur.execute(query, tuple(values))
-                return cur.fetchone()
-        except Exception as e:
-            print(f"Error updating vendedor: {e}")
-            raise e
+        with db_transaction(self.db) as cur:
+            cur.execute(query, tuple(values))
+            return cur.fetchone()
 
-    def delete(self, vendedor_id: UUID):
+    def delete(self, vendedor_id: UUID) -> Optional[dict]:
         if not self.db: return None
-        try:
-            with db_transaction(self.db) as cur:
-                cur.execute("DELETE FROM vendedor WHERE id = %s RETURNING id", (str(vendedor_id),))
-                return cur.fetchone()
-        except Exception as e:
-            print(f"Error deleting vendedor: {e}")
-            raise e
+        with db_transaction(self.db) as cur:
+            cur.execute("DELETE FROM vendedor WHERE id = %s RETURNING id", (str(vendedor_id),))
+            return cur.fetchone()

@@ -2,13 +2,17 @@ from fastapi import Depends
 from database.connection import get_db_connection
 from database.transaction import db_transaction
 from uuid import UUID
+from typing import List, Optional
 import json
 
 class PlanRepository:
     def __init__(self, db=Depends(get_db_connection)):
         self.db = db
 
-    def create_plan(self, plan_data: dict):
+    def _serialize_uuids(self, values: list) -> list:
+        return [str(v) if isinstance(v, UUID) else v for v in values]
+
+    def create_plan(self, plan_data: dict) -> Optional[dict]:
         if not self.db: return None
         
         # Ensure json field is serialized
@@ -16,7 +20,7 @@ class PlanRepository:
             plan_data['caracteristicas'] = json.dumps(plan_data['caracteristicas'])
 
         fields = list(plan_data.keys())
-        values = list(plan_data.values())
+        clean_values = self._serialize_uuids(list(plan_data.values()))
         placeholders = ["%s"] * len(fields)
         
         query = f"""
@@ -26,32 +30,32 @@ class PlanRepository:
         """
         
         with db_transaction(self.db) as cur:
-            cur.execute(query, tuple(values))
+            cur.execute(query, tuple(clean_values))
             row = cur.fetchone()
             return dict(row) if row else None
 
-    def get_plan(self, plan_id: UUID):
+    def get_plan(self, plan_id: UUID) -> Optional[dict]:
         if not self.db: return None
         with self.db.cursor() as cur:
             cur.execute("SELECT * FROM plan WHERE id = %s", (str(plan_id),))
             row = cur.fetchone()
             return dict(row) if row else None
 
-    def get_plan_by_codigo(self, codigo: str):
+    def get_plan_by_codigo(self, codigo: str) -> Optional[dict]:
         if not self.db: return None
         with self.db.cursor() as cur:
             cur.execute("SELECT * FROM plan WHERE codigo = %s", (codigo,))
             row = cur.fetchone()
             return dict(row) if row else None
 
-    def list_plans(self):
+    def list_plans(self) -> List[dict]:
         if not self.db: return []
         with self.db.cursor() as cur:
-            cur.execute("SELECT * FROM plan ORDER BY created_at DESC")
+            cur.execute("SELECT * FROM plan ORDER BY orden ASC, created_at DESC")
             rows = cur.fetchall()
             return [dict(row) for row in rows]
 
-    def update_plan(self, plan_id: UUID, plan_data: dict):
+    def update_plan(self, plan_id: UUID, plan_data: dict) -> Optional[dict]:
         if not self.db or not plan_data: return None
         
         # Ensure json field is serialized
@@ -59,8 +63,8 @@ class PlanRepository:
             plan_data['caracteristicas'] = json.dumps(plan_data['caracteristicas'])
 
         set_clauses = [f"{key} = %s" for key in plan_data.keys()]
-        values = list(plan_data.values())
-        values.append(str(plan_id))
+        clean_values = self._serialize_uuids(list(plan_data.values()))
+        clean_values.append(str(plan_id))
 
         query = f"""
             UPDATE plan
@@ -70,15 +74,12 @@ class PlanRepository:
         """
         
         with db_transaction(self.db) as cur:
-            cur.execute(query, tuple(values))
+            cur.execute(query, tuple(clean_values))
             row = cur.fetchone()
             return dict(row) if row else None
 
-    def delete_plan(self, plan_id: UUID):
+    def delete_plan(self, plan_id: UUID) -> bool:
         query = "DELETE FROM plan WHERE id = %s RETURNING id"
-        try:
-            with db_transaction(self.db) as cur:
-                cur.execute(query, (str(plan_id),))
-                return cur.fetchone() is not None
-        except Exception:
-            return False
+        with db_transaction(self.db) as cur:
+            cur.execute(query, (str(plan_id),))
+            return cur.fetchone() is not None

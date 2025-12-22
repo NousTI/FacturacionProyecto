@@ -2,12 +2,11 @@
 
 from datetime import datetime, timezone
 
-from repositories.session_repository import (
+from repositories.user_sessions_repository import (
     create_session,
-    get_active_session_for_user,
-    get_session,
-    invalidate_all_sessions_for_user,
     invalidate_session,
+    get_session,
+    get_active_session_for_user,
 )
 
 

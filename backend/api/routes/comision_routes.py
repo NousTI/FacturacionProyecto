@@ -29,13 +29,9 @@ def get_comision(
 def create_comision(
     comision: ComisionCreate,
     current_user: dict = Depends(get_current_user),
-    repo: ComisionRepository = Depends()
+    service: ComisionService = Depends()
 ):
-    # Manual creation - ADMIN ONLY
-    if not current_user.get(AuthKeys.IS_SUPERADMIN, False):
-        raise HTTPException(status_code=403, detail="Solo administradores pueden crear comisiones manualmente")
-        
-    return repo.create(comision.model_dump())
+    return service.create_manual(comision, current_user)
 
 @router.put("/{comision_id}", response_model=ComisionRead)
 def update_comision(

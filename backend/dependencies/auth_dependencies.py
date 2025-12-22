@@ -4,7 +4,7 @@ from fastapi import Depends, HTTPException, Request, status
 from fastapi.security import OAuth2PasswordBearer
 
 from database.connection import get_db_connection
-from services.session_service import validate_session
+from services.user_session_service import validate_session
 from services.superadmin_session_service import SuperadminSessionService
 from services.vendedor_session_service import VendedorSessionService
 from utils.jwt_utils import decode_access_token

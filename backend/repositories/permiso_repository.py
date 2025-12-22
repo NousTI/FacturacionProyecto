@@ -22,55 +22,43 @@ class PermisoRepository:
 
     def create_permission(self, data: dict) -> Optional[dict]:
         if not self.db: return None
-        try:
-            with db_transaction(self.db) as cur:
-                fields = ["codigo", "nombre", "modulo", "descripcion", "tipo"]
-                values = [
-                    data.get("codigo"),
-                    data.get("nombre"),
-                    data.get("modulo"),
-                    data.get("descripcion"),
-                    data.get("tipo")
-                ]
-                query = f"""
-                    INSERT INTO permiso ({', '.join(fields)})
-                    VALUES ({', '.join(['%s'] * len(fields))})
-                    RETURNING *
-                """
-                cur.execute(query, tuple(values))
-                return cur.fetchone()
-        except Exception as e:
-            print(f"Error creating permission: {e}")
-            return {"error": str(e)}
+        with db_transaction(self.db) as cur:
+            fields = ["codigo", "nombre", "modulo", "descripcion", "tipo"]
+            values = [
+                data.get("codigo"),
+                data.get("nombre"),
+                data.get("modulo"),
+                data.get("descripcion"),
+                data.get("tipo")
+            ]
+            query = f"""
+                INSERT INTO permiso ({', '.join(fields)})
+                VALUES ({', '.join(['%s'] * len(fields))})
+                RETURNING *
+            """
+            cur.execute(query, tuple(values))
+            return cur.fetchone()
 
     def update_permission(self, permiso_id: UUID, data: dict) -> Optional[dict]:
         if not self.db: return None
-        try:
-            with db_transaction(self.db) as cur:
-                fields = []
-                params = []
-                for k, v in data.items():
-                    if v is not None:
-                        fields.append(f"{k} = %s")
-                        params.append(v)
-                
-                if not fields: return None
-                
-                query = f"UPDATE permiso SET {', '.join(fields)} WHERE id = %s RETURNING *"
-                params.append(str(permiso_id))
-                
-                cur.execute(query, tuple(params))
-                return cur.fetchone()
-        except Exception as e:
-            print(f"Error updating permission: {e}")
-            return {"error": str(e)}
+        with db_transaction(self.db) as cur:
+            fields = []
+            params = []
+            for k, v in data.items():
+                if v is not None:
+                    fields.append(f"{k} = %s")
+                    params.append(v)
+            
+            if not fields: return None
+            
+            query = f"UPDATE permiso SET {', '.join(fields)}, updated_at = NOW() WHERE id = %s RETURNING *"
+            params.append(str(permiso_id))
+            
+            cur.execute(query, tuple(params))
+            return cur.fetchone()
 
     def delete_permission(self, permiso_id: UUID) -> Optional[dict]:
         if not self.db: return None
-        try:
-            with db_transaction(self.db) as cur:
-                cur.execute("DELETE FROM permiso WHERE id = %s RETURNING *", (str(permiso_id),))
-                return cur.fetchone()
-        except Exception as e:
-            print(f"Error deleting permission: {e}")
-            return {"error": str(e)}
+        with db_transaction(self.db) as cur:
+            cur.execute("DELETE FROM permiso WHERE id = %s RETURNING *", (str(permiso_id),))
+            return cur.fetchone()
