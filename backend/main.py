@@ -109,11 +109,22 @@ app.add_middleware(
 from api.routes.establecimiento_routes import router as establecimiento_router
 
 from api.routes.punto_emision_routes import router as punto_emision_router
-
+from api.routes.cuenta_cobrar_routes import router as cuenta_cobrar_router
+from api.routes.pago_factura_routes import router as pago_factura_router
+from api.routes.log_emision_routes import router as log_emision_router
+from api.routes.reporte_generado_routes import router as reporte_generado_router
+from api.routes.sri_routes import router as sri_router
+from api.routes.configuracion_sri_routes import router as configuracion_sri_router
+from api.routes.modulo_routes import router as modulo_router
 from api.routes.factura_routes import router as factura_router
-
 from api.routes.factura_detalle_routes import router as factura_detalle_router
 
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run("main:app", host="127.0.0.1", port=8000, reload=True)
+
+# App Include
+# App Include
 app.include_router(auth_router, prefix="/api/auth")
 app.include_router(cliente_router, prefix="/api/clientes")
 app.include_router(user_router, prefix="/api/usuarios")
@@ -132,7 +143,16 @@ app.include_router(factura_detalle_router, prefix="/api/facturas-detalle", tags=
 app.include_router(facturacion_programada_router, prefix="/api/facturacion-programada", tags=["Facturación Programada"])
 app.include_router(establecimiento_router, prefix="/api/establecimientos", tags=["Establecimientos"])
 app.include_router(punto_emision_router, prefix="/api/puntos-emision", tags=["Puntos de Emisión"])
+app.include_router(cuenta_cobrar_router, prefix="/api/cuentas-cobrar", tags=["Cuentas por Cobrar"])
+app.include_router(pago_factura_router, prefix="/api/pagos-factura", tags=["Pagos Factura"])
+app.include_router(log_emision_router, prefix="/api/logs-emision", tags=["Logs Emisión"])
+app.include_router(reporte_generado_router, prefix="/api/reportes-generados", tags=["Reportes Generados"])
+app.include_router(sri_router, prefix="/api/sri", tags=["SRI"])
+app.include_router(configuracion_sri_router, prefix="/api/configuracion-sri", tags=["Configuración SRI"])
+app.include_router(modulo_router, tags=["Módulos"])
 
+from api.routes.forma_pago_routes import router as forma_pago_router
+app.include_router(forma_pago_router, prefix="/api", tags=["Forma Pago"])
 
 if __name__ == "__main__":
     import uvicorn

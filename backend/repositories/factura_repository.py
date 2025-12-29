@@ -102,3 +102,10 @@ class FacturaRepository:
          with db_transaction(self.db) as cur:
             cur.execute(query, (str(id),))
             return cur.rowcount > 0
+
+    def get_detalles(self, factura_id: UUID) -> List[dict]:
+        query = "SELECT * FROM factura_detalle WHERE factura_id = %s"
+        with self.db.cursor() as cur:
+            cur.execute(query, (str(factura_id),))
+            rows = cur.fetchall()
+            return [dict(row) for row in rows]

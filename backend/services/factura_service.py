@@ -9,18 +9,22 @@ from repositories.punto_emision_repository import PuntoEmisionRepository
 from utils.enums import AuthKeys
 import datetime
 
+from services.forma_pago_service import FormaPagoService # Import
+
 class FacturaService:
     def __init__(
         self, 
         repository: FacturaRepository = Depends(),
         cliente_repository: ClienteRepository = Depends(),
         establecimiento_repository: EstablecimientoRepository = Depends(),
-        punto_emision_repository: PuntoEmisionRepository = Depends()
+        punto_emision_repository: PuntoEmisionRepository = Depends(),
+        forma_pago_service: FormaPagoService = Depends() # Inject
     ):
         self.repository = repository
         self.cliente_repository = cliente_repository
         self.establecimiento_repository = establecimiento_repository
         self.punto_emision_repository = punto_emision_repository
+        self.forma_pago_service = forma_pago_service
 
     def _validate_ownership(self, user_empresa_id: UUID, is_superadmin: bool, entity_id: UUID, repository, entity_name: str, id_field_in_entity: str = 'empresa_id') -> dict:
         """
@@ -105,7 +109,8 @@ class FacturaService:
             usuario_id=target_usuario_id,
             numero_factura=numero_factura,
             clave_acceso=None, # SRI logic usually handles this
-            **data.model_dump(exclude={'empresa_id', 'usuario_id'})
+            estado='PENDIENTE', # FORCE INITIAL STATE TO PENDING
+            **data.dict(exclude={'empresa_id', 'usuario_id'})
         )
 
         try:
@@ -143,8 +148,13 @@ class FacturaService:
         return FacturaRead(**result)
 
     def update(self, id: UUID, data: FacturaUpdate, current_user: dict) -> FacturaRead:
-        self.get_by_id(id, current_user) # Permission check
+        factura = self.get_by_id(id, current_user) # Permission check
         
+        # Emission Logic Trigger
+        # If user is trying to set status to 'EMITIDA', we must validate payments
+        if data.estado == 'EMITIDA' and factura.estado != 'EMITIDA':
+             self.forma_pago_service.process_payments_for_emission(id, current_user)
+
         # Only allow updates if not in final state? User didn't specify.
         # Assuming open for now.
         
