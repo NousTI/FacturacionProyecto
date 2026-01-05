@@ -2,6 +2,11 @@
 from functools import lru_cache
 from typing import List
 import os
+from dotenv import load_dotenv
+
+load_dotenv(override=True)
+
+
 
 
 def _split_origins(raw: str) -> List[str]:
@@ -33,6 +38,14 @@ class Settings:
         self.allowed_origins: List[str] = _split_origins(
             os.getenv("ALLOWED_ORIGINS", default_origins)
         )
+        
+        # SRI Security
+        self.cert_master_key: str = os.getenv("CERT_MASTER_KEY")
+        self.cert_cipher_algorithm: str = os.getenv("CERT_CIPHER_ALGORITHM", "AES-256-GCM")
+
+        if not self.cert_master_key:
+             # Fail fast as required by user
+             raise ValueError("CRITICAL: CERT_MASTER_KEY is missing from environment variables.")
 
 
 @lru_cache

@@ -16,4 +16,4 @@ def enviar_factura_sri(
     Endpoint protegedio por FACTURA_ENVIAR_SRI.
     Genera el XML (Phase 1) y simula el envío.
     """
-    return service.enviar_factura_sri(id, current_user)
+    return service.enviar_factura(id, current_user)

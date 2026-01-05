@@ -97,7 +97,22 @@ class SuscripcionService:
         
         return result
 
-    # ... list_pagos ...
+    def list_pagos(self, current_user: dict, estado: str = None) -> list:
+        is_superadmin = current_user.get(AuthKeys.IS_SUPERADMIN) or current_user.get("role") == "superadmin"
+        
+        empresa_id = None
+        if not is_superadmin:
+            empresa_id = current_user.get("empresa_id")
+            if not empresa_id:
+                 return [] # Or raise error if user has no company
+        
+        # If superadmin, empresa_id stays None (list all) unless we add filter param later
+        # The route only asks for 'estado', not 'empresa_id' filter for now. 
+        # If user wants to filter by company as superadmin, we might need to update route.
+        # But requirement says "Vista: Pagos Pendientes" (implies global list).
+        
+        pagos = self.suscripcion_repo.list_pagos(empresa_id=empresa_id, estado=estado)
+        return pagos
 
     def approve_pago(self, pago_id: UUID, current_user: dict):
         is_superadmin = current_user.get(AuthKeys.IS_SUPERADMIN) or current_user.get("role") == "superadmin"

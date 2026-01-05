@@ -154,6 +154,18 @@ app.include_router(modulo_router, tags=["Módulos"])
 from api.routes.forma_pago_routes import router as forma_pago_router
 app.include_router(forma_pago_router, prefix="/api", tags=["Forma Pago"])
 
+from api.routes.categoria_gasto_routes import router as categoria_gasto_router
+app.include_router(categoria_gasto_router, prefix="/api", tags=["Categoria Gasto"])
+
+from api.routes.gasto_routes import router as gasto_router
+app.include_router(gasto_router, prefix="/api", tags=["Gasto"])
+
+from api.routes.pago_gasto_routes import router as pago_gasto_router
+app.include_router(pago_gasto_router, prefix="/api", tags=["Pago Gasto"])
+
+from api.routes.movimiento_inventario_routes import router as movimiento_inventario_router
+app.include_router(movimiento_inventario_router, prefix="/api", tags=["Movimiento Inventario"])
+
 if __name__ == "__main__":
     import uvicorn
 

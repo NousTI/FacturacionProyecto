@@ -714,29 +714,38 @@ CREATE TABLE IF NOT EXISTS public.reporte_generado (
 
 -- =====================================================
 -- TABLA: CONFIGURACION_SRI
+-- Almacena configuración SRI por empresa
+-- El certificado .p12 se guarda CIFRADO en la DB
 -- =====================================================
+
 CREATE TABLE IF NOT EXISTS public.configuracion_sri (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
 
     empresa_id UUID NOT NULL
         REFERENCES public.empresa(id) ON DELETE CASCADE,
 
-    ambiente TEXT NOT NULL,           -- pruebas | produccion
-    tipo_emision TEXT NOT NULL,       -- normal | contingencia
+    -- Configuración SRI
+    ambiente TEXT NOT NULL,            -- pruebas | produccion
+    tipo_emision TEXT NOT NULL,        -- normal | contingencia
 
-    certificado_digital TEXT NOT NULL,  -- ruta o contenido cifrado
-    clave_certificado TEXT NOT NULL,    -- cifrada
+    -- Seguridad
+    certificado_digital BYTEA NOT NULL, -- .p12 CIFRADO (AES)
+    clave_certificado TEXT NOT NULL,    -- password del .p12 CIFRADA (AES)
 
+    -- Vigencia del certificado
     fecha_expiracion_cert TIMESTAMPTZ NOT NULL,
 
+    -- Estado
     firma_activa BOOLEAN NOT NULL DEFAULT TRUE,
 
+    -- Auditoría
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
 
-    CONSTRAINT uq_configuracion_sri_empresa
-        UNIQUE (empresa_id)
+    -- Una configuración SRI por empresa
+    CONSTRAINT uq_configuracion_sri_empresa UNIQUE (empresa_id)
 );
+
 
 
 -- =====================================================
@@ -853,6 +862,134 @@ CREATE TABLE IF NOT EXISTS public.forma_pago (
 
     plazo INTEGER CHECK (plazo >= 0),
     unidad_tiempo TEXT,                -- dias, meses
+
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+
+-- =====================================================
+-- TABLA: CATEGORIA_GASTO
+-- =====================================================
+CREATE TABLE IF NOT EXISTS public.categoria_gasto (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+
+    empresa_id UUID NOT NULL
+        REFERENCES public.empresa(id) ON DELETE CASCADE,
+
+    codigo TEXT NOT NULL,
+    nombre TEXT NOT NULL,
+    descripcion TEXT,
+
+    tipo TEXT NOT NULL,                -- fijo | variable | operativo | financiero
+
+    activo BOOLEAN NOT NULL DEFAULT TRUE,
+
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+
+    CONSTRAINT uq_categoria_gasto_empresa_codigo
+        UNIQUE (empresa_id, codigo)
+);
+
+-- =====================================================
+-- TABLA: GASTO
+-- =====================================================
+CREATE TABLE IF NOT EXISTS public.gasto (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+
+    empresa_id UUID NOT NULL
+        REFERENCES public.empresa(id) ON DELETE CASCADE,
+
+    proveedor_id UUID
+        REFERENCES public.proveedor(id) ON DELETE SET NULL,
+
+    categoria_gasto_id UUID NOT NULL
+        REFERENCES public.categoria_gasto(id) ON DELETE RESTRICT,
+
+    usuario_id UUID NOT NULL
+        REFERENCES public.usuario(id) ON DELETE RESTRICT,
+
+    numero_factura TEXT,
+
+    fecha_emision DATE NOT NULL,
+    fecha_vencimiento DATE,
+
+    concepto TEXT NOT NULL,
+
+    subtotal NUMERIC(12,2) NOT NULL CHECK (subtotal >= 0),
+    iva NUMERIC(12,2) NOT NULL DEFAULT 0 CHECK (iva >= 0),
+    total NUMERIC(12,2) NOT NULL CHECK (total >= 0),
+
+    estado_pago TEXT NOT NULL DEFAULT 'pendiente', -- pendiente | pagado | vencido
+
+    comprobante_url TEXT,
+
+    observaciones TEXT,
+
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+
+-- =====================================================
+-- TABLA: PAGO_GASTO
+-- =====================================================
+CREATE TABLE IF NOT EXISTS public.pago_gasto (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+
+    gasto_id UUID NOT NULL
+        REFERENCES public.gasto(id) ON DELETE CASCADE,
+
+    usuario_id UUID NOT NULL
+        REFERENCES public.usuario(id) ON DELETE RESTRICT,
+
+    numero_comprobante TEXT,
+
+    fecha_pago DATE NOT NULL DEFAULT CURRENT_DATE,
+
+    monto NUMERIC(12,2) NOT NULL CHECK (monto > 0),
+
+    metodo_pago TEXT NOT NULL,          -- efectivo, transferencia, tarjeta, cheque
+    numero_referencia TEXT,
+
+    observaciones TEXT,
+
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+
+-- =====================================================
+-- TABLA: MOVIMIENTO_INVENTARIO
+-- =====================================================
+CREATE TABLE IF NOT EXISTS public.movimiento_inventario (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+
+    empresa_id UUID NOT NULL
+        REFERENCES public.empresa(id) ON DELETE CASCADE,
+
+    producto_id UUID NOT NULL
+        REFERENCES public.producto(id) ON DELETE RESTRICT,
+
+    usuario_id UUID NOT NULL
+        REFERENCES public.usuario(id) ON DELETE RESTRICT,
+
+    factura_id UUID
+        REFERENCES public.factura(id) ON DELETE SET NULL,
+
+    tipo_movimiento TEXT NOT NULL,      -- entrada | salida | ajuste | devolucion
+
+    cantidad INTEGER NOT NULL CHECK (cantidad > 0),
+
+    costo_unitario NUMERIC(12,2) CHECK (costo_unitario >= 0),
+    costo_total NUMERIC(12,2) CHECK (costo_total >= 0),
+
+    stock_anterior INTEGER NOT NULL CHECK (stock_anterior >= 0),
+    stock_nuevo INTEGER NOT NULL CHECK (stock_nuevo >= 0),
+
+    documento_referencia TEXT,
+    observaciones TEXT,
+
+    fecha_movimiento TIMESTAMPTZ NOT NULL DEFAULT NOW(),
 
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );

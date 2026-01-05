@@ -3,7 +3,9 @@ from typing import List, Optional
 from uuid import UUID
 
 from models.Factura import FacturaCreateInput, FacturaRead, FacturaUpdate
+from models.Factura import FacturaCreateInput, FacturaRead, FacturaUpdate
 from services.factura_service import FacturaService
+from services.sri_service import SRIService
 from dependencies.auth_dependencies import require_permission
 from utils.enums import PermissionCodes
 from utils.responses import success_response
@@ -54,3 +56,15 @@ def delete_factura(
 ):
     service.delete(id, current_user)
     return success_response("Factura eliminada correctamente")
+
+@router.post("/{id}/enviar-sri")
+def send_to_sri(
+    id: UUID,
+    current_user: dict = Depends(require_permission(PermissionCodes.FACTURA_CREAR)), # Or custom strict permission
+    sri_service: SRIService = Depends()
+):
+    """
+    Intenta enviar la factura al SRI (Ambiente Pruebas).
+    Firma -> Valida -> Autoriza.
+    """
+    return sri_service.enviar_factura(id, current_user)

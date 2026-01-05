@@ -86,24 +86,69 @@ class SRIClient:
              return {"estado": "ERROR_INTERNO", "mensaje": str(e)}
 
     def _parse_recepcion_response(self, xml_text: str) -> dict:
-        # Simple string search fallback if lxml is missing, but better use lxml
-        # Assuming lxml or re
-        if "RECIBIDA" in xml_text:
-            return {"estado": "RECIBIDA", "mensaje": "OK"}
-        elif "DEVUELTA" in xml_text:
-            return {"estado": "DEVUELTA", "mensaje": "Revise errores en el XML"}
-        else:
-             # Fallback simulation used previously? 
-             # If this is strictly real now:
-             return {"estado": "RESPUESTA_DESCONOCIDA", "mensaje": xml_text[:200]}
+        import xml.etree.ElementTree as ET
+        try:
+            # Strip namespaces for easier parsing or just simple search
+            root = ET.fromstring(xml_text)
+            
+            # Find 'estado'
+            estado = "DESCONOCIDO"
+            for elem in root.iter():
+                if 'estado' in elem.tag:
+                    estado = elem.text
+                    break
+            
+            mensajes_list = []
+            if state := estado:
+                 # Find messages
+                 for msg in root.iter():
+                     if 'mensaje' in msg.tag and len(list(msg)) > 0: # Is a container of message details
+                          texto = []
+                          for child in msg:
+                               if 'mensaje' in child.tag: texto.append(child.text)
+                               if 'informacionAdicional' in child.tag: texto.append(child.text)
+                               if 'identificador' in child.tag: texto.append(f"[{child.text}]")
+                          if texto:
+                               mensajes_list.append(" ".join([t for t in texto if t]))
+
+            return {"estado": estado, "mensaje": "; ".join(mensajes_list) if mensajes_list else "Sin detalles"}
+            
+        except Exception:
+            # Fallback
+            if "RECIBIDA" in xml_text: return {"estado": "RECIBIDA", "mensaje": "OK"}
+            elif "DEVUELTA" in xml_text: return {"estado": "DEVUELTA", "mensaje": "Devuelta (Error parsing failure)"}
+            return {"estado": "ERROR_PARSING", "mensaje": xml_text[:500]}
 
     def _parse_autorizacion_response(self, xml_text: str) -> dict:
-        if "AUTORIZADO" in xml_text:
-             return {
-                 "estado": "AUTORIZADO", 
-                 "numeroAutorizacion": "N/A", # Need parsing
-                 "fechaAutorizacion": "N/A", 
-                 "mensajes": []
-             }
-        else:
-             return {"estado": "NO_AUTORIZADO", "mensajes": [xml_text[:200]]}
+        import xml.etree.ElementTree as ET
+        try:
+            root = ET.fromstring(xml_text)
+            estado = "DESCONOCIDO"
+            clave_acceso = None
+            
+            for elem in root.iter():
+                if 'estado' in elem.tag:
+                    estado = elem.text
+                if 'claveAccesoConsultada' in elem.tag:
+                     clave_acceso = elem.text
+
+            mensajes = []
+            if estado == 'NO AUTORIZADO':
+                 for msg in root.iter():
+                      if 'mensaje' in msg.tag and len(list(msg)) > 0:
+                          texto = []
+                          for child in msg:
+                               if 'mensaje' in child.tag: texto.append(child.text)
+                               if 'informacionAdicional' in child.tag: texto.append(child.text)
+                          if texto:
+                               mensajes.append(" ".join([t for t in texto if t]))
+            
+            return {
+                "estado": estado,
+                "mensajes": mensajes,
+                "clave_acceso": clave_acceso
+            }
+
+        except Exception:
+            if "AUTORIZADO" in xml_text: return {"estado": "AUTORIZADO", "mensajes": [], "clave_acceso": "N/A"}
+            return {"estado": "ERROR_PARSING", "mensajes": [xml_text[:500]]}
