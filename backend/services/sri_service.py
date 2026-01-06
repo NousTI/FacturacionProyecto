@@ -198,20 +198,7 @@ class SRIService:
         factura_data = factura_read.dict()
         empresa_id = factura_read.empresa_id
 
-        # 2. Get Config & Signer (Fail fast if no cert)
-        try:
-            config_sri = self.repo.get_by_empresa(empresa_id)
-            if not config_sri:
-                 raise HTTPException(status_code=400, detail="Configuración SRI no encontrada")
-            
-            signer = self.get_signer(empresa_id)
-            # ambiente = config_sri.get('ambiente', '1') 
-            ambiente = '1' # FORZADO A PRUEBAS (Hardcoded per user request)
-        except Exception as e:
-            self._registrar_log(factura_id, 'FALLO', f"Error Config/Firma: {str(e)}")
-            raise HTTPException(status_code=400, detail=f"Error cargando firma o configuración: {str(e)}")
-
-        # 3. Fetch Full Company/Client/Details
+        # 2. Fetch Empresa & Client (Moved up for val)
         empresa = self.empresa_repo.get_empresa_by_id(empresa_id)
         if not empresa:
              self._registrar_log(factura_id, 'FALLO', "Empresa no encontrada")
@@ -226,6 +213,24 @@ class SRIService:
         if not detalles:
              self._registrar_log(factura_id, 'FALLO', "Factura sin detalles")
              raise HTTPException(status_code=400, detail="La factura no tiene detalles")
+
+        # 3. Get Config & Signer & Validate RUC
+        try:
+            config_sri = self.repo.get_by_empresa(empresa_id)
+            if not config_sri:
+                 raise HTTPException(status_code=400, detail="Configuración SRI no encontrada")
+            
+            signer = self.get_signer(empresa_id)
+            
+            # --- RUC VALIDATION ---
+            signer.verify_ruc(empresa['ruc'])
+            # ----------------------
+            
+            # ambiente = config_sri.get('ambiente', '1') 
+            ambiente = '1' # FORZADO A PRUEBAS (Hardcoded per user request)
+        except Exception as e:
+            self._registrar_log(factura_id, 'FALLO', f"Error Config/Firma: {str(e)}")
+            raise HTTPException(status_code=400, detail=f"Error cargando firma o validando RUC: {str(e)}")
 
         # 4. Generate XML
         try:
@@ -380,4 +385,6 @@ class SRIService:
                 xml_respuesta=str(raw_response)
             ))
         except Exception as e:
+            # Critical: Log this failure to DB so we know why Auth record wasn't saved
+            self._registrar_log(factura_id, 'FALLO', f"Error interno guardando autorizacion: {str(e)}")
             print(f"Error saving authorization record: {e}")

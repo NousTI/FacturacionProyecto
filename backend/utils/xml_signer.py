@@ -14,6 +14,7 @@ class XMLSigner:
     """
     Implmentación Manual de Firma XAdES-BES para SRI (Ecuador).
     Evita limitaciones de librerías de alto nivel (signxml).
+    Actualizado: SHA-256 obligatoria.
     """
 
     NAMESPACES = {
@@ -47,55 +48,63 @@ class XMLSigner:
         now = datetime.datetime.now(datetime.timezone.utc)
         if self._cert.not_valid_after_utc < now:
              raise ValueError("El certificado digital ha expirado.")
+
+    def verify_ruc(self, expected_ruc: str):
+        """
+        Verifica que el certificado pertenezca al RUC indicado.
+        Búsqueda heurística en el Subject (CN, O, etc).
+        """
+        subject = self._cert.subject.rfc4514_string()
+        # Decodificar por si acaso tiene chars raros, normalizar
+        # RFC4514 suele ser "CN=...,O=..."
         
-        # Debug Prints
-        print(f"DEBUG CERT: NotBefore(UTC)={self._cert.not_valid_before_utc}")
-        print(f"DEBUG CERT: NotAfter(UTC)={self._cert.not_valid_after_utc}")
-        print(f"DEBUG SYS : Now(UTC)={now}")
+        # Estrategia 1: Buscar el RUC exacto en cualquier parte del string del sujeto
+        if expected_ruc in subject:
+             return True
+             
+        # Estrategia 2: Intentar buscar en campos específicos si la estrategia 1 falla
+        # (A veces el RUC está en SerialNumber con prefijo RUC, etc)
+        # Por ahora la estrategia 1 es la más robusta genéricamente sin parser complejo de CAs de EC
+        
+        # Si falla, imprimimos debug para logs si fuera necesario (pero aqui lanzamos error)
+        raise ValueError(f"Certificado no corresponde al emisor. RUC esperado: {expected_ruc}. Subject Cert: {subject}")
 
     def sign_xml(self, xml_bytes: bytes) -> bytes:
         """
-        Genera firma XAdES-BES manual incorporando:
-        - Reference a #comprobante
-        - Reference a #SignedProperties
-        - KeyInfo con cadena de certificados
-        - Object con QualifyingProperties (XAdES)
+        Genera firma XAdES-BES manual SHA-256.
         """
         try:
             # 1. Preparar XML Base
             parser = etree.XMLParser(remove_blank_text=True)
             root = etree.fromstring(xml_bytes, parser=parser)
             
-            # Asegurar que el root tiene el ID correcto si no lo tiene
+            # Asegurar que el root tiene el ID correcto
             if 'id' not in root.attrib:
                 root.attrib['id'] = 'comprobante'
             
-            # IDs aleatorios para unicidad
+            # IDs aleatorios
             signature_id = f"Signature-{uuid4()}"
             signed_props_id = f"SignedProperties-{uuid4()}"
             signed_info_id = f"SignedInfo-{uuid4()}"
             reference_id = f"Reference-{uuid4()}"
-            key_info_id = f"KeyInfo-{uuid4()}" # Optional
+            key_info_id = f"KeyInfo-{uuid4()}" 
             
             # 2. Canonicalización y Hash del Documento (#comprobante)
-            # SRI usa C14N sin comentarios usualmente
-            # El documento es TODO el nodo raíz
+            # C14N
             doc_c14n = etree.tostring(root, method="c14n", exclusive=False, with_comments=False)
-            doc_digest = base64.b64encode(hashlib.sha1(doc_c14n).digest()).decode() # SRI suele usar SHA1 para digests
+            # SHA-256
+            doc_digest = base64.b64encode(hashlib.sha256(doc_c14n).digest()).decode()
             
             # 3. Construir XAdES SignedProperties
             etsi = self.NAMESPACES['etsi']
             ds = self.NAMESPACES['ds']
             nsmap = {'ds': ds, 'etsi': etsi}
             
-            # Preparar datos del certificado para XAdES
+            # Datos Certificado
             cert_der = self._cert.public_bytes(encoding=serialization.Encoding.DER)
-            cert_digest = hashlib.sha1(cert_der).digest()
+            cert_digest = hashlib.sha256(cert_der).digest() # Digest certificado también en SHA-256
             cert_digest_b64 = base64.b64encode(cert_digest).decode()
             serial_number = self._cert.serial_number
-            
-            # Issuer Name en formato correcto (RFC4514 inverso a veces, pero lxml maneja standard)
-            # Intentamos usar el string normal. SRI valida contenido, no string exacto a veces.
             issuer_name = self._cert.issuer.rfc4514_string() 
 
             # Estructura SignedProperties
@@ -105,14 +114,15 @@ class XMLSigner:
             signed_sig_props = etree.SubElement(signed_props, f"{{{etsi}}}SignedSignatureProperties")
             
             signing_time = etree.SubElement(signed_sig_props, f"{{{etsi}}}SigningTime")
-            # Force Ecuador Timezone (-05:00) to ensure SRI accepts it against the UTC NotBefore of the cert
+            # Force Ecuador Timezone (-05:00)
             signing_time.text = datetime.now().strftime("%Y-%m-%dT%H:%M:%S") + "-05:00"
             
             signing_cert = etree.SubElement(signed_sig_props, f"{{{etsi}}}SigningCertificate")
             cert_node = etree.SubElement(signing_cert, f"{{{etsi}}}Cert")
             
             cert_digest_node = etree.SubElement(cert_node, f"{{{etsi}}}CertDigest")
-            etree.SubElement(cert_digest_node, f"{{{ds}}}DigestMethod", Algorithm="http://www.w3.org/2000/09/xmldsig#sha1")
+            # SHA-256 digest method
+            etree.SubElement(cert_digest_node, f"{{{ds}}}DigestMethod", Algorithm="http://www.w3.org/2001/04/xmlenc#sha256")
             etree.SubElement(cert_digest_node, f"{{{ds}}}DigestValue").text = cert_digest_b64
             
             issuer_serial = etree.SubElement(cert_node, f"{{{etsi}}}IssuerSerial")
@@ -120,29 +130,26 @@ class XMLSigner:
             etree.SubElement(issuer_serial, f"{{{ds}}}X509SerialNumber").text = str(serial_number)
             
             # 4. Canonicalización y Hash de SignedProperties
-            # CUIDADO: C14N de este nodo debe ser EXCLUSIVA para ser robusto al envoltorio, 
-            # pero SRI acepta C14N normal. Probamos normal.
-            # Importante: El nodo debe tener namespaces declarados para c14n correcto aislado.
             signed_props_c14n = etree.tostring(signed_props, method="c14n", exclusive=False, with_comments=False)
-            signed_props_digest = base64.b64encode(hashlib.sha1(signed_props_c14n).digest()).decode()
+            signed_props_digest = base64.b64encode(hashlib.sha256(signed_props_c14n).digest()).decode()
             
             # 5. Construir SignedInfo
             signed_info = etree.Element(f"{{{ds}}}SignedInfo", Id=signed_info_id, nsmap=nsmap)
             etree.SubElement(signed_info, f"{{{ds}}}CanonicalizationMethod", Algorithm="http://www.w3.org/TR/2001/REC-xml-c14n-20010315")
+            # Signature Method RSA-SHA256
             etree.SubElement(signed_info, f"{{{ds}}}SignatureMethod", Algorithm="http://www.w3.org/2001/04/xmldsig-more#rsa-sha256")
             
             # Reference Comprobante
             ref_doc = etree.SubElement(signed_info, f"{{{ds}}}Reference", Id=reference_id, URI="#comprobante")
             transforms = etree.SubElement(ref_doc, f"{{{ds}}}Transforms")
             etree.SubElement(transforms, f"{{{ds}}}Transform", Algorithm="http://www.w3.org/2000/09/xmldsig#enveloped-signature")
-            etree.SubElement(ref_doc, f"{{{ds}}}DigestMethod", Algorithm="http://www.w3.org/2000/09/xmldsig#sha1")
+            # Digest Method SHA-256
+            etree.SubElement(ref_doc, f"{{{ds}}}DigestMethod", Algorithm="http://www.w3.org/2001/04/xmlenc#sha256")
             etree.SubElement(ref_doc, f"{{{ds}}}DigestValue").text = doc_digest
             
             # Reference SignedProperties
             ref_props = etree.SubElement(signed_info, f"{{{ds}}}Reference", URI=f"#{signed_props_id}", Type="http://uri.etsi.org/01903#SignedProperties")
-            # Probar sin Transforms para propiedades (a veces requieren c14n transform explicita)
-            # SRI suele requerir canonicalización aquí? XAdES estándar dice que se hashea el C14N bytes.
-            etree.SubElement(ref_props, f"{{{ds}}}DigestMethod", Algorithm="http://www.w3.org/2000/09/xmldsig#sha1")
+            etree.SubElement(ref_props, f"{{{ds}}}DigestMethod", Algorithm="http://www.w3.org/2001/04/xmlenc#sha256")
             etree.SubElement(ref_props, f"{{{ds}}}DigestValue").text = signed_props_digest
             
             # 6. Firmar SignedInfo
@@ -185,7 +192,6 @@ class XMLSigner:
             return etree.tostring(root, encoding='utf-8', xml_declaration=True)
 
         except Exception as e:
-            # print tracing if needed
             raise ValueError(f"Error manual XAdES: {str(e)}")
 
     def _clean_pem(self, cert):

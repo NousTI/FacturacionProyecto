@@ -62,15 +62,10 @@ def inspect_cert():
                 )
                 
                 subject = certificate.subject
+                print(f"Subject RFC4514: {subject.rfc4514_string()}")
                 print("Subject Fields:")
-                found_ruc = False
                 for attribute in subject:
-                    # OID for CommonName is 2.5.4.3
-                    # OID for SerialNumber is 2.5.4.5
                     print(f"  - {attribute.oid._name}: {attribute.value}")
-                    
-                    # Logica comun SRI: RUC suele estar en CN, SerialNumber, o OU.
-                    # A veces SERIALNUMBER=RUC17xxxx
                 
                 print(f"Issuer: {certificate.issuer}")
                 print(f"Not Before: {certificate.not_valid_before}")

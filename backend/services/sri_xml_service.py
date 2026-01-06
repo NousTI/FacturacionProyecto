@@ -1,174 +1,234 @@
 import xml.etree.ElementTree as ET
 from datetime import datetime
 from uuid import UUID
-from decimal import Decimal
+from decimal import Decimal, ROUND_HALF_UP
 
 class SRIXMLService:
     def generar_xml_factura(self, factura: dict, cliente: dict, empresa: dict, detalles: list, ambiente: str = '1', info_adicional: dict = None) -> str:
         """
-        Generates the XML v2.1.0 for a Factura.
-        Returns the XML string.
+        Generates the XML v1.1.0 for a Factura complying with SRI logic.
+        Validates data before generation.
         """
-        # 1. Root Element
-        factura_xml = ET.Element('factura', id="comprobante", version="2.1.0")
-        
+        # 0. Validations
+        self.validateFacturaXmlData(factura, detalles, cliente)
+
+        # 1. Root Element (Version 1.1.0 as requested)
+        factura_xml = ET.Element('factura', id="comprobante", version="1.1.0")
+
         # 2. InfoTributaria
-        # ambiente provided via argument
-        tipo_emision = '1' # Normal
-        
-        info_tributaria = ET.SubElement(factura_xml, 'infoTributaria')
-        ET.SubElement(info_tributaria, 'ambiente').text = ambiente
-        ET.SubElement(info_tributaria, 'tipoEmision').text = tipo_emision
-        ET.SubElement(info_tributaria, 'razonSocial').text = empresa['razon_social']
-        ET.SubElement(info_tributaria, 'nombreComercial').text = empresa.get('nombre_comercial', empresa['razon_social'])
-        ET.SubElement(info_tributaria, 'ruc').text = empresa['ruc']
-        
-        # Generar Clave de Acceso Real
-        secuencial = factura.get('numero_factura', '000000001').split('-')[-1]
-        estab_code = factura.get('establecimiento_codigo', '001')
-        pto_emi_code = factura.get('punto_emision_codigo', '001')
-        
-        # Codigo numerico (8 digitos) - Usamos algo estable o aleatorio.
-        # Para pruebas, podemos usar un valor fijo o derivado del ID para simplicidad, 
-        # pero idealmente deberia ser aleatorio y persistido.
-        # Usaremos '12345678' por defecto si no existe campo, o '87654321' para variar.
-        codigo_numerico = '12345678' 
-        
-        clave_acceso = self._generar_clave_acceso(
-            fecha_emision=factura['fecha_emision'],
-            tipo_comprobante='01', # Factura
-            ruc=empresa['ruc'],
-            ambiente=ambiente,
-            establecimiento=estab_code,
-            punto_emision=pto_emi_code,
-            secuencial=secuencial,
-            codigo_numerico=codigo_numerico
-        )
-        
-        ET.SubElement(info_tributaria, 'claveAcceso').text = clave_acceso
-        
-        ET.SubElement(info_tributaria, 'codDoc').text = '01'
-        ET.SubElement(info_tributaria, 'estab').text = estab_code
-        ET.SubElement(info_tributaria, 'ptoEmi').text = pto_emi_code
-        ET.SubElement(info_tributaria, 'secuencial').text = secuencial
-        ET.SubElement(info_tributaria, 'dirMatriz').text = empresa.get('direccion', 'S/N')
-        
+        self.generateInfoTributaria(factura_xml, factura, empresa, ambiente)
+
         # 3. InfoFactura
-        info_factura = ET.SubElement(factura_xml, 'infoFactura')
-        ET.SubElement(info_factura, 'fechaEmision').text = factura['fecha_emision'].strftime('%d/%m/%Y')
-        ET.SubElement(info_factura, 'dirEstablecimiento').text = empresa.get('direccion', 'S/N') # Should be establishment address
-        ET.SubElement(info_factura, 'obligadoContabilidad').text = 'SI' if empresa.get('obligado_contabilidad') else 'NO'
-        
-        ET.SubElement(info_factura, 'tipoIdentificacionComprador').text = self._map_tipo_identificacion(cliente.get('tipo_identificacion'))
-        ET.SubElement(info_factura, 'razonSocialComprador').text = cliente['razon_social']
-        ET.SubElement(info_factura, 'identificacionComprador').text = cliente['identificacion']
-        ET.SubElement(info_factura, 'totalSinImpuestos').text = f"{factura['subtotal_sin_iva']:.2f}"
-        ET.SubElement(info_factura, 'totalDescuento').text = f"{factura['descuento']:.2f}"
-        
-        # Total con impuestos
-        total_impuesto = ET.SubElement(info_factura, 'totalConImpuestos')
-        # Here we should iterate over tax summary. Assuming simple structure for now.
-        impuesto = ET.SubElement(total_impuesto, 'totalImpuesto')
-        ET.SubElement(impuesto, 'codigo').text = '2' # IVA
-        ET.SubElement(impuesto, 'codigoPorcentaje').text = '2' # 12% currently/dynamic
-        ET.SubElement(impuesto, 'baseImponible').text = f"{factura['subtotal_sin_iva']:.2f}"
-        ET.SubElement(impuesto, 'valor').text = f"{factura['iva']:.2f}"
-        
-        ET.SubElement(info_factura, 'propina').text = f"{factura['propina']:.2f}"
-        ET.SubElement(info_factura, 'importeTotal').text = f"{factura['total']:.2f}"
-        ET.SubElement(info_factura, 'moneda').text = 'DOLAR'
-        
+        self.generateInfoFactura(factura_xml, factura, cliente, empresa)
+
         # 4. Detalles
-        detalles_xml = ET.SubElement(factura_xml, 'detalles')
-        for det in detalles:
-            detalle = ET.SubElement(detalles_xml, 'detalle')
-            ET.SubElement(detalle, 'codigoPrincipal').text = det['codigo_producto']
-            ET.SubElement(detalle, 'descripcion').text = det['descripcion']
-            ET.SubElement(detalle, 'cantidad').text = f"{det['cantidad']:.6f}"
-            ET.SubElement(detalle, 'precioUnitario').text = f"{det['precio_unitario']:.6f}"
-            ET.SubElement(detalle, 'descuento').text = f"{det['descuento']:.2f}"
-            ET.SubElement(detalle, 'precioTotalSinImpuesto').text = f"{det['subtotal']:.2f}"
-            
-            impuestos_det = ET.SubElement(detalle, 'impuestos')
-            imp_det = ET.SubElement(impuestos_det, 'impuesto')
-            ET.SubElement(imp_det, 'codigo').text = '2' # IVA
-            ET.SubElement(imp_det, 'codigoPorcentaje').text = '2' # Example
-            ET.SubElement(imp_det, 'tarifa').text = '12' # Example
-            ET.SubElement(imp_det, 'baseImponible').text = f"{det['subtotal']:.2f}"
-            ET.SubElement(imp_det, 'valor').text = f"{det['valor_iva']:.2f}"
+        self.generateDetalles(factura_xml, detalles)
 
         # 5. InfoAdicional
         if info_adicional:
-             info_ad = ET.SubElement(factura_xml, 'infoAdicional')
-             for k, v in info_adicional.items():
-                 campo = ET.SubElement(info_ad, 'campoAdicional', nombre=k)
-                 campo.text = str(v)
+            self.generateInfoAdicional(factura_xml, info_adicional)
 
         return self._prettify(factura_xml)
 
-    def _prettify(self, elem):
-        """Return a pretty-printed XML string for the Element."""
-        try:
-             # Py 3.9+
-             ET.indent(elem, space="  ", level=0)
-        except:
-             pass
-        return ET.tostring(elem, encoding='unicode', method='xml')
+    def generateInfoTributaria(self, root: ET.Element, factura: dict, empresa: dict, ambiente: str):
+        """Generates infoTributaria node with strict ordering and Clave Acceso."""
+        info = ET.SubElement(root, 'infoTributaria')
+        
+        # Order: ambiente, tipoEmision, razonSocial, nombreComercial, ruc, claveAcceso, codDoc, estab, ptoEmi, secuencial, dirMatriz
+        ET.SubElement(info, 'ambiente').text = ambiente
+        ET.SubElement(info, 'tipoEmision').text = '1' # Normal
+        ET.SubElement(info, 'razonSocial').text = empresa['razon_social']
+        ET.SubElement(info, 'nombreComercial').text = empresa.get('nombre_comercial', empresa['razon_social'])
+        ET.SubElement(info, 'ruc').text = empresa['ruc']
 
-    def _generar_clave_acceso(self, fecha_emision: datetime, tipo_comprobante: str, ruc: str, ambiente: str, establecimiento: str, punto_emision: str, secuencial: str, codigo_numerico: str) -> str:
+        # Clave Acceso Logic
+        fecha_emision = factura['fecha_emision'] # DateTime object
+        if isinstance(fecha_emision, str):
+            fecha_emision = datetime.fromisoformat(fecha_emision)
+
+        estab = factura.get('establecimiento_codigo', '001')
+        pto_emi = factura.get('punto_emision_codigo', '001')
+        secuencial = factura.get('numero_factura', '000000001').split('-')[-1]
+        
+        # Padding checks
+        estab = estab.zfill(3)
+        pto_emi = pto_emi.zfill(3)
+        secuencial = secuencial.zfill(9)
+
+        # Codigo Numerico (8 digits)
+        codigo_numerico = '12345678' # Fixed for stability in this iteration, ideally random.
+
+        clave_acceso = self.generateClaveAcceso(
+            fecha_emision, '01', empresa['ruc'], ambiente, estab, pto_emi, secuencial, codigo_numerico
+        )
+
+        ET.SubElement(info, 'claveAcceso').text = clave_acceso
+        ET.SubElement(info, 'codDoc').text = '01' # Factura
+        ET.SubElement(info, 'estab').text = estab
+        ET.SubElement(info, 'ptoEmi').text = pto_emi
+        ET.SubElement(info, 'secuencial').text = secuencial
+        ET.SubElement(info, 'dirMatriz').text = empresa.get('direccion', 'S/N')
+
+    def generateInfoFactura(self, root: ET.Element, factura: dict, cliente: dict, empresa: dict):
+        """Generates infoFactura node."""
+        info = ET.SubElement(root, 'infoFactura')
+        
+        # Fecha Emision: dd/mm/yyyy
+        fecha_str = self.normalizeDate(factura['fecha_emision'])
+        ET.SubElement(info, 'fechaEmision').text = fecha_str
+        
+        ET.SubElement(info, 'dirEstablecimiento').text = empresa.get('direccion', 'S/N')
+        ET.SubElement(info, 'obligadoContabilidad').text = 'SI' if empresa.get('obligado_contabilidad') else 'NO'
+        
+        tipo_ident = self._map_tipo_identificacion(cliente.get('tipo_identificacion'))
+        ET.SubElement(info, 'tipoIdentificacionComprador').text = tipo_ident
+        ET.SubElement(info, 'razonSocialComprador').text = cliente['razon_social']
+        ET.SubElement(info, 'identificacionComprador').text = cliente['identificacion']
+        
+        ET.SubElement(info, 'totalSinImpuestos').text = self.normalizeNumber(factura['subtotal_sin_iva'])
+        ET.SubElement(info, 'totalDescuento').text = self.normalizeNumber(factura['descuento'])
+        
+        # Total con Impuestos
+        total_impuesto_node = ET.SubElement(info, 'totalConImpuestos')
+        # Assuming all IVA 12/15 is aggregated. For simple implementation:
+        impuesto = ET.SubElement(total_impuesto_node, 'totalImpuesto')
+        ET.SubElement(impuesto, 'codigo').text = '2' # IVA
+        ET.SubElement(impuesto, 'codigoPorcentaje').text = '2' # 12% - ToDo: Make dynamic based on tax logic
+        ET.SubElement(impuesto, 'baseImponible').text = self.normalizeNumber(factura['subtotal_sin_iva'])
+        ET.SubElement(impuesto, 'valor').text = self.normalizeNumber(factura['iva'])
+        
+        ET.SubElement(info, 'propina').text = self.normalizeNumber(factura['propina'])
+        ET.SubElement(info, 'importeTotal').text = self.normalizeNumber(factura['total'])
+        ET.SubElement(info, 'moneda').text = 'DOLAR'
+        
+        # Pagos (Optional but recommended)
+        # pagos = ET.SubElement(info, 'pagos')
+        # ...
+
+    def generateDetalles(self, root: ET.Element, detalles: list):
+        """Generates detalles node."""
+        detalles_node = ET.SubElement(root, 'detalles')
+        
+        for det in detalles:
+            item = ET.SubElement(detalles_node, 'detalle')
+            ET.SubElement(item, 'codigoPrincipal').text = det['codigo_producto']
+            ET.SubElement(item, 'descripcion').text = det['descripcion']
+            ET.SubElement(item, 'cantidad').text = self.normalizeNumber(det['cantidad'], precision=6) # Cantidad can have up to 6
+            ET.SubElement(item, 'precioUnitario').text = self.normalizeNumber(det['precio_unitario'], precision=6)
+            ET.SubElement(item, 'descuento').text = self.normalizeNumber(det['descuento'])
+            ET.SubElement(item, 'precioTotalSinImpuesto').text = self.normalizeNumber(det['subtotal'])
+            
+            impuestos = ET.SubElement(item, 'impuestos')
+            imp = ET.SubElement(impuestos, 'impuesto')
+            ET.SubElement(imp, 'codigo').text = '2' # IVA
+            ET.SubElement(imp, 'codigoPorcentaje').text = '2' # ToDo: Dynamic
+            ET.SubElement(imp, 'tarifa').text = '12' # ToDo: Dynamic
+            ET.SubElement(imp, 'baseImponible').text = self.normalizeNumber(det['subtotal'])
+            ET.SubElement(imp, 'valor').text = self.normalizeNumber(det['valor_iva'])
+
+    def generateInfoAdicional(self, root: ET.Element, info_adicional: dict):
+        info_ad = ET.SubElement(root, 'infoAdicional')
+        for k, v in info_adicional.items():
+            if v:
+                campo = ET.SubElement(info_ad, 'campoAdicional', nombre=k)
+                campo.text = str(v)
+
+    def generateClaveAcceso(self, fecha_emision: datetime, tipo_comprobante: str, ruc: str, ambiente: str, establecimiento: str, punto_emision: str, secuencial: str, codigo_numerico: str) -> str:
         """
-        Generates the 49-digit Access Key (Clave de Acceso).
-        Format:
-        ddmmyyyy (8)
-        tipo_comprobante (2)
-        ruc (13)
-        ambiente (1)
-        serie (est + pto) (6)
-        secuencial (9)
-        codigo_numerico (8)
-        tipo_emision (1)
-        digito_verificador (1) -> Modulo 11
+        Generates 49 digit Clave de Acceso with Modulo 11.
         """
         fecha = fecha_emision.strftime('%d%m%Y')
-        serie = f"{establecimiento}{punto_emision}"
+        tipo_emision = '1' # Normal
         
-        # Base key (48 digits)
-        clave = f"{fecha}{tipo_comprobante}{ruc}{ambiente}{serie}{secuencial}{codigo_numerico}1" # 1 is Initial Emision Type (Normal)
+        # Padding enforcement (just in case)
+        establecimiento = establecimiento.zfill(3)
+        punto_emision = punto_emision.zfill(3)
+        secuencial = secuencial.zfill(9)
+        codigo_numerico = codigo_numerico.zfill(8)
         
-        # Verify Length should be 48
-        if len(clave) != 48:
-             # Fallback or error? For now assume inputs are correct/padded
-             pass
+        clave_base = f"{fecha}{tipo_comprobante}{ruc}{ambiente}{establecimiento}{punto_emision}{secuencial}{codigo_numerico}{tipo_emision}"
+        
+        digito_verificador = self.modulo11(clave_base)
+        
+        return f"{clave_base}{digito_verificador}"
 
-        digito = self._compute_modulo_11(clave)
-        return f"{clave}{digito}"
-
-    def _compute_modulo_11(self, clave: str) -> int:
+    def modulo11(self, clave: str) -> int:
         """
-        Computes Modulo 11 check digit.
+        Calculates Modulo 11 check digit.
+        If result is 10 -> 1
+        If result is 11 -> 0
         """
-        suma = 0
+        # Reverse string
+        reversed_digits = [int(d) for d in reversed(clave)]
         factor = 2
+        suma = 0
         
-        for digit in reversed(clave):
-            suma += int(digit) * factor
+        for d in reversed_digits:
+            suma += d * factor
             factor += 1
             if factor > 7:
                 factor = 2
                 
         residuo = suma % 11
-        check_digit = 11 - residuo
+        resultado = 11 - residuo
         
-        if check_digit == 11:
+        if resultado == 11:
             return 0
-        if check_digit == 10:
+        if resultado == 10:
             return 1
-        return check_digit
+        return resultado
+
+    def validateFacturaXmlData(self, factura: dict, detalles: list, cliente: dict):
+        """
+        Validates data coherence. Raises ValueError if invalid.
+        """
+        # 1. Totals Coherence
+        subtotal = Decimal(str(factura['subtotal_sin_iva']))
+        iva = Decimal(str(factura['iva']))
+        propina = Decimal(str(factura.get('propina', 0)))
+        total_db = Decimal(str(factura['total']))
+        
+        calculated_total = subtotal + iva + propina
+        
+        # Allow small epsilon difference due to rounding
+        if abs(calculated_total - total_db) > Decimal('0.02'):
+             raise ValueError(f"Inconsistencia en totales: Calculado ({calculated_total}) != DB ({total_db})")
+             
+        # 2. Detalles Sum Validation
+        sum_detalles = sum(Decimal(str(d['subtotal'])) for d in detalles)
+        if abs(sum_detalles - subtotal) > Decimal('0.02'):
+             raise ValueError(f"Inconsistencia detalles: Suma Detalles ({sum_detalles}) != Subtotal Factura ({subtotal})")
+             
+        # 3. Identificacion Validation
+        tipo_id = cliente.get('tipo_identificacion', '')
+        ident = cliente.get('identificacion', '')
+        if 'RUC' in tipo_id.upper() and len(ident) != 13:
+             raise ValueError(f"RUC inválido: {ident} (Debe tener 13 dígitos)")
+        if 'CEDULA' in tipo_id.upper() and len(ident) != 10:
+             raise ValueError(f"Cédula inválida: {ident} (Debe tener 10 dígitos)")
+
+    def normalizeNumber(self, val, precision=2) -> str:
+        """Formats number to fixed decimal places."""
+        d = Decimal(str(val))
+        return f"{d:.{precision}f}"
+
+    def normalizeDate(self, date_obj) -> str:
+        """Formats date to dd/mm/yyyy."""
+        if isinstance(date_obj, str):
+            date_obj = datetime.fromisoformat(date_obj)
+        return date_obj.strftime('%d/%m/%Y')
 
     def _map_tipo_identificacion(self, tipo: str) -> str:
-        if not tipo: return '07' # Consumidor Final
+        if not tipo: return '07'
         tipo = tipo.upper()
         if 'RUC' in tipo: return '04'
         if 'CEDULA' in tipo: return '05'
         if 'PASAPORTE' in tipo: return '06'
         return '07'
+
+    def _prettify(self, elem):
+        try:
+             ET.indent(elem, space="  ", level=0)
+        except: pass
+        return ET.tostring(elem, encoding='unicode', method='xml')
+
