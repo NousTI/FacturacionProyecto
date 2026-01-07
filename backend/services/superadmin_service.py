@@ -56,7 +56,11 @@ class SuperadminService:
             "sid": new_sid,
             "jti": new_sid
         })
-        return success_response({"access_token": token, "token_type": "bearer"})
+        return success_response({
+            "access_token": token, 
+            "token_type": "bearer",
+            "user": self._sanitize(superadmin)
+        })
 
     def logout(self, request: Request):
         # We need the SID from the token payload which is stored in request.state usually
