@@ -43,6 +43,10 @@ class EmpresaRead(EmpresaBase):
     fecha_registro: datetime
     fecha_activacion: Optional[datetime] = None
     fecha_vencimiento: Optional[datetime] = None
+    plan: Optional[str] = None
+    plan_id: Optional[UUID] = None
+    fecha_inicio_plan: Optional[datetime] = None
+    fecha_fin_plan: Optional[datetime] = None
     created_at: datetime
     updated_at: datetime
 

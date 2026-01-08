@@ -48,3 +48,56 @@ def delete_empresa(
 ):
     service.delete_empresa(empresa_id, current_user)
     return {"message": "Empresa eliminada exitosamente"}
+
+@router.patch("/{empresa_id}/toggle-active", response_model=EmpresaRead)
+def toggle_active_empresa(
+    empresa_id: UUID,
+    current_user: dict = Depends(get_current_user),
+    service: EmpresaService = Depends()
+):
+    """
+    Alterna el estado ACTIVO de una empresa.
+    Exclusivo para Superadmin.
+    """
+    return service.toggle_active(empresa_id, current_user)
+
+from fastapi import Body
+
+@router.patch("/{empresa_id}/assign-vendor", response_model=EmpresaRead)
+def assign_vendor_empresa(
+    empresa_id: UUID,
+    vendedor_payload: dict = Body(..., example={"vendedor_id": "uuid"}),
+    current_user: dict = Depends(get_current_user),
+    service: EmpresaService = Depends()
+):
+    """
+    Asigna o cambia el vendedor de una empresa.
+    Exclusivo para Superadmin.
+    """
+    # Validamos que al menos se envíe la clave en el JSON
+    if "vendedor_id" not in vendedor_payload:
+         from fastapi import HTTPException
+         raise HTTPException(status_code=400, detail="vendedor_id es requerido en el payload")
+    
+    vendedor_id = vendedor_payload.get("vendedor_id")
+    # Nota: Si vendedor_id es None, se desasigna el vendedor.
+         
+    return service.assign_vendor(empresa_id, vendedor_id, current_user)
+
+@router.post("/{empresa_id}/change-plan", status_code=status.HTTP_200_OK)
+def change_plan_empresa(
+    empresa_id: UUID,
+    plan_payload: dict = Body(..., example={"plan_id": "uuid"}),
+    current_user: dict = Depends(get_current_user),
+    service: EmpresaService = Depends()
+):
+    """
+    Cambia el plan de suscripción de una empresa (Superadmin).
+    Crea un registro en pago_suscripcion.
+    """
+    if "plan_id" not in plan_payload:
+         from fastapi import HTTPException
+         raise HTTPException(status_code=400, detail="plan_id es requerido en el payload")
+    
+    plan_id = plan_payload.get("plan_id")
+    return service.change_plan(empresa_id, plan_id, current_user)

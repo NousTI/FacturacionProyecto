@@ -1,82 +1,152 @@
-import { Component } from '@angular/core';
+import { Component, EventEmitter, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { RouterModule } from '@angular/router';
 
 @Component({
-    selector: 'app-sidebar',
-    standalone: true,
-    imports: [CommonModule],
-    template: `
-    <div class="sidebar d-flex flex-column p-4 h-100 bg-white border-end">
-      <!-- Logo -->
-      <div class="d-flex align-items-center gap-2 mb-4 fw-bold text-dark fs-5">
-        <div class="logo-icon d-flex align-items-center justify-content-center text-white bg-dark rounded">D</div>
-        DealDeck
+  selector: 'app-sidebar',
+  standalone: true,
+  imports: [CommonModule, RouterModule],
+  template: `
+    <div class="d-flex flex-column flex-shrink-0 p-3 bg-white h-100 border-end" style="width: 250px;">
+      <a href="/" class="d-flex align-items-center mb-4 mb-md-0 me-md-auto link-dark text-decoration-none">
+        <div class="bg-dark text-white rounded p-1 me-2 d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
+            <span class="fw-bold fs-5">D</span>
+        </div>
+        <span class="fs-4 fw-bold">DealDeck</span>
+      </a>
+      
+      <div class="overflow-auto mt-4 custom-scrollbar" style="flex: 1;">
+          
+          <!-- MENU -->
+          <div class="mb-4">
+            <span class="text-uppercase text-secondary fw-bold small ps-3">Menu</span>
+            <ul class="nav nav-pills flex-column mt-2">
+              <li class="nav-item mb-1">
+                <a href="#" (click)="onNavigate('dashboard', $event)" class="nav-link active d-flex align-items-center cursor-pointer" aria-current="page" style="background-color: #5a4bda;">
+                  <i class="bi bi-grid-fill me-2"></i>
+                  Dashboard
+                </a>
+              </li>
+              <li class="nav-item mb-1">
+                <a href="#" class="nav-link link-dark d-flex align-items-center text-secondary hover-bg-light">
+                  <i class="bi bi-file-text me-2"></i>
+                  Report
+                </a>
+              </li>
+              <li class="nav-item mb-1">
+                <a href="#" class="nav-link link-dark d-flex align-items-center text-secondary hover-bg-light">
+                  <i class="bi bi-box-seam me-2"></i>
+                  Products
+                </a>
+              </li>
+              <li class="nav-item mb-1">
+                <a href="#" class="nav-link link-dark d-flex align-items-center text-secondary hover-bg-light">
+                  <i class="bi bi-person me-2"></i>
+                  Consumer
+                </a>
+              </li>
+              <!-- Added for User Request -->
+               <li class="nav-item mb-1">
+                <a href="#" (click)="onNavigate('empresas', $event)" class="nav-link link-dark d-flex align-items-center text-secondary hover-bg-light cursor-pointer">
+                  <i class="bi bi-building me-2"></i>
+                  Empresas
+                </a>
+              </li>
+            </ul>
+          </div>
+          <!-- (Rest of template remains same) -->
+          <!-- FINANCIAL -->
+          <div class="mb-4">
+            <span class="text-uppercase text-secondary fw-bold small ps-3">Financial</span>
+            <ul class="nav nav-pills flex-column mt-2">
+              <li class="nav-item mb-1">
+                <a href="#" class="nav-link link-dark d-flex align-items-center text-secondary hover-bg-light">
+                  <i class="bi bi-wallet2 me-2"></i>
+                  Transactions
+                </a>
+              </li>
+              <li class="nav-item mb-1">
+                <a href="#" class="nav-link link-dark d-flex align-items-center text-secondary hover-bg-light">
+                  <i class="bi bi-receipt me-2"></i>
+                  Invoices
+                </a>
+              </li>
+            </ul>
+          </div>
+
+           <!-- TOOLS -->
+           <div class="mb-4">
+            <span class="text-uppercase text-secondary fw-bold small ps-3">Tools</span>
+            <ul class="nav nav-pills flex-column mt-2">
+              <li class="nav-item mb-1">
+                <a href="#" class="nav-link link-dark d-flex align-items-center text-secondary hover-bg-light">
+                  <i class="bi bi-gear me-2"></i>
+                  Settings
+                </a>
+              </li>
+              <li class="nav-item mb-1">
+                <a href="#" class="nav-link link-dark d-flex align-items-center text-secondary hover-bg-light">
+                  <i class="bi bi-chat-left-text me-2"></i>
+                  Feedback
+                </a>
+              </li>
+               <li class="nav-item mb-1">
+                <a href="#" class="nav-link link-dark d-flex align-items-center text-secondary hover-bg-light">
+                  <i class="bi bi-question-circle me-2"></i>
+                  Help
+                </a>
+              </li>
+            </ul>
+          </div>
+
       </div>
 
-      <!-- Menus -->
-      <div class="d-flex flex-column gap-4 flex-grow-1">
-        <div class="menu-section">
-          <div class="menu-title text-uppercase text-secondary fw-bold mb-2">Menu</div>
-          <div class="menu-item active">
-            <i class="bi bi-grid-fill"></i> Dashboard
-          </div>
-          <div class="menu-item">
-            <i class="bi bi-file-earmark-text"></i> Report
-          </div>
-          <div class="menu-item">
-            <i class="bi bi-box-seam"></i> Products
-          </div>
-          <div class="menu-item">
-            <i class="bi bi-person"></i> Consumer
-          </div>
+      <!-- UPGRADE CARD -->
+      <div class="card border-0 bg-dark text-white rounded-4 p-3 mt-3 shadow">
+        <div class="mb-2">
+            <span class="badge bg-secondary bg-opacity-25 text-warning p-2 rounded-3">
+                <i class="bi bi-lightning-fill"></i>
+            </span>
         </div>
-
-        <div class="menu-section">
-          <div class="menu-title text-uppercase text-secondary fw-bold mb-2">Financial</div>
-          <div class="menu-item">
-            <i class="bi bi-cash-stack"></i> Transactions
-          </div>
-          <div class="menu-item">
-            <i class="bi bi-receipt"></i> Invoices
-          </div>
-        </div>
-
-        <div class="menu-section">
-          <div class="menu-title text-uppercase text-secondary fw-bold mb-2">Tools</div>
-          <div class="menu-item">
-            <i class="bi bi-gear"></i> Settings
-          </div>
-          <div class="menu-item">
-            <i class="bi bi-chat-dots"></i> Feedback
-          </div>
-          <div class="menu-item">
-            <i class="bi bi-question-circle"></i> Help
-          </div>
-        </div>
+        <h6 class="fw-bold mb-1">Upgrade Pro</h6>
+        <p class="small text-white-50 mb-3" style="font-size: 0.8rem;">Get full access to all features</p>
+        <button class="btn btn-primary w-100 fw-bold rounded-3" style="background-color: #5a4bda; border: none;">
+            Upgrade $30
+        </button>
       </div>
 
-      <!-- Upgrade Badge -->
-      <div class="upgrade-card bg-dark text-white p-3 rounded-4 mt-auto">
-        <div class="upgrade-icon bg-white bg-opacity-25 rounded p-1 mb-2 d-inline-flex">
-          ⚡
-        </div>
-        <h6 class="mb-1">Upgrade Pro</h6>
-        <p class="small text-secondary mb-2">Get full access to all features</p>
-        <button class="btn btn-primary w-100 btn-sm fw-bold">Upgrade $30</button>
-      </div>
     </div>
   `,
-    styles: [`
-    .logo-icon { width: 32px; height: 32px; }
-    .menu-title { font-size: 0.75rem; letter-spacing: 0.05em; }
-    .menu-item {
-      display: flex; align-items: center; gap: 0.75rem;
-      padding: 0.75rem 1rem; border-radius: 8px;
-      color: #4b5563; cursor: pointer; transition: all 0.2s;
+  styles: [`
+    .nav-link {
+        border-radius: 12px;
+        padding: 10px 16px;
+        transition: all 0.2s;
     }
-    .menu-item:hover { background-color: #f3f4f6; }
-    .menu-item.active { background-color: #4f46e5; color: white; font-weight: 500; }
-    .upgrade-card button { background-color: #4f46e5; border: none; }
+    .hover-bg-light:hover {
+        background-color: #f8f9fa;
+        color: #000 !important;
+    }
+    .custom-scrollbar::-webkit-scrollbar {
+        width: 4px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+        background: transparent;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+        background: #e9ecef; 
+        border-radius: 4px;
+    }
+    .cursor-pointer {
+        cursor: pointer;
+    }
   `]
 })
-export class SidebarComponent { }
+export class SidebarComponent {
+  @Output() navigate = new EventEmitter<string>();
+
+  onNavigate(page: string, event: Event) {
+    event.preventDefault();
+    this.navigate.emit(page);
+  }
+}

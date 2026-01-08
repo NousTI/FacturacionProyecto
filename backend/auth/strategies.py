@@ -4,6 +4,7 @@ from services.superadmin_session_service import SuperadminSessionService
 from services.user_session_service import validate_session
 from repositories.vendedor_repository import VendedorRepository
 from repositories.user_sessions_repository import get_session
+from repositories.vendedor_session_repository import VendedorSessionRepository
 from utils.responses import error_response
 from datetime import datetime, timezone
 
@@ -39,6 +40,7 @@ class SuperadminAuthStrategy(AuthStrategy):
         superadmin[AuthKeys.IS_VENDEDOR] = False
         superadmin[AuthKeys.IS_USUARIO] = False
         superadmin[AuthKeys.ROL_ID] = -1 # Dummy ID for logic compatibility
+        superadmin["role"] = "superadmin"
         return superadmin
 
 class VendedorAuthStrategy(AuthStrategy):
@@ -72,6 +74,7 @@ class VendedorAuthStrategy(AuthStrategy):
         vendedor[AuthKeys.IS_VENDEDOR] = True
         vendedor[AuthKeys.IS_USUARIO] = False
         vendedor[AuthKeys.ROL_ID] = -2 # Dummy ID
+        vendedor["role"] = "vendedor"
         return vendedor
 
 class UsuarioAuthStrategy(AuthStrategy):
@@ -105,5 +108,6 @@ class UsuarioAuthStrategy(AuthStrategy):
         user[AuthKeys.IS_SUPERADMIN] = False
         user[AuthKeys.IS_VENDEDOR] = False
         user[AuthKeys.IS_USUARIO] = True
+        user["role"] = "usuario"
         # user has 'rol_id' effectively
         return user

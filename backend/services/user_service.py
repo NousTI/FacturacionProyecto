@@ -176,7 +176,11 @@ class UserService:
             }
         )
         
-        return {"access_token": token, "token_type": "bearer"}
+        return {
+            "access_token": token,
+            "token_type": "bearer",
+            "user": self._sanitize(user)
+        }
 
     def update_user(self, user_id: UUID, user_update: UserUpdate, current_user: dict):
         # Access control

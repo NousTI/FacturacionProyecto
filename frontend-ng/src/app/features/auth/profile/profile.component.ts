@@ -2,15 +2,26 @@ import { Component, inject } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import { AuthService } from '../../../core/auth/auth.service';
 import { FeedbackService } from '../../../shared/services/feedback.service';
+import { VendedorInfoComponent } from './components/vendedor-info.component';
+import { UsuarioInfoComponent } from './components/usuario-info.component';
+import { SuperadminInfoComponent } from './components/superadmin-info.component';
 
 @Component({
   selector: 'app-profile',
   standalone: true,
-  imports: [CommonModule, DatePipe],
+  imports: [
+    CommonModule,
+    DatePipe,
+    VendedorInfoComponent,
+    UsuarioInfoComponent,
+    SuperadminInfoComponent
+  ],
   template: `
     <div class="d-flex align-items-center justify-content-center min-vh-100 bg-white">
       <div class="p-5" style="width: 100%; max-width: 600px; border-radius: 1px; background-color: #fff;">
-        <h1 class="fw-bold mb-4" style="font-size: 2rem; border-bottom: 2px solid; display: inline-block;">Perfil de Superadmin</h1>
+        <h1 class="fw-bold mb-4" style="font-size: 2rem; border-bottom: 2px solid; display: inline-block;">
+            Perfil de {{ getRoleTitle() }}
+        </h1>
         
         @if (authService.currentUser(); as user) {
           <div class="mb-5">
@@ -25,6 +36,19 @@ import { FeedbackService } from '../../../shared/services/feedback.service';
               <span class="fw-medium text-secondary">Correo Electrónico</span>
               <span class="text-dark">{{ user.email }}</span>
             </div>
+
+            <!-- Role Specific Components -->
+            @if(authService.isVendedor()) {
+                 <app-vendedor-info [user]="user" />
+            }
+
+            @if(authService.isUsuario()) {
+                 <app-usuario-info [user]="user" />
+            }
+
+            @if(authService.isSuperadmin()) {
+                 <app-superadmin-info [user]="user" />
+            }
 
             <div class="d-flex justify-content-between py-2 border-bottom">
               <span class="fw-medium text-secondary">ID de Usuario</span>
@@ -74,6 +98,12 @@ import { FeedbackService } from '../../../shared/services/feedback.service';
 export class ProfileComponent {
   authService = inject(AuthService);
   feedback = inject(FeedbackService);
+
+  getRoleTitle() {
+    if (this.authService.isSuperadmin()) return 'Superadministrador';
+    if (this.authService.isVendedor()) return 'Vendedor';
+    return 'Usuario';
+  }
 
   logout() {
     this.feedback.showLoading('Cerrando sesión...');

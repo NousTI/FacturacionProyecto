@@ -372,9 +372,7 @@ CREATE TABLE IF NOT EXISTS public.superadmin_sessions (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
 
     -- FK debe ser UUID, no INT
-    superadmin_id UUID NOT NULL
-        REFERENCES public.superadmin(id)
-        ON DELETE CASCADE,
+    superadmin_id UUID NOT NULL REFERENCES public.superadmin(id) ON DELETE CASCADE,
 
     is_valid BOOLEAN NOT NULL DEFAULT TRUE,
 

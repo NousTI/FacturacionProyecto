@@ -1,6 +1,7 @@
 /* Global Styles */
-@import "bootstrap/scss/bootstrap";
-@import "bootstrap-icons/font/bootstrap-icons.css";
+/* Global Styles */
+@use "bootstrap/scss/bootstrap";
+/* Icons loaded in angular.json */
 
 :root {
     --bs-body-bg: #ffffff;

@@ -34,7 +34,7 @@ class Settings:
         )
 
         # CORS
-        default_origins = "http://localhost:3000,http://127.0.0.1:3000"
+        default_origins = "http://localhost:3000,http://127.0.0.1:3000,http://localhost:4200,http://127.0.0.1:4200"
         self.allowed_origins: List[str] = _split_origins(
             os.getenv("ALLOWED_ORIGINS", default_origins)
         )

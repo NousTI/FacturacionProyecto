@@ -22,6 +22,8 @@ from api.routes.facturacion_programada_routes import router as facturacion_progr
 from settings import get_settings
 from utils.logger import get_logger
 from utils.responses import error_response
+from services.automation_service import automation_service
+import asyncio
 
 settings = get_settings()
 
@@ -30,6 +32,15 @@ app = FastAPI(
     description="API para gestión de clientes, facturación e inventario",
     version="1.0.0",
 )
+
+@app.on_event("startup")
+async def startup_event():
+    # Start automation tasks in the background
+    asyncio.create_task(automation_service.start_daily_tasks())
+
+@app.on_event("shutdown")
+def shutdown_event():
+    automation_service.stop()
 
 logger = get_logger("api")
 

@@ -2,8 +2,9 @@ from fastapi import Depends, HTTPException, status
 from repositories.empresa_repository import EmpresaRepository
 from models.Empresa import EmpresaCreate, EmpresaUpdate
 from uuid import UUID
+from datetime import datetime, timedelta
 from typing import List, Optional
-from utils.enums import AuthKeys
+from utils.enums import AuthKeys, SubscriptionStatus
 
 class EmpresaService:
     def __init__(self, repository: EmpresaRepository = Depends()):
@@ -87,6 +88,10 @@ class EmpresaService:
     def list_empresas(self, current_user: dict, vendedor_id: Optional[UUID] = None) -> List[dict]:
         ctx = self._get_user_context(current_user)
         
+        # Automáticamente sincronizar/vencer suscripciones antes de listar
+        # Esto asegura que el Superadmin vea los estados reales al momento de consultar.
+        self.repository.check_expired_subscriptions()
+        
         # 1. Superadmin: Can see all or filter by passed vendedor_id
         if ctx["is_superadmin"]:
             return self.repository.list_empresas(vendedor_id=vendedor_id)
@@ -157,4 +162,108 @@ class EmpresaService:
         success = self.repository.delete_empresa(empresa_id)
         if not success:
             raise HTTPException(status_code=500, detail="Error al eliminar la empresa")
+        return success
+
+    def toggle_active(self, empresa_id: UUID, current_user: dict):
+        ctx = self._get_user_context(current_user)
+
+        # STRICT Check: Only Superadmin
+        if not ctx["is_superadmin"]:
+             raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Acción permitida solo para Superadmin"
+            )
+
+        # Get current state directly from repository avoiding the standard get logic overhead/filters if we want raw access
+        # But standard get is fine since Superadmin can see all.
+        empresa = self.repository.get_empresa_by_id(empresa_id)
+        if not empresa:
+             raise HTTPException(status_code=404, detail="Empresa no encontrada")
+
+        new_status = not empresa.get("activo", True) # Flip existing status
+        
+        # Update
+        updated = self.repository.update_empresa(empresa_id, {"activo": new_status})
+        if not updated:
+             raise HTTPException(status_code=500, detail="Error al cambiar el estado de la empresa")
+             
+        return updated
+
+    def assign_vendor(self, empresa_id: UUID, vendedor_id: UUID, current_user: dict):
+        ctx = self._get_user_context(current_user)
+
+        # STRICT Check: Only Superadmin
+        if not ctx["is_superadmin"]:
+             raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Acción permitida solo para Superadmin"
+            )
+        
+        # Verify Empresa exists
+        empresa = self.repository.get_empresa_by_id(empresa_id)
+        if not empresa:
+             raise HTTPException(status_code=404, detail="Empresa no encontrada")
+
+        # Update
+        try:
+            updated = self.repository.update_empresa(empresa_id, {"vendedor_id": vendedor_id})
+        except Exception as e:
+            error_str = str(e)
+            if "viol" in error_str and "key" in error_str:
+                 # Likely Vendedor ID FK violation
+                 raise HTTPException(status_code=400, detail="El Vendedor ID proporcionado no es válido")
+            raise HTTPException(status_code=500, detail=f"Error al asignar vendedor: {error_str}")
+
+        if not updated:
+             raise HTTPException(status_code=500, detail="Error al asignar vendedor")
+             
+        return updated
+    
+    def change_plan(self, empresa_id: UUID, plan_id: UUID, current_user: dict):
+        ctx = self._get_user_context(current_user)
+        
+        # 1. Permission Check
+        if not ctx["is_superadmin"]:
+              raise HTTPException(status_code=403, detail="Solo Superadmin puede cambiar planes manualmente")
+
+        # 2. Verify Data
+        empresa = self.repository.get_empresa_by_id(empresa_id)
+        if not empresa:
+              raise HTTPException(status_code=404, detail="Empresa no encontrada")
+        
+        # 3. Create PagoSuscripcion Record
+        # We need a repository for PagoSuscripcion interaction. 
+        # Since we are in EmpresaService, we ideally should use PagoSuscripcionService or Repository directly.
+        # But for valid architectural brevity, we might need to add a method to EmpresaRepository to create pago?
+        # OR better, import PagoSuscripcionRepository if available.
+        
+        # Let's check imports first. If not available, we might add a raw method to EmpresaRepository 
+        # for 'create_plan_subscription_manual' to avoid circular deps or complex service injection.
+        
+        subscription_data = {
+            "empresa_id": empresa_id,
+            "plan_id": plan_id,
+            "monto": 0,
+            "fecha_pago": datetime.now(),
+            "fecha_inicio_periodo": datetime.now(),
+            "fecha_fin_periodo": datetime.now() + timedelta(days=30), # Default 30 days
+            "metodo_pago": "MANUAL_SUPERADMIN",
+            "estado": "PAGADO",
+            "registrado_por": None, # Superadmin is not in 'usuario' table
+            "observaciones": f"Cambio de plan manual realizado por Superadmin (ID: {ctx['user_id']})"
+        }
+        
+        # 4. Delegate to repository to insert into pago_suscripcion
+        success = self.repository.create_manual_subscription(subscription_data)
+        if not success:
+             raise HTTPException(status_code=500, detail="Error al registrar el cambio de plan")
+        
+        # 5. Synchronize Empresa Status and Dates
+        empresa_update = {
+            "estado_suscripcion": SubscriptionStatus.ACTIVA,
+            "fecha_activacion": datetime.now() if not empresa.get('fecha_activacion') else empresa['fecha_activacion'],
+            "fecha_vencimiento": subscription_data["fecha_fin_periodo"]
+        }
+        self.repository.update_empresa(empresa_id, empresa_update)
+
         return success

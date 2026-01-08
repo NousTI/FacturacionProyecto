@@ -1,13 +1,15 @@
-import { Injectable, signal, computed, effect, inject } from '@angular/core';
+import { Injectable, signal, computed, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { catchError, map, tap } from 'rxjs/operators';
-import { Observable, of, throwError, from } from 'rxjs';
+import { Observable, of, throwError } from 'rxjs';
 
 // TODO: Move to environments
 const API_URL = 'http://localhost:8000/api';
 
-export interface User {
+export type UserRole = 'usuario' | 'vendedor' | 'superadmin';
+
+export interface BaseUser {
     id: string; // UUID
     email: string;
     nombres: string;
@@ -16,7 +18,31 @@ export interface User {
     created_at: string;
     updated_at: string;
     last_login: string | null;
+    role: UserRole; // Helper for frontend logic
 }
+
+export interface Superadmin extends BaseUser {
+    role: 'superadmin';
+}
+
+export interface Vendedor extends BaseUser {
+    role: 'vendedor';
+    telefono?: string;
+    documento_identidad?: string;
+    porcentaje_comision?: number;
+    tipo_comision?: string;
+}
+
+export interface Usuario extends BaseUser {
+    role: 'usuario';
+    telefono?: string;
+    empresa_id?: string;
+    rol_id?: string;
+    avatar_url?: string;
+    requiere_cambio_password?: boolean;
+}
+
+export type User = Superadmin | Vendedor | Usuario;
 
 export interface AuthResponse {
     access_token: string;
@@ -38,6 +64,11 @@ export class AuthService {
     readonly currentUser = this.currentUserSignal.asReadonly();
     readonly isAuthenticated = computed(() => !!this.currentUserSignal());
 
+    // Helpers to easily check role in templates
+    readonly isSuperadmin = computed(() => this.currentUserSignal()?.role === 'superadmin');
+    readonly isVendedor = computed(() => this.currentUserSignal()?.role === 'vendedor');
+    readonly isUsuario = computed(() => this.currentUserSignal()?.role === 'usuario');
+
     constructor() {
         this.restoreSession();
     }
@@ -48,29 +79,83 @@ export class AuthService {
 
         if (storedUser && token) {
             try {
-                this.currentUserSignal.set(JSON.parse(storedUser));
+                const user = JSON.parse(storedUser);
+                this.currentUserSignal.set(user);
+
+                // Verify session validity with backend
+                this.verifySession(user.role);
             } catch (e) {
                 this.clearSession();
             }
         }
     }
 
-    login(credentials: { email: string; password: string }): Observable<User> {
-        return this.http.post<any>(`${API_URL}/superadmin/login`, credentials).pipe(
+    private verifySession(role: UserRole): void {
+        let endpoint = '';
+        switch (role) {
+            case 'superadmin':
+                endpoint = `${API_URL}/auth/superadmin/me`;
+                break;
+            case 'vendedor':
+                endpoint = `${API_URL}/auth/vendedor/me`;
+                break;
+            case 'usuario':
+            default:
+                endpoint = `${API_URL}/auth/usuario/me`;
+                break;
+        }
+
+        this.http.get(endpoint).subscribe({
+            next: (userData: any) => {
+                // Update session state with fresh data from backend
+                console.log('Session verified, updating user data');
+                this.currentUserSignal.set(userData);
+                localStorage.setItem('user', JSON.stringify(userData));
+            },
+            error: (err) => {
+                console.warn('Session invalid, logging out', err);
+                this.clearSession();
+            }
+        });
+    }
+
+    login(credentials: { email: string; password: string }, role: UserRole): Observable<User> {
+        let endpoint = '';
+
+        switch (role) {
+            case 'superadmin':
+                endpoint = `${API_URL}/auth/superadmin/login`;
+                break;
+            case 'vendedor':
+                endpoint = `${API_URL}/auth/vendedor/login`;
+                break;
+            case 'usuario':
+            default:
+                endpoint = `${API_URL}/auth/usuario/login`;
+                break;
+        }
+
+        return this.http.post<any>(endpoint, credentials).pipe(
             map(response => {
-                // Backend returns { data: { access_token, user, token_type }, message, status_code }
-                // OR standard OAuth2 response depending on implementation. 
-                // Based on React code: json.data contains access_token and user.
-                return response.data;
+                // Determine structure: sometimes data is nested, sometimes flat depending on endpoint consistency
+                // We assume consistent: { data: { access_token, user, ... } }
+                // or direct: { access_token, user }
+                const authData = response.data || response;
+
+                // Inject role into user object for frontend persistence
+                // Backend usually sends it, but ensuring it matches request role is good practice
+                if (authData.user) {
+                    authData.user.role = role;
+                }
+                return authData;
             }),
             tap((data: AuthResponse) => {
                 this.setSession(data);
             }),
-            map(data => data.user),
+            map(data => data.user as User),
             catchError(error => {
                 let errorMessage = 'Error al iniciar sesión';
 
-                // Check if it's a backend structured error response
                 if (error.error) {
                     if (typeof error.error.detail === 'string') {
                         errorMessage = error.error.detail;
@@ -88,17 +173,30 @@ export class AuthService {
 
     logout(): Observable<void> {
         const token = localStorage.getItem('token');
-        if (token) {
-            // We use 'from' to convert the Promise/Fetch or just standard Http
-            // But headers act different in Angular Interceptors. 
-            // We will implement TokenInterceptor separately, but for now specific call:
-            return this.http.post<void>(`${API_URL}/superadmin/logout`, {}, {
+        const user = this.currentUserSignal();
+
+        if (token && user) {
+            let endpoint = '';
+            switch (user.role) {
+                case 'superadmin':
+                    endpoint = `${API_URL}/auth/superadmin/logout`;
+                    break;
+                case 'vendedor':
+                    endpoint = `${API_URL}/auth/vendedor/logout`;
+                    break;
+                case 'usuario':
+                default:
+                    endpoint = `${API_URL}/auth/usuario/logout`;
+                    break;
+            }
+
+            return this.http.post<void>(endpoint, {}, {
                 headers: { 'Authorization': `Bearer ${token}` }
             }).pipe(
                 tap(() => this.clearSession()),
                 catchError(err => {
                     console.error('Logout error', err);
-                    this.clearSession(); // Force clear anyway
+                    this.clearSession();
                     return of(void 0);
                 })
             );

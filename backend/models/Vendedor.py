@@ -41,9 +41,9 @@ class VendedorUpdate(BaseModel):
 
 class VendedorRead(VendedorBase):
     id: UUID
-    fecha_registro: datetime
-    created_at: datetime
-    updated_at: datetime
+    fecha_registro: Optional[datetime] = None
+    created_at: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
     last_login: Optional[datetime] = None
 
     class Config:

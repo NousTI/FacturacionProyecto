@@ -35,6 +35,7 @@ class VendedorSessionService:
         # The user said "igualmente con su tabla vendedor_sessions... solo que ahora es para el vendedor".
         # So I should probably enforce single session too to match Superadmin behavior.
         
+        # 3. Check for existing session
         active_session = self.session_repository.get_active_session_for_vendedor(vendedor['id'])
         if active_session:
             # Check if expired
@@ -47,7 +48,13 @@ class VendedorSessionService:
             # If expired but distinct as valid, invalidate it to be clean
             self.session_repository.invalidate_session(active_session['id'])
 
-        # 4. Create Session
+        # 4. Update Last Login
+        # Update db and refresh variable to get new timestamp
+        updated_vendedor = self.vendedor_repository.update_last_login(vendedor['id'])
+        if updated_vendedor:
+            vendedor = updated_vendedor
+
+        # 5. Create Session
         jti = str(uuid.uuid4())
         self.session_repository.create_session(
             vendedor_id=vendedor['id'],
@@ -56,19 +63,33 @@ class VendedorSessionService:
             ip_address=ip_address
         )
 
-        # 5. Generate Token
+        # 6. Generate Token
         access_token = create_access_token(
             data={"sub": str(vendedor['id']), "sid": jti, "role": "vendedor"}
         )
         
         return {
-            "access_token": access_token, 
+            "access_token": access_token[0] if isinstance(access_token, tuple) else access_token, 
             "token_type": "bearer",
-            "vendedor": {
+            "user": {
                 "id": vendedor['id'],
                 "nombres": vendedor['nombres'],
+                "apellidos": vendedor['apellidos'],
                 "email": vendedor['email'],
-                "role": "vendedor"
+                "role": "vendedor",
+                "porcentaje_comision": float(vendedor['porcentaje_comision']) if vendedor['porcentaje_comision'] else 0,
+                "porcentaje_comision_inicial": float(vendedor['porcentaje_comision_inicial']) if vendedor['porcentaje_comision_inicial'] else 0,
+                "porcentaje_comision_recurrente": float(vendedor['porcentaje_comision_recurrente']) if vendedor['porcentaje_comision_recurrente'] else 0,
+                "tipo_comision": vendedor['tipo_comision'],
+                "telefono": vendedor['telefono'],
+                "documento_identidad": vendedor['documento_identidad'],
+                "puede_crear_empresas": vendedor['puede_crear_empresas'],
+                "puede_gestionar_planes": vendedor['puede_gestionar_planes'],
+                "puede_ver_reportes": vendedor['puede_ver_reportes'],
+                "activo": vendedor['activo'],
+                "created_at": vendedor['created_at'],
+                "updated_at": vendedor['updated_at'],
+                "last_login": vendedor['last_login']
             }
         }
 

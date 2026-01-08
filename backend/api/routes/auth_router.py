@@ -1,96 +1,62 @@
 import uuid
-from fastapi import APIRouter, Depends, HTTPException, Request
+from fastapi import APIRouter, Depends, HTTPException, Request, Body, Path, status
 from fastapi.security import OAuth2PasswordBearer
+from pydantic import BaseModel, EmailStr
 
 from database.connection import get_db_connection
 from dependencies.auth_dependencies import get_current_user
-from models.Usuario import UserLogin, UserRead
-from models.Vendedor import VendedorLogin, VendedorRead
-from services.user_session_service import end_user_session
-from services.user_service import UserService
-from services.vendedor_session_service import VendedorSessionService
-from services.vendedor_service import VendedorService
+from services.auth_service import AuthService
 from utils.responses import success_response, error_response
 
 router = APIRouter()
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/login")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/usuario/login")
 
-# Register endpoint moved to user_routes to handle permissions better
-# @router.post("/register", response_model=UserRead)
-# def register(user: UserRegister, service: UserService = Depends()):
-#     new_user = service.create_user(user)
-#     return new_user
+class UnifiedLoginRequest(BaseModel):
+    email: EmailStr
+    password: str
+
+@router.post("/{role}/login")
+def login(
+    request: Request,
+    role: str = Path(..., title="User Role", regex="^(usuario|vendedor|superadmin)$"),
+    credentials: UnifiedLoginRequest = Body(...),
+    auth_service: AuthService = Depends()
+):
+    """
+    Endpoint unificado de login para usuario, vendedor y superadmin.
+    """
+    return auth_service.login(role, credentials.model_dump(), request)
 
 
-@router.post("/login")
-def login(request: Request, user: UserLogin, service: UserService = Depends()):
-    ip_address = request.client.host
-    user_agent = request.headers.get("User-Agent")
-    return service.login_user(user.model_dump(), user_agent=user_agent, ip_address=ip_address)
-
-
-@router.post("/logout")
+@router.post("/{role}/logout")
 def logout(
     request: Request,
-    current_user=Depends(get_current_user),
-    conn=Depends(get_db_connection),
+    role: str = Path(..., regex="^(usuario|vendedor|superadmin)$"),
+    current_user: dict = Depends(get_current_user),
+    auth_service: AuthService = Depends()
 ):
-    payload = request.state.jwt_payload
-    session_id = payload.get("sid")
-
-    if not session_id:
-        raise HTTPException(
-            status_code=400, detail=error_response(400, "Token sin sesión asociada")
-        )
-
-    # Cerrar la sesión en BD
-    end_user_session(conn, session_id)
-
-    return {"message": "Sesión cerrada correctamente"}
+    """
+    Endpoint unificado de logout.
+    """
+    return auth_service.logout(role, request, current_user)
 
 
-@router.get("/me", response_model=UserRead)
-def read_me(current_user: dict = Depends(get_current_user)):
-    return current_user
-
-@router.post("/vendedor/login")
-def login_vendedor(
-    request: Request,
-    credentials: VendedorLogin,
-    session_service: VendedorSessionService = Depends()
+@router.get("/{role}/me")
+def read_me(
+    role: str = Path(..., regex="^(usuario|vendedor|superadmin)$"),
+    current_user: dict = Depends(get_current_user)
 ):
-    ip_address = request.client.host
-    user_agent = request.headers.get("user-agent")
+    """
+    Endpoint unificado para obtener perfil actual.
+    El 'role' en el path es principalmente para consistencia de API.
+    """
+    # Validar que el rol del token (AuthKeys) corresponda con el role del path si se desea.
+    # Por ahora se retorna el usuario autenticado que ya contiene la info.
     
-    result = session_service.login_vendedor(
-        email=credentials.email,
-        password=credentials.password,
-        request=request,
-        user_agent=user_agent,
-        ip_address=ip_address
-    )
-    return result
-
-@router.post("/vendedor/logout")
-def logout_vendedor(
-    request: Request,
-    current_user: dict = Depends(get_current_user),
-    session_service: VendedorSessionService = Depends()
-):
-    payload = request.state.jwt_payload
-    jti = payload.get("sid")
-    if jti:
-        session_service.logout_vendedor(jti)
-    return success_response("Sesión cerrada exitosamente")
-
-@router.get("/vendedor/me", response_model=VendedorRead)
-def get_current_vendedor_me(
-    current_user: dict = Depends(get_current_user),
-    vendedor_service: VendedorService = Depends()
-):
-    if not current_user.get("is_vendedor"):
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="No eres un vendedor"
-        )
-    return vendedor_service.get_vendedor(current_user["id"])
+    # SECURITY: Ensure password_hash is not returned
+    if "password_hash" in current_user:
+        current_user.pop("password_hash")
+    if "password" in current_user:
+        current_user.pop("password")
+        
+    return current_user

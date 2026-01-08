@@ -124,3 +124,12 @@ class VendedorRepository:
         with db_transaction(self.db) as cur:
             cur.execute("DELETE FROM vendedor WHERE id = %s RETURNING id", (str(vendedor_id),))
             return cur.fetchone()
+
+    def update_last_login(self, vendedor_id: UUID) -> Optional[dict]:
+        if not self.db: return None
+        with db_transaction(self.db) as cur:
+            cur.execute(
+                "UPDATE vendedor SET last_login = NOW() WHERE id = %s RETURNING *",
+                (str(vendedor_id),)
+            )
+            return cur.fetchone()
