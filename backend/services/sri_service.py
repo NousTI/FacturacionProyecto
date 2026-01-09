@@ -246,15 +246,6 @@ class SRIService:
             signed_xml = signer.sign_xml(xml_bytes)
             # signed_xml IS bytes
             
-            # --- DEBUG: SAVE XML TO FILE ---
-            try:
-                with open("last_signed_xml_debug.xml", "wb") as f:
-                    f.write(signed_xml)
-                print("DEBUG: XML firmado guardado en last_signed_xml_debug.xml")
-            except Exception as e:
-                print(f"DEBUG Error saving XML: {e}")
-            # -------------------------------
-
             signed_xml_b64 = base64.b64encode(signed_xml).decode('utf-8')
         except Exception as e:
             self._registrar_log(factura_id, 'FALLO', f"Error Firma XML: {str(e)}")

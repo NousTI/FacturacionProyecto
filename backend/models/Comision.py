@@ -33,6 +33,9 @@ class ComisionUpdate(BaseModel):
 
 class ComisionRead(ComisionBase):
     id: UUID
+    vendedor_nombre: Optional[str] = None
+    empresa_nombre: Optional[str] = None
+    monto_pago: Optional[Decimal] = None
     created_at: datetime
     updated_at: datetime
 

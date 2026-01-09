@@ -41,6 +41,11 @@ class SuperadminAuthStrategy(AuthStrategy):
         superadmin[AuthKeys.IS_USUARIO] = False
         superadmin[AuthKeys.ROL_ID] = -1 # Dummy ID for logic compatibility
         superadmin["role"] = "superadmin"
+        
+        # SECURITY: Ensure sensitive fields are not leaked
+        superadmin.pop("password", None)
+        superadmin.pop("password_hash", None)
+        
         return superadmin
 
 class VendedorAuthStrategy(AuthStrategy):
@@ -75,6 +80,11 @@ class VendedorAuthStrategy(AuthStrategy):
         vendedor[AuthKeys.IS_USUARIO] = False
         vendedor[AuthKeys.ROL_ID] = -2 # Dummy ID
         vendedor["role"] = "vendedor"
+        
+        # SECURITY: Ensure sensitive fields are not leaked
+        vendedor.pop("password", None)
+        vendedor.pop("password_hash", None)
+        
         return vendedor
 
 class UsuarioAuthStrategy(AuthStrategy):
@@ -110,4 +120,9 @@ class UsuarioAuthStrategy(AuthStrategy):
         user[AuthKeys.IS_USUARIO] = True
         user["role"] = "usuario"
         # user has 'rol_id' effectively
+
+        # SECURITY: Ensure sensitive fields are not leaked
+        user.pop("password", None)
+        user.pop("password_hash", None)
+        
         return user

@@ -97,7 +97,7 @@ class SuscripcionService:
         
         return result
 
-    def list_pagos(self, current_user: dict, estado: str = None) -> list:
+    def list_pagos(self, current_user: dict, estado: str = None, fecha_inicio: date = None, fecha_fin: date = None) -> list:
         is_superadmin = current_user.get(AuthKeys.IS_SUPERADMIN) or current_user.get("role") == "superadmin"
         
         empresa_id = None
@@ -106,12 +106,12 @@ class SuscripcionService:
             if not empresa_id:
                  return [] # Or raise error if user has no company
         
-        # If superadmin, empresa_id stays None (list all) unless we add filter param later
-        # The route only asks for 'estado', not 'empresa_id' filter for now. 
-        # If user wants to filter by company as superadmin, we might need to update route.
-        # But requirement says "Vista: Pagos Pendientes" (implies global list).
-        
-        pagos = self.suscripcion_repo.list_pagos(empresa_id=empresa_id, estado=estado)
+        pagos = self.suscripcion_repo.list_pagos(
+            empresa_id=empresa_id, 
+            estado=estado,
+            fecha_inicio=fecha_inicio,
+            fecha_fin=fecha_fin
+        )
         return pagos
 
     def approve_pago(self, pago_id: UUID, current_user: dict):
@@ -144,14 +144,7 @@ class SuscripcionService:
                  self.modulo_service.sync_empresa_modules(
                      pago['empresa_id'], 
                      pago['plan_id'], 
-                     pago['fecha_fin_periodo']  # Ensure repo returns this or we fetch it? 
-                     # Wait, get_pago_by_id usually joins? 
-                     # If 'pago' dict has these fields, great.
-                     # If not, we might need to fetch the Subscription details?
-                     # suscripcion_repo.approve_subscription USES these params to UPDATE db.
-                     # So we assume 'pago' record has specific dates if they were stored in 'pago_suscripcion' or 'suscripcion'?
-                     # Typically 'pago_suscripcion' has start/end date columns? 
-                     # If 'pago' is from 'pago_suscripcion' table:
+                     pago['fecha_fin_periodo']
                  )
              except Exception as e:
                  print(f"Error syncing modules approval: {e}")
@@ -159,6 +152,110 @@ class SuscripcionService:
              return {"message": "Pago aprobado y módulos sincronizados"}
         
         raise HTTPException(status_code=500, detail="Error approving")
+
+    def registrar_pago_rapido(self, data: 'PagoSuscripcionQuick', current_user: dict):
+        """
+        Registro simplificado para Superadmin:
+        - Calcula monto desde el Plan.
+        - Calcula fechas (extensión o inicio hoy).
+        - Marcado como COMPLETED automáticamente.
+        """
+        is_superadmin = current_user.get(AuthKeys.IS_SUPERADMIN) or current_user.get("role") == "superadmin"
+        if not is_superadmin:
+             raise HTTPException(status_code=403, detail="Acción exclusiva de Superadmin")
+
+        # 1. Obtener Plan
+        plan = self.plan_repo.get_plan(data.plan_id)
+        if not plan:
+             raise HTTPException(status_code=404, detail="Plan no encontrado")
+        
+        # 2. Obtener Empresa para ver vencimiento actual
+        from repositories.empresa_repository import EmpresaRepository
+        empresa_repo = EmpresaRepository(self.suscripcion_repo.db)
+        empresa = empresa_repo.get_empresa_by_id(data.empresa_id)
+        if not empresa:
+             raise HTTPException(status_code=404, detail="Empresa no encontrada")
+
+        # 3. Calcular Periodo
+        from datetime import datetime, timedelta, timezone
+        ahora = datetime.now(timezone.utc)
+        
+        # Usar valores manuales si vienen en la petición, de lo contrario calcular
+        monto_final = data.monto if data.monto is not None else plan['precio_mensual']
+        
+        if data.fecha_inicio_periodo:
+            fecha_inicio = data.fecha_inicio_periodo
+        else:
+            fecha_vencimiento_actual = empresa.get('fecha_vencimiento')
+            if fecha_vencimiento_actual and fecha_vencimiento_actual > ahora:
+                 fecha_inicio = fecha_vencimiento_actual
+            else:
+                 fecha_inicio = ahora
+        
+        if data.fecha_fin_periodo:
+            fecha_fin = data.fecha_fin_periodo
+        else:
+            fecha_fin = fecha_inicio + timedelta(days=30)
+
+        # 4. Preparar Datos del Pago
+        pago_dict = {
+            "empresa_id": data.empresa_id,
+            "plan_id": data.plan_id,
+            "monto": monto_final,
+            "fecha_pago": ahora,
+            "fecha_inicio_periodo": fecha_inicio,
+            "fecha_fin_periodo": fecha_fin,
+            "metodo_pago": data.metodo_pago,
+            "estado": PaymentStatus.COMPLETED.value,
+            "numero_comprobante": data.numero_comprobante,
+            "observaciones": data.observaciones or f"Pago registrado por Superadmin (ID: {current_user.get('id')})",
+            "registrado_por": current_user.get('id') if not is_superadmin else None
+        }
+
+        # 5. Comision
+        comision_data = self.comision_service.calculate_potential_commission(data.empresa_id, monto_final)
+
+        # 6. Guardar Atómicamente
+        result = self.suscripcion_repo.create_subscription_atomic(
+            pago_data=pago_dict,
+            empresa_id=data.empresa_id,
+            new_empresa_status=SubscriptionStatus.ACTIVA.value,
+            fecha_activacion=fecha_inicio,
+            fecha_vencimiento=fecha_fin,
+            cancel_previous_status=SubscriptionStatus.CANCELADA.value,
+            comision_data=comision_data
+        )
+
+        if result:
+            # Sincronizar Módulos
+            try:
+                self.modulo_service.sync_empresa_modules(data.empresa_id, data.plan_id, fecha_fin)
+            except Exception as e:
+                print(f"Error syncing modules in Quick Pay: {e}")
+
+        return result
+
+    def reject_pago(self, pago_id: UUID, observaciones: str, current_user: dict):
+        """
+        Rechaza un pago pendiente.
+        """
+        is_superadmin = current_user.get(AuthKeys.IS_SUPERADMIN) or current_user.get("role") == "superadmin"
+        if not is_superadmin:
+             raise HTTPException(status_code=403, detail="Solo superadmin")
+
+        pago = self.suscripcion_repo.get_pago_by_id(pago_id)
+        if not pago: raise HTTPException(status_code=404)
+        
+        if pago['estado'] != PaymentStatus.PENDING.value:
+             raise HTTPException(status_code=400, detail="Solo se pueden rechazar pagos PENDIENTES")
+
+        success = self.suscripcion_repo.update_pago_status(
+            pago_id=pago_id,
+            nuevo_estado=PaymentStatus.REJECTED.value,
+            observaciones=observaciones or f"Pago rechazado por Superadmin (ID: {current_user.get('id')})"
+        )
+        
+        return {"message": "Pago rechazado correctamente"} if success else {"error": "No se pudo actualizar"}
 
     def get_pago(self, pago_id: UUID, current_user: dict):
         pago = self.suscripcion_repo.get_pago_by_id(pago_id)

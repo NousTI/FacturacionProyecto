@@ -14,15 +14,24 @@ class ComisionRepository:
     def list_comisiones(self, vendedor_id: Optional[UUID] = None) -> List[dict]:
         if not self.db: return []
         
-        query = "SELECT * FROM comision"
+        query = """
+            SELECT 
+                c.*,
+                v.nombres || ' ' || v.apellidos as vendedor_nombre,
+                e.nombre_comercial as empresa_nombre,
+                p.monto as monto_pago
+            FROM comision c
+            JOIN vendedor v ON c.vendedor_id = v.id
+            JOIN pago_suscripcion p ON c.pago_suscripcion_id = p.id
+            JOIN empresa e ON p.empresa_id = e.id
+        """
         params = []
         
         if vendedor_id:
-            query += " WHERE vendedor_id = %s"
+            query += " WHERE c.vendedor_id = %s"
             params.append(str(vendedor_id))
             
-        # Optional: Order by date
-        query += " ORDER BY created_at DESC"
+        query += " ORDER BY c.created_at DESC"
         
         with self.db.cursor() as cur:
             cur.execute(query, tuple(params))

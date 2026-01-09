@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Output } from '@angular/core';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 
@@ -21,12 +21,7 @@ import { RouterModule } from '@angular/router';
           <div class="mb-4">
             <span class="text-uppercase text-secondary fw-bold small ps-3">Menu</span>
             <ul class="nav nav-pills flex-column mt-2">
-              <li class="nav-item mb-1">
-                <a href="#" (click)="onNavigate('dashboard', $event)" class="nav-link active d-flex align-items-center cursor-pointer" aria-current="page" style="background-color: #5a4bda;">
-                  <i class="bi bi-grid-fill me-2"></i>
-                  Dashboard
-                </a>
-              </li>
+              <!-- Removed Dashboard per user request -->
               <li class="nav-item mb-1">
                 <a href="#" class="nav-link link-dark d-flex align-items-center text-secondary hover-bg-light">
                   <i class="bi bi-file-text me-2"></i>
@@ -47,9 +42,23 @@ import { RouterModule } from '@angular/router';
               </li>
               <!-- Added for User Request -->
                <li class="nav-item mb-1">
-                <a href="#" (click)="onNavigate('empresas', $event)" class="nav-link link-dark d-flex align-items-center text-secondary hover-bg-light cursor-pointer">
+                <a href="#" (click)="onNavigate('empresas', $event)" 
+                   class="nav-link d-flex align-items-center cursor-pointer"
+                   [class.active]="activeView === 'empresas'"
+                   [ngClass]="activeView === 'empresas' ? 'text-white' : 'link-dark text-secondary hover-bg-light'"
+                   [style.background-color]="activeView === 'empresas' ? '#5a4bda' : 'transparent'">
                   <i class="bi bi-building me-2"></i>
                   Empresas
+                </a>
+              </li>
+              <li class="nav-item mb-1">
+                <a href="#" (click)="onNavigate('vendedores', $event)" 
+                   class="nav-link d-flex align-items-center cursor-pointer"
+                   [class.active]="activeView === 'vendedores'"
+                   [ngClass]="activeView === 'vendedores' ? 'text-white' : 'link-dark text-secondary hover-bg-light'"
+                   [style.background-color]="activeView === 'vendedores' ? '#5a4bda' : 'transparent'">
+                  <i class="bi bi-people me-2"></i>
+                  Equipo Ventas
                 </a>
               </li>
             </ul>
@@ -60,19 +69,27 @@ import { RouterModule } from '@angular/router';
             <span class="text-uppercase text-secondary fw-bold small ps-3">Financial</span>
             <ul class="nav nav-pills flex-column mt-2">
               <li class="nav-item mb-1">
-                <a href="#" class="nav-link link-dark d-flex align-items-center text-secondary hover-bg-light">
+                <a href="#" (click)="onNavigate('pagos', $event)" 
+                   class="nav-link d-flex align-items-center cursor-pointer"
+                   [class.active]="activeView === 'pagos'"
+                   [ngClass]="activeView === 'pagos' ? 'text-white' : 'link-dark text-secondary hover-bg-light'"
+                   [style.background-color]="activeView === 'pagos' ? '#5a4bda' : 'transparent'">
                   <i class="bi bi-wallet2 me-2"></i>
-                  Transactions
+                  Pagos Suscripción
                 </a>
               </li>
               <li class="nav-item mb-1">
-                <a href="#" class="nav-link link-dark d-flex align-items-center text-secondary hover-bg-light">
-                  <i class="bi bi-receipt me-2"></i>
-                  Invoices
+                <a href="#" (click)="onNavigate('comisiones', $event)" 
+                   class="nav-link d-flex align-items-center cursor-pointer"
+                   [class.active]="activeView === 'comisiones'"
+                   [ngClass]="activeView === 'comisiones' ? 'text-white' : 'link-dark text-secondary hover-bg-light'"
+                   [style.background-color]="activeView === 'comisiones' ? '#5a4bda' : 'transparent'">
+                  <i class="bi bi-percent me-2"></i>
+                  Comisiones
                 </a>
               </li>
             </ul>
-          </div>
+        </div>
 
            <!-- TOOLS -->
            <div class="mb-4">
@@ -143,6 +160,7 @@ import { RouterModule } from '@angular/router';
   `]
 })
 export class SidebarComponent {
+  @Input() activeView: string = 'dashboard';
   @Output() navigate = new EventEmitter<string>();
 
   onNavigate(page: string, event: Event) {

@@ -10,6 +10,7 @@ class PaymentStatus(str, Enum):
     COMPLETED = "COMPLETED"
     PENDING = "PENDING"
     FAILED = "FAILED"
+    REJECTED = "REJECTED"
     REFUNDED = "REFUNDED"
 
 class CommissionStatus(str, Enum):

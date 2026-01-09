@@ -12,7 +12,7 @@ class PagoSuscripcionBase(BaseModel):
     fecha_inicio_periodo: datetime
     fecha_fin_periodo: datetime
     metodo_pago: str
-    estado: str = "PAGADO"
+    estado: str = "COMPLETED"
     numero_comprobante: Optional[str] = None
     comprobante_url: Optional[str] = None
     observaciones: Optional[str] = None
@@ -23,8 +23,20 @@ class PagoSuscripcionCreate(PagoSuscripcionBase):
 
 class PagoSuscripcionRead(PagoSuscripcionBase):
     id: UUID
+    empresa_nombre: Optional[str] = None
+    plan_nombre: Optional[str] = None
     created_at: datetime
     updated_at: datetime
 
     class Config:
         from_attributes = True
+
+class PagoSuscripcionQuick(BaseModel):
+    empresa_id: UUID
+    plan_id: UUID
+    metodo_pago: str
+    monto: Optional[Decimal] = None
+    fecha_inicio_periodo: Optional[datetime] = None
+    fecha_fin_periodo: Optional[datetime] = None
+    numero_comprobante: Optional[str] = None
+    observaciones: Optional[str] = None

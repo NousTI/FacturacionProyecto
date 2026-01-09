@@ -2,6 +2,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 
 export interface Empresa {
     id: string;
@@ -40,12 +41,30 @@ export class EmpresaService {
     // Better to declare it here too or import.
     private apiUrl = 'http://localhost:8000/api/empresas';
 
-    getEmpresas(vendedorId?: string): Observable<Empresa[]> {
+    private empresasCache: Empresa[] | null = null;
+
+    getEmpresas(vendedorId?: string, forceReload: boolean = false): Observable<Empresa[]> {
+        if (this.empresasCache && !forceReload && !vendedorId) {
+            return new Observable(observer => {
+                observer.next(this.empresasCache!);
+                observer.complete();
+            });
+        }
+
         let params = new HttpParams();
         if (vendedorId) {
             params = params.set('vendedor_id', vendedorId);
         }
-        return this.http.get<Empresa[]>(this.apiUrl, { params });
+        return this.http.get<Empresa[]>(this.apiUrl, { params }).pipe(
+            map(empresas => {
+                if (!vendedorId) this.empresasCache = empresas;
+                return empresas;
+            })
+        );
+    }
+
+    clearCache() {
+        this.empresasCache = null;
     }
 
     createEmpresa(data: Partial<Empresa>): Observable<Empresa> {

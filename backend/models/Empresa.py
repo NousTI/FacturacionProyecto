@@ -1,14 +1,14 @@
 from uuid import UUID
 from datetime import date, datetime
 from typing import Optional, List
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, Field
 
 class EmpresaBase(BaseModel):
-    ruc: str
+    ruc: str = Field(..., pattern=r"^[0-9]{13}$")
     razon_social: str
     nombre_comercial: Optional[str] = None
     email: Optional[EmailStr] = None
-    telefono: Optional[str] = None
+    telefono: Optional[str] = Field(None, pattern=r"^([0-9]{10})?$")
     direccion: Optional[str] = None
     logo_url: Optional[str] = None
     activo: bool = True
@@ -23,11 +23,11 @@ class EmpresaCreate(EmpresaBase):
 
 class EmpresaUpdate(BaseModel):
     vendedor_id: Optional[UUID] = None
-    ruc: Optional[str] = None
+    ruc: Optional[str] = Field(None, pattern=r"^([0-9]{13})?$")
     razon_social: Optional[str] = None
     nombre_comercial: Optional[str] = None
     email: Optional[EmailStr] = None
-    telefono: Optional[str] = None
+    telefono: Optional[str] = Field(None, pattern=r"^([0-9]{10})?$")
     direccion: Optional[str] = None
     logo_url: Optional[str] = None
     activo: Optional[bool] = None

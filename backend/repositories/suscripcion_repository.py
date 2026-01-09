@@ -26,25 +26,38 @@ class SuscripcionRepository:
 
     # ... previously defined registration method ...
 
-    def list_pagos(self, empresa_id: UUID = None, estado: str = None):
+    def list_pagos(self, empresa_id: UUID = None, estado: str = None, fecha_inicio: Optional[date] = None, fecha_fin: Optional[date] = None):
         if not self.db: return []
         
-        query = "SELECT * FROM pago_suscripcion"
+        query = """
+            SELECT p.*, e.nombre_comercial as empresa_nombre, pl.nombre as plan_nombre
+            FROM pago_suscripcion p
+            JOIN empresa e ON p.empresa_id = e.id
+            JOIN plan pl ON p.plan_id = pl.id
+        """
         params = []
         conditions = []
         
         if empresa_id:
-            conditions.append("empresa_id = %s")
+            conditions.append("p.empresa_id = %s")
             params.append(str(empresa_id))
             
         if estado:
-            conditions.append("estado = %s")
+            conditions.append("p.estado = %s")
             params.append(estado)
+
+        if fecha_inicio:
+            conditions.append("p.fecha_pago >= %s")
+            params.append(fecha_inicio)
+
+        if fecha_fin:
+            conditions.append("p.fecha_pago <= %s")
+            params.append(fecha_fin)
             
         if conditions:
              query += " WHERE " + " AND ".join(conditions)
             
-        query += " ORDER BY fecha_pago DESC"
+        query += " ORDER BY p.fecha_pago DESC"
         
         with self.db.cursor() as cur:
             cur.execute(query, tuple(params))
@@ -203,3 +216,17 @@ class SuscripcionRepository:
         except Exception as e:
             print(f"Approval failed: {e}")
             raise e
+
+    def update_pago_status(self, pago_id: UUID, nuevo_estado: str, observaciones: str = None) -> bool:
+        if not self.db: return False
+        query = "UPDATE pago_suscripcion SET estado = %s, updated_at = NOW()"
+        params = [nuevo_estado]
+        if observaciones:
+            query += ", observaciones = %s"
+            params.append(observaciones)
+        query += " WHERE id = %s"
+        params.append(str(pago_id))
+        
+        with db_transaction(self.db) as cur:
+            cur.execute(query, tuple(params))
+            return cur.rowcount > 0

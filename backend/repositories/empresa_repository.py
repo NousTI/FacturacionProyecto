@@ -38,7 +38,7 @@ class EmpresaRepository:
                 FROM pago_suscripcion ps 
                 JOIN plan p ON ps.plan_id = p.id 
                 WHERE ps.empresa_id = e.id 
-                AND ps.estado = 'PAGADO' 
+                AND ps.estado IN ('PAGADO', 'COMPLETED') 
                 ORDER BY ps.fecha_inicio_periodo DESC 
                 LIMIT 1
             ) as plan,
@@ -46,7 +46,7 @@ class EmpresaRepository:
                 SELECT ps.plan_id 
                 FROM pago_suscripcion ps 
                 WHERE ps.empresa_id = e.id 
-                AND ps.estado = 'PAGADO' 
+                AND ps.estado IN ('PAGADO', 'COMPLETED') 
                 ORDER BY ps.fecha_inicio_periodo DESC 
                 LIMIT 1
             ) as plan_id,
@@ -54,7 +54,7 @@ class EmpresaRepository:
                 SELECT ps.fecha_inicio_periodo 
                 FROM pago_suscripcion ps 
                 WHERE ps.empresa_id = e.id 
-                AND ps.estado = 'PAGADO' 
+                AND ps.estado IN ('PAGADO', 'COMPLETED') 
                 ORDER BY ps.fecha_inicio_periodo DESC 
                 LIMIT 1
             ) as fecha_inicio_plan,
@@ -62,7 +62,7 @@ class EmpresaRepository:
                 SELECT ps.fecha_fin_periodo 
                 FROM pago_suscripcion ps 
                 WHERE ps.empresa_id = e.id 
-                AND ps.estado = 'PAGADO' 
+                AND ps.estado IN ('PAGADO', 'COMPLETED') 
                 ORDER BY ps.fecha_inicio_periodo DESC 
                 LIMIT 1
             ) as fecha_fin_plan
@@ -95,7 +95,7 @@ class EmpresaRepository:
                 FROM pago_suscripcion ps 
                 JOIN plan p ON ps.plan_id = p.id 
                 WHERE ps.empresa_id = e.id 
-                AND ps.estado = 'PAGADO' 
+                AND ps.estado IN ('PAGADO', 'COMPLETED') 
                 -- AND ps.fecha_fin_periodo >= NOW() -- Optional: strict check for active only? 
                 -- Let's show the last paid plan even if expired for now, or strict?
                 -- User usually wants to know "What plan are they on?". 
@@ -106,7 +106,7 @@ class EmpresaRepository:
                 SELECT ps.plan_id 
                 FROM pago_suscripcion ps 
                 WHERE ps.empresa_id = e.id 
-                AND ps.estado = 'PAGADO' 
+                AND ps.estado IN ('PAGADO', 'COMPLETED') 
                 ORDER BY ps.fecha_inicio_periodo DESC 
                 LIMIT 1
             ) as plan_id,
@@ -114,7 +114,7 @@ class EmpresaRepository:
                 SELECT ps.fecha_inicio_periodo 
                 FROM pago_suscripcion ps 
                 WHERE ps.empresa_id = e.id 
-                AND ps.estado = 'PAGADO' 
+                AND ps.estado IN ('PAGADO', 'COMPLETED') 
                 ORDER BY ps.fecha_inicio_periodo DESC 
                 LIMIT 1
             ) as fecha_inicio_plan,
@@ -122,7 +122,7 @@ class EmpresaRepository:
                 SELECT ps.fecha_fin_periodo 
                 FROM pago_suscripcion ps 
                 WHERE ps.empresa_id = e.id 
-                AND ps.estado = 'PAGADO' 
+                AND ps.estado IN ('PAGADO', 'COMPLETED') 
                 ORDER BY ps.fecha_inicio_periodo DESC 
                 LIMIT 1
             ) as fecha_fin_plan

@@ -1,14 +1,14 @@
 from uuid import UUID
 from datetime import datetime
 from typing import Optional, Dict, Any
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, Field
 
 class VendedorBase(BaseModel):
     email: EmailStr
     nombres: str
     apellidos: str
-    telefono: Optional[str] = None
-    documento_identidad: Optional[str] = None
+    telefono: Optional[str] = Field(None, pattern=r"^([0-9]{10})?$")
+    documento_identidad: Optional[str] = Field(None, pattern=r"^([0-9]{10})?$")
     porcentaje_comision: Optional[float] = None
     porcentaje_comision_inicial: Optional[float] = None
     porcentaje_comision_recurrente: Optional[float] = None
@@ -20,14 +20,14 @@ class VendedorBase(BaseModel):
     configuracion: Optional[Dict[str, Any]] = None
 
 class VendedorCreate(VendedorBase):
-    password: str
+    password: str = Field(..., min_length=6)
 
 class VendedorUpdate(BaseModel):
     email: Optional[EmailStr] = None
     nombres: Optional[str] = None
     apellidos: Optional[str] = None
-    telefono: Optional[str] = None
-    documento_identidad: Optional[str] = None
+    telefono: Optional[str] = Field(None, pattern=r"^([0-9]{10})?$")
+    documento_identidad: Optional[str] = Field(None, pattern=r"^([0-9]{10})?$")
     porcentaje_comision: Optional[float] = None
     porcentaje_comision_inicial: Optional[float] = None
     porcentaje_comision_recurrente: Optional[float] = None
@@ -37,7 +37,7 @@ class VendedorUpdate(BaseModel):
     puede_ver_reportes: Optional[bool] = None
     activo: Optional[bool] = None
     configuracion: Optional[Dict[str, Any]] = None
-    password: Optional[str] = None
+    password: Optional[str] = Field(None, min_length=6)
 
 class VendedorRead(VendedorBase):
     id: UUID
