@@ -8,17 +8,11 @@ import { FeedbackService } from '../../../../shared/services/feedback.service';
   standalone: true,
   imports: [CommonModule],
   template: `
-    <div class="container-fluid p-0" style="font-family: 'Inter', sans-serif;">
-      <div class="d-flex justify-content-between align-items-end mb-5">
-        <div>
-            <h5 class="text-uppercase text-muted small fw-bold mb-1" style="letter-spacing: 1px;">Suscripciones</h5>
-            <h1 class="display-6 fw-bold text-dark mb-0">Gestión de Pagos</h1>
-        </div>
-        <div class="d-flex gap-3">
-            <button class="btn btn-dark rounded-pill px-4 fw-bold" (click)="cargarPagos(true)">
+    <div class="pagos-content">
+      <div class="d-flex justify-content-end mb-4" header-actions>
+            <button class="btn btn-dark rounded-pill px-4 fw-bold shadow-sm border" (click)="cargarPagos(true)">
                 <i class="bi bi-arrow-clockwise me-2"></i> Actualizar
             </button>
-        </div>
       </div>
 
 

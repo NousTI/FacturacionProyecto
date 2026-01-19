@@ -10,13 +10,7 @@ import { ModalComponent } from '../../../../shared/components/modal/modal.compon
   standalone: true,
   imports: [CommonModule, FormsModule, ModalComponent],
   template: `
-    <div class="container-fluid p-0">
-      <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <h2 class="h4 mb-1 fw-bold">Gestión de Comisiones</h2>
-            <p class="text-muted small mb-0">Seguimiento y registro de pagos a vendedores por suscripciones.</p>
-        </div>
-      </div>
+    <div class="comisiones-content">
 
       <!-- SUMMARY -->
       <div class="row g-3 mb-4">

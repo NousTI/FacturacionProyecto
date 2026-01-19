@@ -193,9 +193,6 @@ class EmpresaRepository:
             rows = cur.fetchall()
             return [row[0] for row in rows] # Return list of UUIDs
 
-            cur.execute(query, (new_status, str(empresa_id)))
-            return cur.rowcount > 0
-
     def check_expired_subscriptions(self) -> int:
         if not self.db: return 0
         query = """

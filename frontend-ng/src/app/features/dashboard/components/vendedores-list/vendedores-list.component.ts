@@ -2,6 +2,7 @@ import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { VendedorService, Vendedor } from '../../../../core/services/vendedor.service';
+import { ComisionService, Comision } from '../../../../core/services/comision.service';
 import { FeedbackService } from '../../../../shared/services/feedback.service';
 import { ModalComponent } from '../../../../shared/components/modal/modal.component';
 
@@ -10,104 +11,203 @@ import { ModalComponent } from '../../../../shared/components/modal/modal.compon
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule, FormsModule, ModalComponent],
   template: `
-    <div class="container-fluid p-0">
-      <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <h2 class="h4 mb-1 fw-bold">Equipo de Ventas</h2>
-            <p class="text-muted small mb-0">Gestiona los vendedores y sus configuraciones de comisiones.</p>
-        </div>
-        <button class="btn btn-primary rounded-3 px-4 fw-bold shadow-sm" 
-                style="background-color: #5a4bda; border: none;"
-                (click)="openCreateModal()">
-          <i class="bi bi-person-plus-fill me-2"></i> Nuevo Vendedor
+    <div class="vendedores-content">
+      
+      <!-- TABS -->
+      <div class="d-flex mb-4 gap-3 border-bottom pb-2">
+        <button class="btn rounded-pill px-4 fw-bold transition-all" 
+                [ngClass]="activeTab() === 'equipo' ? 'btn-dark shadow-sm' : 'btn-light text-muted bg-transparent border-0'"
+                (click)="activeTab.set('equipo')">
+          <i class="bi bi-people-fill me-2"></i> Mi Equipo
+        </button>
+        <button class="btn rounded-pill px-4 fw-bold transition-all" 
+                [ngClass]="activeTab() === 'comisiones' ? 'btn-dark shadow-sm' : 'btn-light text-muted bg-transparent border-0'"
+                (click)="activeTab.set('comisiones')">
+          <i class="bi bi-cash-stack me-2"></i> Gestión de Comisiones
         </button>
       </div>
 
-      <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
-        <div class="table-responsive">
-          <table class="table table-hover align-middle mb-0">
-            <thead class="bg-light text-secondary small text-uppercase">
-              <tr>
-                <th class="ps-4">Vendedor</th>
-                <th>Contacto</th>
-                <th>Comisiones (I/R)</th>
-                <th>Permisos</th>
-                <th>Estado</th>
-                <th class="text-end pe-4">Acciones</th>
-              </tr>
-            </thead>
-            <tbody class="border-top-0">
-              @for (vendedor of vendedores(); track vendedor.id) {
-              <tr>
-                <td class="ps-4">
-                  <div class="d-flex align-items-center">
-                    <div class="avatar bg-primary bg-opacity-10 text-primary rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 40px; height: 40px;">
-                      <i class="bi bi-person-badge"></i>
-                    </div>
-                    <div>
-                      <div class="fw-bold text-dark">{{ vendedor.nombres }} {{ vendedor.apellidos }}</div>
-                      <div class="small text-muted">{{ vendedor.email }}</div>
-                    </div>
-                  </div>
-                </td>
-                <td>
-                  <div class="small text-dark"><i class="bi bi-telephone me-1 text-muted"></i> {{ vendedor.telefono || 'N/A' }}</div>
-                  <div class="small text-muted"><i class="bi bi-card-text me-1"></i> {{ vendedor.documento_identidad || 'N/A' }}</div>
-                </td>
-                <td>
-                  <div>
-                    <span class="badge bg-success-subtle text-success border border-success-subtle me-1">
-                      {{ vendedor.porcentaje_comision_inicial || 0 }}% I
-                    </span>
-                    <span class="badge bg-info-subtle text-info border border-info-subtle">
-                      {{ vendedor.porcentaje_comision_recurrente || 0 }}% R
-                    </span>
-                  </div>
-                  <div class="small text-muted mt-1">{{ vendedor.tipo_comision || 'FIJO' }}</div>
-                </td>
-                <td>
-                  <div class="d-flex gap-1 flex-wrap" style="max-width: 200px;">
-                    <span *ngIf="vendedor.puede_crear_empresas" class="badge bg-light text-dark border small" title="Crear Empresas">Empresas</span>
-                    <span *ngIf="vendedor.puede_gestionar_planes" class="badge bg-light text-dark border small" title="Gestionar Planes">Planes</span>
-                    <span *ngIf="vendedor.puede_ver_reportes" class="badge bg-light text-dark border small" title="Ver Reportes">Reportes</span>
-                  </div>
-                </td>
-                <td>
-                  <span class="badge rounded-pill px-3 py-1 fw-bold" 
-                        [ngClass]="vendedor.activo ? 'bg-success-subtle text-success border border-success' : 'bg-danger-subtle text-danger border border-danger'">
-                    {{ vendedor.activo ? 'ACTIVO' : 'INACTIVO' }}
-                  </span>
-                </td>
-                <td class="text-end pe-4">
-                  <div class="btn-group shadow-sm rounded-3">
-                    <button class="btn btn-white btn-sm border" (click)="openEditModal(vendedor)" title="Editar">
-                      <i class="bi bi-pencil-square text-primary"></i>
-                    </button>
-                    <button class="btn btn-white btn-sm border" (click)="deleteVendedor(vendedor)" title="Eliminar">
-                      <i class="bi bi-trash text-danger"></i>
-                    </button>
-                  </div>
-                </td>
-              </tr>
-              }
-              @if (vendedores().length === 0) {
-              <tr>
-                <td colspan="6" class="text-center py-5 text-secondary">
-                  <i class="bi bi-people h1 d-block mb-3 opacity-25"></i>
-                  No hay vendedores registrados aún.
-                </td>
-              </tr>
-              }
-            </tbody>
-          </table>
+      <!-- VENDEDORES TAB -->
+      @if (activeTab() === 'equipo') {
+        <div class="d-flex justify-content-end mb-4 fade-in">
+            <button class="btn btn-dark rounded-pill px-4 fw-bold shadow-sm" (click)="openCreateModal()">
+            <i class="bi bi-person-plus-fill me-2"></i> Nuevo Vendedor
+            </button>
         </div>
-      </div>
+
+        <div class="card border-0 shadow-sm rounded-4 overflow-hidden fade-in">
+            <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="bg-light text-secondary small text-uppercase">
+                <tr>
+                    <th class="ps-4">Vendedor</th>
+                    <th>Contacto</th>
+                    <th>Comisiones (I/R)</th>
+                    <th>Permisos</th>
+                    <th>Estado</th>
+                    <th class="text-end pe-4">Acciones</th>
+                </tr>
+                </thead>
+                <tbody class="border-top-0">
+                @for (vendedor of vendedores(); track vendedor.id) {
+                <tr>
+                    <td class="ps-4">
+                    <div class="d-flex align-items-center">
+                        <div class="avatar bg-primary bg-opacity-10 text-primary rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 40px; height: 40px;">
+                        <i class="bi bi-person-badge"></i>
+                        </div>
+                        <div>
+                        <div class="fw-bold text-dark">{{ vendedor.nombres }} {{ vendedor.apellidos }}</div>
+                        <div class="small text-muted">{{ vendedor.email }}</div>
+                        </div>
+                    </div>
+                    </td>
+                    <td>
+                    <div class="small text-dark"><i class="bi bi-telephone me-1 text-muted"></i> {{ vendedor.telefono || 'N/A' }}</div>
+                    <div class="small text-muted"><i class="bi bi-card-text me-1"></i> {{ vendedor.documento_identidad || 'N/A' }}</div>
+                    </td>
+                    <td>
+                    <div>
+                        <span class="badge bg-success-subtle text-success border border-success-subtle me-1">
+                        {{ vendedor.porcentaje_comision_inicial || 0 }}% I
+                        </span>
+                        <span class="badge bg-info-subtle text-info border border-info-subtle">
+                        {{ vendedor.porcentaje_comision_recurrente || 0 }}% R
+                        </span>
+                    </div>
+                    <div class="small text-muted mt-1">{{ vendedor.tipo_comision || 'FIJO' }}</div>
+                    </td>
+                    <td>
+                    <div class="d-flex gap-1 flex-wrap" style="max-width: 200px;">
+                        <span *ngIf="vendedor.puede_crear_empresas" class="badge bg-light text-dark border small" title="Crear Empresas">Empresas</span>
+                        <span *ngIf="vendedor.puede_gestionar_planes" class="badge bg-light text-dark border small" title="Gestionar Planes">Planes</span>
+                        <span *ngIf="vendedor.puede_ver_reportes" class="badge bg-light text-dark border small" title="Ver Reportes">Reportes</span>
+                    </div>
+                    </td>
+                    <td>
+                    <span class="badge rounded-pill px-3 py-1 fw-bold" 
+                            [ngClass]="vendedor.activo ? 'bg-success-subtle text-success border border-success' : 'bg-danger-subtle text-danger border border-danger'">
+                        {{ vendedor.activo ? 'ACTIVO' : 'INACTIVO' }}
+                    </span>
+                    </td>
+                    <td class="text-end pe-4">
+                    <div class="btn-group shadow-sm rounded-3">
+                        <button class="btn btn-white btn-sm border" (click)="openEditModal(vendedor)" title="Editar">
+                        <i class="bi bi-pencil-square text-primary"></i>
+                        </button>
+                        <button class="btn btn-white btn-sm border" (click)="deleteVendedor(vendedor)" title="Eliminar">
+                        <i class="bi bi-trash text-danger"></i>
+                        </button>
+                    </div>
+                    </td>
+                </tr>
+                }
+                @if (vendedores().length === 0) {
+                <tr>
+                    <td colspan="6" class="text-center py-5 text-secondary">
+                    <i class="bi bi-people h1 d-block mb-3 opacity-25"></i>
+                    No hay vendedores registrados aún.
+                    </td>
+                </tr>
+                }
+                </tbody>
+            </table>
+            </div>
+        </div>
+      }
+
+      <!-- COMISIONES TAB -->
+      @if (activeTab() === 'comisiones') {
+        <div class="fade-in">
+            <!-- SUMMARY -->
+            <div class="row g-3 mb-4">
+                <div class="col-md-4">
+                    <div class="card border-0 shadow-sm rounded-4 p-3 bg-white h-100">
+                        <div class="small text-muted fw-bold text-uppercase mb-1">Total Pendiente</div>
+                        <div class="h3 mb-0 fw-bold text-warning">$ {{ totalPendiente() }}</div>
+                        <div class="small text-muted mt-2">Por pagar a vendedores</div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card border-0 shadow-sm rounded-4 p-3 bg-white h-100">
+                        <div class="small text-muted fw-bold text-uppercase mb-1">Pagado este Mes</div>
+                        <div class="h3 mb-0 fw-bold text-success">$ {{ totalPagadoMes() }}</div>
+                        <div class="small text-muted mt-2">Comisiones desembolsadas</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+                <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="bg-light text-secondary small text-uppercase">
+                    <tr>
+                        <th class="ps-4">Vendedor</th>
+                        <th>Concepto / Empresa</th>
+                        <th>Comisión</th>
+                        <th>Estado</th>
+                        <th>Fecha Generación</th>
+                        <th class="text-end pe-4">Acciones</th>
+                    </tr>
+                    </thead>
+                    <tbody class="border-top-0">
+                    @for (com of comisiones(); track com.id) {
+                    <tr>
+                        <td class="ps-4">
+                        <div class="fw-bold text-dark">{{ com.vendedor_nombre }}</div>
+                        </td>
+                        <td>
+                        <div class="small text-dark fw-medium">{{ com.empresa_nombre }}</div>
+                        <div class="small text-muted">Pago Base: $ {{ com.monto_pago }}</div>
+                        </td>
+                        <td>
+                        <div class="fw-bold text-primary">$ {{ com.monto }}</div>
+                        <div class="small text-muted">({{ com.porcentaje_aplicado }}%)</div>
+                        </td>
+                        <td>
+                        <span class="status-badge" [ngClass]="getStatusClass(com.estado)">
+                            {{ getStatusLabel(com.estado) }}
+                        </span>
+                        </td>
+                        <td>
+                        <div class="small text-dark">{{ com.fecha_generacion | date:'dd/MM/yyyy' }}</div>
+                        </td>
+                        <td class="text-end pe-4">
+                        <button *ngIf="com.estado === 'PENDIENTE'" 
+                                class="btn btn-primary btn-sm rounded-3 px-3 shadow-sm"
+                                style="background-color: #00ca72; border: none;"
+                                (click)="openPayModal(com)">
+                            Registrar Pago
+                        </button>
+                        <button *ngIf="com.estado === 'PAGADA'" 
+                                class="btn btn-light btn-sm rounded-3 px-3 border"
+                                (click)="openPayModal(com)">
+                            Ver Detalles
+                        </button>
+                        </td>
+                    </tr>
+                    }
+                    @if (comisiones().length === 0) {
+                    <tr>
+                        <td colspan="6" class="text-center py-5 text-secondary">
+                        <i class="bi bi-cash-coin h1 d-block mb-3 opacity-25"></i>
+                        No hay comisiones registradas.
+                        </td>
+                    </tr>
+                    }
+                    </tbody>
+                </table>
+                </div>
+            </div>
+        </div>
+      }
     </div>
 
-    <!-- FORM MODAL -->
+    <!-- VENDEDOR FORM MODAL -->
     @if (formModalOpen()) {
     <app-modal [title]="selectedVendedor() ? 'Editar Vendedor' : 'Nuevo Vendedor'" [size]="'lg'" (close)="closeModal()">
         <form [formGroup]="vendedorForm" (ngSubmit)="saveVendedor()" class="px-2">
+            <!-- Form fields same as before, truncated for brevity in replacement but preserved in logic -->
             <div class="row g-3">
                 <div class="col-md-6">
                     <label class="form-label small fw-bold text-uppercase text-secondary">Nombres</label>
@@ -128,7 +228,7 @@ import { ModalComponent } from '../../../../shared/components/modal/modal.compon
                            placeholder="Min. 6 caracteres" style="border-radius: 10px;">
                     <div class="invalid-feedback">La contraseña debe tener al menos 6 caracteres.</div>
                 </div>
-                <!-- ... existing email field ... -->
+                
                 <div class="col-md-6">
                     <label class="form-label small fw-bold text-uppercase text-secondary">Teléfono</label>
                     <input type="text" class="form-control border-2" formControlName="telefono" 
@@ -214,23 +314,104 @@ import { ModalComponent } from '../../../../shared/components/modal/modal.compon
         </form>
     </app-modal>
     }
+
+    <!-- PAYMENT MODAL -->
+    @if (payModalOpen()) {
+    <app-modal [title]="selectedComision()?.estado === 'PAGADA' ? 'Detalle de Pago' : 'Registrar Pago de Comisión'" [size]="'md'" (close)="closePayModal()">
+        <div class="px-2">
+            <div class="p-3 bg-light rounded-4 mb-4 border shadow-sm">
+                <div class="row g-2">
+                    <div class="col-6">
+                        <div class="small text-muted">Vendedor</div>
+                        <div class="fw-bold">{{ selectedComision()?.vendedor_nombre }}</div>
+                    </div>
+                    <div class="col-6 text-end">
+                        <div class="small text-muted">Monto a Pagar</div>
+                        <div class="h4 mb-0 fw-bold text-primary">$ {{ selectedComision()?.monto }}</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label small fw-bold text-secondary text-uppercase">Método de Pago</label>
+                <select class="form-select border-2" [(ngModel)]="paymentMethod" 
+                        [disabled]="selectedComision()?.estado === 'PAGADA'" style="border-radius: 10px;">
+                    <option value="TRANSFERENCIA">Transferencia Bancaria</option>
+                    <option value="EFECTIVO">Efectivo</option>
+                    <option value="CHEQUE">Cheque</option>
+                    <option value="OTRO">Otro</option>
+                </select>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label small fw-bold text-secondary text-uppercase">Fecha de Pago</label>
+                <input type="date" class="form-control border-2" [(ngModel)]="paymentDate"
+                       [disabled]="selectedComision()?.estado === 'PAGADA'" style="border-radius: 10px;">
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label small fw-bold text-secondary text-uppercase">Observaciones / Referencia</label>
+                <textarea class="form-control border-2" rows="3" [(ngModel)]="paymentObs"
+                          [disabled]="selectedComision()?.estado === 'PAGADA'"
+                          placeholder="Nro de comprobante, banco, etc..." style="border-radius: 10px;"></textarea>
+            </div>
+        </div>
+
+        <ng-container footer>
+            <button class="btn btn-light rounded-3 px-4" (click)="closePayModal()">Cerrar</button>
+            <button *ngIf="selectedComision()?.estado === 'PENDIENTE'"
+                    class="btn btn-primary rounded-3 px-4 shadow-sm" [disabled]="saving()" (click)="confirmPayment()" 
+                    style="background-color: #5a4bda; border: none;">
+                {{ saving() ? 'Procesando...' : 'Confirmar Pago' }}
+            </button>
+        </ng-container>
+    </app-modal>
+    }
   `,
   styles: [`
     .table th { border: none; font-weight: 600; font-size: 0.75rem; color: #6c757d; }
     .table td { padding: 1.25rem 0.5rem; border-color: #f1f3f5; }
     .avatar { font-size: 1.25rem; }
     .badge { font-weight: 600; letter-spacing: 0.3px; }
+    .transition-all { transition: all 0.2s ease; }
+    .fade-in { animation: fadeIn 0.3s ease-out; }
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(5px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .status-badge {
+        display: inline-block;
+        padding: 0.35rem 0.75rem;
+        font-size: 0.75rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        border-radius: 6px;
+        border: 2px solid;
+        color: #000 !important;
+        min-width: 100px;
+        text-align: center;
+    }
+
+    .status-pending { background-color: #fff4e5; border-color: #ffb347; }
+    .status-completed, .status-pagada { background-color: #e6f9ed; border-color: #00ca72; }
+    .status-canceled { background-color: #f4f4f4; border-color: #6c757d; }
   `]
 })
 export class VendedoresListComponent implements OnInit {
   private fb = inject(FormBuilder);
   private vendedorService = inject(VendedorService);
+  private comService = inject(ComisionService);
   private feedback = inject(FeedbackService);
 
+  // General State
+  activeTab = signal<'equipo' | 'comisiones'>('equipo');
+  saving = signal(false);
+
+  // VENDEDORES STATE
   vendedores = signal<Vendedor[]>([]);
   formModalOpen = signal(false);
   selectedVendedor = signal<Vendedor | null>(null);
-  saving = signal(false);
 
   vendedorForm: FormGroup = this.fb.group({
     nombres: ['', Validators.required],
@@ -249,10 +430,31 @@ export class VendedoresListComponent implements OnInit {
     activo: [true]
   });
 
+  // COMISIONES STATE
+  comisiones = signal<Comision[]>([]);
+  payModalOpen = signal(false);
+  selectedComision = signal<Comision | null>(null);
+
+  paymentMethod = 'TRANSFERENCIA';
+  paymentDate = new Date().toISOString().split('T')[0];
+  paymentObs = '';
+
+  readonly STATUS_CONFIG: { [key: string]: { label: string, class: string } } = {
+    'PENDIENTE': { label: 'Pendiente', class: 'status-pending' },
+    'PAGADA': { label: 'Pagada', class: 'status-pagada' },
+    'CANCELADA': { label: 'Cancelada', class: 'status-canceled' }
+  };
+
   ngOnInit() {
-    this.cargarVendedores();
+    this.cargarData();
   }
 
+  cargarData() {
+    this.cargarVendedores();
+    this.cargarComisiones();
+  }
+
+  // --- VENDEDORES LOGIC ---
   cargarVendedores() {
     this.vendedorService.getVendedores().subscribe({
       next: (data) => this.vendedores.set(data),
@@ -293,7 +495,6 @@ export class VendedoresListComponent implements OnInit {
 
     const data = { ...this.vendedorForm.value };
 
-    // Si estamos editando y la contraseña está vacía, no la enviamos
     if (this.selectedVendedor() && !data.password) {
       delete data.password;
     }
@@ -307,10 +508,6 @@ export class VendedoresListComponent implements OnInit {
       },
       error: (err: any) => {
         this.saving.set(false);
-        console.error('ERROR DETALLADO VENDEDOR:', err);
-        if (err.error && err.error.detail) {
-          console.error('DETALLE DE VALIDACIÓN:', err.error.detail);
-        }
         this.feedback.showError('Error: ' + (err.error?.detail?.[0]?.msg || err.error?.detail || 'Operación fallida'));
       }
     };
@@ -332,5 +529,81 @@ export class VendedoresListComponent implements OnInit {
         error: () => this.feedback.showError('No se pudo eliminar el vendedor')
       });
     }
+  }
+
+  // --- COMISIONES LOGIC ---
+  cargarComisiones() {
+    this.comService.getComisiones().subscribe({
+      next: (data) => this.comisiones.set(data),
+      error: () => console.warn('Error al cargar comisiones iniciales') // Fail silently initially or show error
+    });
+  }
+
+  getStatusLabel(estado: string): string {
+    return this.STATUS_CONFIG[estado]?.label || estado;
+  }
+
+  getStatusClass(estado: string): string {
+    return this.STATUS_CONFIG[estado]?.class || '';
+  }
+
+  openPayModal(com: Comision) {
+    this.selectedComision.set(com);
+    if (com.estado === 'PAGADA') {
+      this.paymentMethod = com.metodo_pago || 'TRANSFERENCIA';
+      this.paymentDate = com.fecha_pago || '';
+      this.paymentObs = com.observaciones || '';
+    } else {
+      this.paymentMethod = 'TRANSFERENCIA';
+      this.paymentDate = new Date().toISOString().split('T')[0];
+      this.paymentObs = '';
+    }
+    this.payModalOpen.set(true);
+  }
+
+  closePayModal() {
+    this.payModalOpen.set(false);
+  }
+
+  confirmPayment() {
+    if (!this.selectedComision()) return;
+    this.saving.set(true);
+
+    this.comService.updateComision(this.selectedComision()!.id, {
+      estado: 'PAGADA',
+      metodo_pago: this.paymentMethod,
+      fecha_pago: this.paymentDate,
+      observaciones: this.paymentObs
+    }).subscribe({
+      next: () => {
+        this.saving.set(false);
+        this.closePayModal();
+        this.cargarComisiones();
+        this.feedback.showSuccess('Pago registrado exitosamente');
+      },
+      error: (err) => {
+        this.saving.set(false);
+        this.feedback.showError('Error al registrar pago');
+      }
+    });
+  }
+
+  totalPendiente() {
+    return this.comisiones()
+      .filter(c => c.estado === 'PENDIENTE')
+      .reduce((sum, c) => sum + Number(c.monto), 0)
+      .toFixed(2);
+  }
+
+  totalPagadoMes() {
+    const ahora = new Date();
+    return this.comisiones()
+      .filter(c => {
+        if (c.estado !== 'PAGADA' || !c.fecha_pago) return false;
+        const f = new Date(c.fecha_pago);
+        return f.getMonth() === ahora.getMonth() && f.getFullYear() === ahora.getFullYear();
+      })
+      .reduce((sum, c) => sum + Number(c.monto), 0)
+      .toFixed(2);
   }
 }

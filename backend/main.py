@@ -162,6 +162,9 @@ app.include_router(sri_router, prefix="/api/sri", tags=["SRI"])
 app.include_router(configuracion_sri_router, prefix="/api/configuracion-sri", tags=["Configuración SRI"])
 app.include_router(modulo_router, tags=["Módulos"])
 
+from api.routes.dashboard_routes import router as dashboard_router
+app.include_router(dashboard_router)
+
 from api.routes.forma_pago_routes import router as forma_pago_router
 app.include_router(forma_pago_router, prefix="/api", tags=["Forma Pago"])
 

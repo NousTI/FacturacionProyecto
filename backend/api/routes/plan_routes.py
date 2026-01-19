@@ -8,6 +8,19 @@ from dependencies.superadmin_dependencies import get_current_superadmin
 
 router = APIRouter()
 
+@router.put("/reorder", status_code=status.HTTP_200_OK)
+def reorder_plans(
+    order_updates: List[dict],
+    service: PlanService = Depends(),
+    current_superadmin = Depends(get_current_superadmin)
+):
+    """
+    Recibe una lista de objetos { "id": "uuid", "orden": int }
+    Actualiza el orden de los planes en bloque.
+    """
+    service.reorder_plans(order_updates)
+    return {"message": "Orden actualizado correctamente"}
+
 @router.post("/", response_model=PlanRead, status_code=status.HTTP_201_CREATED)
 def create_plan(
     plan: PlanCreate,
@@ -48,3 +61,11 @@ def delete_plan(
 ):
     service.delete_plan(plan_id)
     return {"message": "Plan eliminado correctamente"}
+
+@router.get("/{plan_id}/companies", response_model=List[dict])
+def get_plan_companies(
+    plan_id: UUID,
+    service: PlanService = Depends(),
+    current_superadmin = Depends(get_current_superadmin)
+):
+    return service.get_companies_by_plan(plan_id)

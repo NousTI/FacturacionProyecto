@@ -21,9 +21,9 @@ class ComisionRepository:
                 e.nombre_comercial as empresa_nombre,
                 p.monto as monto_pago
             FROM comision c
-            JOIN vendedor v ON c.vendedor_id = v.id
-            JOIN pago_suscripcion p ON c.pago_suscripcion_id = p.id
-            JOIN empresa e ON p.empresa_id = e.id
+            LEFT JOIN vendedor v ON c.vendedor_id = v.id
+            LEFT JOIN pago_suscripcion p ON c.pago_suscripcion_id = p.id
+            LEFT JOIN empresa e ON p.empresa_id = e.id
         """
         params = []
         

@@ -1,18 +1,18 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, Input, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { AuthService } from '../../../../core/auth/auth.service';
 import { FeedbackService } from '../../../../shared/services/feedback.service';
 
 @Component({
-    selector: 'app-header',
-    standalone: true,
-    imports: [CommonModule],
-    template: `
-    <div class="header d-flex justify-content-between align-items-center px-4 py-3 bg-light bg-opacity-50">
+  selector: 'app-header',
+  standalone: true,
+  imports: [CommonModule],
+  template: `
+    <div class="header d-flex justify-content-between align-items-center px-4 pt-3 pb-1 bg-light bg-opacity-50">
       <div>
-        <h1 class="h4 fw-bold mb-1 text-dark">Sales Report</h1>
-        <p class="text-secondary small mb-0">Friday, December 15th 2023</p>
+        <h1 class="h4 fw-bold mb-1 text-dark">{{ title }}</h1>
+        <p class="text-secondary small mb-0">{{ subtitle }}</p>
       </div>
 
       <div class="d-flex align-items-center gap-3">
@@ -62,32 +62,35 @@ import { FeedbackService } from '../../../../shared/services/feedback.service';
       </div>
     </div>
   `,
-    styles: [`
+  styles: [`
     .menu-item:hover { background-color: #f3f4f6; }
     .menu-item.text-danger:hover { background-color: #fef2f2; }
   `]
 })
 export class HeaderComponent {
-    authService = inject(AuthService);
-    feedback = inject(FeedbackService);
-    router = inject(Router);
+  @Input() title: string = 'Dashboard';
+  @Input() subtitle: string = 'Bienvenido de nuevo';
 
-    isProfileOpen = signal(false);
-    user = this.authService.currentUser;
+  authService = inject(AuthService);
+  feedback = inject(FeedbackService);
+  router = inject(Router);
 
-    toggleProfile() {
-        this.isProfileOpen.update(v => !v);
-    }
+  isProfileOpen = signal(false);
+  user = this.authService.currentUser;
 
-    navigateToProfile() {
-        this.router.navigate(['/perfil']);
-    }
+  toggleProfile() {
+    this.isProfileOpen.update(v => !v);
+  }
 
-    logout() {
-        this.feedback.showLoading('Cerrando sesión...');
-        this.authService.logout().subscribe(() => {
-            this.feedback.hideLoading();
-            this.feedback.showSuccess('Has cerrado sesión correctamente');
-        });
-    }
+  navigateToProfile() {
+    this.router.navigate(['/perfil']);
+  }
+
+  logout() {
+    this.feedback.showLoading('Cerrando sesión...');
+    this.authService.logout().subscribe(() => {
+      this.feedback.hideLoading();
+      this.feedback.showSuccess('Has cerrado sesión correctamente');
+    });
+  }
 }
