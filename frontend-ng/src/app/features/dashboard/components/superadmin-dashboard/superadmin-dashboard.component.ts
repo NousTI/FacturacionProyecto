@@ -9,6 +9,7 @@ import { VendedoresListComponent } from '../vendedores-list/vendedores-list.comp
 import { ComisionesListComponent } from '../comisiones-list/comisiones-list.component';
 import { ResumenGeneralComponent } from '../resumen-general/resumen-general.component';
 import { PlanesListComponent } from '../planes-list/planes-list.component';
+import { ConfiguracionSistemaComponent } from '../configuracion-sistema/configuracion-sistema.component';
 import { DashboardModuleShellComponent } from '../widgets/dashboard-module-shell/dashboard-module-shell.component';
 import { AuthService } from '../../../../core/auth/auth.service';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -16,7 +17,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 @Component({
   selector: 'app-superadmin-dashboard',
   standalone: true,
-  imports: [CommonModule, SidebarComponent, HeaderComponent, EmpresasListComponent, PagosSuscripcionListComponent, VendedoresListComponent, ComisionesListComponent, PlanesListComponent, ResumenGeneralComponent, DashboardModuleShellComponent],
+  imports: [CommonModule, SidebarComponent, HeaderComponent, EmpresasListComponent, PagosSuscripcionListComponent, VendedoresListComponent, ComisionesListComponent, PlanesListComponent, ResumenGeneralComponent, ConfiguracionSistemaComponent, DashboardModuleShellComponent],
   template: `
     <div class="d-flex min-vh-100" style="background-color: #f8f9fa; font-family: 'Inter', system-ui, sans-serif;">
       
@@ -52,6 +53,8 @@ import { ActivatedRoute, Router } from '@angular/router';
                     <app-comisiones-list></app-comisiones-list>
                 } @else if (currentView() === 'planes') {
                     <app-planes-list></app-planes-list>
+                } @else if (currentView() === 'configuracion') {
+                    <app-configuracion-sistema></app-configuracion-sistema>
                 } @else {
                     <!-- Placeholders for new modules -->
                     <div class="card border-0 rounded-4 p-5 text-center shadow-sm">

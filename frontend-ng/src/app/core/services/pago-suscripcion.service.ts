@@ -4,7 +4,9 @@ import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 
 // TODO: Move to environment
-const API_URL = 'http://localhost:8000/api';
+import { AppConfig } from '../config/app.config';
+
+const API_URL = AppConfig.apiUrl;
 
 export interface PagoSuscripcion {
     id: string;

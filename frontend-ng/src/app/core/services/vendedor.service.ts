@@ -3,7 +3,9 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
 // TODO: Move to environment
-const API_URL = 'http://localhost:8000/api';
+import { AppConfig } from '../config/app.config';
+
+const API_URL = AppConfig.apiUrl;
 
 export interface Vendedor {
     id: string;

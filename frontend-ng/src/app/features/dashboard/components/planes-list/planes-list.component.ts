@@ -6,6 +6,8 @@ import { PlanService, Plan, PlanCreate, PlanUpdate } from '../../../../core/serv
 import { FeedbackService } from '../../../../shared/services/feedback.service';
 import { ModalComponent } from '../../../../shared/components/modal/modal.component';
 import { ConfirmModalComponent } from '../../../../shared/components/confirm-modal/confirm-modal.component';
+import { ModuloService, Modulo } from '../../../../core/services/modulo.service';
+import { EmpresaService, Empresa } from '../../../../core/services/empresa.service';
 
 @Component({
     selector: 'app-planes-list',
@@ -172,14 +174,30 @@ import { ConfirmModalComponent } from '../../../../shared/components/confirm-mod
                 </div>
 
                  <hr class="my-4">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h6 class="fw-bold text-dark mb-0"><i class="bi bi-star me-2"></i>Características</h6>
-                    <button type="button" class="btn btn-sm btn-outline-primary rounded-pill" (click)="addCaracteristica()">
-                        <i class="bi bi-plus text-lg"></i> Agregar
+                <div class="d-flex border-bottom mb-4">
+                    <button type="button" class="btn btn-link link-dark text-decoration-none px-4 py-2 border-bottom border-3" 
+                            [class.border-dark]="activeEditTab() === 'features'"
+                            [class.border-transparent]="activeEditTab() === 'features'"
+                            (click)="activeEditTab.set('features')">
+                        <i class="bi bi-star me-2"></i>Características
+                    </button>
+                    <button type="button" class="btn btn-link link-dark text-decoration-none px-4 py-2 border-bottom border-3"
+                            [class.border-dark]="activeEditTab() === 'modules'"
+                            (click)="activeEditTab.set('modules')">
+                        <i class="bi bi-cpu me-2"></i>Módulos Técnicos
                     </button>
                 </div>
 
-                <div class="col-12" formArrayName="caracteristicas">
+                @if (activeEditTab() === 'features') {
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h6 class="fw-bold text-dark mb-0">Listado de Características</h6>
+                        <button type="button" class="btn btn-sm btn-outline-primary rounded-pill" (click)="addCaracteristica()">
+                            <i class="bi bi-plus text-lg"></i> Agregar
+                        </button>
+                    </div>
+                }
+
+                <div class="col-12" [ngClass]="{'d-none': activeEditTab() !== 'features'}" formArrayName="caracteristicas">
                     @for (ctrl of caracteristicasArray.controls; track $index) {
                         <div class="mb-2" [formGroupName]="$index">
                             <div class="input-group">
@@ -198,6 +216,30 @@ import { ConfirmModalComponent } from '../../../../shared/components/confirm-mod
                         </div>
                     }
                 </div>
+
+                <!-- Modules Selection -->
+                @if (activeEditTab() === 'modules') {
+                    <div class="col-12">
+                        <p class="small text-muted mb-4">Selecciona los módulos integrados que estarán disponibles por defecto para las empresas que contraten este plan.</p>
+                        <div class="row g-3">
+                            @for (modulo of allModulos(); track modulo.id) {
+                                <div class="col-md-6">
+                                    <div class="card border border-light p-3 h-100 flex-row align-items-center bg-light-hover">
+                                        <div class="form-check form-switch mb-0">
+                                            <input class="form-check-input" type="checkbox" 
+                                                   [checked]="isModuloIncluido(modulo.id)"
+                                                   (change)="togglePlanModulo(modulo, $event)">
+                                        </div>
+                                        <div class="ms-3">
+                                            <div class="fw-bold small">{{ modulo.nombre }}</div>
+                                            <div class="text-muted" style="font-size: 0.75rem;">{{ modulo.codigo }}</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                }
 
                 <hr class="my-4">
                 
@@ -242,6 +284,13 @@ import { ConfirmModalComponent } from '../../../../shared/components/confirm-mod
     @if (companiesModalOpen()) {
     <app-modal [title]="'Empresas en Plan: ' + selectedPlan()?.nombre" [size]="'lg'" (close)="companiesModalOpen.set(false)">
         <div class="p-2">
+            <div class="d-flex justify-content-between align-items-center mb-4 px-1">
+                <h6 class="fw-bold mb-0 text-secondary">Empresas con suscripción activa</h6>
+                <button class="btn btn-sm btn-dark rounded-pill px-3" (click)="openAssignModal()">
+                    <i class="bi bi-plus-lg me-1"></i> Asignar Empresa
+                </button>
+            </div>
+
             @if (loadingCompanies()) {
                 <div class="text-center py-5">
                     <div class="spinner-border text-dark" role="status"></div>
@@ -276,13 +325,42 @@ import { ConfirmModalComponent } from '../../../../shared/components/confirm-mod
                                             {{ empresa.estado_suscripcion }}
                                         </span>
                                     </td>
-                                    <td class="small">{{ (empresa.fecha_vencimiento | date:'dd/MM/yyyy') || 'N/A' }}</td>
+                                    <td class="small" [class.text-danger]="isExpired(empresa.fecha_vencimiento)">
+                                        <i *ngIf="isExpired(empresa.fecha_vencimiento)" class="bi bi-exclamation-triangle-fill me-1"></i>
+                                        {{ (empresa.fecha_vencimiento | date:'dd/MM/yyyy') || 'N/A' }}
+                                    </td>
                                 </tr>
                             }
                         </tbody>
                     </table>
                 </div>
             }
+        </div>
+    </app-modal>
+    }
+
+    <!-- ASSIGN COMPANY MODAL -->
+    @if (assignModalOpen()) {
+    <app-modal [title]="'Asignar Empresa a Plan'" [size]="'md'" (close)="assignModalOpen.set(false)">
+        <div class="p-4">
+            <p>Selecciona una empresa para asignarla directamente al plan <strong>{{ selectedPlan()?.nombre }}</strong>.</p>
+            
+            <div class="mb-4 mt-3">
+                <label class="form-label small fw-bold">Empresa</label>
+                <select class="form-select border-2 rounded-3" [(ngModel)]="selectedEmpresaId">
+                    <option value="">Seleccione una empresa...</option>
+                    @for (emp of allEmpresas(); track emp.id) {
+                        <option [value]="emp.id">{{ emp.razon_social }} ({{ emp.ruc }})</option>
+                    }
+                </select>
+            </div>
+
+            <div class="d-flex justify-content-end gap-2">
+                <button class="btn btn-light rounded-pill px-4" (click)="assignModalOpen.set(false)">Cancelar</button>
+                <button class="btn btn-dark rounded-pill px-4 shadow-sm" [disabled]="!selectedEmpresaId() || assignmentLoading()" (click)="assignCompany()">
+                    {{ assignmentLoading() ? 'Asignando...' : 'Asignar Plan' }}
+                </button>
+            </div>
         </div>
     </app-modal>
     }
@@ -317,6 +395,8 @@ import { ConfirmModalComponent } from '../../../../shared/components/confirm-mod
 export class PlanesListComponent implements OnInit {
     private fb = inject(FormBuilder);
     private planService = inject(PlanService);
+    private moduloService = inject(ModuloService);
+    private empresaService = inject(EmpresaService);
     private feedback = inject(FeedbackService);
 
     planes = signal<Plan[]>([]);
@@ -326,6 +406,17 @@ export class PlanesListComponent implements OnInit {
     companiesInSelectedPlan = signal<any[]>([]);
     loadingCompanies = signal(false);
     saving = signal(false);
+
+    // Module Management
+    allModulos = signal<Modulo[]>([]);
+    planModulos = signal<any[]>([]); // Current assignments for selected plan
+
+    // Local Assignment
+    assignModalOpen = signal(false);
+    allEmpresas = signal<Empresa[]>([]);
+    selectedEmpresaId = signal<string>('');
+    assignmentLoading = signal(false);
+    activeEditTab = signal<'features' | 'modules'>('features');
 
     // Confirmation Modal State
     showConfirmModal = signal(false);
@@ -355,6 +446,16 @@ export class PlanesListComponent implements OnInit {
 
     ngOnInit() {
         this.loadPlanes();
+        this.loadModulos();
+        this.loadEmpresas();
+    }
+
+    loadModulos() {
+        this.moduloService.getModulos().subscribe(data => this.allModulos.set(data));
+    }
+
+    loadEmpresas() {
+        this.empresaService.getEmpresas().subscribe(data => this.allEmpresas.set(data));
     }
 
     loadPlanes() {
@@ -402,7 +503,25 @@ export class PlanesListComponent implements OnInit {
         }
 
         this.planForm.patchValue(plan);
+        this.loadPlanModulos(plan.id);
         this.formModalOpen.set(true);
+    }
+
+    loadPlanModulos(planId: string) {
+        this.moduloService.getModulosByPlan(planId).subscribe(data => this.planModulos.set(data));
+    }
+
+    togglePlanModulo(modulo: Modulo, evento: any) {
+        if (!this.selectedPlan()) return;
+        const incluido = evento.target.checked;
+        this.moduloService.assignModuloToPlan(this.selectedPlan()!.id, modulo.id, incluido).subscribe({
+            next: () => this.feedback.showSuccess(`Módulo ${modulo.nombre} actualizado`),
+            error: () => this.feedback.showError('Error al actualizar módulo')
+        });
+    }
+
+    isModuloIncluido(moduloId: string): boolean {
+        return this.planModulos().some(pm => pm.modulo_id === moduloId && pm.incluido);
     }
 
     get caracteristicasArray() {
@@ -565,5 +684,34 @@ export class PlanesListComponent implements OnInit {
                 this.loadingCompanies.set(false);
             }
         });
+    }
+
+    openAssignModal() {
+        this.selectedEmpresaId.set('');
+        this.assignModalOpen.set(true);
+    }
+
+    assignCompany() {
+        if (!this.selectedEmpresaId() || !this.selectedPlan()) return;
+        this.assignmentLoading.set(true);
+
+        // Using EmpresaService to update plan
+        this.empresaService.updateEmpresa(this.selectedEmpresaId(), { plan_id: this.selectedPlan()!.id }).subscribe({
+            next: () => {
+                this.assignmentLoading.set(false);
+                this.assignModalOpen.set(false);
+                this.feedback.showSuccess('Empresa asignada al plan');
+                this.viewCompanies(this.selectedPlan()!); // Refresh list
+            },
+            error: () => {
+                this.assignmentLoading.set(false);
+                this.feedback.showError('Error al asignar empresa');
+            }
+        });
+    }
+
+    isExpired(fechaStr: string): boolean {
+        if (!fechaStr) return false;
+        return new Date(fechaStr) < new Date();
     }
 }

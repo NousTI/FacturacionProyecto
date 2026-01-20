@@ -27,12 +27,14 @@ export interface ChartData {
     sri_trend: number[];
 }
 
+import { AppConfig } from '../config/app.config';
+
 @Injectable({
     providedIn: 'root'
 })
 export class DashboardService {
     private http = inject(HttpClient);
-    private apiUrl = 'http://localhost:8000/api/dashboard';
+    private apiUrl = `${AppConfig.apiUrl}/dashboard`;
 
     getSummary(): Observable<DashboardSummary> {
         return this.http.get<DashboardSummary>(`${this.apiUrl}/summary`);

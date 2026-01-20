@@ -30,16 +30,14 @@ export interface Empresa {
     fecha_fin_plan?: string;
 }
 
+import { AppConfig } from '../config/app.config';
+
 @Injectable({
     providedIn: 'root'
 })
 export class EmpresaService {
     private http = inject(HttpClient);
-    // private apiUrl = `${environment.apiUrl}/empresas`; // Assuming environment
-    // Hardcoding for now based on AuthService usage of API_URL constant if available, or relative.
-    // AuthService uses const API_URL = 'http://localhost:8000/api'; 
-    // Better to declare it here too or import.
-    private apiUrl = 'http://localhost:8000/api/empresas';
+    private apiUrl = `${AppConfig.apiUrl}/empresas`;
 
     private empresasCache: Empresa[] | null = null;
 

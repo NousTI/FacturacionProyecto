@@ -16,17 +16,6 @@ import { FeedbackService } from '../../../shared/services/feedback.service';
         <h1 class="text-center fw-bold mb-4">Bienvenido</h1>
         
         <!-- Role Tabs -->
-        <ul class="nav nav-pills nav-fill mb-4" style="font-size: 0.9rem;">
-          <li class="nav-item">
-            <a class="nav-link" [class.active]="selectedRole() === 'usuario'" (click)="selectRole('usuario')" style="cursor: pointer;">Usuario</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" [class.active]="selectedRole() === 'vendedor'" (click)="selectRole('vendedor')" style="cursor: pointer;">Vendedor</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" [class.active]="selectedRole() === 'superadmin'" (click)="selectRole('superadmin')" style="cursor: pointer;">Admin</a>
-          </li>
-        </ul>
 
         <form (ngSubmit)="onSubmit()">
           <!-- Email -->
@@ -78,27 +67,42 @@ import { FeedbackService } from '../../../shared/services/feedback.service';
           <!-- Submit Button -->
           <button 
             type="submit" 
-            class="btn w-100 text-white fw-bold py-2"
-            style="background-color: #000;"
+            class="btn w-100 text-white fw-bold py-2 btn-primary"
+            
             [disabled]="!email || !password"
           >
-            Ingresar como {{ getRoleDisplayName() }}
+            Ingresar
           </button>
         </form>
       </div>
     </div>
   `,
   styles: [`
-        .nav-pills .nav-link {
-            color: #6c757d;
-            background-color: transparent;
-            font-weight: 500;
+        :host {
+            display: block;
+            font-family: 'Inter', sans-serif;
         }
-        .nav-pills .nav-link.active {
+        .btn-primary {
+            background-color: #000;
+            border-color: #000;
+            transition: all 0.3s ease;
+        }
+        .btn-primary:hover {
+            background-color: #333;
+            border-color: #333;
+            transform: translateY(-1px);
+        }
+        .btn-primary:disabled {
+            background-color: #000;
+            border-color: #000;
+            opacity: 0.6;
+        }
+        .form-control:focus {
+            border-color: #000;
+            box-shadow: 0 0 0 0.25rem rgba(0, 0, 0, 0.1);
+        }
+        .text-accent {
             color: #000;
-            background-color: #f8f9fa;
-            border: 1px solid #dee2e6;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
         }
     `]
 })
@@ -111,34 +115,20 @@ export class LoginComponent {
   password = '';
   showPassword = signal(false);
   error = signal('');
-  selectedRole = signal<UserRole>('usuario');
 
   togglePassword() {
     this.showPassword.update(v => !v);
-  }
-
-  selectRole(role: UserRole) {
-    this.selectedRole.set(role);
-    this.error.set(''); // Clear errors when switching roles
-  }
-
-  getRoleDisplayName() {
-    switch (this.selectedRole()) {
-      case 'superadmin': return 'Superadmin';
-      case 'vendedor': return 'Vendedor';
-      case 'usuario': return 'Usuario';
-    }
   }
 
   onSubmit() {
     this.error.set('');
     this.feedback.showLoading('Iniciando sesión...');
 
-    this.authService.login({ email: this.email, password: this.password }, this.selectedRole())
+    this.authService.login({ email: this.email, password: this.password })
       .subscribe({
         next: () => {
           this.feedback.hideLoading();
-          this.router.navigate(['/perfil']);
+          this.router.navigate(['/dashboard']);
         },
         error: (err) => {
           this.feedback.hideLoading();

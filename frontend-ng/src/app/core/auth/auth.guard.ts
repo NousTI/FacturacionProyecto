@@ -18,7 +18,7 @@ export const publicGuard: CanActivateFn = (route, state) => {
     const router = inject(Router);
 
     if (authService.isAuthenticated()) {
-        return router.createUrlTree(['/perfil']); // Redirect to profile/dashboard
+        return router.createUrlTree(['/dashboard']); // Redirect to dashboard
     }
 
     return true;

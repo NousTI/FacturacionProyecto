@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { VendedorService, Vendedor } from '../../../../core/services/vendedor.service';
 import { ComisionService, Comision } from '../../../../core/services/comision.service';
+import { EmpresaService, Empresa } from '../../../../core/services/empresa.service';
 import { FeedbackService } from '../../../../shared/services/feedback.service';
 import { ModalComponent } from '../../../../shared/components/modal/modal.component';
 
@@ -92,6 +93,9 @@ import { ModalComponent } from '../../../../shared/components/modal/modal.compon
                     </td>
                     <td class="text-end pe-4">
                     <div class="btn-group shadow-sm rounded-3">
+                        <button class="btn btn-white btn-sm border" (click)="openEmpresasModal(vendedor)" title="Ver Empresas">
+                        <i class="bi bi-building text-success"></i>
+                        </button>
                         <button class="btn btn-white btn-sm border" (click)="openEditModal(vendedor)" title="Editar">
                         <i class="bi bi-pencil-square text-primary"></i>
                         </button>
@@ -367,6 +371,58 @@ import { ModalComponent } from '../../../../shared/components/modal/modal.compon
         </ng-container>
     </app-modal>
     }
+
+    <!-- COMPANIES MODAL -->
+    @if (empresasModalOpen()) {
+    <app-modal [title]="'Empresas de ' + selectedVendedor()?.nombres" [size]="'lg'" (close)="closeEmpresasModal()">
+        <div class="px-2">
+            <p class="text-muted small mb-4">Lista de empresas asignadas a <strong>{{ selectedVendedor()?.nombres }} {{ selectedVendedor()?.apellidos }}</strong>.</p>
+            
+            <div class="table-responsive rounded-3 border">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="bg-light small fw-bold">
+                        <tr>
+                            <th class="ps-3">Empresa</th>
+                            <th>RUC</th>
+                            <th>Estado</th>
+                            <th class="text-end pe-3">Reasignar a</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @for (empresa of empresasDelVendedor(); track empresa.id) {
+                        <tr>
+                            <td class="ps-3 fw-medium">{{ empresa.nombre_comercial }}</td>
+                            <td>{{ empresa.ruc }}</td>
+                            <td>
+                                <span class="badge rounded-pill px-2 py-1" [ngClass]="empresa.activo ? 'bg-success-subtle text-success' : 'bg-danger-subtle text-danger'">
+                                    {{ empresa.activo ? 'Activa' : 'Inactiva' }}
+                                </span>
+                            </td>
+                            <td class="text-end pe-3">
+                                <select class="form-select form-select-sm d-inline-block w-auto" 
+                                        (change)="onReassignChange(empresa.id, $event)">
+                                    <option value="" [selected]="!empresa.vendedor_id">Nous Direct (Superadmin)</option>
+                                    @for (v of vendedores(); track v.id) {
+                                        <option [value]="v.id" [selected]="v.id === empresa.vendedor_id">{{ v.nombres }} {{ v.apellidos }}</option>
+                                    }
+                                </select>
+                            </td>
+                        </tr>
+                        }
+                        @if (empresasDelVendedor().length === 0) {
+                        <tr>
+                            <td colspan="4" class="text-center py-4 text-muted">No hay empresas asignadas a este vendedor.</td>
+                        </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <ng-container footer>
+            <button class="btn btn-dark rounded-3 px-4" (click)="closeEmpresasModal()">Cerrar</button>
+        </ng-container>
+    </app-modal>
+    }
   `,
   styles: [`
     .table th { border: none; font-weight: 600; font-size: 0.75rem; color: #6c757d; }
@@ -402,6 +458,7 @@ export class VendedoresListComponent implements OnInit {
   private fb = inject(FormBuilder);
   private vendedorService = inject(VendedorService);
   private comService = inject(ComisionService);
+  private empresaService = inject(EmpresaService);
   private feedback = inject(FeedbackService);
 
   // General State
@@ -411,7 +468,9 @@ export class VendedoresListComponent implements OnInit {
   // VENDEDORES STATE
   vendedores = signal<Vendedor[]>([]);
   formModalOpen = signal(false);
+  empresasModalOpen = signal(false);
   selectedVendedor = signal<Vendedor | null>(null);
+  empresasDelVendedor = signal<Empresa[]>([]);
 
   vendedorForm: FormGroup = this.fb.group({
     nombres: ['', Validators.required],
@@ -528,6 +587,64 @@ export class VendedoresListComponent implements OnInit {
         },
         error: () => this.feedback.showError('No se pudo eliminar el vendedor')
       });
+    }
+  }
+
+  // --- EMPRESAS ASIGNADAS LOGIC ---
+  openEmpresasModal(vendedor: Vendedor) {
+    this.selectedVendedor.set(vendedor);
+    this.cargarEmpresasDelVendedor(vendedor.id);
+    this.empresasModalOpen.set(true);
+  }
+
+  closeEmpresasModal() {
+    this.empresasModalOpen.set(false);
+    this.selectedVendedor.set(null);
+    this.empresasDelVendedor.set([]);
+  }
+
+  cargarEmpresasDelVendedor(vendedorId: string) {
+    this.empresaService.getEmpresas(vendedorId).subscribe({
+      next: (data) => this.empresasDelVendedor.set(data),
+      error: () => this.feedback.showError('Error al cargar empresas del vendedor')
+    });
+  }
+
+  onReassignChange(empresaId: string, event: any) {
+    const nuevoVendedorId = event.target.value || null;
+    const vendedorDestino = nuevoVendedorId
+      ? this.vendedores().find(v => v.id === nuevoVendedorId)
+      : null;
+
+    const nombreDestino = vendedorDestino
+      ? `${vendedorDestino.nombres} ${vendedorDestino.apellidos}`
+      : 'Nous Direct (Superadmin)';
+
+    if (confirm(`¿Está seguro de reasignar esta empresa a ${nombreDestino}?`)) {
+      this.saving.set(true);
+      this.empresaService.assignVendor(empresaId, nuevoVendedorId).subscribe({
+        next: () => {
+          this.saving.set(false);
+          this.feedback.showSuccess('Empresa reasignada correctamente');
+          // Recargar la lista de empresas del vendedor actual para que desaparezca la que se movió
+          if (this.selectedVendedor()) {
+            this.cargarEmpresasDelVendedor(this.selectedVendedor()!.id);
+          }
+        },
+        error: (err) => {
+          this.saving.set(false);
+          this.feedback.showError('Error al reasignar empresa');
+          // Revertir el select si es posible o simplemente recargar
+          if (this.selectedVendedor()) {
+            this.cargarEmpresasDelVendedor(this.selectedVendedor()!.id);
+          }
+        }
+      });
+    } else {
+      // Revertir el cambio visual en el select
+      if (this.selectedVendedor()) {
+        this.cargarEmpresasDelVendedor(this.selectedVendedor()!.id);
+      }
     }
   }
 

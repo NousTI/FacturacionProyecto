@@ -4,8 +4,9 @@ import { Router } from '@angular/router';
 import { catchError, map, tap } from 'rxjs/operators';
 import { Observable, of, throwError } from 'rxjs';
 
-// TODO: Move to environments
-const API_URL = 'http://localhost:8000/api';
+import { AppConfig } from '../config/app.config';
+
+const API_URL = AppConfig.apiUrl;
 
 export type UserRole = 'usuario' | 'vendedor' | 'superadmin';
 
@@ -107,8 +108,9 @@ export class AuthService {
 
         this.http.get(endpoint).subscribe({
             next: (userData: any) => {
-                // Update session state with fresh data from backend
                 console.log('Session verified, updating user data');
+                // Ensure role is preserved/assigned if backend doesn't send it explicitly in 'me'
+                if (!userData.role) userData.role = role;
                 this.currentUserSignal.set(userData);
                 localStorage.setItem('user', JSON.stringify(userData));
             },
@@ -119,34 +121,13 @@ export class AuthService {
         });
     }
 
-    login(credentials: { email: string; password: string }, role: UserRole): Observable<User> {
-        let endpoint = '';
-
-        switch (role) {
-            case 'superadmin':
-                endpoint = `${API_URL}/auth/superadmin/login`;
-                break;
-            case 'vendedor':
-                endpoint = `${API_URL}/auth/vendedor/login`;
-                break;
-            case 'usuario':
-            default:
-                endpoint = `${API_URL}/auth/usuario/login`;
-                break;
-        }
+    login(credentials: { email: string; password: string }): Observable<User> {
+        const endpoint = `${API_URL}/auth/login`;
 
         return this.http.post<any>(endpoint, credentials).pipe(
             map(response => {
-                // Determine structure: sometimes data is nested, sometimes flat depending on endpoint consistency
-                // We assume consistent: { data: { access_token, user, ... } }
-                // or direct: { access_token, user }
-                const authData = response.data || response;
-
-                // Inject role into user object for frontend persistence
-                // Backend usually sends it, but ensuring it matches request role is good practice
-                if (authData.user) {
-                    authData.user.role = role;
-                }
+                const authData = response.details || response.data || response;
+                // Backend unified_login should return user object with 'role' property
                 return authData;
             }),
             tap((data: AuthResponse) => {
@@ -170,6 +151,7 @@ export class AuthService {
             })
         );
     }
+
 
     logout(): Observable<void> {
         const token = localStorage.getItem('token');
@@ -206,9 +188,18 @@ export class AuthService {
     }
 
     private setSession(authResult: AuthResponse) {
+        if (!authResult || !authResult.access_token) {
+            console.error('Login successful but no access_token received', authResult);
+            return;
+        }
+
+        console.log('Setting session with token:', authResult.access_token.substring(0, 10) + '...');
         localStorage.setItem('token', authResult.access_token);
-        localStorage.setItem('user', JSON.stringify(authResult.user));
-        this.currentUserSignal.set(authResult.user);
+
+        if (authResult.user) {
+            localStorage.setItem('user', JSON.stringify(authResult.user));
+            this.currentUserSignal.set(authResult.user);
+        }
     }
 
     private clearSession() {
