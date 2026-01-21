@@ -26,6 +26,16 @@ class RepositorioAutenticacion:
         with db_transaction(self.db) as cur:
             cur.execute(query, (sid,))
 
+    def tiene_sesion_activa_usuario(self, usuario_id: UUID) -> bool:
+        query = """
+            SELECT 1 FROM usuario_sesiones 
+            WHERE usuario_id = %s AND is_valid = TRUE AND expires_at > NOW()
+            LIMIT 1
+        """
+        with self.db.cursor() as cur:
+            cur.execute(query, (str(usuario_id),))
+            return cur.fetchone() is not None
+
     def obtener_sesion_usuario(self, sid: str) -> Optional[dict]:
         query = "SELECT * FROM usuario_sesiones WHERE id = %s"
         with self.db.cursor() as cur:
@@ -49,6 +59,16 @@ class RepositorioAutenticacion:
         query = "UPDATE vendedor_sessions SET is_valid = FALSE WHERE id = %s"
         with db_transaction(self.db) as cur:
             cur.execute(query, (sid,))
+
+    def tiene_sesion_activa_vendedor(self, vendedor_id: UUID) -> bool:
+        query = """
+            SELECT 1 FROM vendedor_sessions 
+            WHERE vendedor_id = %s AND is_valid = TRUE AND expires_at > NOW()
+            LIMIT 1
+        """
+        with self.db.cursor() as cur:
+            cur.execute(query, (str(vendedor_id),))
+            return cur.fetchone() is not None
 
     def obtener_sesion_vendedor(self, sid: str) -> Optional[dict]:
         query = "SELECT * FROM vendedor_sessions WHERE id = %s"

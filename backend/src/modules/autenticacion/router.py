@@ -2,6 +2,8 @@ from fastapi import APIRouter, Depends, Request, Path, Body
 from .schemas import LoginRequest
 from .service import AutenticacionService
 from .dependencies import obtener_usuario_actual
+from ...errors.app_error import AppError
+from ...utils.response import success_response
 
 router = APIRouter()
 
@@ -12,27 +14,24 @@ def login_unificado(
     service: AutenticacionService = Depends()
 ):
     """
-    Intenta iniciar sesión buscando en Usuario, Vendedor y Superadmin secuencialmente (o unificado si se decide).
-    De momento, por compatibilidad con endpoint legacy '/login', este endpoint decide.
-    Pero la arquitectura pide '/{rol}/iniciar-sesion' explícito o unificado? 
-    El legacy tenia ambos.
-    Haremos el unificado iterando roles o por defecto "usuario". 
-    Para ser explícitos y RESTful: POST /autenticacion/{rol}/iniciar-sesion es mejor.
-    Pero si el frontend usa un solo form login... 
-    Mantengamos '/iniciar-sesion' por defecto como USUARIO (o intentar todos).
+    Intenta iniciar sesión buscando en Usuario, Vendedor y Superadmin secuencialmente.
     """
-    # Intentar como Usuario por defecto, o lógica unificada.
-    # Por simplicidad y seguridad, exigimos rol o probamos todos catch-fail.
-    try:
-        return service.iniciar_sesion("usuario", body.correo, body.clave, request.client.host, request.headers.get("user-agent"))
-    except Exception:
-        # Fallback a vendedor, luego superadmin? 
-        # Mejor forzar a usar el endpoint tipado si el frontend lo soporta.
-        # Pero PROMPT dice "frontend se ajustará".
-        # Haremos endpoints explícitos.
-        pass
+    # Intentar roles secuencialmente
+    for rol in ["usuario", "vendedor", "superadmin"]:
+        try:
+            return service.iniciar_sesion(rol, body.correo, body.clave, request.client.host, request.headers.get("user-agent"))
+        except AppError as e:
+            # Si el error es específicamente que ya tiene una sesión, lo lanzamos de inmediato
+            if e.code == "AUTH_SESSION_ALREADY_ACTIVE":
+                raise e
+            # Si es otro error (como credenciales), seguimos probando el siguiente rol
+            continue
+        except Exception:
+            # Si falla un rol por otra razón, probamos el siguiente
+            continue
     
-    # Si falla, error generico
+    # Si llegamos aquí, falló para todos los roles
+    # Llamamos una última vez con 'usuario' para que lance la excepción correspondiente (401)
     return service.iniciar_sesion("usuario", body.correo, body.clave, request.client.host, request.headers.get("user-agent"))
 
 
@@ -60,4 +59,4 @@ def obtener_perfil(usuario: dict = Depends(obtener_usuario_actual)):
     # Sanitizar seguridad
     usuario.pop("password", None)
     usuario.pop("password_hash", None)
-    return usuario
+    return success_response(data=usuario)

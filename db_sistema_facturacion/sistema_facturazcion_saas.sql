@@ -15,11 +15,12 @@ CREATE TABLE IF NOT EXISTS superadmin (
     nombres TEXT NOT NULL,
     apellidos TEXT NOT NULL,
 
+    activo BOOLEAN NOT NULL DEFAULT TRUE,
+
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    last_login TIMESTAMPTZ,
+    last_login TIMESTAMPTZ
 
-    activo BOOLEAN NOT NULL DEFAULT TRUE
 );
 -- =========================================
 -- VENDEDOR

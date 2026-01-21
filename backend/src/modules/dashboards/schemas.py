@@ -1,5 +1,28 @@
 from pydantic import BaseModel
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
+
+class DashboardKPIs(BaseModel):
+    empresas_activas: int
+    ingresos_mensuales: float
+    comisiones_pendientes: float
+    pagos_atrasados: int
+    empresas_por_vencer: int
+    variacion_ingresos: float
+
+class DashboardAlerta(BaseModel):
+    tipo: str
+    cantidad: int
+    nivel: str  # critical, warning, info
+    mensaje: str
+
+class DashboardAlertas(BaseModel):
+    criticas: List[DashboardAlerta]
+    advertencias: List[DashboardAlerta]
+    informativas: List[DashboardAlerta]
+
+class DashboardOverview(BaseModel):
+    kpis: DashboardKPIs
+    alertas: DashboardAlertas
 
 class ResumenDashboard(BaseModel):
     total_empresas: int

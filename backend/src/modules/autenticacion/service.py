@@ -66,6 +66,15 @@ class AutenticacionService:
 
         # 2. Gestionar Sesión
         user_id = user["id"]
+        
+        if self.auth_repo.tiene_sesion_activa_usuario(user_id):
+            raise AppError(
+                message="Ya existe una sesión activa para este usuario.",
+                status_code=403,
+                code=ErrorCodes.AUTH_SESSION_ALREADY_ACTIVE,
+                description="Solo se permite una sesión activa a la vez."
+            )
+
         session_id = uuid4().hex
         
         sid = self.auth_repo.crear_sesion_usuario(
@@ -127,6 +136,15 @@ class AutenticacionService:
 
         # 2. Gestionar Sesión
         vendedor_id = vendedor["id"]
+        
+        if self.auth_repo.tiene_sesion_activa_vendedor(vendedor_id):
+            raise AppError(
+                message="Ya existe una sesión activa para este vendedor.",
+                status_code=403,
+                code=ErrorCodes.AUTH_SESSION_ALREADY_ACTIVE,
+                description="Solo se permite una sesión activa a la vez."
+            )
+
         session_id = uuid4().hex
         
         sid = self.auth_repo.crear_sesion_vendedor(
@@ -170,7 +188,7 @@ class AutenticacionService:
         # MockRequest because ServicioSuperadmin expects a Request object
         class MockRequest:
             def __init__(self, ip, ua):
-                self.headers = {"user-agent": ua}
+                self.headers = {"User-Agent": ua, "user-agent": ua}
                 self.client = type("Client", (), {"host": ip})()
         
         mock_req = MockRequest(ip_address, user_agent)

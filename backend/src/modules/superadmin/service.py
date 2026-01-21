@@ -17,15 +17,18 @@ class ServicioSuperadmin:
         if not admin or not verify_password(datos.password, admin['password_hash']):
             raise AppError("Credenciales incorrectas", 401, "AUTH_INVALID")
             
-        # Validar sesión activa (Opcional, según política deseada)
+        # Validar sesión activa
         activa = self.repo.obtener_sesion_activa(admin['id'])
         if activa:
             exp = activa['expires_at'].replace(tzinfo=timezone.utc)
             if exp > datetime.now(timezone.utc):
-                # Opcional: Permitir relogin o bloquear
-                pass
+                raise AppError(
+                    message="Ya existe una sesión activa para este administrador.",
+                    status_code=403,
+                    code="AUTH_SESSION_ALREADY_ACTIVE"
+                )
                 
-        sid = uuid4().hex
+        sid = str(uuid4())
         self.repo.crear_sesion(admin['id'], sid, request.headers.get("User-Agent"), request.client.host)
         self.repo.actualizar_ultimo_login(admin['id'])
         
@@ -38,11 +41,12 @@ class ServicioSuperadmin:
         return {
             "access_token": token,
             "token_type": "bearer",
-            "user": {
-                "id": admin['id'],
+            "usuario": {
+                "id": str(admin['id']),
                 "email": admin['email'],
                 "nombres": admin['nombres'],
-                "apellidos": admin['apellidos']
+                "apellidos": admin['apellidos'],
+                "role": "superadmin"
             }
         }
 

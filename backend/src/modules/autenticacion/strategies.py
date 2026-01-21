@@ -21,7 +21,7 @@ class EstrategiaAuthSuperadmin(EstrategiaAuth):
         session = admin_repo.obtener_sesion_activa(user_id)
         
         # Superadmin session is valid if it exists and id matches jti
-        if not session or str(session['id']) != session_id or not session['is_valid']:
+        if not session or str(session['id']) != str(session_id) or not session['is_valid']:
              raise AppError(
                 message="Sesión de Superadmin inválida o expirada",
                 status_code=401,
