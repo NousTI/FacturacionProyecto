@@ -91,30 +91,39 @@ CREATE TABLE IF NOT EXISTS public.plan (
 CREATE TABLE IF NOT EXISTS public.empresa (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
 
-    vendedor_id UUID REFERENCES public.vendedor(id) ON DELETE SET NULL,
+    vendedor_id UUID
+      REFERENCES public.vendedor(id)
+      ON DELETE SET NULL,
 
+    -- Identificación SRI
     ruc TEXT NOT NULL UNIQUE,
     razon_social TEXT NOT NULL,
     nombre_comercial TEXT,
 
-    email TEXT,
+    -- Contacto y ubicación (SRI exige dirección matriz)
+    email TEXT NOT NULL,
     telefono TEXT,
-    direccion TEXT,
+    direccion TEXT NOT NULL,
     logo_url TEXT,
 
+    -- Estado general
     activo BOOLEAN NOT NULL DEFAULT TRUE,
 
+    -- Ciclo de vida del cliente
     fecha_registro TIMESTAMPTZ NOT NULL DEFAULT CURRENT_DATE,
     fecha_activacion TIMESTAMPTZ,
     fecha_vencimiento TIMESTAMPTZ,
 
+    -- Información tributaria obligatoria
     estado_suscripcion TEXT NOT NULL DEFAULT 'PENDIENTE',
-    tipo_contribuyente TEXT,
+    tipo_contribuyente TEXT NOT NULL,
     obligado_contabilidad BOOLEAN NOT NULL DEFAULT FALSE,
 
+    -- Auditoría
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
 );
+
 
 -- =========================================
 -- ROL

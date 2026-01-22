@@ -1,4 +1,5 @@
 from fastapi import Depends
+from datetime import datetime, timedelta
 from typing import List, Dict, Any
 from ...database.session import get_db
 
@@ -29,38 +30,77 @@ class RepositorioDashboards:
 
         return stats
 
-    def obtener_kpis_principales(self) -> Dict[str, Any]:
+    def obtener_kpis_principales(self, vendedor_id=None, empresa_id=None) -> Dict[str, Any]:
         """Obtiene métricas principales para los KPIs."""
         kpis = {}
         with self.db.cursor() as cur:
-            # Empresas activas
-            cur.execute("SELECT COUNT(*) as count FROM empresa WHERE activo = true")
-            kpis['empresas_activas'] = cur.fetchone()['count']
+            if empresa_id:
+                # KPIs para Empresa
+                # 1. Ventas mes actual (Facturas no anuladas)
+                cur.execute("""
+                    SELECT COALESCE(SUM(total), 0) as total 
+                    FROM factura 
+                    WHERE empresa_id = %s 
+                    AND estado != 'ANULADA'
+                    AND DATE_TRUNC('month', fecha_emision) = DATE_TRUNC('month', CURRENT_DATE)
+                """, (empresa_id,))
+                kpis['ventas_mes'] = float(cur.fetchone()['total'])
 
-            # Ingresos mes actual
-            cur.execute("""
-                SELECT COALESCE(SUM(monto), 0) as total 
-                FROM pago_suscripcion 
-                WHERE estado IN ('PAGADO', 'COMPLETED')
-                AND DATE_TRUNC('month', fecha_pago) = DATE_TRUNC('month', CURRENT_DATE)
-            """)
-            kpis['ingresos_mensuales'] = float(cur.fetchone()['total'])
+                # 2. Ventas hoy
+                cur.execute("""
+                    SELECT COALESCE(SUM(total), 0) as total 
+                    FROM factura 
+                    WHERE empresa_id = %s 
+                    AND estado != 'ANULADA'
+                    AND fecha_emision::date = CURRENT_DATE
+                """, (empresa_id,))
+                kpis['ventas_hoy'] = float(cur.fetchone()['total'])
 
-            # Comisiones pendientes total
-            cur.execute("SELECT COALESCE(SUM(monto), 0) as total FROM comision WHERE estado = 'PENDIENTE'")
-            kpis['comisiones_pendientes'] = float(cur.fetchone()['total'])
+                # 3. Cuentas por cobrar (Facturas con saldo > 0)
+                cur.execute("SELECT COALESCE(SUM(total), 0) as total FROM factura WHERE empresa_id = %s AND estado = 'AUTORIZADO'", (empresa_id,))
+                kpis['cuentas_cobrar'] = float(cur.fetchone()['total'])
+                
+                kpis['productos_stock_bajo'] = 0 # Placeholder
+                kpis['facturas_rechazadas'] = 0 # Placeholder
 
-            # Empresas por vencer (KPI agregado)
-            # SOLO Plan < 7 dias (Certificado comentado por seguridad de schema)
-            cur.execute("""
-                SELECT COUNT(DISTINCT e.id) as count
-                FROM empresa e
-                WHERE e.activo = true
-                AND (
-                    e.fecha_vencimiento > CURRENT_DATE AND e.fecha_vencimiento <= CURRENT_DATE + INTERVAL '7 days'
-                )
-            """)
-            kpis['empresas_por_vencer'] = cur.fetchone()['count']
+            elif vendedor_id:
+                # KPIs para Vendedor
+                cur.execute("SELECT COUNT(*) as count FROM empresa WHERE vendedor_id = %s AND activo = true", (vendedor_id,))
+                kpis['empresas_activas'] = cur.fetchone()['count']
+
+                cur.execute("""
+                    SELECT COALESCE(SUM(monto), 0) as total FROM comision 
+                    WHERE vendedor_id = %s AND estado = 'PENDIENTE'
+                """, (vendedor_id,))
+                kpis['comisiones_pendientes'] = float(cur.fetchone()['total'])
+
+                cur.execute("""
+                    SELECT COUNT(*) as count FROM empresa 
+                    WHERE vendedor_id = %s AND fecha_vencimiento < CURRENT_DATE AND activo = true
+                """, (vendedor_id,))
+                kpis['pagos_atrasados'] = cur.fetchone()['count']
+            else:
+                # KPIs Globales (Superadmin)
+                cur.execute("SELECT COUNT(*) as count FROM empresa WHERE activo = true")
+                kpis['empresas_activas'] = cur.fetchone()['count']
+
+                cur.execute("""
+                    SELECT COALESCE(SUM(monto), 0) as total 
+                    FROM pago_suscripcion 
+                    WHERE estado IN ('PAGADO', 'COMPLETED')
+                    AND DATE_TRUNC('month', fecha_pago) = DATE_TRUNC('month', CURRENT_DATE)
+                """)
+                kpis['ingresos_mensuales'] = float(cur.fetchone()['total'])
+
+                cur.execute("SELECT COALESCE(SUM(monto), 0) as total FROM comision WHERE estado = 'PENDIENTE'")
+                kpis['comisiones_pendientes'] = float(cur.fetchone()['total'])
+
+                cur.execute("""
+                    SELECT COUNT(DISTINCT e.id) as count FROM empresa e
+                    WHERE e.activo = true AND e.fecha_vencimiento > CURRENT_DATE 
+                    AND e.fecha_vencimiento <= CURRENT_DATE + INTERVAL '7 days'
+                """)
+                kpis['empresas_por_vencer'] = cur.fetchone()['count']
 
         return kpis
 
@@ -101,120 +141,114 @@ class RepositorioDashboards:
             """)
             return cur.fetchone()['count']
 
-    def obtener_alertas_sistema(self) -> Dict[str, List[Dict[str, Any]]]:
-        """Obtiene alertas categorizadas."""
-        alertas = {
-            "criticas": [],
-            "advertencias": [],
-            "informativas": []
-        }
+    def obtener_alertas_sistema(self, vendedor_id=None, empresa_id=None) -> Dict[str, List[Dict[str, Any]]]:
+        """Obtiene alertas categorizadas por rol."""
+        alertas = {"criticas": [], "advertencias": [], "informativas": []}
         
         with self.db.cursor() as cur:
-            # CRÍTICAS: Certificados próximos a vencer (ej. < 7 días) o vencidos
-            # Simulando consulta a tabla de certificados si existiera, o usando lógica placeholder segura
-            # Asumiremos que no hay tabla certificados visible en models, usaremos stubs lógicos o consultas a tablas existentes
-            # Para el ejemplo y estabilidad, usaré contadores reales donde pueda.
+            if empresa_id:
+                # Alertas para Empresa
+                cur.execute("SELECT fecha_vencimiento FROM empresa WHERE id = %s", (empresa_id,))
+                row = cur.fetchone()
+                if row and row['fecha_vencimiento'] and row['fecha_vencimiento'] < (datetime.now().date() + timedelta(days=7)):
+                     alertas["criticas"].append({
+                        "tipo": "Suscripción",
+                        "cantidad": 1,
+                        "nivel": "critical",
+                        "mensaje": "Su suscripción vence pronto"
+                    })
             
-            # Empresas sin actividad reciente (Warning)
-            cur.execute("""
-                SELECT COUNT(*) as count FROM empresa 
-                WHERE id NOT IN (SELECT DISTINCT empresa_id FROM factura WHERE fecha_emision > CURRENT_DATE - INTERVAL '30 days')
-            """)
-            inactivas = cur.fetchone()['count']
-            if inactivas > 0:
-                alertas["advertencias"].append({
-                    "tipo": "Inactividad",
-                    "cantidad": inactivas,
-                    "nivel": "warning",
-                    "mensaje": f"{inactivas} empresas sin facturación en 30 días"
-                })
+            elif vendedor_id:
+                # Alertas para Vendedor (Sus clientes)
+                cur.execute("""
+                    SELECT COUNT(*) as count FROM empresa 
+                    WHERE vendedor_id = %s AND fecha_vencimiento < CURRENT_DATE AND activo = true
+                """, (vendedor_id,))
+                vencidas = cur.fetchone()['count']
+                if vencidas > 0:
+                    alertas["criticas"].append({
+                        "tipo": "Clientes Vencidos",
+                        "cantidad": vencidas,
+                        "nivel": "critical",
+                        "mensaje": f"{vencidas} de sus empresas tienen pagos atrasados"
+                    })
+            else:
+                # Alertas Globales (Superadmin)
+                cur.execute("""
+                    SELECT COUNT(*) as count FROM empresa 
+                    WHERE id NOT IN (SELECT DISTINCT empresa_id FROM factura WHERE fecha_emision > CURRENT_DATE - INTERVAL '30 days')
+                """)
+                inactivas = cur.fetchone()['count']
+                if inactivas > 0:
+                    alertas["advertencias"].append({
+                        "tipo": "Inactividad",
+                        "cantidad": inactivas,
+                        "nivel": "warning",
+                        "mensaje": f"{inactivas} empresas sin facturación en 30 días"
+                    })
 
-            # Pagos vencidos (Critical)
-            pagos_vencidos = self.obtener_pagos_atrasados()
-            if pagos_vencidos > 0:
-                alertas["criticas"].append({
-                    "tipo": "Pagos Vencidos",
-                    "cantidad": pagos_vencidos,
-                    "nivel": "critical",
-                    "mensaje": f"{pagos_vencidos} pagos de suscripción vencidos"
-                })
-
-            # Comisiones acumuladas (Info)
-            cur.execute("SELECT COUNT(*) as count FROM comision WHERE estado = 'PENDIENTE'")
-            comisiones = cur.fetchone()['count']
-            if comisiones > 0:
-                alertas["informativas"].append({
-                    "tipo": "Comisiones",
-                    "cantidad": comisiones,
-                    "nivel": "info",
-                    "mensaje": f"{comisiones} comisiones pendientes de liquidar"
-                })
-
-            # --- NUEVAS ALERTAS POR VENCER ---
-            
-            # Planes próximos a vencer (Warning) - 3 a 7 días
-            cur.execute("""
-                SELECT COUNT(*) as count FROM empresa 
-                WHERE activo = true 
-                AND fecha_vencimiento > CURRENT_DATE 
-                AND fecha_vencimiento <= CURRENT_DATE + INTERVAL '7 days'
-            """)
-            planes_por_vencer = cur.fetchone()['count']
-            if planes_por_vencer > 0:
-                alertas["advertencias"].append({
-                    "tipo": "Suscripción",
-                    "cantidad": planes_por_vencer,
-                    "nivel": "warning",
-                    "mensaje": f"{planes_por_vencer} planes vencen en menos de 7 días"
-                })
-
-            # Certificados próximos a vencer (Warning) - 7 a 15 días
-            # Comentado hasta verificar schema
-            # cur.execute("""
-            #     SELECT COUNT(*) as count FROM configuracion_sri 
-            #     WHERE fecha_expiracion_cert > CURRENT_DATE 
-            #     AND fecha_expiracion_cert <= CURRENT_DATE + INTERVAL '15 days'
-            # """)
-            # certs_por_vencer = cur.fetchone()['count']
-            # if certs_por_vencer > 0:
-            #     alertas["advertencias"].append({
-            #         "tipo": "Certificados",
-            #         "cantidad": certs_por_vencer,
-            #         "nivel": "warning",
-            #         "mensaje": f"{certs_por_vencer} certificados SRI vencen pronto"
-            #     })
+                cur.execute("SELECT COUNT(*) as count FROM comision WHERE estado = 'PENDIENTE'")
+                comisiones = cur.fetchone()['count']
+                if comisiones > 0:
+                    alertas["informativas"].append({
+                        "tipo": "Comisiones",
+                        "cantidad": comisiones,
+                        "nivel": "info",
+                        "mensaje": f"{comisiones} comisiones pendientes"
+                    })
 
         return alertas
 
-    def obtener_facturas_mensuales(self, limite: int = 6) -> List[Dict[str, Any]]:
-        query = """
+    def obtener_facturas_mensuales(self, limite: int = 6, empresa_id=None) -> List[Dict[str, Any]]:
+        where_clause = "AND f.empresa_id = %s" if empresa_id else ""
+        params = (limite - 1, empresa_id) if empresa_id else (limite - 1,)
+        
+        query = f"""
             WITH months AS (
                 SELECT generate_series(DATE_TRUNC('month', CURRENT_DATE) - (INTERVAL '1 month' * %s),
                                      DATE_TRUNC('month', CURRENT_DATE), '1 month'::interval) as month
             )
             SELECT TO_CHAR(m.month, 'Mon') as label, COALESCE(COUNT(f.id), 0) as value
             FROM months m
-            LEFT JOIN factura f ON DATE_TRUNC('month', f.fecha_emision) = m.month AND f.estado != 'ANULADA'
+            LEFT JOIN factura f ON DATE_TRUNC('month', f.fecha_emision) = m.month 
+                 AND f.estado != 'ANULADA' {where_clause}
             GROUP BY m.month ORDER BY m.month ASC
         """
         with self.db.cursor() as cur:
-            cur.execute(query, (limite - 1,))
+            cur.execute(query, params)
             return [{"label": r['label'], "value": r['value']} for r in cur.fetchall()]
 
-    def obtener_ingresos_mensuales(self, limite: int = 6) -> List[Dict[str, Any]]:
-        query = """
-            WITH months AS (
-                SELECT generate_series(DATE_TRUNC('month', CURRENT_DATE) - (INTERVAL '1 month' * %s),
-                                     DATE_TRUNC('month', CURRENT_DATE), '1 month'::interval) as month
-            )
-            SELECT TO_CHAR(m.month, 'Mon') as label, COALESCE(SUM(p.monto), 0) as value
-            FROM months m
-            LEFT JOIN pago_suscripcion p ON DATE_TRUNC('month', p.fecha_pago) = m.month 
-                 AND p.estado IN ('PAGADO', 'COMPLETED')
-            GROUP BY m.month ORDER BY m.month ASC
-        """
+    def obtener_ingresos_mensuales(self, limite: int = 6, vendedor_id=None) -> List[Dict[str, Any]]:
+        # Para vendedor son sus comisiones, para superadmin son suscripciones
+        if vendedor_id:
+             query = """
+                WITH months AS (
+                    SELECT generate_series(DATE_TRUNC('month', CURRENT_DATE) - (INTERVAL '1 month' * %s),
+                                         DATE_TRUNC('month', CURRENT_DATE), '1 month'::interval) as month
+                )
+                SELECT TO_CHAR(m.month, 'Mon') as label, COALESCE(SUM(c.monto), 0) as value
+                FROM months m
+                LEFT JOIN comision c ON DATE_TRUNC('month', c.fecha_creacion) = m.month 
+                     AND c.vendedor_id = %s AND c.estado = 'PAGADA'
+                GROUP BY m.month ORDER BY m.month ASC
+            """
+             params = (limite - 1, vendedor_id)
+        else:
+            query = """
+                WITH months AS (
+                    SELECT generate_series(DATE_TRUNC('month', CURRENT_DATE) - (INTERVAL '1 month' * %s),
+                                         DATE_TRUNC('month', CURRENT_DATE), '1 month'::interval) as month
+                )
+                SELECT TO_CHAR(m.month, 'Mon') as label, COALESCE(SUM(p.monto), 0) as value
+                FROM months m
+                LEFT JOIN pago_suscripcion p ON DATE_TRUNC('month', p.fecha_pago) = m.month 
+                     AND p.estado IN ('PAGADO', 'COMPLETED')
+                GROUP BY m.month ORDER BY m.month ASC
+            """
+            params = (limite - 1,)
+
         with self.db.cursor() as cur:
-            cur.execute(query, (limite - 1,))
+            cur.execute(query, params)
             return [{"label": r['label'], "value": float(r['value'])} for r in cur.fetchall()]
 
     def obtener_empresas_por_plan(self) -> List[Dict[str, Any]]:

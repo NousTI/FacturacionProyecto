@@ -2,12 +2,20 @@ from pydantic import BaseModel
 from typing import List, Dict, Any, Optional
 
 class DashboardKPIs(BaseModel):
-    empresas_activas: int
-    ingresos_mensuales: float
-    comisiones_pendientes: float
-    pagos_atrasados: int
-    empresas_por_vencer: int
-    variacion_ingresos: float
+    # Superadmin / Vendedor
+    empresas_activas: Optional[int] = None
+    ingresos_mensuales: Optional[float] = None
+    comisiones_pendientes: Optional[float] = None
+    pagos_atrasados: Optional[int] = None
+    empresas_por_vencer: Optional[int] = None
+    variacion_ingresos: Optional[float] = 0.0
+    
+    # Empresa
+    ventas_mes: Optional[float] = None
+    ventas_hoy: Optional[float] = None
+    cuentas_cobrar: Optional[float] = None
+    productos_stock_bajo: Optional[int] = None
+    facturas_rechazadas: Optional[int] = None
 
 class DashboardAlerta(BaseModel):
     tipo: str

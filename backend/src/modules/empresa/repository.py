@@ -138,6 +138,24 @@ class RepositorioEmpresa:
             cur.execute(query, tuple(params))
             return [dict(row) for row in cur.fetchall()]
 
+    def obtener_estadisticas(self, vendedor_id: Optional[UUID] = None) -> dict:
+        query = """
+            SELECT 
+                COUNT(*) as total,
+                COUNT(*) FILTER (WHERE activo = true) as activas,
+                COUNT(*) FILTER (WHERE activo = false) as inactivas
+            FROM empresa
+        """
+        params = []
+        if vendedor_id:
+            query += " WHERE vendedor_id = %s"
+            params.append(str(vendedor_id))
+            
+        with self.db.cursor() as cur:
+            cur.execute(query, tuple(params))
+            row = cur.fetchone()
+            return dict(row) if row else {"total": 0, "activas": 0, "inactivas": 0}
+
     def actualizar_empresa(self, empresa_id: UUID, data: dict) -> Optional[dict]:
         if not data: return None
         

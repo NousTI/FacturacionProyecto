@@ -11,8 +11,8 @@ import { Observable, map } from 'rxjs';
         <div class="logo-text d-flex align-items-center">
             <div class="logo-icon me-2">
                 <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="width: 24px;">
-                    <path d="M7 14L12 9L17 14" stroke="#4facfe" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-                    <path d="M7 18L12 13L17 18" stroke="#4facfe" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" opacity="0.3"/>
+                    <path d="M7 14L12 9L17 14" stroke="#161d35" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M7 18L12 13L17 18" stroke="#161d35" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" opacity="0.3"/>
                 </svg>
             </div>
             <span class="fw-bold fs-5">NousTI</span>
@@ -23,8 +23,8 @@ import { Observable, map } from 'rxjs';
         <div class="menu-section mb-4">
           <span class="menu-label px-3 text-muted mb-2 d-block">GENERAL</span>
           <div class="list-group list-group-flush border-0">
-            <a *ngIf="isSuperadmin$ | async" routerLink="/dashboard" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" class="menu-item px-3 mb-1">
-              <i class="bi bi-grid-fill me-3"></i> Dashboard
+            <a routerLink="/dashboard" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" class="menu-item px-3 mb-1">
+              <i class="bi bi-grid-fill me-3"></i> Dashboard {{ dashboardRoleSuffix$ | async }}
             </a>
             
             <ng-container *ngIf="isSuperadmin$ | async">
@@ -42,14 +42,7 @@ import { Observable, map } from 'rxjs';
               </a>
             </ng-container>
 
-            <ng-container *ngIf="isVendedor$ | async">
-               <a routerLink="/dashboard/facturas" routerLinkActive="active" class="menu-item px-3 mb-1">
-                <i class="bi bi-receipt me-3"></i> Facturación
-              </a>
-               <a routerLink="/dashboard/clientes" routerLinkActive="active" class="menu-item px-3 mb-1">
-                <i class="bi bi-person-lines-fill me-3"></i> Clientes
-              </a>
-            </ng-container>
+            <!-- Removed vendor specific links for now as per "ONLY Dashboard" instruction -->
           </div>
         </div>
 
@@ -74,7 +67,7 @@ import { Observable, map } from 'rxjs';
           </div>
         </div>
 
-        <div class="menu-section mb-4">
+        <div class="menu-section mb-4" *ngIf="isSuperadmin$ | async">
           <span class="menu-label px-3 text-muted mb-2 d-block">OTROS</span>
           <div class="list-group list-group-flush border-0">
             <a routerLink="/dashboard/soporte" routerLinkActive="active" class="menu-item px-3 mb-1">
@@ -109,9 +102,9 @@ import { Observable, map } from 'rxjs';
       color: #0f172a;
     }
     .menu-item.active {
-      background: #4facfe;
+      background: #161d35;
       color: white;
-      box-shadow: 0 4px 12px rgba(79, 172, 254, 0.2);
+      box-shadow: 0 4px 12px rgba(22, 29, 53, 0.2);
     }
     .menu-item i {
       font-size: 1.1rem;
@@ -134,6 +127,7 @@ import { Observable, map } from 'rxjs';
   standalone: false
 })
 export class SidebarComponent {
+  dashboardRoleSuffix$: Observable<string>;
   role$: Observable<UserRole | null>;
   isSuperadmin$: Observable<boolean>;
   isVendedor$: Observable<boolean>;
@@ -143,16 +137,16 @@ export class SidebarComponent {
     this.role$ = this.authFacade.user$.pipe(map(user => user?.role as UserRole));
 
     this.isSuperadmin$ = this.role$.pipe(map(role => role === UserRole.SUPERADMIN));
-    this.isVendedor$ = this.role$.pipe(map(role => role === UserRole.VENDEDOR || role === UserRole.SUPERADMIN)); // Superadmin also sees seller stuff usually? Or strictly separated which is better.
-    // Making it strict per prompts instructions "Sidebar con opciones de sistema" for superadmin, "Sidebar limitada" for vendedor.
-    // I'll assume they stack permissions usually, but prompting said "UI de vendedor" vs "UI de superadmin".
-    // I will keep them cumulative or separate?
-    // "Si es SUPERADMIN: Sidebar con opciones de sistema (placeholder por ahora)"
-    // "Si es VENDEDOR: Sidebar limitada a su rol"
-    // I will use precise checks.
-
-    this.isSuperadmin$ = this.role$.pipe(map(role => role === UserRole.SUPERADMIN));
     this.isVendedor$ = this.role$.pipe(map(role => role === UserRole.VENDEDOR));
     this.isUsuario$ = this.role$.pipe(map(role => role === UserRole.USUARIO));
+
+    this.dashboardRoleSuffix$ = this.role$.pipe(
+      map(role => {
+        if (role === UserRole.SUPERADMIN) return '';
+        if (role === UserRole.VENDEDOR) return '(Vendedor)';
+        if (role === UserRole.USUARIO) return '(Usuario)';
+        return '';
+      })
+    );
   }
 }

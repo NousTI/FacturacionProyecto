@@ -2,7 +2,7 @@ from decimal import Decimal
 from uuid import UUID
 from datetime import date, datetime
 from typing import Optional, List, Dict, Any
-from pydantic import BaseModel
+from pydantic import BaseModel, field_validator
 
 class PlanBase(BaseModel):
     codigo: str
@@ -18,6 +18,13 @@ class PlanBase(BaseModel):
     visible_publico: bool = True
     activo: bool = True
     orden: int = 0
+
+    @field_validator('caracteristicas', mode='before')
+    @classmethod
+    def normalizar_caracteristicas(cls, v):
+        if isinstance(v, dict):
+            return [{'nombre': str(k), 'descripcion': str(val)} for k, val in v.items()]
+        return v
 
 class PlanCreacion(PlanBase):
     pass

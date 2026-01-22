@@ -14,9 +14,6 @@ import { Router, NavigationEnd, ActivatedRoute } from '@angular/router';
           <h5 class="fw-bold mb-0 text-dark">{{ pageTitle }}</h5>
           <div class="d-flex align-items-center">
             <span class="text-muted small me-3">{{ pageDescription }}</span>
-            <span class="text-primary small fw-medium">
-              <i class="bi bi-calendar3 me-1"></i> {{ today | date:'dd MMMM, yyyy' }}
-            </span>
           </div>
         </div>
 

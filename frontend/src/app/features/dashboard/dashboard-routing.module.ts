@@ -1,6 +1,7 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { DashboardHomePage } from './pages/home/dashboard-home.page';
+import { EmpresasPage } from './pages/empresas/empresas.page';
 import { ProfilePage } from './pages/profile/profile.page';
 import { MaintenanceComponent } from '../../shared/components/maintenance/maintenance.component';
 import { RoleGuard } from '../../core/guards/role.guard';
@@ -11,13 +12,13 @@ const routes: Routes = [
         path: '',
         component: DashboardHomePage,
         canActivate: [RoleGuard],
-        data: { title: 'Dashboard', roles: [UserRole.SUPERADMIN], description: 'Vista general del sistema' }
+        data: { title: 'Dashboard', roles: [UserRole.SUPERADMIN, UserRole.VENDEDOR, UserRole.USUARIO], description: 'Vista general del sistema' }
     },
     { path: 'perfil', component: ProfilePage, data: { title: 'Perfil', description: 'Gestiona tu cuenta' } },
     { path: 'facturas', component: MaintenanceComponent, data: { title: 'Facturación', description: 'Emisión y control de facturas' } },
     { path: 'clientes', component: MaintenanceComponent, data: { title: 'Clientes', description: 'Listado de clientes registrados' } },
     { path: 'productos', component: MaintenanceComponent, data: { title: 'Productos', description: 'Gestión de productos y servicios' } },
-    { path: 'empresas', component: MaintenanceComponent, data: { title: 'Empresas', description: 'Empresas activas y suspendidas' } },
+    { path: 'empresas', component: EmpresasPage, canActivate: [RoleGuard], data: { title: 'Empresas', roles: [UserRole.SUPERADMIN], description: 'Empresas activas y suspendidas' } },
     { path: 'suscripciones', component: MaintenanceComponent, data: { title: 'Suscripciones y Pagos', description: 'Planes activos y cobros' } },
     { path: 'finanzas', component: MaintenanceComponent, data: { title: 'Finanzas', description: 'Estado financiero global' } },
     { path: 'vendedores', component: MaintenanceComponent, data: { title: 'Vendedores', description: 'Gestión de fuerza de ventas' } },

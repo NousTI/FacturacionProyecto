@@ -1,12 +1,19 @@
 from fastapi import APIRouter, Depends, Body, Path
 from typing import List
 from uuid import UUID
-from .schemas import EmpresaCreacion, EmpresaActualizacion, EmpresaLectura
+from .schemas import EmpresaCreacion, EmpresaActualizacion, EmpresaLectura, EmpresaAsignarVendedor
 from .service import ServicioEmpresa
 from ..autenticacion.dependencies import obtener_usuario_actual
 from ...utils.response import success_response
 
 router = APIRouter()
+
+@router.get("/stats")
+def obtener_estadisticas(
+    usuario: dict = Depends(obtener_usuario_actual),
+    servicio: ServicioEmpresa = Depends()
+):
+    return servicio.obtener_estadisticas(usuario)
 
 @router.post("/", response_model=EmpresaLectura, status_code=201)
 def crear_empresa(
@@ -61,16 +68,11 @@ def toggle_active(
 @router.patch("/{empresa_id}/assign-vendor", response_model=EmpresaLectura)
 def assign_vendor(
     empresa_id: UUID,
-    payload: dict = Body(..., embed=True), # expects {"vendedor_id": "uuid"} wrapped or plain? 
-    # Legacy used embed=False but body example showed dict.
-    # Body(..., example={"vendedor_id": "..."}) -> Payload is the dict.
-    # Let's extract straightforwardly.
+    datos: EmpresaAsignarVendedor,
     usuario: dict = Depends(obtener_usuario_actual),
     servicio: ServicioEmpresa = Depends()
 ):
-    # If payload comes as {"vendedor_id": "..."}
-    vid = payload.get("vendedor_id")
-    return servicio.assign_vendor(empresa_id, vid, usuario)
+    return servicio.assign_vendor(empresa_id, datos.vendedor_id, usuario)
 
 @router.post("/{empresa_id}/change-plan")
 def change_plan(
@@ -80,5 +82,7 @@ def change_plan(
     servicio: ServicioEmpresa = Depends()
 ):
     pid = payload.get("plan_id")
-    servicio.change_plan(empresa_id, pid, usuario)
+    monto = payload.get("monto")
+    observaciones = payload.get("observaciones")
+    servicio.change_plan(empresa_id, pid, usuario, monto, observaciones)
     return success_response(None, "Plan cambiado correctamente")

@@ -43,8 +43,12 @@ class ServicioEmpresa:
                  level="WARNING"
              )
         
-        payload = datos.model_dump(exclude_unset=True)
-        
+        # Extract non-model fields (payment info)
+        plan_id = payload.pop('plan_id', None)
+        monto_pago = payload.pop('monto_pago', None)
+        metodo_pago = payload.pop('metodo_pago', 'MANUAL_SUPERADMIN')
+        observacion_pago = payload.pop('observacion_pago', None)
+
         if not ctx["is_superadmin"]:
             if not ctx["user_id"]:
                   raise AppError(
@@ -56,7 +60,32 @@ class ServicioEmpresa:
             payload['vendedor_id'] = ctx["user_id"]
             
         try:
+             # 1. Create Empresa
              nueva = self.repo.crear_empresa(payload)
+             
+             # 2. Create Initial Subscription (if plan_id provided)
+             if nueva and plan_id:
+                 subscription_data = {
+                    "empresa_id": nueva['id'],
+                    "plan_id": plan_id,
+                    "monto": monto_pago if monto_pago is not None else 0, # Default to 0 or plan price handled in frontend? Schema says default None.
+                    "fecha_pago": datetime.now(),
+                    "fecha_inicio_periodo": datetime.now(),
+                    "fecha_fin_periodo": datetime.now() + timedelta(days=30), # TODO: Get plan duration dynamically
+                    "metodo_pago": metodo_pago,
+                    "estado": "PAGADO",
+                    "registrado_por": ctx["user_id"] if ctx["is_superadmin"] else None,
+                    "observaciones": observacion_pago or f"Suscripción inicial (Creada por {ctx['user_id']})"
+                 }
+                 self.repo.create_manual_subscription(subscription_data)
+                 
+                 # Update empresa expiration
+                 self.repo.actualizar_empresa(nueva['id'], {
+                     "estado_suscripcion": SubscriptionStatus.ACTIVA,
+                     "fecha_activacion": datetime.now(),
+                     "fecha_vencimiento": subscription_data["fecha_fin_periodo"]
+                 })
+
              return nueva
         except Exception as e:
              if "vendedor_id" in str(e) and "viol" in str(e):
@@ -137,6 +166,22 @@ class ServicioEmpresa:
             message=AppMessages.PERM_FORBIDDEN, 
             status_code=403, 
             code=ErrorCodes.PERM_FORBIDDEN
+        )
+
+    def obtener_estadisticas(self, usuario_actual: dict):
+        ctx = self._get_context(usuario_actual)
+        
+        if ctx["is_superadmin"]:
+            return self.repo.obtener_estadisticas()
+            
+        if ctx["is_vendedor"]:
+            return self.repo.obtener_estadisticas(vendedor_id=ctx["user_id"])
+            
+        raise AppError(
+            message=AppMessages.PERM_FORBIDDEN, 
+            status_code=403, 
+            code=ErrorCodes.PERM_FORBIDDEN,
+            description="No tienes permiso para ver estadísticas"
         )
 
     def list_empresas(self, usuario_actual: dict, vendedor_id: Optional[UUID] = None):
@@ -244,7 +289,7 @@ class ServicioEmpresa:
                  description="Error al asignar vendedor (ID inválido o inexistente)"
              )
 
-    def change_plan(self, empresa_id: UUID, plan_id: UUID, usuario_actual: dict):
+    def change_plan(self, empresa_id: UUID, plan_id: UUID, usuario_actual: dict, monto: float = 0, observaciones: str = None):
         ctx = self._get_context(usuario_actual)
         if not ctx["is_superadmin"]:
              raise AppError(
@@ -264,14 +309,14 @@ class ServicioEmpresa:
         subscription_data = {
             "empresa_id": empresa_id,
             "plan_id": plan_id,
-            "monto": 0,
+            "monto": monto,
             "fecha_pago": datetime.now(),
             "fecha_inicio_periodo": datetime.now(),
             "fecha_fin_periodo": datetime.now() + timedelta(days=30), 
             "metodo_pago": "MANUAL_SUPERADMIN",
             "estado": "PAGADO",
-            "registrado_por": None,
-            "observaciones": f"Cambio de plan manual por Superadmin (ID: {ctx['user_id']})"
+            "registrado_por": None, # Should refer to creator if possible, but schema allows NULL.
+            "observaciones": observaciones or f"Cambio de plan manual por Superadmin (ID: {ctx['user_id']})"
         }
         
         if not self.repo.create_manual_subscription(subscription_data):
@@ -285,7 +330,8 @@ class ServicioEmpresa:
         updates = {
             "estado_suscripcion": SubscriptionStatus.ACTIVA,
             "fecha_activacion": datetime.now() if not empresa.get('fecha_activacion') else empresa['fecha_activacion'],
-            "fecha_vencimiento": subscription_data["fecha_fin_periodo"]
+            "fecha_vencimiento": subscription_data["fecha_fin_periodo"],
+            # Also update plan linkage in empresa if stored denormalized? No, it's looked up.
         }
         
         return self.repo.actualizar_empresa(empresa_id, updates)

@@ -1,17 +1,23 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { finalize } from 'rxjs/operators';
+import { finalize, map } from 'rxjs/operators';
+import { Observable } from 'rxjs';
 import { StatCardComponent } from '../../components/stat-card/stat-card.component';
 import { AlertCardComponent, DashboardAlert } from '../../components/alert-card/alert-card.component';
 import { ChartCardComponent } from '../../components/chart-card/chart-card.component';
 import { HorizontalBarCardComponent } from '../../components/horizontal-bar-card/horizontal-bar-card.component';
 import { DashboardService, DashboardKPIs, DashboardAlertas } from '../../services/dashboard.service';
+import { MaintenanceComponent } from '../../../../shared/components/maintenance/maintenance.component';
+import { AuthFacade } from '../../../../core/auth/auth.facade';
+import { UserRole } from '../../../../domain/enums/role.enum';
 
 @Component({
   selector: 'app-dashboard-home',
   template: `
     <div class="dashboard-container">
-      <!-- Main KPIs -->
+      <!-- Maintenance Card for non-Superadmins -->
+      <ng-container *ngIf="isSuperadmin$ | async; else maintenance">
+        <!-- Main KPIs -->
       <!-- Main KPIs -->
       <div *ngIf="error" class="row mb-5">
         <div class="col-12">
@@ -93,6 +99,11 @@ import { DashboardService, DashboardKPIs, DashboardAlertas } from '../../service
           </app-horizontal-bar-card>
         </div>
       </div>
+      </ng-container>
+
+      <ng-template #maintenance>
+        <app-maintenance></app-maintenance>
+      </ng-template>
     </div>
   `,
   styles: [`
@@ -106,7 +117,7 @@ import { DashboardService, DashboardKPIs, DashboardAlertas } from '../../service
     }
   `],
   standalone: true,
-  imports: [CommonModule, StatCardComponent, AlertCardComponent, ChartCardComponent, HorizontalBarCardComponent]
+  imports: [CommonModule, StatCardComponent, AlertCardComponent, ChartCardComponent, HorizontalBarCardComponent, MaintenanceComponent]
 })
 export class DashboardHomePage implements OnInit {
   // KPIs
@@ -120,11 +131,15 @@ export class DashboardHomePage implements OnInit {
   // Charts
   incomeData: { label: string, value: number }[] = [];
   plansData: { label: string, value: number, percent: number, color?: string }[] = [];
+  isSuperadmin$: Observable<boolean>;
 
   constructor(
     private dashboardService: DashboardService,
+    private authFacade: AuthFacade,
     private cdr: ChangeDetectorRef
-  ) { }
+  ) {
+    this.isSuperadmin$ = this.authFacade.user$.pipe(map(user => user?.role === UserRole.SUPERADMIN));
+  }
 
   ngOnInit() {
     this.loadDashboardData();
