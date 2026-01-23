@@ -27,6 +27,18 @@ class EstrategiaAuthSuperadmin(EstrategiaAuth):
                 status_code=401,
                 code="AUTH_SESSION_INVALID"
             )
+
+        if 'expires_at' in session:
+            expires_at = session['expires_at']
+            if expires_at.tzinfo is None:
+                expires_at = expires_at.replace(tzinfo=timezone.utc)
+            
+            if expires_at < datetime.now(timezone.utc):
+                 raise AppError(
+                    message="Sesión de Superadmin expirada",
+                    status_code=401,
+                    code="AUTH_SESSION_EXPIRED"
+                )
         
         with conn.cursor() as cur:
             cur.execute("SELECT * FROM superadmin WHERE id = %s", (user_id,))

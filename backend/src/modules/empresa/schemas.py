@@ -10,7 +10,7 @@ class EmpresaBase(BaseModel):
     razon_social: str = Field(..., min_length=3)
     nombre_comercial: Optional[str] = None
     email: EmailStr
-    telefono: Optional[str] = Field(None, pattern=r"^([0-9]{7,10})?$")
+    telefono: Optional[str] = Field(None, pattern=r"^([0-9]{10})?$")
     direccion: str = Field(..., min_length=5)
     logo_url: Optional[str] = None
     activo: bool = True
@@ -68,6 +68,7 @@ class EmpresaLectura(EmpresaBase):
     fecha_vencimiento: Optional[datetime] = None
     plan: Optional[str] = None
     plan_id: Optional[UUID] = None
+    vendedor_name: Optional[str] = None
     fecha_inicio_plan: Optional[datetime] = None
     fecha_fin_plan: Optional[datetime] = None
     created_at: datetime

@@ -29,21 +29,23 @@ class ServicioEmpresa:
 
         if not ctx["is_superadmin"] and not ctx["is_vendedor"]:
              raise AppError(
-                 message=AppMessages.PERM_FORBIDDEN, 
+                 message="Acceso Denegado", 
                  status_code=403, 
                  code=ErrorCodes.PERM_FORBIDDEN,
-                 description="No autorizado para crear empresas"
+                 description="No tienes permisos suficientes para registrar nuevas empresas."
              )
 
         if self.repo.obtener_por_ruc(datos.ruc):
              raise AppError(
-                 message="El RUC ingresado ya se encuentra registrado.", 
+                 message="RUC Duplicado", 
                  status_code=400, 
                  code=ErrorCodes.DB_CONSTRAINT_VIOLATION,
+                 description="El RUC ingresado ya se encuentra registrado en el sistema.",
                  level="WARNING"
              )
         
         # Extract non-model fields (payment info)
+        payload = datos.model_dump()
         plan_id = payload.pop('plan_id', None)
         monto_pago = payload.pop('monto_pago', None)
         metodo_pago = payload.pop('metodo_pago', 'MANUAL_SUPERADMIN')
@@ -74,7 +76,7 @@ class ServicioEmpresa:
                     "fecha_fin_periodo": datetime.now() + timedelta(days=30), # TODO: Get plan duration dynamically
                     "metodo_pago": metodo_pago,
                     "estado": "PAGADO",
-                    "registrado_por": ctx["user_id"] if ctx["is_superadmin"] else None,
+                    "registrado_por": None,
                     "observaciones": observacion_pago or f"Suscripción inicial (Creada por {ctx['user_id']})"
                  }
                  self.repo.create_manual_subscription(subscription_data)
@@ -197,9 +199,10 @@ class ServicioEmpresa:
         if 'ruc' in payload and payload['ruc'] != current['ruc']:
              if self.repo.obtener_por_ruc(payload['ruc']):
                  raise AppError(
-                     message="El RUC ya está en uso por otra empresa.", 
+                     message="RUC Duplicado", 
                      status_code=400, 
                      code=ErrorCodes.DB_CONSTRAINT_VIOLATION,
+                     description="No se puede actualizar el RUC porque ya pertenece a otra empresa.",
                      level="WARNING"
                  )
                  

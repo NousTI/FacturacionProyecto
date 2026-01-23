@@ -1,14 +1,15 @@
 from uuid import UUID
 from datetime import datetime
-from typing import Optional, Dict, Any
-from pydantic import BaseModel, EmailStr, Field
+from typing import Optional, Dict, Any, List
+from pydantic import BaseModel, EmailStr, Field, field_validator
+from ...utils.validators import validar_identificacion
 
 class VendedorBase(BaseModel):
     email: EmailStr
     nombres: str
     apellidos: str
-    telefono: Optional[str] = None
-    documento_identidad: Optional[str] = None
+    telefono: Optional[str] = Field(None, pattern=r"^([0-9]{10})?$")
+    documento_identidad: Optional[str] = Field(None, pattern=r"^([0-9]{10,13})?$")
     porcentaje_comision: Optional[float] = None
     porcentaje_comision_inicial: Optional[float] = None
     porcentaje_comision_recurrente: Optional[float] = None
@@ -19,6 +20,13 @@ class VendedorBase(BaseModel):
     activo: bool = True
     configuracion: Optional[Dict[str, Any]] = None
 
+    @field_validator("documento_identidad")
+    @classmethod
+    def validar_documento(cls, v: str) -> Optional[str]:
+        if v is not None and not validar_identificacion(v):
+            raise ValueError("La identificación (Cédula o RUC) no es válida según los algoritmos del SRI.")
+        return v
+
 class VendedorCreacion(VendedorBase):
     password: str = Field(..., min_length=6)
 
@@ -26,8 +34,8 @@ class VendedorActualizacion(BaseModel):
     email: Optional[EmailStr] = None
     nombres: Optional[str] = None
     apellidos: Optional[str] = None
-    telefono: Optional[str] = None
-    documento_identidad: Optional[str] = None
+    telefono: Optional[str] = Field(None, pattern=r"^([0-9]{10})?$")
+    documento_identidad: Optional[str] = Field(None, pattern=r"^([0-9]{10,13})?$")
     porcentaje_comision: Optional[float] = None
     porcentaje_comision_inicial: Optional[float] = None
     porcentaje_comision_recurrente: Optional[float] = None
@@ -45,6 +53,22 @@ class VendedorLectura(VendedorBase):
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
     last_login: Optional[datetime] = None
+    
+    # Statistical fields
+    empresas_asignadas: Optional[int] = 0
+    empresas_activas: Optional[int] = 0
+    ingresos_generados: Optional[float] = 0.0
 
     class Config:
         from_attributes = True
+
+class VendedorStats(BaseModel):
+    total: int
+    activos: int
+    inactivos: int
+    empresas_totales: int
+    ingresos_generados: float
+
+class ReasignacionEmpresas(BaseModel):
+    vendedor_destino_id: UUID
+    empresa_ids: Optional[List[UUID]] = None

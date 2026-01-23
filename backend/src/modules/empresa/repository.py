@@ -65,7 +65,8 @@ class RepositorioEmpresa:
                 AND ps.estado IN ('PAGADO', 'COMPLETED') 
                 ORDER BY ps.fecha_inicio_periodo DESC 
                 LIMIT 1
-            ) as fecha_fin_plan
+            ) as fecha_fin_plan,
+            (SELECT v.nombres || ' ' || v.apellidos FROM vendedor v WHERE v.id = e.vendedor_id) as vendedor_name
             FROM empresa e 
             WHERE e.id = %s
         """
@@ -115,7 +116,8 @@ class RepositorioEmpresa:
                 AND ps.estado IN ('PAGADO', 'COMPLETED') 
                 ORDER BY ps.fecha_inicio_periodo DESC 
                 LIMIT 1
-            ) as fecha_fin_plan
+            ) as fecha_fin_plan,
+            (SELECT v.nombres || ' ' || v.apellidos FROM vendedor v WHERE v.id = e.vendedor_id) as vendedor_name
             FROM empresa e
         """
         params = []

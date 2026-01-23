@@ -6,7 +6,7 @@ import { ToastComponent } from '../../../../shared/components/toast/toast.compon
 import { EmpresaStatsComponent } from './components/empresa-stats/empresa-stats.component';
 import { EmpresaActionsComponent } from './components/empresa-actions/empresa-actions.component';
 import { EmpresaTableComponent } from './components/empresa-table/empresa-table.component';
-import { ConfirmModalComponent } from './components/confirm-modal/confirm-modal.component';
+import { ConfirmModalComponent } from '../../../../shared/components/confirm-modal/confirm-modal.component';
 import { ChangePlanModalComponent } from './components/change-plan-modal/change-plan-modal.component';
 import { AssignVendedorModalComponent } from './components/assign-vendedor-modal/assign-vendedor-modal.component';
 import { EmpresaDetailsModalComponent } from './components/empresa-details-modal/empresa-details-modal.component';
@@ -183,6 +183,7 @@ export class EmpresasPage implements OnInit {
           ...e,
           razonSocial: e.razon_social,
           estado: e.activo ? 'ACTIVO' : 'INACTIVO',
+          vendedorName: e.vendedor_name,
           fechaVencimiento: e.fecha_vencimiento ? new Date(e.fecha_vencimiento) : null
         }));
         this.cd.detectChanges();
@@ -255,7 +256,7 @@ export class EmpresasPage implements OnInit {
           );
           this.loadStats(); // Refrescar stats
         },
-        error: (err) => this.uiService.showToast('Error al cambiar estado', 'danger')
+        error: (err) => this.uiService.showError(err, 'Error de Estado')
       });
     } else if (this.confirmData.action === 'SUPPORT') {
       this.uiService.showToast('Accediendo al panel de la empresa...', 'info');
@@ -272,8 +273,7 @@ export class EmpresasPage implements OnInit {
         this.showPlanModal = false;
       },
       error: (err) => {
-        console.error('Error changing plan', err);
-        this.uiService.showToast('Error al actualizar el plan', 'danger');
+        this.uiService.showError(err, 'Error de Plan');
       }
     });
   }
@@ -289,8 +289,7 @@ export class EmpresasPage implements OnInit {
         this.showVendedorModal = false;
       },
       error: (err) => {
-        console.error('Error assigning vendor', err);
-        this.uiService.showToast('Error al asignar vendedor', 'danger');
+        this.uiService.showError(err, 'Error de Asignación');
       }
     });
   }
@@ -303,30 +302,7 @@ export class EmpresasPage implements OnInit {
         this.uiService.showToast('¡Empresa registrada exitosamente!', 'success');
       },
       error: (err) => {
-        console.error('Error creating empresa', err);
-        let errorTitle = 'Error al registrar empresa';
-        let errorDescription = 'Ocurrió un error inesperado al procesar la solicitud.';
-
-        if (err.error) {
-          if (typeof err.error.detail === 'string') {
-            errorDescription = err.error.detail;
-          } else if (Array.isArray(err.error.detail)) {
-            errorTitle = 'Error de Validación';
-            // Handle validation errors (array of objects)
-            const firstError = err.error.detail[0];
-            if (firstError && firstError.msg) {
-              errorDescription = firstError.msg;
-              // If it's a value error (checking specifically for "Value error,")
-              if (errorDescription.includes('Value error,')) {
-                errorDescription = errorDescription.split('Value error,')[1].trim();
-              }
-            } else {
-              errorDescription = JSON.stringify(err.error.detail);
-            }
-          }
-        }
-
-        this.uiService.showToast(errorTitle, 'danger', errorDescription);
+        this.uiService.showError(err, 'Error de Registro');
       }
     });
 

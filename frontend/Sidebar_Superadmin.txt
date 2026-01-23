@@ -1,8 +1,8 @@
 Dashboard
 Empresas
+Vendedores
 Suscripciones y Pagos
 Finanzas
-Vendedores
 Comisiones
 Planes
 Certificados SRI

@@ -2,9 +2,9 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 @Component({
-    selector: 'app-confirm-modal',
-    template: `
-    <div class="modal-overlay animate__animated animate__fadeIn animate__faster" (click)="onCancel.emit()">
+  selector: 'app-confirm-modal',
+  template: `
+    <div class="modal-overlay animate__animated animate__fadeIn animate__faster" (click)="!loading && onCancel.emit()">
       <div class="modal-container-confirm shadow-premium" (click)="$event.stopPropagation()">
         
         <div class="modal-body-confirm text-center">
@@ -23,16 +23,17 @@ import { CommonModule } from '@angular/common';
         </div>
 
         <div class="modal-footer-confirm">
-          <button (click)="onCancel.emit()" class="btn-confirm-secondary">Cancelar</button>
-          <button (click)="onConfirm.emit()" class="btn-confirm-primary" [ngClass]="type">
-            {{ confirmText }}
+          <button (click)="onCancel.emit()" [disabled]="loading" class="btn-confirm-secondary">Cancelar</button>
+          <button (click)="onConfirm.emit()" [disabled]="loading" class="btn-confirm-primary d-flex align-items-center justify-content-center gap-2" [ngClass]="type">
+            <span *ngIf="loading" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+            {{ loading ? 'Procesando...' : confirmText }}
           </button>
         </div>
 
       </div>
     </div>
   `,
-    styles: [`
+  styles: [`
     .modal-overlay {
       position: fixed;
       top: 0;
@@ -122,17 +123,18 @@ import { CommonModule } from '@angular/common';
       box-shadow: 0 40px 80px -20px rgba(22, 29, 53, 0.25);
     }
   `],
-    standalone: true,
-    imports: [CommonModule]
+  standalone: true,
+  imports: [CommonModule]
 })
 export class ConfirmModalComponent {
-    @Input() title: string = '¿Estás seguro?';
-    @Input() message: string = 'Esta acción no se puede deshacer.';
-    @Input() confirmText: string = 'Confirmar';
-    @Input() type: 'danger' | 'success' | 'primary' = 'primary';
-    @Input() icon: string = 'bi-exclamation-circle';
-    @Input() empresaName: string = '';
+  @Input() title: string = '¿Estás seguro?';
+  @Input() message: string = 'Esta acción no se puede deshacer.';
+  @Input() confirmText: string = 'Confirmar';
+  @Input() type: 'danger' | 'success' | 'primary' = 'primary';
+  @Input() icon: string = 'bi-exclamation-circle';
+  @Input() empresaName: string = '';
+  @Input() loading: boolean = false;
 
-    @Output() onConfirm = new EventEmitter<void>();
-    @Output() onCancel = new EventEmitter<void>();
+  @Output() onConfirm = new EventEmitter<void>();
+  @Output() onCancel = new EventEmitter<void>();
 }

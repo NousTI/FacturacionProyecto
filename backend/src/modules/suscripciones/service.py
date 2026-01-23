@@ -27,12 +27,43 @@ class ServicioSuscripciones:
     def listar_planes(self):
         return self.repo.listar_planes()
 
+    def obtener_plan(self, id: UUID):
+        return self.repo.obtener_plan_por_id(id)
+
+    def crear_plan(self, data: PlanCreacion, usuario_actual: dict):
+        if not usuario_actual.get(AuthKeys.IS_SUPERADMIN):
+            raise AppError("No autorizado", 403)
+        return self.repo.crear_plan(data.model_dump())
+
+    def actualizar_plan(self, id: UUID, data: any, usuario_actual: dict):
+        if not usuario_actual.get(AuthKeys.IS_SUPERADMIN):
+            raise AppError("No autorizado", 403)
+        plan = self.repo.actualizar_plan(id, data.model_dump(exclude_unset=True))
+        if not plan:
+            raise AppError("Plan no encontrado", 404)
+        return plan
+
+    def eliminar_plan(self, id: UUID, usuario_actual: dict):
+        if not usuario_actual.get(AuthKeys.IS_SUPERADMIN):
+            raise AppError("No autorizado", 403)
+        return self.repo.eliminar_plan(id)
+
+    def listar_empresas_por_plan(self, plan_id: UUID, usuario_actual: dict):
+        if not usuario_actual.get(AuthKeys.IS_SUPERADMIN):
+            raise AppError("No autorizado", 403)
+        return self.repo.listar_empresas_por_plan(plan_id)
+
+    def obtener_stats_dashboard(self, usuario_actual: dict):
+        if not usuario_actual.get(AuthKeys.IS_SUPERADMIN):
+            raise AppError("No autorizado", 403)
+        return self.repo.obtener_stats_dashboard()
+
     def registrar_pago_rapido(self, data: PagoSuscripcionQuick, usuario_actual: dict):
         if not usuario_actual.get(AuthKeys.IS_SUPERADMIN):
             raise AppError("Solo superadmin", 403, "AUTH_FORBIDDEN")
             
         plan = self.repo.obtener_plan_por_id(data.plan_id)
-        empresa = self.empresa_repo.obtener_por_id(data.empresa_id)
+        if not plan: raise AppError("Plan no encontrado", 404)
         
         monto = data.monto or plan['precio_mensual']
         fecha_inicio = data.fecha_inicio_periodo or datetime.now()
@@ -67,6 +98,12 @@ class ServicioSuscripciones:
         
         return {"id": pago_id, "mensaje": "Pago registrado y suscripción activada"}
 
-    def listar_pagos(self, usuario_actual: dict):
-        empresa_id = None if usuario_actual.get(AuthKeys.IS_SUPERADMIN) else usuario_actual.get('empresa_id')
+    def listar_pagos(self, usuario_actual: dict, empresa_id_filtro: Optional[UUID] = None):
+        # Si es superadmin, puede ver todo o filtrar por empresa
+        if usuario_actual.get(AuthKeys.IS_SUPERADMIN):
+            empresa_id = empresa_id_filtro
+        else:
+            # Si no es superadmin, solo ve su propia empresa
+            empresa_id = usuario_actual.get('empresa_id')
+            
         return self.repo.listar_pagos(empresa_id)

@@ -69,3 +69,18 @@ def _validar_cedula(cedula: str) -> bool:
     check_digit = int(cedula[9])
     res = (10 - (sum_total % 10)) % 10
     return res == check_digit
+
+def validar_identificacion(identificacion: str) -> bool:
+    """
+    Valida si una identificación es una Cédula (10 dígitos) o RUC (13 dígitos) válidos en Ecuador.
+    """
+    if not identificacion:
+        return False
+    
+    length = len(identificacion)
+    if length == 10:
+        return _validar_cedula(identificacion)
+    elif length == 13:
+        return validar_ruc(identificacion)
+    
+    return False

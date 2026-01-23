@@ -5,7 +5,7 @@ import { CommonModule } from '@angular/common';
   selector: 'app-empresa-table',
   template: `
     <section class="module-table">
-      <div class="table-container border-0">
+      <div class="table-container border-0 shadow-premium">
         <div class="table-responsive-premium">
           <table class="table mb-0 align-middle">
             <thead>
@@ -108,11 +108,11 @@ import { CommonModule } from '@angular/common';
       background: #ffffff;
       border-radius: 24px;
       border: 1px solid #f1f5f9;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02);
       position: relative;
+      z-index: 1;
+      overflow: visible !important;
     }
     .table-responsive-premium {
-      /* Eliminamos overflow hidden/scroll de Bootstrap para evitar clipping */
       overflow: visible !important;
     }
     .table {
@@ -130,6 +130,9 @@ import { CommonModule } from '@angular/common';
       color: #94a3b8;
       font-weight: 800;
       border-bottom: 2px solid #f1f5f9;
+      position: sticky;
+      top: 0;
+      z-index: 10;
     }
     .table thead th:first-child { border-top-left-radius: 24px; }
     .table thead th:last-child { border-top-right-radius: 24px; }
@@ -137,23 +140,19 @@ import { CommonModule } from '@angular/common';
     .table tbody tr {
       position: relative;
     }
+    .table tbody tr:focus-within,
     .table tbody tr:hover {
-      background: none !important;
-      z-index: 5;
+      z-index: 100;
     }
-
-    /* FIX: Asegurar que la fila con el menú abierto siempre esté por encima del hover de otras filas */
     .table tbody tr:has(.show),
     .table tbody tr:has(.btn-action-trigger[aria-expanded="true"]) {
-      z-index: 100 !important;
+      z-index: 10001 !important;
     }
     
-    /* FIX: No usar position: relative ni z-index en celdas individuales */
     .table tbody td {
       padding: 1.15rem 1.5rem;
       border-bottom: 1px solid #f8fafc;
       background: transparent;
-      position: relative; /* Necesario para que el dropdown se ancie correctamente */
     }
 
     .avatar-soft-premium {
@@ -167,8 +166,8 @@ import { CommonModule } from '@angular/common';
       padding: 0.4rem 0.85rem; border-radius: 100px;
       font-size: 0.75rem; font-weight: 800;
     }
-    .badge-status-premium.active { background: #dcfce7; color: #15803d; } /* Verde suave y texto verde oscuro */
-    .badge-status-premium.inactive { background: #fee2e2; color: #b91c1c; } /* Rojo suave y texto rojo oscuro */
+    .badge-status-premium.active { background: #dcfce7; color: #15803d; }
+    .badge-status-premium.inactive { background: #fee2e2; color: #b91c1c; }
 
     .btn-action-trigger {
       background: #f8fafc; border: none;
@@ -180,18 +179,16 @@ import { CommonModule } from '@angular/common';
       background: #161d35; color: #ffffff;
     }
 
-    /* FIX: El dropdown debe usar una posición fija o elevarse sobre todo */
-    /* FIX DEFINITIVO PARA DROPDOWNS EN TABLAS */
     .dropdown {
       position: relative;
     }
     .dropdown-menu {
-      z-index: 5000; /* Super elevación */
+      z-index: 10005 !important;
       min-width: 210px;
       border: 1px solid #e2e8f0 !important;
       box-shadow: 0 15px 35px rgba(22, 29, 53, 0.15) !important;
       margin-top: 5px !important;
-      pointer-events: auto !important; /* Asegurar clics */
+      pointer-events: auto !important;
     }
     .dropdown-item {
       font-size: 0.85rem; font-weight: 600;
@@ -209,6 +206,8 @@ import { CommonModule } from '@angular/common';
     .text-danger { color: #ef4444 !important; }
     .text-success { color: #22c55e !important; }
     .font-mono { font-family: 'DM Mono', monospace; }
+    .shadow-premium { box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.04); }
+    .shadow-premium-lg { box-shadow: 0 20px 40px -15px rgba(0, 10, 30, 0.15); }
   `],
   standalone: true,
   imports: [CommonModule]

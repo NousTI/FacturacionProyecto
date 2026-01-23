@@ -2,6 +2,7 @@ import { Component, EventEmitter, Output, OnInit, OnDestroy } from '@angular/cor
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { EmpresaService } from '../../services/empresa.service';
+import { SriValidators } from '../../../../../../shared/utils/sri-validators';
 
 @Component({
   selector: 'app-create-empresa-modal',
@@ -39,11 +40,15 @@ import { EmpresaService } from '../../services/empresa.service';
                     type="text" 
                     formControlName="ruc" 
                     class="input-final" 
+                    [class.is-invalid]="empresaForm.get('ruc')?.invalid && empresaForm.get('ruc')?.touched && empresaForm.get('ruc')?.value"
                     placeholder="1234567890001"
                     maxlength="13"
                     (keypress)="onlyNumbers($event)"
                   >
-                  <span class="hint-final">13 dígitos</span>
+                  <div class="error-feedback" *ngIf="empresaForm.get('ruc')?.invalid && empresaForm.get('ruc')?.touched && empresaForm.get('ruc')?.value">
+                    {{ empresaForm.get('ruc')?.errors?.['message'] || 'RUC inválido' }}
+                  </div>
+                  <span class="hint-final" *ngIf="!empresaForm.get('ruc')?.touched">13 dígitos</span>
                 </div>
                 <div class="col-md-12">
                   <label class="label-final">Tipo de Contribuyente *</label>
@@ -68,7 +73,12 @@ import { EmpresaService } from '../../services/empresa.service';
               <div class="row g-3">
                 <div class="col-md-7">
                   <label class="label-final">Correo Electrónico *</label>
-                  <input type="email" formControlName="email" class="input-final" placeholder="ejemplo@empresa.com">
+                  <input type="email" formControlName="email" class="input-final" 
+                    [class.is-invalid]="empresaForm.get('email')?.invalid && empresaForm.get('email')?.touched && empresaForm.get('email')?.value"
+                    placeholder="ejemplo@empresa.com">
+                  <div class="error-feedback" *ngIf="empresaForm.get('email')?.invalid && empresaForm.get('email')?.touched && empresaForm.get('email')?.value">
+                    Ingrese un correo electrónico válido
+                  </div>
                 </div>
                 <div class="col-md-5">
                   <label class="label-final">Teléfono</label>
@@ -76,11 +86,15 @@ import { EmpresaService } from '../../services/empresa.service';
                     type="text" 
                     formControlName="telefono" 
                     class="input-final" 
+                    [class.is-invalid]="empresaForm.get('telefono')?.invalid && empresaForm.get('telefono')?.touched && empresaForm.get('telefono')?.value"
                     placeholder="0999999999"
                     maxlength="10"
                     (keypress)="onlyNumbers($event)"
                   >
-                  <span class="hint-final">10 dígitos</span>
+                  <div class="error-feedback" *ngIf="empresaForm.get('telefono')?.invalid && empresaForm.get('telefono')?.touched && empresaForm.get('telefono')?.value">
+                    El teléfono debe tener 10 dígitos
+                  </div>
+                  <span class="hint-final" *ngIf="!empresaForm.get('telefono')?.touched">10 dígitos</span>
                 </div>
               </div>
             </div>
@@ -294,6 +308,17 @@ import { EmpresaService } from '../../services/empresa.service';
       background: #e2e8f0;
       border-radius: 10px;
     }
+    .input-final.is-invalid {
+      border-color: #ef4444;
+      background: #fffcfc;
+    }
+    .error-feedback {
+      color: #ef4444;
+      font-size: 0.75rem;
+      font-weight: 700;
+      margin-top: 0.4rem;
+      padding-left: 0.5rem;
+    }
   `],
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule]
@@ -312,7 +337,7 @@ export class CreateEmpresaModalComponent implements OnInit, OnDestroy {
     private empresaService: EmpresaService
   ) {
     this.empresaForm = this.fb.group({
-      ruc: ['', [Validators.required, Validators.pattern(/^[0-9]{13}$/)]],
+      ruc: ['', [Validators.required, SriValidators.rucEcuador()]],
       razon_social: ['', [Validators.required, Validators.minLength(3)]],
       nombre_comercial: [''],
       email: ['', [Validators.required, Validators.email]],

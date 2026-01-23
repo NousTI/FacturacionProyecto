@@ -31,14 +31,14 @@ import { Observable, map } from 'rxjs';
               <a routerLink="/dashboard/empresas" routerLinkActive="active" class="menu-item px-3 mb-1">
                 <i class="bi bi-building me-3"></i> Empresas
               </a>
+              <a routerLink="/dashboard/vendedores" routerLinkActive="active" class="menu-item px-3 mb-1">
+                <i class="bi bi-people me-3"></i> Vendedores
+              </a>
               <a routerLink="/dashboard/suscripciones" routerLinkActive="active" class="menu-item px-3 mb-1">
                 <i class="bi bi-credit-card me-3"></i> Suscripciones y Pagos
               </a>
               <a routerLink="/dashboard/finanzas" routerLinkActive="active" class="menu-item px-3 mb-1">
                 <i class="bi bi-wallet2 me-3"></i> Finanzas
-              </a>
-              <a routerLink="/dashboard/vendedores" routerLinkActive="active" class="menu-item px-3 mb-1">
-                <i class="bi bi-people me-3"></i> Vendedores
               </a>
             </ng-container>
 

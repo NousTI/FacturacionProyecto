@@ -6,6 +6,7 @@ import { NavbarComponent } from './components/navbar/navbar.component';
 import { SidebarComponent } from './components/sidebar/sidebar.component';
 import { PublicLayoutComponent } from './layouts/public-layout/public-layout.component';
 import { PrivateLayoutComponent } from './layouts/private-layout/private-layout.component';
+import { ToastComponent } from './components/toast/toast.component';
 
 @NgModule({
     declarations: [
@@ -17,7 +18,8 @@ import { PrivateLayoutComponent } from './layouts/private-layout/private-layout.
     imports: [
         CommonModule,
         RouterModule,
-        ReactiveFormsModule
+        ReactiveFormsModule,
+        ToastComponent
     ],
     exports: [
         CommonModule,
@@ -26,7 +28,8 @@ import { PrivateLayoutComponent } from './layouts/private-layout/private-layout.
         NavbarComponent,
         SidebarComponent,
         PublicLayoutComponent,
-        PrivateLayoutComponent
+        PrivateLayoutComponent,
+        ToastComponent
     ]
 })
 export class SharedModule { }

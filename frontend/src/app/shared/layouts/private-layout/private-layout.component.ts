@@ -11,6 +11,7 @@ import { Component } from '@angular/core';
           <router-outlet></router-outlet>
         </div>
       </div>
+      <app-toast></app-toast>
     </div>
   `,
   styles: [`
