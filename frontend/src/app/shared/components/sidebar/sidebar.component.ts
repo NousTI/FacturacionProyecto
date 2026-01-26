@@ -70,9 +70,6 @@ import { Observable, map } from 'rxjs';
         <div class="menu-section mb-4" *ngIf="isSuperadmin$ | async">
           <span class="menu-label px-3 text-muted mb-2 d-block">OTROS</span>
           <div class="list-group list-group-flush border-0">
-            <a routerLink="/dashboard/soporte" routerLinkActive="active" class="menu-item px-3 mb-1">
-              <i class="bi bi-headset me-3"></i> Soporte
-            </a>
             <a routerLink="/dashboard/config" routerLinkActive="active" class="menu-item px-3 mb-1">
               <i class="bi bi-gear me-3"></i> Configuración
             </a>

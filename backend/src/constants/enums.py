@@ -15,7 +15,9 @@ class PaymentStatus(str, Enum):
 
 class CommissionStatus(str, Enum):
     PENDIENTE = "PENDIENTE"
+    APROBADA = "APROBADA"
     PAGADA = "PAGADA"
+    RECHAZADA = "RECHAZADA"
     CANCELADA = "CANCELADA"
 
 class PaymentMethod(str, Enum):

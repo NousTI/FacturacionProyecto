@@ -22,6 +22,7 @@ CREATE TABLE IF NOT EXISTS superadmin (
     last_login TIMESTAMPTZ
 
 );
+
 -- =========================================
 -- VENDEDOR
 -- =========================================
@@ -310,7 +311,6 @@ CREATE TABLE IF NOT EXISTS public.producto (
 
 
 -- ==================================================================================
-
 -- PAGO_SUSCRIPCION
 -- =========================================
 CREATE TABLE IF NOT EXISTS public.pago_suscripcion (
@@ -341,39 +341,7 @@ CREATE TABLE IF NOT EXISTS public.pago_suscripcion (
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
--- =========================================
--- COMISION
--- =========================================
-CREATE TABLE IF NOT EXISTS public.comision (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
 
-    vendedor_id UUID NOT NULL
-        REFERENCES public.vendedor(id)
-        ON DELETE RESTRICT,
-
-    pago_suscripcion_id UUID NOT NULL
-        REFERENCES public.pago_suscripcion(id)
-        ON DELETE CASCADE,
-
-    monto NUMERIC(10,2) NOT NULL,
-    porcentaje_aplicado NUMERIC(5,2) NOT NULL,
-
-    estado TEXT NOT NULL DEFAULT 'PENDIENTE',
-
-    -- Fechas de negocio
-    fecha_generacion DATE NOT NULL DEFAULT CURRENT_DATE,
-    fecha_pago DATE,
-
-    metodo_pago TEXT,
-    observaciones TEXT,
-
-    -- Auditoría (UTC)
-    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-
-    -- Una comisión por pago
-    CONSTRAINT uq_comision_pago UNIQUE (pago_suscripcion_id)
-);
 
 -- =========================================
 -- SUPERADMIN SESSIONS

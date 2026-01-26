@@ -8,6 +8,7 @@ import { MaintenanceComponent } from '../../shared/components/maintenance/mainte
 import { RoleGuard } from '../../core/guards/role.guard';
 import { PlanesPage } from './pages/planes/planes.page';
 import { UserRole } from '../../domain/enums/role.enum';
+import { ComisionesPage } from './pages/comisiones/comisiones.page';
 
 const routes: Routes = [
     {
@@ -24,12 +25,11 @@ const routes: Routes = [
     { path: 'vendedores', component: VendedoresPage, canActivate: [RoleGuard], data: { title: 'Vendedores', roles: [UserRole.SUPERADMIN], description: 'Gestión de fuerza de ventas' } },
     { path: 'suscripciones', component: MaintenanceComponent, data: { title: 'Suscripciones y Pagos', description: 'Planes activos y cobros' } },
     { path: 'finanzas', component: MaintenanceComponent, data: { title: 'Finanzas', description: 'Estado financiero global' } },
-    { path: 'comisiones', component: MaintenanceComponent, data: { title: 'Comisiones', description: 'Cálculo y pagos pendientes' } },
+    { path: 'comisiones', component: ComisionesPage, canActivate: [RoleGuard], data: { title: 'Comisiones', roles: [UserRole.SUPERADMIN], description: 'Cálculo y pagos pendientes' } },
     { path: 'planes', component: PlanesPage, canActivate: [RoleGuard], data: { title: 'Planes y Límites', roles: [UserRole.SUPERADMIN], description: 'Configuración de paquetes' } },
     { path: 'certificados', component: MaintenanceComponent, data: { title: 'Certificados SRI', description: 'Vencimientos y renovaciones' } },
     { path: 'reportes', component: MaintenanceComponent, data: { title: 'Reportes', description: 'Analítica y estadísticas' } },
     { path: 'auditoria', component: MaintenanceComponent, data: { title: 'Auditoría', description: 'Registros de actividad' } },
-    { path: 'soporte', component: MaintenanceComponent, data: { title: 'Soporte', description: 'Tickets de ayuda' } },
     { path: 'config', component: MaintenanceComponent, data: { title: 'Configuración', description: 'Ajustes del sistema' } }
 ];
 

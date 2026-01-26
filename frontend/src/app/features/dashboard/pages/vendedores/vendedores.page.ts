@@ -33,13 +33,6 @@ import { ConfirmModalComponent } from '../../../../shared/components/confirm-mod
 
       <!-- 3. MÓDULO DE TABLA DE DATOS -->
       <div class="table-container shadow-premium mt-4">
-        <div class="p-4 bg-white border-bottom d-flex justify-content-between align-items-center" style="border-radius: 28px 28px 0 0;">
-            <h5 class="mb-0 fw-bold">Listado de Vendedores</h5>
-            <span class="badge bg-light text-dark rounded-pill px-3 py-2 fw-bold" style="font-size: 0.75rem;">
-                {{ filteringVendedores.length }} Vendedores encontrados
-            </span>
-        </div>
-        
         <app-vendedor-table
           [vendedores]="filteringVendedores"
           (onAction)="handleAction($event)"

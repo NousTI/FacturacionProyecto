@@ -29,6 +29,9 @@ class ComisionLectura(ComisionBase):
     vendedor_nombre: Optional[str] = None
     empresa_nombre: Optional[str] = None
     monto_pago: Optional[Decimal] = None
+    aprobado_por: Optional[UUID] = None
+    aprobado_por_nombre: Optional[str] = None
+    fecha_aprobacion: Optional[datetime] = None
     created_at: datetime
     updated_at: datetime
 

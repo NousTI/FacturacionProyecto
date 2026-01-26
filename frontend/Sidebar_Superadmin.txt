@@ -8,5 +8,4 @@ Planes
 Certificados SRI
 Reportes
 Auditoría
-Soporte
 Configuración

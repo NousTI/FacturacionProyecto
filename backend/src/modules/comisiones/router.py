@@ -15,6 +15,14 @@ def listar_comisiones(
 ):
     return servicio.listar_comisiones(usuario)
 
+@router.get("/stats")
+def obtener_stats(
+    usuario: dict = Depends(obtener_usuario_actual),
+    servicio: ServicioComisiones = Depends()
+):
+    return servicio.obtener_stats(usuario)
+
+
 @router.get("/{id}", response_model=ComisionLectura)
 def obtener_comision(
     id: UUID,
@@ -22,6 +30,14 @@ def obtener_comision(
     servicio: ServicioComisiones = Depends()
 ):
     return servicio.obtener_comision(id, usuario)
+
+@router.get("/{id}/historial")
+def obtener_historial(
+    id: UUID,
+    usuario: dict = Depends(obtener_usuario_actual),
+    servicio: ServicioComisiones = Depends()
+):
+    return servicio.obtener_historial(id, usuario)
 
 @router.post("/", response_model=ComisionLectura, status_code=status.HTTP_201_CREATED)
 def crear_comision(
