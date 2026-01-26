@@ -41,8 +41,7 @@ class RepositorioVendedores:
                    COALESCE((
                        SELECT SUM(ps.monto)
                        FROM pago_suscripcion ps
-                       JOIN usuario u ON ps.registrado_por = u.id
-                       JOIN empresa e2 ON u.empresa_id = e2.id
+                       JOIN empresa e2 ON ps.empresa_id = e2.id
                        WHERE e2.vendedor_id = v.id
                        AND ps.estado IN ('PAGADO', 'COMPLETED')
                    ), 0) as ingresos_generados
@@ -65,9 +64,9 @@ class RepositorioVendedores:
                 COALESCE((
                     SELECT SUM(ps.monto)
                     FROM pago_suscripcion ps
-                    JOIN usuario u ON ps.registrado_por = u.id
-                    JOIN empresa e ON u.empresa_id = e.id
+                    JOIN empresa e ON ps.empresa_id = e.id
                     WHERE ps.estado IN ('PAGADO', 'COMPLETED')
+                    AND e.vendedor_id IS NOT NULL
                 ), 0) as ingresos_generados
             FROM vendedor
         """

@@ -84,7 +84,7 @@ import { Vendedor } from '../../services/vendedor.service';
   styles: [`
     .table-surface {
       background: #ffffff;
-      border-radius: 28px;
+      border-radius: 24px;
       overflow: visible !important;
       border: 1px solid #f1f5f9;
       position: relative;
