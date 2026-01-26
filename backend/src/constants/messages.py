@@ -7,6 +7,7 @@ class AppMessages:
     AUTH_TOKEN_EXPIRED = "Tu sesión ha expirado. Por favor, inicia sesión nuevamente."
     AUTH_INACTIVE_USER = "Tu cuenta se encuentra inactiva. Contacta al administrador."
     AUTH_SESSION_EXPIRED = "La sesión ha caducado por inactividad."
+    AUTH_SESSION_ALREADY_ACTIVE = "Ya tienes una sesión activa en otro navegador o dispositivo. Por favor, cierra la otra sesión antes de continuar."
 
     # PERMISSIONS
     PERM_FORBIDDEN = "No tienes permisos suficientes para realizar esta acción."

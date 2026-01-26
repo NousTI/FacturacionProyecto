@@ -4,7 +4,7 @@ from uuid import UUID
 
 from .service import ServicioComisiones
 from .schemas import ComisionLectura, ComisionCreacion, ComisionActualizacion
-from ..autenticacion.dependencies import obtener_usuario_actual
+from ..autenticacion.routes import obtener_usuario_actual
 
 router = APIRouter()
 

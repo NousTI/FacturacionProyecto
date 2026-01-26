@@ -7,7 +7,7 @@ from .middlewares.cors import add_cors_middleware
 from .middlewares.error_middleware import ErrorMiddleware
 from .errors.app_error import AppError
 from .errors.handlers import app_error_handler, validation_error_handler, general_exception_handler
-from .modules.superadmin.automation import automation_service
+# from .modules.superadmin.automation import automation_service
 
 app = FastAPI(
     title="Sistema de Facturación API",
@@ -35,11 +35,13 @@ app.include_router(api_router, prefix="/api")
 @app.on_event("startup")
 async def startup_event():
     import asyncio
-    asyncio.create_task(automation_service.start_daily_tasks())
+    # asyncio.create_task(automation_service.start_daily_tasks())
+    pass
 
 @app.on_event("shutdown")
 def shutdown_event():
-    automation_service.stop()
+    # automation_service.stop()
+    pass
 
 if __name__ == "__main__":
     import uvicorn

@@ -7,7 +7,7 @@ from .schemas import (
     DashboardAlertas, 
     DashboardOverview
 )
-from ..autenticacion.dependencies import obtener_usuario_actual
+from ..autenticacion.routes import obtener_usuario_actual
 
 router = APIRouter()
 

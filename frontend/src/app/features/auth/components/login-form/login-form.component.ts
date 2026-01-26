@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Output } from '@angular/core';
+import { Component, EventEmitter, Output, Input } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 
@@ -33,8 +33,9 @@ import { CommonModule } from '@angular/common';
           </button>
         </div>
 
-        <button type="submit" class="btn btn-dark w-100 py-2 fw-semibold" [disabled]="loginForm.invalid">
-          Iniciar Sesión
+        <button type="submit" class="btn btn-dark w-100 py-2 fw-semibold" [disabled]="loginForm.invalid || isLoading">
+          <span *ngIf="isLoading" class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+          {{ isLoading ? 'Iniciando sesión...' : 'Iniciar Sesión' }}
         </button>
       </form>
     </div>
@@ -101,6 +102,7 @@ import { CommonModule } from '@angular/common';
   `]
 })
 export class LoginFormComponent {
+  @Input() isLoading = false;
   @Output() login = new EventEmitter<{ email: string, password: string }>();
   loginForm: FormGroup;
   showPassword = false;

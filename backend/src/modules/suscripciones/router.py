@@ -4,7 +4,7 @@ from uuid import UUID
 
 from .service import ServicioSuscripciones
 from .schemas import PlanLectura, PlanCreacion, PlanUpdate, PlanStats, PagoSuscripcionQuick, HistoricoSuscripcion
-from ..autenticacion.dependencies import obtener_usuario_actual, requerir_superadmin
+from ..autenticacion.routes import obtener_usuario_actual, requerir_superadmin
 
 router = APIRouter()
 

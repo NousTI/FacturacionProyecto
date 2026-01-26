@@ -5,6 +5,8 @@ import { User } from '../../domain/models/user.model';
 import { UserRole } from '../../domain/enums/role.enum';
 import { Router } from '@angular/router';
 
+import { ROLES } from '../../../shared/constantes/app.constants';
+
 @Injectable({
     providedIn: 'root'
 })
@@ -31,7 +33,7 @@ export class AuthFacade {
                 next: (userData) => {
                     // Refresh user data with fresh info from server
                     const role = this.authService.getRole();
-                    const updatedUser = { ...userData, role: role || undefined };
+                    const updatedUser = { ...userData, role: role || null };
 
                     // Update Facade state
                     this.userSubject.next(updatedUser);
@@ -48,18 +50,21 @@ export class AuthFacade {
     }
 
     login(correo: string, clave: string): Observable<any> {
-        // Return observable to let component handle success/error (e.g. stop loading spinner)
-        // But we tap into it to update state
         return new Observable(observer => {
             this.authService.login(correo, clave).subscribe({
                 next: (response) => {
                     this.isAuthenticatedSubject.next(true);
-                    // Update user with role
-                    const role = this.authService.getRole();
-                    const userWithRole = { ...response.usuario, role: role || undefined };
-                    this.userSubject.next(userWithRole);
+
+                    // En el nuevo backend, el rol viene dentro del objeto usuario como 'role'
+                    const userWithRole = response.usuario;
+                    const role = (userWithRole.role || this.authService.getRole()) as UserRole;
+
+                    // Asegurar que el objeto en el subject tenga el rol detectado
+                    this.userSubject.next({ ...userWithRole, role });
+
                     observer.next(response);
                     observer.complete();
+
                     this.navigateBasedOnRole(role);
                 },
                 error: (err) => {
@@ -70,8 +75,7 @@ export class AuthFacade {
     }
 
     logout(): void {
-        const role = this.getUserRole();
-        this.authService.logout(role);
+        this.authService.logout();
         this.userSubject.next(null);
         this.isAuthenticatedSubject.next(false);
         this.router.navigate(['/login']);
@@ -81,7 +85,14 @@ export class AuthFacade {
         return this.authService.getRole();
     }
 
-    private navigateBasedOnRole(role: UserRole | null): void {
-        this.router.navigate(['/dashboard']);
+    private navigateBasedOnRole(role: string | null): void {
+        // Lógica de redirección dinámica basada en el rol inyectado
+        if (role === ROLES.SUPERADMIN) {
+            this.router.navigate(['/dashboard/admin']);
+        } else if (role === ROLES.VENDEDOR) {
+            this.router.navigate(['/dashboard/vendedor']);
+        } else {
+            this.router.navigate(['/dashboard']);
+        }
     }
 }

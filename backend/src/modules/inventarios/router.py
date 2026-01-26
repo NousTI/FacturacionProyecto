@@ -4,7 +4,7 @@ from uuid import UUID
 
 from .service import ServicioInventarios
 from .schemas import MovimientoInventarioLectura, MovimientoInventarioCreacion
-from ..autenticacion.dependencies import obtener_usuario_actual, requerir_permiso
+from ..autenticacion.routes import obtener_usuario_actual, requerir_permiso
 from ...constants.permissions import PermissionCodes
 
 router = APIRouter()

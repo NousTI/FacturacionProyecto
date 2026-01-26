@@ -9,7 +9,7 @@ class AuthRepository:
     def __init__(self, db=Depends(get_db)):
         self.db = db
 
-    def crear_sesion(self, user_id: UUID, jti: str, user_agent: str = None, ip: str = None) -> str:
+    def crear_sesion(self, user_id: UUID, jti: str, user_agent: str = None, ip_address: str = None) -> str:
         expires_at = datetime.now(timezone.utc) + timedelta(days=1)
         query = """
             INSERT INTO sistema_facturacion.user_sessions (id, user_id, is_valid, expires_at, user_agent, ip_address)
@@ -17,7 +17,7 @@ class AuthRepository:
             RETURNING id
         """
         with db_transaction(self.db) as cur:
-            cur.execute(query, (jti, str(user_id), expires_at, user_agent, ip))
+            cur.execute(query, (jti, str(user_id), expires_at, user_agent, ip_address))
             row = cur.fetchone()
             return str(row['id']) if row else None
 
@@ -47,10 +47,10 @@ class AuthRepository:
             row = cur.fetchone()
             return dict(row) if row else None
 
-    def registrar_log(self, user_id: UUID, evento: str, origen: str = 'SISTEMA', detail: str = None, ip: str = None, ua: str = None):
+    def registrar_log(self, user_id: UUID, evento: str, origen: str = 'SISTEMA', detail: str = None, ip_address: str = None, ua: str = None):
         query = """
             INSERT INTO sistema_facturacion.users_logs (user_id, evento, origen, motivo, ip_address, user_agent)
             VALUES (%s, %s, %s, %s, %s, %s)
         """
         with db_transaction(self.db) as cur:
-            cur.execute(query, (str(user_id) if user_id else None, evento, origen, detail, ip, ua))
+            cur.execute(query, (str(user_id) if user_id else None, evento, origen, detail, ip_address, ua))

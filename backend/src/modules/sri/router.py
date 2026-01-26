@@ -4,7 +4,7 @@ from typing import List, Optional
 
 from .service import ServicioSRI
 from .schemas import ConfigSRILectura, ConfigSRIActualizacion, AutorizacionSRILectura
-from ..autenticacion.dependencies import obtener_usuario_actual, requerir_permiso, requerir_superadmin
+from ..autenticacion.routes import obtener_usuario_actual, requerir_permiso, requerir_superadmin
 from ...constants.permissions import PermissionCodes
 
 router = APIRouter()

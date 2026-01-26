@@ -1,53 +1,43 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { BaseApiService } from '../api/base-api.service';
-import { Observable, tap, finalize, of, map } from 'rxjs';
-import { catchError } from 'rxjs/operators';
+import { Observable, from, map, tap } from 'rxjs';
 import { AuthResponse } from '../../domain/models/auth.model';
 import { User } from '../../domain/models/user.model';
 import { UserRole } from '../../domain/enums/role.enum';
+import { http } from '../../../api/http';
+import { API_ENDPOINTS } from '../../../api/endpoint';
+import { ApiResponse } from '../../../api/types';
 
 @Injectable({
     providedIn: 'root'
 })
-export class AuthService extends BaseApiService {
+export class AuthService {
     private readonly TOKEN_KEY = 'auth_token';
     private readonly USER_KEY = 'auth_user';
 
-    constructor(http: HttpClient) {
-        super(http);
-    }
-
     login(correo: string, clave: string): Observable<AuthResponse> {
-        return this.post<any>('autenticacion/iniciar-sesion', { correo, clave }).pipe(
-            map(response => response.detalles),
+        return from(http.post<ApiResponse<AuthResponse>>(API_ENDPOINTS.AUTH.LOGIN, { correo, clave })).pipe(
+            map(response => response.data.detalles),
             tap(response => this.saveSession(response))
         );
     }
 
-    logout(role: UserRole | null): void {
+    logout(): void {
         const cleanup = () => {
             localStorage.removeItem(this.TOKEN_KEY);
             localStorage.removeItem(this.USER_KEY);
-            localStorage.clear(); // Limpiar todo para estar seguros
+            localStorage.clear();
         };
 
-        if (role) {
-            this.post(`autenticacion/${role}/cerrar-sesion`, {}).pipe(
-                catchError(err => {
-                    console.error('Error al cerrar sesión en el backend', err);
-                    return of(null);
-                }),
-                finalize(() => cleanup())
-            ).subscribe();
-        } else {
-            cleanup();
-        }
+        // Note: The interceptor handles 401/403, but manual logout still calls the endpoint
+        from(http.post(API_ENDPOINTS.AUTH.LOGOUT, {})).subscribe({
+            next: () => cleanup(),
+            error: () => cleanup() // Cleanup anyway on error
+        });
     }
 
     getPerfil(): Observable<any> {
-        return this.get<any>('autenticacion/perfil').pipe(
-            map(response => response.detalles)
+        return from(http.get<ApiResponse<any>>(API_ENDPOINTS.AUTH.PERFIL)).pipe(
+            map(response => response.data.detalles)
         );
     }
 
@@ -69,16 +59,8 @@ export class AuthService extends BaseApiService {
     }
 
     getRole(): UserRole | null {
-        const token = this.getToken();
-        if (!token) return null;
-
-        try {
-            const payload = JSON.parse(atob(token.split('.')[1]));
-            return payload.role as UserRole;
-        } catch (e) {
-            console.error('Error parsing token', e);
-            return null;
-        }
+        const user = this.getUser();
+        return user?.role ? (user.role as UserRole) : null;
     }
 
     isAuthenticated(): boolean {
@@ -87,18 +69,7 @@ export class AuthService extends BaseApiService {
 
     private saveSession(response: AuthResponse): void {
         localStorage.setItem(this.TOKEN_KEY, response.access_token);
-        // Add role from token to user object for easy access if needed, though Facade handles state
-        const role = this.getRoleFromToken(response.access_token);
-        const userWithRole = { ...response.usuario, role };
-        localStorage.setItem(this.USER_KEY, JSON.stringify(userWithRole));
-    }
-
-    private getRoleFromToken(token: string): UserRole | null {
-        try {
-            const payload = JSON.parse(atob(token.split('.')[1]));
-            return payload.role as UserRole;
-        } catch (e) {
-            return null;
-        }
+        // El rol ya viene inyectado en el objeto usuario desde el backend
+        localStorage.setItem(this.USER_KEY, JSON.stringify(response.usuario));
     }
 }

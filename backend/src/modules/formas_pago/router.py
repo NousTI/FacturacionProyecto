@@ -4,7 +4,7 @@ from uuid import UUID
 
 from .schemas import FormaPagoCreacion, FormaPagoLectura, FormaPagoActualizacion
 from .service import ServicioFormasPago
-from ..autenticacion.dependencies import obtener_usuario_actual, requerir_permiso
+from ..autenticacion.routes import obtener_usuario_actual, requerir_permiso
 from ...constants.permissions import PermissionCodes
 from ...utils.response import success_response
 

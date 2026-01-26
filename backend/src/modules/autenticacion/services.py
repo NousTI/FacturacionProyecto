@@ -13,16 +13,19 @@ from ...constants.enums import AuthKeys
 
 # Modular Imports
 from ..usuarios.repository import RepositorioUsuarios
+from ..roles.repositories import RolesRepository
 from .repositories import AuthRepository
 
 class AuthServices:
     def __init__(
         self, 
         user_repo: RepositorioUsuarios = Depends(),
-        auth_repo: AuthRepository = Depends()
+        auth_repo: AuthRepository = Depends(),
+        role_repo: RolesRepository = Depends()
     ):
         self.user_repo = user_repo
         self.auth_repo = auth_repo
+        self.role_repo = role_repo
 
     def iniciar_sesion(self, correo: str, clave: str, ip_address: str, user_agent: str):
         # 1. Buscar Usuario en tabla única
@@ -34,7 +37,7 @@ class AuthServices:
                 user_id=user['id'] if user else None,
                 evento='LOGIN_FALLIDO',
                 detail=f"Intento fallido para: {correo}",
-                ip=ip_address,
+                ip_address=ip_address,
                 ua=user_agent
             )
             raise AppError(
@@ -50,10 +53,27 @@ class AuthServices:
                 code=ErrorCodes.AUTH_INACTIVE_USER
             )
 
-        # 2. Control de Sesión Única (Opcional)
+        # 2. Obtener Roles del Usuario
         user_id = user["id"]
+        user_roles = self.role_repo.obtener_roles_usuario(user_id)
+        
+        primary_role = "USUARIO"
+        role_codes = [r['codigo'].upper() for r in user_roles]
+        
+        if "SUPERADMIN" in role_codes:
+            primary_role = "SUPERADMIN"
+        elif "VENDEDOR" in role_codes:
+            primary_role = "VENDEDOR"
 
-        # 3. Crear Nueva Sesión
+        # 3. Validar Sesión Única
+        if self.auth_repo.tiene_sesion_activa(user_id):
+             raise AppError(
+                message=AppMessages.AUTH_SESSION_ALREADY_ACTIVE, 
+                status_code=403, 
+                code=ErrorCodes.AUTH_SESSION_ALREADY_ACTIVE
+            )
+
+        # 4. Crear Nueva Sesión
         session_id = uuid4().hex
         sid = self.auth_repo.crear_sesion(
             user_id=user_id,
@@ -66,23 +86,23 @@ class AuthServices:
         self.auth_repo.registrar_log(
             user_id=user_id,
             evento='LOGIN_OK',
-            ip=ip_address,
+            ip_address=ip_address,
             ua=user_agent
         )
 
         # 5. Generar Token
-        # El rol se determinará por los permisos asignados, no se espera del cliente
         token, _ = create_access_token({
             "sub": str(user_id),
             "sid": sid,
-            "role": "usuario" # Default, la autorización real usa user_id
+            "role": primary_role
         })
 
         # Sanitize
         user_safe = {
             "id": str(user["id"]),
             "email": user["email"],
-            "estado": user["estado"]
+            "estado": user["estado"],
+            "role": primary_role
         }
 
         return success_response(

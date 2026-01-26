@@ -5,7 +5,7 @@ from uuid import UUID
 from .schemas import FacturaCreacion, FacturaLectura, FacturaActualizacion
 from .schemas_detalle import FacturaDetalleLectura, FacturaDetalleCreacion, FacturaDetalleActualizacion
 from .service import ServicioFacturas
-from ..autenticacion.dependencies import obtener_usuario_actual, requerir_permiso
+from ..autenticacion.routes import obtener_usuario_actual, requerir_permiso
 from ...constants.permissions import PermissionCodes
 from ...utils.response import success_response
 

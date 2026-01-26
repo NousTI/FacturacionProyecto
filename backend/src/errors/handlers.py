@@ -19,12 +19,10 @@ async def app_error_handler(request: Request, exc: AppError):
     return JSONResponse(
         status_code=exc.status_code,
         content={
-            "ok": False,
-            "nivel": exc.level,
-            "mensaje": exc.message,
             "codigo": exc.code,
-            "descripcion": exc.description,
-            "detalles": exc.details
+            "mensaje": exc.message,
+            "detalle": exc.details,
+            "status": exc.status_code
         }
     )
 
@@ -41,12 +39,10 @@ async def validation_error_handler(request: Request, exc: RequestValidationError
     return JSONResponse(
         status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
         content={
-            "ok": False,
-            "nivel": "WARNING",
-            "mensaje": AppMessages.VAL_INVALID_INPUT,
             "codigo": ErrorCodes.VAL_INVALID_INPUT,
-            "descripcion": "La estructura de los datos enviados es incorrecta",
-            "detalles": {"errores": errores}
+            "mensaje": AppMessages.VAL_INVALID_INPUT,
+            "detalle": {"errores": errores},
+            "status": status.HTTP_422_UNPROCESSABLE_ENTITY
         }
     )
 
@@ -56,11 +52,9 @@ async def general_exception_handler(request: Request, exc: Exception):
     return JSONResponse(
         status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
         content={
-            "ok": False,
-            "nivel": "ERROR",
-            "mensaje": AppMessages.SYS_INTERNAL_ERROR,
             "codigo": ErrorCodes.SYS_INTERNAL_ERROR,
-            "descripcion": "Error interno no controlado",
-            "detalles": {"error": str(exc)} # Ocultar en prod si se desea
+            "mensaje": AppMessages.SYS_INTERNAL_ERROR,
+            "detalle": {"error": str(exc)},
+            "status": status.HTTP_500_INTERNAL_SERVER_ERROR
         }
     )

@@ -3,7 +3,7 @@ from typing import List
 from uuid import UUID
 from .schemas import UsuarioCreacion, UsuarioLectura, UsuarioActualizacion, CambioClave
 from .service import ServicioUsuarios
-from ..autenticacion.dependencies import obtener_usuario_actual
+from ..autenticacion.routes import obtener_usuario_actual
 from ...utils.response import success_response
 
 router = APIRouter()
