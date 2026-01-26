@@ -86,6 +86,7 @@ class AuthServices:
         self.auth_repo.registrar_log(
             user_id=user_id,
             evento='LOGIN_OK',
+            detail=f"Inicio de sesión exitoso para: {user.get('email')}",
             ip_address=ip_address,
             ua=user_agent
         )
@@ -115,7 +116,7 @@ class AuthServices:
             codigo="LOGIN_SUCCESS"
         )
 
-    def cerrar_sesion(self, token_payload: dict):
+    def cerrar_sesion(self, token_payload: dict, ip_address: str = None, user_agent: str = None):
         sid = token_payload.get("sid")
         user_id = token_payload.get("sub")
         
@@ -124,7 +125,10 @@ class AuthServices:
             if user_id:
                 self.auth_repo.registrar_log(
                     user_id=user_id,
-                    evento='LOGOUT'
+                    evento='LOGOUT',
+                    detail="Cierre de sesión exitoso",
+                    ip_address=ip_address,
+                    ua=user_agent
                 )
         
         return success_response(None, "Sesión cerrada correctamente", "LOGOUT_SUCCESS")

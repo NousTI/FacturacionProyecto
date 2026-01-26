@@ -45,8 +45,11 @@ def setup_logger():
     handler = logging.StreamHandler(sys.stdout)
     handler.setLevel(logging.INFO)
     
-    # Format: [LEVEL] Message
-    formatter = ColoredFormatter("[%(levelname)s] %(message)s")
+    # Format: [TIMESTAMP] Logger - LEVEL - Message
+    formatter = ColoredFormatter(
+        "[%(asctime)s] %(name)s - %(levelname)s - %(message)s",
+        datefmt="%Y-%m-%d %H:%M:%S"
+    )
     handler.setFormatter(formatter)
 
     logger.addHandler(handler)

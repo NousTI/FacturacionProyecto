@@ -16,7 +16,11 @@ class AuthController:
 
     def logout(self, request: Request):
         payload = getattr(request.state, "jwt_payload", {})
-        return self.service.cerrar_sesion(payload)
+        return self.service.cerrar_sesion(
+            payload,
+            request.client.host,
+            request.headers.get("user-agent")
+        )
 
     def obtener_perfil(self, usuario: dict):
         return {"data": usuario}
