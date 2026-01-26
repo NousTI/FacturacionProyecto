@@ -43,7 +43,7 @@ class RepositorioVendedores:
                        FROM pago_suscripcion ps
                        JOIN empresa e2 ON ps.empresa_id = e2.id
                        WHERE e2.vendedor_id = v.id
-                       AND ps.estado IN ('PAGADO', 'COMPLETED')
+                       AND ps.estado = 'PAGADO'
                    ), 0) as ingresos_generados
             FROM vendedor v
             LEFT JOIN empresa e ON e.vendedor_id = v.id
@@ -65,7 +65,7 @@ class RepositorioVendedores:
                     SELECT SUM(ps.monto)
                     FROM pago_suscripcion ps
                     JOIN empresa e ON ps.empresa_id = e.id
-                    WHERE ps.estado IN ('PAGADO', 'COMPLETED')
+                    WHERE ps.estado = 'PAGADO'
                     AND e.vendedor_id IS NOT NULL
                 ), 0) as ingresos_generados
             FROM vendedor

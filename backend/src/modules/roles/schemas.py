@@ -1,41 +1,8 @@
-from datetime import datetime
+from pydantic import BaseModel, Field
 from uuid import UUID
-from typing import Optional, List
-from pydantic import BaseModel
-from ..permisos.schemas import PermisoLectura
+from typing import Optional
 
-class RolBase(BaseModel):
-    empresa_id: Optional[UUID] = None
-    codigo: str
-    nombre: str
-    descripcion: Optional[str] = None
-    es_sistema: bool = False
-    activo: bool = True
-
-class RolCreacion(RolBase):
-    pass
-
-class RolActualizacion(BaseModel):
-    nombre: Optional[str] = None
-    descripcion: Optional[str] = None
-    activo: Optional[bool] = None
-
-class RolPermisoLectura(PermisoLectura):
-    assigned_at: datetime
-    assigned_updated_at: datetime
-    activo: bool = True
-
-class RolLectura(RolBase):
-    id: UUID
-    created_at: datetime
-    updated_at: datetime
-    permisos: Optional[List[RolPermisoLectura]] = []
-
-    class Config:
-        from_attributes = True
-
-class RolPermisoAsignacion(BaseModel):
-    permiso_ids: List[UUID]
-
-class RolPermisoAgregar(BaseModel):
-    permiso_id: UUID
+class AsignacionRolRequest(BaseModel):
+    user_id: UUID = Field(..., description="ID del usuario al que se le asigna/remueve el rol")
+    role_id: UUID = Field(..., description="ID del rol a gestionar")
+    motivo: Optional[str] = Field(None, description="Motivo del cambio")

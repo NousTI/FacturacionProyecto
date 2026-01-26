@@ -77,7 +77,7 @@ class ServicioSuscripciones:
             "fecha_inicio_periodo": fecha_inicio,
             "fecha_fin_periodo": fecha_fin,
             "metodo_pago": data.metodo_pago,
-            "estado": "COMPLETED",
+            "estado": "PAGADO",
             "numero_comprobante": data.numero_comprobante,
             "registrado_por": usuario_actual['id']
         }

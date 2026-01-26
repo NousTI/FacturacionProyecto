@@ -66,7 +66,7 @@ class RepositorioComisiones:
             return dict(row) if row else None
 
     def contar_pagos_previos_empresa(self, empresa_id: UUID) -> int:
-        query = "SELECT COUNT(*) as total FROM pago_suscripcion WHERE empresa_id = %s AND estado IN ('COMPLETED', 'PAGADO')"
+        query = "SELECT COUNT(*) as total FROM pago_suscripcion WHERE empresa_id = %s AND estado = 'PAGADO'"
         with self.db.cursor() as cur:
             cur.execute(query, (str(empresa_id),))
             row = cur.fetchone()

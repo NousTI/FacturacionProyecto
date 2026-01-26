@@ -23,7 +23,7 @@ def verify_fix():
                         SELECT SUM(ps.monto)
                         FROM pago_suscripcion ps
                         JOIN empresa e ON ps.empresa_id = e.id
-                        WHERE ps.estado IN ('PAGADO', 'COMPLETED')
+                        WHERE ps.estado = 'PAGADO'
                         AND e.vendedor_id IS NOT NULL
                     ), 0) as ingresos_generados
                 FROM vendedor

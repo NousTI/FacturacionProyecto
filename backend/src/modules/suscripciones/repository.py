@@ -20,7 +20,7 @@ class RepositorioSuscripciones:
                     FROM empresa e
                     JOIN pago_suscripcion ps ON e.id = ps.empresa_id
                     WHERE ps.plan_id = p.id
-                    AND ps.estado IN ('PAGADO', 'COMPLETED')
+                    AND ps.estado = 'PAGADO'
                     AND e.fecha_vencimiento >= CURRENT_DATE
                     AND e.activo = true
                     AND ps.fecha_inicio_periodo = (
@@ -86,7 +86,7 @@ class RepositorioSuscripciones:
             FROM empresa e
             JOIN pago_suscripcion ps ON e.id = ps.empresa_id
             WHERE ps.plan_id = %s
-            AND ps.estado IN ('PAGADO', 'COMPLETED')
+            AND ps.estado = 'PAGADO'
             AND e.fecha_vencimiento >= CURRENT_DATE
             AND ps.fecha_inicio_periodo = (
                 SELECT MAX(fecha_inicio_periodo) 

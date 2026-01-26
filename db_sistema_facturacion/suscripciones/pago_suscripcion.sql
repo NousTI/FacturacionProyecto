@@ -35,11 +35,3 @@ PENDIENTE -> Aún se verifica que se haya pagado
 PAGADO -> Ya se confirmó el pago
 ANULADO -> Por incumplimiento de normas
 REEMBOLSADO -> Por solicitud del cliente
-
-
-suscripcion.estado
-
-ACTIVA → Pagó y está dentro del periodo
-CANCELADA → el usuario decide no renovar
-SUSPENDIDA → incumplimiento / fraude / bloqueo manual
-VENCIDA → no renovó y el periodo terminó

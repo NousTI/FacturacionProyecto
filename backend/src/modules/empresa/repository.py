@@ -38,7 +38,7 @@ class RepositorioEmpresa:
                 FROM pago_suscripcion ps 
                 JOIN plan p ON ps.plan_id = p.id 
                 WHERE ps.empresa_id = e.id 
-                AND ps.estado IN ('PAGADO', 'COMPLETED') 
+                AND ps.estado = 'PAGADO' 
                 ORDER BY ps.fecha_inicio_periodo DESC 
                 LIMIT 1
             ) as plan,
@@ -46,7 +46,7 @@ class RepositorioEmpresa:
                 SELECT ps.plan_id 
                 FROM pago_suscripcion ps 
                 WHERE ps.empresa_id = e.id 
-                AND ps.estado IN ('PAGADO', 'COMPLETED') 
+                AND ps.estado = 'PAGADO' 
                 ORDER BY ps.fecha_inicio_periodo DESC 
                 LIMIT 1
             ) as plan_id,
@@ -54,7 +54,7 @@ class RepositorioEmpresa:
                 SELECT ps.fecha_inicio_periodo 
                 FROM pago_suscripcion ps 
                 WHERE ps.empresa_id = e.id 
-                AND ps.estado IN ('PAGADO', 'COMPLETED') 
+                AND ps.estado = 'PAGADO' 
                 ORDER BY ps.fecha_inicio_periodo DESC 
                 LIMIT 1
             ) as fecha_inicio_plan,
@@ -62,7 +62,7 @@ class RepositorioEmpresa:
                 SELECT ps.fecha_fin_periodo 
                 FROM pago_suscripcion ps 
                 WHERE ps.empresa_id = e.id 
-                AND ps.estado IN ('PAGADO', 'COMPLETED') 
+                AND ps.estado = 'PAGADO' 
                 ORDER BY ps.fecha_inicio_periodo DESC 
                 LIMIT 1
             ) as fecha_fin_plan,
@@ -89,7 +89,7 @@ class RepositorioEmpresa:
                 FROM pago_suscripcion ps 
                 JOIN plan p ON ps.plan_id = p.id 
                 WHERE ps.empresa_id = e.id 
-                AND ps.estado IN ('PAGADO', 'COMPLETED') 
+                AND ps.estado = 'PAGADO' 
                 ORDER BY ps.fecha_inicio_periodo DESC 
                 LIMIT 1
             ) as plan,
@@ -97,7 +97,7 @@ class RepositorioEmpresa:
                 SELECT ps.plan_id 
                 FROM pago_suscripcion ps 
                 WHERE ps.empresa_id = e.id 
-                AND ps.estado IN ('PAGADO', 'COMPLETED') 
+                AND ps.estado = 'PAGADO' 
                 ORDER BY ps.fecha_inicio_periodo DESC 
                 LIMIT 1
             ) as plan_id,
@@ -105,7 +105,7 @@ class RepositorioEmpresa:
                 SELECT ps.fecha_inicio_periodo 
                 FROM pago_suscripcion ps 
                 WHERE ps.empresa_id = e.id 
-                AND ps.estado IN ('PAGADO', 'COMPLETED') 
+                AND ps.estado = 'PAGADO' 
                 ORDER BY ps.fecha_inicio_periodo DESC 
                 LIMIT 1
             ) as fecha_inicio_plan,
@@ -113,7 +113,7 @@ class RepositorioEmpresa:
                 SELECT ps.fecha_fin_periodo 
                 FROM pago_suscripcion ps 
                 WHERE ps.empresa_id = e.id 
-                AND ps.estado IN ('PAGADO', 'COMPLETED') 
+                AND ps.estado = 'PAGADO' 
                 ORDER BY ps.fecha_inicio_periodo DESC 
                 LIMIT 1
             ) as fecha_fin_plan,

@@ -19,7 +19,7 @@ class RepositorioDashboards:
             cur.execute("SELECT COUNT(*) as count FROM usuario")
             stats['total_usuarios'] = cur.fetchone()['count']
             
-            cur.execute("SELECT COALESCE(SUM(monto), 0) as total FROM pago_suscripcion WHERE estado IN ('PAGADO', 'COMPLETED')")
+            cur.execute("SELECT COALESCE(SUM(monto), 0) as total FROM pago_suscripcion WHERE estado = 'PAGADO'")
             stats['total_ingresos'] = float(cur.fetchone()['total'])
             
             cur.execute("SELECT COALESCE(SUM(monto), 0) as total FROM comision WHERE estado = 'PENDIENTE'")
@@ -87,7 +87,7 @@ class RepositorioDashboards:
                 cur.execute("""
                     SELECT COALESCE(SUM(monto), 0) as total 
                     FROM pago_suscripcion 
-                    WHERE estado IN ('PAGADO', 'COMPLETED')
+                    WHERE estado = 'PAGADO'
                     AND DATE_TRUNC('month', fecha_pago) = DATE_TRUNC('month', CURRENT_DATE)
                 """)
                 kpis['ingresos_mensuales'] = float(cur.fetchone()['total'])
@@ -111,7 +111,7 @@ class RepositorioDashboards:
             cur.execute("""
                 SELECT COALESCE(SUM(monto), 0) as total 
                 FROM pago_suscripcion 
-                WHERE estado IN ('PAGADO', 'COMPLETED')
+                WHERE estado = 'PAGADO'
                 AND DATE_TRUNC('month', fecha_pago) = DATE_TRUNC('month', CURRENT_DATE)
             """)
             actual = float(cur.fetchone()['total'])
@@ -120,7 +120,7 @@ class RepositorioDashboards:
             cur.execute("""
                 SELECT COALESCE(SUM(monto), 0) as total 
                 FROM pago_suscripcion 
-                WHERE estado IN ('PAGADO', 'COMPLETED')
+                WHERE estado = 'PAGADO'
                 AND DATE_TRUNC('month', fecha_pago) = DATE_TRUNC('month', CURRENT_DATE - INTERVAL '1 month')
             """)
             anterior = float(cur.fetchone()['total'])
@@ -242,7 +242,7 @@ class RepositorioDashboards:
                 SELECT TO_CHAR(m.month, 'Mon') as label, COALESCE(SUM(p.monto), 0) as value
                 FROM months m
                 LEFT JOIN pago_suscripcion p ON DATE_TRUNC('month', p.fecha_pago) = m.month 
-                     AND p.estado IN ('PAGADO', 'COMPLETED')
+                     AND p.estado = 'PAGADO'
                 GROUP BY m.month ORDER BY m.month ASC
             """
             params = (limite - 1,)
@@ -255,7 +255,7 @@ class RepositorioDashboards:
         query = """
             WITH LatestSubscription AS (
                 SELECT DISTINCT ON (empresa_id) empresa_id, plan_id
-                FROM pago_suscripcion WHERE estado IN ('PAGADO', 'COMPLETED')
+                FROM pago_suscripcion WHERE estado = 'PAGADO'
                 ORDER BY empresa_id, fecha_inicio_periodo DESC
             )
             SELECT p.nombre, COUNT(ls.empresa_id) as count

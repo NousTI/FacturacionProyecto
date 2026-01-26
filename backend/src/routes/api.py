@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from ..modules.autenticacion.router import router as auth_router
+from ..modules.autenticacion.routes import router as auth_router
 from ..modules.permisos.router import router as permisos_router
 
 api_router = APIRouter()
@@ -10,7 +10,7 @@ api_router.include_router(permisos_router, prefix="/permisos", tags=["Permisos"]
 from ..modules.usuarios.router import router as usuarios_router
 api_router.include_router(usuarios_router, prefix="/usuarios", tags=["Usuarios"])
 
-from ..modules.roles.router import router as roles_router
+from ..modules.roles.routes import router as roles_router
 api_router.include_router(roles_router, prefix="/roles", tags=["Roles"])
 
 from ..modules.empresa.router import router as empresa_router
@@ -85,5 +85,5 @@ api_router.include_router(inventarios_router, prefix="/inventarios", tags=["Inve
 from ..modules.programaciones.router import router as programaciones_router
 api_router.include_router(programaciones_router, prefix="/programaciones", tags=["Facturación Programada"])
 
-from ..modules.superadmin.router import router as superadmin_router
+from ..modules.superadmin.routes import router as superadmin_router
 api_router.include_router(superadmin_router, prefix="/superadmin", tags=["Súper Admin"])

@@ -78,7 +78,7 @@ class PagoSuscripcionBase(BaseModel):
     fecha_inicio_periodo: datetime
     fecha_fin_periodo: datetime
     metodo_pago: str
-    estado: str = "COMPLETED"
+    estado: str = "PAGADO"
     numero_comprobante: Optional[str] = None
     observaciones: Optional[str] = None
     registrado_por: Optional[UUID] = None

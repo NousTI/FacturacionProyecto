@@ -5,13 +5,13 @@ class SubscriptionStatus(str, Enum):
     PENDIENTE = "PENDIENTE"
     VENCIDA = "VENCIDA"
     CANCELADA = "CANCELADA"
+    SUSPENDIDA = "SUSPENDIDA"
 
 class PaymentStatus(str, Enum):
-    COMPLETED = "COMPLETED"
-    PENDING = "PENDING"
-    FAILED = "FAILED"
-    REJECTED = "REJECTED"
-    REFUNDED = "REFUNDED"
+    PENDIENTE = "PENDIENTE"
+    PAGADO = "PAGADO"
+    ANULADO = "ANULADO"
+    REEMBOLSADO = "REEMBOLSADO"
 
 class CommissionStatus(str, Enum):
     PENDIENTE = "PENDIENTE"

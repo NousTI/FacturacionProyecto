@@ -23,6 +23,27 @@ CREATE TABLE IF NOT EXISTS superadmin (
 
 );
 
+
+
+-- =========================================
+-- SUPERADMIN SESSIONS
+-- =========================================
+CREATE TABLE IF NOT EXISTS public.superadmin_sessions (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+
+    -- FK debe ser UUID, no INT
+    superadmin_id UUID NOT NULL REFERENCES public.superadmin(id) ON DELETE CASCADE,
+
+    is_valid BOOLEAN NOT NULL DEFAULT TRUE,
+
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    expires_at TIMESTAMPTZ NOT NULL,
+
+    user_agent TEXT,
+    ip_address TEXT
+);
+
+
 -- =========================================
 -- VENDEDOR
 -- =========================================
@@ -310,25 +331,6 @@ CREATE TABLE IF NOT EXISTS public.producto (
 );
 
 
-
-
--- =========================================
--- SUPERADMIN SESSIONS
--- =========================================
-CREATE TABLE IF NOT EXISTS public.superadmin_sessions (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-
-    -- FK debe ser UUID, no INT
-    superadmin_id UUID NOT NULL REFERENCES public.superadmin(id) ON DELETE CASCADE,
-
-    is_valid BOOLEAN NOT NULL DEFAULT TRUE,
-
-    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    expires_at TIMESTAMPTZ NOT NULL,
-
-    user_agent TEXT,
-    ip_address TEXT
-);
 
 -- =========================================
 -- VENDEDOR SESSIONS
