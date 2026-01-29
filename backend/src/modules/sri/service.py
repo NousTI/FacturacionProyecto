@@ -16,8 +16,8 @@ from ...errors.app_error import AppError
 
 # Other modules repos
 from ..facturas.repository import RepositorioFacturas
-from ..empresa.repository import RepositorioEmpresa
-from ..clientes.repository import RepositorioClientes
+from ..empresas.repositories import RepositorioEmpresas
+from ..clientes.repositories import RepositorioClientes
 from ..logs.repository import RepositorioLogs
 
 class ServicioSRI:
@@ -25,7 +25,7 @@ class ServicioSRI:
         self,
         repo: RepositorioSRI = Depends(),
         factura_repo: RepositorioFacturas = Depends(),
-        empresa_repo: RepositorioEmpresa = Depends(),
+        empresa_repo: RepositorioEmpresas = Depends(),
         cliente_repo: RepositorioClientes = Depends(),
         log_repo: RepositorioLogs = Depends(),
         client_sri: ClienteSRI = Depends(),

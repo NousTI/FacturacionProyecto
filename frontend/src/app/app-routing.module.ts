@@ -6,17 +6,17 @@ import { AuthGuard } from './core/guards/auth.guard';
 
 const routes: Routes = [
     {
-        path: 'dashboard',
+        path: '',
         component: PrivateLayoutComponent,
         canActivate: [AuthGuard],
-        loadChildren: () => import('./features/dashboard/dashboard.module').then(m => m.DashboardModule)
+        loadChildren: () => import('./features/main/main.module').then(m => m.MainModule)
     },
     {
-        path: '',
+        path: 'auth',
         component: PublicLayoutComponent,
         loadChildren: () => import('./features/auth/auth.module').then(m => m.AuthModule)
     },
-    { path: '**', redirectTo: 'dashboard' }
+    { path: '**', redirectTo: '' }
 ];
 
 @NgModule({

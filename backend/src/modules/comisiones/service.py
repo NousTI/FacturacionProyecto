@@ -6,8 +6,8 @@ from typing import List, Optional
 from .repository import RepositorioComisiones
 from .schemas import ComisionCreacion, ComisionActualizacion
 from ..configuracion.service import ServicioConfiguracion
-from ..empresa.repository import RepositorioEmpresa
-from ..vendedores.repository import RepositorioVendedores
+from ..empresas.repositories import RepositorioEmpresas
+from ..vendedores.repositories import RepositorioVendedores
 from ...constants.enums import AuthKeys, CommissionStatus
 from ...errors.app_error import AppError
 from .repository_log import RepositorioComisionLog
@@ -16,7 +16,7 @@ class ServicioComisiones:
     def __init__(
         self,
         repo: RepositorioComisiones = Depends(),
-        empresa_repo: RepositorioEmpresa = Depends(),
+        empresa_repo: RepositorioEmpresas = Depends(),
         vendedor_repo: RepositorioVendedores = Depends(),
         log_repo: RepositorioComisionLog = Depends(),
         config_service: ServicioConfiguracion = Depends()

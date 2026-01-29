@@ -5,7 +5,6 @@ from pydantic import BaseModel, EmailStr, Field, field_validator
 from ...utils.validators import validar_identificacion
 
 class VendedorBase(BaseModel):
-    email: EmailStr
     nombres: str
     apellidos: str
     telefono: Optional[str] = Field(None, pattern=r"^([0-9]{10})?$")
@@ -16,6 +15,7 @@ class VendedorBase(BaseModel):
     tipo_comision: Optional[str] = None
     puede_crear_empresas: bool = False
     puede_gestionar_planes: bool = False
+    puede_acceder_empresas: bool = False
     puede_ver_reportes: bool = False
     activo: bool = True
     configuracion: Optional[Dict[str, Any]] = None
@@ -28,10 +28,10 @@ class VendedorBase(BaseModel):
         return v
 
 class VendedorCreacion(VendedorBase):
+    email: EmailStr
     password: str = Field(..., min_length=6)
 
 class VendedorActualizacion(BaseModel):
-    email: Optional[EmailStr] = None
     nombres: Optional[str] = None
     apellidos: Optional[str] = None
     telefono: Optional[str] = Field(None, pattern=r"^([0-9]{10})?$")
@@ -42,25 +42,18 @@ class VendedorActualizacion(BaseModel):
     tipo_comision: Optional[str] = None
     puede_crear_empresas: Optional[bool] = None
     puede_gestionar_planes: Optional[bool] = None
+    puede_acceder_empresas: Optional[bool] = None
     puede_ver_reportes: Optional[bool] = None
     activo: Optional[bool] = None
     configuracion: Optional[Dict[str, Any]] = None
-    password: Optional[str] = None
 
 class VendedorLectura(VendedorBase):
     id: UUID
+    email: Optional[str] = None
     fecha_registro: Optional[datetime] = None
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
-    last_login: Optional[datetime] = None
-    
-    # Statistical fields
-    empresas_asignadas: Optional[int] = 0
-    empresas_activas: Optional[int] = 0
-    ingresos_generados: Optional[float] = 0.0
-
-    class Config:
-        from_attributes = True
+    ultimo_acceso: Optional[datetime] = None
 
 class VendedorStats(BaseModel):
     total: int

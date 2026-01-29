@@ -12,20 +12,18 @@ from ...constants.messages import AppMessages
 from ...constants.enums import AuthKeys
 
 # Modular Imports
-from ..usuarios.repository import RepositorioUsuarios
-from ..roles.repositories import RolesRepository
+from ..usuarios.repositories import RepositorioUsuarios
+# from ..roles.repositories import RolesRepository # Removed
 from .repositories import AuthRepository
 
 class AuthServices:
     def __init__(
         self, 
         user_repo: RepositorioUsuarios = Depends(),
-        auth_repo: AuthRepository = Depends(),
-        role_repo: RolesRepository = Depends()
+        auth_repo: AuthRepository = Depends()
     ):
         self.user_repo = user_repo
         self.auth_repo = auth_repo
-        self.role_repo = role_repo
 
     def iniciar_sesion(self, correo: str, clave: str, ip_address: str, user_agent: str):
         # 1. Buscar Usuario en tabla única
@@ -53,17 +51,9 @@ class AuthServices:
                 code=ErrorCodes.AUTH_INACTIVE_USER
             )
 
-        # 2. Obtener Roles del Usuario
-        user_id = user["id"]
-        user_roles = self.role_repo.obtener_roles_usuario(user_id)
-        
-        primary_role = "USUARIO"
-        role_codes = [r['codigo'].upper() for r in user_roles]
-        
-        if "SUPERADMIN" in role_codes:
-            primary_role = "SUPERADMIN"
-        elif "VENDEDOR" in role_codes:
-            primary_role = "VENDEDOR"
+        # 2. Obtener Rol del Usuario
+        user_id = user['id']
+        primary_role = user.get("role", "USUARIO")
 
         # 3. Validar Sesión Única
         if self.auth_repo.tiene_sesion_activa(user_id):
@@ -82,7 +72,7 @@ class AuthServices:
             ip_address=ip_address,
         )
 
-        # 4. Registrar Log de Éxito
+        # 4. Registrar Log de Éxito y Actualizar Último Acceso
         self.auth_repo.registrar_log(
             user_id=user_id,
             evento='LOGIN_OK',
@@ -90,6 +80,7 @@ class AuthServices:
             ip_address=ip_address,
             ua=user_agent
         )
+        self.auth_repo.actualizar_ultimo_acceso(user_id)
 
         # 5. Generar Token
         token, _ = create_access_token({
@@ -120,13 +111,16 @@ class AuthServices:
         sid = token_payload.get("sid")
         user_id = token_payload.get("sub")
         
+         # 1. Buscar Usuario en tabla única
+        user = self.user_repo.obtener_por_id(user_id)
+        
         if sid:
             self.auth_repo.invalidar_sesion(sid)
             if user_id:
                 self.auth_repo.registrar_log(
                     user_id=user_id,
                     evento='LOGOUT',
-                    detail="Cierre de sesión exitoso",
+                    detail=f"Cierre de sesión exitoso para: {user.get('email')}",
                     ip_address=ip_address,
                     ua=user_agent
                 )
@@ -160,9 +154,10 @@ class AuthServices:
             raise AppError("Usuario no encontrado", 404, "AUTH_USER_NOT_FOUND")
 
         # Inyectar flags de rol para compatibilidad
-        user[AuthKeys.IS_SUPERADMIN] = (role == "superadmin")
-        user[AuthKeys.IS_VENDEDOR] = (role == "vendedor")
-        user[AuthKeys.IS_USUARIO] = (role == "usuario")
+        role_upper = str(role).upper()
+        user[AuthKeys.IS_SUPERADMIN] = (role_upper == "SUPERADMIN")
+        user[AuthKeys.IS_VENDEDOR] = (role_upper == "VENDEDOR")
+        user[AuthKeys.IS_USUARIO] = (role_upper == "USUARIO")
         user["role"] = role
 
         user.pop("password_hash", None)

@@ -2,6 +2,7 @@ from fastapi import Depends, Request
 from .services import AuthServices
 from .schemas import LoginRequest
 from ...errors.app_error import AppError
+from ...utils.response import success_response
 
 class AuthController:
     def __init__(self, service: AuthServices = Depends()):
@@ -23,4 +24,4 @@ class AuthController:
         )
 
     def obtener_perfil(self, usuario: dict):
-        return {"data": usuario}
+        return success_response(usuario)

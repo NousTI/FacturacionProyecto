@@ -19,7 +19,7 @@ class RepositorioComisionLog:
                      observaciones: str = None):
         
         query = """
-            INSERT INTO comision_log (
+            INSERT INTO sistema_facturacion.comisiones_logs (
                 comision_id, 
                 responsable_id, 
                 rol_responsable, 
@@ -48,9 +48,9 @@ class RepositorioComisionLog:
 
     def obtener_por_comision(self, comision_id: UUID) -> list[dict]:
         query = """
-            SELECT l.*, s.email as responsable_email
-            FROM comision_log l
-            LEFT JOIN superadmin s ON l.responsable_id = s.id
+            SELECT l.*, u.email as responsable_email
+            FROM sistema_facturacion.comisiones_logs l
+            LEFT JOIN sistema_facturacion.users u ON l.responsable_id = u.id
             WHERE l.comision_id = %s
             ORDER BY l.created_at DESC
         """

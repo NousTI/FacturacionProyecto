@@ -1,112 +1,4 @@
 -- =========================================
--- EXTENSIÓN PARA UUID
--- =========================================
-CREATE EXTENSION IF NOT EXISTS "pgcrypto";
-
--- =========================================
--- VENDEDOR
--- =========================================
-CREATE TABLE IF NOT EXISTS public.vendedor (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-
-    email TEXT NOT NULL UNIQUE,
-    password_hash TEXT NOT NULL,
-
-    nombres TEXT NOT NULL,
-    apellidos TEXT NOT NULL,
-
-    telefono TEXT,
-    documento_identidad TEXT,
-
-    porcentaje_comision NUMERIC(5,2),
-    porcentaje_comision_inicial NUMERIC(5,2),
-    porcentaje_comision_recurrente NUMERIC(5,2),
-    tipo_comision TEXT,
-
-    puede_crear_empresas BOOLEAN NOT NULL DEFAULT FALSE,
-    puede_gestionar_planes BOOLEAN NOT NULL DEFAULT FALSE,
-    puede_ver_reportes BOOLEAN NOT NULL DEFAULT FALSE,
-
-    activo BOOLEAN NOT NULL DEFAULT TRUE,
-
-    configuracion JSONB
-
-    fecha_registro TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    last_login TIMESTAMPTZ,
-);
-
--- =========================================
--- PLAN
--- =========================================
-CREATE TABLE IF NOT EXISTS public.plan (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-
-    codigo TEXT NOT NULL UNIQUE,
-    nombre TEXT NOT NULL,
-    descripcion TEXT NOT NULL,
-
-    precio_mensual NUMERIC(10,2) NOT NULL DEFAULT 0.00,
-
-    max_usuarios INT NOT NULL,
-    max_facturas_mes INT NOT NULL,
-    max_establecimientos INT NOT NULL,
-    max_programaciones INT NOT NULL,
-
-    caracteristicas JSONB,
-
-    visible_publico BOOLEAN NOT NULL DEFAULT TRUE,
-
-    activo BOOLEAN NOT NULL DEFAULT TRUE,
-
-    orden INT NOT NULL DEFAULT 0,
-
-    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-);
-
--- =========================================
--- EMPRESA
--- =========================================
-CREATE TABLE IF NOT EXISTS public.empresa (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-
-    vendedor_id UUID
-      REFERENCES public.vendedor(id)
-      ON DELETE SET NULL,
-
-    -- Identificación SRI
-    ruc TEXT NOT NULL UNIQUE,
-    razon_social TEXT NOT NULL,
-    nombre_comercial TEXT,
-
-    -- Contacto y ubicación (SRI exige dirección matriz)
-    email TEXT NOT NULL,
-    telefono TEXT,
-    direccion TEXT NOT NULL,
-    logo_url TEXT,
-
-    -- Estado general
-    activo BOOLEAN NOT NULL DEFAULT TRUE,
-
-    -- Ciclo de vida del cliente
-    fecha_registro TIMESTAMPTZ NOT NULL DEFAULT CURRENT_DATE,
-    fecha_activacion TIMESTAMPTZ,
-    fecha_vencimiento TIMESTAMPTZ,
-
-    -- Información tributaria obligatoria
-    estado_suscripcion TEXT NOT NULL DEFAULT 'PENDIENTE',
-    tipo_contribuyente TEXT NOT NULL,
-    obligado_contabilidad BOOLEAN NOT NULL DEFAULT FALSE,
-
-    -- Auditoría
-    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-);
-
-
--- =========================================
 -- ROL
 -- =========================================
 CREATE TABLE IF NOT EXISTS public.rol (
@@ -163,217 +55,71 @@ CREATE TABLE IF NOT EXISTS public.rol_permiso (
 );
 
 
--- =========================================
--- USUARIO
--- =========================================
-CREATE TABLE IF NOT EXISTS public.usuario (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-
-    empresa_id UUID NOT NULL REFERENCES public.empresa(id) ON DELETE CASCADE,
-
-    rol_id UUID NOT NULL REFERENCES public.rol(id) ON DELETE RESTRICT,
-
-    email TEXT NOT NULL UNIQUE,
-    password_hash TEXT NOT NULL,
-
-    nombres TEXT NOT NULL,
-    apellidos TEXT NOT NULL,
-    telefono TEXT NOT NULL,
-
-    avatar_url TEXT,
-
-    activo BOOLEAN NOT NULL DEFAULT TRUE,
-
-    requiere_cambio_password BOOLEAN NOT NULL DEFAULT FALSE,
-	
-	created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-	updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-	last_login TIMESTAMPTZ
-);
 
 
--- =========================================
--- CLIENTE
--- =========================================
-CREATE TABLE IF NOT EXISTS public.cliente (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+-- =====================================================
+-- TABLA: CONFIGURACION_SRI
+-- Almacena configuración SRI por empresa
+-- El certificado .p12 se guarda CIFRADO en la DB
+-- =====================================================
 
-    empresa_id UUID NOT null REFERENCES public.empresa(id) ON DELETE CASCADE,
-
-    identificacion TEXT NOT NULL,
-    tipo_identificacion TEXT NOT NULL, -- CEDULA | RUC | PASAPORTE
-    razon_social TEXT NOT NULL,
-
-    email TEXT,
-    telefono TEXT,
-
-    direccion TEXT,
-    ciudad TEXT,
-    provincia TEXT,
-    pais TEXT,
-
-    avatar_url TEXT,
-    observaciones TEXT,
-
-    activo BOOLEAN NOT NULL DEFAULT TRUE,
-
-    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-
-    -- Un cliente no se repite dentro de la misma empresa
-    CONSTRAINT uq_cliente_empresa_identificacion UNIQUE (empresa_id, identificacion)
-);
-
--- =========================================
--- TABLA: proveedor
--- =========================================
-CREATE TABLE IF NOT EXISTS public.proveedor (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-
-    empresa_id UUID NOT null REFERENCES public.empresa(id) ON DELETE CASCADE,
-
-    identificacion TEXT NOT NULL,
-    tipo_identificacion TEXT NOT NULL, -- RUC | CEDULA | PASAPORTE
-
-    razon_social TEXT NOT NULL,
-    nombre_comercial TEXT,
-
-    email TEXT,
-    telefono TEXT,
-    direccion TEXT,
-    ciudad TEXT,
-    provincia TEXT,
-
-    dias_credito INT NOT NULL DEFAULT 0,
-
-    activo BOOLEAN NOT NULL DEFAULT TRUE,
-
-    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-
-    -- Un proveedor no se repite dentro de la misma empresa
-    CONSTRAINT uq_proveedor_empresa_identificacion UNIQUE (empresa_id, identificacion)
-);
-
-
--- =========================================
--- TABLA: producto
--- =========================================
-CREATE TABLE IF NOT EXISTS public.producto (
+CREATE TABLE IF NOT EXISTS public.configuracion_sri (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
 
     empresa_id UUID NOT NULL
         REFERENCES public.empresa(id) ON DELETE CASCADE,
 
-    codigo TEXT NOT NULL UNIQUE,
-    nombre TEXT NOT NULL,
-    descripcion TEXT,
+    -- Configuración SRI
+    ambiente TEXT NOT NULL,            -- pruebas | produccion
+    tipo_emision TEXT NOT NULL,        -- normal | contingencia
 
-    precio NUMERIC(10,2) NOT NULL CHECK (precio >= 0),
-    costo NUMERIC(10,2) NOT NULL CHECK (costo >= 0),
+    -- Seguridad
+    certificado_digital BYTEA NOT NULL, -- .p12 CIFRADO (AES)
+    clave_certificado TEXT NOT NULL,    -- password del .p12 CIFRADA (AES)
 
-    stock_actual INTEGER NOT NULL DEFAULT 0 CHECK (stock_actual >= 0),
-    stock_minimo INTEGER NOT NULL DEFAULT 0 CHECK (stock_minimo >= 0),
+    -- Vigencia del certificado
+    fecha_expiracion_cert TIMESTAMPTZ NOT NULL,
 
-    tipo_iva TEXT NOT NULL,
-    porcentaje_iva NUMERIC(5,2) NOT NULL CHECK (porcentaje_iva >= 0),
+    -- Estado
+    firma_activa BOOLEAN NOT NULL DEFAULT TRUE,
 
-    maneja_inventario BOOLEAN NOT NULL DEFAULT TRUE,
-
-    tipo TEXT,
-    unidad_medida TEXT,
-
-    activo BOOLEAN NOT NULL DEFAULT TRUE,
-
+    -- Auditoría
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+
+    -- Una configuración SRI por empresa
+    CONSTRAINT uq_configuracion_sri_empresa UNIQUE (empresa_id)
 );
 
 
 
--- =========================================
--- VENDEDOR SESSIONS
--- =========================================
-CREATE TABLE IF NOT EXISTS public.vendedor_sessions (
+-- =====================================================
+-- TABLA: AUTORIZACION_SRI
+-- =====================================================
+CREATE TABLE IF NOT EXISTS public.autorizacion_sri (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
 
-    -- FK a vendedor
-    vendedor_id UUID NOT NULL
-        REFERENCES public.vendedor(id)
-        ON DELETE CASCADE,
+    factura_id UUID NOT NULL
+        REFERENCES public.factura(id) ON DELETE CASCADE,
 
-    is_valid BOOLEAN NOT NULL DEFAULT TRUE,
+    numero_autorizacion TEXT,
 
-    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    expires_at TIMESTAMPTZ NOT NULL,
+    fecha_autorizacion TIMESTAMPTZ,
 
-    user_agent TEXT,
-    ip_address TEXT
-);
+    estado TEXT NOT NULL, -- autorizado | no_autorizado | devuelto | error
 
--- =========================================
--- USER SESSIONS (Usuarios)
--- =========================================
-CREATE TABLE IF NOT EXISTS public.usuario_sesiones (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    mensajes TEXT,
 
-    usuario_id UUID NOT NULL REFERENCES public.usuario(id) ON DELETE CASCADE,
-
-    is_valid BOOLEAN NOT NULL DEFAULT TRUE,
-
-    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    expires_at TIMESTAMP NOT NULL,
-
-    user_agent TEXT,
-    ip_address TEXT
-);
-
--- =========================================
--- FACTURACION PROGRAMADA 
--- ==================================================================================
-CREATE TABLE IF NOT EXISTS public.facturacion_programada (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-
-    empresa_id UUID NOT NULL
-        REFERENCES public.empresa(id) ON DELETE CASCADE,
-
-    cliente_id UUID NOT NULL
-        REFERENCES public.cliente(id) ON DELETE RESTRICT,
-
-    usuario_id UUID NOT NULL
-        REFERENCES public.usuario(id) ON DELETE RESTRICT,
-
-    tipo_frecuencia TEXT NOT NULL
-        CHECK (tipo_frecuencia IN ('MENSUAL', 'TRIMESTRAL', 'ANUAL')),
-
-    dia_emision INT
-        CHECK (dia_emision BETWEEN 1 AND 31),
-
-    monto NUMERIC(12,2) NOT NULL
-        CHECK (monto >= 0),
-
-    concepto TEXT NOT NULL,
-
-    fecha_inicio DATE NOT NULL,
-    fecha_fin DATE,
-
-    ultima_emision DATE,
-    proxima_emision DATE,
-
-    total_emisiones INT NOT NULL DEFAULT 0,
-    emisiones_exitosas INT NOT NULL DEFAULT 0,
-    emisiones_fallidas INT NOT NULL DEFAULT 0,
-
-    activo BOOLEAN NOT NULL DEFAULT TRUE,
-    enviar_email BOOLEAN NOT NULL DEFAULT TRUE,
-
-    configuracion JSONB,
+    xml_enviado TEXT,
+    xml_respuesta TEXT,
 
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
 
-    CHECK (fecha_fin IS NULL OR fecha_fin >= fecha_inicio)
+    CONSTRAINT uq_autorizacion_sri_factura
+        UNIQUE (factura_id)
 );
+
 
 -- =========================================
 -- ESTABLECIMIENTO 
@@ -503,6 +249,121 @@ CREATE TABLE IF NOT EXISTS public.factura_detalle (
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
+
+
+-- =========================================
+-- TABLA: proveedor
+-- =========================================
+CREATE TABLE IF NOT EXISTS public.proveedor (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+
+    empresa_id UUID NOT null REFERENCES public.empresa(id) ON DELETE CASCADE,
+
+    identificacion TEXT NOT NULL,
+    tipo_identificacion TEXT NOT NULL, -- RUC | CEDULA | PASAPORTE
+
+    razon_social TEXT NOT NULL,
+    nombre_comercial TEXT,
+
+    email TEXT,
+    telefono TEXT,
+    direccion TEXT,
+    ciudad TEXT,
+    provincia TEXT,
+
+    dias_credito INT NOT NULL DEFAULT 0,
+
+    activo BOOLEAN NOT NULL DEFAULT TRUE,
+
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+
+    -- Un proveedor no se repite dentro de la misma empresa
+    CONSTRAINT uq_proveedor_empresa_identificacion UNIQUE (empresa_id, identificacion)
+);
+
+
+-- =========================================
+-- TABLA: producto
+-- =========================================
+CREATE TABLE IF NOT EXISTS public.producto (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+
+    empresa_id UUID NOT NULL
+        REFERENCES public.empresa(id) ON DELETE CASCADE,
+
+    codigo TEXT NOT NULL UNIQUE,
+    nombre TEXT NOT NULL,
+    descripcion TEXT,
+
+    precio NUMERIC(10,2) NOT NULL CHECK (precio >= 0),
+    costo NUMERIC(10,2) NOT NULL CHECK (costo >= 0),
+
+    stock_actual INTEGER NOT NULL DEFAULT 0 CHECK (stock_actual >= 0),
+    stock_minimo INTEGER NOT NULL DEFAULT 0 CHECK (stock_minimo >= 0),
+
+    tipo_iva TEXT NOT NULL,
+    porcentaje_iva NUMERIC(5,2) NOT NULL CHECK (porcentaje_iva >= 0),
+
+    maneja_inventario BOOLEAN NOT NULL DEFAULT TRUE,
+
+    tipo TEXT,
+    unidad_medida TEXT,
+
+    activo BOOLEAN NOT NULL DEFAULT TRUE,
+
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+
+-- =========================================
+-- FACTURACION PROGRAMADA 
+-- ==================================================================================
+CREATE TABLE IF NOT EXISTS public.facturacion_programada (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+
+    empresa_id UUID NOT NULL
+        REFERENCES public.empresa(id) ON DELETE CASCADE,
+
+    cliente_id UUID NOT NULL
+        REFERENCES public.cliente(id) ON DELETE RESTRICT,
+
+    usuario_id UUID NOT NULL
+        REFERENCES public.usuario(id) ON DELETE RESTRICT,
+
+    tipo_frecuencia TEXT NOT NULL
+        CHECK (tipo_frecuencia IN ('MENSUAL', 'TRIMESTRAL', 'ANUAL')),
+
+    dia_emision INT
+        CHECK (dia_emision BETWEEN 1 AND 31),
+
+    monto NUMERIC(12,2) NOT NULL
+        CHECK (monto >= 0),
+
+    concepto TEXT NOT NULL,
+
+    fecha_inicio DATE NOT NULL,
+    fecha_fin DATE,
+
+    ultima_emision DATE,
+    proxima_emision DATE,
+
+    total_emisiones INT NOT NULL DEFAULT 0,
+    emisiones_exitosas INT NOT NULL DEFAULT 0,
+    emisiones_fallidas INT NOT NULL DEFAULT 0,
+
+    activo BOOLEAN NOT NULL DEFAULT TRUE,
+    enviar_email BOOLEAN NOT NULL DEFAULT TRUE,
+
+    configuracion JSONB,
+
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+
+    CHECK (fecha_fin IS NULL OR fecha_fin >= fecha_inicio)
+);
+
 -- =========================================
 -- CUENTA COBRAR
 -- ==================================================================================
@@ -618,68 +479,6 @@ CREATE TABLE IF NOT EXISTS public.reporte_generado (
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
--- =====================================================
--- TABLA: CONFIGURACION_SRI
--- Almacena configuración SRI por empresa
--- El certificado .p12 se guarda CIFRADO en la DB
--- =====================================================
-
-CREATE TABLE IF NOT EXISTS public.configuracion_sri (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-
-    empresa_id UUID NOT NULL
-        REFERENCES public.empresa(id) ON DELETE CASCADE,
-
-    -- Configuración SRI
-    ambiente TEXT NOT NULL,            -- pruebas | produccion
-    tipo_emision TEXT NOT NULL,        -- normal | contingencia
-
-    -- Seguridad
-    certificado_digital BYTEA NOT NULL, -- .p12 CIFRADO (AES)
-    clave_certificado TEXT NOT NULL,    -- password del .p12 CIFRADA (AES)
-
-    -- Vigencia del certificado
-    fecha_expiracion_cert TIMESTAMPTZ NOT NULL,
-
-    -- Estado
-    firma_activa BOOLEAN NOT NULL DEFAULT TRUE,
-
-    -- Auditoría
-    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-
-    -- Una configuración SRI por empresa
-    CONSTRAINT uq_configuracion_sri_empresa UNIQUE (empresa_id)
-);
-
-
-
--- =====================================================
--- TABLA: AUTORIZACION_SRI
--- =====================================================
-CREATE TABLE IF NOT EXISTS public.autorizacion_sri (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-
-    factura_id UUID NOT NULL
-        REFERENCES public.factura(id) ON DELETE CASCADE,
-
-    numero_autorizacion TEXT,
-
-    fecha_autorizacion TIMESTAMPTZ,
-
-    estado TEXT NOT NULL, -- autorizado | no_autorizado | devuelto | error
-
-    mensajes TEXT,
-
-    xml_enviado TEXT,
-    xml_respuesta TEXT,
-
-    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-
-    CONSTRAINT uq_autorizacion_sri_factura
-        UNIQUE (factura_id)
-);
 
 
 -- =====================================================

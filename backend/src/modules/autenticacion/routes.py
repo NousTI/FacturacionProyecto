@@ -4,6 +4,7 @@ from fastapi.security import OAuth2PasswordBearer
 from .controller import AuthController
 from .services import AuthServices
 from .schemas import LoginRequest
+from ...utils.response_schemas import RespuestaBase
 
 router = APIRouter()
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/autenticacion/iniciar-sesion")
@@ -45,7 +46,7 @@ async def requerir_superadmin(usuario: dict = Depends(obtener_usuario_actual)):
 requerir_admin = requerir_superadmin
 requerir_rol = requerir_permiso # O algo similar
 
-@router.post("/iniciar-sesion")
+@router.post("/iniciar-sesion", response_model=RespuestaBase)
 def login(
     request: Request,
     body: LoginRequest,
@@ -53,7 +54,7 @@ def login(
 ):
     return controller.login(request, body)
 
-@router.post("/cerrar-sesion")
+@router.post("/cerrar-sesion", response_model=RespuestaBase)
 def logout(
     request: Request,
     usuario: dict = Depends(get_current_user),
@@ -61,7 +62,7 @@ def logout(
 ):
     return controller.logout(request)
 
-@router.get("/perfil")
+@router.get("/perfil", response_model=RespuestaBase)
 def obtener_perfil(
     usuario: dict = Depends(get_current_user),
     controller: AuthController = Depends()

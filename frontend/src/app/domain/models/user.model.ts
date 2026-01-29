@@ -14,6 +14,5 @@ export interface User {
 
     telefono?: string;
     empresa_id?: string;
-    rol_id?: string;
     role?: UserRole | string;
 }

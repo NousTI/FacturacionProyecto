@@ -21,7 +21,7 @@ def standard_response(
         "ok": ok,
         "mensaje": mensaje,
         "codigo": codigo,
-        "detalles": detalles or {},
+        "detalles": detalles if detalles is not None else {},
         "timestamp": datetime.now().isoformat() + "Z"
     }
     return response

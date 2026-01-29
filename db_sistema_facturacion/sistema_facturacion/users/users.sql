@@ -13,8 +13,13 @@ CREATE TABLE IF NOT EXISTS sistema_facturacion.users (
 
     password_hash TEXT NOT NULL,
 
+    role TEXT NOT NULL DEFAULT 'USUARIO'
+        CHECK (role IN ('SUPERADMIN', 'VENDEDOR', 'USUARIO')),
+
     estado TEXT NOT NULL DEFAULT 'ACTIVA'
         CHECK (estado IN ('ACTIVA', 'BLOQUEADA', 'DESHABILITADA')),
+
+    requiere_cambio_password BOOLEAN NOT NULL DEFAULT FALSE,
 
     ultimo_acceso TIMESTAMPTZ,
 

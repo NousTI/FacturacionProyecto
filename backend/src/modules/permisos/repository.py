@@ -17,18 +17,6 @@ class RepositorioPermisos:
         with self.db.cursor() as cur:
             cur.execute("SELECT * FROM permiso WHERE id = %s", (str(permiso_id),))
             return cur.fetchone()
-    
-    def get_permissions_by_role_id(self, rol_id) -> List[str]:
-        # Helper used by Auth
-        with self.db.cursor() as cur:
-            cur.execute("""
-                SELECT p.codigo 
-                FROM permiso p
-                JOIN rol_permiso rp ON p.id = rp.permiso_id
-                WHERE rp.rol_id = %s AND rp.activo = TRUE
-            """, (str(rol_id),))
-            rows = cur.fetchall()
-            return [r['codigo'] for r in rows]
 
     def create_permission(self, data: dict) -> Optional[dict]:
         with db_transaction(self.db) as cur:

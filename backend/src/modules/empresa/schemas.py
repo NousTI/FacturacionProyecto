@@ -14,7 +14,6 @@ class EmpresaBase(BaseModel):
     direccion: str = Field(..., min_length=5)
     logo_url: Optional[str] = None
     activo: bool = True
-    estado_suscripcion: str = "PENDIENTE"
     tipo_contribuyente: str
     obligado_contabilidad: bool = False
 
@@ -27,12 +26,6 @@ class EmpresaBase(BaseModel):
 
 class EmpresaCreacion(EmpresaBase):
     vendedor_id: Optional[UUID] = None
-    fecha_activacion: Optional[datetime] = None
-    fecha_vencimiento: Optional[datetime] = None
-    plan_id: UUID
-    monto_pago: Optional[Decimal] = None
-    metodo_pago: Optional[str] = "MANUAL_SUPERADMIN"
-    observacion_pago: Optional[str] = None
 
 class EmpresaAsignarVendedor(BaseModel):
     vendedor_id: Optional[UUID] = None
@@ -47,11 +40,8 @@ class EmpresaActualizacion(BaseModel):
     direccion: Optional[str] = None
     logo_url: Optional[str] = None
     activo: Optional[bool] = None
-    estado_suscripcion: Optional[str] = None
     tipo_contribuyente: Optional[str] = None
     obligado_contabilidad: Optional[bool] = None
-    fecha_activacion: Optional[datetime] = None
-    fecha_vencimiento: Optional[datetime] = None
 
     @field_validator("ruc")
     @classmethod
@@ -63,14 +53,7 @@ class EmpresaActualizacion(BaseModel):
 class EmpresaLectura(EmpresaBase):
     id: UUID
     vendedor_id: Optional[UUID] = None
-    fecha_registro: datetime
-    fecha_activacion: Optional[datetime] = None
-    fecha_vencimiento: Optional[datetime] = None
-    plan: Optional[str] = None
-    plan_id: Optional[UUID] = None
     vendedor_name: Optional[str] = None
-    fecha_inicio_plan: Optional[datetime] = None
-    fecha_fin_plan: Optional[datetime] = None
     created_at: datetime
     updated_at: datetime
 

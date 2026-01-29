@@ -94,3 +94,55 @@ class PagoSuscripcionQuick(BaseModel):
     fecha_inicio_periodo: Optional[datetime] = None
     fecha_fin_periodo: Optional[datetime] = None
     numero_comprobante: Optional[str] = None
+
+# Suscripciones schemas
+class SuscripcionBase(BaseModel):
+    empresa_id: UUID
+    plan_id: UUID
+    fecha_inicio: datetime
+    fecha_fin: datetime
+    estado: str = "ACTIVA"  # ACTIVA, CANCELADA, SUSPENDIDA, VENCIDA
+    actualizado_por: Optional[UUID] = None
+    observaciones: Optional[str] = None
+
+class SuscripcionCreacion(SuscripcionBase):
+    pass
+
+class SuscripcionActualizacion(BaseModel):
+    plan_id: Optional[UUID] = None
+    fecha_inicio: Optional[datetime] = None
+    fecha_fin: Optional[datetime] = None
+    estado: Optional[str] = None
+    actualizado_por: Optional[UUID] = None
+    observaciones: Optional[str] = None
+
+class SuscripcionLectura(SuscripcionBase):
+    id: UUID
+    created_at: datetime
+    updated_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
+# Audit log schemas
+class SuscripcionLogBase(BaseModel):
+    suscripcion_id: UUID
+    estado_anterior: Optional[str] = None
+    estado_nuevo: str
+    plan_anterior: Optional[UUID] = None
+    plan_nuevo: Optional[UUID] = None
+    fecha_inicio_anterior: Optional[datetime] = None
+    fecha_fin_anterior: Optional[datetime] = None
+    fecha_inicio_nuevo: Optional[datetime] = None
+    fecha_fin_nuevo: Optional[datetime] = None
+    cambiado_por: Optional[UUID] = None
+    origen: str = 'SISTEMA'
+    motivo: Optional[str] = None
+
+class SuscripcionLogLectura(SuscripcionLogBase):
+    id: UUID
+    created_at: datetime
+    
+    class Config:
+        from_attributes = True

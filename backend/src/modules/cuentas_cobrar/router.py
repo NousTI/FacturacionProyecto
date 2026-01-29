@@ -10,7 +10,7 @@ from ...utils.response import success_response
 
 # Dependency Repos for validation
 from ..facturas.repository import RepositorioFacturas
-from ..clientes.repository import RepositorioClientes
+from ..clientes.repositories import RepositorioClientes
 
 router = APIRouter()
 

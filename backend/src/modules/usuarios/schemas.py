@@ -1,36 +1,43 @@
 from datetime import datetime
 from uuid import UUID
-from typing import Optional, List
+from typing import Optional
 from pydantic import BaseModel, EmailStr
 
 class UsuarioBase(BaseModel):
-    nombre: str
-    apellido: str
-    correo: EmailStr
-    telefono: Optional[str] = None
-    empresa_id: Optional[UUID] = None
-    rol_id: Optional[UUID] = None
-    # Otros campos según modelo DB
+    empresa_id: UUID
+    empresa_rol_id: UUID
+    nombres: str
+    apellidos: str
+    telefono: str
+    avatar_url: Optional[str] = None
+    activo: bool = True
 
-class UsuarioCreacion(UsuarioBase):
-    clave: str # password
+class UsuarioCreacion(BaseModel):
+    email: EmailStr
+    password: str
+    empresa_id: UUID
+    empresa_rol_id: UUID
+    nombres: str
+    apellidos: str
+    telefono: str
+    avatar_url: Optional[str] = None
 
 class UsuarioActualizacion(BaseModel):
-    nombre: Optional[str] = None
-    apellido: Optional[str] = None
-    # correo: Optional[EmailStr] = None # Permitir cambio de correo? Logic dice que si.
+    empresa_rol_id: Optional[UUID] = None
+    nombres: Optional[str] = None
+    apellidos: Optional[str] = None
     telefono: Optional[str] = None
-    # empresa_id, rol_id? Depende de reglas. El service legacy lo permitía.
-
-class CambioClave(BaseModel):
-    clave_nueva: str
+    avatar_url: Optional[str] = None
+    activo: Optional[bool] = None
 
 class UsuarioLectura(UsuarioBase):
     id: UUID
-    is_active: bool = True
+    user_id: UUID
+    email: Optional[str] = None
+    rol_nombre: Optional[str] = None
+    rol_codigo: Optional[str] = None
     created_at: datetime
     updated_at: datetime
-    # Ocultar clave hash
-
+    
     class Config:
         from_attributes = True

@@ -28,11 +28,11 @@ class PaymentMethod(str, Enum):
     STRIPE = "STRIPE"
     PAYPAL = "PAYPAL"
 
-from .roles import RolCodigo
+# from .roles import RolCodigo # Removed legacy import
 from .permissions import PermissionCodes
 
 class AuthKeys:
     IS_SUPERADMIN = "is_superadmin"
     IS_VENDEDOR = "is_vendedor"
     IS_USUARIO = "is_usuario"
-    ROL_ID = "rol_id"
+    ROLE = "role" # Changed from rol_id to role

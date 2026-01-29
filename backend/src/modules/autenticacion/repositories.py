@@ -40,6 +40,11 @@ class AuthRepository:
             cur.execute(query, (str(user_id),))
             return cur.fetchone() is not None
 
+    def actualizar_ultimo_acceso(self, user_id: UUID):
+        query = "UPDATE sistema_facturacion.users SET ultimo_acceso = NOW() WHERE id = %s"
+        with db_transaction(self.db) as cur:
+            cur.execute(query, (str(user_id),))
+
     def obtener_sesion(self, sid: str) -> Optional[dict]:
         query = "SELECT * FROM sistema_facturacion.user_sessions WHERE id = %s"
         with self.db.cursor() as cur:

@@ -4,7 +4,7 @@ from fastapi import Depends
 
 from .repository import RepositorioFacturas
 from .schemas import FacturaCreacion, FacturaActualizacion
-from ..clientes.service import ServicioClientes
+from ..clientes.services import ServicioClientes
 from ..establecimientos.service import ServicioEstablecimientos
 from ..puntos_emision.service import ServicioPuntosEmision
 from ..puntos_emision.repository import RepositorioPuntosEmision

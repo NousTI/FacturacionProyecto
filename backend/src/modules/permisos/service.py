@@ -9,16 +9,24 @@ class ServicioPermisos:
         self.repo = repo
 
     def _verificar_acceso(self, usuario: dict, permiso_requerido: str):
+        # 1. Superadmin siempre tiene acceso
         if usuario.get(AuthKeys.IS_SUPERADMIN):
             return
-            
-        rol_id = usuario.get(AuthKeys.ROL_ID)
-        if not rol_id:
-             raise AppError("Usuario sin rol asignado", 403, "AUTH_NO_ROLE")
-             
-        permisos_usuario = self.repo.get_permissions_by_role_id(rol_id)
-        if permiso_requerido not in permisos_usuario:
-             raise AppError(f"No tienes el permiso: {permiso_requerido}", 403, "AUTH_FORBIDDEN")
+
+        # 2. Otros roles (Definir lógica hardcoded o simplificada)
+        role = usuario.get("role")
+        # Por ahora, para simplificar, borramos la dependencia de 'rol_permiso'
+        # Si 'VENDEDOR' necesita acceder a gestión de permisos, agregarlo aquí.
+        # Generalmente solo Superadmin gestiona permisos.
+        
+        # permissions_mock = {
+        #     "VENDEDOR": [],
+        #     "USUARIO": []
+        # }
+        # user_perms = permissions_mock.get(role, [])
+        
+        # if permiso_requerido not in user_perms:
+        raise AppError(f"Acceso denegado: Rol {role} no tiene permiso {permiso_requerido}", 403, "AUTH_FORBIDDEN")
 
     def listar_permisos(self, usuario: dict):
         self._verificar_acceso(usuario, PermissionCodes.PERMISO_VER)

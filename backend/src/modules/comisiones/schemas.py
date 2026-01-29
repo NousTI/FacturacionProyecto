@@ -37,3 +37,22 @@ class ComisionLectura(ComisionBase):
 
     class Config:
         from_attributes = True
+
+# Audit log schemas
+class ComisionLogBase(BaseModel):
+    comision_id: UUID
+    responsable_id: Optional[UUID] = None
+    rol_responsable: str  # SUPERADMIN, SISTEMA
+    estado_anterior: Optional[str] = None
+    estado_nuevo: str
+    datos_snapshot: Optional[dict] = None
+    observaciones: Optional[str] = None
+
+class ComisionLogLectura(ComisionLogBase):
+    id: UUID
+    created_at: datetime
+    responsable_email: Optional[str] = None
+    
+    class Config:
+        from_attributes = True
+

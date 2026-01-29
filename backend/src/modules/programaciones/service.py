@@ -4,7 +4,7 @@ from typing import List, Optional
 
 from .repository import RepositorioProgramaciones
 from .schemas import FacturaProgramadaCreacion, FacturaProgramadaActualizacion
-from ..clientes.repository import RepositorioClientes
+from ..clientes.repositories import RepositorioClientes
 from ...constants.enums import AuthKeys
 from ...errors.app_error import AppError
 

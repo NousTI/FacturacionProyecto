@@ -7,16 +7,16 @@ api_router = APIRouter()
 api_router.include_router(auth_router, prefix="/autenticacion", tags=["Autenticación"])
 api_router.include_router(permisos_router, prefix="/permisos", tags=["Permisos"])
 
-from ..modules.usuarios.router import router as usuarios_router
+from ..modules.usuarios.routes import router as usuarios_router
 api_router.include_router(usuarios_router, prefix="/usuarios", tags=["Usuarios"])
 
-from ..modules.roles.routes import router as roles_router
-api_router.include_router(roles_router, prefix="/roles", tags=["Roles"])
+# from ..modules.roles.routes import router as roles_router
+# api_router.include_router(roles_router, prefix="/roles", tags=["Roles"])
 
-from ..modules.empresa.router import router as empresa_router
-api_router.include_router(empresa_router, prefix="/empresas", tags=["Empresas"])
+from ..modules.empresas.routes import router as empresas_router
+api_router.include_router(empresas_router, prefix="/empresas", tags=["Empresas"])
 
-from ..modules.clientes.router import router as clientes_router
+from ..modules.clientes.routes import router as clientes_router
 api_router.include_router(clientes_router, prefix="/clientes", tags=["Clientes"])
 
 from ..modules.productos.router import router as productos_router
@@ -64,10 +64,10 @@ api_router.include_router(comisiones_router, prefix="/comisiones", tags=["Comisi
 from ..modules.modulos.router import router as modulos_router
 api_router.include_router(modulos_router, prefix="/modulos", tags=["Módulos SaaS"])
 
-from ..modules.suscripciones.router import router as suscripciones_router
+from ..modules.suscripciones.routes import router as suscripciones_router
 api_router.include_router(suscripciones_router, prefix="/suscripciones", tags=["Suscripciones y Planes"])
 
-from ..modules.vendedores.router import router as vendedores_router
+from ..modules.vendedores.routes import router as vendedores_router
 api_router.include_router(vendedores_router, prefix="/vendedores", tags=["Vendedores"])
 
 from ..modules.dashboards.router import router as dashboards_router
