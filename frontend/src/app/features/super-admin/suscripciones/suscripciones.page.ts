@@ -8,6 +8,7 @@ import { SuscripcionStatsComponent } from './components/suscripcion-stats/suscri
 import { SuscripcionTableComponent } from './components/suscripcion-table/suscripcion-table.component';
 import { RegistroPagoModalComponent } from './components/registro-pago-modal/registro-pago-modal.component';
 import { HistorialPagosModalComponent } from './components/historial-pagos-modal/historial-pagos-modal.component';
+import { SuscripcionHistoryModalComponent } from './components/history-modal/history-modal.component';
 import { ConfirmModalComponent } from '../../../shared/components/confirm-modal/confirm-modal.component';
 import { ToastComponent } from '../../../shared/components/toast/toast.component';
 
@@ -25,6 +26,7 @@ import { UiService } from '../../../shared/services/ui.service';
         SuscripcionTableComponent,
         RegistroPagoModalComponent,
         HistorialPagosModalComponent,
+        SuscripcionHistoryModalComponent,
         ConfirmModalComponent,
         ToastComponent
     ],
@@ -49,6 +51,10 @@ import { UiService } from '../../../shared/services/ui.service';
 
         <!-- Filter Tabs -->
         <div class="filter-tabs d-flex gap-2">
+           <button class="btn-tab" (click)="showHistorySectionModal = true">
+             <i class="bi bi-clock-history me-1"></i> Historial
+           </button>
+           <div class="vr mx-1"></div>
            <button class="btn-tab" [class.active]="filterStatus === 'ALL'" (click)="setFilter('ALL')">Todos</button>
            <button class="btn-tab" [class.active]="filterStatus === 'ACTIVA'" (click)="setFilter('ACTIVA')">Activas</button>
            <button class="btn-tab" [class.active]="filterStatus === 'VENCIDA'" (click)="setFilter('VENCIDA')">Vencidas</button>
@@ -82,6 +88,12 @@ import { UiService } from '../../../shared/services/ui.service';
         [pagos]="historialPagos"
         (onClose)="showHistorialModal = false"
       ></app-historial-pagos-modal>
+
+      <!-- Historial General Sección -->
+      <app-suscripcion-history-modal
+        *ngIf="showHistorySectionModal"
+        (onClose)="showHistorySectionModal = false"
+      ></app-suscripcion-history-modal>
 
       <!-- Confirmación -->
       <app-confirm-modal
@@ -161,6 +173,7 @@ export class SuscripcionesPage implements OnInit {
     saving = false;
     showRegistroPagoModal = false;
     showHistorialModal = false;
+    showHistorySectionModal = false; // New modal for general history
 
     selectedSuscripcion: Suscripcion | null = null;
 
@@ -186,6 +199,7 @@ export class SuscripcionesPage implements OnInit {
 
     loadData() {
         this.globalLoading = true;
+        this.susService.clearCache();
 
         // Workflow: Get Planes -> Get Companies per Plan -> Aggregate
         this.susService.getPlanes().pipe(
@@ -311,7 +325,10 @@ export class SuscripcionesPage implements OnInit {
 
     openRegistroPago(sub: Suscripcion) {
         this.selectedSuscripcion = sub;
+        this.showHistorialModal = false; // Close other modals
+        this.showConfirmModal = false;
         this.showRegistroPagoModal = true;
+        this.cdr.detectChanges();
     }
 
     handleRegistroPago(data: any) {
@@ -332,15 +349,18 @@ export class SuscripcionesPage implements OnInit {
 
     openHistorial(sub: Suscripcion) {
         this.selectedSuscripcion = sub;
-        this.uiService.showToast('Cargando historial...', 'info');
+        this.showRegistroPagoModal = false; // Close other modals
+        this.showConfirmModal = false;
 
         this.susService.getPagos(sub.empresa_id).subscribe({
             next: (pagos) => {
                 this.historialPagos = pagos;
                 this.showHistorialModal = true;
+                this.cdr.detectChanges();
             },
             error: (err) => {
                 this.uiService.showError(err, 'Error al cargar historial');
+                this.cdr.detectChanges();
             }
         });
     }
@@ -383,7 +403,10 @@ export class SuscripcionesPage implements OnInit {
             };
         }
 
+        this.showRegistroPagoModal = false; // Close other modals
+        this.showHistorialModal = false;
         this.showConfirmModal = true;
+        this.cdr.detectChanges();
     }
 
     callSuscripcionAction(id: string, action: 'cancelar' | 'suspender') {

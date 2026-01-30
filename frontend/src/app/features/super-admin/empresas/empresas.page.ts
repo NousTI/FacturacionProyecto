@@ -12,36 +12,19 @@ import { AssignVendedorModalComponent } from './components/assign-vendedor-modal
 import { EmpresaDetailsModalComponent } from './components/empresa-details-modal/empresa-details-modal.component';
 import { UiService } from '../../../shared/services/ui.service';
 import { EmpresaService, EmpresaStats } from './services/empresa.service';
-import { OnInit, ChangeDetectorRef } from '@angular/core';
-
-export interface Empresa {
-  id: number;
-  razonSocial: string;
-  nombreComercial?: string;
-  ruc: string;
-  estado: string;
-  plan: string;
-  direccion?: string;
-  email?: string;
-  telefono?: string;
-  fechaVencimiento: Date;
-  fechaRegistro?: Date;
-  fechaActivacion?: Date | null;
-  vendedorId?: number | null;
-  vendedorName?: string;
-  tipoContribuyente?: string;
-}
+import { OnInit, ChangeDetectorRef, OnDestroy } from '@angular/core';
+import { Subject, takeUntil, finalize } from 'rxjs';
 
 @Component({
   selector: 'app-empresas',
   template: `
-    <div class="empresas-page-container animate__animated animate__fadeIn">
+    <div class="empresas-page-container">
       
       <!-- 1. MÓDULO DE ESTADÍSTICAS -->
       <app-empresa-stats
-        [total]="totalEmpresas"
-        [active]="activasCount"
-        [inactive]="inactivasCount"
+        [total]="stats.total"
+        [active]="stats.activas"
+        [inactive]="stats.inactivas"
       ></app-empresa-stats>
 
       <!-- 2. MÓDULO DE BÚSQUEDA Y ACCIONES -->
@@ -58,7 +41,7 @@ export interface Empresa {
         [empresas]="filteredEmpresas"
         (onAction)="handleAction($event)"
       ></app-empresa-table>
-
+      
       <!-- 4. MODALS (Creación) -->
       <app-create-empresa-modal 
         *ngIf="showCreateModal" 
@@ -93,7 +76,7 @@ export interface Empresa {
       <app-change-plan-modal
         *ngIf="showPlanModal"
         [empresaName]="selectedEmpresa?.razonSocial || ''"
-        [selectedPlan]="selectedEmpresa?.plan || ''"
+        [selectedPlanId]="selectedEmpresa?.currentPlanId || null"
         (onSave)="updatePlan($event)"
         (onClose)="showPlanModal = false"
       ></app-change-plan-modal>
@@ -102,7 +85,8 @@ export interface Empresa {
       <app-assign-vendedor-modal
         *ngIf="showVendedorModal"
         [empresaName]="selectedEmpresa?.razonSocial || ''"
-        [selectedVendedorId]="selectedEmpresa?.vendedorId || null"
+        [currentVendedorId]="selectedEmpresa?.vendedorId || null"
+        [loading]="isAssigning"
         (onSave)="updateVendedor($event)"
         (onClose)="showVendedorModal = false"
       ></app-assign-vendedor-modal>
@@ -132,7 +116,7 @@ export interface Empresa {
     EmpresaDetailsModalComponent
   ]
 })
-export class EmpresasPage implements OnInit {
+export class EmpresasPage implements OnInit, OnDestroy {
   // Data
   empresas: any[] = [];
   availablePlanes: any[] = [];
@@ -156,8 +140,13 @@ export class EmpresasPage implements OnInit {
   showPlanModal: boolean = false;
   showVendedorModal: boolean = false;
 
+  // Loading States
+  isAssigning: boolean = false;
+
   selectedEmpresa: any = null;
   confirmData: any = {};
+
+  private destroy$ = new Subject<void>();
 
   constructor(
     private uiService: UiService,
@@ -166,46 +155,46 @@ export class EmpresasPage implements OnInit {
   ) { }
 
   ngOnInit() {
-    this.loadData();
+    this.initSubscriptions();
+    this.empresaService.loadData();
     this.loadSupportData();
   }
 
-  loadData() {
-    this.empresaService.loadData();
+  ngOnDestroy() {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
 
-    this.empresaService.getStats().subscribe({
-      next: (data: EmpresaStats) => {
-        this.stats = data;
+  private initSubscriptions() {
+    this.empresaService.getStats()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(stats => {
+        this.stats = stats;
         this.cd.detectChanges();
-      },
-      error: (err: any) => console.error('Error stats:', err)
-    });
+      });
 
-    this.empresaService.getEmpresas().subscribe({
-      next: (data: any[]) => {
-        this.empresas = data.map((e: any) => ({
-          ...e,
-          razonSocial: e.razon_social,
-          estado: e.activo ? 'ACTIVO' : 'INACTIVO',
-          vendedorName: e.vendedor_name,
-          fechaVencimiento: e.fecha_vencimiento ? new Date(e.fecha_vencimiento) : null
-          // Note: Plan info usually needs a join or comes from backend
-        }));
+    this.empresaService.getEmpresas()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(empresas => {
+        this.empresas = empresas;
         this.cd.detectChanges();
-      },
-      error: (err: any) => console.error('Error empresas:', err)
-    });
+      });
   }
 
   loadSupportData() {
-    this.empresaService.getPlanes().subscribe((planes: any[]) => {
-      this.availablePlanes = planes.map((p: any) => ({ id: p.id, nombre: p.nombre }));
-      this.cd.detectChanges();
-    });
-    this.empresaService.getVendedores().subscribe((vends: any[]) => {
-      this.availableVendedores = vends.map((v: any) => ({ id: v.id, nombre: `${v.nombres} ${v.apellidos}` }));
-      this.cd.detectChanges();
-    });
+    this.empresaService.getPlanes()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(planes => {
+        this.availablePlanes = planes.map((p: any) => ({ id: p.id, nombre: p.nombre }));
+        this.cd.detectChanges();
+      });
+
+    this.empresaService.getVendedores()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(vends => {
+        this.availableVendedores = vends.map((v: any) => ({ id: v.id, nombre: `${v.nombres} ${v.apellidos}` }));
+        this.cd.detectChanges();
+      });
   }
 
   get totalEmpresas() { return this.stats.total; }
@@ -320,13 +309,16 @@ export class EmpresasPage implements OnInit {
   }
 
   updateVendedor(vendedorId: any) {
-    this.empresaService.assignVendor(this.selectedEmpresa.id, vendedorId).subscribe({
-      next: () => {
-        this.uiService.showToast('Vendedor asignado correctamente', 'success');
-        this.showVendedorModal = false;
-      },
-      error: (err: any) => this.uiService.showError(err, 'Error de Asignación')
-    });
+    this.isAssigning = true;
+    this.empresaService.assignVendor(this.selectedEmpresa.id, vendedorId)
+      .pipe(finalize(() => this.isAssigning = false))
+      .subscribe({
+        next: () => {
+          this.uiService.showToast('Vendedor asignado correctamente', 'success');
+          this.showVendedorModal = false;
+        },
+        error: (err: any) => this.uiService.showError(err, 'Error de Asignación')
+      });
   }
 
   saveEmpresa(data: any) {

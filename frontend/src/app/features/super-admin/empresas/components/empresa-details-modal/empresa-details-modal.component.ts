@@ -2,8 +2,8 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 @Component({
-  selector: 'app-empresa-details-modal',
-  template: `
+   selector: 'app-empresa-details-modal',
+   template: `
     <div class="modal-overlay animate__animated animate__fadeIn animate__faster" (click)="onClose.emit()">
       <div class="modal-container-premium" (click)="$event.stopPropagation()">
         
@@ -91,9 +91,12 @@ import { CommonModule } from '@angular/common';
                       </div>
                       <div class="d-flex justify-content-between align-items-center">
                          <span class="text-muted">Último Pago</span>
-                         <span class="fw-800 text-success">
-                            {{ empresa?.ultimoPago?.monto | currency:'USD' }} ({{ empresa?.ultimoPago?.fecha | date:'dd/MM' }})
+                         <span class="fw-800 text-success" *ngIf="empresa?.ultimoPagoFecha; else noPago">
+                            {{ empresa?.ultimoPagoMonto | currency:'USD' }} ({{ empresa?.ultimoPagoFecha | date:'dd/MM/yyyy' }})
                          </span>
+                         <ng-template #noPago>
+                            <span class="badge bg-light text-muted border fw-normal" style="font-size: 0.7rem;">Ninguno</span>
+                         </ng-template>
                       </div>
                    </div>
                 </div>
@@ -190,7 +193,7 @@ import { CommonModule } from '@angular/common';
       </div>
     </div>
   `,
-  styles: [`
+   styles: [`
     .modal-overlay {
       position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
       background: rgba(15, 23, 53, 0.4); backdrop-filter: blur(8px);
@@ -269,44 +272,44 @@ import { CommonModule } from '@angular/common';
     .scroll-custom::-webkit-scrollbar { width: 5px; }
     .scroll-custom::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
   `],
-  standalone: true,
-  imports: [CommonModule]
+   standalone: true,
+   imports: [CommonModule]
 })
 export class EmpresaDetailsModalComponent {
-  @Input() empresa: any;
-  @Output() onClose = new EventEmitter<void>();
+   @Input() empresa: any;
+   @Output() onClose = new EventEmitter<void>();
 
-  activeTab: string = 'general';
-  tabs = [
-    { id: 'general', label: 'General', icon: 'bi-grid-fill' },
-    { id: 'suscripcion', label: 'Plan & Uso', icon: 'bi-box' },
-    { id: 'sri', label: 'SRI & Facturación', icon: 'bi-shield-check' }
-  ];
+   activeTab: string = 'general';
+   tabs = [
+      { id: 'general', label: 'General', icon: 'bi-grid-fill' },
+      { id: 'suscripcion', label: 'Plan & Uso', icon: 'bi-box' },
+      { id: 'sri', label: 'SRI & Facturación', icon: 'bi-shield-check' }
+   ];
 
-  getAvatarColor(name: string, opacity: number): string {
-    if (!name) return `rgba(148, 163, 184, ${opacity})`;
-    const colors = [
-      `rgba(99, 102, 241, ${opacity})`, // Indigo
-      `rgba(16, 185, 129, ${opacity})`, // Emerald
-      `rgba(245, 158, 11, ${opacity})`, // Amber
-      `rgba(139, 92, 246, ${opacity})`, // Violet
-      `rgba(20, 184, 166, ${opacity})`  // Teal
-    ];
-    let hash = 0;
-    for (let i = 0; i < name.length; i++) {
-      hash = name.charCodeAt(i) + ((hash << 5) - hash);
-    }
-    return colors[Math.abs(hash) % colors.length];
-  }
+   getAvatarColor(name: string, opacity: number): string {
+      if (!name) return `rgba(148, 163, 184, ${opacity})`;
+      const colors = [
+         `rgba(99, 102, 241, ${opacity})`, // Indigo
+         `rgba(16, 185, 129, ${opacity})`, // Emerald
+         `rgba(245, 158, 11, ${opacity})`, // Amber
+         `rgba(139, 92, 246, ${opacity})`, // Violet
+         `rgba(20, 184, 166, ${opacity})`  // Teal
+      ];
+      let hash = 0;
+      for (let i = 0; i < name.length; i++) {
+         hash = name.charCodeAt(i) + ((hash << 5) - hash);
+      }
+      return colors[Math.abs(hash) % colors.length];
+   }
 
-  isExpired(date: any): boolean {
-    if (!date) return false;
-    return new Date(date) < new Date();
-  }
+   isExpired(date: any): boolean {
+      if (!date) return false;
+      return new Date(date) < new Date();
+   }
 
-  getUsagePercent(current: number = 0, max: any = 0): number {
-    if (!max || max === '-' || max <= 0) return 0;
-    const percent = (current / max) * 100;
-    return Math.min(percent, 100);
-  }
+   getUsagePercent(current: number = 0, max: any = 0): number {
+      if (!max || max === '-' || max <= 0) return 0;
+      const percent = (current / max) * 100;
+      return Math.min(percent, 100);
+   }
 }

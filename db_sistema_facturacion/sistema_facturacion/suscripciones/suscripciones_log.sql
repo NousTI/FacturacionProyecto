@@ -36,9 +36,9 @@ CREATE TABLE IF NOT EXISTS sistema_facturacion.suscripciones_log (
     fecha_inicio_nuevo TIMESTAMPTZ,
     fecha_fin_nuevo TIMESTAMPTZ,
 
-    -- Quién / qué originó el cambio
+    -- Quién / qué originó el cambio    
     cambiado_por UUID
-        REFERENCES sistema_facturacion.usuarios(id)
+        REFERENCES sistema_facturacion.users(id)
         ON DELETE SET NULL,
 
     origen TEXT NOT NULL DEFAULT 'SISTEMA'

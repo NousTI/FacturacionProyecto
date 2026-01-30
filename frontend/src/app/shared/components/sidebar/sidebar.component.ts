@@ -23,13 +23,23 @@ import { Observable, map } from 'rxjs';
         <div class="menu-section mb-4">
           <span class="menu-label px-3 text-muted mb-2 d-block">GENERAL</span>
           <div class="list-group list-group-flush border-0">
-            <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" class="menu-item px-3 mb-1">
-              <i class="bi bi-grid-fill me-3"></i> Inicio {{ dashboardRoleSuffix$ | async }}
+            <!-- SuperAdmin Home -->
+            <a *ngIf="isSuperadmin$ | async" routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" class="menu-item px-3 mb-1">
+              <i class="bi bi-grid-fill me-3"></i> Inicio
+            </a>
+
+            <!-- Vendedor Home -->
+            <a *ngIf="isVendedor$ | async" routerLink="/vendedor" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" class="menu-item px-3 mb-1">
+              <i class="bi bi-grid-fill me-3"></i> Inicio
             </a>
             
             <ng-container *ngIf="isSuperadmin$ | async">
               <a routerLink="/empresas" routerLinkActive="active" class="menu-item px-3 mb-1">
                 <i class="bi bi-building me-3"></i> Empresas
+              </a>
+              <!-- More SuperAdmin links... (unchanged) -->
+              <a routerLink="/clientes" routerLinkActive="active" class="menu-item px-3 mb-1">
+                <i class="bi bi-person-badge me-3"></i> Clientes
               </a>
               <a routerLink="/vendedores" routerLinkActive="active" class="menu-item px-3 mb-1">
                 <i class="bi bi-people me-3"></i> Vendedores
@@ -40,6 +50,13 @@ import { Observable, map } from 'rxjs';
               <a routerLink="/finanzas" routerLinkActive="active" class="menu-item px-3 mb-1">
                 <i class="bi bi-wallet2 me-3"></i> Finanzas
               </a>
+            </ng-container>
+
+            <!-- Vendedor Menu -->
+            <ng-container *ngIf="isVendedor$ | async">
+               <a routerLink="/vendedor/empresas" routerLinkActive="active" class="menu-item px-3 mb-1">
+                 <i class="bi bi-building me-3"></i> Empresas
+               </a>
             </ng-container>
 
             <!-- Removed vendor specific links for now as per "ONLY Dashboard" instruction -->
@@ -53,13 +70,10 @@ import { Observable, map } from 'rxjs';
               <i class="bi bi-percent me-3"></i> Comisiones
             </a>
             <a routerLink="/planes" routerLinkActive="active" class="menu-item px-3 mb-1">
-              <i class="bi bi-tags me-3"></i> Planes
+              <i class="bi bi-tags me-3"></i> Planes y Límites
             </a>
-            <a routerLink="/certificados" routerLinkActive="active" class="menu-item px-3 mb-1">
+            <a routerLink="/certificados-sri" routerLinkActive="active" class="menu-item px-3 mb-1">
               <i class="bi bi-shield-check me-3"></i> Certificados SRI
-            </a>
-            <a routerLink="/clientes" routerLinkActive="active" class="menu-item px-3 mb-1">
-              <i class="bi bi-person-heart me-3"></i> Clientes
             </a>
             <a routerLink="/reportes" routerLinkActive="active" class="menu-item px-3 mb-1">
               <i class="bi bi-bar-chart me-3"></i> Reportes
@@ -132,6 +146,7 @@ export class SidebarComponent {
   isSuperadmin$: Observable<boolean>;
   isVendedor$: Observable<boolean>;
   isUsuario$: Observable<boolean>;
+  homeLink$: Observable<string>;
 
   constructor(private authFacade: AuthFacade) {
     this.role$ = this.authFacade.user$.pipe(map(user => user?.role as UserRole));
@@ -147,6 +162,10 @@ export class SidebarComponent {
         if (role === UserRole.USUARIO) return '(Usuario)';
         return '';
       })
+    );
+
+    this.homeLink$ = this.role$.pipe(
+      map(role => role === UserRole.VENDEDOR ? '/vendedor' : '/')
     );
   }
 }

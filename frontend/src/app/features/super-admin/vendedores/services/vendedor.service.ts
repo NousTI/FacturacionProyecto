@@ -18,7 +18,7 @@ export interface Vendedor {
     apellidos?: string;
     email: string;
     telefono: string;
-    dni: string;
+    documento_identidad: string;
     activo: boolean;
     empresasAsignadas: number;
     empresas_asignadas?: number;
@@ -28,7 +28,13 @@ export interface Vendedor {
     ingresos_generados?: number;
     fechaRegistro: Date;
     porcentajeComision: number;
+    porcentajeComisionInicial: number;
+    porcentajeComisionRecurrente: number;
     tipoComision: string;
+    puede_crear_empresas: boolean;
+    puede_gestionar_planes: boolean;
+    puede_acceder_empresas: boolean;
+    puede_ver_reportes: boolean;
 }
 
 @Injectable({
@@ -64,16 +70,24 @@ export class VendedorService {
         return {
             id: data.id,
             nombre: `${data.nombres} ${data.apellidos}`,
+            nombres: data.nombres,
+            apellidos: data.apellidos,
             email: data.email,
             telefono: data.telefono || '',
-            dni: data.documento_identidad || '',
+            documento_identidad: data.documento_identidad || '',
             activo: data.activo,
             empresasAsignadas: data.empresas_asignadas || 0,
             empresasActivas: data.empresas_activas || 0,
             ingresosGenerados: data.ingresos_generados || 0,
             fechaRegistro: new Date(data.created_at),
             porcentajeComision: data.porcentaje_comision || 0,
-            tipoComision: data.tipo_comision || 'FIJO'
+            porcentajeComisionInicial: data.porcentaje_comision_inicial || 0,
+            porcentajeComisionRecurrente: data.porcentaje_comision_recurrente || 0,
+            tipoComision: data.tipo_comision || 'PORCENTAJE',
+            puede_crear_empresas: data.puede_crear_empresas || false,
+            puede_gestionar_planes: data.puede_gestionar_planes || false,
+            puede_acceder_empresas: data.puede_acceder_empresas || false,
+            puede_ver_reportes: data.puede_ver_reportes || false
         };
     }
 
@@ -82,21 +96,11 @@ export class VendedorService {
     }
 
     crearVendedor(data: any): Observable<any> {
-        // Map frontend fields back to backend if necessary
-        const backendData = {
-            email: data.email,
-            nombres: data.nombre.split(' ')[0],
-            apellidos: data.nombre.split(' ').slice(1).join(' '),
-            telefono: data.telefono,
-            documento_identidad: data.dni,
-            password: data.password,
-            activo: true
-        };
-        return this.http.post(this.apiUrl, backendData);
+        return this.http.post(this.apiUrl, data);
     }
 
     actualizarVendedor(id: string, data: any): Observable<any> {
-        return this.http.put(`${this.apiUrl}/${id}`, data);
+        return this.http.patch(`${this.apiUrl}/${id}`, data);
     }
 
     reassignCompanies(fromId: string, toId: string, empresaIds?: string[]): Observable<any> {

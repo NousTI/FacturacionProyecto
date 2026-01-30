@@ -5,6 +5,7 @@ import { VendedoresPage } from './vendedores/vendedores.page';
 import { SuscripcionesPage } from './suscripciones/suscripciones.page';
 import { ComisionesPage } from './comisiones/comisiones.page';
 import { PlanesPage } from './planes/planes.page';
+import { ClientesPage } from './clientes/clientes.page';
 import { RoleGuard } from '../../core/guards/role.guard';
 import { UserRole } from '../../domain/enums/role.enum';
 
@@ -14,6 +15,12 @@ const routes: Routes = [
         component: EmpresasPage,
         canActivate: [RoleGuard],
         data: { title: 'Empresas', roles: [UserRole.SUPERADMIN], description: 'Empresas activas y suspendidas' }
+    },
+    {
+        path: 'clientes',
+        component: ClientesPage,
+        canActivate: [RoleGuard],
+        data: { title: 'Directorio Clientes', roles: [UserRole.SUPERADMIN], description: 'Usuarios de empresas y trazabilidad' }
     },
     {
         path: 'vendedores',
@@ -32,6 +39,16 @@ const routes: Routes = [
         component: ComisionesPage,
         canActivate: [RoleGuard],
         data: { title: 'Comisiones', roles: [UserRole.SUPERADMIN], description: 'Cálculo y pagos pendientes' }
+    },
+    {
+        path: 'certificados-sri',
+        loadComponent: () => import('./certificados-sri/certificados-sri.page').then(m => m.CertificadosSriPage),
+        title: 'Certificados SRI'
+    },
+    {
+        path: '',
+        redirectTo: 'home',
+        pathMatch: 'full'
     },
     {
         path: 'planes',

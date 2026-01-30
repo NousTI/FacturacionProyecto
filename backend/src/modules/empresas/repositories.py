@@ -33,8 +33,22 @@ class RepositorioEmpresas:
     def obtener_por_id(self, empresa_id: UUID) -> Optional[dict]:
         query = """
             SELECT e.*, 
-            (SELECT v.nombres || ' ' || v.apellidos FROM sistema_facturacion.vendedores v WHERE v.id = e.vendedor_id) as vendedor_name
+                   v.nombres || ' ' || v.apellidos as vendedor_name,
+                   p.nombre as plan_nombre,
+                   s.plan_id as current_plan_id,
+                   s.fecha_inicio,
+                   s.fecha_fin,
+                   s.estado as suscripcion_estado,
+                   p.max_usuarios,
+                   p.max_facturas_mes,
+                   p.max_establecimientos,
+                   p.max_programaciones,
+                   (SELECT MAX(fecha_pago) FROM sistema_facturacion.pagos_suscripciones WHERE empresa_id = e.id) as ultimo_pago_fecha,
+                   (SELECT monto FROM sistema_facturacion.pagos_suscripciones WHERE empresa_id = e.id ORDER BY fecha_pago DESC LIMIT 1) as ultimo_pago_monto
             FROM sistema_facturacion.empresas e 
+            LEFT JOIN sistema_facturacion.vendedores v ON e.vendedor_id = v.id
+            LEFT JOIN sistema_facturacion.suscripciones s ON e.id = s.empresa_id
+            LEFT JOIN sistema_facturacion.planes p ON s.plan_id = p.id
             WHERE e.id = %s
         """
         with self.db.cursor() as cur:
@@ -51,8 +65,22 @@ class RepositorioEmpresas:
     def listar_empresas(self, vendedor_id: Optional[UUID] = None, empresa_id: Optional[UUID] = None) -> List[dict]:
         query = """
             SELECT e.*, 
-            (SELECT v.nombres || ' ' || v.apellidos FROM sistema_facturacion.vendedores v WHERE v.id = e.vendedor_id) as vendedor_name
+                   v.nombres || ' ' || v.apellidos as vendedor_name,
+                   p.nombre as plan_nombre,
+                   s.plan_id as current_plan_id,
+                   s.fecha_inicio,
+                   s.fecha_fin,
+                   s.estado as suscripcion_estado,
+                   p.max_usuarios,
+                   p.max_facturas_mes,
+                   p.max_establecimientos,
+                   p.max_programaciones,
+                   (SELECT MAX(fecha_pago) FROM sistema_facturacion.pagos_suscripciones WHERE empresa_id = e.id) as ultimo_pago_fecha,
+                   (SELECT monto FROM sistema_facturacion.pagos_suscripciones WHERE empresa_id = e.id ORDER BY fecha_pago DESC LIMIT 1) as ultimo_pago_monto
             FROM sistema_facturacion.empresas e
+            LEFT JOIN sistema_facturacion.vendedores v ON e.vendedor_id = v.id
+            LEFT JOIN sistema_facturacion.suscripciones s ON e.id = s.empresa_id
+            LEFT JOIN sistema_facturacion.planes p ON s.plan_id = p.id
         """
         params = []
         conditions = []
@@ -141,4 +169,12 @@ class RepositorioEmpresas:
         
         with db_transaction(self.db) as cur:
             cur.execute(query, tuple(cleaned_data))
+            return cur.rowcount > 0
+
+    def asignar_vendedor(self, empresa_id: UUID, vendedor_id: Optional[UUID]) -> bool:
+        query = "UPDATE sistema_facturacion.empresas SET vendedor_id = %s, updated_at = NOW() WHERE id = %s"
+        val_id = str(vendedor_id) if vendedor_id else None
+        
+        with db_transaction(self.db) as cur:
+            cur.execute(query, (val_id, str(empresa_id)))
             return cur.rowcount > 0

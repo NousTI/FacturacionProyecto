@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, Input } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { CommonModule } from '@angular/common';
 
@@ -18,8 +18,8 @@ import { CommonModule } from '@angular/common';
   styles: []
 })
 export class MaintenanceComponent implements OnInit {
-  moduleName = 'Módulo';
-  description = 'Este módulo se encuentra actualmente en construcción.';
+  @Input() moduleName = 'Módulo';
+  @Input() description = 'Este módulo se encuentra actualmente en construcción.';
 
   constructor(private route: ActivatedRoute) { }
 

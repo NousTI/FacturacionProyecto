@@ -41,7 +41,7 @@ def crear_plan(
 ):
     return controller.crear_plan(datos, usuario)
 
-@router.put("/planes/{id}", response_model=RespuestaBase[PlanLectura])
+@router.patch("/planes/{id}", response_model=RespuestaBase[PlanLectura])
 def actualizar_plan(
     id: UUID,
     datos: PlanUpdate,

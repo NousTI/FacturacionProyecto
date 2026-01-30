@@ -7,11 +7,11 @@ CREATE TABLE IF NOT EXISTS sistema_facturacion.comisiones (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
 
     vendedor_id UUID NOT NULL
-        REFERENCES sistema_facturacion.vendedor(id)
+        REFERENCES sistema_facturacion.vendedores(id)
         ON DELETE RESTRICT,
 
     pago_suscripcion_id UUID NOT NULL
-        REFERENCES sistema_facturacion.pago_suscripciones(id)
+        REFERENCES sistema_facturacion.pagos_suscripciones(id)
         ON DELETE CASCADE,
 
     monto NUMERIC(10,2) NOT NULL CHECK (monto >= 0),

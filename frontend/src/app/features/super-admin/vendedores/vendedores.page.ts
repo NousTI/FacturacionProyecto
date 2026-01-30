@@ -14,7 +14,7 @@ import { ConfirmModalComponent } from '../../../shared/components/confirm-modal/
 @Component({
     selector: 'app-vendedores',
     template: `
-    <div class="vendedores-page-container animate__animated animate__fadeIn">
+    <div class="vendedores-page-container">
       
       <!-- 1. MÓDULO DE ESTADÍSTICAS -->
       <app-vendedor-stats 
@@ -169,7 +169,7 @@ export class VendedoresPage implements OnInit {
         return this.vendedores.filter(v =>
             v.nombre.toLowerCase().includes(q) ||
             v.email.toLowerCase().includes(q) ||
-            v.dni.includes(q)
+            v.documento_identidad.includes(q)
         );
     }
 
@@ -203,6 +203,24 @@ export class VendedoresPage implements OnInit {
             this.showConfirmModal = true;
         } else if (event.type === 'view_details') {
             this.showDetailsModal = true;
+        } else if (event.type === 'edit') {
+            this.editing = true;
+            this.saving = false;
+            this.selectedVendedorData = {
+                nombres: event.vendedor.nombres,
+                apellidos: event.vendedor.apellidos,
+                documento_identidad: event.vendedor.documento_identidad,
+                email: event.vendedor.email,
+                telefono: event.vendedor.telefono,
+                tipo_comision: event.vendedor.tipoComision,
+                porcentaje_comision_inicial: event.vendedor.porcentajeComisionInicial,
+                porcentaje_comision_recurrente: event.vendedor.porcentajeComisionRecurrente,
+                puede_crear_empresas: event.vendedor.puede_crear_empresas,
+                puede_gestionar_planes: event.vendedor.puede_gestionar_planes,
+                puede_acceder_empresas: event.vendedor.puede_acceder_empresas,
+                puede_ver_reportes: event.vendedor.puede_ver_reportes
+            };
+            this.showFormModal = true;
         } else if (event.type === 'reassign') {
             this.savingReassign = false;
             this.vendedorEmpresas = [];
@@ -256,7 +274,16 @@ export class VendedoresPage implements OnInit {
     openCreateModal() {
         this.editing = false;
         this.saving = false;
-        this.selectedVendedorData = { nombre: '', dni: '', email: '', telefono: '', password: '' };
+        this.selectedVendedorData = {
+            nombres: '', apellidos: '', documento_identidad: '', email: '', telefono: '',
+            tipo_comision: 'PORCENTAJE',
+            porcentaje_comision_inicial: 0,
+            porcentaje_comision_recurrente: 0,
+            puede_crear_empresas: false,
+            puede_gestionar_planes: false,
+            puede_acceder_empresas: false,
+            puede_ver_reportes: false
+        };
         this.showFormModal = true;
     }
 

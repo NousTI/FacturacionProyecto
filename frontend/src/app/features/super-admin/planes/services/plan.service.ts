@@ -201,6 +201,11 @@ export class PlanService {
         );
     }
 
+    updatePlan(id: string, plan: Partial<Plan>): Observable<Plan> {
+        return this.http.patch<any>(`${this.apiUrl}/planes/${id}`, plan)
+            .pipe(map(response => response.detalles || response));
+    }
+
     deletePlan(id: string): Observable<any> {
         return this.http.delete(`${this.apiUrl}/planes/${id}`).pipe(
             tap(() => {

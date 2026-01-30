@@ -18,13 +18,13 @@ CREATE TABLE IF NOT EXISTS sistema_facturacion.pagos_suscripciones (
 
     metodo_pago TEXT NOT NULL,
     estado TEXT NOT NULL DEFAULT 'PENDIENTE'
-    CHECK (estado IN ('PENDIENTE', 'PAGADO', 'ANULADO', 'REEMBOLSADO'));
+    CHECK (estado IN ('PENDIENTE', 'PAGADO', 'ANULADO', 'REEMBOLSADO')),
 
     numero_comprobante TEXT,
     comprobante_url TEXT,
     observaciones TEXT,
 
-    registrado_por UUID REFERENCES sistema_facturacion.usuarios(id) ON DELETE SET NULL,
+    registrado_por UUID REFERENCES sistema_facturacion.users(id) ON DELETE SET NULL,
 
     -- Auditoría
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),

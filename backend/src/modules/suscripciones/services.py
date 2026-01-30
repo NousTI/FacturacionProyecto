@@ -65,6 +65,16 @@ class ServicioSuscripciones:
         plan = self.repo.obtener_plan_por_id(data.plan_id)
         if not plan: raise AppError("Plan no encontrado", 404)
         
+        # Verificar que no sea el mismo plan actual
+        current_sub = self.repo.obtener_suscripcion_por_empresa(data.empresa_id)
+        if current_sub and str(current_sub['plan_id']) == str(data.plan_id) and current_sub['estado'] == 'ACTIVA':
+            raise AppError(
+                message="Plan ya activo",
+                status_code=400,
+                code="SUBSCRIPTION_ALREADY_ACTIVE",
+                description=f"La empresa ya cuenta con el plan '{plan['nombre']}' activo."
+            )
+        
         monto = data.monto or plan['precio_mensual']
         fecha_inicio = data.fecha_inicio_periodo or datetime.now()
         fecha_fin = data.fecha_fin_periodo or (fecha_inicio + timedelta(days=30))

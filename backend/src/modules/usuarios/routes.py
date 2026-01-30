@@ -33,7 +33,7 @@ def crear_usuario(
     """Create new user in empresa"""
     return controller.crear_usuario(datos, usuario)
 
-@router.put("/{id}", response_model=RespuestaBase[UsuarioLectura])
+@router.patch("/{id}", response_model=RespuestaBase[UsuarioLectura])
 def actualizar_usuario(
     id: UUID,
     datos: UsuarioActualizacion,

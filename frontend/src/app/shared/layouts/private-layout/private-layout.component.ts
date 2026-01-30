@@ -38,6 +38,8 @@ import { Component } from '@angular/core';
       flex-grow: 1;
       overflow-y: auto;
       background-color: #f8fafc;
+      display: flex;
+      flex-direction: column;
     }
   `],
   standalone: false

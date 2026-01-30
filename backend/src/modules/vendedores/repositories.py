@@ -21,8 +21,21 @@ class RepositorioVendedores:
             return dict(row) if row else None
 
     def obtener_por_id(self, id: UUID) -> Optional[dict]:
+        query = """
+            SELECT v.*, u.email, u.ultimo_acceso,
+                   COUNT(DISTINCT e.id) as empresas_asignadas,
+                   COUNT(DISTINCT e.id) FILTER (WHERE e.activo = true) as empresas_activas,
+                   COALESCE(SUM(p.monto), 0) as ingresos_generados
+            FROM sistema_facturacion.vendedores v
+            LEFT JOIN sistema_facturacion.users u ON u.id = v.user_id
+            LEFT JOIN sistema_facturacion.empresas e ON e.vendedor_id = v.id
+            LEFT JOIN sistema_facturacion.comisiones c ON c.vendedor_id = v.id
+            LEFT JOIN sistema_facturacion.pagos_suscripciones p ON p.id = c.pago_suscripcion_id AND p.estado = 'PAGADO'
+            WHERE v.id = %s
+            GROUP BY v.id, u.email, u.ultimo_acceso
+        """
         with self.db.cursor() as cur:
-            cur.execute("SELECT * FROM sistema_facturacion.vendedores WHERE id = %s", (str(id),))
+            cur.execute(query, (str(id),))
             row = cur.fetchone()
             return dict(row) if row else None
 
@@ -36,10 +49,13 @@ class RepositorioVendedores:
         query = """
             SELECT v.*, u.email, u.ultimo_acceso,
                    COUNT(DISTINCT e.id) as empresas_asignadas,
-                   COUNT(DISTINCT e.id) FILTER (WHERE e.activo = true) as empresas_activas
+                   COUNT(DISTINCT e.id) FILTER (WHERE e.activo = true) as empresas_activas,
+                   COALESCE(SUM(p.monto), 0) as ingresos_generados
             FROM sistema_facturacion.vendedores v
             LEFT JOIN sistema_facturacion.users u ON u.id = v.user_id
             LEFT JOIN sistema_facturacion.empresas e ON e.vendedor_id = v.id
+            LEFT JOIN sistema_facturacion.comisiones c ON c.vendedor_id = v.id
+            LEFT JOIN sistema_facturacion.pagos_suscripciones p ON p.id = c.pago_suscripcion_id AND p.estado = 'PAGADO'
             GROUP BY v.id, u.email, u.ultimo_acceso
             ORDER BY v.created_at DESC
         """
@@ -53,8 +69,13 @@ class RepositorioVendedores:
                 COUNT(*) as total,
                 COUNT(*) FILTER (WHERE activo = true) as activos,
                 COUNT(*) FILTER (WHERE activo = false) as inactivos,
-                (SELECT COUNT(*) FROM sistema_facturacion.empresas) as empresas_totales,
-                COALESCE((SELECT SUM(monto) FROM sistema_facturacion.pagos_suscripciones WHERE estado = 'PAGADO'), 0) as ingresos_generados
+                (SELECT COUNT(*) FROM sistema_facturacion.empresas WHERE vendedor_id IS NOT NULL) as empresas_totales,
+                COALESCE((
+                    SELECT SUM(p.monto) 
+                    FROM sistema_facturacion.pagos_suscripciones p
+                    JOIN sistema_facturacion.comisiones c ON c.pago_suscripcion_id = p.id
+                    WHERE p.estado = 'PAGADO'
+                ), 0) as ingresos_generados
             FROM sistema_facturacion.vendedores
         """
         with self.db.cursor() as cur:

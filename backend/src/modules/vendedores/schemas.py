@@ -29,7 +29,7 @@ class VendedorBase(BaseModel):
 
 class VendedorCreacion(VendedorBase):
     email: EmailStr
-    password: str = Field(..., min_length=6)
+    password: Optional[str] = Field(None, min_length=6)
 
 class VendedorActualizacion(BaseModel):
     nombres: Optional[str] = None
@@ -54,6 +54,9 @@ class VendedorLectura(VendedorBase):
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
     ultimo_acceso: Optional[datetime] = None
+    empresas_asignadas: int = 0
+    empresas_activas: int = 0
+    ingresos_generados: float = 0.0
 
 class VendedorStats(BaseModel):
     total: int

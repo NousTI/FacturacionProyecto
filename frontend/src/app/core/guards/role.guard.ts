@@ -15,7 +15,7 @@ export class RoleGuard implements CanActivate {
         const userRole = this.authFacade.getUserRole();
 
         if (!userRole) {
-            return this.router.createUrlTree(['/login']);
+            return this.router.createUrlTree(['/auth/login']);
         }
 
         if (!expectedRoles || expectedRoles.length === 0) {
@@ -27,6 +27,12 @@ export class RoleGuard implements CanActivate {
         }
 
         // Redirect to a safe route if unauthorized for this view
-        return this.router.createUrlTree(['/dashboard/perfil']);
+        if (userRole === UserRole.VENDEDOR) {
+            return this.router.createUrlTree(['/vendedor']);
+        } else if (userRole === UserRole.SUPERADMIN) {
+            return this.router.createUrlTree(['/']);
+        }
+
+        return this.router.createUrlTree(['/auth/login']);
     }
 }

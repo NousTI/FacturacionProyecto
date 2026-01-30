@@ -43,13 +43,15 @@ class ServicioVendedores:
              )
         
         # 1. Create user record in users table
+        password = datos.password if datos.password else "password"
+        
         user_data = {
             "email": datos.email,
-            "password": datos.password,  # Repository will convert to password_hash
+            "password_hash": get_password_hash(password),
             "role": "VENDEDOR",
             "estado": "ACTIVA"
         }
-        user = self.repo_usuarios.crear_usuario(user_data)
+        user = self.repo_usuarios.crear_auth_user(user_data)
         
         if not user:
             raise AppError(

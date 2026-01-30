@@ -3,8 +3,8 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
 @Component({
-    selector: 'app-plan-actions',
-    template: `
+  selector: 'app-plan-actions',
+  template: `
     <div class="actions-container mb-4">
       <div class="search-wrapper">
         <i class="bi bi-search search-icon"></i>
@@ -18,10 +18,7 @@ import { FormsModule } from '@angular/forms';
       </div>
 
       <div class="button-group">
-        <button class="btn btn-history" (click)="onViewHistory.emit()">
-          <i class="bi bi-clock-history me-2"></i>
-          Historial
-        </button>
+        <!-- History button transferred to subscriptions -->
         <button class="btn btn-create-premium" (click)="onCreate.emit()">
           <i class="bi bi-plus-lg me-2"></i>
           Nuevo Plan
@@ -29,7 +26,7 @@ import { FormsModule } from '@angular/forms';
       </div>
     </div>
   `,
-    styles: [`
+  styles: [`
     .actions-container {
       display: flex;
       justify-content: space-between;
@@ -102,12 +99,11 @@ import { FormsModule } from '@angular/forms';
       border-color: #e2e8f0;
     }
   `],
-    standalone: true,
-    imports: [CommonModule, FormsModule]
+  standalone: true,
+  imports: [CommonModule, FormsModule]
 })
 export class PlanActionsComponent {
-    @Input() searchQuery: string = '';
-    @Output() searchQueryChange = new EventEmitter<string>();
-    @Output() onCreate = new EventEmitter<void>();
-    @Output() onViewHistory = new EventEmitter<void>();
+  @Input() searchQuery: string = '';
+  @Output() searchQueryChange = new EventEmitter<string>();
+  @Output() onCreate = new EventEmitter<void>();
 }

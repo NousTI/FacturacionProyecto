@@ -34,14 +34,17 @@ import { Vendedor, VendedorService } from '../../services/vendedor.service';
             <div class="col-md-4">
                 <div class="perf-card">
                     <span class="label">Empresas Asignadas</span>
-                    <h4 class="value mb-0">{{ vendedor.empresas_asignadas || vendedor.empresasAsignadas || 0 }}</h4>
+                    <!-- Priorizar el conteo de la lista cargada en tiempo real -->
+                    <h4 class="value mb-0">
+                        {{ loading ? (vendedor.empresas_asignadas || vendedor.empresasAsignadas || 0) : companies.length }}
+                    </h4>
                 </div>
             </div>
             <div class="col-md-4">
                 <div class="perf-card">
                     <span class="label text-success">Conversión</span>
                     <h4 class="value mb-0">
-                        {{ ((vendedor.empresas_asignadas || vendedor.empresasAsignadas || 0) > 0 ? ((vendedor.empresas_activas || vendedor.empresasActivas || 0) / (vendedor.empresas_asignadas || vendedor.empresasAsignadas || 0)) : 0) | percent }}
+                        {{ getConversion() | percent }}
                     </h4>
                 </div>
             </div>
@@ -49,6 +52,52 @@ import { Vendedor, VendedorService } from '../../services/vendedor.service';
                 <div class="perf-card">
                     <span class="label text-primary">Ingresos Brutos</span>
                     <h4 class="value mb-0">{{ (vendedor.ingresos_generados || vendedor.ingresosGenerados || 0) | currency }}</h4>
+                </div>
+            </div>
+          </div>
+
+          <!-- Section: Commercial Configuration -->
+          <div class="row g-3 mb-4">
+            <div class="col-md-6">
+                <div class="details-section h-100">
+                    <h6 class="section-title mb-3"><i class="bi bi-cash-coin me-2"></i>Comisiones</h6>
+                    <div class="comision-info">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted small">Tipo:</span>
+                            <span class="fw-bold small">{{ vendedor.tipoComision }}</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted small">Venta Inicial:</span>
+                            <span class="fw-bold text-dark">{{ vendedor.porcentajeComisionInicial }}{{ vendedor.tipoComision === 'PORCENTAJE' ? '%' : '$' }}</span>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <span class="text-muted small">Recurrente:</span>
+                            <span class="fw-bold text-primary">{{ vendedor.porcentajeComisionRecurrente }}{{ vendedor.tipoComision === 'PORCENTAJE' ? '%' : '$' }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="details-section h-100">
+                    <h6 class="section-title mb-3"><i class="bi bi-shield-lock me-2"></i>Permisos</h6>
+                    <div class="permissions-list">
+                        <div class="permission-pill" [class.enabled]="vendedor.puede_crear_empresas">
+                            <i class="bi" [class]="vendedor.puede_crear_empresas ? 'bi-check-circle-fill text-success' : 'bi-x-circle text-muted'"></i>
+                            <span>Crear Empresas</span>
+                        </div>
+                        <div class="permission-pill" [class.enabled]="vendedor.puede_acceder_empresas">
+                            <i class="bi" [class]="vendedor.puede_acceder_empresas ? 'bi-check-circle-fill text-success' : 'bi-x-circle text-muted'"></i>
+                            <span>Acceder Datos</span>
+                        </div>
+                        <div class="permission-pill" [class.enabled]="vendedor.puede_gestionar_planes">
+                            <i class="bi" [class]="vendedor.puede_gestionar_planes ? 'bi-check-circle-fill text-success' : 'bi-x-circle text-muted'"></i>
+                            <span>Gestionar Planes</span>
+                        </div>
+                        <div class="permission-pill" [class.enabled]="vendedor.puede_ver_reportes">
+                            <i class="bi" [class]="vendedor.puede_ver_reportes ? 'bi-check-circle-fill text-success' : 'bi-x-circle text-muted'"></i>
+                            <span>Ver Reportes</span>
+                        </div>
+                    </div>
                 </div>
             </div>
           </div>
@@ -147,10 +196,37 @@ import { Vendedor, VendedorService } from '../../services/vendedor.service';
     .perf-card .label { font-size: 0.7rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; display: block; margin-bottom: 5px; }
     .perf-card .value { font-size: 1.5rem; font-weight: 800; color: #1e293b; }
 
-    .section-title { font-size: 0.85rem; font-weight: 800; color: #1e293b; text-transform: uppercase; letter-spacing: 1px; }
+    .details-section {
+        background: #ffffff; border: 1px solid rgba(0, 0, 0, 0.05);
+        padding: 1.5rem; border-radius: 24px;
+    }
+    .section-title { 
+        font-size: 0.7rem; font-weight: 800; color: #94a3b8; 
+        text-transform: uppercase; letter-spacing: 1px;
+        display: flex; align-items: center;
+    }
+    
+    .comision-info {
+        padding: 0.5rem 0;
+    }
+    
+    .permissions-list {
+        display: grid; grid-template-columns: 1fr; gap: 0.5rem;
+    }
+    .permission-pill {
+        display: flex; align-items: center; gap: 0.75rem;
+        padding: 0.5rem 0.75rem; border-radius: 10px;
+        font-size: 0.8rem; font-weight: 600; color: #64748b;
+        background: #f8fafc; border: 1px solid rgba(0,0,0,0.02);
+    }
+    .permission-pill.enabled {
+        color: #1e293b;
+        background: white;
+        border-color: rgba(22, 29, 53, 0.05);
+    }
     
     .companies-container {
-        max-height: 350px;
+        max-height: 250px;
         overflow-y: auto;
         padding-right: 5px;
     }
@@ -230,5 +306,16 @@ export class VendedorDetailsModalComponent implements OnInit {
         this.cd.detectChanges();
       }
     });
+  }
+
+  getConversion(): number {
+    const total = this.loading ? (this.vendedor.empresasAsignadas || 0) : this.companies.length;
+    if (total === 0) return 0;
+
+    const activas = this.loading
+      ? (this.vendedor.empresasActivas || 0)
+      : this.companies.filter(c => c.activo).length;
+
+    return activas / total;
   }
 }

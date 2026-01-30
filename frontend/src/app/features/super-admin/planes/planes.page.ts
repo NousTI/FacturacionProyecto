@@ -6,7 +6,7 @@ import { PlanActionsComponent } from './components/plan-actions/plan-actions.com
 import { PlanTableComponent } from './components/plan-table/plan-table.component';
 import { PlanModalComponent } from './components/plan-modal/plan-modal.component';
 import { PlanCompaniesModalComponent } from './components/plan-companies-modal/plan-companies-modal.component';
-import { PlanHistoryModalComponent } from './components/plan-history-modal/plan-history-modal.component';
+// import { PlanHistoryModalComponent } from './components/plan-history-modal/plan-history-modal.component';
 import { PlanDetailsModalComponent } from './components/plan-details-modal/plan-details-modal.component';
 import { ToastComponent } from '../../../shared/components/toast/toast.component';
 import { ConfirmModalComponent } from '../../../shared/components/confirm-modal/confirm-modal.component';
@@ -28,7 +28,6 @@ import { map } from 'rxjs/operators';
       <app-plan-actions
         [(searchQuery)]="searchQuery"
         (onCreate)="openCreateModal()"
-        (onViewHistory)="showHistoryModal = true"
       ></app-plan-actions>
 
       <!-- 3. TABLA DE PLANES -->
@@ -67,11 +66,7 @@ import { map } from 'rxjs/operators';
         (onClose)="showCompaniesModal = false"
       ></app-plan-companies-modal>
 
-      <!-- Historial de Cambios -->
-      <app-plan-history-modal
-        *ngIf="showHistoryModal"
-        (onClose)="showHistoryModal = false"
-      ></app-plan-history-modal>
+      <!-- Historial de Cambios moved to Suscripciones -->
 
       <!-- Modal de Confirmación Genérico -->
       <app-confirm-modal
@@ -106,8 +101,6 @@ import { map } from 'rxjs/operators';
     PlanTableComponent,
     PlanModalComponent,
     PlanCompaniesModalComponent,
-    PlanCompaniesModalComponent,
-    PlanHistoryModalComponent,
     PlanDetailsModalComponent,
     ConfirmModalComponent,
     ToastComponent
@@ -121,7 +114,6 @@ export class PlanesPage implements OnInit {
   // UI Control
   showPlanModal: boolean = false;
   showCompaniesModal: boolean = false;
-  showHistoryModal: boolean = false;
   showDetailsModal: boolean = false;
   showConfirmModal: boolean = false;
 

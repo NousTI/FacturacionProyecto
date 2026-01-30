@@ -18,7 +18,7 @@ import { Vendedor } from '../../services/vendedor.service';
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let v of vendedores" class="animate__animated animate__fadeIn">
+            <tr *ngFor="let v of vendedores">
               <td>
                 <div class="d-flex align-items-center">
                   <div class="vendedor-avatar me-3">
@@ -58,6 +58,11 @@ import { Vendedor } from '../../services/vendedor.service';
                     <li>
                       <a class="dropdown-item rounded-3 py-2" (click)="onAction.emit({type: 'view_details', vendedor: v})">
                         <i class="bi bi-eye text-primary me-2"></i> Ver Desempeño
+                      </a>
+                    </li>
+                    <li>
+                      <a class="dropdown-item rounded-3 py-2" (click)="onAction.emit({type: 'edit', vendedor: v})">
+                        <i class="bi bi-pencil-square text-warning me-2"></i> Editar Vendedor
                       </a>
                     </li>
                     <li>

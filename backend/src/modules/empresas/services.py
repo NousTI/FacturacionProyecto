@@ -184,15 +184,8 @@ class ServicioEmpresas:
                      description="Solo Superadmin puede cambiar estado activo"
                  )
 
-        updated = self.repo.actualizar_empresa(empresa_id, payload)
-        if not updated:
-             raise AppError(
-                 message=AppMessages.SYS_INTERNAL_ERROR, 
-                 status_code=500, 
-                 code=ErrorCodes.DB_QUERY_ERROR,
-                 description="Error al actualizar empresa en base de datos"
-             )
-        return updated
+        self.repo.actualizar_empresa(empresa_id, payload)
+        return self.obtener_empresa(empresa_id, usuario_actual)
 
     def eliminar_empresa(self, empresa_id: UUID, usuario_actual: dict):
         self.obtener_empresa(empresa_id, usuario_actual)
@@ -232,27 +225,31 @@ class ServicioEmpresas:
              )
         
         new_status = not empresa.get("activo", True)
-        return self.repo.actualizar_empresa(empresa_id, {"activo": new_status})
+        self.repo.actualizar_empresa(empresa_id, {"activo": new_status})
+        return self.obtener_empresa(empresa_id, usuario_actual)
 
-    def assign_vendor(self, empresa_id: UUID, vendedor_id: UUID, usuario_actual: dict):
-        ctx = self._get_context(usuario_actual)
-        if not ctx["is_superadmin"]:
-             raise AppError(
-                 message=AppMessages.PERM_FORBIDDEN, 
-                 status_code=403, 
-                 code=ErrorCodes.PERM_FORBIDDEN
-             )
-             
-        empresa = self.repo.obtener_por_id(empresa_id)
-        if not empresa: 
-             raise AppError(
-                 message=AppMessages.DB_NOT_FOUND, 
-                 status_code=404, 
-                 code=ErrorCodes.DB_NOT_FOUND
-             )
+    def assign_vendor(self, empresa_id: UUID, vendedor_id: Optional[UUID], usuario_actual: dict):
+        if not usuario_actual.get(AuthKeys.IS_SUPERADMIN):
+            raise AppError(AppMessages.PERM_FORBIDDEN, 403, ErrorCodes.PERM_FORBIDDEN)
         
+        current = self.obtener_empresa(empresa_id, usuario_actual)
+        current_vendedor_id = current.get('vendedor_id')
+        
+        # Estabilizar comparación (UUID -> string / None)
+        curr_id_str = str(current_vendedor_id) if current_vendedor_id else None
+        new_id_str = str(vendedor_id) if vendedor_id else None
+        
+        if curr_id_str == new_id_str:
+            raise AppError(
+                message="Vendedor ya asignado",
+                status_code=400,
+                code=ErrorCodes.VAL_INVALID_INPUT,
+                description="La empresa ya tiene este vendedor/gestión asignado."
+            )
+
         try:
-             return self.repo.actualizar_empresa(empresa_id, {"vendedor_id": vendedor_id})
+             self.repo.asignar_vendedor(empresa_id, vendedor_id)
+             return self.obtener_empresa(empresa_id, usuario_actual)
         except Exception:
              raise AppError(
                  message=AppMessages.VAL_INVALID_INPUT, 

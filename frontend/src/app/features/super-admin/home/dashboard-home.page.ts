@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { finalize, map } from 'rxjs/operators';
 import { Observable } from 'rxjs';
 import { StatCardComponent } from '../../../shared/components/stat-card/stat-card.component';
-import { AlertCardComponent, DashboardAlert } from '../../../shared/components/alert-card/alert-card.component';
+import { PremiumAlertComponent } from '../../../shared/components/premium-alert/premium-alert.component';
 import { ChartCardComponent } from '../../../shared/components/chart-card/chart-card.component';
 import { HorizontalBarCardComponent } from '../../../shared/components/horizontal-bar-card/horizontal-bar-card.component';
 import { DashboardService, DashboardKPIs, DashboardAlertas } from '../../../shared/services/dashboard.service';
@@ -18,7 +18,6 @@ import { UserRole } from '../../../domain/enums/role.enum';
       <!-- Maintenance Card for non-Superadmins -->
       <ng-container *ngIf="isSuperadmin$ | async; else maintenance">
         <!-- Main KPIs -->
-      <!-- Main KPIs -->
       <div *ngIf="error" class="row mb-5">
         <div class="col-12">
             <div class="alert alert-danger px-4 py-3 rounded-4 border-0 d-flex align-items-center">
@@ -83,7 +82,13 @@ import { UserRole } from '../../../domain/enums/role.enum';
       <!-- Alerts and charts row -->
       <div class="row g-4">
         <div class="col-lg-4">
-          <app-alert-card [alerts]="criticalAlerts"></app-alert-card>
+          <app-premium-alert
+            [title]="alertState.title"
+            [message]="alertState.message"
+            [count]="alertState.count"
+            [type]="alertState.type"
+            [icon]="alertState.icon">
+          </app-premium-alert>
         </div>
         <div class="col-lg-4">
           <app-chart-card 
@@ -117,7 +122,7 @@ import { UserRole } from '../../../domain/enums/role.enum';
     }
   `],
   standalone: true,
-  imports: [CommonModule, StatCardComponent, AlertCardComponent, ChartCardComponent, HorizontalBarCardComponent, MaintenanceComponent]
+  imports: [CommonModule, StatCardComponent, PremiumAlertComponent, ChartCardComponent, HorizontalBarCardComponent, MaintenanceComponent]
 })
 export class DashboardHomePage implements OnInit {
   // KPIs
@@ -126,7 +131,13 @@ export class DashboardHomePage implements OnInit {
   error = false;
 
   // Alerts
-  criticalAlerts: DashboardAlert[] = [];
+  alertState = {
+    title: 'Estado del Sistema',
+    message: 'Todo funciona correctamente',
+    count: undefined as number | undefined,
+    type: 'success' as 'success' | 'danger' | 'warning' | 'info',
+    icon: 'bi-check-circle-fill'
+  };
 
   // Charts
   incomeData: { label: string, value: number }[] = [];
@@ -159,9 +170,6 @@ export class DashboardHomePage implements OnInit {
         try {
           console.log('Dashboard data received:', data);
           this.kpis = data.kpis;
-          // Transform backend alerts to frontend structure if necessary
-          // Backend: { criticas: [], advertencias: [], informativas: [] }
-          // Frontend AlertCard expects a flat list with types mapable to styles
           this.processAlerts(data.alertas);
           this.cdr.markForCheck();
         } catch (e) {
@@ -181,15 +189,12 @@ export class DashboardHomePage implements OnInit {
     this.dashboardService.getChartsData().subscribe({
       next: (data) => {
         this.incomeData = data.ingresos_saas;
-        // Transform plan data 
-        // Backend: {name, count, percent, color}
         this.plansData = data.empresas_by_plan.map(p => ({
           label: p.name,
           value: p.count,
           percent: p.percent,
           color: p.color
         }));
-        // Sort by percent descending just in case
         this.plansData.sort((a, b) => b.percent - a.percent);
       },
       error: (err) => console.error('Error loading charts:', err)
@@ -197,26 +202,42 @@ export class DashboardHomePage implements OnInit {
   }
 
   private processAlerts(alertas: DashboardAlertas) {
-    // Combine all alerts into one list for the AlertCard component
-    // Map backend 'nivel' to frontend 'type' if they differ, but they seem aligned (critical/warning/info vs danger/warning/info)
-    const criticas = alertas.criticas.map(a => ({
-      type: 'danger' as const,
-      message: a.mensaje,
-      count: a.cantidad
-    }));
+    const criticalCount = alertas.criticas.reduce((sum, a) => sum + (a.cantidad || 1), 0);
+    const warningCount = alertas.advertencias.reduce((sum, a) => sum + (a.cantidad || 1), 0);
+    const infoCount = alertas.informativas.reduce((sum, a) => sum + (a.cantidad || 1), 0);
 
-    const advertencias = alertas.advertencias.map(a => ({
-      type: 'warning' as const,
-      message: a.mensaje,
-      count: a.cantidad
-    }));
-
-    const informativas = alertas.informativas.map(a => ({
-      type: 'info' as const,
-      message: a.mensaje,
-      count: a.cantidad
-    }));
-
-    this.criticalAlerts = [...criticas, ...advertencias, ...informativas];
+    if (criticalCount > 0) {
+      this.alertState = {
+        title: 'Atención Requerida',
+        message: 'Se han detectado problemas críticos en el sistema.',
+        count: criticalCount,
+        type: 'danger',
+        icon: 'bi-exclamation-octagon-fill'
+      };
+    } else if (warningCount > 0) {
+      this.alertState = {
+        title: 'Advertencias',
+        message: 'Hay elementos que requieren supervisión.',
+        count: warningCount,
+        type: 'warning',
+        icon: 'bi-exclamation-triangle-fill'
+      };
+    } else if (infoCount > 0) {
+      this.alertState = {
+        title: 'Información',
+        message: 'Nuevos eventos registrados.',
+        count: infoCount,
+        type: 'info',
+        icon: 'bi-info-circle-fill'
+      };
+    } else {
+      this.alertState = {
+        title: 'Sistema Saludable',
+        message: 'Todos los servicios operan con normalidad.',
+        count: undefined,
+        type: 'success',
+        icon: 'bi-shield-check'
+      };
+    }
   }
 }

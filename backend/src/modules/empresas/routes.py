@@ -39,7 +39,7 @@ def obtener_empresa(
 ):
     return controller.obtener_empresa(empresa_id, usuario)
 
-@router.put("/{empresa_id}", response_model=RespuestaBase[EmpresaLectura])
+@router.patch("/{empresa_id}", response_model=RespuestaBase[EmpresaLectura])
 def actualizar_empresa(
     empresa_id: UUID,
     datos: EmpresaActualizacion,
@@ -72,3 +72,12 @@ def assign_vendor(
     controller: EmpresaController = Depends()
 ):
     return controller.asignar_vendedor(empresa_id, datos, usuario)
+
+@router.post("/{empresa_id}/change-plan", response_model=RespuestaBase[EmpresaLectura])
+def cambiar_plan(
+    empresa_id: UUID,
+    datos: dict,
+    usuario: dict = Depends(obtener_usuario_actual),
+    controller: EmpresaController = Depends()
+):
+    return controller.cambiar_plan(empresa_id, datos, usuario)

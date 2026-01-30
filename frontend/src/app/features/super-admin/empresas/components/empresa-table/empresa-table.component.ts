@@ -20,7 +20,7 @@ import { CommonModule } from '@angular/common';
               </tr>
             </thead>
             <tbody>
-              <tr *ngFor="let empresa of empresas" class="animate__animated animate__fadeIn">
+              <tr *ngFor="let empresa of empresas">
                 <td>
                   <div class="d-flex align-items-center">
                     <div class="avatar-soft-premium me-3" [style.background]="getAvatarColor(empresa.razonSocial, 0.1)" [style.color]="getAvatarColor(empresa.razonSocial, 1)">

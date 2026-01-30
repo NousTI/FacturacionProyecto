@@ -5,12 +5,12 @@ import { EmpresaService } from '../../services/empresa.service';
 @Component({
   selector: 'app-assign-vendedor-modal',
   template: `
-    <div class="modal-overlay animate__animated animate__fadeIn animate__faster" (click)="onClose.emit()">
+    <div class="modal-overlay" (click)="!loading && onClose.emit()">
       <div class="modal-container-final shadow-premium" (click)="$event.stopPropagation()">
         
         <div class="modal-header-final">
           <h2 class="modal-title-final">Asignar Vendedor Responsable</h2>
-          <button (click)="onClose.emit()" class="btn-close-final">
+          <button (click)="onClose.emit()" class="btn-close-final" [disabled]="loading">
             <i class="bi bi-x"></i>
           </button>
         </div>
@@ -18,22 +18,29 @@ import { EmpresaService } from '../../services/empresa.service';
         <div class="modal-body-final">
           <p class="subtitle-premium mb-4">Selecciona el asesor encargado de gestionar la cuenta de <strong>{{ empresaName }}</strong></p>
           
-          <div class="selection-list-premium scroll-custom">
+          <div class="selection-list-premium scroll-custom" [class.disabled-content]="loading">
             <!-- Opción: Gestión Directa -->
             <div 
               class="selection-card-premium" 
-              [ngClass]="{'selected': selectedVendedorId === null}"
-              (click)="selectedVendedorId = null"
+              [ngClass]="{
+                'selected': selectedVendedorId === null,
+                'is-current': isCurrentVendor(null),
+                'disabled': isCurrentVendor(null)
+              }"
+              (click)="!loading && selectVendedor(null)"
             >
               <div class="selection-icon-box direct">
                 <i class="bi bi-shield-lock"></i>
               </div>
               <div class="selection-info">
-                <span class="selection-name">Gestión Directa</span>
+                <div class="d-flex align-items-center gap-2">
+                  <span class="selection-name">Gestión Directa</span>
+                  <span class="badge-current" *ngIf="isCurrentVendor(null)">VENDEDOR ACTUAL</span>
+                </div>
                 <span class="selection-desc">Administrado directamente por el equipo de Superadmins</span>
               </div>
               <div class="selection-check">
-                <i class="bi" [ngClass]="selectedVendedorId === null ? 'bi-check-circle-fill' : 'bi-circle'"></i>
+                <i class="bi" [ngClass]="selectedVendedorId === null ? 'bi-check-circle-fill' : (isCurrentVendor(null) ? 'bi-slash-circle' : 'bi-circle')"></i>
               </div>
             </div>
 
@@ -41,27 +48,40 @@ import { EmpresaService } from '../../services/empresa.service';
             <div 
               *ngFor="let v of vendedores" 
               class="selection-card-premium" 
-              [ngClass]="{'selected': selectedVendedorId === v.id}"
-              (click)="selectedVendedorId = v.id"
+              [ngClass]="{
+                'selected': selectedVendedorId === v.id,
+                'is-current': isCurrentVendor(v.id),
+                'disabled': isCurrentVendor(v.id)
+              }"
+              (click)="!loading && selectVendedor(v.id)"
             >
               <div class="selection-icon-box v-icon">
                 <i class="bi bi-briefcase"></i>
               </div>
               <div class="selection-info">
-                <span class="selection-name">{{ v.nombres }} {{ v.apellidos }}</span>
+                <div class="d-flex align-items-center gap-2">
+                  <span class="selection-name">{{ v.nombres }} {{ v.apellidos }}</span>
+                  <span class="badge-current" *ngIf="isCurrentVendor(v.id)">VENDEDOR ACTUAL</span>
+                </div>
                 <span class="selection-desc">{{ v.email }}</span>
               </div>
               <div class="selection-check">
-                <i class="bi" [ngClass]="selectedVendedorId === v.id ? 'bi-check-circle-fill' : 'bi-circle'"></i>
+                <i class="bi" [ngClass]="selectedVendedorId === v.id ? 'bi-check-circle-fill' : (isCurrentVendor(v.id) ? 'bi-slash-circle' : 'bi-circle')"></i>
               </div>
             </div>
           </div>
         </div>
 
         <div class="modal-footer-final">
-          <button (click)="onClose.emit()" class="btn-cancel-final">Cancelar</button>
-          <button (click)="submit()" class="btn-submit-final">
-            Confirmar Asignación
+          <button (click)="onClose.emit()" class="btn-cancel-final" [disabled]="loading">Cancelar</button>
+          <button 
+            (click)="submit()" 
+            class="btn-submit-final"
+            [disabled]="!hasChanges || loading"
+          >
+            <span *ngIf="loading" class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+            <span *ngIf="!loading">Confirmar Asignación</span>
+            <span *ngIf="loading">Asignando...</span>
           </button>
         </div>
 
@@ -91,6 +111,7 @@ import { EmpresaService } from '../../services/empresa.service';
       display: flex; flex-direction: column; gap: 0.85rem; 
       max-height: 380px; overflow-y: auto; padding-right: 0.5rem;
     }
+    .disabled-content { opacity: 0.6; pointer-events: none; }
     
     .selection-card-premium {
       padding: 1rem 1.5rem; border: 1px solid #e2e8f0; border-radius: 18px;
@@ -101,9 +122,29 @@ import { EmpresaService } from '../../services/empresa.service';
       border-color: #161d35; background: rgba(22, 29, 53, 0.02);
       box-shadow: 0 4px 15px rgba(22, 29, 53, 0.05);
     }
+    .selection-card-premium.disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      background: #f1f5f9;
+      border-color: #e2e8f0;
+    }
+    .selection-card-premium.is-current {
+      border-style: dashed;
+      border-color: #cbd5e1;
+    }
+    
+    .badge-current {
+      font-size: 0.65rem;
+      background: #e2e8f0;
+      color: #64748b;
+      padding: 2px 8px;
+      border-radius: 6px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+    }
     
     .selection-icon-box {
-      width: 40px; height: 40px; background: #f1f5f9; color: #64748b; /* Gris neutro per request */
+      width: 40px; height: 40px; background: #f1f5f9; color: #64748b; 
       border-radius: 10px; display: flex; align-items: center; justify-content: center;
       font-weight: 800; font-size: 1rem; flex-shrink: 0;
     }
@@ -128,6 +169,7 @@ import { EmpresaService } from '../../services/empresa.service';
       transition: all 0.2s;
     }
     .btn-submit-final:hover { background: #232d4d; }
+    .btn-submit-final:disabled { opacity: 0.7; cursor: not-allowed; }
     .btn-cancel-final {
       background: #ffffff; color: #64748b; border: 1px solid #e2e8f0;
       padding: 0.75rem 2rem; border-radius: 12px; font-weight: 600;
@@ -141,10 +183,12 @@ import { EmpresaService } from '../../services/empresa.service';
 })
 export class AssignVendedorModalComponent implements OnInit {
   @Input() empresaName: string = '';
-  @Input() selectedVendedorId: number | null = null;
+  @Input() currentVendedorId: any = null;
+  @Input() loading: boolean = false;
   @Output() onSave = new EventEmitter<number | null>();
   @Output() onClose = new EventEmitter<void>();
 
+  selectedVendedorId: any = null;
   vendedores: any[] = [];
 
   constructor(
@@ -153,6 +197,7 @@ export class AssignVendedorModalComponent implements OnInit {
   ) { }
 
   ngOnInit() {
+    this.selectedVendedorId = this.currentVendedorId;
     this.empresaService.getVendedores().subscribe({
       next: (data) => {
         this.vendedores = data;
@@ -162,7 +207,27 @@ export class AssignVendedorModalComponent implements OnInit {
     });
   }
 
+  isCurrentVendor(id: any): boolean {
+    const cid = this.currentVendedorId === undefined ? null : this.currentVendedorId;
+    const targetId = id === undefined ? null : id;
+    if (targetId === null && cid === null) return true;
+    if (targetId === null || cid === null) return false;
+    return String(targetId) === String(cid);
+  }
+
+  selectVendedor(id: any) {
+    if (this.isCurrentVendor(id)) return;
+    this.selectedVendedorId = id;
+  }
+
+  get hasChanges(): boolean {
+    const cid = this.currentVendedorId == null ? null : String(this.currentVendedorId);
+    const sid = this.selectedVendedorId == null ? null : String(this.selectedVendedorId);
+    return sid !== cid;
+  }
+
   submit() {
+    if (!this.hasChanges) return;
     this.onSave.emit(this.selectedVendedorId);
   }
 }

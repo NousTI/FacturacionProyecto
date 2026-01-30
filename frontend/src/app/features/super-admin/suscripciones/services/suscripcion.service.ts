@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { HttpClient, HttpParams } from '@angular/common/http';
+import { Observable, of } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { environment } from '../../../../../environments/environment';
 
@@ -52,6 +52,7 @@ export interface SuscripcionStats {
 })
 export class SuscripcionService {
     private apiUrl = `${environment.apiUrl}/suscripciones`;
+    private paymentsCache = new Map<string, PagoHistorico[]>();
 
     constructor(private http: HttpClient) { }
 
@@ -77,18 +78,39 @@ export class SuscripcionService {
     }
 
     // --- Pagos ---
-    getPagos(empresaId?: string): Observable<PagoHistorico[]> {
+    getPagos(empresaId?: string, forceRefresh = false): Observable<PagoHistorico[]> {
+        if (empresaId && !forceRefresh && this.paymentsCache.has(empresaId)) {
+            return of(this.paymentsCache.get(empresaId)!);
+        }
+
         let url = `${this.apiUrl}/pagos`;
         if (empresaId) {
             url += `?empresa_id=${empresaId}`;
         }
         return this.http.get<any>(url).pipe(
-            map(res => res.detalles || [])
+            map(res => {
+                const data = res.detalles || [];
+                if (empresaId) {
+                    this.paymentsCache.set(empresaId, data);
+                }
+                return data;
+            })
         );
     }
 
     registrarPago(data: PagoQuick): Observable<any> {
-        return this.http.post(`${this.apiUrl}/pagos/rapido`, data);
+        return this.http.post(`${this.apiUrl}/pagos/rapido`, data).pipe(
+            map(res => {
+                if (data.empresa_id) {
+                    this.paymentsCache.delete(data.empresa_id);
+                }
+                return res;
+            })
+        );
+    }
+
+    clearCache() {
+        this.paymentsCache.clear();
     }
 
     // --- Lifecycle ---

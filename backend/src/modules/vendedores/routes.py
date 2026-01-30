@@ -38,7 +38,7 @@ def obtener_vendedor(
 ):
     return controller.obtener_vendedor(id, usuario)
 
-@router.put("/{id}", response_model=RespuestaBase[VendedorLectura])
+@router.patch("/{id}", response_model=RespuestaBase[VendedorLectura])
 def actualizar_vendedor(
     id: UUID,
     datos: VendedorActualizacion,

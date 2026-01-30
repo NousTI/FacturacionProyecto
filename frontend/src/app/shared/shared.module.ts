@@ -8,10 +8,11 @@ import { PublicLayoutComponent } from './layouts/public-layout/public-layout.com
 import { PrivateLayoutComponent } from './layouts/private-layout/private-layout.component';
 import { ToastComponent } from './components/toast/toast.component';
 import { StatCardComponent } from './components/stat-card/stat-card.component';
-import { AlertCardComponent } from './components/alert-card/alert-card.component';
 import { ChartCardComponent } from './components/chart-card/chart-card.component';
 import { HorizontalBarCardComponent } from './components/horizontal-bar-card/horizontal-bar-card.component';
 import { WelcomeCardComponent } from './components/welcome-card/welcome-card.component';
+import { MaintenanceComponent } from './components/maintenance/maintenance.component';
+import { PremiumAlertComponent } from './components/premium-alert/premium-alert.component';
 
 @NgModule({
     declarations: [
@@ -27,10 +28,11 @@ import { WelcomeCardComponent } from './components/welcome-card/welcome-card.com
         FormsModule,
         ToastComponent,
         StatCardComponent,
-        AlertCardComponent,
         ChartCardComponent,
         HorizontalBarCardComponent,
-        WelcomeCardComponent
+        WelcomeCardComponent,
+        MaintenanceComponent,
+        PremiumAlertComponent
     ],
     exports: [
         CommonModule,
@@ -43,10 +45,11 @@ import { WelcomeCardComponent } from './components/welcome-card/welcome-card.com
         PrivateLayoutComponent,
         ToastComponent,
         StatCardComponent,
-        AlertCardComponent,
         ChartCardComponent,
         HorizontalBarCardComponent,
-        WelcomeCardComponent
+        WelcomeCardComponent,
+        MaintenanceComponent,
+        PremiumAlertComponent
     ]
 })
 export class SharedModule { }

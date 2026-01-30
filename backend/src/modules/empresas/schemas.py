@@ -54,6 +54,17 @@ class EmpresaLectura(EmpresaBase):
     id: UUID
     vendedor_id: Optional[UUID] = None
     vendedor_name: Optional[str] = None
+    plan_nombre: Optional[str] = None
+    current_plan_id: Optional[UUID] = None
+    fecha_inicio: Optional[datetime] = None
+    fecha_fin: Optional[datetime] = None
+    suscripcion_estado: Optional[str] = None
+    max_usuarios: Optional[int] = None
+    max_facturas_mes: Optional[int] = None
+    max_establecimientos: Optional[int] = None
+    max_programaciones: Optional[int] = None
+    ultimo_pago_fecha: Optional[datetime] = None
+    ultimo_pago_monto: Optional[Decimal] = None
     created_at: datetime
     updated_at: datetime
 

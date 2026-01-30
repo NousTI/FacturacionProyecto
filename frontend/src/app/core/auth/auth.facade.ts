@@ -4,6 +4,7 @@ import { AuthService } from './auth.service';
 import { User } from '../../domain/models/user.model';
 import { UserRole } from '../../domain/enums/role.enum';
 import { Router } from '@angular/router';
+import { UiService } from '../../shared/services/ui.service';
 
 import { ROLES } from '../../../shared/constantes/app.constants';
 
@@ -17,7 +18,11 @@ export class AuthFacade {
     private isAuthenticatedSubject: BehaviorSubject<boolean>;
     public isAuthenticated$: Observable<boolean>;
 
-    constructor(private authService: AuthService, private router: Router) {
+    constructor(
+        private authService: AuthService,
+        private router: Router,
+        private uiService: UiService
+    ) {
         this.userSubject = new BehaviorSubject<User | null>(this.authService.getUser());
         this.user$ = this.userSubject.asObservable();
         this.isAuthenticatedSubject = new BehaviorSubject<boolean>(this.authService.isAuthenticated());
@@ -78,19 +83,24 @@ export class AuthFacade {
         this.authService.logout();
         this.userSubject.next(null);
         this.isAuthenticatedSubject.next(false);
-        this.router.navigate(['/login']);
+        this.uiService.showToast('Has cerrado sesión correctamente', 'info');
+        this.router.navigate(['/auth/login']);
     }
 
     getUserRole(): UserRole | null {
         return this.authService.getRole();
     }
 
+    getUser(): User | null {
+        return this.authService.getUser();
+    }
+
     private navigateBasedOnRole(role: string | null): void {
         // Lógica de redirección dinámica basada en el rol inyectado
-        if (role === ROLES.SUPERADMIN) {
+        if (role === UserRole.SUPERADMIN) {
             this.router.navigate(['/dashboard/admin']);
-        } else if (role === ROLES.VENDEDOR) {
-            this.router.navigate(['/dashboard/vendedor']);
+        } else if (role === UserRole.VENDEDOR) {
+            this.router.navigate(['/vendedor']);
         } else {
             this.router.navigate(['/dashboard']);
         }

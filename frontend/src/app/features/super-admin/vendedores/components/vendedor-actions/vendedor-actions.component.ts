@@ -3,8 +3,8 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
 @Component({
-    selector: 'app-vendedor-actions',
-    template: `
+  selector: 'app-vendedor-actions',
+  template: `
     <div class="actions-surface shadow-premium">
       <div class="row align-items-center g-3">
         
@@ -34,12 +34,12 @@ import { FormsModule } from '@angular/forms';
       </div>
     </div>
   `,
-    styles: [`
+  styles: [`
     .actions-surface {
       background: #ffffff;
-      padding: 1.25rem 1.5rem;
+      padding: 0.75rem 1.5rem;
       border-radius: 20px;
-      border: 1px solid #f1f5f9;
+      border: 1px solid rgba(0, 0, 0, 0.05);
     }
     .search-premium-group {
       position: relative;
@@ -53,13 +53,15 @@ import { FormsModule } from '@angular/forms';
       font-size: 1.1rem;
     }
     .search-input-premium {
-      padding: 0.85rem 1rem 0.85rem 3.5rem;
+      padding: 0 1rem 0 3.5rem;
+      height: 40px;
       border-radius: 16px;
       background: #f8fafc;
-      border: 1px solid #e2e8f0;
+      border: 1px solid rgba(0, 0, 0, 0.05);
       font-size: 0.95rem;
       font-weight: 500;
       transition: all 0.2s;
+      width: 100%;
     }
     .search-input-premium:focus {
       background: #ffffff;
@@ -80,8 +82,9 @@ import { FormsModule } from '@angular/forms';
     .btn-premium-primary {
       background: #161d35;
       color: #ffffff;
-      border: none;
-      padding: 0.85rem 1.5rem;
+      border: 1.5px solid transparent;
+      padding: 0 1.5rem;
+      height: 40px;
       border-radius: 16px;
       font-weight: 700;
       font-size: 0.95rem;
@@ -99,11 +102,11 @@ import { FormsModule } from '@angular/forms';
       box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.04);
     }
   `],
-    standalone: true,
-    imports: [CommonModule, FormsModule]
+  standalone: true,
+  imports: [CommonModule, FormsModule]
 })
 export class VendedorActionsComponent {
-    @Input() searchQuery: string = '';
-    @Output() searchQueryChange = new EventEmitter<string>();
-    @Output() onCreate = new EventEmitter<void>();
+  @Input() searchQuery: string = '';
+  @Output() searchQueryChange = new EventEmitter<string>();
+  @Output() onCreate = new EventEmitter<void>();
 }

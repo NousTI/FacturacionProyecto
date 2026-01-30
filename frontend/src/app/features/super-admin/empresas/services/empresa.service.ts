@@ -20,38 +20,49 @@ export class EmpresaService {
     private _stats$ = new BehaviorSubject<EmpresaStats | null>(null);
 
     // Loading state
-    private _dataLoaded = false;
     private _loading = false;
 
     constructor(private http: HttpClient) { }
 
     loadData(force: boolean = false) {
-        if (!force && (this._dataLoaded || this._loading)) return;
+        if (this._loading && !force) return;
 
         this._loading = true;
 
         // Fetch Empresas
         this.http.get<any>(this.apiUrl).pipe(
-            map(res => res.detalles || []),
-            finalize(() => {
-                this._loading = false;
-                this._dataLoaded = true;
-            })
+            map(res => (res.detalles || []).map((e: any) => this.mapEmpresa(e))),
+            finalize(() => this._loading = false)
         ).subscribe({
-            next: (data) => this._empresas$.next(data),
+            next: (data) => {
+                this._empresas$.next(data);
+            },
             error: (err) => console.error('Error loading empresas:', err)
         });
 
         this.refreshStats();
     }
 
-    refreshStats() {
-        this.http.get<any>(`${this.apiUrl}/stats`).pipe(
-            map(res => res.detalles)
-        ).subscribe({
-            next: (data) => this._stats$.next(data),
-            error: (err) => console.error('Error loading stats:', err)
-        });
+    private mapEmpresa(e: any): any {
+        return {
+            ...e,
+            razonSocial: e.razon_social,
+            nombreComercial: e.nombre_comercial,
+            estado: e.activo ? 'ACTIVO' : 'INACTIVO',
+            vendedorId: e.vendedor_id,
+            vendedorName: e.vendedor_name,
+            plan: e.plan_nombre || 'SIN PLAN',
+            currentPlanId: e.current_plan_id,
+            fechaVencimiento: e.fecha_fin ? new Date(e.fecha_fin) : null,
+            ultimoPagoFecha: e.ultimo_pago_fecha ? new Date(e.ultimo_pago_fecha) : null,
+            ultimoPagoMonto: e.ultimo_pago_monto || 0,
+            limits: {
+                max_usuarios: e.max_usuarios,
+                max_facturas: e.max_facturas_mes,
+                max_establecimientos: e.max_establecimientos,
+                max_programaciones: e.max_programaciones
+            }
+        };
     }
 
     getStats(): Observable<EmpresaStats> {
@@ -67,7 +78,7 @@ export class EmpresaService {
 
     createEmpresa(data: any): Observable<any> {
         return this.http.post<any>(this.apiUrl, data).pipe(
-            map(res => res.detalles),
+            map(res => this.mapEmpresa(res.detalles)),
             tap(nueva => {
                 const current = this._empresas$.value;
                 this._empresas$.next([nueva, ...current]);
@@ -78,14 +89,13 @@ export class EmpresaService {
 
     updateEmpresa(id: string, data: any): Observable<any> {
         return this.http.patch<any>(`${this.apiUrl}/${id}`, data).pipe(
-            map(res => res.detalles),
+            map(res => this.mapEmpresa(res.detalles)),
             tap(updated => {
                 const current = this._empresas$.value;
                 const index = current.findIndex(e => e.id.toString() === id.toString());
                 if (index !== -1) {
                     current[index] = { ...current[index], ...updated };
                     this._empresas$.next([...current]);
-                    this.refreshStats();
                 }
             })
         );
@@ -93,12 +103,12 @@ export class EmpresaService {
 
     toggleActive(id: string): Observable<any> {
         return this.http.patch(`${this.apiUrl}/${id}/toggle-active`, {}).pipe(
-            map((res: any) => res.detalles),
+            map((res: any) => this.mapEmpresa(res.detalles)),
             tap(updated => {
                 const current = this._empresas$.value;
-                const index = current.findIndex(e => e.id === parseInt(id));
+                const index = current.findIndex(e => e.id.toString() === id.toString());
                 if (index !== -1) {
-                    current[index] = { ...current[index], ...updated, activo: updated.activo };
+                    current[index] = { ...current[index], ...updated };
                     this._empresas$.next([...current]);
                     this.refreshStats();
                 }
@@ -112,13 +122,30 @@ export class EmpresaService {
             monto,
             observaciones
         }).pipe(
-            tap(() => this.loadData(true))
+            map((res: any) => this.mapEmpresa(res.detalles)),
+            tap(updated => {
+                const current = this._empresas$.value;
+                const index = current.findIndex(e => e.id.toString() === empresaId.toString());
+                if (index !== -1) {
+                    current[index] = { ...current[index], ...updated };
+                    this._empresas$.next([...current]);
+                    this.refreshStats();
+                }
+            })
         );
     }
 
     assignVendor(empresaId: string, vendedorId: string | null): Observable<any> {
         return this.http.patch(`${this.apiUrl}/${empresaId}/assign-vendor`, { vendedor_id: vendedorId }).pipe(
-            tap(() => this.loadData(true))
+            map((res: any) => this.mapEmpresa(res.detalles)),
+            tap(updated => {
+                const current = this._empresas$.value;
+                const index = current.findIndex(e => e.id.toString() === empresaId.toString());
+                if (index !== -1) {
+                    current[index] = { ...current[index], ...updated };
+                    this._empresas$.next([...current]);
+                }
+            })
         );
     }
 
@@ -134,5 +161,12 @@ export class EmpresaService {
         );
     }
 
-
+    refreshStats() {
+        this.http.get<any>(`${this.apiUrl}/stats`).pipe(
+            map(res => res.detalles)
+        ).subscribe({
+            next: (data) => this._stats$.next(data),
+            error: (err) => console.error('Error loading stats:', err)
+        });
+    }
 }

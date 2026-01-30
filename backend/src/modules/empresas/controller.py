@@ -1,12 +1,19 @@
 from fastapi import Depends
+from datetime import datetime
 from .services import ServicioEmpresas
+from ..suscripciones.services import ServicioSuscripciones
 from .schemas import EmpresaCreacion, EmpresaActualizacion, EmpresaAsignarVendedor
 from uuid import UUID
 from ...utils.response import success_response
 
 class EmpresaController:
-    def __init__(self, service: ServicioEmpresas = Depends()):
+    def __init__(
+        self, 
+        service: ServicioEmpresas = Depends(),
+        suscripcion_service: ServicioSuscripciones = Depends()
+    ):
         self.service = service
+        self.suscripcion_service = suscripcion_service
 
     def crear_empresa(self, body: EmpresaCreacion, usuario_actual: dict):
         nueva = self.service.crear_empresa(body, usuario_actual)
@@ -39,3 +46,19 @@ class EmpresaController:
     def asignar_vendedor(self, empresa_id: UUID, body: EmpresaAsignarVendedor, usuario_actual: dict):
         actualizada = self.service.assign_vendor(empresa_id, body.vendedor_id, usuario_actual)
         return success_response(actualizada, "Vendedor asignado correctamente")
+
+    def cambiar_plan(self, empresa_id: UUID, body: dict, usuario_actual: dict):
+        # Delegate to suscripcion service but through empresa flow if needed
+        # Or just use the existing logic in suscripcion service
+        from ..suscripciones.schemas import PagoSuscripcionQuick
+        pago_data = PagoSuscripcionQuick(
+            empresa_id=empresa_id,
+            plan_id=body.get('plan_id'),
+            monto=body.get('monto'),
+            metodo_pago="MANUAL_SUPERADMIN",
+            numero_comprobante=f"CAMBIO_PLAN_{datetime.now().strftime('%Y%m%d%H%M%S')}"
+        )
+        resultado = self.suscripcion_service.registrar_pago_rapido(pago_data, usuario_actual)
+        # Fetch updated empresa to return it
+        actualizada = self.service.obtener_empresa(empresa_id, usuario_actual)
+        return success_response(actualizada, "Plan actualizado correctamente")

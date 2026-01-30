@@ -6,7 +6,7 @@ import { EmpresaService } from '../../services/empresa.service';
 @Component({
   selector: 'app-change-plan-modal',
   template: `
-    <div class="modal-overlay animate__animated animate__fadeIn animate__faster" (click)="onClose.emit()">
+    <div class="modal-overlay" (click)="onClose.emit()">
       <div class="modal-container-plan shadow-premium" (click)="$event.stopPropagation()">
         
         <div class="modal-header-plan">
@@ -220,8 +220,7 @@ import { EmpresaService } from '../../services/empresa.service';
 })
 export class ChangePlanModalComponent implements OnInit {
   @Input() empresaName: string = '';
-  // Input received from parent can be ID or Name
-  @Input('selectedPlan') currentPlanValue: string = '';
+  @Input() selectedPlanId: string | null = null;
 
   @Output() onSave = new EventEmitter<{ planId: string, monto: number, observaciones: string }>();
   @Output() onClose = new EventEmitter<void>();
@@ -249,10 +248,8 @@ export class ChangePlanModalComponent implements OnInit {
   }
 
   isCurrentPlan(plan: any): boolean {
-    if (!this.currentPlanValue) return false;
-    // Check match by ID or by Name (case insensitive for name is safer but exact match is fine too)
-    return String(plan.id) === String(this.currentPlanValue) ||
-      plan.nombre === this.currentPlanValue;
+    if (!this.selectedPlanId) return false;
+    return String(plan.id) === String(this.selectedPlanId);
   }
 
   selectPlan(plan: any) {

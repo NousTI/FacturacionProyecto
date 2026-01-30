@@ -23,7 +23,7 @@ class RepositorioSuscripciones:
                     AND s.fecha_fin >= CURRENT_DATE
                 ) as active_companies
                 FROM sistema_facturacion.planes p
-                ORDER BY p.orden ASC
+                ORDER BY p.precio_mensual ASC
             """
             cur.execute(query)
             return [dict(row) for row in cur.fetchall()]
@@ -91,6 +91,14 @@ class RepositorioSuscripciones:
     # --- Suscripciones / Pagos ---
     def registrar_suscripcion_atomica(self, pago_data: dict, empresa_data: dict, comision_data: Optional[dict]):
         with db_transaction(self.db) as cur:
+            # 0. Obtener estado anterior para el log
+            cur.execute("""
+                SELECT id, plan_id, fecha_inicio, fecha_fin, estado 
+                FROM sistema_facturacion.suscripciones 
+                WHERE empresa_id = %s
+            """, (str(empresa_data['id']),))
+            old_s = cur.fetchone()
+
             # 1. Pago
             p_fields = list(pago_data.keys())
             p_values = [str(v) if isinstance(v, UUID) else v for v in pago_data.values()]
@@ -99,15 +107,36 @@ class RepositorioSuscripciones:
 
             # 2. Suscripcion (UPSERT)
             cur.execute("""
-                INSERT INTO sistema_facturacion.suscripciones (empresa_id, plan_id, fecha_inicio, fecha_fin, estado)
-                VALUES (%s, %s, %s, %s, %s)
+                INSERT INTO sistema_facturacion.suscripciones (empresa_id, plan_id, fecha_inicio, fecha_fin, estado, actualizado_por)
+                VALUES (%s, %s, %s, %s, %s, %s)
                 ON CONFLICT (empresa_id) DO UPDATE SET
                     plan_id = EXCLUDED.plan_id,
                     fecha_inicio = EXCLUDED.fecha_inicio,
                     fecha_fin = EXCLUDED.fecha_fin,
                     estado = EXCLUDED.estado,
+                    actualizado_por = EXCLUDED.actualizado_por,
                     updated_at = NOW()
-            """, (str(empresa_data['id']), str(pago_data['plan_id']), empresa_data['fecha_activacion'], empresa_data['fecha_vencimiento'], empresa_data['estado']))
+                RETURNING id
+            """, (str(empresa_data['id']), str(pago_data['plan_id']), empresa_data['fecha_activacion'], empresa_data['fecha_vencimiento'], empresa_data['estado'], str(pago_data.get('registrado_por'))))
+            suscripcion_id = cur.fetchone()['id']
+
+            # 2.5 Registrar Log
+            log_data = {
+                "suscripcion_id": str(suscripcion_id),
+                "estado_anterior": old_s['estado'] if old_s else None,
+                "estado_nuevo": empresa_data['estado'],
+                "plan_anterior": str(old_s['plan_id']) if old_s else None,
+                "plan_nuevo": str(pago_data['plan_id']),
+                "fecha_inicio_anterior": old_s['fecha_inicio'] if old_s else None,
+                "fecha_fin_anterior": old_s['fecha_fin'] if old_s else None,
+                "fecha_inicio_nuevo": empresa_data['fecha_activacion'],
+                "fecha_fin_nuevo": empresa_data['fecha_vencimiento'],
+                "cambiado_por": str(pago_data.get('registrado_por')),
+                "origen": "ADMIN",
+                "motivo": pago_data.get("observaciones", "Cambio de plan / Registro de pago")
+            }
+            l_fields = list(log_data.keys())
+            cur.execute(f"INSERT INTO sistema_facturacion.suscripciones_log ({', '.join(l_fields)}) VALUES ({', '.join(['%s']*len(l_fields))})", tuple(log_data.values()))
 
             # 3. Comision
             if comision_data:
@@ -128,6 +157,12 @@ class RepositorioSuscripciones:
         with self.db.cursor() as cur:
             cur.execute(query, tuple(params) if params else None)
             return [dict(row) for row in cur.fetchall()]
+
+    def obtener_suscripcion_por_empresa(self, empresa_id: UUID) -> Optional[dict]:
+        with self.db.cursor() as cur:
+            cur.execute("SELECT * FROM sistema_facturacion.suscripciones WHERE empresa_id = %s", (str(empresa_id),))
+            row = cur.fetchone()
+            return dict(row) if row else None
 
     def obtener_stats_dashboard(self) -> dict:
         with self.db.cursor() as cur:
@@ -197,7 +232,7 @@ class RepositorioSuscripciones:
             row = cur.fetchone()
             return dict(row) if row else None
 
-    def obtener_historial_suscripcion(self, suscripcion_id: UUID):
+    def obtener_historial_suscripcion(self, suscripcion_id: UUID) -> List[dict]:
         """Get audit log history for a subscription"""
         query = """
             SELECT sl.*, 
@@ -207,7 +242,7 @@ class RepositorioSuscripciones:
             FROM sistema_facturacion.suscripciones_log sl
             LEFT JOIN sistema_facturacion.planes pa ON sl.plan_anterior = pa.id
             LEFT JOIN sistema_facturacion.planes pn ON sl.plan_nuevo = pn.id
-            LEFT JOIN sistema_facturacion.usuarios u ON sl.cambiado_por = u.id
+            LEFT JOIN sistema_facturacion.users u ON sl.cambiado_por = u.id
             WHERE sl.suscripcion_id = %s
             ORDER BY sl.created_at DESC
         """

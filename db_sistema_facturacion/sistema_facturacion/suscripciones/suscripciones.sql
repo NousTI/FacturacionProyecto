@@ -29,7 +29,7 @@ CREATE TABLE IF NOT EXISTS sistema_facturacion.suscripciones (
 
     -- Quién cambió el estado (admin / sistema)
     actualizado_por UUID
-        REFERENCES sistema_facturacion.usuarios(id)
+        REFERENCES sistema_facturacion.users(id)
         ON DELETE SET NULL,
 
     -- Motivo del estado (opcional pero muy útil)

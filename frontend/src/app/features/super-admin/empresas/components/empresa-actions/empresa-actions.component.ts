@@ -6,7 +6,7 @@ import { FormsModule } from '@angular/forms';
   selector: 'app-empresa-actions',
   template: `
     <section class="module-actions mb-4">
-      <div class="actions-bar-container shadow-sm p-4 rounded-4">
+      <div class="actions-bar-container shadow-sm py-2 px-4 rounded-4">
         <div class="row align-items-center g-3">
           <!-- Búsqueda Principal -->
           <div class="col-lg-5">
@@ -65,7 +65,7 @@ import { FormsModule } from '@angular/forms';
   styles: [`
     .actions-bar-container {
       background: #ffffff;
-      border: 1px solid #f1f5f9;
+      border: 1px solid rgba(0, 0, 0, 0.05);
     }
     .search-box-premium {
       position: relative;
@@ -81,10 +81,11 @@ import { FormsModule } from '@angular/forms';
     }
     .form-control-premium-search {
       background: #f8fafc;
-      border: 1.5px solid #f1f5f9;
+      border: 1.5px solid rgba(0, 0, 0, 0.05);
       border-radius: 14px;
-      padding: 0.75rem 1.25rem 0.75rem 3.25rem;
-      font-size: 0.95rem;
+      padding: 0 1.25rem 0 3.25rem;
+      height: 40px;
+      font-size: 0.9rem;
       font-weight: 500;
       color: #161d35;
       transition: all 0.2s;
@@ -98,9 +99,10 @@ import { FormsModule } from '@angular/forms';
     }
     .form-select-premium {
       background: #f8fafc;
-      border: 1.5px solid #f1f5f9;
+      border: 1.5px solid rgba(0, 0, 0, 0.05);
       border-radius: 14px;
-      padding: 0.75rem 1rem;
+      padding: 0 1rem;
+      height: 40px;
       font-size: 0.85rem;
       font-weight: 600;
       color: #475569;
@@ -115,8 +117,9 @@ import { FormsModule } from '@angular/forms';
     .btn-system-action {
       background: #161d35;
       color: #ffffff;
-      border: none;
-      padding: 0.8rem 1.5rem;
+      border: 1.5px solid transparent;
+      padding: 0 1.5rem;
+      height: 40px;
       border-radius: 14px;
       font-weight: 700;
       display: inline-flex;

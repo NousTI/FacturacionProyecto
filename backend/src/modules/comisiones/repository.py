@@ -12,12 +12,12 @@ class RepositorioComisiones:
         query = """
             SELECT c.*, v.nombres || ' ' || v.apellidos as vendedor_nombre,
                    e.nombre_comercial as empresa_nombre, p.monto as monto_pago,
-                   sa.email as aprobado_por_nombre
-            FROM comision c
-            LEFT JOIN vendedor v ON c.vendedor_id = v.id
-            LEFT JOIN pago_suscripcion p ON c.pago_suscripcion_id = p.id
-            LEFT JOIN empresa e ON p.empresa_id = e.id
-            LEFT JOIN superadmin sa ON c.aprobado_por = sa.id
+                   u.email as aprobado_por_nombre
+            FROM sistema_facturacion.comisiones c
+            LEFT JOIN sistema_facturacion.vendedores v ON c.vendedor_id = v.id
+            LEFT JOIN sistema_facturacion.pagos_suscripciones p ON c.pago_suscripcion_id = p.id
+            LEFT JOIN sistema_facturacion.empresas e ON p.empresa_id = e.id
+            LEFT JOIN sistema_facturacion.users u ON c.aprobado_por = u.id
         """
         params = []
         if vendedor_id:
@@ -32,19 +32,22 @@ class RepositorioComisiones:
     def obtener_stats(self, vendedor_id: Optional[UUID] = None) -> dict:
         query = """
             SELECT 
-                COALESCE(SUM(monto), 0) as total,
-                COALESCE(SUM(CASE WHEN estado = 'PENDIENTE' THEN monto ELSE 0 END), 0) as pendientes,
-                COALESCE(SUM(CASE WHEN estado = 'PAGADA' THEN monto ELSE 0 END), 0) as pagados
-            FROM comision
+                COALESCE(SUM(p.monto), 0) as total,
+                COALESCE(SUM(CASE WHEN c.estado = 'PENDIENTE' THEN c.monto ELSE 0 END), 0) as pendientes,
+                COALESCE(SUM(CASE WHEN c.estado = 'PAGADA' THEN c.monto ELSE 0 END), 0) as pagados
+            FROM sistema_facturacion.comisiones c
+            JOIN sistema_facturacion.pagos_suscripciones p ON c.pago_suscripcion_id = p.id
+            WHERE p.estado = 'PAGADO'
         """
         params = []
         if vendedor_id:
-            query += " WHERE vendedor_id = %s"
+            query += " AND c.vendedor_id = %s"
             params.append(str(vendedor_id))
             
         with self.db.cursor() as cur:
             cur.execute(query, tuple(params))
-            return dict(cur.fetchone())
+            row = cur.fetchone()
+            return dict(row) if row else {"total": 0, "pendientes": 0, "pagados": 0}
 
     def obtener_por_id(self, id: UUID) -> Optional[dict]:
         query = """
@@ -52,12 +55,12 @@ class RepositorioComisiones:
                    v.nombres as vendedor_nombres, v.apellidos as vendedor_apellidos,
                    v.documento_identidad, v.telefono, v.email as vendedor_email,
                    e.nombre_comercial as empresa_nombre, p.monto as monto_pago,
-                   sa.email as aprobado_por_nombre 
-            FROM comision c
-            LEFT JOIN vendedor v ON c.vendedor_id = v.id
-            LEFT JOIN pago_suscripcion p ON c.pago_suscripcion_id = p.id
-            LEFT JOIN empresa e ON p.empresa_id = e.id
-            LEFT JOIN superadmin sa ON c.aprobado_por = sa.id
+                   u.email as aprobado_por_nombre 
+            FROM sistema_facturacion.comisiones c
+            LEFT JOIN sistema_facturacion.vendedores v ON c.vendedor_id = v.id
+            LEFT JOIN sistema_facturacion.pagos_suscripciones p ON c.pago_suscripcion_id = p.id
+            LEFT JOIN sistema_facturacion.empresas e ON p.empresa_id = e.id
+            LEFT JOIN sistema_facturacion.users u ON c.aprobado_por = u.id
             WHERE c.id = %s
         """
         with self.db.cursor() as cur:
@@ -66,7 +69,7 @@ class RepositorioComisiones:
             return dict(row) if row else None
 
     def contar_pagos_previos_empresa(self, empresa_id: UUID) -> int:
-        query = "SELECT COUNT(*) as total FROM pago_suscripcion WHERE empresa_id = %s AND estado = 'PAGADO'"
+        query = "SELECT COUNT(*) as total FROM sistema_facturacion.pagos_suscripciones WHERE empresa_id = %s AND estado = 'PAGADO'"
         with self.db.cursor() as cur:
             cur.execute(query, (str(empresa_id),))
             row = cur.fetchone()
@@ -76,7 +79,7 @@ class RepositorioComisiones:
         fields = list(data.keys())
         values = [str(v) if isinstance(v, UUID) else v for v in data.values()]
         placeholders = ["%s"] * len(fields)
-        query = f"INSERT INTO comision ({', '.join(fields)}) VALUES ({', '.join(placeholders)}) RETURNING *"
+        query = f"INSERT INTO sistema_facturacion.comisiones ({', '.join(fields)}) VALUES ({', '.join(placeholders)}) RETURNING *"
         with db_transaction(self.db) as cur:
             cur.execute(query, tuple(values))
             row = cur.fetchone()
@@ -86,14 +89,14 @@ class RepositorioComisiones:
         set_clauses = [f"{k} = %s" for k in data.keys()]
         values = [str(v) if isinstance(v, UUID) else v for v in data.values()]
         values.append(str(id))
-        query = f"UPDATE comision SET {', '.join(set_clauses)}, updated_at = NOW() WHERE id = %s RETURNING *"
+        query = f"UPDATE sistema_facturacion.comisiones SET {', '.join(set_clauses)}, updated_at = NOW() WHERE id = %s RETURNING *"
         with db_transaction(self.db) as cur:
             cur.execute(query, tuple(values))
             row = cur.fetchone()
             return dict(row) if row else None
 
     def eliminar_comision(self, id: UUID) -> bool:
-        query = "DELETE FROM comision WHERE id = %s"
+        query = "DELETE FROM sistema_facturacion.comisiones WHERE id = %s"
         with db_transaction(self.db) as cur:
             cur.execute(query, (str(id),))
             return cur.rowcount > 0

@@ -104,6 +104,22 @@ class RepositorioUsuarios:
             row = cur.fetchone()
             return dict(row) if row else None
     
+    def crear_auth_user(self, user_data: dict) -> Optional[dict]:
+        """Create only the authentication record in users table"""
+        user_fields = list(user_data.keys())
+        user_values = [str(v) if isinstance(v, UUID) else v for v in user_data.values()]
+        user_placeholders = ["%s"] * len(user_fields)
+        
+        user_query = f"""
+            INSERT INTO sistema_facturacion.users ({', '.join(user_fields)})
+            VALUES ({', '.join(user_placeholders)})
+            RETURNING *
+        """
+        with db_transaction(self.db) as cur:
+            cur.execute(user_query, tuple(user_values))
+            row = cur.fetchone()
+            return dict(row) if row else None
+    
     def crear_usuario(self, user_data: dict, usuario_data: dict) -> Optional[dict]:
         """Create user in both users and usuarios tables atomically"""
         with db_transaction(self.db) as cur:
