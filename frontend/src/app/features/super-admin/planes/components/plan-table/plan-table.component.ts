@@ -118,7 +118,7 @@ import { Plan } from '../../services/plan.service';
       border: 1px solid #f1f5f9;
       overflow: visible !important;
     }
-    .table-responsive-premium { overflow: visible !important; }
+    .table-responsive-premium { overflow: visible !important; position: relative; }
     .table thead th {
       background: #f8fafc;
       padding: 1.15rem 1.5rem;
@@ -187,12 +187,11 @@ import { Plan } from '../../services/plan.service';
       position: relative;
     }
     .dropdown-menu {
-      z-index: 10005 !important;
+      z-index: 100000 !important;
       min-width: 210px;
       border: 1px solid #e2e8f0 !important;
-      box-shadow: 0 15px 35px rgba(22, 29, 53, 0.15) !important;
-      margin-top: 5px !important;
-      pointer-events: auto !important;
+      box-shadow: 0 15px 35px rgba(22, 29, 53, 0.25) !important;
+      position: fixed !important;
     }
 
     .dropdown-item {

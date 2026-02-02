@@ -54,8 +54,23 @@ import { Observable, map } from 'rxjs';
 
             <!-- Vendedor Menu -->
             <ng-container *ngIf="isVendedor$ | async">
-               <a routerLink="/vendedor/empresas" routerLinkActive="active" class="menu-item px-3 mb-1">
+               <a *appHasPermission="['acceder_empresas', 'crear_empresas']" routerLink="/vendedor/empresas" routerLinkActive="active" class="menu-item px-3 mb-1">
                  <i class="bi bi-building me-3"></i> Empresas
+               </a>
+                <a routerLink="/vendedor/pagos" routerLinkActive="active" class="menu-item px-3 mb-1">
+                  <i class="bi bi-credit-card me-3"></i> Suscripciones y Pagos
+                </a>
+                <a routerLink="/vendedor/clientes" routerLinkActive="active" class="menu-item px-3 mb-1">
+                  <i class="bi bi-person-badge me-3"></i> Clientes
+                </a>
+               <a routerLink="/vendedor/comisiones" routerLinkActive="active" class="menu-item px-3 mb-1">
+                 <i class="bi bi-percent me-3"></i> Comisiones
+               </a>
+               <a routerLink="/vendedor/planes" routerLinkActive="active" class="menu-item px-3 mb-1">
+                 <i class="bi bi-tags me-3"></i> Planes y Límites
+               </a>
+               <a *appHasPermission="'ver_reportes'" routerLink="/vendedor/reportes" routerLinkActive="active" class="menu-item px-3 mb-1">
+                 <i class="bi bi-bar-chart me-3"></i> Reportes
                </a>
             </ng-container>
 

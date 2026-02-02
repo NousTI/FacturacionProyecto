@@ -105,7 +105,6 @@ import { UiService } from '../../../shared/services/ui.service';
   `,
   styles: [`
     .comisiones-page-container {
-      padding: 1.5rem 2rem;
     }
     .tabs-container {
       overflow-x: auto;

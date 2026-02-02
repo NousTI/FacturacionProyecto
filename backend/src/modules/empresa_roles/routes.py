@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends
-from typing import List
+from typing import List, Optional
 from uuid import UUID
 from .schemas import PermisoCreacion, PermisoLectura, RolCreacion, RolActualizacion, RolLectura
 from .controller import RolController
@@ -26,11 +26,12 @@ def crear_permiso(
 # --- Roles ---
 @router.get("/", response_model=RespuestaBase[List[RolLectura]])
 def listar_roles(
+    empresa_id: Optional[UUID] = None,
     usuario: dict = Depends(obtener_usuario_actual),
     controller: RolController = Depends()
 ):
-    """List roles for user's empresa"""
-    return controller.listar_roles(usuario)
+    """List roles for an empresa"""
+    return controller.listar_roles(usuario, empresa_id)
 
 @router.get("/{id}", response_model=RespuestaBase[RolLectura])
 def obtener_rol(

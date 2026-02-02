@@ -158,7 +158,7 @@ export class PlanService {
     savePlan(data: any): Observable<any> {
         const payload = this.mapToBackend(data);
         const request = data.id
-            ? this.http.put(`${this.apiUrl}/planes/${data.id}`, payload)
+            ? this.http.patch(`${this.apiUrl}/planes/${data.id}`, payload)
             : this.http.post(`${this.apiUrl}/planes`, payload);
 
         return request.pipe(

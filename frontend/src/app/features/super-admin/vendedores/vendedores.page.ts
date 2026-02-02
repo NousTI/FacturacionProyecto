@@ -92,7 +92,6 @@ import { ConfirmModalComponent } from '../../../shared/components/confirm-modal/
   `,
     styles: [`
     .vendedores-page-container {
-      padding: 1.5rem 2rem;
     }
     .sticky-actions {
       position: sticky;

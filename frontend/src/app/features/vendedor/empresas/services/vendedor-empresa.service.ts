@@ -37,9 +37,8 @@ export class VendedorEmpresaService {
         this.http.get<any>(this.apiUrl).pipe(
             map(res => {
                 const all: any[] = res.detalles || [];
-                // Client-side filtering just in case backend returns all
-                // Ideally backend handles this via token context
-                return all.filter(e => e.vendedor_id === user.id).map(e => this.mapEmpresa(e));
+                // Backend now filters by vendor context correctly
+                return all.map(e => this.mapEmpresa(e));
             }),
             finalize(() => this._loading = false)
         ).subscribe({
@@ -66,6 +65,25 @@ export class VendedorEmpresaService {
         );
     }
 
+    changePlan(empresaId: string, planId: string, monto: number = 0, observaciones: string = '', metodo_pago: string = 'MANUAL_VENDEDOR'): Observable<any> {
+        return this.http.post(`${this.apiUrl}/${empresaId}/change-plan`, {
+            plan_id: planId,
+            monto,
+            observaciones,
+            metodo_pago
+        }).pipe(
+            map((res: any) => this.mapEmpresa(res.detalles)),
+            tap(updated => {
+                const current = this._empresas$.value;
+                const index = current.findIndex(e => e.id.toString() === empresaId.toString());
+                if (index !== -1) {
+                    current[index] = { ...current[index], ...updated };
+                    this._empresas$.next([...current]);
+                }
+            })
+        );
+    }
+
     getPlanes(): Observable<any[]> {
         return this.http.get<any>(this.planesUrl).pipe(
             map(res => res.detalles || [])
@@ -81,10 +99,17 @@ export class VendedorEmpresaService {
             vendedorId: e.vendedor_id,
             plan: e.plan_nombre || 'SIN PLAN',
             planId: e.current_plan_id,
+            precioPlan: e.precio_mensual || 0,
             fechaVencimiento: e.fecha_fin ? new Date(e.fecha_fin) : null,
-            usage: {
-                usuarios: e.usage?.usuarios || 0,
-                max_usuarios: e.max_usuarios
+            ultimoPagoFecha: e.ultimo_pago_fecha ? new Date(e.ultimo_pago_fecha) : null,
+            ultimoPagoMonto: e.ultimo_pago_monto || 0,
+            ultimoPagoEstado: e.ultimo_pago_estado || 'PENDIENTE',
+            usage: e.usage || {},
+            limits: {
+                max_usuarios: e.max_usuarios,
+                max_facturas: e.max_facturas_mes,
+                max_establecimientos: e.max_establecimientos,
+                max_programaciones: e.max_programaciones
             }
         };
     }

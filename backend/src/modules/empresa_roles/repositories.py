@@ -101,6 +101,19 @@ class RepositorioRoles:
             row = cur.fetchone()
             return dict(row) if row else None
     
+    def obtener_rol_admin_por_empresa(self, empresa_id: UUID) -> Optional[dict]:
+        """Find the default admin role for a company"""
+        query = """
+            SELECT * FROM sistema_facturacion.empresa_roles 
+            WHERE empresa_id = %s AND es_sistema = TRUE 
+            AND (nombre = 'Administrador de Empresa' OR codigo LIKE 'ADMIN_%%')
+            LIMIT 1
+        """
+        with self.db.cursor() as cur:
+            cur.execute(query, (str(empresa_id),))
+            row = cur.fetchone()
+            return dict(row) if row else None
+    
     def crear_rol(self, empresa_id: UUID, data: dict, permiso_ids: List[UUID]) -> Optional[dict]:
         """Create role and assign permissions atomically"""
         with db_transaction(self.db) as cur:

@@ -120,8 +120,8 @@ class RepositorioUsuarios:
             row = cur.fetchone()
             return dict(row) if row else None
     
-    def crear_usuario(self, user_data: dict, usuario_data: dict) -> Optional[dict]:
-        """Create user in both users and usuarios tables atomically"""
+    def crear_usuario(self, user_data: dict, usuario_data: dict, log_data: Optional[dict] = None) -> Optional[dict]:
+        """Create user in both users and usuarios tables atomically, with optional creation log"""
         with db_transaction(self.db) as cur:
             # 1. Create in users table
             user_fields = list(user_data.keys())
@@ -148,8 +148,29 @@ class RepositorioUsuarios:
                 RETURNING *
             """
             cur.execute(usuario_query, tuple(usuario_values))
-            row = cur.fetchone()
-            return dict(row) if row else None
+            usuario = dict(cur.fetchone())
+
+            # 3. Create log if data provided
+            if log_data:
+                import json
+                log_data['usuario_id'] = usuario['id']
+                log_fields = list(log_data.keys())
+                # Convert dict to JSON string for JSONB columns
+                log_values = [
+                    str(v) if isinstance(v, UUID) 
+                    else json.dumps(v) if isinstance(v, dict) 
+                    else v 
+                    for v in log_data.values()
+                ]
+                log_placeholders = ["%s"] * len(log_fields)
+                
+                log_query = f"""
+                    INSERT INTO sistema_facturacion.usuario_creacion_logs ({', '.join(log_fields)})
+                    VALUES ({', '.join(log_placeholders)})
+                """
+                cur.execute(log_query, tuple(log_values))
+            
+            return usuario
     
     def actualizar_usuario(self, id: UUID, data: dict) -> Optional[dict]:
         """Update usuario"""

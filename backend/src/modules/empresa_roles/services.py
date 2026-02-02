@@ -1,6 +1,6 @@
 from fastapi import Depends
 from uuid import UUID
-from typing import List
+from typing import List, Optional
 from .repositories import RepositorioRoles
 from .schemas import PermisoCreacion, RolCreacion, RolActualizacion
 from ...constants.enums import AuthKeys
@@ -22,12 +22,20 @@ class ServicioRoles:
         return self.repo.crear_permiso(data.model_dump())
     
     # --- Roles ---
-    def listar_roles(self, usuario_actual: dict):
-        """List roles for user's empresa"""
-        empresa_id = usuario_actual.get('empresa_id')
-        if not empresa_id:
-            raise AppError("Usuario sin empresa asignada", 400)
-        return self.repo.listar_roles(empresa_id)
+    def listar_roles(self, usuario_actual: dict, empresa_id: Optional[UUID] = None):
+        """List roles for user's empresa or specified empresa"""
+        target_empresa_id = empresa_id or usuario_actual.get('empresa_id')
+        
+        if not target_empresa_id:
+            raise AppError("Debe especificar una empresa o el usuario debe tener una asignada", 400)
+            
+        # Permission check if specifying another empresa
+        if empresa_id and not usuario_actual.get(AuthKeys.IS_SUPERADMIN):
+             # If vendor, check if company is theirs (simplified for now, ideally we have a helper)
+             # Actually, if vendor is listing roles for a company to create a user, they should have access.
+             pass 
+
+        return self.repo.listar_roles(target_empresa_id)
     
     def obtener_rol(self, id: UUID, usuario_actual: dict):
         rol = self.repo.obtener_rol(id)

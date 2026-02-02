@@ -49,9 +49,24 @@ class ServicioSuscripciones:
         return self.repo.eliminar_plan(id)
 
     def listar_empresas_por_plan(self, plan_id: UUID, usuario_actual: dict):
-        if not usuario_actual.get(AuthKeys.IS_SUPERADMIN):
+        is_superadmin = usuario_actual.get(AuthKeys.IS_SUPERADMIN)
+        is_vendedor = usuario_actual.get(AuthKeys.IS_VENDEDOR)
+        
+        if not is_superadmin and not is_vendedor:
             raise AppError("No autorizado", 403)
-        return self.repo.listar_empresas_por_plan(plan_id)
+            
+        vendedor_id = None
+        if is_vendedor:
+            # Reutilizar lógica para buscar vendedor_id
+            query = "SELECT id FROM sistema_facturacion.vendedores WHERE user_id = %s"
+            with self.repo.db.cursor() as cur:
+                cur.execute(query, (str(usuario_actual['id']),))
+                row = cur.fetchone()
+                if not row:
+                    raise AppError("Perfil de vendedor no encontrado", 403)
+                vendedor_id = row['id']
+                
+        return self.repo.listar_empresas_por_plan(plan_id, vendedor_id)
 
     def obtener_stats_dashboard(self, usuario_actual: dict):
         if not usuario_actual.get(AuthKeys.IS_SUPERADMIN):
@@ -59,9 +74,35 @@ class ServicioSuscripciones:
         return self.repo.obtener_stats_dashboard()
 
     def registrar_pago_rapido(self, data: PagoSuscripcionQuick, usuario_actual: dict):
-        if not usuario_actual.get(AuthKeys.IS_SUPERADMIN):
-            raise AppError("Solo superadmin", 403, "AUTH_FORBIDDEN")
+        is_superadmin = usuario_actual.get(AuthKeys.IS_SUPERADMIN)
+        is_vendedor = usuario_actual.get(AuthKeys.IS_VENDEDOR)
+
+        if not is_superadmin and not is_vendedor:
+            raise AppError("No autorizado", 403, "AUTH_FORBIDDEN")
             
+        # Ownership check for vendors
+        if is_vendedor:
+            empresa = self.empresa_repo.obtener_por_id(data.empresa_id)
+            if not empresa: raise AppError("Empresa no encontrada", 404)
+            
+            # We need to find the vendor profile for this user
+            from ..vendedores.repositories import RepositorioVendedores
+            # Note: This is a bit circular if we don't have access to repo here, 
+            # but ServicioSuscripciones already has self.empresa_repo
+            vendedor_id = empresa.get('vendedor_id')
+            
+            # Get the user's vendor profile id
+            # Note: The easiest way is to check the user context if it was already enriched, 
+            # but here we might need to fetch it.
+            # Assuming we can trust the 'vendedor_id' in the company matches the logged in vendor.
+            # Let's verify via the user's id.
+            query = "SELECT id FROM sistema_facturacion.vendedores WHERE user_id = %s"
+            with self.repo.db.cursor() as cur:
+                cur.execute(query, (str(usuario_actual['id']),))
+                row = cur.fetchone()
+                if not row or str(row['id']) != str(vendedor_id):
+                    raise AppError("No autorizado: Esta empresa no está bajo tu gestión", 403, "AUTH_FORBIDDEN")
+
         plan = self.repo.obtener_plan_por_id(data.plan_id)
         if not plan: raise AppError("Plan no encontrado", 404)
         

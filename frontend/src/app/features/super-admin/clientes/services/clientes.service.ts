@@ -1,95 +1,141 @@
 import { Injectable } from '@angular/core';
-import { Observable, of } from 'rxjs';
-import { delay } from 'rxjs/operators';
+import { HttpClient } from '@angular/common/http';
+import { environment } from '../../../../../environments/environment';
+import { Observable, BehaviorSubject, tap, map } from 'rxjs';
 
 export interface ClienteUsuario {
     id: string;
-    nombre: string;
+    user_id: string;
+    nombres: string;
+    apellidos: string;
     email: string;
-    role: string;
+    telefono: string;
     empresa_id: string;
-    empresa_nombre: string;
+    empresa_nombre?: string;
+    empresa_rol_id: string;
+    rol_nombre?: string;
+    activo: boolean;
+    ultimo_acceso?: string;
+    created_at: string;
+    // Add any missing fields from page expectation
+    nombre?: string; // Some parts use .nombre (concatenated)
     vendedor_id?: string;
-    vendedor_nombre?: string;
-    creado_por_id: string;
-    creado_por_nombre: string;
-    creado_por_role: string;
-    estado: 'ACTIVO' | 'INACTIVO';
-    fecha_registro: string;
+}
+
+export type Cliente = ClienteUsuario;
+
+export interface ClienteStats {
+    total: number;
+    activos: number;
+    inactivos: number;
+}
+
+export interface ClienteConTrazabilidad extends ClienteUsuario {
+    creado_por_nombre?: string;
+    creado_por_email?: string;
+    creado_por_rol?: string;
+    origen_creacion?: 'superadmin' | 'vendedor' | 'sistema';
+    fecha_creacion_log?: string;
 }
 
 @Injectable({
     providedIn: 'root'
 })
 export class ClientesService {
-    private mockClientes: ClienteUsuario[] = [
-        {
-            id: 'u1',
-            nombre: 'Juan Pérez',
-            email: 'juan.perez@empresa-alpha.com',
-            role: 'ADMIN',
-            empresa_id: 'e1',
-            empresa_nombre: 'Empresa Alpha',
-            vendedor_id: 'v1',
-            vendedor_nombre: 'Carlos Vendedor',
-            creado_por_id: 'v1',
-            creado_por_nombre: 'Carlos Vendedor',
-            creado_por_role: 'VENDEDOR',
-            estado: 'ACTIVO',
-            fecha_registro: '2024-01-15T10:30:00Z'
-        },
-        {
-            id: 'u2',
-            nombre: 'Maria García',
-            email: 'maria.garcia@empresa-alpha.com',
-            role: 'CONTADOR',
-            empresa_id: 'e1',
-            empresa_nombre: 'Empresa Alpha',
-            creado_por_id: 'u1',
-            creado_por_nombre: 'Juan Pérez',
-            creado_por_role: 'ADMIN_EMPRESA',
-            estado: 'ACTIVO',
-            fecha_registro: '2024-02-01T14:20:00Z'
-        },
-        {
-            id: 'u3',
-            nombre: 'Roberto Gómez',
-            email: 'roberto@logistica-beta.com',
-            role: 'ADMIN',
-            empresa_id: 'e2',
-            empresa_nombre: 'Logística Beta',
-            vendedor_id: 'v2',
-            vendedor_nombre: 'Ana Ventas',
-            creado_por_id: 'v2',
-            creado_por_nombre: 'Ana Ventas',
-            creado_por_role: 'VENDEDOR',
-            estado: 'ACTIVO',
-            fecha_registro: '2024-01-20T09:00:00Z'
-        },
-        {
-            id: 'u4',
-            nombre: 'Elena Soto',
-            email: 'elena.soto@empresa-alpha.com',
-            role: 'AUXILIAR',
-            empresa_id: 'e1',
-            empresa_nombre: 'Empresa Alpha',
-            creado_por_id: 'u2',
-            creado_por_nombre: 'Maria García',
-            creado_por_role: 'COLABORADOR',
-            estado: 'ACTIVO',
-            fecha_registro: '2024-02-15T11:45:00Z'
-        }
-    ];
+    private apiUrl = `${environment.apiUrl}/clientes`;
 
-    getClientes(): Observable<ClienteUsuario[]> {
-        return of(this.mockClientes).pipe(delay(500));
+    private _clientes$ = new BehaviorSubject<Cliente[]>([]);
+    public clientes$ = this._clientes$.asObservable();
+
+    private _stats$ = new BehaviorSubject<ClienteStats | null>(null);
+    public stats$ = this._stats$.asObservable();
+
+    private _loading$ = new BehaviorSubject<boolean>(false);
+    public loading$ = this._loading$.asObservable();
+
+    constructor(private http: HttpClient) { }
+
+    fetchClientes(vendedorId?: string): void {
+        this._loading$.next(true);
+        let url = this.apiUrl;
+        if (vendedorId) url += `?vendedor_id=${vendedorId}`;
+
+        this.http.get<any>(url).pipe(
+            map(res => res.detalles as Cliente[]),
+            tap(clientes => this._clientes$.next(clientes)),
+            tap(() => this._loading$.next(false))
+        ).subscribe();
     }
 
-    getStats(): Observable<any> {
-        return of({
-            total: 154,
-            activos: 142,
-            nuevos_mes: 28
-        }).pipe(delay(300));
+    getClientes(vendedorId?: string): Observable<Cliente[]> {
+        let url = this.apiUrl;
+        if (vendedorId) url += `?vendedor_id=${vendedorId}`;
+        return this.http.get<any>(url).pipe(
+            map(res => res.detalles as Cliente[])
+        );
+    }
+
+    fetchStats(): void {
+        this.http.get<any>(`${this.apiUrl}/stats`).pipe(
+            map(res => res.detalles as ClienteStats),
+            tap(stats => this._stats$.next(stats))
+        ).subscribe();
+    }
+
+    getStats(): Observable<ClienteStats> {
+        return this.http.get<any>(`${this.apiUrl}/stats`).pipe(
+            map(res => res.detalles as ClienteStats)
+        );
+    }
+
+    crearCliente(datos: any): Observable<Cliente> {
+        return this.http.post<any>(this.apiUrl, datos).pipe(
+            map(res => res.detalles as Cliente),
+            tap(nuevo => {
+                const current = this._clientes$.value;
+                this._clientes$.next([nuevo, ...current]);
+                this.fetchStats();
+            })
+        );
+    }
+
+    eliminarCliente(id: string): Observable<boolean> {
+        return this.http.delete<any>(`${this.apiUrl}/${id}`).pipe(
+            map(res => res.success),
+            tap(success => {
+                if (success) {
+                    const current = this._clientes$.value.filter(c => c.id !== id);
+                    this._clientes$.next(current);
+                    this.fetchStats();
+                }
+            })
+        );
+    }
+
+    getClienteDetalle(id: string): Observable<ClienteConTrazabilidad> {
+        return this.http.get<any>(`${this.apiUrl}/${id}`).pipe(
+            map(res => res.detalles as ClienteConTrazabilidad)
+        );
+    }
+
+    actualizarCliente(id: string, datos: Partial<Cliente>): Observable<Cliente> {
+        return this.http.put<any>(`${this.apiUrl}/${id}`, datos).pipe(
+            map(res => res.detalles as Cliente),
+            tap(() => this.fetchClientes()) // Reload list
+        );
+    }
+
+    toggleStatus(id: string): Observable<Cliente> {
+        return this.http.patch<any>(`${this.apiUrl}/${id}/toggle-status`, {}).pipe(
+            map(res => res.detalles as Cliente),
+            tap(() => this.fetchClientes()) // Reload list
+        );
+    }
+
+    reasignarEmpresa(id: string, nuevaEmpresaId: string): Observable<Cliente> {
+        return this.http.patch<any>(`${this.apiUrl}/${id}/reasignar-empresa?nueva_empresa_id=${nuevaEmpresaId}`, {}).pipe(
+            map(res => res.detalles as Cliente),
+            tap(() => this.fetchClientes()) // Reload list
+        );
     }
 }

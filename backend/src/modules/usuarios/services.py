@@ -1,14 +1,20 @@
 from fastapi import Depends
 from uuid import UUID
 from .repositories import RepositorioUsuarios
+from ..empresa_roles.repositories import RepositorioRoles
 from .schemas import UsuarioCreacion, UsuarioActualizacion
 from ...constants.enums import AuthKeys
 from ...errors.app_error import AppError
 from ...utils.password import get_password_hash
 
 class ServicioUsuarios:
-    def __init__(self, repo: RepositorioUsuarios = Depends()):
+    def __init__(
+        self, 
+        repo: RepositorioUsuarios = Depends(),
+        roles_repo: RepositorioRoles = Depends()
+    ):
         self.repo = repo
+        self.roles_repo = roles_repo
     
     def listar_usuarios(self, usuario_actual: dict):
         """List users in current user's empresa"""
@@ -47,17 +53,50 @@ class ServicioUsuarios:
         }
         
         # Prepare usuario data (profile)
+        # Si no se provee un rol, asignar el rol de administrador de la empresa por defecto
+        final_rol_id = data.empresa_rol_id
+        if not final_rol_id:
+            rol_admin = self.roles_repo.obtener_rol_admin_por_empresa(data.empresa_id)
+            if rol_admin:
+                final_rol_id = rol_admin['id']
+            else:
+                raise AppError(
+                    "No se pudo encontrar un rol de administrador para esta empresa", 
+                    400,
+                    description="Debe existir al menos un rol de Administrador de Empresa para crear usuarios automáticamente."
+                )
+
         usuario_data = {
             'empresa_id': data.empresa_id,
-            'empresa_rol_id': data.empresa_rol_id,
+            'empresa_rol_id': final_rol_id,
             'nombres': data.nombres,
             'apellidos': data.apellidos,
             'telefono': data.telefono,
             'avatar_url': data.avatar_url,
             'activo': True
         }
+
+        # Auditoría de creación
+        log_data = {
+            'actor_user_id': usuario_actual.get('id'),
+            'actor_rol_sistema': usuario_actual.get(AuthKeys.ROLE),
+            'actor_rol_empresa': usuario_actual.get('rol_nombre'),
+            'empresa_id': usuario_actual.get('empresa_id'),
+            'origen': 'sistema',
+            'metadata': {'email_nuevo_usuario': data.email}
+        }
+
+        # Ajustar origen según reglas
+        if usuario_actual.get(AuthKeys.IS_SUPERADMIN):
+            log_data['origen'] = 'superadmin'
+            log_data['actor_rol_empresa'] = None
+        elif usuario_actual.get('rol_nombre') == 'vendedor': # O lógica similar para vendedores
+            log_data['origen'] = 'vendedor'
+        elif not usuario_actual.get('id'):
+            log_data['origen'] = 'sistema'
+            log_data['actor_rol_sistema'] = 'sistema'
         
-        return self.repo.crear_usuario(user_data, usuario_data)
+        return self.repo.crear_usuario(user_data, usuario_data, log_data)
     
     def actualizar_usuario(self, id: UUID, data: UsuarioActualizacion, usuario_actual: dict):
         """Update user (verify empresa ownership)"""

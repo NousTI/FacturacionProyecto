@@ -55,7 +55,7 @@ class EmpresaController:
             empresa_id=empresa_id,
             plan_id=body.get('plan_id'),
             monto=body.get('monto'),
-            metodo_pago="MANUAL_SUPERADMIN",
+            metodo_pago=body.get('metodo_pago', "MANUAL_SUPERADMIN"),
             numero_comprobante=f"CAMBIO_PLAN_{datetime.now().strftime('%Y%m%d%H%M%S')}"
         )
         resultado = self.suscripcion_service.registrar_pago_rapido(pago_data, usuario_actual)

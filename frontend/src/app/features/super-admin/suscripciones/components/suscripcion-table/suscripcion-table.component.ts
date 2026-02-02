@@ -15,6 +15,7 @@ import { Suscripcion } from '../../services/suscripcion.service';
                 <th>Empresa</th>
                 <th>Plan</th>
                 <th style="width: 140px">Vencimiento</th>
+                <th style="width: 120px">Pago</th>
                 <th style="width: 120px">Estado</th>
                 <th class="text-end" style="width: 100px">Acciones</th>
               </tr>
@@ -47,6 +48,11 @@ import { Suscripcion } from '../../services/suscripcion.service';
                       <i class="bi bi-exclamation-triangle-fill text-danger me-1"></i> <span class="text-danger">Vencido</span>
                     </small>
                   </div>
+                </td>
+                <td>
+                    <span class="badge-pago" [ngClass]="sub.estado_pago?.toLowerCase()">
+                        {{ sub.estado_pago || 'PENDIENTE' }}
+                    </span>
                 </td>
                 <td>
                   <span class="badge-status-premium" [ngClass]="getStatusClass(sub.estado)">
@@ -168,6 +174,13 @@ import { Suscripcion } from '../../services/suscripcion.service';
     .badge-status-premium.vencida { background: #fee2e2; color: #b91c1c; }
     .badge-status-premium.cancelada { background: #f1f5f9; color: #64748b; }
     .badge-status-premium.suspendida { background: #f8fafc; color: #475569; text-decoration: line-through; }
+    
+    .badge-pago {
+        padding: 0.3rem 0.6rem; border-radius: 6px; font-size: 0.7rem; font-weight: 700; text-transform: uppercase;
+    }
+    .badge-pago.pagado { background: #eff6ff; color: #1d4ed8; border: 1px solid #dbeafe; }
+    .badge-pago.pendiente { background: #fff7ed; color: #c2410c; border: 1px solid #ffedd5; }
+    .badge-pago.atrasado { background: #fef2f2; color: #b91c1c; border: 1px solid #fee2e2; }
     
     .btn-action-trigger {
       background: #f8fafc; border: none;

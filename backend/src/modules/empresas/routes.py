@@ -3,7 +3,8 @@ from typing import List, Optional
 from uuid import UUID
 from .schemas import EmpresaCreacion, EmpresaActualizacion, EmpresaLectura, EmpresaAsignarVendedor
 from .controller import EmpresaController
-from ..autenticacion.routes import obtener_usuario_actual
+from ..autenticacion.routes import obtener_usuario_actual, requerir_permiso
+from ..permisos.constants import PermisosVendedor
 from ...utils.response_schemas import RespuestaBase
 
 router = APIRouter(redirect_slashes=False)
@@ -18,6 +19,7 @@ def obtener_estadisticas(
 @router.post("", response_model=RespuestaBase[EmpresaLectura], status_code=201)
 def crear_empresa(
     datos: EmpresaCreacion,
+    permiso: dict = Depends(requerir_permiso(PermisosVendedor.CREAR_EMPRESAS)),
     usuario: dict = Depends(obtener_usuario_actual),
     controller: EmpresaController = Depends()
 ):

@@ -1,5 +1,6 @@
 from fastapi import Depends
 from .services import ServicioRoles
+from typing import Optional
 from .schemas import PermisoCreacion, RolCreacion, RolActualizacion
 from uuid import UUID
 from ...utils.response import success_response
@@ -18,8 +19,8 @@ class RolController:
         return success_response(permiso, "Permiso creado")
     
     # Roles
-    def listar_roles(self, usuario_actual: dict):
-        roles = self.service.listar_roles(usuario_actual)
+    def listar_roles(self, usuario_actual: dict, empresa_id: Optional[UUID] = None):
+        roles = self.service.listar_roles(usuario_actual, empresa_id)
         return success_response(roles)
     
     def obtener_rol(self, id: UUID, usuario_actual: dict):

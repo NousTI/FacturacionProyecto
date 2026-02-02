@@ -1,7 +1,7 @@
 from fastapi import Depends
 from typing import List, Optional
 from uuid import UUID
-from datetime import date
+from datetime import date, datetime
 import json
 from ...database.session import get_db
 from ...database.transaction import db_transaction
@@ -72,7 +72,7 @@ class RepositorioSuscripciones:
             cur.execute("DELETE FROM sistema_facturacion.planes WHERE id = %s", (str(id),))
             return cur.rowcount > 0
 
-    def listar_empresas_por_plan(self, plan_id: UUID) -> List[dict]:
+    def listar_empresas_por_plan(self, plan_id: UUID, vendedor_id: Optional[UUID] = None) -> List[dict]:
         query = """
             SELECT e.id, e.razon_social, e.nombre_comercial, e.ruc, e.email, e.telefono, 
                    s.fecha_inicio as fecha_activacion, s.fecha_fin as fecha_vencimiento, 
@@ -82,10 +82,17 @@ class RepositorioSuscripciones:
             WHERE s.plan_id = %s
             AND s.estado = 'ACTIVA'
             AND s.fecha_fin >= CURRENT_DATE
-            ORDER BY s.fecha_inicio DESC
         """
+        params = [str(plan_id)]
+        
+        if vendedor_id:
+            query += " AND e.vendedor_id = %s"
+            params.append(str(vendedor_id))
+            
+        query += " ORDER BY s.fecha_inicio DESC"
+        
         with self.db.cursor() as cur:
-            cur.execute(query, (str(plan_id),))
+            cur.execute(query, tuple(params))
             return [dict(row) for row in cur.fetchall()]
 
     # --- Suscripciones / Pagos ---
@@ -142,7 +149,64 @@ class RepositorioSuscripciones:
             if comision_data:
                 comision_data['pago_suscripcion_id'] = str(pago_id)
                 c_fields = list(comision_data.keys())
-                cur.execute(f"INSERT INTO sistema_facturacion.comisiones ({', '.join(c_fields)}) VALUES ({', '.join(['%s']*len(c_fields))})", tuple(comision_data.values()))
+                placeholder_c = ["%s"] * len(c_fields)
+                cur.execute(f"INSERT INTO sistema_facturacion.comisiones ({', '.join(c_fields)}) VALUES ({', '.join(placeholder_c)}) RETURNING id", tuple(comision_data.values()))
+                comision_id = cur.fetchone()['id']
+
+                # 3.5 Log de Comision
+                # Fetch enriched data for snapshot (joins)
+                cur.execute("""
+                    SELECT c.*, v.nombres || ' ' || v.apellidos as vendedor_nombre,
+                           v.nombres as vendedor_nombres, v.apellidos as vendedor_apellidos,
+                           v.documento_identidad, uv.email as vendedor_email,
+                           e.nombre_comercial as empresa_nombre, p.monto as monto_pago
+                    FROM sistema_facturacion.comisiones c
+                    LEFT JOIN sistema_facturacion.vendedores v ON c.vendedor_id = v.id
+                    LEFT JOIN sistema_facturacion.users uv ON v.user_id = uv.id
+                    LEFT JOIN sistema_facturacion.pagos_suscripciones p ON c.pago_suscripcion_id = p.id
+                    LEFT JOIN sistema_facturacion.empresas e ON p.empresa_id = e.id
+                    WHERE c.id = %s
+                """, (str(comision_id),))
+                c_full = dict(cur.fetchone())
+
+                snapshot = {
+                    "comision": {
+                        "id": str(comision_id),
+                        "estado": c_full['estado'],
+                        "estado_nuevo": 'PENDIENTE'
+                    },
+                    "valores": {
+                        "monto": float(c_full['monto']),
+                        "porcentaje_aplicado": float(c_full['porcentaje_aplicado']),
+                        "monto_pago": float(c_full['monto_pago'])
+                    },
+                    "fechas": {
+                        "fecha_generacion": c_full['fecha_generacion'].isoformat() if isinstance(c_full['fecha_generacion'], (date, datetime)) else c_full['fecha_generacion']
+                    },
+                    "vendedor": {
+                        "id": str(c_full['vendedor_id']),
+                        "nombre": c_full['vendedor_nombre'],
+                        "identificacion": c_full['documento_identidad'],
+                        "email": c_full['vendedor_email']
+                    },
+                    "empresa": {
+                        "razon_social": c_full['empresa_nombre']
+                    },
+                    "created_at": datetime.now().isoformat()
+                }
+
+                log_query = """
+                    INSERT INTO sistema_facturacion.comisiones_logs (
+                        comision_id, rol_responsable, estado_nuevo, datos_snapshot, observaciones
+                    ) VALUES (%s, %s, %s, %s, %s)
+                """
+                cur.execute(log_query, (
+                    str(comision_id),
+                    'SISTEMA',
+                    'PENDIENTE',
+                    json.dumps(snapshot, default=str),
+                    "Generación automática por suscripción"
+                ))
             
             return pago_id
 

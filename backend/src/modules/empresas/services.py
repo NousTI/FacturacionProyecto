@@ -4,6 +4,8 @@ from datetime import datetime, timedelta
 from typing import List, Optional
 
 from .repositories import RepositorioEmpresas
+from ..vendedores.repositories import RepositorioVendedores
+from ..empresa_roles.services import ServicioRoles
 from .schemas import EmpresaCreacion, EmpresaActualizacion
 from ...constants.enums import AuthKeys, SubscriptionStatus
 from ...errors.app_error import AppError
@@ -12,17 +14,32 @@ from ...constants.error_codes import ErrorCodes
 from ...constants.messages import AppMessages
 
 class ServicioEmpresas:
-    def __init__(self, repo: RepositorioEmpresas = Depends()):
+    def __init__(
+        self, 
+        repo: RepositorioEmpresas = Depends(), 
+        vendedor_repo: RepositorioVendedores = Depends(),
+        roles_service: ServicioRoles = Depends()
+    ):
         self.repo = repo
+        self.vendedor_repo = vendedor_repo
+        self.roles_service = roles_service
 
     def _get_context(self, current_user: dict):
-        return {
+        ctx = {
             "is_superadmin": current_user.get(AuthKeys.IS_SUPERADMIN, False),
             "is_vendedor": current_user.get(AuthKeys.IS_VENDEDOR, False),
             "is_usuario": current_user.get(AuthKeys.IS_USUARIO, False),
             "user_id": current_user.get("id"),
-            "empresa_id": current_user.get("empresa_id")
+            "empresa_id": current_user.get("empresa_id"),
+            "vendedor_id": None
         }
+        
+        if ctx["is_vendedor"]:
+             vendedor_profile = self.vendedor_repo.obtener_por_user_id(ctx["user_id"])
+             if vendedor_profile:
+                 ctx["vendedor_id"] = vendedor_profile["id"]
+                 
+        return ctx
 
     def crear_empresa(self, datos: EmpresaCreacion, usuario_actual: dict):
         ctx = self._get_context(usuario_actual)
@@ -47,17 +64,19 @@ class ServicioEmpresas:
         payload = datos.model_dump()
 
         if not ctx["is_superadmin"]:
-            if not ctx["user_id"]:
+            if not ctx["vendedor_id"]:
                   raise AppError(
-                      message=AppMessages.AUTH_SESSION_EXPIRED, 
-                      status_code=400, 
-                      code=ErrorCodes.AUTH_SESSION_EXPIRED,
-                      description="Vendedor ID no encontrado en sesión"
+                      message=AppMessages.PERM_FORBIDDEN, 
+                      status_code=403, 
+                      code=ErrorCodes.PERM_FORBIDDEN,
+                      description="No se encontró un perfil de vendedor asociado a tu cuenta."
                   )
-            payload['vendedor_id'] = ctx["user_id"]
+            payload['vendedor_id'] = ctx["vendedor_id"]
             
         try:
              nueva = self.repo.crear_empresa(payload)
+             # Inicializar roles y permisos por defecto
+             self._inicializar_empresa_roles(nueva['id'])
              return nueva
         except Exception as e:
              if "vendedor_id" in str(e) and "viol" in str(e):
@@ -85,7 +104,7 @@ class ServicioEmpresas:
             return empresa
         
         if ctx["is_vendedor"]:
-            if str(empresa.get('vendedor_id')) != str(ctx["user_id"]):
+            if str(empresa.get('vendedor_id')) != str(ctx["vendedor_id"]):
                  raise AppError(
                      message=AppMessages.PERM_FORBIDDEN, 
                      status_code=403, 
@@ -120,14 +139,15 @@ class ServicioEmpresas:
             return self.repo.listar_empresas(vendedor_id=vendedor_id)
 
         if ctx["is_vendedor"]:
-             if vendedor_id and str(vendedor_id) != str(ctx["user_id"]):
+             # Si envia un vendedor_id diferente al suyo, bloquearlo
+             if vendedor_id and str(vendedor_id) != str(ctx["vendedor_id"]):
                   raise AppError(
                       message=AppMessages.PERM_FORBIDDEN, 
                       status_code=403, 
                       code=ErrorCodes.PERM_FORBIDDEN,
                       description="No puedes ver empresas de otros vendedores"
                   )
-             return self.repo.listar_empresas(vendedor_id=ctx["user_id"])
+             return self.repo.listar_empresas(vendedor_id=ctx["vendedor_id"])
 
         if ctx["is_usuario"]:
             if not ctx["empresa_id"]: return []
@@ -146,7 +166,7 @@ class ServicioEmpresas:
             return self.repo.obtener_estadisticas()
             
         if ctx["is_vendedor"]:
-            return self.repo.obtener_estadisticas(vendedor_id=ctx["user_id"])
+            return self.repo.obtener_estadisticas(vendedor_id=ctx["vendedor_id"])
             
         raise AppError(
             message=AppMessages.PERM_FORBIDDEN, 
@@ -176,6 +196,16 @@ class ServicioEmpresas:
                  )
                  
         if not ctx["is_superadmin"]:
+            # Si es vendedor, NO tiene permiso de editar datos generales de la empresa
+            # Solo puede cambiar plan o toggle active (via otros endpoints)
+            if ctx["is_vendedor"]:
+                 raise AppError(
+                     message=AppMessages.PERM_FORBIDDEN, 
+                     status_code=403, 
+                     code=ErrorCodes.PERM_FORBIDDEN,
+                     description="No tienes permisos para editar los datos fiscales o de contacto de la empresa."
+                 )
+
             if 'activo' in payload and payload['activo'] != current['activo']:
                  raise AppError(
                      message=AppMessages.PERM_FORBIDDEN, 
@@ -258,4 +288,22 @@ class ServicioEmpresas:
                  description="Error al asignar vendedor (ID inválido o inexistente)"
              )
 
+    def _inicializar_empresa_roles(self, empresa_id: UUID):
+        """Crea el rol de Administrador con todos los permisos para la nueva empresa"""
+        try:
+            # 1. Obtener todos los permisos del catálogo
+            permisos = self.roles_service.listar_permisos()
+            permiso_ids = [p['id'] for p in permisos]
 
+            # 2. Crear el rol de Administrador
+            rol_data = {
+                "nombre": "Administrador de Empresa",
+                "descripcion": "Rol con todos los permisos del sistema",
+                "es_sistema": True
+            }
+
+            # Usamos el repositorio directamente para evitar chequeos de contexto
+            self.roles_service.repo.crear_rol(empresa_id, rol_data, permiso_ids)
+            
+        except Exception as e:
+            print(f"Error al inicializar roles para la empresa {empresa_id}: {str(e)}")

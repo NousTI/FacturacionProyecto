@@ -48,7 +48,7 @@ import { Comision } from '../../services/comisiones.service';
               </div>
             </div>
 
-            <!-- Approval Info -->
+            <!-- Approval Info (Only for APPROVED or PAID) -->
             <div class="row g-3 mt-1" *ngIf="comision?.aprobado_por_nombre && (comision?.estado === 'APROBADA' || comision?.estado === 'PAGADA')">
               <div class="col-md-6">
                 <label class="label-final">Aprobado Por</label>
@@ -60,6 +60,16 @@ import { Comision } from '../../services/comisiones.service';
                 <label class="label-final">Fecha Aprobación</label>
                 <div class="value-display-premium">
                   {{ comision?.fecha_aprobacion | date:'dd/MM/yyyy HH:mm' }}
+                </div>
+              </div>
+            </div>
+            
+            <!-- Rejection Info (Only for REJECTED) -->
+            <div class="row g-3 mt-1" *ngIf="comision?.estado === 'RECHAZADA'">
+              <div class="col-12">
+                <label class="label-final">Motivo de Rechazo / Observaciones</label>
+                <div class="value-display-premium text-danger fw-bold border-danger-soft">
+                  {{ comision?.observaciones || 'Sin observaciones especificadas' }}
                 </div>
               </div>
             </div>
@@ -80,25 +90,32 @@ import { Comision } from '../../services/comisiones.service';
                   <label class="label-final">Porcentaje Aplicado</label>
                   <div class="value-display-premium font-mono">{{ comision?.porcentaje_aplicado }}%</div>
                 </div>
-                <div class="col-md-6" *ngIf="comision?.metodo_pago && comision?.estado === 'PAGADA'">
-                  <label class="label-final">Método de Pago</label>
-                  <div class="value-display-premium font-mono">
-                    {{ comision?.metodo_pago }}
-                  </div>
-                </div>
+                
+                <!-- Payment details (Only for PAID) -->
+                <ng-container *ngIf="comision?.estado === 'PAGADA'">
+                    <div class="col-md-6">
+                        <label class="label-final">Método de Pago</label>
+                        <div class="value-display-premium font-mono">
+                            {{ comision?.metodo_pago || 'No especificado' }}
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="label-final">Fecha de Pago</label>
+                        <div class="value-display-premium text-success fw-bold">
+                            {{ comision?.fecha_pago | date:'dd MMM, yyyy' }}
+                        </div>
+                    </div>
+                </ng-container>
+
                 <div class="col-md-6">
                   <label class="label-final">Fecha Generación</label>
                   <div class="value-display-premium">
                     {{ comision?.fecha_generacion | date:'dd MMM, yyyy' }}
                   </div>
                 </div>
-                <div class="col-md-6" *ngIf="comision?.fecha_pago && comision?.estado === 'PAGADA'">
-                  <label class="label-final">Fecha de Pago</label>
-                  <div class="value-display-premium text-success fw-bold">
-                    {{ comision?.fecha_pago | date:'dd MMM, yyyy' }}
-                  </div>
-                </div>
-                <div class="col-12" *ngIf="comision?.observaciones">
+
+                <!-- Observations (Only if exists and not rejected - where it has its own section) -->
+                <div class="col-12" *ngIf="comision?.observaciones && comision?.estado !== 'RECHAZADA'">
                   <label class="label-final">Observaciones</label>
                   <div class="value-display-premium fst-italic">
                     {{ comision?.observaciones }}
@@ -181,6 +198,7 @@ import { Comision } from '../../services/comisiones.service';
       padding: 0.75rem 2rem; border-radius: 12px; font-weight: 600;
       min-width: 120px;
     }
+    .border-danger-soft { border: 1px solid rgba(239, 68, 68, 0.2) !important; background: #fff5f5 !important; }
     
     .scroll-custom::-webkit-scrollbar { width: 5px; }
     .scroll-custom::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }

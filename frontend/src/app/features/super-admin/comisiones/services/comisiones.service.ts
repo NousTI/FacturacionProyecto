@@ -120,20 +120,19 @@ export class ComisionesService {
         );
     }
 
-    rejectComision(id: string, observaciones?: string): Observable<boolean> {
+    rejectComision(id: string, observaciones?: string): Observable<Comision> {
         return this.http.put<any>(`${this.apiUrl}/${id}`, {
             estado: 'RECHAZADA',
             observaciones
         }).pipe(
-            map(() => true),
-            tap(() => {
-                this.refreshStats();
-                // Optimistic update
+            map(res => this.mapBackendToFrontend(res.detalles)),
+            tap(updatedComision => {
                 const current = this._comisiones$.value;
-                const index = current.findIndex(c => c.id === id);
+                const index = current.findIndex(c => c.id === updatedComision.id);
                 if (index !== -1) {
-                    current[index].estado = 'RECHAZADA';
+                    current[index] = updatedComision;
                     this._comisiones$.next([...current]);
+                    this.refreshStats();
                 }
             })
         );
@@ -152,17 +151,16 @@ export class ComisionesService {
                 fecha_pago: new Date().toISOString().split('T')[0],
                 ...details
             }).pipe(
-                map(() => true),
-                tap(() => {
-                    this.refreshStats();
+                map(res => {
+                    const updated = this.mapBackendToFrontend(res.detalles);
                     const current = this._comisiones$.value;
-                    const index = current.findIndex(c => c.id === ids[0]);
+                    const index = current.findIndex(c => c.id === updated.id);
                     if (index !== -1) {
-                        current[index].estado = 'PAGADA';
-                        current[index].fecha_pago = new Date();
-                        if (details.observaciones) current[index].observaciones = details.observaciones;
+                        current[index] = updated;
                         this._comisiones$.next([...current]);
+                        this.refreshStats();
                     }
+                    return true;
                 })
             );
         }

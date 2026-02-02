@@ -85,7 +85,7 @@ def listar_pagos(
 
 
 # --- Suscripciones Lifecycle ---
-@router.post("/suscripciones/activar", response_model=RespuestaBase[SuscripcionLectura], status_code=201)
+@router.post("/activar", response_model=RespuestaBase[SuscripcionLectura], status_code=201)
 def activar_suscripcion(
     datos: SuscripcionCreacion,
     usuario: dict = Depends(obtener_usuario_actual),
@@ -93,7 +93,7 @@ def activar_suscripcion(
 ):
     return controller.activar_suscripcion(datos, usuario)
 
-@router.post("/suscripciones/{empresa_id}/cancelar", response_model=RespuestaBase[SuscripcionLectura])
+@router.post("/{empresa_id}/cancelar", response_model=RespuestaBase[SuscripcionLectura])
 def cancelar_suscripcion(
     empresa_id: UUID,
     observaciones: str,
@@ -102,7 +102,7 @@ def cancelar_suscripcion(
 ):
     return controller.cancelar_suscripcion(empresa_id, observaciones, usuario)
 
-@router.post("/suscripciones/{empresa_id}/suspender", response_model=RespuestaBase[SuscripcionLectura])
+@router.post("/{empresa_id}/suspender", response_model=RespuestaBase[SuscripcionLectura])
 def suspender_suscripcion(
     empresa_id: UUID,
     observaciones: str,
@@ -111,7 +111,7 @@ def suspender_suscripcion(
 ):
     return controller.suspender_suscripcion(empresa_id, observaciones, usuario)
 
-@router.post("/suscripciones/verificar-vencimientos")
+@router.post("/verificar-vencimientos")
 def verificar_vencimientos(
     usuario: dict = Depends(obtener_usuario_actual),
     controller: SuscripcionController = Depends()
@@ -119,7 +119,7 @@ def verificar_vencimientos(
     return controller.verificar_vencimientos(usuario)
 
 # --- Audit Log ---
-@router.get('/suscripciones/{empresa_id}/historial', response_model=RespuestaBase[List[SuscripcionLogLectura]])
+@router.get('/{empresa_id}/historial', response_model=RespuestaBase[List[SuscripcionLogLectura]])
 def obtener_historial_suscripcion(
     empresa_id: UUID,
     usuario: dict = Depends(obtener_usuario_actual),

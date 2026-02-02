@@ -273,6 +273,7 @@ export class SuscripcionesPage implements OnInit {
             fecha_inicio: c.fecha_inicio || c.created_at,
             fecha_fin: c.fecha_vencimiento,
             estado: estado,
+            estado_pago: isOverdue ? 'PENDIENTE' : 'PAGADO', // Simple inference for now
             created_at: c.created_at || '',
             updated_at: ''
         };

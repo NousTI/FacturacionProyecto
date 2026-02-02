@@ -16,7 +16,7 @@ class UsuarioCreacion(BaseModel):
     email: EmailStr
     password: str
     empresa_id: UUID
-    empresa_rol_id: UUID
+    empresa_rol_id: Optional[UUID] = None
     nombres: str
     apellidos: str
     telefono: str

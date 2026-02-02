@@ -88,7 +88,6 @@ import { map } from 'rxjs/operators';
   `,
   styles: [`
     .planes-page-container {
-      padding: 1.5rem 2rem;
       position: relative;
       min-height: 400px;
     }

@@ -11,6 +11,7 @@ export interface Suscripcion {
     fecha_inicio: string;
     fecha_fin: string;
     estado: 'ACTIVA' | 'CANCELADA' | 'SUSPENDIDA' | 'VENCIDA';
+    estado_pago?: 'PAGADO' | 'PENDIENTE' | 'ANULADO' | 'REEMBOLSADO'; // Added field
     created_at: string;
     updated_at: string;
     // Annotated fields from potential joins/view models
@@ -28,6 +29,7 @@ export interface PagoHistorico {
     fecha_pago: string;
     numero_comprobante?: string;
     metodo_pago: string;
+    estado?: 'PENDIENTE' | 'PAGADO' | 'ANULADO' | 'REEMBOLSADO';
 }
 
 export interface PagoQuick {

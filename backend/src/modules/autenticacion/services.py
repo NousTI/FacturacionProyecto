@@ -13,17 +13,19 @@ from ...constants.enums import AuthKeys
 
 # Modular Imports
 from ..usuarios.repositories import RepositorioUsuarios
-# from ..roles.repositories import RolesRepository # Removed
+from ..vendedores.repositories import RepositorioVendedores
 from .repositories import AuthRepository
 
 class AuthServices:
     def __init__(
         self, 
         user_repo: RepositorioUsuarios = Depends(),
-        auth_repo: AuthRepository = Depends()
+        auth_repo: AuthRepository = Depends(),
+        vendedor_repo: RepositorioVendedores = Depends()
     ):
         self.user_repo = user_repo
         self.auth_repo = auth_repo
+        self.vendedor_repo = vendedor_repo
 
     def iniciar_sesion(self, correo: str, clave: str, ip_address: str, user_agent: str):
         # 1. Buscar Usuario en tabla única
@@ -97,6 +99,21 @@ class AuthServices:
             "role": primary_role
         }
 
+        # Si es VENDEDOR, inyectar permisos
+        if primary_role == "VENDEDOR":
+            vendedor_profile = self.vendedor_repo.obtener_por_user_id(user_id)
+            if vendedor_profile:
+                # Copiar flags de permisos explicitamente
+                permisos = [
+                    "puede_crear_empresas",
+                    "puede_gestionar_planes",
+                    "puede_acceder_empresas",
+                    "puede_ver_reportes"
+                ]
+                for p in permisos:
+                    if p in vendedor_profile:
+                        user_safe[p] = vendedor_profile[p]
+
         return success_response(
             data={
                 "access_token": token,
@@ -159,6 +176,20 @@ class AuthServices:
         user[AuthKeys.IS_VENDEDOR] = (role_upper == "VENDEDOR")
         user[AuthKeys.IS_USUARIO] = (role_upper == "USUARIO")
         user["role"] = role
+
+        # Si es VENDEDOR, inyectar permisos tambien aqui
+        if role_upper == "VENDEDOR":
+            vendedor_profile = self.vendedor_repo.obtener_por_user_id(user_id)
+            if vendedor_profile:
+                permisos = [
+                    "puede_crear_empresas",
+                    "puede_gestionar_planes",
+                    "puede_acceder_empresas",
+                    "puede_ver_reportes"
+                ]
+                for p in permisos:
+                    if p in vendedor_profile:
+                        user[p] = vendedor_profile[p]
 
         user.pop("password_hash", None)
         return user

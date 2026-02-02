@@ -27,31 +27,46 @@ class ServicioComisiones:
         self.log_repo = log_repo
         self.config_service = config_service
 
-    def _crear_snapshot(self, comision: dict, responsable: dict = None) -> dict:
-        """Creates a snapshot of critical data at the time of status change."""
+    def _crear_snapshot(self, comision: dict, responsable: dict = None, estado_anterior: str = None, estado_nuevo: str = None) -> dict:
+        """Creates a detailed snapshot of the commission state for audit logs."""
         snapshot = {
-            "id": str(comision.get('id')),
-            "monto": float(comision.get('monto') or 0),
-            "porcentaje_aplicado": float(comision.get('porcentaje_aplicado') or 0),
+            "comision": {
+                "id": str(comision.get('id')),
+                "estado": comision.get('estado'),
+                "estado_anterior": estado_anterior,
+                "estado_nuevo": estado_nuevo
+            },
+            "valores": {
+                "monto": float(comision.get('monto') or 0),
+                "porcentaje_aplicado": float(comision.get('porcentaje_aplicado') or 0),
+                "monto_pago": float(comision.get('monto_pago') or 0)
+            },
+            "fechas": {
+                "fecha_generacion": comision.get('fecha_generacion').isoformat() if isinstance(comision.get('fecha_generacion'), (date, datetime)) else comision.get('fecha_generacion'),
+                "fecha_aprobacion": comision.get('fecha_aprobacion').isoformat() if isinstance(comision.get('fecha_aprobacion'), (date, datetime)) else comision.get('fecha_aprobacion'),
+                "fecha_pago": comision.get('fecha_pago').isoformat() if isinstance(comision.get('fecha_pago'), (date, datetime)) else comision.get('fecha_pago')
+            },
             "vendedor": {
                 "id": str(comision.get('vendedor_id')),
-                "nombres": comision.get('vendedor_nombres'),
-                "apellidos": comision.get('vendedor_apellidos'),
-                "email": comision.get('vendedor_email'),
-                "telefono": comision.get('telefono'),
-                "documento_identidad": comision.get('documento_identidad')
+                "nombre": f"{comision.get('vendedor_nombres', '')} {comision.get('vendedor_apellidos', '')}".strip() or comision.get('vendedor_nombre'),
+                "identificacion": comision.get('documento_identidad'),
+                "email": comision.get('vendedor_email')
             },
             "empresa": {
-                "nombre": comision.get('empresa_nombre')
+                "razon_social": comision.get('empresa_nombre')
             },
-            "pago_suscripcion_id": str(comision.get('pago_suscripcion_id')),
-            "updated_at": datetime.now().isoformat()
+            "pago": {
+                "metodo_pago": comision.get('metodo_pago'),
+                "referencia": comision.get('numero_operacion')
+            },
+            "created_at": datetime.now().isoformat()
         }
 
         if responsable:
             snapshot["responsable"] = {
-                "nombres": responsable.get('nombres'),
-                "apellidos": responsable.get('apellidos'),
+                "id": str(responsable.get('id')),
+                "nombre": f"{responsable.get('nombres', '')} {responsable.get('apellidos', '')}".strip(),
+                "rol": "SUPERADMIN" if responsable.get(AuthKeys.IS_SUPERADMIN) else "VENDEDOR",
                 "email": responsable.get('email')
             }
 
@@ -102,7 +117,10 @@ class ServicioComisiones:
         if not is_superadmin:
             # Si es vendedor, solo ve sus stats
             if usuario_actual.get(AuthKeys.IS_VENDEDOR):
-                vendedor_id = usuario_actual['id']
+                vendedor = self.vendedor_repo.obtener_por_user_id(usuario_actual['id'])
+                if not vendedor:
+                    raise AppError("Perfil de vendedor no encontrado", 403)
+                vendedor_id = vendedor['id']
             else:
                 raise AppError("No autorizado", 403, "AUTH_FORBIDDEN")
                 
@@ -115,7 +133,10 @@ class ServicioComisiones:
         if is_superadmin:
             return self.repo.listar_comisiones()
         if is_vendedor:
-            return self.repo.listar_comisiones(vendedor_id=usuario_actual['id'])
+            vendedor = self.vendedor_repo.obtener_por_user_id(usuario_actual['id'])
+            if not vendedor:
+                raise AppError("Perfil de vendedor no encontrado", 403)
+            return self.repo.listar_comisiones(vendedor_id=vendedor['id'])
         
         raise AppError("No autorizado", 403, "AUTH_FORBIDDEN")
 
@@ -123,15 +144,36 @@ class ServicioComisiones:
         comision = self.repo.obtener_por_id(id)
         if not comision: raise AppError("Comisión no encontrada", 404, "COMISION_NOT_FOUND")
         
-        if not usuario_actual.get(AuthKeys.IS_SUPERADMIN) and str(comision['vendedor_id']) != str(usuario_actual['id']):
-            raise AppError("No autorizado", 403, "AUTH_FORBIDDEN")
+        if not usuario_actual.get(AuthKeys.IS_SUPERADMIN):
+            vendedor = self.vendedor_repo.obtener_por_user_id(usuario_actual['id'])
+            if not vendedor or str(comision['vendedor_id']) != str(vendedor['id']):
+                raise AppError("No autorizado", 403, "AUTH_FORBIDDEN")
             
         return comision
 
     def crear_manual(self, datos: ComisionCreacion, usuario_actual: dict):
         if not usuario_actual.get(AuthKeys.IS_SUPERADMIN):
             raise AppError("Solo superadmin", 403, "AUTH_FORBIDDEN")
-        return self.repo.crear_comision(datos.model_dump())
+        
+        nueva = self.repo.crear_comision(datos.model_dump())
+        if nueva:
+            # Re-fetch with joins for snapshot enrichment
+            comision_full = self.repo.obtener_por_id(nueva['id'])
+            snapshot = self._crear_snapshot(
+                comision=comision_full, 
+                responsable=usuario_actual,
+                estado_nuevo='PENDIENTE'
+            )
+            self.log_repo.registrar_log(
+                comision_id=nueva['id'],
+                estado_anterior=None,
+                estado_nuevo='PENDIENTE',
+                snapshot=snapshot,
+                responsable_id=usuario_actual['id'],
+                rol_responsable='SUPERADMIN',
+                observaciones="Creación manual de comisión"
+            )
+        return nueva
 
     def actualizar(self, id: UUID, datos: ComisionActualizacion, usuario_actual: dict):
         if not usuario_actual.get(AuthKeys.IS_SUPERADMIN):
@@ -157,7 +199,14 @@ class ServicioComisiones:
         
         # 2. Log if state changed
         if updated and estado_nuevo and estado_nuevo != comision_anterior['estado']:
-            snapshot = self._crear_snapshot(comision_anterior, responsable=usuario_actual)
+            # Re-fetch updated for accurate snapshot
+            comision_nueva = self.repo.obtener_por_id(id)
+            snapshot = self._crear_snapshot(
+                comision=comision_nueva, 
+                responsable=usuario_actual,
+                estado_anterior=comision_anterior['estado'],
+                estado_nuevo=estado_nuevo
+            )
             self.log_repo.registrar_log(
                 comision_id=id,
                 estado_anterior=comision_anterior['estado'],
@@ -192,7 +241,13 @@ class ServicioComisiones:
             
             if updated:
                 # 2. Log change
-                snapshot = self._crear_snapshot(comision_anterior, responsable=usuario_actual)
+                comision_nueva = self.repo.obtener_por_id(ids[0])
+                snapshot = self._crear_snapshot(
+                    comision=comision_nueva, 
+                    responsable=usuario_actual,
+                    estado_anterior=comision_anterior['estado'],
+                    estado_nuevo=CommissionStatus.PAGADA.value
+                )
                 self.log_repo.registrar_log(
                     comision_id=ids[0],
                     estado_anterior=comision_anterior['estado'],

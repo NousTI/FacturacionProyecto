@@ -1,10 +1,16 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ClientesService, ClienteUsuario } from './services/clientes.service';
+import { ClientesService, ClienteUsuario, ClienteConTrazabilidad } from './services/clientes.service';
 import { ClientesStatsComponent } from './components/clientes-stats.component';
 import { ClientesTableComponent } from './components/clientes-table.component';
 import { ClientesDetailsModalComponent } from './components/clientes-details-modal.component';
+import { ClienteModalComponent } from './components/cliente-modal.component';
+import { ClienteReassignModalComponent } from './components/cliente-reassign-modal.component';
+import { UiService } from '../../../shared/services/ui.service';
+import { ToastComponent } from '../../../shared/components/toast/toast.component';
+import { HttpClient } from '@angular/common/http';
+import { environment } from '../../../../environments/environment';
 
 @Component({
   selector: 'app-clientes',
@@ -14,22 +20,13 @@ import { ClientesDetailsModalComponent } from './components/clientes-details-mod
     FormsModule,
     ClientesStatsComponent,
     ClientesTableComponent,
-    ClientesDetailsModalComponent
+    ClientesDetailsModalComponent,
+    ClienteModalComponent,
+    ClienteReassignModalComponent,
+    ToastComponent
   ],
   template: `
     <div class="clientes-page-container animate__animated animate__fadeIn">
-      
-      <!-- Header Section -->
-      <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-          <h1 class="page-title">Directorio de Clientes</h1>
-          <p class="page-subtitle">Listado de usuarios por empresa y trazabilidad de origen</p>
-        </div>
-        <button class="btn-primary-premium d-flex align-items-center gap-2">
-          <i class="bi bi-download"></i>
-          Exportar Lista
-        </button>
-      </div>
 
       <!-- Stats Section -->
       <app-clientes-stats [stats]="stats"></app-clientes-stats>
@@ -58,6 +55,11 @@ import { ClientesDetailsModalComponent } from './components/clientes-details-mod
             <option value="VENDEDOR">Creados por Vendedores</option>
             <option value="INTERNO">Creados Internamente</option>
           </select>
+
+          <button class="btn-create-premium" (click)="showCreateModal = true">
+            <i class="bi bi-plus-lg"></i>
+            <span>Nuevo Cliente</span>
+          </button>
         </div>
       </div>
 
@@ -70,16 +72,52 @@ import { ClientesDetailsModalComponent } from './components/clientes-details-mod
       <app-clientes-table
         *ngIf="!loading"
         [usuarios]="filteredUsuarios"
-        (onViewDetails)="openDetails($event)"
+        (onAction)="handleAction($event)"
       ></app-clientes-table>
 
       <!-- Details Modal -->
       <app-clientes-details-modal
-        *ngIf="showDetailsModal && selectedUsuario"
-        [usuario]="selectedUsuario"
-        (close)="showDetailsModal = false"
+        *ngIf="showDetailsModal && selectedUsuarioDetalle"
+        [usuario]="selectedUsuarioDetalle"
+        (close)="closeDetailsModal()"
       ></app-clientes-details-modal>
 
+      <!-- Create Modal -->
+      <app-cliente-modal
+        *ngIf="showCreateModal"
+        [empresas]="allEmpresas"
+        [allRoles]="[]"
+        (onClose)="showCreateModal = false"
+        (onSave)="createCliente($event)"
+      ></app-cliente-modal>
+
+      <!-- Reassign Modal -->
+      <app-cliente-reassign-modal
+        *ngIf="showReassignModal && selectedUsuario"
+        [cliente]="selectedUsuario"
+        [empresas]="allEmpresas"
+        (onClose)="closeReassignModal()"
+        (onReasignar)="executeReassign($event)"
+      ></app-cliente-reassign-modal>
+
+      <!-- Confirmation Modal -->
+      <div class="modal-overlay" *ngIf="showConfirmModal" (click)="showConfirmModal = false">
+        <div class="confirm-modal" (click)="$event.stopPropagation()">
+          <div class="confirm-header">
+            <i class="bi" [ngClass]="confirmAction === 'delete' ? 'bi-exclamation-triangle text-danger' : 'bi-question-circle text-warning'"></i>
+            <h3>{{ getConfirmTitle() }}</h3>
+          </div>
+          <p class="confirm-message">{{ getConfirmMessage() }}</p>
+          <div class="confirm-actions">
+            <button class="btn-cancel" (click)="showConfirmModal = false">Cancelar</button>
+            <button class="btn-confirm" [class.danger]="confirmAction === 'delete'" (click)="executeAction()">
+              Confirmar
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <app-toast></app-toast>
     </div>
   `,
   styles: [`
@@ -108,6 +146,69 @@ import { ClientesDetailsModalComponent } from './components/clientes-details-mod
       background-color: white; color: #475569; font-weight: 600; font-size: 0.9rem;
       padding: 0 1.5rem; min-width: 200px;
     }
+
+    .btn-create-premium {
+      background: #161d35;
+      color: #ffffff;
+      border: none;
+      padding: 0 1.5rem;
+      height: 48px;
+      border-radius: 14px;
+      font-weight: 700;
+      font-size: 0.95rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 0 10px 20px -5px rgba(22, 29, 53, 0.3);
+      cursor: pointer;
+    }
+    .btn-create-premium:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 20px 30px -8px rgba(22, 29, 53, 0.4);
+      background: #232d4d;
+    }
+
+    /* Confirmation Modal */
+    .modal-overlay {
+      position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0, 0, 0, 0.5); backdrop-filter: blur(4px);
+      display: flex; align-items: center; justify-content: center;
+      z-index: 10000;
+    }
+    .confirm-modal {
+      background: white; border-radius: 20px;
+      padding: 2rem; max-width: 450px; width: 90%;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    }
+    .confirm-header {
+      display: flex; align-items: center; gap: 1rem;
+      margin-bottom: 1rem;
+    }
+    .confirm-header i { font-size: 2.5rem; }
+    .confirm-header h3 { margin: 0; font-weight: 800; color: #1e293b; }
+    .confirm-message {
+      color: #64748b; margin-bottom: 1.5rem; line-height: 1.6;
+    }
+    .confirm-actions {
+      display: flex; gap: 0.75rem; justify-content: flex-end;
+    }
+    .btn-cancel, .btn-confirm {
+      padding: 0.75rem 1.5rem; border-radius: 12px;
+      font-weight: 700; border: none; cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-cancel {
+      background: #f8fafc; color: #475569;
+    }
+    .btn-cancel:hover { background: #e2e8f0; }
+    .btn-confirm {
+      background: #161d35; color: white;
+    }
+    .btn-confirm.danger {
+      background: #dc2626;
+    }
+    .btn-confirm:hover { transform: translateY(-2px); }
   `]
 })
 export class ClientesPage implements OnInit {
@@ -116,21 +217,33 @@ export class ClientesPage implements OnInit {
   allUsuarios: ClienteUsuario[] = [];
   filteredUsuarios: ClienteUsuario[] = [];
   empresas: string[] = [];
+  allEmpresas: any[] = [];
+  apiUrl = environment.apiUrl;
 
   searchQuery = '';
   filterEmpresa = 'ALL';
   filterCreador = 'ALL';
 
   showDetailsModal = false;
+  showEditModal = false;
+  showCreateModal = false;
+  showReassignModal = false;
+  showConfirmModal = false;
   selectedUsuario: ClienteUsuario | null = null;
+  selectedUsuarioDetalle: ClienteConTrazabilidad | null = null;
+  confirmAction: 'toggle' | 'delete' | null = null;
+  selectedEmpresaId: string | null = null;
 
   constructor(
     private clientesService: ClientesService,
+    private uiService: UiService,
+    private http: HttpClient,
     private cdr: ChangeDetectorRef
   ) { }
 
   ngOnInit() {
     this.loadData();
+    this.loadEmpresas();
   }
 
   loadData() {
@@ -139,9 +252,21 @@ export class ClientesPage implements OnInit {
     this.clientesService.getClientes().subscribe(users => {
       this.allUsuarios = users;
       this.filteredUsuarios = users;
-      this.empresas = Array.from(new Set(users.map(u => u.empresa_nombre)));
+      this.empresas = Array.from(new Set(users.map(u => u.empresa_nombre).filter((name): name is string => !!name)));
       this.loading = false;
       this.cdr.detectChanges();
+    });
+  }
+
+  loadEmpresas() {
+    // Import EmpresaService if needed
+    this.http.get<any>(`${this.apiUrl}/empresas`).subscribe({
+      next: (res) => {
+        this.allEmpresas = res.detalles || [];
+      },
+      error: () => {
+        this.allEmpresas = [];
+      }
     });
   }
 
@@ -151,9 +276,10 @@ export class ClientesPage implements OnInit {
     if (this.searchQuery) {
       const q = this.searchQuery.toLowerCase();
       temp = temp.filter(u =>
-        u.nombre.toLowerCase().includes(q) ||
-        u.email.toLowerCase().includes(q) ||
-        u.empresa_nombre.toLowerCase().includes(q)
+        (u.nombres?.toLowerCase().includes(q) || '') ||
+        (u.apellidos?.toLowerCase().includes(q) || '') ||
+        (u.email?.toLowerCase().includes(q) || '') ||
+        (u.empresa_nombre?.toLowerCase().includes(q) || '')
       );
     }
 
@@ -173,9 +299,151 @@ export class ClientesPage implements OnInit {
     this.cdr.detectChanges();
   }
 
-  openDetails(usuario: ClienteUsuario) {
-    this.selectedUsuario = usuario;
-    this.showDetailsModal = true;
-    this.cdr.detectChanges();
+  handleAction(event: { type: string, cliente: ClienteUsuario }) {
+    this.selectedUsuario = event.cliente;
+
+    switch (event.type) {
+      case 'view':
+        this.openDetails(event.cliente);
+        break;
+      case 'reassign':
+        this.openReassignModal();
+        break;
+      case 'toggle':
+        this.confirmToggleStatus();
+        break;
+      case 'delete':
+        this.confirmDelete();
+        break;
+    }
+  }
+
+  openDetails(cliente: ClienteUsuario) {
+    this.clientesService.getClienteDetalle(cliente.id).subscribe({
+      next: (detalle) => {
+        this.selectedUsuarioDetalle = detalle;
+        this.showDetailsModal = true;
+        this.cdr.detectChanges();
+      },
+      error: (err) => this.uiService.showError(err, 'Error al cargar detalles')
+    });
+  }
+
+  closeDetailsModal() {
+    this.showDetailsModal = false;
+    this.selectedUsuarioDetalle = null;
+  }
+
+  openEditModal() {
+    this.showEditModal = true;
+  }
+
+  closeEditModal() {
+    this.showEditModal = false;
+    this.selectedUsuario = null;
+  }
+
+  createCliente(datos: any) {
+    this.clientesService.crearCliente(datos).subscribe({
+      next: () => {
+        this.uiService.showToast('Cliente creado exitosamente', 'success');
+        this.showCreateModal = false;
+        this.loadData();
+      },
+      error: (err) => this.uiService.showError(err, 'Error al crear cliente')
+    });
+  }
+
+  saveEdit(datos: any) {
+    if (!this.selectedUsuario) return;
+
+    this.clientesService.actualizarCliente(this.selectedUsuario.id, datos).subscribe({
+      next: () => {
+        this.uiService.showToast('Cliente actualizado exitosamente', 'success');
+        this.closeEditModal();
+        this.loadData();
+      },
+      error: (err) => this.uiService.showError(err, 'Error al actualizar cliente')
+    });
+  }
+
+  openReassignModal() {
+    this.showReassignModal = true;
+  }
+
+  closeReassignModal() {
+    this.showReassignModal = false;
+    this.selectedUsuario = null;
+  }
+
+  executeReassign(nuevaEmpresaId: string) {
+    if (!this.selectedUsuario || !nuevaEmpresaId) return;
+
+    this.clientesService.reasignarEmpresa(this.selectedUsuario.id, nuevaEmpresaId).subscribe({
+      next: () => {
+        this.uiService.showToast('Empresa reasignada exitosamente', 'success');
+        this.closeReassignModal();
+        this.loadData();
+      },
+      error: (err) => this.uiService.showError(err, 'Error al reasignar empresa')
+    });
+  }
+
+  confirmToggleStatus() {
+    this.confirmAction = 'toggle';
+    this.showConfirmModal = true;
+  }
+
+  confirmDelete() {
+    this.confirmAction = 'delete';
+    this.showConfirmModal = true;
+  }
+
+  executeAction() {
+    if (!this.selectedUsuario) return;
+
+    if (this.confirmAction === 'toggle') {
+      this.clientesService.toggleStatus(this.selectedUsuario.id).subscribe({
+        next: () => {
+          const estado = this.selectedUsuario!.activo ? 'desactivado' : 'activado';
+          this.uiService.showToast(`Cliente ${estado} exitosamente`, 'success');
+          this.showConfirmModal = false;
+          this.loadData();
+        },
+        error: (err) => this.uiService.showError(err, 'Error al cambiar estado')
+      });
+    } else if (this.confirmAction === 'delete') {
+      this.clientesService.eliminarCliente(this.selectedUsuario.id).subscribe({
+        next: () => {
+          this.uiService.showToast('Cliente eliminado exitosamente', 'success');
+          this.showConfirmModal = false;
+          this.loadData();
+        },
+        error: (err) => this.uiService.showError(err, 'Error al eliminar')
+      });
+    }
+  }
+
+  getConfirmTitle(): string {
+    if (this.confirmAction === 'delete') return 'Eliminar Cliente';
+    if (this.confirmAction === 'toggle') {
+      return this.selectedUsuario?.activo ? 'Desactivar Cliente' : 'Activar Cliente';
+    }
+    return 'Confirmar Acción';
+  }
+
+  getConfirmMessage(): string {
+    if (!this.selectedUsuario) return '';
+
+    const nombre = `${this.selectedUsuario.nombres} ${this.selectedUsuario.apellidos}`;
+
+    if (this.confirmAction === 'delete') {
+      return `¿Está seguro que desea eliminar al cliente "${nombre}"? Esta acción no se puede deshacer.`;
+    }
+    if (this.confirmAction === 'toggle') {
+      const accion = this.selectedUsuario.activo ? 'desactivar' : 'activar';
+      return `¿Está seguro que desea ${accion} al cliente "${nombre}"?`;
+    }
+    return '';
   }
 }

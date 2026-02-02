@@ -32,7 +32,7 @@ class RepositorioComisiones:
     def obtener_stats(self, vendedor_id: Optional[UUID] = None) -> dict:
         query = """
             SELECT 
-                COALESCE(SUM(p.monto), 0) as total,
+                COALESCE(SUM(c.monto), 0) as total,
                 COALESCE(SUM(CASE WHEN c.estado = 'PENDIENTE' THEN c.monto ELSE 0 END), 0) as pendientes,
                 COALESCE(SUM(CASE WHEN c.estado = 'PAGADA' THEN c.monto ELSE 0 END), 0) as pagados
             FROM sistema_facturacion.comisiones c
@@ -53,11 +53,12 @@ class RepositorioComisiones:
         query = """
             SELECT c.*, v.nombres || ' ' || v.apellidos as vendedor_nombre,
                    v.nombres as vendedor_nombres, v.apellidos as vendedor_apellidos,
-                   v.documento_identidad, v.telefono, v.email as vendedor_email,
+                   v.documento_identidad, v.telefono, uv.email as vendedor_email,
                    e.nombre_comercial as empresa_nombre, p.monto as monto_pago,
                    u.email as aprobado_por_nombre 
             FROM sistema_facturacion.comisiones c
             LEFT JOIN sistema_facturacion.vendedores v ON c.vendedor_id = v.id
+            LEFT JOIN sistema_facturacion.users uv ON v.user_id = uv.id
             LEFT JOIN sistema_facturacion.pagos_suscripciones p ON c.pago_suscripcion_id = p.id
             LEFT JOIN sistema_facturacion.empresas e ON p.empresa_id = e.id
             LEFT JOIN sistema_facturacion.users u ON c.aprobado_por = u.id

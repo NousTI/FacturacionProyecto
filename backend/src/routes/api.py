@@ -10,8 +10,8 @@ api_router.include_router(permisos_router, prefix="/permisos", tags=["Permisos"]
 from ..modules.usuarios.routes import router as usuarios_router
 api_router.include_router(usuarios_router, prefix="/usuarios", tags=["Usuarios"])
 
-# from ..modules.roles.routes import router as roles_router
-# api_router.include_router(roles_router, prefix="/roles", tags=["Roles"])
+from ..modules.empresa_roles.routes import router as roles_router
+api_router.include_router(roles_router, prefix="/roles", tags=["Roles"])
 
 from ..modules.empresas.routes import router as empresas_router
 api_router.include_router(empresas_router, prefix="/empresas", tags=["Empresas"])

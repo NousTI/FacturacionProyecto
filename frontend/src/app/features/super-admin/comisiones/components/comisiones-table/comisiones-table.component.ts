@@ -52,7 +52,6 @@ import { CommonModule } from '@angular/common';
                       [id]="'actions-' + comision.id" 
                       data-bs-toggle="dropdown" 
                       aria-expanded="false"
-                      data-bs-display="static"
                     >
                       <i class="bi bi-three-dots"></i>
                     </button>
@@ -69,14 +68,6 @@ import { CommonModule } from '@angular/common';
 
                       <!-- STANDARD ACTIONS -->
                       <ng-container *ngIf="!isAudit">
-                        <li>
-                          <a class="dropdown-item rounded-3 py-2" href="javascript:void(0)" (click)="onAction.emit({type: 'view_details', comision: comision})">
-                            <i class="bi bi-eye text-corporate"></i>
-                            <div class="ms-2 d-flex flex-column">
-                              <span>Ver Detalles</span>
-                            </div>
-                          </a>
-                        </li>
                         <li *ngIf="comision.estado === 'PENDIENTE'">
                           <a class="dropdown-item rounded-3 py-2" href="javascript:void(0)" (click)="onAction.emit({type: 'approve', comision: comision})">
                             <i class="bi bi-check-circle text-success"></i>
@@ -93,6 +84,15 @@ import { CommonModule } from '@angular/common';
                           <a class="dropdown-item rounded-3 py-2" href="javascript:void(0)" (click)="onAction.emit({type: 'register_payment', comision: comision})">
                             <i class="bi bi-wallet2 text-corporate"></i>
                             <span class="ms-2">Registrar Pago</span>
+                          </a>
+                        </li>
+                        <!-- View Details is always available -->
+                        <li>
+                          <a class="dropdown-item rounded-3 py-2" href="javascript:void(0)" (click)="onAction.emit({type: 'view_details', comision: comision})">
+                            <i class="bi bi-eye text-corporate"></i>
+                            <div class="ms-2 d-flex flex-column">
+                              <span>Ver Detalles</span>
+                            </div>
                           </a>
                         </li>
                       </ng-container>
@@ -127,6 +127,7 @@ import { CommonModule } from '@angular/common';
     }
     .table-responsive-premium {
       overflow: visible !important;
+      position: relative;
     }
     .table {
       border-collapse: separate;
@@ -197,12 +198,10 @@ import { CommonModule } from '@angular/common';
 
     .dropdown { position: relative; }
     .dropdown-menu {
-      z-index: 10005 !important;
+      z-index: 10001;
       min-width: 210px;
       border: 1px solid #e2e8f0 !important;
-      box-shadow: 0 15px 35px rgba(22, 29, 53, 0.15) !important;
-      margin-top: 5px !important;
-      pointer-events: auto !important;
+      box-shadow: 0 15px 35px rgba(22, 29, 53, 0.25) !important;
     }
     .dropdown-item {
       font-size: 0.85rem; font-weight: 600;

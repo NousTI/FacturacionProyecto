@@ -13,6 +13,7 @@ import { HorizontalBarCardComponent } from './components/horizontal-bar-card/hor
 import { WelcomeCardComponent } from './components/welcome-card/welcome-card.component';
 import { MaintenanceComponent } from './components/maintenance/maintenance.component';
 import { PremiumAlertComponent } from './components/premium-alert/premium-alert.component';
+import { HasPermissionDirective } from './directives/has-permission.directive';
 
 @NgModule({
     declarations: [
@@ -32,7 +33,8 @@ import { PremiumAlertComponent } from './components/premium-alert/premium-alert.
         HorizontalBarCardComponent,
         WelcomeCardComponent,
         MaintenanceComponent,
-        PremiumAlertComponent
+        PremiumAlertComponent,
+        HasPermissionDirective
     ],
     exports: [
         CommonModule,
@@ -49,7 +51,8 @@ import { PremiumAlertComponent } from './components/premium-alert/premium-alert.
         HorizontalBarCardComponent,
         WelcomeCardComponent,
         MaintenanceComponent,
-        PremiumAlertComponent
+        PremiumAlertComponent,
+        HasPermissionDirective
     ]
 })
 export class SharedModule { }

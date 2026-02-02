@@ -5,13 +5,13 @@ from uuid import UUID
 from .service import ServicioReportes
 from .schemas import ReporteLectura, ReporteCreacion
 from ..autenticacion.routes import obtener_usuario_actual, requerir_permiso
-from ...constants.permissions import PermissionCodes
+from ..permisos.constants import PermisosVendedor
 
 router = APIRouter()
 
 @router.get("/", response_model=List[ReporteLectura])
 def listar_reportes(
-    usuario: dict = Depends(requerir_permiso(PermissionCodes.REPORTE_VER)),
+    usuario: dict = Depends(requerir_permiso(PermisosVendedor.VER_REPORTES)),
     servicio: ServicioReportes = Depends()
 ):
     return servicio.listar_reportes(usuario)
@@ -19,7 +19,7 @@ def listar_reportes(
 @router.post("/", response_model=ReporteLectura, status_code=status.HTTP_201_CREATED)
 def generar_reporte(
     datos: ReporteCreacion,
-    usuario: dict = Depends(requerir_permiso(PermissionCodes.REPORTE_EXPORTAR)),
+    usuario: dict = Depends(requerir_permiso(PermisosVendedor.VER_REPORTES)),
     servicio: ServicioReportes = Depends()
 ):
     return servicio.crear_reporte(datos, usuario)

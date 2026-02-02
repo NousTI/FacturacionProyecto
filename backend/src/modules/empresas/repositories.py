@@ -75,8 +75,10 @@ class RepositorioEmpresas:
                    p.max_facturas_mes,
                    p.max_establecimientos,
                    p.max_programaciones,
+                   p.precio_mensual,
                    (SELECT MAX(fecha_pago) FROM sistema_facturacion.pagos_suscripciones WHERE empresa_id = e.id) as ultimo_pago_fecha,
-                   (SELECT monto FROM sistema_facturacion.pagos_suscripciones WHERE empresa_id = e.id ORDER BY fecha_pago DESC LIMIT 1) as ultimo_pago_monto
+                   (SELECT monto FROM sistema_facturacion.pagos_suscripciones WHERE empresa_id = e.id ORDER BY fecha_pago DESC LIMIT 1) as ultimo_pago_monto,
+                   (SELECT estado FROM sistema_facturacion.pagos_suscripciones WHERE empresa_id = e.id ORDER BY fecha_pago DESC LIMIT 1) as ultimo_pago_estado
             FROM sistema_facturacion.empresas e
             LEFT JOIN sistema_facturacion.vendedores v ON e.vendedor_id = v.id
             LEFT JOIN sistema_facturacion.suscripciones s ON e.id = s.empresa_id

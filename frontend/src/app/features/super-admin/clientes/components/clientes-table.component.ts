@@ -7,70 +7,82 @@ import { ClienteUsuario } from '../services/clientes.service';
   standalone: true,
   imports: [CommonModule],
   template: `
-    <div class="table-premium-container animate__animated animate__fadeIn">
-      <div class="table-responsive">
-        <table class="table table-hover align-middle mb-0">
+    <div class="table-surface shadow-premium">
+      <div class="table-responsive-premium">
+        <table class="table mb-0 align-middle">
           <thead>
             <tr>
-              <th class="ps-4">Usuario</th>
+              <th>Cliente</th>
+              <th>Email / Teléfono</th>
               <th>Empresa</th>
-              <th class="text-center">Rol</th>
-              <th>Creado Por</th>
+              <th>Rol</th>
               <th class="text-center">Estado</th>
-              <th class="text-end pe-4">Acciones</th>
+              <th class="text-end" style="width: 80px">Acciones</th>
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let u of usuarios">
-              <td class="ps-4">
-                <div class="d-flex align-items-center gap-3">
-                  <div class="avatar-circle">
-                    {{ u.nombre.charAt(0) }}
+            <tr *ngFor="let cliente of usuarios">
+              <td>
+                <div class="d-flex align-items-center">
+                  <div class="cliente-avatar me-3">
+                    {{ cliente.nombres[0] }}{{ cliente.apellidos[0] }}
                   </div>
                   <div class="d-flex flex-column">
-                    <span class="fw-bold text-dark">{{ u.nombre }}</span>
-                    <span class="text-muted small">{{ u.email }}</span>
+                    <span class="cliente-name">{{ cliente.nombres }} {{ cliente.apellidos }}</span>
+                    <small class="text-muted">ID: {{ cliente.id.slice(0,8) }}</small>
                   </div>
                 </div>
               </td>
               <td>
-                <div class="company-badge">
-                  <i class="bi bi-building me-2"></i>
-                  {{ u.empresa_nombre }}
-                </div>
-              </td>
-              <td class="text-center">
-                <span class="role-badge" [class.admin]="u.role === 'ADMIN'">
-                  {{ u.role }}
-                </span>
+                <div class="fw-semibold">{{ cliente.email }}</div>
+                <small class="text-muted">{{ cliente.telefono }}</small>
               </td>
               <td>
-                <div class="creator-info">
-                  <div class="creator-avatar" [class.vendor]="u.vendedor_id">
-                    <i class="bi" [ngClass]="u.vendedor_id ? 'bi-shop' : 'bi-person-badge'"></i>
-                  </div>
-                  <div class="d-flex flex-column">
-                    <span class="creator-name">{{ u.creado_por_nombre }}</span>
-                    <span class="creator-type">
-                        {{ u.vendedor_id ? 'Vendedor' : 'Colaborador' }}
-                    </span>
-                  </div>
-                </div>
+                <span class="badge bg-light text-dark border">{{ cliente.empresa_nombre }}</span>
+              </td>
+              <td>
+                <span class="text-muted">{{ cliente.rol_nombre }}</span>
               </td>
               <td class="text-center">
-                <span class="status-indicator" [class.active]="u.estado === 'ACTIVO'">
-                  {{ u.estado }}
+                <span class="status-badge" [class.active]="cliente.activo" [class.inactive]="!cliente.activo">
+                  {{ cliente.activo ? 'ACTIVO' : 'INACTIVO' }}
                 </span>
               </td>
-              <td class="text-end pe-4">
-                <div class="actions-group">
-                  <button (click)="onViewDetails.emit(u)" class="btn-action" title="Ver Detalles">
-                    <i class="bi bi-eye"></i>
+              <td class="text-end">
+                <div class="dropdown">
+                  <button class="btn-action-trigger" data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="bi bi-three-dots"></i>
                   </button>
-                  <button class="btn-action danger" title="Desactivar">
-                    <i class="bi bi-person-x"></i>
-                  </button>
+                  <ul class="dropdown-menu dropdown-menu-end shadow-premium-lg border-0 p-2 rounded-4">
+                    <li>
+                      <a class="dropdown-item rounded-3 py-2" (click)="onAction.emit({type: 'view', cliente: cliente})">
+                        <i class="bi bi-eye text-primary me-2"></i> Ver Detalles
+                      </a>
+                    </li>
+                    <li>
+                      <a class="dropdown-item rounded-3 py-2" (click)="onAction.emit({type: 'reassign', cliente: cliente})">
+                        <i class="bi bi-arrow-repeat text-secondary me-2"></i> Reasignar Empresa
+                      </a>
+                    </li>
+                    <li><hr class="dropdown-divider mx-2"></li>
+                    <li>
+                      <a class="dropdown-item rounded-3 py-2" [class.text-danger]="cliente.activo" (click)="onAction.emit({type: 'toggle', cliente: cliente})">
+                        <i class="bi me-2" [class]="cliente.activo ? 'bi-toggle-off text-danger' : 'bi-toggle-on text-success'"></i>
+                        {{ cliente.activo ? 'Desactivar' : 'Activar' }}
+                      </a>
+                    </li>
+                    <li>
+                      <a class="dropdown-item rounded-3 py-2 text-danger" (click)="onAction.emit({type: 'delete', cliente: cliente})">
+                        <i class="bi bi-trash text-danger me-2"></i> Eliminar
+                      </a>
+                    </li>
+                  </ul>
                 </div>
+              </td>
+            </tr>
+            <tr *ngIf="usuarios.length === 0">
+              <td colspan="6" class="text-center py-5 text-muted">
+                No se encontraron clientes registrados.
               </td>
             </tr>
           </tbody>
@@ -79,65 +91,120 @@ import { ClienteUsuario } from '../services/clientes.service';
     </div>
   `,
   styles: [`
-    .table-premium-container {
-      background: white; border-radius: 20px; border: 1px solid #f1f5f9;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.02); overflow: hidden;
+    .table-surface {
+      background: #ffffff;
+      border-radius: 24px;
+      overflow: visible !important;
+      border: 1px solid #f1f5f9;
+      position: relative;
+      z-index: 5;
     }
+    .table-responsive-premium { 
+      overflow: visible !important; 
+    }
+    .table {
+      border-collapse: separate;
+    }
+    .table tbody tr {
+      position: relative;
+      transition: z-index 0.2s;
+    }
+    .table tbody tr:focus-within,
+    .table tbody tr:hover {
+      z-index: 100;
+    }
+    .table tbody tr:has(.show),
+    .table tbody tr:has(.btn-action-trigger[aria-expanded="true"]) {
+      z-index: 10001 !important;
+    }
+
     .table thead th {
-      background: #f8fafc; color: #64748b; font-size: 0.75rem;
-      font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px;
-      padding: 1.25rem 1rem; border: none;
+      background: #f8fafc;
+      padding: 1.25rem 1.5rem;
+      font-size: 0.7rem;
+      font-weight: 800;
+      color: #94a3b8;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      border-bottom: 2px solid #f1f5f9;
+      position: sticky;
+      top: 0;
+      z-index: 10;
     }
-    .table tbody tr { transition: all 0.2s; border-bottom: 1px solid #f1f5f9; }
-    .table tbody tr:hover { background: #f8fafc; }
-    
-    .avatar-circle {
-      width: 40px; height: 40px; background: #eef2ff; color: #4f46e5;
-      border-radius: 12px; display: flex; align-items: center; justify-content: center;
-      font-weight: 800; border: 2px solid #ffffff; box-shadow: 0 4px 10px rgba(79, 70, 229, 0.1);
-    }
-    
-    .company-badge {
-      display: inline-flex; align-items: center; padding: 0.4rem 0.8rem;
-      background: #f1f5f9; border-radius: 10px; font-weight: 600; color: #475569; font-size: 0.85rem;
-    }
-    
-    .role-badge {
-      padding: 0.25rem 0.75rem; border-radius: 8px; font-size: 0.7rem; font-weight: 800;
-      background: #f1f5f9; color: #64748b;
-    }
-    .role-badge.admin { background: #fee2e2; color: #ef4444; }
-    
-    .creator-info { display: flex; align-items: center; gap: 10px; }
-    .creator-avatar {
-      width: 32px; height: 32px; border-radius: 8px; background: #f1f5f9;
-      display: flex; align-items: center; justify-content: center; color: #64748b; font-size: 0.9rem;
-    }
-    .creator-avatar.vendor { background: #fff7ed; color: #f97316; }
-    .creator-name { font-size: 0.85rem; font-weight: 700; color: #1e293b; line-height: 1.2; }
-    .creator-type { font-size: 0.7rem; font-weight: 600; color: #94a3b8; }
-    
-    .status-indicator {
-      padding: 0.35rem 0.75rem; border-radius: 10px; font-size: 0.7rem; font-weight: 800;
-      background: #fef2f2; color: #ef4444; position: relative; padding-left: 1.5rem;
-    }
-    .status-indicator.active { background: #f0fdf4; color: #16a34a; }
-    .status-indicator::before {
-      content: ''; position: absolute; left: 0.6rem; top: 50%; transform: translateY(-50%);
-      width: 6px; height: 6px; border-radius: 50%; background: currentColor;
+    .table tbody td {
+      padding: 1.25rem 1.5rem;
+      border-bottom: 1px solid #f8fafc;
+      background: transparent;
     }
     
-    .actions-group { display: flex; gap: 8px; justify-content: flex-end; }
-    .btn-action {
-      width: 34px; height: 34px; border-radius: 10px; border: 1px solid #e2e8f0;
-      background: white; color: #64748b; display: flex; align-items: center; justify-content: center;
-      transition: all 0.2s; cursor: pointer;
+    .cliente-avatar {
+      width: 42px; height: 42px;
+      background: #161d35; color: white;
+      border-radius: 12px; display: flex;
+      align-items: center; justify-content: center;
+      font-weight: 800; font-size: 0.85rem;
     }
-    .btn-action:hover { background: #f8fafc; color: #1e293b; border-color: #cbd5e1; }
-    .btn-action.danger:hover { background: #fef2f2; color: #ef4444; border-color: #fecaca; }
+    .cliente-name { 
+      font-weight: 700; 
+      color: #1e293b; 
+      font-size: 0.95rem; 
+    }
+    
+    .status-badge {
+      padding: 0.4rem 0.85rem; 
+      border-radius: 100px;
+      font-size: 0.7rem; 
+      font-weight: 800;
+    }
+    .status-badge.active { 
+      background: #dcfce7; 
+      color: #15803d; 
+    }
+    .status-badge.inactive { 
+      background: #fee2e2; 
+      color: #b91c1c; 
+    }
+
+    .btn-action-trigger {
+      background: #f8fafc; 
+      border: none;
+      width: 32px; 
+      height: 32px;
+      border-radius: 8px; 
+      color: #94a3b8;
+      transition: all 0.2s;
+    }
+    .btn-action-trigger:hover { 
+      background: #161d35; 
+      color: white; 
+    }
+
+    .dropdown-menu {
+      min-width: 200px;
+      border: 1px solid #e2e8f0 !important;
+      z-index: 10005 !important;
+      margin-top: 5px !important;
+      box-shadow: 0 15px 35px rgba(22, 29, 53, 0.15) !important;
+    }
+    .dropdown-item {
+      font-size: 0.85rem; 
+      font-weight: 600;
+      color: #475569; 
+      cursor: pointer;
+    }
+    .dropdown-item:hover { 
+      background: #f8fafc; 
+      color: #161d35; 
+    }
+    .shadow-premium { 
+      box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.04); 
+    }
+    .shadow-premium-lg { 
+      box-shadow: 0 20px 40px -15px rgba(0, 10, 30, 0.15); 
+    }
   `]
 })
 export class ClientesTableComponent {
   @Input() usuarios: ClienteUsuario[] = [];
-  @Output() onViewDetails = new EventEmitter<ClienteUsuario>();
+  @Output() onAction = new EventEmitter<{ type: string, cliente: ClienteUsuario }>();
 }
