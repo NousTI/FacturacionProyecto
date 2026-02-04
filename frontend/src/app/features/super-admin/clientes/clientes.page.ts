@@ -52,8 +52,9 @@ import { environment } from '../../../../environments/environment';
 
           <select class="form-select filter-select" [(ngModel)]="filterCreador" (change)="filterUsuarios()">
             <option value="ALL">Todos los Orígenes</option>
-            <option value="VENDEDOR">Creados por Vendedores</option>
-            <option value="INTERNO">Creados Internamente</option>
+            <option value="SUPERADMIN">Superadmin</option>
+            <option value="VENDEDOR">Vendedores</option>
+            <option value="SISTEMA">Sistema (Auto-registro)</option>
           </select>
 
           <button class="btn-create-premium" (click)="showCreateModal = true">
@@ -288,11 +289,8 @@ export class ClientesPage implements OnInit {
     }
 
     if (this.filterCreador !== 'ALL') {
-      if (this.filterCreador === 'VENDEDOR') {
-        temp = temp.filter(u => !!u.vendedor_id);
-      } else {
-        temp = temp.filter(u => !u.vendedor_id);
-      }
+      const q = this.filterCreador.toLowerCase();
+      temp = temp.filter(u => (u.origen_creacion || 'sistema') === q);
     }
 
     this.filteredUsuarios = temp;

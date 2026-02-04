@@ -50,3 +50,9 @@ export interface ClienteUpdate {
     limite_credito?: number;
     activo?: boolean;
 }
+
+export interface ClienteStats {
+    total: number;
+    activos: number;
+    con_credito: number;
+}

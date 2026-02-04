@@ -27,6 +27,13 @@ const routes: Routes = [
         data: { roles: [UserRole.VENDEDOR] },
         loadChildren: () => import('./features/vendedor/vendedor.module').then(m => m.VendedorModule)
     },
+    {
+        path: 'usuario',
+        component: PrivateLayoutComponent,
+        canActivate: [AuthGuard, RoleGuard],
+        data: { roles: [UserRole.USUARIO] },
+        loadChildren: () => import('./features/usuario/usuario.module').then(m => m.UsuarioModule)
+    },
     { path: '**', redirectTo: '' }
 ];
 

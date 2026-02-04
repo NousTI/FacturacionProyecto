@@ -95,6 +95,9 @@ class AuthServices:
         user_safe = {
             "id": str(user["id"]),
             "email": user["email"],
+            "nombres": user.get("nombres"),
+            "apellidos": user.get("apellidos"),
+            "avatar_url": user.get("avatar_url"),
             "estado": user["estado"],
             "role": primary_role
         }

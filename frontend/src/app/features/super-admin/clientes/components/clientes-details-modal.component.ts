@@ -31,17 +31,19 @@ import { ClienteConTrazabilidad } from '../services/clientes.service';
             <h3 class="section-title"><i class="bi bi-diagram-3 me-2"></i>Trazabilidad de Creación</h3>
             
             <div class="timeline-lineage">
-              <!-- Creador (si existe) -->
-              <div class="timeline-item" *ngIf="usuario.creado_por_nombre">
+              <!-- Creador -->
+              <div class="timeline-item" *ngIf="usuario.origen_creacion">
                 <div class="timeline-icon" [ngClass]="getCreadorIconClass(usuario.origen_creacion)">
                   <i class="bi" [ngClass]="getCreadorIcon(usuario.origen_creacion)"></i>
                 </div>
                 <div class="timeline-content">
                   <span class="timeline-label">{{ getOrigenLabel(usuario.origen_creacion) }}</span>
-                  <span class="timeline-value">{{ usuario.creado_por_nombre }}</span>
+                  <span class="timeline-value">{{ usuario.creado_por_nombre || 'PROCESO AUTOMÁTICO' }}</span>
                   <p class="timeline-hint">
-                    {{ usuario.creado_por_email }}
-                    <span *ngIf="usuario.fecha_creacion_log"> • {{ usuario.fecha_creacion_log | date:'dd/MM/yyyy' }}</span>
+                    {{ usuario.creado_por_email || 'No aplica' }}
+                    <span *ngIf="usuario.fecha_creacion_log || usuario.created_at"> 
+                      • {{ (usuario.fecha_creacion_log || usuario.created_at) | date:'dd/MM/yyyy' }}
+                    </span>
                   </p>
                 </div>
               </div>

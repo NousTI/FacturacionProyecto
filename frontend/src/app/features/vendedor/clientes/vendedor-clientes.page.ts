@@ -59,24 +59,12 @@ interface ClienteStats {
             </div>
 
             <!-- Filtros -->
-            <div class="col-lg-4">
+            <div class="col-lg-7">
                 <select class="form-select-premium" [(ngModel)]="filterEstado">
                     <option value="ALL">Todos los Estados</option>
                     <option value="ACTIVO">Activos</option>
                     <option value="INACTIVO">Inactivos</option>
                 </select>
-            </div>
-
-            <!-- Botón de Acción -->
-            <div class="col-lg-3 text-lg-end">
-                <button 
-                    class="btn-premium-primary w-100 justify-content-center"
-                    (click)="showModal = true"
-                    style="height: 40px;"
-                >
-                    <i class="bi bi-plus-lg"></i>
-                    <span class="ms-2">Nuevo Cliente</span>
-                </button>
             </div>
             
             </div>
@@ -88,15 +76,6 @@ interface ClienteStats {
         [clientes]="filteredClientes"
         (onAction)="handleAction($event)"
       ></app-vendedor-clientes-table>
-
-      <!-- MODAL CREATE -->
-      <app-cliente-modal
-        *ngIf="showModal"
-        [empresas]="empresas"
-        [allRoles]="roles"
-        (onClose)="showModal = false"
-        (onSave)="crearCliente($event)"
-      ></app-cliente-modal>
 
       <!-- MODAL DETAILS -->
       <app-cliente-details-modal
@@ -283,8 +262,14 @@ export class VendedorClientesPage implements OnInit, OnDestroy {
 
   handleAction(event: { type: string, cliente: any }) {
     if (event.type === 'view_details') {
-      this.selectedCliente = event.cliente;
-      this.showDetailsModal = true;
+      this.clientesService.getClienteDetalle(event.cliente.id).subscribe({
+        next: (full) => {
+          this.selectedCliente = full;
+          this.showDetailsModal = true;
+          this.cd.detectChanges();
+        },
+        error: (err) => this.uiService.showError(err, 'Error al cargar detalles')
+      });
     }
   }
 

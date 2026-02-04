@@ -15,6 +15,7 @@ import { ClienteUsuario } from '../services/clientes.service';
               <th>Cliente</th>
               <th>Email / Teléfono</th>
               <th>Empresa</th>
+              <th class="text-center">Origen</th>
               <th>Rol</th>
               <th class="text-center">Estado</th>
               <th class="text-end" style="width: 80px">Acciones</th>
@@ -29,7 +30,7 @@ import { ClienteUsuario } from '../services/clientes.service';
                   </div>
                   <div class="d-flex flex-column">
                     <span class="cliente-name">{{ cliente.nombres }} {{ cliente.apellidos }}</span>
-                    <small class="text-muted">ID: {{ cliente.id.slice(0,8) }}</small>
+                    <small class="text-muted" style="font-size: 0.7rem;">ID: {{ cliente.id.slice(0,8) }}</small>
                   </div>
                 </div>
               </td>
@@ -39,6 +40,12 @@ import { ClienteUsuario } from '../services/clientes.service';
               </td>
               <td>
                 <span class="badge bg-light text-dark border">{{ cliente.empresa_nombre }}</span>
+              </td>
+              <td class="text-center">
+                <div [ngClass]="getOrigenClass(cliente.origen_creacion)" class="badge-origen">
+                    <i class="bi" [ngClass]="getOrigenIcon(cliente.origen_creacion)"></i>
+                    {{ (cliente.origen_creacion || 'sistema') | uppercase }}
+                </div>
               </td>
               <td>
                 <span class="text-muted">{{ cliente.rol_nombre }}</span>
@@ -150,6 +157,21 @@ import { ClienteUsuario } from '../services/clientes.service';
       font-size: 0.95rem; 
     }
     
+    /* Origin Badge */
+    .badge-origen {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        padding: 0.15rem 0.5rem;
+        border-radius: 6px;
+        font-size: 0.55rem;
+        font-weight: 800;
+        text-transform: uppercase;
+    }
+    .badge-origen.superadmin { background: #eff6ff; color: #1e40af; border: 1px solid #bfdbfe; }
+    .badge-origen.vendedor { background: #fff7ed; color: #9a3412; border: 1px solid #fed7aa; }
+    .badge-origen.sistema { background: #f1f5f9; color: #475569; border: 1px solid #e2e8f0; }
+
     .status-badge {
       padding: 0.4rem 0.85rem; 
       border-radius: 100px;
@@ -207,4 +229,17 @@ import { ClienteUsuario } from '../services/clientes.service';
 export class ClientesTableComponent {
   @Input() usuarios: ClienteUsuario[] = [];
   @Output() onAction = new EventEmitter<{ type: string, cliente: ClienteUsuario }>();
+
+  getOrigenClass(origen?: string): string {
+    if (!origen) return 'sistema';
+    return origen.toLowerCase();
+  }
+
+  getOrigenIcon(origen?: string): string {
+    switch (origen?.toLowerCase()) {
+      case 'superadmin': return 'bi-shield-check';
+      case 'vendedor': return 'bi-person-badge';
+      default: return 'bi-cpu';
+    }
+  }
 }

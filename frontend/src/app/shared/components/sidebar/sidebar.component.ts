@@ -75,8 +75,42 @@ import { Observable, map } from 'rxjs';
             </ng-container>
 
             <!-- Removed vendor specific links for now as per "ONLY Dashboard" instruction -->
-          </div>
-        </div>
+            <!-- Usuario Menu -->
+            <ng-container *ngIf="isUsuario$ | async">
+              <a routerLink="/usuario/dashboard" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" class="menu-item px-3 mb-1">
+                <i class="bi bi-grid-fill me-3"></i> Dashboard
+              </a>
+              <a routerLink="/usuario/usuarios" routerLinkActive="active" class="menu-item px-3 mb-1">
+                <i class="bi bi-person me-3"></i> Usuarios
+              </a>
+              <a routerLink="/usuario/clientes" routerLinkActive="active" class="menu-item px-3 mb-1">
+                <i class="bi bi-people me-3"></i> Clientes
+              </a>
+              <a routerLink="/usuario/productos" routerLinkActive="active" class="menu-item px-3 mb-1">
+                <i class="bi bi-box-seam me-3"></i> Productos
+              </a>
+              <a routerLink="/usuario/facturacion" routerLinkActive="active" class="menu-item px-3 mb-1">
+                <i class="bi bi-receipt me-3"></i> Facturación
+              </a>
+              <a routerLink="/usuario/facturacion-recurrente" routerLinkActive="active" class="menu-item px-3 mb-1">
+                <i class="bi bi-arrow-repeat me-3"></i> Fac. Recurrente
+              </a>
+              <a routerLink="/usuario/reportes" routerLinkActive="active" class="menu-item px-3 mb-1">
+                <i class="bi bi-bar-chart me-3"></i> Reportes
+              </a>
+              <a routerLink="/usuario/establecimientos" routerLinkActive="active" class="menu-item px-3 mb-1">
+                <i class="bi bi-shop me-3"></i> Establecimientos
+              </a>
+               <a routerLink="/usuario/configuracion" routerLinkActive="active" class="menu-item px-3 mb-1">
+                <i class="bi bi-gear me-3"></i> Configuración
+              </a>
+              <a routerLink="/usuario/certificado-sri" routerLinkActive="active" class="menu-item px-3 mb-1">
+                <i class="bi bi-shield-lock me-3"></i> Certificado SRI
+              </a>
+              <a routerLink="/usuario/perfil" routerLinkActive="active" class="menu-item px-3 mb-1">
+                <i class="bi bi-person-circle me-3"></i> Mi Perfil
+              </a>
+            </ng-container>
 
         <div class="menu-section mb-4" *ngIf="isSuperadmin$ | async">
           <span class="menu-label px-3 text-muted mb-2 d-block">SISTEMA</span>

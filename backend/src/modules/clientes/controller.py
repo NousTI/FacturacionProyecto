@@ -28,3 +28,7 @@ class ClienteController:
     def eliminar_cliente(self, id: UUID, usuario_actual: dict):
         self.service.eliminar_cliente(id, usuario_actual)
         return success_response(None, "Cliente eliminado correctamente")
+
+    def obtener_stats(self, usuario_actual: dict):
+        stats = self.service.obtener_stats(usuario_actual)
+        return success_response(stats)

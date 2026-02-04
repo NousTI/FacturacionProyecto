@@ -34,10 +34,84 @@ class UsuarioLectura(UsuarioBase):
     id: UUID
     user_id: UUID
     email: Optional[str] = None
+    empresa_nombre: Optional[str] = None
     rol_nombre: Optional[str] = None
     rol_codigo: Optional[str] = None
     created_at: datetime
     updated_at: datetime
     
+    # Traceability fields (Optional)
+    origen_creacion: Optional[str] = None
+    creado_por_nombre: Optional[str] = None
+    creado_por_email: Optional[str] = None
+    fecha_creacion_log: Optional[datetime] = None
+    
+    class Config:
+        from_attributes = True
+
+class PermisoSchema(BaseModel):
+    id: UUID
+    codigo: str
+    nombre: str
+    modulo: str
+    tipo: str
+    descripcion: Optional[str] = None
+
+class EmpresaInfoSchema(BaseModel):
+    id: UUID
+    ruc: str
+    razon_social: str
+    nombre_comercial: Optional[str] = None
+    email: str
+    direccion: str
+    logo_url: Optional[str] = None
+
+class PerfilUsuarioLectura(BaseModel):
+    # Datos del Usuario (Perfil)
+    id: UUID
+    user_id: UUID
+    nombres: str
+    apellidos: str
+    telefono: str
+    avatar_url: Optional[str] = None
+    activo: bool # Estado en la empresa
+    
+    # Datos de Autenticación (Sistema)
+    email: str
+    system_role: str
+    system_estado: str
+    ultimo_acceso: Optional[datetime] = None
+    created_at: datetime
+    updated_at: datetime
+    
+    # Datos de la Empresa
+    empresa: EmpresaInfoSchema
+    
+    # Datos del Rol y Permisos
+    rol_nombre: str
+    rol_codigo: str
+    permisos: list[PermisoSchema]
+    
+    class Config:
+        from_attributes = True
+
+class UsuarioAdminLectura(BaseModel):
+    id: UUID
+    user_id: UUID
+    nombres: str
+    apellidos: str
+    email: str
+    telefono: str
+    avatar_url: Optional[str] = None
+    activo: bool
+    ultimo_acceso: Optional[datetime] = None
+    created_at: datetime
+    updated_at: Optional[datetime] = None
+    rol_nombre: str
+    empresa_id: UUID
+    empresa_nombre: str
+    vendedor_id: Optional[UUID] = None
+    origen_creacion: Optional[str] = None
+
     class Config:
         from_attributes = True

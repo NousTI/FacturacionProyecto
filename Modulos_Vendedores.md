@@ -155,6 +155,10 @@ eliminar planes
 Por qué:
 Le permite vender mejor sin romper reglas del sistema.
 
+
+
+
+
 7️⃣ Reportes del Vendedor
 
 Funcionalidades

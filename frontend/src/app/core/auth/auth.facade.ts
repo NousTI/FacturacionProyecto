@@ -98,11 +98,12 @@ export class AuthFacade {
     private navigateBasedOnRole(role: string | null): void {
         // Lógica de redirección dinámica basada en el rol inyectado
         if (role === UserRole.SUPERADMIN) {
-            this.router.navigate(['/dashboard/admin']);
+            this.router.navigate(['/']); // Superadmin va a raíz que es su dashboard
         } else if (role === UserRole.VENDEDOR) {
             this.router.navigate(['/vendedor']);
         } else {
-            this.router.navigate(['/dashboard']);
+            // Usuario regular
+            this.router.navigate(['/usuario']);
         }
     }
 }

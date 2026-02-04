@@ -33,9 +33,11 @@ class RepositorioUsuarios:
                    u.empresa_id,
                    COALESCE(u.nombres, s.nombres, v.nombres) as nombres,
                    COALESCE(u.apellidos, s.apellidos, v.apellidos) as apellidos,
+                   u.avatar_url,
                    COALESCE(u.telefono, v.telefono) as telefono,
                    er.nombre as rol_nombre,
-                   er.codigo as rol_codigo
+                   er.codigo as rol_codigo,
+                   v.id as internal_vendedor_id
             FROM sistema_facturacion.users us
             LEFT JOIN sistema_facturacion.usuarios u ON us.id = u.user_id
             LEFT JOIN sistema_facturacion.superadmin s ON us.id = s.user_id
@@ -56,9 +58,11 @@ class RepositorioUsuarios:
                    u.empresa_id,
                    COALESCE(u.nombres, s.nombres, v.nombres) as nombres,
                    COALESCE(u.apellidos, s.apellidos, v.apellidos) as apellidos,
+                   u.avatar_url,
                    COALESCE(u.telefono, v.telefono) as telefono,
                    er.nombre as rol_nombre,
-                   er.codigo as rol_codigo
+                   er.codigo as rol_codigo,
+                   v.id as internal_vendedor_id
             FROM sistema_facturacion.users us
             LEFT JOIN sistema_facturacion.usuarios u ON us.id = u.user_id
             LEFT JOIN sistema_facturacion.superadmin s ON us.id = s.user_id
@@ -77,10 +81,12 @@ class RepositorioUsuarios:
             SELECT u.*, 
                    us.email,
                    er.nombre as rol_nombre,
-                   er.codigo as rol_codigo
+                   er.codigo as rol_codigo,
+                   e.razon_social as empresa_nombre
             FROM sistema_facturacion.usuarios u
             JOIN sistema_facturacion.users us ON u.user_id = us.id
             JOIN sistema_facturacion.empresa_roles er ON u.empresa_rol_id = er.id
+            JOIN sistema_facturacion.empresas e ON u.empresa_id = e.id
             WHERE u.id = %s
         """
         with self.db.cursor() as cur:
@@ -198,3 +204,142 @@ class RepositorioUsuarios:
         with db_transaction(self.db) as cur:
             cur.execute(query, (str(id),))
             return cur.rowcount > 0
+
+    def obtener_perfil_completo(self, user_id: UUID) -> Optional[dict]:
+        """Fetch full profile: user (profile + auth), company, role and permissions"""
+        # 1. Get User and Company Info
+        query_user = """
+            SELECT 
+                u.id, u.user_id, u.nombres, u.apellidos, u.telefono, u.avatar_url, u.activo,
+                us.email, us.role as system_role, us.estado as system_estado, 
+                us.ultimo_acceso, us.created_at, us.updated_at,
+                er.nombre as rol_nombre, er.codigo as rol_codigo, er.id as rol_id,
+                e.id as empresa_id, e.ruc as empresa_ruc, e.razon_social as empresa_razon_social,
+                e.nombre_comercial as empresa_nombre_comercial, e.email as empresa_email,
+                e.direccion as empresa_direccion, e.logo_url as empresa_logo_url
+            FROM sistema_facturacion.usuarios u
+            JOIN sistema_facturacion.users us ON u.user_id = us.id
+            JOIN sistema_facturacion.empresas e ON u.empresa_id = e.id
+            JOIN sistema_facturacion.empresa_roles er ON u.empresa_rol_id = er.id
+            WHERE u.user_id = %s
+        """
+        
+        with self.db.cursor() as cur:
+            cur.execute(query_user, (str(user_id),))
+            user_row = cur.fetchone()
+            if not user_row:
+                return None
+            
+            user_data = dict(user_row)
+            rol_id = user_data['rol_id']
+            
+            # 2. Get Permissions for the role
+            query_perms = """
+                SELECT p.id, p.codigo, p.nombre, p.modulo, p.tipo, p.descripcion
+                FROM sistema_facturacion.empresa_permisos p
+                JOIN sistema_facturacion.empresa_roles_permisos erp ON p.id = erp.permiso_id
+                WHERE erp.rol_id = %s AND erp.activo = TRUE
+            """
+            cur.execute(query_perms, (str(rol_id),))
+            permisos = [dict(row) for row in cur.fetchall()]
+            
+            # 3. Format result
+            result = {
+                "id": user_data["id"],
+                "user_id": user_data["user_id"],
+                "nombres": user_data["nombres"],
+                "apellidos": user_data["apellidos"],
+                "email": user_data["email"],
+                "telefono": user_data["telefono"],
+                "avatar_url": user_data["avatar_url"],
+                "activo": user_data["activo"],
+                "system_role": user_data["system_role"],
+                "system_estado": user_data["system_estado"],
+                "ultimo_acceso": user_data["ultimo_acceso"],
+                "created_at": user_data["created_at"],
+                "updated_at": user_data["updated_at"],
+                "empresa": {
+                    "id": user_data["empresa_id"],
+                    "ruc": user_data["empresa_ruc"],
+                    "razon_social": user_data["empresa_razon_social"],
+                    "nombre_comercial": user_data["empresa_nombre_comercial"],
+                    "email": user_data["empresa_email"],
+                    "direccion": user_data["empresa_direccion"],
+                    "logo_url": user_data["empresa_logo_url"]
+                },
+                "rol_nombre": user_data["rol_nombre"],
+                "rol_codigo": user_data["rol_codigo"],
+                "permisos": permisos
+            }
+            return result
+
+    def listar_todos_usuarios_admin(self, vendedor_id: Optional[UUID] = None, actor_user_id: Optional[UUID] = None) -> List[dict]:
+        """List all users with their company and role info for Superadmin/Vendedor context."""
+        query = """
+            SELECT 
+                u.id, u.user_id, u.nombres, u.apellidos, u.telefono, u.avatar_url, u.activo,
+                us.email, us.ultimo_acceso, us.created_at, u.updated_at,
+                er.nombre as rol_nombre, er.id as empresa_rol_id,
+                e.id as empresa_id, e.razon_social as empresa_nombre, e.vendedor_id,
+                l.origen as origen_creacion
+            FROM sistema_facturacion.usuarios u
+            JOIN sistema_facturacion.users us ON u.user_id = us.id
+            JOIN sistema_facturacion.empresas e ON u.empresa_id = e.id
+            JOIN sistema_facturacion.empresa_roles er ON u.empresa_rol_id = er.id
+            LEFT JOIN sistema_facturacion.usuario_creacion_logs l ON u.id = l.usuario_id
+        """
+        params = []
+        where_clauses = []
+        
+        if vendedor_id:
+            if actor_user_id:
+                where_clauses.append("(e.vendedor_id = %s OR l.actor_user_id = %s)")
+                params.extend([str(vendedor_id), str(actor_user_id)])
+            else:
+                where_clauses.append("e.vendedor_id = %s")
+                params.append(str(vendedor_id))
+        elif actor_user_id:
+            where_clauses.append("l.actor_user_id = %s")
+            params.append(str(actor_user_id))
+            
+        if where_clauses:
+            query += " WHERE " + " AND ".join(where_clauses)
+        
+        query += " ORDER BY us.created_at DESC"
+        
+        with self.db.cursor() as cur:
+            cur.execute(query, tuple(params))
+            return [dict(row) for row in cur.fetchall()]
+
+    def obtener_stats_admin(self, vendedor_id: Optional[UUID] = None, actor_user_id: Optional[UUID] = None) -> dict:
+        """Get user stats for Superadmin/Vendedor context."""
+        query = """
+            SELECT 
+                COUNT(*) as total,
+                SUM(CASE WHEN u.activo = TRUE THEN 1 ELSE 0 END) as activos,
+                SUM(CASE WHEN u.activo = FALSE THEN 1 ELSE 0 END) as inactivos
+            FROM sistema_facturacion.usuarios u
+            JOIN sistema_facturacion.empresas e ON u.empresa_id = e.id
+            LEFT JOIN sistema_facturacion.usuario_creacion_logs l ON u.id = l.usuario_id
+        """
+        params = []
+        where_clauses = []
+        
+        if vendedor_id:
+            if actor_user_id:
+                where_clauses.append("(e.vendedor_id = %s OR l.actor_user_id = %s)")
+                params.extend([str(vendedor_id), str(actor_user_id)])
+            else:
+                where_clauses.append("e.vendedor_id = %s")
+                params.append(str(vendedor_id))
+        elif actor_user_id:
+            where_clauses.append("l.actor_user_id = %s")
+            params.append(str(actor_user_id))
+            
+        if where_clauses:
+            query += " WHERE " + " AND ".join(where_clauses)
+            
+        with self.db.cursor() as cur:
+            cur.execute(query, tuple(params))
+            row = cur.fetchone()
+            return dict(row) if row else {"total": 0, "activos": 0, "inactivos": 0}

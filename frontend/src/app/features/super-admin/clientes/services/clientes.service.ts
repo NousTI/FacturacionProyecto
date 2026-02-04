@@ -20,6 +20,7 @@ export interface ClienteUsuario {
     // Add any missing fields from page expectation
     nombre?: string; // Some parts use .nombre (concatenated)
     vendedor_id?: string;
+    origen_creacion?: string;
 }
 
 export type Cliente = ClienteUsuario;
@@ -42,7 +43,7 @@ export interface ClienteConTrazabilidad extends ClienteUsuario {
     providedIn: 'root'
 })
 export class ClientesService {
-    private apiUrl = `${environment.apiUrl}/clientes`;
+    private apiUrl = `${environment.apiUrl}/usuarios/admin`;
 
     private _clientes$ = new BehaviorSubject<Cliente[]>([]);
     public clientes$ = this._clientes$.asObservable();
@@ -57,7 +58,7 @@ export class ClientesService {
 
     fetchClientes(vendedorId?: string): void {
         this._loading$.next(true);
-        let url = this.apiUrl;
+        let url = `${this.apiUrl}/lista`;
         if (vendedorId) url += `?vendedor_id=${vendedorId}`;
 
         this.http.get<any>(url).pipe(
@@ -68,7 +69,7 @@ export class ClientesService {
     }
 
     getClientes(vendedorId?: string): Observable<Cliente[]> {
-        let url = this.apiUrl;
+        let url = `${this.apiUrl}/lista`;
         if (vendedorId) url += `?vendedor_id=${vendedorId}`;
         return this.http.get<any>(url).pipe(
             map(res => res.detalles as Cliente[])
@@ -89,7 +90,9 @@ export class ClientesService {
     }
 
     crearCliente(datos: any): Observable<Cliente> {
-        return this.http.post<any>(this.apiUrl, datos).pipe(
+        // Point to base usuarios endpoint
+        const baseUrl = this.apiUrl.replace('/admin', '');
+        return this.http.post<any>(baseUrl, datos).pipe(
             map(res => res.detalles as Cliente),
             tap(nuevo => {
                 const current = this._clientes$.value;
@@ -100,7 +103,9 @@ export class ClientesService {
     }
 
     eliminarCliente(id: string): Observable<boolean> {
-        return this.http.delete<any>(`${this.apiUrl}/${id}`).pipe(
+        // Point to base usuarios endpoint
+        const baseUrl = this.apiUrl.replace('/admin', '');
+        return this.http.delete<any>(`${baseUrl}/${id}`).pipe(
             map(res => res.success),
             tap(success => {
                 if (success) {
@@ -113,13 +118,16 @@ export class ClientesService {
     }
 
     getClienteDetalle(id: string): Observable<ClienteConTrazabilidad> {
-        return this.http.get<any>(`${this.apiUrl}/${id}`).pipe(
+        // We can use the admin list or profile endpoint, but base /id might work if it returns full data
+        const baseUrl = this.apiUrl.replace('/admin', '');
+        return this.http.get<any>(`${baseUrl}/${id}`).pipe(
             map(res => res.detalles as ClienteConTrazabilidad)
         );
     }
 
     actualizarCliente(id: string, datos: Partial<Cliente>): Observable<Cliente> {
-        return this.http.put<any>(`${this.apiUrl}/${id}`, datos).pipe(
+        const baseUrl = this.apiUrl.replace('/admin', '');
+        return this.http.patch<any>(`${baseUrl}/${id}`, datos).pipe(
             map(res => res.detalles as Cliente),
             tap(() => this.fetchClientes()) // Reload list
         );

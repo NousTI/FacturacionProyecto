@@ -5,41 +5,88 @@ import { MaintenanceComponent } from '../../shared/components/maintenance/mainte
 import { RoleGuard } from '../../core/guards/role.guard';
 import { UserRole } from '../../domain/enums/role.enum';
 
+// New Component Imports
+import { DashboardComponent } from './dashboard/dashboard.component';
+import { ClientesPage } from './clientes/clientes.page';
+import { ProductosPage } from './productos/productos.page';
+import { FacturacionPage } from './facturacion/facturacion.page';
+import { FacturacionRecurrentePage } from './facturacion-recurrente/facturacion-recurrente.page';
+import { ReportesPage } from './reportes/reportes.page';
+import { EstablecimientosPage } from './establecimientos/establecimientos.page';
+import { ConfiguracionPage } from './configuracion/configuracion.page';
+import { UsuariosPage } from './usuarios/usuarios.page';
+
 const routes: Routes = [
     {
-        path: 'perfil',
-        component: ProfilePage,
-        data: { title: 'Perfil', description: 'Gestiona tu cuenta' }
+        path: '',
+        redirectTo: 'dashboard',
+        pathMatch: 'full'
     },
     {
-        path: 'facturas',
-        component: MaintenanceComponent,
+        path: 'dashboard',
+        component: DashboardComponent,
         canActivate: [RoleGuard],
-        data: { title: 'Facturación', roles: [UserRole.USUARIO], description: 'Emisión y control de facturas' }
+        data: { title: 'Dashboard', roles: [UserRole.USUARIO] }
+    },
+    {
+        path: 'usuarios',
+        component: UsuariosPage,
+        canActivate: [RoleGuard],
+        data: { title: 'Usuarios', roles: [UserRole.USUARIO] }
     },
     {
         path: 'clientes',
-        component: MaintenanceComponent,
+        component: ClientesPage,
         canActivate: [RoleGuard],
-        data: { title: 'Clientes', roles: [UserRole.USUARIO, UserRole.VENDEDOR], description: 'Listado de clientes registrados' }
+        data: { title: 'Clientes', roles: [UserRole.USUARIO, UserRole.VENDEDOR] }
     },
     {
         path: 'productos',
-        component: MaintenanceComponent,
+        component: ProductosPage,
         canActivate: [RoleGuard],
-        data: { title: 'Productos', roles: [UserRole.USUARIO], description: 'Gestión de productos y servicios' }
+        data: { title: 'Productos', roles: [UserRole.USUARIO] }
     },
     {
-        path: 'certificados',
-        component: MaintenanceComponent,
+        path: 'facturacion',
+        component: FacturacionPage,
         canActivate: [RoleGuard],
-        data: { title: 'Certificados SRI', roles: [UserRole.USUARIO], description: 'Vencimientos y renovaciones' }
+        data: { title: 'Facturación', roles: [UserRole.USUARIO] }
     },
     {
-        path: 'config',
+        path: 'facturacion-recurrente',
+        component: FacturacionRecurrentePage,
+        canActivate: [RoleGuard],
+        data: { title: 'Facturación Recurrente', roles: [UserRole.USUARIO] }
+    },
+    {
+        path: 'reportes',
+        component: ReportesPage,
+        canActivate: [RoleGuard],
+        data: { title: 'Reportes', roles: [UserRole.USUARIO] }
+    },
+    {
+        path: 'establecimientos',
+        component: EstablecimientosPage,
+        canActivate: [RoleGuard],
+        data: { title: 'Establecimientos', roles: [UserRole.USUARIO] }
+    },
+    {
+        path: 'configuracion',
+        component: ConfiguracionPage,
+        canActivate: [RoleGuard],
+        data: { title: 'Configuración', roles: [UserRole.USUARIO] }
+    },
+    {
+        path: 'perfil',
+        component: ProfilePage,
+        canActivate: [RoleGuard],
+        data: { title: 'Perfil', roles: [UserRole.USUARIO] }
+    },
+    {
+        path: 'certificado-sri',
         component: MaintenanceComponent,
         canActivate: [RoleGuard],
-        data: { title: 'Configuración', roles: [UserRole.USUARIO], description: 'Ajustes del sistema' }
+        data: { title: 'Certificado SRI', roles: [UserRole.USUARIO] }
     }
 ];
 

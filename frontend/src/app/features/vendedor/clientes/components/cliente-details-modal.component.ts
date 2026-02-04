@@ -2,10 +2,10 @@ import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 @Component({
-    selector: 'app-cliente-details-modal',
-    standalone: true,
-    imports: [CommonModule],
-    template: `
+  selector: 'app-cliente-details-modal',
+  standalone: true,
+  imports: [CommonModule],
+  template: `
     <div class="modal-overlay" (click)="onClose.emit()">
       <div class="modal-content-premium" (click)="$event.stopPropagation()">
         <!-- HEADER -->
@@ -44,8 +44,30 @@ import { CommonModule } from '@angular/common';
                 <i class="bi bi-building"></i>
               </div>
               <div class="info-content">
-                <span class="info-label">Empresa</span>
+                <span class="info-label">Empresa / Razón Social</span>
                 <span class="info-value">{{ cliente?.empresa_nombre || 'N/A' }}</span>
+              </div>
+            </div>
+
+            <!-- Creado Por (Origen) -->
+            <div class="info-card">
+              <div class="info-icon">
+                <i class="bi bi-person-plus"></i>
+              </div>
+              <div class="info-content">
+                <span class="info-label">Responsable de Registro</span>
+                <div class="d-flex flex-column">
+                    <div [ngClass]="getOrigenClass(cliente?.origen_creacion)" class="badge-origen-detail mb-1">
+                        <i class="bi" [ngClass]="getOrigenIcon(cliente?.origen_creacion)"></i>
+                        <span class="ms-1">{{ (cliente?.origen_creacion || 'sistema') | uppercase }}</span>
+                    </div>
+                    <span class="info-value" *ngIf="cliente?.creado_por_nombre" style="font-size: 0.85rem;">
+                        {{ cliente.creado_por_nombre }}
+                    </span>
+                    <small class="text-muted" *ngIf="cliente?.creado_por_email" style="font-size: 0.7rem;">
+                        {{ cliente.creado_por_email }}
+                    </small>
+                </div>
               </div>
             </div>
 
@@ -115,7 +137,7 @@ import { CommonModule } from '@angular/common';
       </div>
     </div>
   `,
-    styles: [`
+  styles: [`
     .modal-overlay {
       position: fixed;
       top: 0;
@@ -261,6 +283,19 @@ import { CommonModule } from '@angular/common';
       word-break: break-word;
     }
 
+    /* Origin Badge in Details */
+    .badge-origen-detail {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.35rem 0.75rem;
+        border-radius: 8px;
+        font-size: 0.75rem;
+        font-weight: 800;
+    }
+    .badge-origen-detail.superadmin { background: #eff6ff; color: #1e40af; border: 1px solid #bfdbfe; }
+    .badge-origen-detail.vendedor { background: #fff7ed; color: #9a3412; border: 1px solid #fed7aa; }
+    .badge-origen-detail.sistema { background: #f1f5f9; color: #475569; border: 1px solid #e2e8f0; }
+
     .modal-footer-premium {
       padding: 1.5rem 2rem;
       border-top: 1px solid #f1f5f9;
@@ -292,22 +327,35 @@ import { CommonModule } from '@angular/common';
   `]
 })
 export class ClienteDetailsModalComponent {
-    @Input() cliente: any;
-    @Output() onClose = new EventEmitter<void>();
+  @Input() cliente: any;
+  @Output() onClose = new EventEmitter<void>();
 
-    getInitials(name: string): string {
-        if (!name) return '??';
-        return name.split(' ').slice(0, 2).map(n => n[0]).join('').toUpperCase();
-    }
+  getInitials(name: string): string {
+    if (!name) return '??';
+    return name.split(' ').slice(0, 2).map(n => n[0]).join('').toUpperCase();
+  }
 
-    getAvatarColor(name: string, opacity: number): string {
-        const colors = [
-            `rgba(99, 102, 241, ${opacity})`, `rgba(16, 185, 129, ${opacity})`,
-            `rgba(245, 158, 11, ${opacity})`, `rgba(239, 68, 68, ${opacity})`,
-            `rgba(139, 92, 246, ${opacity})`
-        ];
-        let hash = 0;
-        for (let i = 0; i < name.length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash);
-        return colors[Math.abs(hash) % colors.length];
+  getAvatarColor(name: string, opacity: number): string {
+    const colors = [
+      `rgba(99, 102, 241, ${opacity})`, `rgba(16, 185, 129, ${opacity})`,
+      `rgba(245, 158, 11, ${opacity})`, `rgba(239, 68, 68, ${opacity})`,
+      `rgba(139, 92, 246, ${opacity})`
+    ];
+    let hash = 0;
+    for (let i = 0; i < name.length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash);
+    return colors[Math.abs(hash) % colors.length];
+  }
+
+  getOrigenClass(origen?: string): string {
+    if (!origen) return 'sistema';
+    return origen.toLowerCase();
+  }
+
+  getOrigenIcon(origen?: string): string {
+    switch (origen?.toLowerCase()) {
+      case 'superadmin': return 'bi-shield-check';
+      case 'vendedor': return 'bi-person-badge';
+      default: return 'bi-cpu';
     }
+  }
 }
