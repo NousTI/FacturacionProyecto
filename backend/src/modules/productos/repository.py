@@ -9,7 +9,7 @@ class RepositorioProductos:
         self.db = db
 
     def listar_productos(self, empresa_id: Optional[UUID] = None, nombre: Optional[str] = None, codigo: Optional[str] = None) -> List[dict]:
-        query = "SELECT * FROM producto WHERE activo = TRUE"
+        query = "SELECT * FROM sistema_facturacion.productos WHERE activo = TRUE"
         params = []
         
         if empresa_id:
@@ -30,7 +30,7 @@ class RepositorioProductos:
             return [dict(row) for row in cur.fetchall()]
 
     def obtener_por_id(self, producto_id: UUID) -> Optional[dict]:
-        query = "SELECT * FROM producto WHERE id = %s"
+        query = "SELECT * FROM sistema_facturacion.productos WHERE id = %s"
         with self.db.cursor() as cur:
             cur.execute(query, (str(producto_id),))
             row = cur.fetchone()
@@ -39,7 +39,7 @@ class RepositorioProductos:
     def codigo_existe(self, codigo: str, empresa_id: UUID) -> bool:
         with self.db.cursor() as cur:
             cur.execute(
-                "SELECT id FROM producto WHERE codigo = %s AND empresa_id = %s", 
+                "SELECT id FROM sistema_facturacion.productos WHERE codigo = %s AND empresa_id = %s", 
                 (codigo, str(empresa_id))
             )
             return cur.fetchone() is not None
@@ -50,7 +50,7 @@ class RepositorioProductos:
         placeholders = ["%s"] * len(fields)
         
         query = f"""
-            INSERT INTO producto ({', '.join(fields)})
+            INSERT INTO sistema_facturacion.productos ({', '.join(fields)})
             VALUES ({', '.join(placeholders)})
             RETURNING *
         """
@@ -66,7 +66,7 @@ class RepositorioProductos:
         clean_values = [str(v) if isinstance(v, UUID) else v for v in data.values()]
         clean_values.append(str(producto_id))
 
-        query = f"UPDATE producto SET {', '.join(set_clauses)}, updated_at = NOW() WHERE id=%s RETURNING *"
+        query = f"UPDATE sistema_facturacion.productos SET {', '.join(set_clauses)}, updated_at = NOW() WHERE id=%s RETURNING *"
         
         with db_transaction(self.db) as cur:
             cur.execute(query, tuple(clean_values))
@@ -75,7 +75,7 @@ class RepositorioProductos:
 
     def eliminar_producto(self, producto_id: UUID) -> bool:
         # Soft Delete
-        query = "UPDATE producto SET activo = FALSE, updated_at = NOW() WHERE id=%s"
+        query = "UPDATE sistema_facturacion.productos SET activo = FALSE, updated_at = NOW() WHERE id=%s"
         with db_transaction(self.db) as cur:
             cur.execute(query, (str(producto_id),))
             return cur.rowcount > 0

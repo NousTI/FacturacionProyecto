@@ -8,8 +8,10 @@ from ...constants.error_codes import ErrorCodes
 from ...constants.messages import AppMessages
 from ...errors.app_error import AppError
 
+from typing import Union
+
 class PermissionChecker:
-    def __init__(self, required_permission: PermisosVendedor):
+    def __init__(self, required_permission: Union[str, PermisosVendedor]):
         self.required_permission = required_permission
 
     def __call__(self, usuario: dict = Depends(get_current_user), repo_vendedores: RepositorioVendedores = Depends()):
@@ -17,28 +19,26 @@ class PermissionChecker:
         if usuario.get(AuthKeys.IS_SUPERADMIN):
             return usuario
             
-        # 2. Check if user is Vendedor
-        vendedor = repo_vendedores.obtener_por_user_id(usuario["id"])
-        
-        # If user is not found in vendors table, they might be a regular user or client
-        # In this context, if they are not superadmin and not a vendor, they don't have access to vendor features
-        if not vendedor:
-             raise AppError(
-                message=AppMessages.PERM_FORBIDDEN,
-                status_code=403,
-                code=ErrorCodes.PERM_FORBIDDEN
-            )
+        # Get permission string value (handle both Enum and string)
+        req_perm_value = self.required_permission.value if hasattr(self.required_permission, 'value') else self.required_permission
 
-        # 3. Check specific permission
-        # The permission enum value (e.g., 'puede_crear_empresas') matches the DB column name
-        if not vendedor.get(self.required_permission.value):
-             raise AppError(
-                message=AppMessages.PERM_FORBIDDEN,
-                status_code=403,
-                code=ErrorCodes.PERM_FORBIDDEN
-            )
-            
-        return usuario
+        # 2. Check granular permissions (attached to usuario in services.py)
+        granular_perms = usuario.get("permisos", [])
+        if req_perm_value in granular_perms:
+            return usuario
+
+        # 3. Check Vendedor flags (for backward compatibility or specific vendor routes)
+        if usuario.get(AuthKeys.IS_VENDEDOR):
+            vendedor = repo_vendedores.obtener_por_user_id(usuario["id"])
+            if vendedor and vendedor.get(req_perm_value):
+                return usuario
+        
+        # 4. No permission found
+        raise AppError(
+            message=AppMessages.PERM_FORBIDDEN,
+            status_code=403,
+            code=ErrorCodes.PERM_FORBIDDEN
+        )
 
 # Alias for easy import
 requerir_permiso = PermissionChecker

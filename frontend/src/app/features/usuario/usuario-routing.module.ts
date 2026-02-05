@@ -15,6 +15,7 @@ import { ReportesPage } from './reportes/reportes.page';
 import { EstablecimientosPage } from './establecimientos/establecimientos.page';
 import { ConfiguracionPage } from './configuracion/configuracion.page';
 import { UsuariosPage } from './usuarios/usuarios.page';
+import { CertificadoSriPage } from './certificado-sri/certificado-sri.page';
 
 const routes: Routes = [
     {
@@ -84,9 +85,9 @@ const routes: Routes = [
     },
     {
         path: 'certificado-sri',
-        component: MaintenanceComponent,
+        component: CertificadoSriPage,
         canActivate: [RoleGuard],
-        data: { title: 'Certificado SRI', roles: [UserRole.USUARIO] }
+        data: { title: 'Certificado SRI', roles: [UserRole.USUARIO], permission: 'CONFIG_SRI' }
     }
 ];
 

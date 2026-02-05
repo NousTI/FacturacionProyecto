@@ -57,40 +57,6 @@ CREATE TABLE IF NOT EXISTS public.rol_permiso (
 
 
 
--- =====================================================
--- TABLA: CONFIGURACION_SRI
--- Almacena configuración SRI por empresa
--- El certificado .p12 se guarda CIFRADO en la DB
--- =====================================================
-
-CREATE TABLE IF NOT EXISTS public.configuracion_sri (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-
-    empresa_id UUID NOT NULL
-        REFERENCES public.empresa(id) ON DELETE CASCADE,
-
-    -- Configuración SRI
-    ambiente TEXT NOT NULL,            -- pruebas | produccion
-    tipo_emision TEXT NOT NULL,        -- normal | contingencia
-
-    -- Seguridad
-    certificado_digital BYTEA NOT NULL, -- .p12 CIFRADO (AES)
-    clave_certificado TEXT NOT NULL,    -- password del .p12 CIFRADA (AES)
-
-    -- Vigencia del certificado
-    fecha_expiracion_cert TIMESTAMPTZ NOT NULL,
-
-    -- Estado
-    firma_activa BOOLEAN NOT NULL DEFAULT TRUE,
-
-    -- Auditoría
-    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-
-    -- Una configuración SRI por empresa
-    CONSTRAINT uq_configuracion_sri_empresa UNIQUE (empresa_id)
-);
-
 
 
 -- =====================================================
@@ -282,39 +248,6 @@ CREATE TABLE IF NOT EXISTS public.proveedor (
     CONSTRAINT uq_proveedor_empresa_identificacion UNIQUE (empresa_id, identificacion)
 );
 
-
--- =========================================
--- TABLA: producto
--- =========================================
-CREATE TABLE IF NOT EXISTS public.producto (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-
-    empresa_id UUID NOT NULL
-        REFERENCES public.empresa(id) ON DELETE CASCADE,
-
-    codigo TEXT NOT NULL UNIQUE,
-    nombre TEXT NOT NULL,
-    descripcion TEXT,
-
-    precio NUMERIC(10,2) NOT NULL CHECK (precio >= 0),
-    costo NUMERIC(10,2) NOT NULL CHECK (costo >= 0),
-
-    stock_actual INTEGER NOT NULL DEFAULT 0 CHECK (stock_actual >= 0),
-    stock_minimo INTEGER NOT NULL DEFAULT 0 CHECK (stock_minimo >= 0),
-
-    tipo_iva TEXT NOT NULL,
-    porcentaje_iva NUMERIC(5,2) NOT NULL CHECK (porcentaje_iva >= 0),
-
-    maneja_inventario BOOLEAN NOT NULL DEFAULT TRUE,
-
-    tipo TEXT,
-    unidad_medida TEXT,
-
-    activo BOOLEAN NOT NULL DEFAULT TRUE,
-
-    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-);
 
 
 -- =========================================

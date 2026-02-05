@@ -1,4 +1,5 @@
 import base64
+import re
 from fastapi import Depends
 from uuid import UUID
 from typing import List, Optional
@@ -8,7 +9,8 @@ from .repository import RepositorioSRI
 from .client import ClienteSRI
 from .xml_service import ServicioSRIXML
 from .signer import XMLSigner
-from .schemas import ConfigSRICreacion, ConfigSRIActualizacion
+from .cert_utils import ExtractorCertificadoSRI
+from .schemas import ConfigSRICreacion, ConfigSRIActualizacion, ConfigSRIActualizacionParametros
 from ...utils.crypto import CryptoService
 from ...config.env import env
 from ...constants.enums import AuthKeys
@@ -42,21 +44,29 @@ class ServicioSRI:
 
     def guardar_certificado(self, empresa_id: UUID, p12_bin: bytes, password: str, ambiente: str, emision: str):
         try:
+            # Extraer metadatos automáticamente
+            extractor = ExtractorCertificadoSRI(p12_bin, password)
+            meta = extractor.extraer_metadatos()
+            
+            # Verificar validez técnica con el signer actual
             signer = XMLSigner(p12_bin, password)
             signer.check_validity()
-            expira = signer._cert.not_valid_after_utc
             signer.cleanup()
         except Exception as e:
-            raise AppError(f"Certificado inválido: {str(e)}", 400, "CERT_INVALID")
+            raise AppError(f"Certificado inválido o clave incorrecta: {str(e)}", 400, "CERT_INVALID")
 
         data = {
             "empresa_id": empresa_id,
             "ambiente": ambiente,
             "tipo_emision": emision,
             "certificado_digital": self.crypto.encrypt(p12_bin),
-            "clave_certificado": base64.b64encode(self.crypto.encrypt(password)).decode(),
-            "fecha_expiracion_cert": expira,
-            "firma_activa": True
+            "clave_certificado": self.crypto.encrypt(password), # El repo lo manejará como BYTEA
+            "fecha_activacion_cert": meta["fecha_activacion"],
+            "fecha_expiracion_cert": meta["fecha_expiracion"],
+            "cert_serial": meta["serial"],
+            "cert_sujeto": meta["sujeto"],
+            "cert_emisor": meta["emisor"],
+            "estado": "ACTIVO"
         }
         
         existing = self.repo.obtener_config(empresa_id)
@@ -64,14 +74,25 @@ class ServicioSRI:
             return self.repo.actualizar_config(existing['id'], data)
         return self.repo.crear_config(data)
 
+    def actualizar_parametros(self, empresa_id: UUID, params: ConfigSRIActualizacionParametros):
+        existing = self.repo.obtener_config(empresa_id)
+        if not existing:
+            raise AppError("No existe configuración SRI. Cargue el certificado primero.", 404, "SRI_CONFIG_NOT_FOUND")
+            
+        data = {
+            "ambiente": params.ambiente,
+            "tipo_emision": params.tipo_emision
+        }
+        return self.repo.actualizar_config(existing['id'], data)
+
     def obtener_signer(self, empresa_id: UUID) -> XMLSigner:
         config = self.repo.obtener_config(empresa_id)
-        if not config or not config['firma_activa']:
-            raise AppError("Firma electrónica no activa", 400, "SRI_CONFIG_INCOMPLETE")
+        if not config or config['estado'] != 'ACTIVO':
+            raise AppError("Firma electrónica no activa o inválida", 400, "SRI_CONFIG_INCOMPLETE")
         
         try:
             p12 = self.crypto.decrypt(bytes(config['certificado_digital']))
-            passw = self.crypto.decrypt_to_str(base64.b64decode(config['clave_certificado']))
+            passw = self.crypto.decrypt_to_str(bytes(config['clave_certificado']))
             return XMLSigner(p12, passw)
         except Exception as e:
             raise AppError("Error de seguridad al acceder a la firma", 500, "CRYPTO_ERROR")
@@ -87,13 +108,19 @@ class ServicioSRI:
         
         if not config_sri: raise AppError("Configuración SRI no encontrada", 400, "SRI_CONFIG_MISSING")
         
-        ambiente = '1' # Pruebas (Hardcoded por requerimiento usuario)
+        # Mapeo de ambiente y emisión para el SRI
+        ambiente_map = {"PRUEBAS": "1", "PRODUCCION": "2"}
+        emision_map = {"NORMAL": "1", "CONTINGENCIA": "2"}
         
+        ambiente = ambiente_map.get(config_sri['ambiente'], "1")
+        tipo_emision = emision_map.get(config_sri['tipo_emision'], "1")
+        
+        signer = None
         try:
             signer = self.obtener_signer(factura['empresa_id'])
             signer.verify_ruc(empresa['ruc'])
             
-            xml_str = self.xml_service.generar_xml_factura(factura, cliente, empresa, detalles, ambiente)
+            xml_str = self.xml_service.generar_xml_factura(factura, cliente, empresa, detalles, ambiente, tipo_emision)
             xml_firmado = signer.sign_xml(xml_str.encode('utf-8'))
             xml_b64 = base64.b64encode(xml_firmado).decode('utf-8')
             
@@ -101,8 +128,12 @@ class ServicioSRI:
             res_rec = self.client_sri.validar_comprobante(xml_b64, ambiente)
             
             if res_rec['estado'] == 'RECIBIDA':
-                # Extraer clave de acceso del XML (implementación simplificada)
-                clave = xml_str.split('<claveAcceso>')[1].split('</claveAcceso>')[0] # Muy frágil, mejor usar regex o lxml
+                # Extraer clave de acceso del XML de forma robusta
+                clave_match = re.search(r'<claveAcceso>(.*?)</claveAcceso>', xml_str)
+                clave = clave_match.group(1) if clave_match else ""
+                
+                if not clave:
+                    raise AppError("No se pudo extraer la clave de acceso del XML", 500, "SRI_KEY_ERROR")
                 
                 res_aut = self.client_sri.autorizar_comprobante(clave, ambiente)
                 
@@ -131,3 +162,6 @@ class ServicioSRI:
                 "mensaje_error": str(e)[:500]
             })
             raise e
+        finally:
+            if signer:
+                signer.cleanup()

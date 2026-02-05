@@ -21,4 +21,7 @@ export interface User {
     puede_gestionar_planes?: boolean;
     puede_acceder_empresas?: boolean;
     puede_ver_reportes?: boolean;
+
+    // Permisos Granulares (Nuevo Sistema)
+    permisos?: string[];
 }

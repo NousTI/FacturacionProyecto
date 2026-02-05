@@ -17,11 +17,11 @@ app = FastAPI(
 )
 
 # 1. Middlewares
-# CORS
-add_cors_middleware(app)
-
 # Middleware de Errores Custom
 app.add_middleware(ErrorMiddleware)
+
+# CORS (Debe ser el último en agregarse para ser el primero en procesar y el último en responder)
+add_cors_middleware(app)
 
 # 2. Exception Handlers
 app.add_exception_handler(AppError, app_error_handler)

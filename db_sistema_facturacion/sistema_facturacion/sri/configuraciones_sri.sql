@@ -20,6 +20,7 @@ CREATE TABLE sistema_facturacion.configuraciones_sri (
     certificado_digital BYTEA NOT NULL,
     clave_certificado BYTEA NOT NULL,
 
+    fecha_activacion_cert TIMESTAMPTZ NOT NULL,
     fecha_expiracion_cert TIMESTAMPTZ NOT NULL,
 
     estado TEXT NOT NULL DEFAULT 'ACTIVO'

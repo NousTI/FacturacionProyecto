@@ -43,7 +43,8 @@ const routes: Routes = [
     {
         path: 'certificados-sri',
         loadComponent: () => import('./certificados-sri/certificados-sri.page').then(m => m.CertificadosSriPage),
-        title: 'Certificados SRI'
+        canActivate: [RoleGuard],
+        data: { title: 'Certificados SRI', roles: [UserRole.SUPERADMIN], permission: 'CONFIG_SRI' }
     },
     {
         path: '',

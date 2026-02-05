@@ -9,7 +9,8 @@ from ...utils.jwt import create_access_token, decode_access_token
 from ...utils.response import success_response
 from ...constants.error_codes import ErrorCodes
 from ...constants.messages import AppMessages
-from ...constants.enums import AuthKeys
+from ...constants.enums import AuthKeys, SubscriptionStatus
+from ...constants.roles import RolCodigo
 
 # Modular Imports
 from ..usuarios.repositories import RepositorioUsuarios
@@ -46,7 +47,7 @@ class AuthServices:
                 code=ErrorCodes.AUTH_CREDENTIALS_INVALID
             )
 
-        if user.get('estado') != 'ACTIVA':
+        if user.get('estado') != SubscriptionStatus.ACTIVA.value:
             raise AppError(
                 message=f"La cuenta está {user.get('estado')}.", 
                 status_code=403, 
@@ -55,7 +56,7 @@ class AuthServices:
 
         # 2. Obtener Rol del Usuario
         user_id = user['id']
-        primary_role = user.get("role", "USUARIO")
+        primary_role = str(user.get("role") or RolCodigo.USUARIO.value).strip().upper()
 
         # 3. Validar Sesión Única
         if self.auth_repo.tiene_sesion_activa(user_id):
@@ -91,7 +92,8 @@ class AuthServices:
             "role": primary_role
         })
 
-        # Sanitize
+        # Sanitize and prepare base data
+        is_superadmin = (primary_role == RolCodigo.SUPERADMIN.value)
         user_safe = {
             "id": str(user["id"]),
             "email": user["email"],
@@ -99,23 +101,35 @@ class AuthServices:
             "apellidos": user.get("apellidos"),
             "avatar_url": user.get("avatar_url"),
             "estado": user["estado"],
-            "role": primary_role
+            "empresa_id": str(user.get("empresa_id")) if user.get("empresa_id") else None,
+            "role": primary_role,
+            "is_superadmin": is_superadmin,
+            "permisos": []
         }
 
-        # Si es VENDEDOR, inyectar permisos
-        if primary_role == "VENDEDOR":
+        # 6. Inject role-specific permissions
+        if is_superadmin:
+            # For superadmins, they logically have all perms. 
+            # Frontend handles this via is_superadmin flag, but we keep array for consistency
+            user_safe["permisos"] = [] 
+        
+        elif primary_role == RolCodigo.VENDEDOR.value:
             vendedor_profile = self.vendedor_repo.obtener_por_user_id(user_id)
             if vendedor_profile:
-                # Copiar flags de permisos explicitamente
-                permisos = [
+                # Vendor-specific flags for backward compatibility
+                legacy_perms = [
                     "puede_crear_empresas",
                     "puede_gestionar_planes",
                     "puede_acceder_empresas",
                     "puede_ver_reportes"
                 ]
-                for p in permisos:
+                for p in legacy_perms:
                     if p in vendedor_profile:
                         user_safe[p] = vendedor_profile[p]
+        
+        elif primary_role == RolCodigo.USUARIO.value:
+            # Business users get their company-defined permissions
+            user_safe["permisos"] = self.user_repo.obtener_permisos_por_user_id(user_id)
 
         return success_response(
             data={
@@ -174,14 +188,14 @@ class AuthServices:
             raise AppError("Usuario no encontrado", 404, "AUTH_USER_NOT_FOUND")
 
         # Inyectar flags de rol para compatibilidad
-        role_upper = str(role).upper()
-        user[AuthKeys.IS_SUPERADMIN] = (role_upper == "SUPERADMIN")
-        user[AuthKeys.IS_VENDEDOR] = (role_upper == "VENDEDOR")
-        user[AuthKeys.IS_USUARIO] = (role_upper == "USUARIO")
+        role_upper = str(role).strip().upper()
+        user[AuthKeys.IS_SUPERADMIN] = (role_upper == RolCodigo.SUPERADMIN.value)
+        user[AuthKeys.IS_VENDEDOR] = (role_upper == RolCodigo.VENDEDOR.value)
+        user[AuthKeys.IS_USUARIO] = (role_upper == RolCodigo.USUARIO.value)
         user["role"] = role
 
         # Si es VENDEDOR, inyectar permisos tambien aqui
-        if role_upper == "VENDEDOR":
+        if role_upper == RolCodigo.VENDEDOR.value:
             vendedor_profile = self.vendedor_repo.obtener_por_user_id(user_id)
             if vendedor_profile:
                 permisos = [
@@ -193,6 +207,10 @@ class AuthServices:
                 for p in permisos:
                     if p in vendedor_profile:
                         user[p] = vendedor_profile[p]
+        
+        # Si es USUARIO, inyectar permisos granulares
+        if role_upper == RolCodigo.USUARIO.value:
+            user["permisos"] = self.user_repo.obtener_permisos_por_user_id(user_id)
 
         user.pop("password_hash", None)
         return user

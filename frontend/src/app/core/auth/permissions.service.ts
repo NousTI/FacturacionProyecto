@@ -12,15 +12,27 @@ export class PermissionsService {
 
     hasPermission(permission: string): boolean {
         const user = this.authService.getUser();
-        if (!user) return false;
+        if (!user) {
+            console.warn('PermissionsService: No user found in session');
+            return false;
+        }
 
-        // SuperAdmin tiene acceso a todo
+        // 1. SuperAdmin bypass
         if (user.role === UserRole.SUPERADMIN || (user as any).is_superadmin) {
             return true;
         }
 
-        // Mapeo de strings a propiedades del modelo User
-        // 'crear_empresas' -> user.puede_crear_empresas
-        return !!(user as any)[permission] || !!(user as any)[`puede_${permission}`];
+        // 2. Check granular permissions array (New System)
+        const hasGranular = user.permisos && user.permisos.includes(permission);
+        if (hasGranular) return true;
+
+        // 3. Backward compatibility/Legacy
+        const hasLegacy = !!(user as any)[permission] || !!(user as any)[`puede_${permission}`];
+
+        if (!hasGranular && !hasLegacy && (permission.includes('EDITAR') || permission.includes('ELIMINAR'))) {
+            console.log(`Permission Denied for ${permission}. User perms:`, user.permisos);
+        }
+
+        return hasLegacy;
     }
 }

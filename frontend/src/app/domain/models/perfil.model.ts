@@ -5,6 +5,7 @@ export interface Permiso {
     modulo: string;
     tipo: string;
     descripcion?: string;
+    concedido: boolean;
 }
 
 export interface EmpresaInfo {

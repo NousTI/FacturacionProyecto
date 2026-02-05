@@ -95,6 +95,23 @@ export class AuthFacade {
         return this.authService.getUser();
     }
 
+    hasPermission(permission: string): boolean {
+        const user = this.getUser();
+        if (!user) return false;
+
+        // Superadmin bypass
+        if (user.role === UserRole.SUPERADMIN || (user as any).is_superadmin) {
+            return true;
+        }
+
+        // Exact match in permissions array
+        if (user.permisos && user.permisos.includes(permission)) {
+            return true;
+        }
+
+        return !!(user as any)[permission] || !!(user as any)[`puede_${permission}`];
+    }
+
     private navigateBasedOnRole(role: string | null): void {
         // Lógica de redirección dinámica basada en el rol inyectado
         if (role === UserRole.SUPERADMIN) {

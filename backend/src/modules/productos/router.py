@@ -7,47 +7,52 @@ from .service import ServicioProductos
 from ..autenticacion.routes import obtener_usuario_actual, requerir_permiso
 from ...constants.permissions import PermissionCodes
 from ...utils.response import success_response
+from ...utils.response_schemas import RespuestaBase
 
 router = APIRouter()
 
-@router.get("/", response_model=List[ProductoLectura])
+@router.get("/", response_model=RespuestaBase[List[ProductoLectura]])
 def listar_productos(
     nombre: Optional[str] = None, 
     codigo: Optional[str] = None, 
-    usuario: dict = Depends(requerir_permiso(PermissionCodes.PRODUCTO_VER)),
+    usuario: dict = Depends(requerir_permiso(PermissionCodes.PRODUCTOS_VER)),
     servicio: ServicioProductos = Depends()
 ):
-    return servicio.listar_productos(usuario, nombre, codigo)
+    productos = servicio.listar_productos(usuario, nombre, codigo)
+    return success_response(productos, "Productos listados correctamente")
 
-@router.get("/{producto_id}", response_model=ProductoLectura)
+@router.get("/{producto_id}", response_model=RespuestaBase[ProductoLectura])
 def obtener_producto(
     producto_id: UUID,
-    usuario: dict = Depends(requerir_permiso(PermissionCodes.PRODUCTO_VER)), 
+    usuario: dict = Depends(requerir_permiso(PermissionCodes.PRODUCTOS_VER)), 
     servicio: ServicioProductos = Depends()
 ):
-    return servicio.obtener_producto(producto_id, usuario)
+    producto = servicio.obtener_producto(producto_id, usuario)
+    return success_response(producto, "Producto obtenido correctamente")
 
-@router.post("/", response_model=ProductoLectura, status_code=status.HTTP_201_CREATED)
+@router.post("/", response_model=RespuestaBase[ProductoLectura], status_code=status.HTTP_201_CREATED)
 def crear_producto(
     datos: ProductoCreacion,
-    usuario: dict = Depends(requerir_permiso(PermissionCodes.PRODUCTO_CREAR)),
+    usuario: dict = Depends(requerir_permiso(PermissionCodes.PRODUCTOS_CREAR)),
     servicio: ServicioProductos = Depends()
 ):
-    return servicio.crear_producto(datos, usuario)
+    producto = servicio.crear_producto(datos, usuario)
+    return success_response(producto, "Producto creado correctamente")
 
-@router.put("/{producto_id}", response_model=ProductoLectura)
+@router.put("/{producto_id}", response_model=RespuestaBase[ProductoLectura])
 def actualizar_producto(
     producto_id: UUID,
     datos: ProductoActualizacion,
-    usuario: dict = Depends(requerir_permiso(PermissionCodes.PRODUCTO_EDITAR)),
+    usuario: dict = Depends(requerir_permiso(PermissionCodes.PRODUCTOS_EDITAR)),
     servicio: ServicioProductos = Depends()
 ):
-    return servicio.actualizar_producto(producto_id, datos, usuario)
+    producto = servicio.actualizar_producto(producto_id, datos, usuario)
+    return success_response(producto, "Producto actualizado correctamente")
 
-@router.delete("/{producto_id}")
+@router.delete("/{producto_id}", response_model=RespuestaBase)
 def eliminar_producto(
     producto_id: UUID,
-    usuario: dict = Depends(requerir_permiso(PermissionCodes.PRODUCTO_ELIMINAR)),
+    usuario: dict = Depends(requerir_permiso(PermissionCodes.PRODUCTOS_ELIMINAR)),
     servicio: ServicioProductos = Depends()
 ):
     servicio.eliminar_producto(producto_id, usuario)

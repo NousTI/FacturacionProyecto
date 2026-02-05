@@ -104,7 +104,7 @@ import { Observable, map } from 'rxjs';
                <a routerLink="/usuario/configuracion" routerLinkActive="active" class="menu-item px-3 mb-1">
                 <i class="bi bi-gear me-3"></i> Configuración
               </a>
-              <a routerLink="/usuario/certificado-sri" routerLinkActive="active" class="menu-item px-3 mb-1">
+              <a *appHasPermission="'CONFIG_SRI'" routerLink="/usuario/certificado-sri" routerLinkActive="active" class="menu-item px-3 mb-1">
                 <i class="bi bi-shield-lock me-3"></i> Certificado SRI
               </a>
               <a routerLink="/usuario/perfil" routerLinkActive="active" class="menu-item px-3 mb-1">
@@ -121,7 +121,7 @@ import { Observable, map } from 'rxjs';
             <a routerLink="/planes" routerLinkActive="active" class="menu-item px-3 mb-1">
               <i class="bi bi-tags me-3"></i> Planes y Límites
             </a>
-            <a routerLink="/certificados-sri" routerLinkActive="active" class="menu-item px-3 mb-1">
+            <a *appHasPermission="'CONFIG_SRI'" routerLink="/certificados-sri" routerLinkActive="active" class="menu-item px-3 mb-1">
               <i class="bi bi-shield-check me-3"></i> Certificados SRI
             </a>
             <a routerLink="/reportes" routerLinkActive="active" class="menu-item px-3 mb-1">

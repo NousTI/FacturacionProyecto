@@ -11,27 +11,35 @@ export class RoleGuard implements CanActivate {
     constructor(private authFacade: AuthFacade, private router: Router) { }
 
     canActivate(route: ActivatedRouteSnapshot): boolean | UrlTree {
-        const expectedRoles: UserRole[] = route.data['roles'];
         const userRole = this.authFacade.getUserRole();
+        const expectedRoles: UserRole[] = route.data['roles'];
 
         if (!userRole) {
             return this.router.createUrlTree(['/auth/login']);
         }
 
-        if (!expectedRoles || expectedRoles.length === 0) {
-            return true; // No roles restricted
+        // 1. Check Role-based access
+        if (expectedRoles && expectedRoles.length > 0) {
+            if (!expectedRoles.includes(userRole)) {
+                // Redirect to a safe route if unauthorized for this role
+                if (userRole === UserRole.VENDEDOR) {
+                    return this.router.createUrlTree(['/vendedor']);
+                } else if (userRole === UserRole.SUPERADMIN) {
+                    return this.router.createUrlTree(['/']);
+                }
+                return this.router.createUrlTree(['/auth/login']);
+            }
         }
 
-        if (expectedRoles.includes(userRole)) {
-            return true;
+        // 2. Check Granular Permission
+        const requiredPermission = route.data['permission'];
+        if (requiredPermission && !this.authFacade.hasPermission(requiredPermission)) {
+            // If user has the role but lacks the specific permission
+            this.router.navigate(['/usuario/dashboard']); // Go back to dashboard or show error
+            return false;
         }
 
-        // Redirect to a safe route if unauthorized for this view
-        if (userRole === UserRole.VENDEDOR) {
-            return this.router.createUrlTree(['/vendedor']);
-        } else if (userRole === UserRole.SUPERADMIN) {
-            return this.router.createUrlTree(['/']);
-        }
+        return true;
 
         return this.router.createUrlTree(['/auth/login']);
     }

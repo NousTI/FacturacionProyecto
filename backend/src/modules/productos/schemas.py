@@ -9,9 +9,9 @@ class ProductoBase(BaseModel):
     nombre: str
     descripcion: Optional[str] = None
     precio: float = Field(..., ge=0)
-    costo: float = Field(..., ge=0)
-    stock_actual: int = Field(0, ge=0)
-    stock_minimo: int = Field(0, ge=0)
+    costo: Optional[float] = Field(None, ge=0)
+    stock_actual: float = Field(0, ge=0)
+    stock_minimo: float = Field(0, ge=0)
     tipo_iva: str
     porcentaje_iva: float
     maneja_inventario: bool = True

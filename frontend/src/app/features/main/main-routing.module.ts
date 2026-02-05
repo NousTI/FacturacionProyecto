@@ -20,10 +20,6 @@ const routes: Routes = [
         data: { roles: [UserRole.SUPERADMIN] }
     },
     {
-        path: '',
-        loadChildren: () => import('../usuario/usuario.module').then(m => m.UsuarioModule)
-    },
-    {
         path: 'vendedor-portal',
         loadChildren: () => import('../vendedor/vendedor.module').then(m => m.VendedorModule),
         canActivate: [RoleGuard],

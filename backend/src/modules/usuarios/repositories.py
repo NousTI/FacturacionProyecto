@@ -3,6 +3,7 @@ from uuid import UUID
 from typing import List, Optional
 from ...database.session import get_db
 from ...database.transaction import db_transaction
+from ...constants.roles import RolCodigo
 
 class RepositorioUsuarios:
     def __init__(self, db=Depends(get_db)):
@@ -206,22 +207,29 @@ class RepositorioUsuarios:
             return cur.rowcount > 0
 
     def obtener_perfil_completo(self, user_id: UUID) -> Optional[dict]:
-        """Fetch full profile: user (profile + auth), company, role and permissions"""
-        # 1. Get User and Company Info
+        """Fetch full profile: user (profile + auth), company, role and ALL permissions with granted status"""
+        # 1. Get User and Company Info using LEFT JOINs to support all user roles
         query_user = """
             SELECT 
-                u.id, u.user_id, u.nombres, u.apellidos, u.telefono, u.avatar_url, u.activo,
-                us.email, us.role as system_role, us.estado as system_estado, 
+                us.id as user_id, us.email, us.role as system_role, us.estado as system_estado, 
                 us.ultimo_acceso, us.created_at, us.updated_at,
+                u.id as usuario_id,
+                COALESCE(u.nombres, s.nombres, v.nombres) as nombres,
+                COALESCE(u.apellidos, s.apellidos, v.apellidos) as apellidos,
+                COALESCE(u.telefono, v.telefono) as telefono,
+                u.avatar_url, 
+                COALESCE(u.activo, TRUE) as activo,
                 er.nombre as rol_nombre, er.codigo as rol_codigo, er.id as rol_id,
                 e.id as empresa_id, e.ruc as empresa_ruc, e.razon_social as empresa_razon_social,
                 e.nombre_comercial as empresa_nombre_comercial, e.email as empresa_email,
                 e.direccion as empresa_direccion, e.logo_url as empresa_logo_url
-            FROM sistema_facturacion.usuarios u
-            JOIN sistema_facturacion.users us ON u.user_id = us.id
-            JOIN sistema_facturacion.empresas e ON u.empresa_id = e.id
-            JOIN sistema_facturacion.empresa_roles er ON u.empresa_rol_id = er.id
-            WHERE u.user_id = %s
+            FROM sistema_facturacion.users us
+            LEFT JOIN sistema_facturacion.usuarios u ON us.id = u.user_id
+            LEFT JOIN sistema_facturacion.superadmin s ON us.id = s.user_id
+            LEFT JOIN sistema_facturacion.vendedores v ON us.id = v.user_id
+            LEFT JOIN sistema_facturacion.empresas e ON u.empresa_id = e.id
+            LEFT JOIN sistema_facturacion.empresa_roles er ON u.empresa_rol_id = er.id
+            WHERE us.id = %s
         """
         
         with self.db.cursor() as cur:
@@ -231,21 +239,26 @@ class RepositorioUsuarios:
                 return None
             
             user_data = dict(user_row)
-            rol_id = user_data['rol_id']
+            rol_id = user_data.get('rol_id')
+            system_role = str(user_data.get('system_role') or '').strip().upper()
+            is_superadmin = (system_role == RolCodigo.SUPERADMIN.value)
             
-            # 2. Get Permissions for the role
+            # 2. Get ALL Permissions and check grant status
+            # If SuperAdmin, all are granted. If not, join with role permissions.
             query_perms = """
-                SELECT p.id, p.codigo, p.nombre, p.modulo, p.tipo, p.descripcion
+                SELECT p.id, p.codigo, p.nombre, p.modulo, p.tipo, p.descripcion,
+                       (erp.permiso_id IS NOT NULL OR %s) as concedido
                 FROM sistema_facturacion.empresa_permisos p
-                JOIN sistema_facturacion.empresa_roles_permisos erp ON p.id = erp.permiso_id
-                WHERE erp.rol_id = %s AND erp.activo = TRUE
+                LEFT JOIN sistema_facturacion.empresa_roles_permisos erp ON p.id = erp.permiso_id 
+                    AND erp.rol_id = %s AND erp.activo = TRUE
+                ORDER BY p.modulo, p.nombre
             """
-            cur.execute(query_perms, (str(rol_id),))
+            cur.execute(query_perms, (is_superadmin, str(rol_id) if rol_id else None))
             permisos = [dict(row) for row in cur.fetchall()]
             
             # 3. Format result
             result = {
-                "id": user_data["id"],
+                "id": user_data.get("usuario_id"),
                 "user_id": user_data["user_id"],
                 "nombres": user_data["nombres"],
                 "apellidos": user_data["apellidos"],
@@ -266,12 +279,27 @@ class RepositorioUsuarios:
                     "email": user_data["empresa_email"],
                     "direccion": user_data["empresa_direccion"],
                     "logo_url": user_data["empresa_logo_url"]
-                },
-                "rol_nombre": user_data["rol_nombre"],
+                } if user_data["empresa_id"] else None,
+                "rol_nombre": user_data["rol_nombre"] or (user_data["system_role"] if is_superadmin else RolCodigo.USUARIO.value),
                 "rol_codigo": user_data["rol_codigo"],
                 "permisos": permisos
             }
             return result
+
+    def obtener_permisos_por_user_id(self, user_id: UUID) -> List[str]:
+        """Fetch only the permission codes for a user."""
+        query = """
+            SELECT p.codigo
+            FROM sistema_facturacion.usuarios u
+            JOIN sistema_facturacion.empresa_roles_permisos erp ON u.empresa_rol_id = erp.rol_id
+            JOIN sistema_facturacion.empresa_permisos p ON erp.permiso_id = p.id
+            WHERE u.user_id = %s AND erp.activo = TRUE
+        """
+        with self.db.cursor() as cur:
+            cur.execute(query, (str(user_id),))
+            perms = [row['codigo'] for row in cur.fetchall()]
+            print(f"DEBUG: Permissions for user {user_id}: {perms}")
+            return perms
 
     def listar_todos_usuarios_admin(self, vendedor_id: Optional[UUID] = None, actor_user_id: Optional[UUID] = None) -> List[dict]:
         """List all users with their company and role info for Superadmin/Vendedor context."""

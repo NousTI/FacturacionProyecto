@@ -5,6 +5,7 @@ from typing import List, Optional
 from .repository import RepositorioProductos
 from .schemas import ProductoCreacion, ProductoActualizacion
 from ...constants.enums import AuthKeys
+from ...constants.permissions import PermissionCodes
 from ...errors.app_error import AppError
 
 class ServicioProductos:
@@ -21,7 +22,8 @@ class ServicioProductos:
         if not empresa_id:
              raise AppError("Usuario no asociado a una empresa", 400, "VAL_ERROR")
 
-        return self.repo.listar_productos(empresa_id, nombre, codigo)
+        productos = self.repo.listar_productos(empresa_id, nombre, codigo)
+        return [self._filtrar_costos(p, usuario_actual) for p in productos]
 
     def obtener_producto(self, producto_id: UUID, usuario_actual: dict):
         producto = self.repo.obtener_por_id(producto_id)
@@ -34,6 +36,18 @@ class ServicioProductos:
         if not is_superadmin and str(producto['empresa_id']) != str(user_empresa_id):
              raise AppError("No tienes acceso a este producto", 403, "AUTH_FORBIDDEN")
              
+        return self._filtrar_costos(producto, usuario_actual)
+
+    def _filtrar_costos(self, producto: dict, usuario_actual: dict):
+        """Oculta el costo si el usuario no tiene el permiso adecuado."""
+        if usuario_actual.get(AuthKeys.IS_SUPERADMIN):
+            return producto
+            
+        permisos = usuario_actual.get("permisos", [])
+        if PermissionCodes.PRODUCTOS_VER_COSTOS not in permisos:
+            producto["costo"] = None
+            # Aquí se pueden limpiar otros campos sensibles si existieran
+            
         return producto
 
     def crear_producto(self, datos: ProductoCreacion, usuario_actual: dict):

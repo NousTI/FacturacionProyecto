@@ -5,7 +5,6 @@ import { Subject, takeUntil, forkJoin } from 'rxjs';
 import { ClientesService, ClienteUsuario } from '../../super-admin/clientes/services/clientes.service';
 import { VendedorEmpresaService } from '../empresas/services/vendedor-empresa.service';
 import { RolesService, Rol } from '../../../shared/services/roles.service';
-import { ClienteModalComponent } from '../../super-admin/clientes/components/cliente-modal.component';
 import { VendedorClientesTableComponent } from './components/vendedor-clientes-table.component';
 import { ClientesStatsComponent } from './components/clientes-stats.component';
 import { ClienteDetailsModalComponent } from './components/cliente-details-modal.component';
@@ -26,7 +25,6 @@ interface ClienteStats {
     CommonModule,
     FormsModule,
     VendedorClientesTableComponent,
-    ClienteModalComponent,
     ClientesStatsComponent,
     ClienteDetailsModalComponent,
     ToastComponent
