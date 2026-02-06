@@ -2,6 +2,7 @@ from fastapi import Depends
 from uuid import UUID
 from datetime import datetime, timedelta
 from typing import List, Optional
+import logging
 
 from .repositories import RepositorioEmpresas
 from ..vendedores.repositories import RepositorioVendedores
@@ -12,6 +13,8 @@ from ...errors.app_error import AppError
 
 from ...constants.error_codes import ErrorCodes
 from ...constants.messages import AppMessages
+
+logger = logging.getLogger("facturacion_api")
 
 class ServicioEmpresas:
     def __init__(
@@ -42,9 +45,11 @@ class ServicioEmpresas:
         return ctx
 
     def crear_empresa(self, datos: EmpresaCreacion, usuario_actual: dict):
+        logger.info(f"[CREAR] Iniciando creación de empresa - RUC: {datos.ruc}")
         ctx = self._get_context(usuario_actual)
 
         if not ctx["is_superadmin"] and not ctx["is_vendedor"]:
+             logger.warning("[VALIDACIÓN] Usuario sin permisos para crear empresa")
              raise AppError(
                  message="Acceso Denegado", 
                  status_code=403, 
@@ -53,6 +58,7 @@ class ServicioEmpresas:
              )
 
         if self.repo.obtener_por_ruc(datos.ruc):
+             logger.warning(f"[VALIDACIÓN] RUC duplicado: {datos.ruc}")
              raise AppError(
                  message="RUC Duplicado", 
                  status_code=400, 
@@ -75,10 +81,13 @@ class ServicioEmpresas:
             
         try:
              nueva = self.repo.crear_empresa(payload)
+             logger.info(f"[ÉXITO] Empresa creada - ID: {nueva['id']}, RUC: {nueva['ruc']}")
              # Inicializar roles y permisos por defecto
              self._inicializar_empresa_roles(nueva['id'])
+             logger.info(f"[CREAR] Roles inicializados para empresa: {nueva['id']}")
              return nueva
         except Exception as e:
+             logger.error(f"[ERROR] Fallo al crear empresa: {str(e)}")
              if "vendedor_id" in str(e) and "viol" in str(e):
                   raise AppError(
                       message=AppMessages.VAL_INVALID_INPUT, 
@@ -89,8 +98,10 @@ class ServicioEmpresas:
              raise e
 
     def obtener_empresa(self, empresa_id: UUID, usuario_actual: dict):
+        logger.info(f"[INICIO] Obteniendo empresa: {empresa_id}")
         empresa = self.repo.obtener_por_id(empresa_id)
         if not empresa:
+             logger.warning(f"[VALIDACIÓN] Empresa no encontrada: {empresa_id}")
              raise AppError(
                  message=AppMessages.DB_NOT_FOUND, 
                  status_code=404, 
@@ -101,6 +112,7 @@ class ServicioEmpresas:
         ctx = self._get_context(usuario_actual)
         
         if ctx["is_superadmin"]:
+            logger.info(f"[ÉXITO] Empresa obtenida - ID: {empresa_id}")
             return empresa
         
         if ctx["is_vendedor"]:
@@ -133,14 +145,18 @@ class ServicioEmpresas:
         return self.obtener_empresa(empresa_id, usuario_actual)
 
     def listar_empresas(self, usuario_actual: dict, vendedor_id: Optional[UUID] = None):
+        logger.info("[INICIO] Listando empresas")
         ctx = self._get_context(usuario_actual)
         
         if ctx["is_superadmin"]:
-            return self.repo.listar_empresas(vendedor_id=vendedor_id)
+            result = self.repo.listar_empresas(vendedor_id=vendedor_id)
+            logger.info(f"[ÉXITO] Empresas listadas: {len(result)} registros")
+            return result
 
         if ctx["is_vendedor"]:
              # Si envia un vendedor_id diferente al suyo, bloquearlo
              if vendedor_id and str(vendedor_id) != str(ctx["vendedor_id"]):
+                  logger.warning(f"[VALIDACIÓN] Intento de acceso a empresas de otro vendedor")
                   raise AppError(
                       message=AppMessages.PERM_FORBIDDEN, 
                       status_code=403, 
@@ -180,6 +196,7 @@ class ServicioEmpresas:
         return self.listar_empresas(usuario_actual, vendedor_id)
 
     def actualizar_empresa(self, empresa_id: UUID, datos: EmpresaActualizacion, usuario_actual: dict):
+        logger.info(f"[EDITAR] Iniciando actualización de empresa: {empresa_id}")
         ctx = self._get_context(usuario_actual)
         current = self.obtener_empresa(empresa_id, usuario_actual)
         
@@ -187,6 +204,7 @@ class ServicioEmpresas:
         
         if 'ruc' in payload and payload['ruc'] != current['ruc']:
              if self.repo.obtener_por_ruc(payload['ruc']):
+                 logger.warning(f"[VALIDACIÓN] RUC duplicado en actualización: {payload['ruc']}")
                  raise AppError(
                      message="RUC Duplicado", 
                      status_code=400, 
@@ -199,6 +217,7 @@ class ServicioEmpresas:
             # Si es vendedor, NO tiene permiso de editar datos generales de la empresa
             # Solo puede cambiar plan o toggle active (via otros endpoints)
             if ctx["is_vendedor"]:
+                 logger.warning(f"[VALIDACIÓN] Vendedor intentó editar datos de empresa")
                  raise AppError(
                      message=AppMessages.PERM_FORBIDDEN, 
                      status_code=403, 
@@ -207,6 +226,7 @@ class ServicioEmpresas:
                  )
 
             if 'activo' in payload and payload['activo'] != current['activo']:
+                 logger.warning(f"[VALIDACIÓN] Usuario sin permisos para cambiar estado active")
                  raise AppError(
                      message=AppMessages.PERM_FORBIDDEN, 
                      status_code=403, 
@@ -215,13 +235,16 @@ class ServicioEmpresas:
                  )
 
         self.repo.actualizar_empresa(empresa_id, payload)
+        logger.info(f"[ÉXITO] Empresa actualizada - ID: {empresa_id}")
         return self.obtener_empresa(empresa_id, usuario_actual)
 
     def eliminar_empresa(self, empresa_id: UUID, usuario_actual: dict):
+        logger.info(f"[ELIMINAR] Iniciando eliminación de empresa: {empresa_id}")
         self.obtener_empresa(empresa_id, usuario_actual)
         ctx = self._get_context(usuario_actual)
         
         if ctx["is_usuario"]:
+             logger.warning("[VALIDACIÓN] Usuario regular intentó eliminar empresa")
              raise AppError(
                  message=AppMessages.PERM_FORBIDDEN, 
                  status_code=403, 
@@ -229,17 +252,21 @@ class ServicioEmpresas:
              )
              
         if not self.repo.eliminar_empresa(empresa_id):
+             logger.error(f"[ERROR] Fallo al eliminar empresa: {empresa_id}")
              raise AppError(
                  message=AppMessages.SYS_INTERNAL_ERROR, 
                  status_code=500, 
                  code=ErrorCodes.DB_QUERY_ERROR,
                  description="Error al eliminar empresa"
              )
+        logger.info(f"[ÉXITO] Empresa eliminada - ID: {empresa_id}")
         return True
 
     def toggle_active(self, empresa_id: UUID, usuario_actual: dict):
+        logger.info(f"[EDITAR] Alternando estado activo de empresa: {empresa_id}")
         ctx = self._get_context(usuario_actual)
         if not ctx["is_superadmin"]:
+             logger.warning("[VALIDACIÓN] Usuario sin permisos para cambiar estado active")
              raise AppError(
                  message=AppMessages.PERM_FORBIDDEN, 
                  status_code=403, 
@@ -248,6 +275,7 @@ class ServicioEmpresas:
              
         empresa = self.repo.obtener_por_id(empresa_id)
         if not empresa: 
+             logger.warning(f"[VALIDACIÓN] Empresa no encontrada: {empresa_id}")
              raise AppError(
                  message=AppMessages.DB_NOT_FOUND, 
                  status_code=404, 
@@ -256,10 +284,13 @@ class ServicioEmpresas:
         
         new_status = not empresa.get("activo", True)
         self.repo.actualizar_empresa(empresa_id, {"activo": new_status})
+        logger.info(f"[ÉXITO] Estado activo cambiado a {new_status} - ID: {empresa_id}")
         return self.obtener_empresa(empresa_id, usuario_actual)
 
     def assign_vendor(self, empresa_id: UUID, vendedor_id: Optional[UUID], usuario_actual: dict):
+        logger.info(f"[EDITAR] Asignando vendedor a empresa: {empresa_id}")
         if not usuario_actual.get(AuthKeys.IS_SUPERADMIN):
+            logger.warning("[VALIDACIÓN] Usuario sin permisos para asignar vendedor")
             raise AppError(AppMessages.PERM_FORBIDDEN, 403, ErrorCodes.PERM_FORBIDDEN)
         
         current = self.obtener_empresa(empresa_id, usuario_actual)
@@ -270,6 +301,7 @@ class ServicioEmpresas:
         new_id_str = str(vendedor_id) if vendedor_id else None
         
         if curr_id_str == new_id_str:
+            logger.warning(f"[VALIDACIÓN] Vendedor ya asignado a empresa")
             raise AppError(
                 message="Vendedor ya asignado",
                 status_code=400,
@@ -279,8 +311,10 @@ class ServicioEmpresas:
 
         try:
              self.repo.asignar_vendedor(empresa_id, vendedor_id)
+             logger.info(f"[ÉXITO] Vendedor asignado a empresa - empresa ID: {empresa_id}, vendedor ID: {vendedor_id}")
              return self.obtener_empresa(empresa_id, usuario_actual)
-        except Exception:
+        except Exception as e:
+             logger.error(f"[ERROR] Fallo al asignar vendedor: {str(e)}")
              raise AppError(
                  message=AppMessages.VAL_INVALID_INPUT, 
                  status_code=400, 

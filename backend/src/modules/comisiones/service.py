@@ -2,6 +2,7 @@ from fastapi import Depends
 from uuid import UUID
 from datetime import date, datetime
 from typing import List, Optional
+import logging
 
 from .repository import RepositorioComisiones
 from .schemas import ComisionCreacion, ComisionActualizacion
@@ -11,6 +12,8 @@ from ..vendedores.repositories import RepositorioVendedores
 from ...constants.enums import AuthKeys, CommissionStatus
 from ...errors.app_error import AppError
 from .repository_log import RepositorioComisionLog
+
+logger = logging.getLogger("facturacion_api")
 
 class ServicioComisiones:
     def __init__(
@@ -73,8 +76,10 @@ class ServicioComisiones:
         return snapshot
 
     def calcular_comision_potencial(self, empresa_id: UUID, monto_pago: float) -> Optional[dict]:
+        logger.info(f"[INICIO] Calculando comisión potencial - empresa: {empresa_id}, monto: {monto_pago}")
         empresa = self.empresa_repo.obtener_por_id(empresa_id)
         if not empresa or not empresa.get('vendedor_id'):
+            logger.warning(f"[VALIDACIÓN] Empresa sin vendedor asignado")
             return None
             
         vendedor = self.vendedor_repo.obtener_por_id(empresa['vendedor_id'])
@@ -111,6 +116,7 @@ class ServicioComisiones:
         }
 
     def obtener_stats(self, usuario_actual: dict):
+        logger.info("[INICIO] Obteniendo estadísticas de comisiones")
         is_superadmin = usuario_actual.get(AuthKeys.IS_SUPERADMIN)
         vendedor_id = None
         
@@ -119,44 +125,63 @@ class ServicioComisiones:
             if usuario_actual.get(AuthKeys.IS_VENDEDOR):
                 vendedor = self.vendedor_repo.obtener_por_user_id(usuario_actual['id'])
                 if not vendedor:
+                    logger.warning("[VALIDACIÓN] Perfil de vendedor no encontrado")
                     raise AppError("Perfil de vendedor no encontrado", 403)
                 vendedor_id = vendedor['id']
             else:
+                logger.warning("[VALIDACIÓN] Usuario no autorizado para ver estadísticas")
                 raise AppError("No autorizado", 403, "AUTH_FORBIDDEN")
-                
-        return self.repo.obtener_stats(vendedor_id)
+        
+        result = self.repo.obtener_stats(vendedor_id)
+        logger.info(f"[ÉXITO] Estadísticas obtenidas")
+        return result
 
     def listar_comisiones(self, usuario_actual: dict):
+        logger.info("[INICIO] Listando comisiones")
         is_superadmin = usuario_actual.get(AuthKeys.IS_SUPERADMIN)
         is_vendedor = usuario_actual.get(AuthKeys.IS_VENDEDOR)
         
         if is_superadmin:
-            return self.repo.listar_comisiones()
+            result = self.repo.listar_comisiones()
+            logger.info(f"[ÉXITO] Comisiones listadas: {len(result)} registros")
+            return result
         if is_vendedor:
             vendedor = self.vendedor_repo.obtener_por_user_id(usuario_actual['id'])
             if not vendedor:
+                logger.warning("[VALIDACIÓN] Perfil de vendedor no encontrado")
                 raise AppError("Perfil de vendedor no encontrado", 403)
-            return self.repo.listar_comisiones(vendedor_id=vendedor['id'])
+            result = self.repo.listar_comisiones(vendedor_id=vendedor['id'])
+            logger.info(f"[ÉXITO] Comisiones del vendedor listadas: {len(result)} registros")
+            return result
         
+        logger.warning("[VALIDACIÓN] Usuario no autorizado para listar comisiones")
         raise AppError("No autorizado", 403, "AUTH_FORBIDDEN")
 
     def obtener_comision(self, id: UUID, usuario_actual: dict):
+        logger.info(f"[INICIO] Obteniendo comisión: {id}")
         comision = self.repo.obtener_por_id(id)
-        if not comision: raise AppError("Comisión no encontrada", 404, "COMISION_NOT_FOUND")
+        if not comision:
+            logger.warning(f"[VALIDACIÓN] Comisión no encontrada: {id}")
+            raise AppError("Comisión no encontrada", 404, "COMISION_NOT_FOUND")
         
         if not usuario_actual.get(AuthKeys.IS_SUPERADMIN):
             vendedor = self.vendedor_repo.obtener_por_user_id(usuario_actual['id'])
             if not vendedor or str(comision['vendedor_id']) != str(vendedor['id']):
+                logger.warning(f"[VALIDACIÓN] Acceso denegado a comisión")
                 raise AppError("No autorizado", 403, "AUTH_FORBIDDEN")
-            
+        
+        logger.info(f"[ÉXITO] Comisión obtenida - ID: {id}")
         return comision
 
     def crear_manual(self, datos: ComisionCreacion, usuario_actual: dict):
+        logger.info(f"[CREAR] Iniciando creación manual de comisión")
         if not usuario_actual.get(AuthKeys.IS_SUPERADMIN):
+            logger.warning("[VALIDACIÓN] Usuario sin permisos para crear comisiones")
             raise AppError("Solo superadmin", 403, "AUTH_FORBIDDEN")
         
         nueva = self.repo.crear_comision(datos.model_dump())
         if nueva:
+            logger.info(f"[ÉXITO] Comisión creada - ID: {nueva['id']}")
             # Re-fetch with joins for snapshot enrichment
             comision_full = self.repo.obtener_por_id(nueva['id'])
             snapshot = self._crear_snapshot(
@@ -173,15 +198,20 @@ class ServicioComisiones:
                 rol_responsable='SUPERADMIN',
                 observaciones="Creación manual de comisión"
             )
+            logger.info(f"[CREAR] Comisión registrada en log")
         return nueva
 
     def actualizar(self, id: UUID, datos: ComisionActualizacion, usuario_actual: dict):
+        logger.info(f"[EDITAR] Iniciando actualización de comisión: {id}")
         if not usuario_actual.get(AuthKeys.IS_SUPERADMIN):
+            logger.warning("[VALIDACIÓN] Usuario sin permisos para actualizar comisiones")
             raise AppError("Solo superadmin", 403, "AUTH_FORBIDDEN")
             
         # 1. Fetch previous state for logging
         comision_anterior = self.repo.obtener_por_id(id)
-        if not comision_anterior: raise AppError("Comisión no encontrada", 404, "COMISION_NOT_FOUND")
+        if not comision_anterior:
+            logger.warning(f"[VALIDACIÓN] Comisión no encontrada: {id}")
+            raise AppError("Comisión no encontrada", 404, "COMISION_NOT_FOUND")
 
         update_data = datos.model_dump(exclude_unset=True)
         estado_nuevo = update_data.get('estado')

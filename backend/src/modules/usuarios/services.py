@@ -1,12 +1,16 @@
 from fastapi import Depends
 from typing import List, Optional
 from uuid import UUID
+import logging
+
 from .repositories import RepositorioUsuarios
 from ..empresa_roles.repositories import RepositorioRoles
 from .schemas import UsuarioCreacion, UsuarioActualizacion
 from ...constants.enums import AuthKeys
 from ...errors.app_error import AppError
 from ...utils.password import get_password_hash
+
+logger = logging.getLogger("facturacion_api")
 
 class ServicioUsuarios:
     def __init__(

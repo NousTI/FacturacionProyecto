@@ -1,9 +1,12 @@
 from fastapi import Depends
 from uuid import UUID
 from typing import Optional
+import logging
 
 from .repositories import SuperadminRepository
 from ...errors.app_error import AppError
+
+logger = logging.getLogger("facturacion_api")
 
 class SuperadminServices:
     def __init__(self, repo: SuperadminRepository = Depends()):

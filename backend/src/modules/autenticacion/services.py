@@ -2,6 +2,7 @@ from fastapi import Depends, Request
 from uuid import uuid4
 from datetime import datetime, timezone
 from typing import Dict, Any, Optional
+import logging
 
 from ...errors.app_error import AppError
 from ...utils.password import verify_password
@@ -17,6 +18,8 @@ from ..usuarios.repositories import RepositorioUsuarios
 from ..vendedores.repositories import RepositorioVendedores
 from .repositories import AuthRepository
 
+logger = logging.getLogger("facturacion_api")
+
 class AuthServices:
     def __init__(
         self, 
@@ -29,10 +32,12 @@ class AuthServices:
         self.vendedor_repo = vendedor_repo
 
     def iniciar_sesion(self, correo: str, clave: str, ip_address: str, user_agent: str):
+        logger.info(f"[INICIO] Intentando iniciar sesión - email: {correo}")
         # 1. Buscar Usuario en tabla única
         user = self.user_repo.obtener_por_correo(correo)
         
         if not user or not verify_password(clave, user['password_hash']):
+            logger.warning(f"[VALIDACIÓN] Credenciales inválidas para: {correo}")
             # Registrar Intento Fallido
             self.auth_repo.registrar_log(
                 user_id=user['id'] if user else None,
@@ -48,6 +53,7 @@ class AuthServices:
             )
 
         if user.get('estado') != SubscriptionStatus.ACTIVA.value:
+            logger.warning(f"[VALIDACIÓN] Cuenta inactiva: {correo}, estado: {user.get('estado')}")
             raise AppError(
                 message=f"La cuenta está {user.get('estado')}.", 
                 status_code=403, 
@@ -60,6 +66,7 @@ class AuthServices:
 
         # 3. Validar Sesión Única
         if self.auth_repo.tiene_sesion_activa(user_id):
+             logger.warning(f"[VALIDACIÓN] Sesión activa para usuario: {user_id}")
              raise AppError(
                 message=AppMessages.AUTH_SESSION_ALREADY_ACTIVE, 
                 status_code=403, 
@@ -76,6 +83,7 @@ class AuthServices:
         )
 
         # 4. Registrar Log de Éxito y Actualizar Último Acceso
+        logger.info(f"[ÉXITO] Sesión creada - usuario ID: {user_id}, email: {user.get('email')}")
         self.auth_repo.registrar_log(
             user_id=user_id,
             evento='LOGIN_OK',
@@ -142,6 +150,7 @@ class AuthServices:
         )
 
     def cerrar_sesion(self, token_payload: dict, ip_address: str = None, user_agent: str = None):
+        logger.info(f"[INICIO] Cerrando sesión")
         sid = token_payload.get("sid")
         user_id = token_payload.get("sub")
         
@@ -151,6 +160,7 @@ class AuthServices:
         if sid:
             self.auth_repo.invalidar_sesion(sid)
             if user_id:
+                logger.info(f"[ÉXITO] Sesión cerrada - usuario ID: {user_id}")
                 self.auth_repo.registrar_log(
                     user_id=user_id,
                     evento='LOGOUT',
@@ -163,8 +173,10 @@ class AuthServices:
 
     def validar_token_y_obtener_usuario(self, token: str) -> dict:
         """Absorbe la lógica de dependencies.py y strategies.py"""
+        logger.info("[INICIO] Validando token y obteniendo usuario")
         payload = decode_access_token(token)
         if not payload:
+            logger.warning("[VALIDACIÓN] Token inválido o no decodificable")
             raise AppError(AppMessages.AUTH_TOKEN_INVALID, 401, ErrorCodes.AUTH_TOKEN_INVALID)
 
         user_id = payload.get("sub")
@@ -172,20 +184,26 @@ class AuthServices:
         role = payload.get("role")
 
         if not session_id or not user_id:
+             logger.warning("[VALIDACIÓN] Faltan parámetros en token (session_id o user_id)")
              raise AppError(AppMessages.AUTH_TOKEN_INVALID, 401, ErrorCodes.AUTH_TOKEN_INVALID)
 
         # Validar Sesión
         session = self.auth_repo.obtener_sesion(session_id)
         if not session or not session['is_valid'] or str(session['user_id']) != str(user_id):
+            logger.warning(f"[VALIDACIÓN] Sesión inválida para usuario: {user_id}")
             raise AppError("Sesión inválida o expirada", 401, "AUTH_SESSION_INVALID")
 
         if session['expires_at'] < datetime.now(timezone.utc):
+            logger.warning(f"[VALIDACIÓN] Sesión expirada para usuario: {user_id}")
             raise AppError("Sesión expirada", 401, "AUTH_SESSION_EXPIRED")
 
         # Obtener Usuario (Absorbe strategies)
         user = self.user_repo.obtener_por_id(user_id)
         if not user:
+            logger.warning(f"[VALIDACIÓN] Usuario no encontrado: {user_id}")
             raise AppError("Usuario no encontrado", 404, "AUTH_USER_NOT_FOUND")
+        
+        logger.info(f"[ÉXITO] Token y usuario validados - usuario ID: {user_id}")
 
         # Inyectar flags de rol para compatibilidad
         role_upper = str(role).strip().upper()

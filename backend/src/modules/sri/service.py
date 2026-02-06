@@ -1,5 +1,6 @@
 import base64
 import re
+import logging
 from fastapi import Depends
 from uuid import UUID
 from typing import List, Optional
@@ -15,6 +16,8 @@ from ...utils.crypto import CryptoService
 from ...config.env import env
 from ...constants.enums import AuthKeys
 from ...errors.app_error import AppError
+
+logger = logging.getLogger("facturacion_api")
 
 # Other modules repos
 from ..facturas.repository import RepositorioFacturas

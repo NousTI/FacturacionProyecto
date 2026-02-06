@@ -101,6 +101,9 @@ import { Observable, map } from 'rxjs';
               <a routerLink="/usuario/establecimientos" routerLinkActive="active" class="menu-item px-3 mb-1">
                 <i class="bi bi-shop me-3"></i> Establecimientos
               </a>
+              <a routerLink="/usuario/puntos-emision" routerLinkActive="active" class="menu-item px-3 mb-1">
+                <i class="bi bi-printer me-3"></i> Puntos Emisión
+              </a>
                <a routerLink="/usuario/configuracion" routerLinkActive="active" class="menu-item px-3 mb-1">
                 <i class="bi bi-gear me-3"></i> Configuración
               </a>

@@ -1,10 +1,14 @@
 from fastapi import Depends
 from uuid import UUID
 from typing import List, Optional
+import logging
+
 from .repositories import RepositorioRoles
 from .schemas import PermisoCreacion, RolCreacion, RolActualizacion
 from ...constants.enums import AuthKeys
 from ...errors.app_error import AppError
+
+logger = logging.getLogger("facturacion_api")
 
 class ServicioRoles:
     def __init__(self, repo: RepositorioRoles = Depends()):

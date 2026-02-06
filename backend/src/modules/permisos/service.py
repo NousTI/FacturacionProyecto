@@ -1,8 +1,12 @@
 from fastapi import Depends, HTTPException
 from uuid import UUID
+import logging
+
 from .repository import RepositorioPermisos
 from ...constants.enums import AuthKeys, PermissionCodes
 from ...errors.app_error import AppError
+
+logger = logging.getLogger("facturacion_api")
 
 class ServicioPermisos:
     def __init__(self, repo: RepositorioPermisos = Depends()):

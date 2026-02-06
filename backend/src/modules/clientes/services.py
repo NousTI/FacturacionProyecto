@@ -1,6 +1,7 @@
 from fastapi import Depends
 from uuid import UUID
 from typing import List, Optional
+import logging
 
 from .repository import RepositorioClientes
 from .schemas import ClienteCreacion, ClienteActualizacion
@@ -8,6 +9,8 @@ from ..vendedores.repositories import RepositorioVendedores
 from ..empresas.repositories import RepositorioEmpresas
 from ...constants.enums import AuthKeys
 from ...errors.app_error import AppError
+
+logger = logging.getLogger("facturacion_api")
 
 class ServicioClientes:
     def __init__(
@@ -30,13 +33,17 @@ class ServicioClientes:
         }
 
     def listar_clientes(self, usuario_actual: dict, empresa_id_filtro: Optional[UUID] = None):
+        logger.info("[INICIO] Listando clientes")
         ctx = self._get_context(usuario_actual)
         
         # 1. Usuario Regular: Solo ve clientes de su propia empresa
         if ctx["is_usuario"]:
             if not ctx["empresa_id"]:
+                 logger.warning("[VALIDACIÓN] Usuario sin empresa asignada")
                  raise AppError("Usuario no tiene empresa asignada", 400)
-            return self.repo.listar_clientes(empresa_id=ctx["empresa_id"])
+            result = self.repo.listar_clientes(empresa_id=ctx["empresa_id"])
+            logger.info(f"[ÉXITO] Clientes listados: {len(result)} registros")
+            return result
         
         # 2. Vendedor: Solo ve clientes de empresas que gestiona
         if ctx["is_vendedor"]:
@@ -63,26 +70,32 @@ class ServicioClientes:
         raise AppError("No autorizado", 403)
 
     def obtener_cliente(self, id: UUID, usuario_actual: dict):
+        logger.info(f"[INICIO] Obteniendo cliente: {id}")
         ctx = self._get_context(usuario_actual)
         cliente = self.repo.obtener_por_id(id)
 
         if not cliente:
+            logger.warning(f"[VALIDACIÓN] Cliente no encontrado: {id}")
             raise AppError("Cliente no encontrado", 404)
         
         # Validar acceso
         if ctx["is_usuario"]:
              if str(cliente["empresa_id"]) != str(ctx["empresa_id"]):
+                  logger.warning(f"[VALIDACIÓN] Acceso negado a cliente")
                   raise AppError("Acceso denegado a este cliente", 403)
         
         elif ctx["is_vendedor"]:
              empresa = self.empresa_repo.obtener_por_id(cliente["empresa_id"])
              vendedor_profile = self.vendedor_repo.obtener_por_user_id(ctx["user_id"])
              if not empresa or not vendedor_profile or str(empresa.get('vendedor_id')) != str(vendedor_profile['id']):
+                  logger.warning(f"[VALIDACIÓN] Acceso negado a cliente")
                   raise AppError("Acceso denegado", 403)
-
+        
+        logger.info(f"[ÉXITO] Cliente obtenido - ID: {id}")
         return cliente
 
     def crear_cliente(self, datos: ClienteCreacion, usuario_actual: dict):
+        logger.info(f"[CREAR] Iniciando creación de cliente")
         ctx = self._get_context(usuario_actual)
         
         # Determinar empresa_id
@@ -122,23 +135,34 @@ class ServicioClientes:
                  data_dict["empresa_id"] = ctx["empresa_id"]
 
         try:
-            return self.repo.crear_cliente(data_dict)
+            result = self.repo.crear_cliente(data_dict)
+            logger.info(f"[ÉXITO] Cliente creado - ID: {result['id']}")
+            return result
         except ValueError as e:
+            logger.error(f"[ERROR] Fallo al crear cliente: {str(e)}")
             raise AppError(str(e), 400)
 
     def actualizar_cliente(self, id: UUID, datos: ClienteActualizacion, usuario_actual: dict):
+        logger.info(f"[EDITAR] Iniciando actualización de cliente: {id}")
         cliente = self.obtener_cliente(id, usuario_actual) # Valida permisos y existencia
         
         try:
-            return self.repo.actualizar_cliente(id, datos.model_dump(exclude_unset=True))
+            result = self.repo.actualizar_cliente(id, datos.model_dump(exclude_unset=True))
+            logger.info(f"[ÉXITO] Cliente actualizado - ID: {id}")
+            return result
         except ValueError as e:
+            logger.error(f"[ERROR] Fallo al actualizar cliente: {str(e)}")
             raise AppError(str(e), 400)
 
     def eliminar_cliente(self, id: UUID, usuario_actual: dict):
+        logger.info(f"[ELIMINAR] Iniciando eliminación de cliente: {id}")
         self.obtener_cliente(id, usuario_actual) # Valida permisos
-        return self.repo.eliminar_cliente(id)
+        result = self.repo.eliminar_cliente(id)
+        logger.info(f"[ÉXITO] Cliente eliminado - ID: {id}")
+        return result
 
     def obtener_stats(self, usuario_actual: dict):
+        logger.info("[INICIO] Obteniendo estadísticas de clientes")
         ctx = self._get_context(usuario_actual)
         
         # Validar empresa
@@ -149,7 +173,10 @@ class ServicioClientes:
              # Si es superadmin/vendedor deberian pasar filtro, por ahora retornamos vacio o error
              # para no romper el dashboard si llaman sin contexto
              if not empresa_id:
+                 logger.warning("[VALIDACIÓN] Admin/vendedor sin contexto de empresa para stats")
                  return {"total": 0, "activos": 0, "con_credito": 0}
 
-        return self.repo.obtener_stats(empresa_id)
+        result = self.repo.obtener_stats(empresa_id)
+        logger.info(f"[ÉXITO] Estadísticas obtenidas")
+        return result
 

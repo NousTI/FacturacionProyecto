@@ -14,7 +14,7 @@ class RepositorioPuntosEmision:
         placeholders = ["%s"] * len(fields)
         
         query = f"""
-            INSERT INTO punto_emision ({', '.join(fields)})
+            INSERT INTO sistema_facturacion.puntos_emision ({', '.join(fields)})
             VALUES ({', '.join(placeholders)})
             RETURNING *
         """
@@ -24,21 +24,34 @@ class RepositorioPuntosEmision:
             return dict(row) if row else None
 
     def obtener_por_id(self, id: UUID) -> Optional[dict]:
-        query = "SELECT * FROM punto_emision WHERE id = %s"
+        query = """
+            SELECT 
+                pe.*,
+                e.nombre as establecimiento_nombre
+            FROM sistema_facturacion.puntos_emision pe
+            LEFT JOIN sistema_facturacion.establecimientos e ON pe.establecimiento_id = e.id
+            WHERE pe.id = %s
+        """
         with self.db.cursor() as cur:
             cur.execute(query, (str(id),))
             row = cur.fetchone()
             return dict(row) if row else None
 
     def listar_puntos(self, establecimiento_id: Optional[UUID] = None, limit: int = 100, offset: int = 0) -> List[dict]:
-        query = "SELECT * FROM punto_emision"
+        query = """
+            SELECT 
+                pe.*,
+                e.nombre as establecimiento_nombre
+            FROM sistema_facturacion.puntos_emision pe
+            LEFT JOIN sistema_facturacion.establecimientos e ON pe.establecimiento_id = e.id
+        """
         params = []
         
         if establecimiento_id:
-            query += " WHERE establecimiento_id = %s"
+            query += " WHERE pe.establecimiento_id = %s"
             params.append(str(establecimiento_id))
             
-        query += " ORDER BY codigo ASC LIMIT %s OFFSET %s"
+        query += " ORDER BY pe.codigo ASC LIMIT %s OFFSET %s"
         params.extend([limit, offset])
         
         with self.db.cursor() as cur:
@@ -52,7 +65,7 @@ class RepositorioPuntosEmision:
         clean_values = [str(v) if isinstance(v, UUID) else v for v in data.values()]
         clean_values.append(str(id))
 
-        query = f"UPDATE punto_emision SET {', '.join(set_clauses)}, updated_at = NOW() WHERE id = %s RETURNING *"
+        query = f"UPDATE sistema_facturacion.puntos_emision SET {', '.join(set_clauses)}, updated_at = NOW() WHERE id = %s RETURNING *"
         
         with db_transaction(self.db) as cur:
             cur.execute(query, tuple(clean_values))
@@ -60,13 +73,13 @@ class RepositorioPuntosEmision:
             return dict(row) if row else None
 
     def eliminar_punto(self, id: UUID) -> bool:
-        query = "DELETE FROM punto_emision WHERE id = %s"
+        query = "DELETE FROM sistema_facturacion.puntos_emision WHERE id = %s"
         with db_transaction(self.db) as cur:
             cur.execute(query, (str(id),))
             return cur.rowcount > 0
 
     def incrementar_secuencial(self, id: UUID) -> Optional[int]:
-        query = "UPDATE punto_emision SET secuencial_actual = secuencial_actual + 1, updated_at = NOW() WHERE id = %s RETURNING secuencial_actual"
+        query = "UPDATE sistema_facturacion.puntos_emision SET secuencial_actual = secuencial_actual + 1, updated_at = NOW() WHERE id = %s RETURNING secuencial_actual"
         with db_transaction(self.db) as cur:
              cur.execute(query, (str(id),))
              row = cur.fetchone()

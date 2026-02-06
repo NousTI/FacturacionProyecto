@@ -2,6 +2,7 @@ from fastapi import Depends
 from uuid import UUID
 from datetime import datetime, timedelta
 from typing import List, Optional
+import logging
 
 from .repositories import RepositorioSuscripciones
 from .schemas import PlanCreacion, PagoSuscripcionCreacion, PagoSuscripcionQuick
@@ -10,6 +11,8 @@ from ..modulos.service import ServicioModulos
 from ..empresas.repositories import RepositorioEmpresas
 from ...constants.enums import AuthKeys
 from ...errors.app_error import AppError
+
+logger = logging.getLogger("facturacion_api")
 
 class ServicioSuscripciones:
     def __init__(

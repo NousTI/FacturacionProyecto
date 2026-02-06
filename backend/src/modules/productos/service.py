@@ -1,12 +1,15 @@
 from fastapi import Depends
 from uuid import UUID
 from typing import List, Optional
+import logging
 
 from .repository import RepositorioProductos
 from .schemas import ProductoCreacion, ProductoActualizacion
 from ...constants.enums import AuthKeys
 from ...constants.permissions import PermissionCodes
 from ...errors.app_error import AppError
+
+logger = logging.getLogger("facturacion_api")
 
 class ServicioProductos:
     def __init__(self, repo: RepositorioProductos = Depends()):

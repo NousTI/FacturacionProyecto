@@ -13,6 +13,7 @@ import { FacturacionPage } from './facturacion/facturacion.page';
 import { FacturacionRecurrentePage } from './facturacion-recurrente/facturacion-recurrente.page';
 import { ReportesPage } from './reportes/reportes.page';
 import { EstablecimientosPage } from './establecimientos/establecimientos.page';
+import { PuntosEmisionPage } from './puntos-emision/puntos-emision.page';
 import { ConfiguracionPage } from './configuracion/configuracion.page';
 import { UsuariosPage } from './usuarios/usuarios.page';
 import { CertificadoSriPage } from './certificado-sri/certificado-sri.page';
@@ -70,6 +71,12 @@ const routes: Routes = [
         component: EstablecimientosPage,
         canActivate: [RoleGuard],
         data: { title: 'Establecimientos', roles: [UserRole.USUARIO] }
+    },
+    {
+        path: 'puntos-emision',
+        component: PuntosEmisionPage,
+        canActivate: [RoleGuard],
+        data: { title: 'Puntos de Emisión', roles: [UserRole.USUARIO] }
     },
     {
         path: 'configuracion',
