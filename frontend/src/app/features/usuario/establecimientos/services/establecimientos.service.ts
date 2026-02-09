@@ -22,7 +22,7 @@ export class EstablecimientosService {
   // Cache con datos
   private establecimientosCache$ = new BehaviorSubject<Establecimiento[]>([]);
   private statsCache$ = new BehaviorSubject<EstablecimientoStats | null>(null);
-  
+
   // Trigger para refresh
   private refreshTrigger$ = new BehaviorSubject<void>(void 0);
 
@@ -32,10 +32,13 @@ export class EstablecimientosService {
   ) {
     // Configurar el observador que se auto-actualiza cuando se emite refreshTrigger$
     this.refreshTrigger$.pipe(
-      switchMap(() => this.apiService.listar()),
+      switchMap(() => {
+        console.log('EstablecimientosService: Refrescando datos...');
+        return this.apiService.listar();
+      }),
       tap(data => {
+        console.log('EstablecimientosService: Datos recibidos', data?.length);
         this.establecimientosCache$.next(data);
-        // Actualizar stats cuando se cargan los datos
         this.actualizarStats();
       }),
       catchError(err => {

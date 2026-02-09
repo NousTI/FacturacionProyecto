@@ -43,12 +43,25 @@ class RepositorioEmpresas:
                    p.max_facturas_mes,
                    p.max_establecimientos,
                    p.max_programaciones,
+                   -- Info SRI
+                   csri.ambiente as sri_ambiente,
+                   csri.estado as sri_estado,
+                   csri.fecha_expiracion_cert as firma_expiracion,
+                   csri.cert_emisor as firma_emisor,
+                   -- Infraestructura (Conteo real)
+                   (SELECT COUNT(*) FROM sistema_facturacion.establecimientos WHERE empresa_id = e.id) as establecimientos_count,
+                   (SELECT COUNT(pe.id) 
+                    FROM sistema_facturacion.establecimientos est 
+                    JOIN sistema_facturacion.puntos_emision pe ON est.id = pe.establecimiento_id 
+                    WHERE est.empresa_id = e.id) as puntos_emision_count,
+                   -- Pagos
                    (SELECT MAX(fecha_pago) FROM sistema_facturacion.pagos_suscripciones WHERE empresa_id = e.id) as ultimo_pago_fecha,
                    (SELECT monto FROM sistema_facturacion.pagos_suscripciones WHERE empresa_id = e.id ORDER BY fecha_pago DESC LIMIT 1) as ultimo_pago_monto
             FROM sistema_facturacion.empresas e 
             LEFT JOIN sistema_facturacion.vendedores v ON e.vendedor_id = v.id
             LEFT JOIN sistema_facturacion.suscripciones s ON e.id = s.empresa_id
             LEFT JOIN sistema_facturacion.planes p ON s.plan_id = p.id
+            LEFT JOIN sistema_facturacion.configuraciones_sri csri ON e.id = csri.empresa_id
             WHERE e.id = %s
         """
         with self.db.cursor() as cur:

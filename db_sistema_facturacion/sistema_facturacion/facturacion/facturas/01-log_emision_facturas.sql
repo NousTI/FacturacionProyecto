@@ -6,7 +6,7 @@
 CREATE TABLE IF NOT EXISTS sistema_facturacion.log_emision_facturas (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
 
-    facturacion_programada_id UUID REFERENCES public.facturacion_programada(id) ON DELETE SET NULL,
+    facturacion_programada_id UUID REFERENCES sistema_facturacion.facturacion_programada(id) ON DELETE SET NULL,
     
     factura_id UUID NOT NULL
         REFERENCES sistema_facturacion.facturas(id) ON DELETE CASCADE,

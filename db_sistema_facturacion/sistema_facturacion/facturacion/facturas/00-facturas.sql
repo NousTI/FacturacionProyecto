@@ -31,7 +31,7 @@ CREATE TABLE IF NOT EXISTS sistema_facturacion.facturas (
     -- Cada referencia se copia como JSON para preservar estado original
     -- =============================================
     snapshot_empresa JSONB NOT NULL 
-        COMMENT 'Snapshot empresa: {id, numero_ruc, razon_social, nombre_comercial, email, telefono, direccion, ciudad, provincia}',
+        COMMENT 'Snapshot empresa: {id, ruc, razon_social, nombre_comercial, email, telefono, direccion, ciudad, provincia}',
     
     snapshot_cliente JSONB NOT NULL
         COMMENT 'Snapshot cliente: {id, tipo_identificacion, numero_identificacion, nombres, apellidos, razon_social, email, telefono, direccion, ciudad, provincia}',
@@ -65,6 +65,9 @@ CREATE TABLE IF NOT EXISTS sistema_facturacion.facturas (
     tipo_documento VARCHAR(2) DEFAULT '01' 
         CHECK (tipo_documento IN ('01', '04', '05'))
         COMMENT '01=Factura, 04=Nota Crédito, 05=Nota Débito',
+    
+    forma_pago_sri VARCHAR(2) NOT NULL DEFAULT '01'
+        COMMENT 'Código SRI de forma de pago (ej: 01=Efectivo, 16=Tarjeta, 20=Transferencia)',
     
     -- Ambiente: 1=Prueba, 2=Producción
     ambiente INT DEFAULT 1 
@@ -120,7 +123,8 @@ CREATE TABLE IF NOT EXISTS sistema_facturacion.facturas (
         COMMENT 'Retención de Renta',
     
     total NUMERIC(12,2) NOT NULL 
-        CHECK (total = ROUND(subtotal_con_iva + propina - descuento - retencion_iva - retencion_renta, 2))
+        CHECK (total = ROUND(subtotal_sin_iva + subtotal_con_iva + propina - descuento - retencion_iva - retencion_renta, 2))
+
         COMMENT 'Total = subtotal + propina - descuento - retenciones',
 
     -- =============================================
@@ -146,6 +150,18 @@ CREATE TABLE IF NOT EXISTS sistema_facturacion.facturas (
     origen VARCHAR(20) 
         CHECK (origen IN ('MANUAL', 'IMPORTADO', 'API', 'FACTURACION_PROGRAMADA'))
         COMMENT 'Cómo se creó: MANUAL, IMPORTADO, API, o FACTURACION_PROGRAMADA',
+
+    forma_pago_sri CHAR(2) NOT NULL DEFAULT '01'
+        CHECK (forma_pago_sri IN (
+            '01', -- SIN UTILIZACIÓN DEL SISTEMA FINANCIERO (EFECTIVO)
+            '15', -- COMPENSACIÓN DE DEUDAS
+            '16', -- TARJETA DE DÉBITO
+            '17', -- TARJETA DE CRÉDITO
+            '18', -- TARJETA PREPAGO
+            '19', -- TRANSFERENCIA / DEPÓSITO
+            '20', -- OTROS CON UTILIZACIÓN DEL SISTEMA FINANCIERO
+            '21'  -- ENDOSO DE TÍTULOS
+        )),
 
     -- =============================================
     -- AUDITORÍA

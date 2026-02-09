@@ -27,8 +27,8 @@ from .schemas_logs import AutorizacionSRIResumen, ResumenPagos
 
 EstadoFactura = Literal['BORRADOR', 'EMITIDA', 'ANULADA']
 EstadoPago = Literal['PENDIENTE', 'PAGADO', 'PARCIAL', 'VENCIDO']
-TipoEmision = Literal['NORMAL', 'CONTINGENCIA']
-Ambiente = Literal['PRODUCCION', 'PRUEBAS']
+# Ambiente: 1=Prueba, 2=Produccion
+# TipoEmision: 1=Normal, 2=Contingencia
 
 
 # ===================================================================
@@ -42,15 +42,27 @@ class FacturaBase(BaseModel):
     punto_emision_id: UUID
     cliente_id: UUID
     facturacion_programada_id: Optional[UUID] = None
+    
+    # SRI ECUADOR
+    tipo_documento: str = Field(default='01', pattern=r'^\d{2}$', description="01=Factura, 04=NC, 05=ND")
+    ambiente: int = Field(default=1, ge=1, le=2, description="1=Prueba, 2=Produccion")
+    tipo_emision: int = Field(default=1, ge=1, le=2, description="1=Normal, 2=Contingencia")
+    forma_pago_sri: str = Field(default='01', pattern=r'^\d{2}$', description="Código SRI de forma de pago")
+    
     fecha_emision: date
     fecha_vencimiento: Optional[date] = None
+    
+    # MONTOS
     subtotal_sin_iva: Decimal = Field(default=Decimal('0.00'), ge=0)
     subtotal_con_iva: Decimal = Field(default=Decimal('0.00'), ge=0)
     iva: Decimal = Field(default=Decimal('0.00'), ge=0)
     descuento: Decimal = Field(default=Decimal('0.00'), ge=0)
     propina: Decimal = Field(default=Decimal('0.00'), ge=0)
+    retencion_iva: Decimal = Field(default=Decimal('0.00'), ge=0)
+    retencion_renta: Decimal = Field(default=Decimal('0.00'), ge=0)
     total: Decimal = Field(..., ge=0)
-    origen: Optional[str] = Field(None, description="WEB | MOVIL | API | PROGRAMADA")
+    
+    origen: Optional[str] = Field(None, description="MANUAL | IMPORTADO | API | FACTURACION_PROGRAMADA")
     observaciones: Optional[str] = None
 
     @field_validator('fecha_vencimiento')
@@ -80,22 +92,27 @@ class FacturaCreacion(FacturaBase):
     @model_validator(mode='after')
     def validar_total(self) -> 'FacturaCreacion':
         """
-        Valida que el total sea consistente con los subtotales.
-        total = subtotal_sin_iva + subtotal_con_iva + iva + propina - descuento
+        Valida que el total sea consistente con los montos.
+        Segun SQL Check: total = subtotal_con_iva + propina - descuento - retencion_iva - retencion_renta
         """
+        # Seguir logica de SQL: 
         calculado = (
-            self.subtotal_sin_iva +
+            self.subtotal_sin_iva + 
             self.subtotal_con_iva +
             self.iva +
             self.propina -
-            self.descuento
+            self.descuento -
+            self.retencion_iva -
+            self.retencion_renta
         )
+        # NOTA: En este esquema subtotal_con_iva parece actuar como el total previo a retenciones
+        
         # Permitir pequeña diferencia por redondeo (0.01)
         diferencia = abs(self.total - calculado)
         if diferencia > Decimal('0.01'):
             raise ValueError(
                 f'Total ({self.total}) no coincide con el cálculo esperado ({calculado}). '
-                f'total = subtotal_sin_iva + subtotal_con_iva + iva + propina - descuento'
+                f'total = subtotal_sin_iva + subtotal_con_iva + iva + propina - descuento - retencion_iva - retencion_renta'
             )
         return self
 
@@ -124,6 +141,8 @@ class FacturaActualizacion(BaseModel):
     iva: Optional[Decimal] = Field(None, ge=0)
     descuento: Optional[Decimal] = Field(None, ge=0)
     propina: Optional[Decimal] = Field(None, ge=0)
+    retencion_iva: Optional[Decimal] = Field(None, ge=0)
+    retencion_renta: Optional[Decimal] = Field(None, ge=0)
     total: Optional[Decimal] = Field(None, ge=0)
     origen: Optional[str] = None
     observaciones: Optional[str] = None
@@ -182,35 +201,34 @@ class FacturaLectura(BaseModel):
     facturacion_programada_id: Optional[UUID] = None
     
     # Número de factura formato SRI: NNN-NNN-NNNNNNNNN
-    numero_factura: str = Field(
-        ...,
-        pattern=r'^\d{3}-\d{3}-\d{9}$',
-        description="Formato SRI: 001-001-000000001"
-    )
+    numero_factura: str
+    secuencial_punto_emision: int
     
     # Campos SRI
-    clave_acceso: Optional[str] = Field(
-        None,
-        min_length=49,
-        max_length=49,
-        description="Clave de acceso SRI (49 dígitos)"
-    )
-    ambiente: Optional[Ambiente] = Field(None, description="PRODUCCION | PRUEBAS")
-    tipo_emision: Optional[TipoEmision] = Field(None, description="NORMAL | CONTINGENCIA")
+    clave_acceso: Optional[str] = None
+    numero_autorizacion: Optional[str] = None
+    tipo_documento: str
+    ambiente: int
+    tipo_emision: int
+    forma_pago_sri: str
     
     # Estados
-    estado: EstadoFactura = Field(..., description="BORRADOR | EMITIDA | ANULADA")
-    estado_pago: EstadoPago = Field(..., description="PENDIENTE | PAGADO | PARCIAL | VENCIDO")
+    estado: EstadoFactura
+    estado_pago: EstadoPago
     razon_anulacion: Optional[str] = None
     
     # Montos
     fecha_emision: date
     fecha_vencimiento: Optional[date] = None
+    fecha_autorizacion: Optional[datetime] = None
+    
     subtotal_sin_iva: Decimal
     subtotal_con_iva: Decimal
     iva: Decimal
     descuento: Decimal
     propina: Decimal
+    retencion_iva: Decimal
+    retencion_renta: Decimal
     total: Decimal
     
     # Otros

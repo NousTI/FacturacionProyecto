@@ -87,7 +87,7 @@ import { Establecimiento } from '../../../../../domain/models/establecimiento.mo
             <div class="form-section-final" *ngIf="establecimiento">
               <h3 class="section-header-final">Puntos de Emisión</h3>
               <div class="info-box">
-                <p><span class="label">Cantidad de Puntos:</span> <strong>{{ establecimiento.puntos_emision_count || 0 }}</strong></p>
+                  <p><span class="label">Cantidad de Puntos:</span> <strong>{{ establecimiento.puntos_emision_total || 0 }}</strong></p>
                 <p><span class="label">Último Secuencial:</span> <strong>{{ establecimiento.ultimo_secuencial || 'N/A' }}</strong></p>
               </div>
             </div>

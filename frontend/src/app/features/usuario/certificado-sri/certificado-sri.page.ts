@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { SriConfigService } from './services/sri-config.service';
@@ -330,10 +330,12 @@ export class CertificadoSriPage implements OnInit, OnDestroy {
     constructor(
         private sriService: SriConfigService,
         private authFacade: AuthFacade,
-        private uiService: UiService
+        private uiService: UiService,
+        private cdr: ChangeDetectorRef
     ) { }
 
     ngOnInit() {
+        console.log('[CertificadoSRI] Componente inicializado');
         this.cargarConfiguracion();
     }
 
@@ -348,10 +350,12 @@ export class CertificadoSriPage implements OnInit, OnDestroy {
 
     private cargarConfiguracion() {
         this.loading = true;
+        console.log('[CertificadoSRI] -> Cargando configuración...');
+
         this.sriService.obtenerConfiguracion()
-            .pipe(finalize(() => this.loading = false))
             .subscribe({
                 next: (data) => {
+                    console.log('[CertificadoSRI] -> Datos recibidos correctamente:', data);
                     this.config = data;
                     if (data) {
                         this.updateParams = {
@@ -359,10 +363,20 @@ export class CertificadoSriPage implements OnInit, OnDestroy {
                             tipo_emision: data.tipo_emision
                         };
                     }
+                    // Forzar fin de carga
+                    this.loading = false;
+                    this.cdr.detectChanges();
                 },
                 error: (err) => {
-                    console.error('SRI Load Error:', err);
+                    console.error('[CertificadoSRI] -> Error en petición:', err);
                     this.uiService.showError(err, 'No se pudo cargar la configuración');
+                    this.loading = false;
+                    this.cdr.detectChanges();
+                },
+                complete: () => {
+                    console.log('[CertificadoSRI] -> Petición completada');
+                    this.loading = false;
+                    this.cdr.detectChanges();
                 }
             });
     }
@@ -421,10 +435,15 @@ export class CertificadoSriPage implements OnInit, OnDestroy {
             .subscribe({
                 next: (data) => {
                     this.config = data;
-                    this.uiService.showToast('Certificado activado', 'success');
+                    this.uiService.showToast('Certificado activado y RUC sincronizado', 'success');
                     this.password = '';
                     this.selectedFile = null;
                     this.fileSelected = false;
+
+                    // Redirigir a la página de empresa para ver el RUC actualizado
+                    setTimeout(() => {
+                        window.location.href = '/usuario/empresa';
+                    }, 1500);
                 },
                 error: (err) => {
                     console.error('Upload Error:', err);

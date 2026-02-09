@@ -72,6 +72,15 @@ class ServicioSRI:
             "estado": "ACTIVO"
         }
         
+        # 🟢 ACTUALIZACIÓN AUTOMÁTICA DEL RUC DE LA EMPRESA
+        # Si el certificado contiene un RUC válido, actualizamos la tabla empresas
+        ruc_extraido = meta.get("ruc")
+        if ruc_extraido and len(ruc_extraido) == 13:
+            logger.info(f"[SRI] Sincronizando RUC {ruc_extraido} desde certificado para empresa {empresa_id}")
+            self.empresa_repo.actualizar_empresa(empresa_id, {"ruc": ruc_extraido})
+        else:
+            logger.warning(f"[SRI] No se pudo extraer un RUC válido del certificado para la empresa {empresa_id}")
+
         existing = self.repo.obtener_config(empresa_id)
         if existing:
             return self.repo.actualizar_config(existing['id'], data)
@@ -89,7 +98,7 @@ class ServicioSRI:
         return self.repo.actualizar_config(existing['id'], data)
 
     def obtener_signer(self, empresa_id: UUID) -> XMLSigner:
-        config = self.repo.obtener_config(empresa_id)
+        config = self.repo.obtener_config(empresa_id, incluir_binarios=True)
         if not config or config['estado'] != 'ACTIVO':
             raise AppError("Firma electrónica no activa o inválida", 400, "SRI_CONFIG_INCOMPLETE")
         
@@ -106,7 +115,7 @@ class ServicioSRI:
         
         empresa = self.empresa_repo.obtener_por_id(factura['empresa_id'])
         cliente = self.cliente_repo.obtener_por_id(factura['cliente_id'])
-        detalles = self.factura_repo.obtener_detalles(factura_id)
+        detalles = self.factura_repo.listar_detalles(factura_id)
         config_sri = self.repo.obtener_config(factura['empresa_id'])
         
         if not config_sri: raise AppError("Configuración SRI no encontrada", 400, "SRI_CONFIG_MISSING")
@@ -119,6 +128,10 @@ class ServicioSRI:
         tipo_emision = emision_map.get(config_sri['tipo_emision'], "1")
         
         signer = None
+        # Identificar el intento actual (conteo básico para logs)
+        historial = self.factura_repo.listar_logs_emision(factura_id)
+        intento_num = len(historial) + 1
+        
         try:
             signer = self.obtener_signer(factura['empresa_id'])
             signer.verify_ruc(empresa['ruc'])
@@ -127,42 +140,76 @@ class ServicioSRI:
             xml_firmado = signer.sign_xml(xml_str.encode('utf-8'))
             xml_b64 = base64.b64encode(xml_firmado).decode('utf-8')
             
-            # Enviar Recepción
+            # 1. ENVIAR RECEPCIÓN
             res_rec = self.client_sri.validar_comprobante(xml_b64, ambiente)
             
-            if res_rec['estado'] == 'RECIBIDA':
-                # Extraer clave de acceso del XML de forma robusta
-                clave_match = re.search(r'<claveAcceso>(.*?)</claveAcceso>', xml_str)
-                clave = clave_match.group(1) if clave_match else ""
-                
-                if not clave:
-                    raise AppError("No se pudo extraer la clave de acceso del XML", 500, "SRI_KEY_ERROR")
-                
-                res_aut = self.client_sri.autorizar_comprobante(clave, ambiente)
-                
-                # Guardar Autorización
-                self.repo.crear_autorizacion({
+            if res_rec['estado'] != 'RECIBIDA':
+                # Registrar fallo en recepción
+                self.factura_repo.crear_log_emision({
                     "factura_id": factura_id,
-                    "numero_autorizacion": res_aut.get('numeroAutorizacion'),
-                    "fecha_autorizacion": datetime.fromisoformat(res_aut['fechaAutorizacion']) if res_aut.get('fechaAutorizacion') else None,
-                    "estado": res_aut['estado'],
-                    "mensajes": "; ".join(res_aut['mensajes']) if res_aut.get('mensajes') else None,
-                    "xml_enviado": xml_firmado.decode('utf-8', errors='ignore'),
-                    "xml_respuesta": str(res_aut)
+                    "facturacion_programada_id": factura.get('facturacion_programada_id'),
+                    "usuario_id": usuario_actual.get('id'),
+                    "estado": "ERROR_VALIDACION",
+                    "tipo_intento": "INICIAL" if intento_num == 1 else "REINTENTO",
+                    "intento_numero": intento_num,
+                    "mensaje_error": f"SRI Recepción: {res_rec.get('mensaje')}",
+                    "xml_enviado": xml_str,
+                    "xml_respuesta": str(res_rec)
                 })
-                
-                if res_aut['estado'] == 'AUTORIZADO':
-                    self.factura_repo.actualizar_factura(factura_id, {"estado": "AUTORIZADO", "clave_acceso": clave})
-                
-                return res_aut
-            else:
                 return res_rec
+
+            # 2. PROCESAR AUTORIZACIÓN (Solo si fue RECIBIDA)
+            clave_match = re.search(r'<claveAcceso>(.*?)</claveAcceso>', xml_str)
+            clave = clave_match.group(1) if clave_match else ""
+            
+            if not clave:
+                raise AppError("No se pudo extraer la clave de acceso del XML", 500, "SRI_KEY_ERROR")
+            
+            res_aut = self.client_sri.autorizar_comprobante(clave, ambiente)
+            estado_aut = res_aut['estado']
+            
+            # 3. REGISTRAR RESULTADO FINAL EN LOGS
+            log_estado = "EXITOSO" if estado_aut == "AUTORIZADO" else "ERROR_VALIDACION"
+            self.factura_repo.crear_log_emision({
+                "factura_id": factura_id,
+                "facturacion_programada_id": factura.get('facturacion_programada_id'),
+                "usuario_id": usuario_actual.get('id'),
+                "estado": log_estado,
+                "tipo_intento": "INICIAL" if intento_num == 1 else "REINTENTO",
+                "intento_numero": intento_num,
+                "mensaje_error": "; ".join(res_aut.get('mensajes', [])) if estado_aut != "AUTORIZADO" else None,
+                "xml_enviado": xml_firmado.decode('utf-8', errors='ignore'),
+                "xml_respuesta": str(res_aut)
+            })
+
+            # 4. GUARDAR EN TABLA DE AUTORIZACIONES (Verdad técnica final)
+            self.repo.crear_autorizacion({
+                "factura_id": factura_id,
+                "numero_autorizacion": res_aut.get('numeroAutorizacion'),
+                "fecha_autorizacion": datetime.fromisoformat(res_aut['fechaAutorizacion']) if res_aut.get('fechaAutorizacion') else None,
+                "estado": estado_aut,
+                "mensajes": res_aut.get('mensajes'),
+                "xml_enviado": xml_firmado.decode('utf-8', errors='ignore'),
+                "xml_respuesta": str(res_aut)
+            })
+            
+            if estado_aut == 'AUTORIZADO':
+                self.factura_repo.actualizar_factura(factura_id, {
+                    "estado": "EMITIDA", 
+                    "clave_acceso": clave,
+                    "numero_autorizacion": res_aut.get('numeroAutorizacion'),
+                    "fecha_autorizacion": res_aut.get('fechaAutorizacion')
+                })
+            
+            return res_aut
                 
         except Exception as e:
-            self.log_repo.crear_log({
+            self.factura_repo.crear_log_emision({
                 "factura_id": factura_id,
-                "estado": "FALLO",
-                "mensaje_error": str(e)[:500]
+                "usuario_id": usuario_actual.get('id'),
+                "estado": "ERROR_OTRO",
+                "intento_numero": intento_num,
+                "mensaje_error": f"EXCEPCIÓN: {str(e)[:500]}"
             })
             raise e
         finally:

@@ -15,12 +15,10 @@ export class SriConfigService extends BaseApiService {
      * Obtiene la configuración SRI de la empresa actual (basado en el token)
      */
     obtenerConfiguracion(): Observable<ConfigSRI | null> {
-        return this.get<ApiResponse<ConfigSRI>>(this.endpoint).pipe(
+        return this.get<any>(this.endpoint).pipe(
             map(res => {
-                if (!res.ok) {
-                    throw new Error(res.mensaje || 'Error al obtener configuración');
-                }
-                return res.detalles;
+                // El backend devuelve un RespuestaBase con .detalles
+                return res.detalles !== undefined ? res.detalles : res;
             })
         );
     }

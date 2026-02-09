@@ -80,6 +80,9 @@ import { Observable, map } from 'rxjs';
               <a routerLink="/usuario/dashboard" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" class="menu-item px-3 mb-1">
                 <i class="bi bi-grid-fill me-3"></i> Dashboard
               </a>
+                <a routerLink="/usuario/empresa" routerLinkActive="active" class="menu-item px-3 mb-1">
+                  <i class="bi bi-building me-3"></i> Empresa
+                </a>
               <a routerLink="/usuario/usuarios" routerLinkActive="active" class="menu-item px-3 mb-1">
                 <i class="bi bi-person me-3"></i> Usuarios
               </a>

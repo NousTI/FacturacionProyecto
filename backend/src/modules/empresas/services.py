@@ -109,10 +109,12 @@ class ServicioEmpresas:
                  description="La empresa solicitada no existe."
              )
         
+        logger.debug(f"[DEBUG] Raw Repository Data for {empresa_id}: {empresa}")
         ctx = self._get_context(usuario_actual)
         
         if ctx["is_superadmin"]:
             logger.info(f"[ÉXITO] Empresa obtenida - ID: {empresa_id}")
+            logger.debug(f"[DEBUG] Raw Repository Data: {empresa}")
             return empresa
         
         if ctx["is_vendedor"]:

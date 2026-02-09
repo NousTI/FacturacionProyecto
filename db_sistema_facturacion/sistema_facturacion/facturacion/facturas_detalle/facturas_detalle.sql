@@ -2,16 +2,17 @@
 -- =========================================
 -- FACTURA DETALLE
 -- ==================================================================================
-CREATE TABLE IF NOT EXISTS public.factura_detalle (
+CREATE TABLE IF NOT EXISTS sistema_facturacion.facturas_detalle (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
 
     factura_id UUID NOT NULL
-        REFERENCES public.factura(id) ON DELETE CASCADE,
+        REFERENCES sistema_facturacion.facturas(id) ON DELETE CASCADE,
 
     producto_id UUID
-        REFERENCES public.producto(id) ON DELETE SET NULL,
+        REFERENCES sistema_facturacion.productos(id) ON DELETE SET NULL,
 
     codigo_producto TEXT NOT NULL,
+    nombre TEXT NOT NULL,
     descripcion TEXT NOT NULL,
 
     cantidad INT NOT NULL

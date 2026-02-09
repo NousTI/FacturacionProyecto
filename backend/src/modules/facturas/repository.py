@@ -28,12 +28,19 @@ class RepositorioFacturas:
         'snapshot_cliente', 
         'snapshot_establecimiento',
         'snapshot_punto_emision',
-        'snapshot_usuario'
+        'snapshot_usuario',
+        'mensajes'
     }
     
     def __init__(self, db=Depends(get_db)):
         self.db = db
     
+    def _json_serial(self, obj):
+        """JSON serializer for objects not serializable by default json code"""
+        if isinstance(obj, (datetime, date)):
+            return obj.isoformat()
+        raise TypeError (f"Type {type(obj)} not serializable")
+
     def _prepare_value(self, key: str, value: Any) -> Any:
         """
         Prepara un valor para inserción en BD.
@@ -42,7 +49,8 @@ class RepositorioFacturas:
         if isinstance(value, UUID):
             return str(value)
         if key in self.JSONB_FIELDS and isinstance(value, dict):
-            return Json(value)
+            # Use json.dumps with default=str to handle datetime/date inside the dict
+            return json.dumps(value, default=str)
         return value
     
     def _prepare_data(self, data: dict) -> dict:
@@ -232,7 +240,7 @@ class RepositorioFacturas:
         placeholders = ["%s"] * len(fields)
         
         query = f"""
-            INSERT INTO sistema_facturacion.factura_detalles ({', '.join(fields)}) 
+            INSERT INTO sistema_facturacion.facturas_detalle ({', '.join(fields)}) 
             VALUES ({', '.join(placeholders)}) 
             RETURNING *
         """
@@ -243,14 +251,14 @@ class RepositorioFacturas:
 
     def listar_detalles(self, factura_id: UUID) -> List[dict]:
         """Lista los detalles de una factura."""
-        query = "SELECT * FROM sistema_facturacion.factura_detalles WHERE factura_id = %s ORDER BY created_at"
+        query = "SELECT * FROM sistema_facturacion.facturas_detalle WHERE factura_id = %s ORDER BY created_at"
         with self.db.cursor() as cur:
             cur.execute(query, (str(factura_id),))
             return [dict(row) for row in cur.fetchall()]
 
     def obtener_detalle(self, id: UUID) -> Optional[dict]:
         """Obtiene un detalle por ID."""
-        query = "SELECT * FROM sistema_facturacion.factura_detalles WHERE id = %s"
+        query = "SELECT * FROM sistema_facturacion.facturas_detalle WHERE id = %s"
         with self.db.cursor() as cur:
             cur.execute(query, (str(id),))
             row = cur.fetchone()
@@ -267,7 +275,7 @@ class RepositorioFacturas:
         values.append(str(id))
         
         query = f"""
-            UPDATE sistema_facturacion.factura_detalles 
+            UPDATE sistema_facturacion.facturas_detalle 
             SET {', '.join(set_clauses)} 
             WHERE id = %s 
             RETURNING *
@@ -279,7 +287,144 @@ class RepositorioFacturas:
 
     def eliminar_detalle(self, id: UUID) -> bool:
         """Elimina un detalle de factura."""
-        query = "DELETE FROM sistema_facturacion.factura_detalles WHERE id = %s"
+        query = "DELETE FROM sistema_facturacion.facturas_detalle WHERE id = %s"
         with db_transaction(self.db) as cur:
             cur.execute(query, (str(id),))
             return cur.rowcount > 0
+    # =========================================================
+    # LOGS DE EMISIÓN (SRI)
+    # =========================================================
+
+    def crear_log_emision(self, data: dict) -> Optional[dict]:
+        """Crea un registro en el log de emisión al SRI."""
+        prepared = self._prepare_data(data)
+        fields = list(prepared.keys())
+        values = list(prepared.values())
+        placeholders = ["%s"] * len(fields)
+        
+        query = f"""
+            INSERT INTO sistema_facturacion.log_emision_facturas ({', '.join(fields)}) 
+            VALUES ({', '.join(placeholders)}) 
+            RETURNING *
+        """
+        with db_transaction(self.db) as cur:
+            cur.execute(query, tuple(values))
+            row = cur.fetchone()
+            return dict(row) if row else None
+
+    def listar_logs_emision(self, factura_id: UUID) -> List[dict]:
+        """Lista el historial de intentos de emisión de una factura."""
+        query = """
+            SELECT l.*, u.nombre as usuario_nombre 
+            FROM sistema_facturacion.log_emision_facturas l
+            LEFT JOIN sistema_facturacion.usuarios u ON l.usuario_id = u.id
+            WHERE l.factura_id = %s 
+            ORDER BY l.timestamp DESC
+        """
+        with self.db.cursor() as cur:
+            cur.execute(query, (str(factura_id),))
+            return [dict(row) for row in cur.fetchall()]
+
+    def actualizar_log_emision(self, id: UUID, data: dict) -> Optional[dict]:
+        """Actualiza un intento de emisión (ej: pasar de EN_PROCESO a EXITOSO)."""
+        if not data:
+            return None
+        
+        prepared = self._prepare_data(data)
+        set_clauses = [f"{k} = %s" for k in prepared.keys()]
+        values = list(prepared.values())
+        values.append(str(id))
+        
+        query = f"""
+            UPDATE sistema_facturacion.log_emision_facturas 
+            SET {', '.join(set_clauses)} 
+            WHERE id = %s 
+            RETURNING *
+        """
+        with db_transaction(self.db) as cur:
+            cur.execute(query, tuple(values))
+            row = cur.fetchone()
+            return dict(row) if row else None
+
+    # =========================================================
+    # AUTORIZACIONES SRI
+    # =========================================================
+
+    def crear_autorizacion(self, data: dict) -> Optional[dict]:
+        """Crea un registro de autorización final del SRI."""
+        prepared = self._prepare_data(data)
+        fields = list(prepared.keys())
+        values = list(prepared.values())
+        placeholders = ["%s"] * len(fields)
+        
+        query = f"""
+            INSERT INTO sistema_facturacion.autorizaciones_sri ({', '.join(fields)}) 
+            VALUES ({', '.join(placeholders)}) 
+            ON CONFLICT (factura_id) DO UPDATE SET {', '.join([f'{f}=EXCLUDED.{f}' for f in fields])}, updated_at = NOW()
+            RETURNING *
+        """
+        with db_transaction(self.db) as cur:
+            cur.execute(query, tuple(values))
+            row = cur.fetchone()
+            return dict(row) if row else None
+
+    def obtener_autorizacion(self, factura_id: UUID) -> Optional[dict]:
+        """Obtiene la autorización oficial de una factura."""
+        query = "SELECT * FROM sistema_facturacion.autorizaciones_sri WHERE factura_id = %s"
+        with self.db.cursor() as cur:
+            cur.execute(query, (str(factura_id),))
+            row = cur.fetchone()
+            return dict(row) if row else None
+
+    # =========================================================
+    # PAGOS DE FACTURA
+    # =========================================================
+
+    def crear_pago(self, data: dict) -> Optional[dict]:
+        """Registra un nuevo pago para una factura."""
+        prepared = self._prepare_data(data)
+        fields = list(prepared.keys())
+        values = list(prepared.values())
+        placeholders = ["%s"] * len(fields)
+        
+        query = f"""
+            INSERT INTO sistema_facturacion.log_pago_facturas ({', '.join(fields)}) 
+            VALUES ({', '.join(placeholders)}) 
+            RETURNING *
+        """
+        with db_transaction(self.db) as cur:
+            cur.execute(query, tuple(values))
+            row = cur.fetchone()
+            return dict(row) if row else None
+
+    def listar_pagos(self, factura_id: UUID) -> List[dict]:
+        """Lista el historial de pagos de una factura."""
+        query = """
+            SELECT p.*, u.nombre as usuario_nombre 
+            FROM sistema_facturacion.log_pago_facturas p
+            LEFT JOIN sistema_facturacion.usuarios u ON p.usuario_id = u.id
+            WHERE p.factura_id = %s 
+            ORDER BY p.timestamp DESC
+        """
+        with self.db.cursor() as cur:
+            cur.execute(query, (str(factura_id),))
+            return [dict(row) for row in cur.fetchall()]
+
+    def obtener_resumen_pagos(self, factura_id: UUID) -> dict:
+        """Calcula el total pagado y saldo pendiente de una factura."""
+        query = """
+            SELECT 
+                f.total as total_factura,
+                COALESCE(SUM(p.monto), 0) as total_pagado,
+                f.total - COALESCE(SUM(p.monto), 0) as saldo_pendiente,
+                COUNT(p.id) as cantidad_pagos,
+                MAX(p.timestamp) as ultimo_pago
+            FROM sistema_facturacion.facturas f
+            LEFT JOIN sistema_facturacion.log_pago_facturas p ON f.id = p.factura_id
+            WHERE f.id = %s
+            GROUP BY f.id, f.total
+        """
+        with self.db.cursor() as cur:
+            cur.execute(query, (str(factura_id),))
+            row = cur.fetchone()
+            return dict(row) if row else {}

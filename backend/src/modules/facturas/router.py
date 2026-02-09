@@ -31,7 +31,9 @@ from .schemas_detalle import FacturaDetalleLectura, FacturaDetalleCreacion, Fact
 from .service import ServicioFacturas
 from ..autenticacion.routes import obtener_usuario_actual, requerir_permiso
 from ...constants.permissions import PermissionCodes
-from ...utils.response import success_response
+from ...utils.response import success_response, error_response
+from .schemas_logs import LogPagoCreacion, ResumenPagos, LogPagoLectura
+from .schemas_programacion import FacturacionProgramadaCreacion, FacturacionProgramadaLectura, FacturacionProgramadaActualizacion
 
 # Services for specific actions
 from ..formas_pago.service import ServicioFormasPago
@@ -229,8 +231,7 @@ def enviar_a_sri(
     
     **Requiere permiso:** FACTURAS_ENVIAR_SRI
     """
-    # TODO: Implementar integración SRI
-    return {"message": "Endpoint en desarrollo (Módulo SRI pendiente)"}
+    return servicio.emitir_sri(id, usuario)
 
 
 @router.get("/{id}/pdf")
@@ -246,8 +247,8 @@ def descargar_pdf(
     """
     # Validar que tiene acceso a la factura
     servicio.obtener_factura(id, usuario)
-    # TODO: Implementar generación de PDF
-    return {"message": "Endpoint en desarrollo (Generación PDF pendiente)"}
+    # TODO: Implementar generación de PDF del RIDE
+    return {"message": "Endpoint en desarrollo (Generación PDF RIDE pendiente)", "factura_id": id}
 
 
 @router.post("/{id}/enviar-email")
@@ -268,8 +269,12 @@ def enviar_por_email(
     """
     # Validar que tiene acceso a la factura
     servicio.obtener_factura(id, usuario)
-    # TODO: Implementar envío de email
-    return {"message": "Endpoint en desarrollo (Envío email pendiente)"}
+    # TODO: Implementar envío de email con adjuntos
+    return {
+        "message": "Endpoint en desarrollo (Envío email pendiente)", 
+        "factura_id": id,
+        "email_destino": email_destino
+    }
 
 
 # =================================================================
@@ -331,3 +336,101 @@ def eliminar_detalle(
     """
     servicio.eliminar_detalle(id, usuario)
     return success_response(None, "Detalle eliminado correctamente")
+
+
+# =================================================================
+# ENDPOINTS DE PAGOS (Auditoría de Caja)
+# =================================================================
+
+@router.post("/{id}/pagos", status_code=status.HTTP_201_CREATED)
+def registrar_pago(
+    id: UUID,
+    datos: LogPagoCreacion,
+    usuario: dict = Depends(requerir_permiso(PermissionCodes.FACTURAS_EDITAR)),
+    servicio: ServicioFacturas = Depends()
+):
+    """
+    Registra un pago o abono para la factura.
+    
+    Actualiza automáticamente el `estado_pago` a PARCIAL o PAGADO.
+    """
+    if datos.factura_id != id:
+        return error_response("ID de factura no coincide", 400)
+        
+    return servicio.registrar_pago(datos, usuario)
+
+
+@router.get("/{id}/pagos/resumen", response_model=ResumenPagos)
+def obtener_resumen_pagos(
+    id: UUID,
+    usuario: dict = Depends(requerir_permiso(PermissionCodes.FACTURAS_VER_TODAS)),
+    servicio: ServicioFacturas = Depends()
+):
+    """Obtiene el resumen financiero de pagos (total, pagado, saldo)."""
+    return servicio.obtener_resumen_pagos(id, usuario)
+
+
+@router.get("/{id}/pagos", response_model=List[LogPagoLectura])
+def listar_pagos(
+    id: UUID,
+    usuario: dict = Depends(requerir_permiso(PermissionCodes.FACTURAS_VER_TODAS)),
+    servicio: ServicioFacturas = Depends()
+):
+    """Lista el historial de todos los abonos realizados a la factura."""
+    return servicio.listar_pagos(id, usuario)
+
+
+# =================================================================
+# ENDPOINTS DE FACTURACIÓN PROGRAMADA (Recurrente)
+# =================================================================
+
+@router.post("/programacion", response_model=FacturacionProgramadaLectura, status_code=status.HTTP_201_CREATED)
+def crear_programacion(
+    datos: FacturacionProgramadaCreacion,
+    usuario: dict = Depends(requerir_permiso(PermissionCodes.FACTURAS_CREAR)),
+    servicio: ServicioFacturas = Depends()
+):
+    """Crea una nueva regla de facturación recurrente."""
+    return servicio.crear_programacion(datos, usuario)
+
+
+@router.get("/programacion", response_model=List[FacturacionProgramadaLectura])
+def listar_programaciones(
+    activo: Optional[bool] = Query(None, description="Filtrar por estado activo/inactivo"),
+    usuario: dict = Depends(requerir_permiso(PermissionCodes.FACTURAS_VER_TODAS)),
+    servicio: ServicioFacturas = Depends()
+):
+    """Lista las reglas de facturación recurrente de la empresa."""
+    return servicio.listar_programaciones(usuario, activo)
+
+
+@router.get("/programacion/{id}", response_model=FacturacionProgramadaLectura)
+def obtener_programacion(
+    id: UUID,
+    usuario: dict = Depends(requerir_permiso(PermissionCodes.FACTURAS_VER_TODAS)),
+    servicio: ServicioFacturas = Depends()
+):
+    """Obtiene el detalle de una programación específica."""
+    return servicio.obtener_programacion(id, usuario)
+
+
+@router.put("/programacion/{id}", response_model=FacturacionProgramadaLectura)
+def actualizar_programacion(
+    id: UUID,
+    datos: FacturacionProgramadaActualizacion,
+    usuario: dict = Depends(requerir_permiso(PermissionCodes.FACTURAS_EDITAR)),
+    servicio: ServicioFacturas = Depends()
+):
+    """Actualiza una regla de facturación recurrente."""
+    return servicio.actualizar_programacion(id, datos, usuario)
+
+
+@router.delete("/programacion/{id}")
+def eliminar_programacion(
+    id: UUID,
+    usuario: dict = Depends(requerir_permiso(PermissionCodes.FACTURAS_EDITAR)),
+    servicio: ServicioFacturas = Depends()
+):
+    """Elimina una regla de facturación recurrente."""
+    servicio.eliminar_programacion(id, usuario)
+    return success_response(None, "Programación eliminada correctamente")

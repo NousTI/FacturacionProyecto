@@ -1,9 +1,9 @@
 -- ===================================================================
--- TABLA: autorizacion_sri
+-- TABLA: autorizaciones_sri
 -- ===================================================================
 -- Auditoría: Datos de la autorización final del SRI
 -- Una factura puede tener una sola autorización exitosa
-CREATE TABLE IF NOT EXISTS sistema_facturacion.autorizacion_sri (
+CREATE TABLE IF NOT EXISTS sistema_facturacion.autorizaciones_sri (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
 
     factura_id UUID NOT NULL
@@ -39,14 +39,14 @@ CREATE TABLE IF NOT EXISTS sistema_facturacion.autorizacion_sri (
         COMMENT 'Timestamp de actualización'
 );
 
-COMMENT ON TABLE sistema_facturacion.autorizacion_sri IS
+COMMENT ON TABLE sistema_facturacion.autorizaciones_sri IS
 'Datos de la autorización final del SRI. Una sola autorización por factura.';
 
 -- Índices
 CREATE INDEX IF NOT EXISTS idx_autorizacion_sri_factura_id 
-    ON sistema_facturacion.autorizacion_sri(factura_id)
+    ON sistema_facturacion.autorizaciones_sri(factura_id)
     COMMENT 'Búsqueda rápida por factura_id';
 
 CREATE INDEX IF NOT EXISTS idx_autorizacion_sri_numero 
-    ON sistema_facturacion.autorizacion_sri(numero_autorizacion)
+    ON sistema_facturacion.autorizaciones_sri(numero_autorizacion)
     COMMENT 'Búsqueda rápida por número de autorización';

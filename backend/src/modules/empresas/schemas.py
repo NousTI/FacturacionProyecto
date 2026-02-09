@@ -54,17 +54,34 @@ class EmpresaLectura(EmpresaBase):
     id: UUID
     vendedor_id: Optional[UUID] = None
     vendedor_name: Optional[str] = None
+    
+    # Suscripción y Plan
     plan_nombre: Optional[str] = None
     current_plan_id: Optional[UUID] = None
     fecha_inicio: Optional[datetime] = None
     fecha_fin: Optional[datetime] = None
     suscripcion_estado: Optional[str] = None
+    
+    # Límites y Consumo (del Plan)
     max_usuarios: Optional[int] = None
     max_facturas_mes: Optional[int] = None
     max_establecimientos: Optional[int] = None
     max_programaciones: Optional[int] = None
+    
+    # Info SRI y Firma (de configuraciones_sri)
+    sri_ambiente: Optional[str] = None # 'PRUEBAS' | 'PRODUCCION'
+    sri_estado: Optional[str] = None # 'ACTIVO' | 'INACTIVO'
+    firma_expiracion: Optional[datetime] = None
+    firma_emisor: Optional[str] = None
+    
+    # Infraestructura real (conteo actual)
+    establecimientos_count: int = 0
+    puntos_emision_count: int = 0
+    
+    # Pagos
     ultimo_pago_fecha: Optional[datetime] = None
     ultimo_pago_monto: Optional[Decimal] = None
+    
     created_at: datetime
     updated_at: datetime
 

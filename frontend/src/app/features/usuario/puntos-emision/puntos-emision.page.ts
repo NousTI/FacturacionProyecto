@@ -95,7 +95,6 @@ interface PuntosEmisionStats {
     .puntos-emision-page-container {
       min-height: 100vh;
       background: #f8fafc;
-      padding: 2rem;
     }
 
     .page-header {

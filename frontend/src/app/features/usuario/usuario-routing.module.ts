@@ -17,6 +17,7 @@ import { PuntosEmisionPage } from './puntos-emision/puntos-emision.page';
 import { ConfiguracionPage } from './configuracion/configuracion.page';
 import { UsuariosPage } from './usuarios/usuarios.page';
 import { CertificadoSriPage } from './certificado-sri/certificado-sri.page';
+import { EmpresaPage } from './empresa/empresa.page';
 
 const routes: Routes = [
     {
@@ -25,10 +26,10 @@ const routes: Routes = [
         pathMatch: 'full'
     },
     {
-        path: 'dashboard',
-        component: DashboardComponent,
+        path: 'empresa',
+        component: EmpresaPage,
         canActivate: [RoleGuard],
-        data: { title: 'Dashboard', roles: [UserRole.USUARIO] }
+        data: { title: 'Empresa', roles: [UserRole.USUARIO], permission: 'CONFIG_EMPRESA' }
     },
     {
         path: 'usuarios',
@@ -97,7 +98,6 @@ const routes: Routes = [
         data: { title: 'Certificado SRI', roles: [UserRole.USUARIO], permission: 'CONFIG_SRI' }
     }
 ];
-
 @NgModule({
     imports: [RouterModule.forChild(routes)],
     exports: [RouterModule]

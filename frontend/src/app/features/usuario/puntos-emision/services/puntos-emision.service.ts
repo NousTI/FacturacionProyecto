@@ -22,7 +22,7 @@ export class PuntosEmisionService {
   // Cache con datos
   private puntosEmisionCache$ = new BehaviorSubject<PuntoEmision[]>([]);
   private statsCache$ = new BehaviorSubject<PuntosEmisionStats | null>(null);
-  
+
   // Trigger para refresh
   private refreshTrigger$ = new BehaviorSubject<void>(void 0);
 

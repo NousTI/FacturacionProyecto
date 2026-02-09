@@ -10,21 +10,24 @@ class RepositorioSRI:
         self.db = db
 
     # --- Configuración ---
-    def obtener_config(self, empresa_id: UUID) -> Optional[dict]:
-        query = """
-            SELECT id, empresa_id, ambiente, tipo_emision, 
-                   fecha_activacion_cert, fecha_expiracion_cert, 
-                   cert_serial, cert_sujeto, cert_emisor, 
-                   estado, created_at, updated_at
-            FROM sistema_facturacion.configuraciones_sri 
-            WHERE empresa_id = %s
-        """
+    def obtener_config(self, empresa_id: UUID, incluir_binarios: bool = False) -> Optional[dict]:
+        fields = [
+            "id", "empresa_id", "ambiente", "tipo_emision", 
+            "fecha_activacion_cert", "fecha_expiracion_cert", 
+            "cert_serial", "cert_sujeto", "cert_emisor", 
+            "estado", "created_at", "updated_at"
+        ]
+        
+        if incluir_binarios:
+            fields.append("certificado_digital")
+            fields.append("clave_certificado")
+            
+        query = f"SELECT {', '.join(fields)} FROM sistema_facturacion.configuraciones_sri WHERE empresa_id = %s"
+        
         with self.db.cursor(cursor_factory=RealDictCursor) as cur:
             cur.execute(query, (str(empresa_id),))
             row = cur.fetchone()
-            if row:
-                return dict(row)
-            return None
+            return dict(row) if row else None
 
     def crear_config(self, data: dict) -> Optional[dict]:
         fields = list(data.keys())
@@ -62,11 +65,21 @@ class RepositorioSRI:
 
     # --- Autorizaciones ---
     def crear_autorizacion(self, data: dict) -> Optional[dict]:
+        from psycopg2.extras import Json
+        
         fields = list(data.keys())
-        values = [str(v) if isinstance(v, UUID) else v for v in data.values()]
+        values = []
+        for k, v in data.items():
+            if isinstance(v, UUID):
+                values.append(str(v))
+            elif k == 'mensajes' and (isinstance(v, list) or isinstance(v, dict)):
+                values.append(Json(v))
+            else:
+                values.append(v)
+                
         placeholders = ["%s"] * len(fields)
         query = f"""
-            INSERT INTO sistema_facturacion.autorizacion_sri ({', '.join(fields)}) 
+            INSERT INTO sistema_facturacion.autorizaciones_sri ({', '.join(fields)}) 
             VALUES ({', '.join(placeholders)}) 
             ON CONFLICT (factura_id) DO UPDATE SET {', '.join([f'{f}=EXCLUDED.{f}' for f in fields])}, updated_at = NOW()
             RETURNING *
@@ -77,7 +90,7 @@ class RepositorioSRI:
             return dict(row) if row else None
 
     def obtener_autorizacion(self, factura_id: UUID) -> Optional[dict]:
-        query = "SELECT * FROM sistema_facturacion.autorizacion_sri WHERE factura_id = %s"
+        query = "SELECT * FROM sistema_facturacion.autorizaciones_sri WHERE factura_id = %s"
         with self.db.cursor(cursor_factory=RealDictCursor) as cur:
             cur.execute(query, (str(factura_id),))
             row = cur.fetchone()

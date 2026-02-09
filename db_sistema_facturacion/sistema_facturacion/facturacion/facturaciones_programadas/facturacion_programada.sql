@@ -2,17 +2,17 @@
 -- =========================================
 -- FACTURACION PROGRAMADA 
 -- ==================================================================================
-CREATE TABLE IF NOT EXISTS public.facturacion_programada (
+CREATE TABLE IF NOT EXISTS sistema_facturacion.facturacion_programada (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
 
     empresa_id UUID NOT NULL
-        REFERENCES public.empresa(id) ON DELETE CASCADE,
+        REFERENCES sistema_facturacion.empresas(id) ON DELETE CASCADE,
 
     cliente_id UUID NOT NULL
-        REFERENCES public.cliente(id) ON DELETE RESTRICT,
+        REFERENCES sistema_facturacion.clientes(id) ON DELETE RESTRICT,
 
     usuario_id UUID NOT NULL
-        REFERENCES public.usuario(id) ON DELETE RESTRICT,
+        REFERENCES sistema_facturacion.usuarios(id) ON DELETE RESTRICT,
 
     tipo_frecuencia TEXT NOT NULL
         CHECK (tipo_frecuencia IN ('MENSUAL', 'TRIMESTRAL', 'ANUAL')),
