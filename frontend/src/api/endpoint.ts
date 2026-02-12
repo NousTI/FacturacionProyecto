@@ -6,5 +6,18 @@ export const API_ENDPOINTS = {
     },
     SUPERADMIN: {
         ME: '/superadmin/me',
+        USUARIOS: '/usuarios/admin',
+    },
+    CLIENTES: {
+        BASE: '/clientes',
+        STATS: '/clientes/stats',
+    },
+    USUARIOS: {
+        BASE: '/usuarios',
+        PERFIL: '/usuarios/perfil',
+    },
+    ROLES: {
+        BASE: '/roles',
+        PERMISOS: '/roles/permisos',
     }
 };

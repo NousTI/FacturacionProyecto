@@ -113,7 +113,7 @@ class SnapshotPuntoEmision(BaseModel):
     
     codigo: str = Field(..., pattern=r'^\d{3}$', description="Código SRI del punto de emisión (001-999)")
     nombre: str = Field(..., description="Nombre del punto de emisión")
-    secuencial_usado: int = Field(..., ge=1, description="Número secuencial asignado a esta factura")
+    secuencial_usado: Optional[int] = Field(None, ge=1, description="Número secuencial asignado a esta factura (None en borradores)")
     
     # Metadata del snapshot
     snapshot_timestamp: datetime = Field(

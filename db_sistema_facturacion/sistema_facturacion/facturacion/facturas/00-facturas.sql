@@ -48,11 +48,11 @@ CREATE TABLE IF NOT EXISTS sistema_facturacion.facturas (
     -- =============================================
     -- INFORMACIÓN SRI (Ecuador)
     -- =============================================
-    numero_factura TEXT NOT NULL UNIQUE 
+    numero_factura TEXT UNIQUE 
         CHECK (numero_factura ~ '^\d{3}-\d{3}-\d{9}$')
         COMMENT 'Formato: NNN-NNN-NNNNNNNNN',
     
-    secuencial_punto_emision INT NOT NULL
+    secuencial_punto_emision INT
         COMMENT 'Número secuencial para este punto de emisión',
     
     clave_acceso VARCHAR(49) UNIQUE
@@ -134,8 +134,8 @@ CREATE TABLE IF NOT EXISTS sistema_facturacion.facturas (
     -- EMITIDA: Enviada y autorizada por el SRI
     -- ANULADA: Cancelada (ver log_emision_facturas para detalles)
     estado VARCHAR(20) NOT NULL DEFAULT 'BORRADOR' 
-        CHECK (estado IN ('BORRADOR', 'EMITIDA', 'ANULADA'))
-        COMMENT 'BORRADOR=creada, EMITIDA=autorizada SRI, ANULADA=cancelada',
+        CHECK (estado IN ('BORRADOR', 'EN_PROCESO', 'EMITIDA', 'RECHAZADA', 'ANULADA'))
+        COMMENT 'BORRADOR=creada, EN_PROCESO=enviada al SRI, EMITIDA=autorizada SRI, RECHAZADA=rechazada por SRI, ANULADA=cancelada',
     
     -- Estado de pago (independiente del estado de emisión)
     -- PENDIENTE: No pagada

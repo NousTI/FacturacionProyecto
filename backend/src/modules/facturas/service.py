@@ -71,6 +71,7 @@ class ServicioFacturas:
 
     def crear_factura(self, datos: FacturaCreacion, usuario_actual: dict):
         """Orquestador para creación de factura (Borrador)."""
+        print(f"--- [SERVICE] crear_factura iniciado ---")
         self._validar_rol_operativo(usuario_actual)
         
         empresa_id = usuario_actual.get("empresa_id") if not usuario_actual.get(AuthKeys.IS_SUPERADMIN) else datos.empresa_id
@@ -88,29 +89,33 @@ class ServicioFacturas:
         
         if not empresa_id: raise AppError("Empresa no especificada", 400, "VAL_ERROR")
 
+        print(f"Recuperando entidades para factura. ClienteID: {datos.cliente_id}, EstabID: {datos.establecimiento_id}")
         cliente = self.core.cliente_service.obtener_cliente(datos.cliente_id, usuario_actual)
         establecimiento = self.core.establecimiento_service.obtener_establecimiento(datos.establecimiento_id, usuario_actual)
         punto = self.core.punto_emision_service.obtener_punto(datos.punto_emision_id, usuario_actual)
         empresa = self.core.empresa_service.obtener_empresa(empresa_id, usuario_actual)
 
-        secuencial = self.core.punto_emision_repo.incrementar_secuencial(datos.punto_emision_id)
-        numero_factura = f"{establecimiento['codigo']}-{punto['codigo']}-{secuencial:09d}"
-
+        # YA NO INCREMENTAMOS AQUÍ. El número se asigna al emitir para evitar saltos si se elimina un borrador.
         snapshots = {
             "snapshot_empresa": empresa,
             "snapshot_cliente": cliente,
             "snapshot_establecimiento": establecimiento,
-            "snapshot_punto_emision": {**punto, "secuencial_usado": secuencial},
+            "snapshot_punto_emision": {**punto, "secuencial_usado": None},
             "snapshot_usuario": usuario_actual
         }
 
         # Inyectar IDs calculados en datos para persistencia
         datos.empresa_id = empresa_id
         datos.usuario_id = usuario_id
+        datos.ambiente = 1 # FORZAR A PRUEBAS POR SEGURIDAD
+        
+        print(f"Ambiente forzado a: {datos.ambiente}")
+        
+        print("Creando factura en BD (borrador sin número secuencial)...")
         
         payload_extra = {
-            "numero_factura": numero_factura,
-            "secuencial_punto_emision": secuencial
+            "numero_factura": None,
+            "secuencial_punto_emision": None
         }
         
         return self.core.crear_borrador(datos, usuario_actual, {**snapshots, **payload_extra})
@@ -134,6 +139,8 @@ class ServicioFacturas:
         )
 
     def actualizar_factura(self, id: UUID, datos: FacturaActualizacion, usuario_actual: dict):
+        print(f"--- [SERVICE] actualizar_factura ID: {id} ---")
+        print(f"Datos a actualizar: {datos.dict(exclude_unset=True)}")
         factura = self.obtener_factura(id, usuario_actual)
         self._validar_estado_borrador(factura)
         return self.core.actualizar_factura(id, datos.model_dump(exclude_unset=True))
@@ -234,12 +241,52 @@ class ServicioFacturas:
 
     def emitir_sri(self, id: UUID, usuario_actual: dict):
         """Procesa el envío real al SRI."""
+        # Resolver usuario_id de facturación si no es superadmin
+        usuario_contexto = usuario_actual.copy()
+        
+        if not usuario_actual.get(AuthKeys.IS_SUPERADMIN):
+            auth_user_id = usuario_actual.get("id")
+            usuario_facturacion = self.usuario_repo.obtener_por_user_id(auth_user_id)
+            if not usuario_facturacion:
+                raise AppError("Usuario no encontrado en sistema de facturación", 404, "USUARIO_NOT_FOUND")
+            # Inyectar el ID correcto para que los logs funcionen con la FK correcta
+            usuario_contexto["id"] = usuario_facturacion['id']
+            
         factura = self.obtener_factura(id, usuario_actual)
         # Validaciones previas a emitir
         if factura['estado'] != 'BORRADOR':
              raise AppError("La factura ya fue emitida o anulada", 400)
+
+        # --- ASIGNACIÓN DE SECUENCIAL COMPENSATORIO (Justo a tiempo) ---
+        if not factura.get('numero_factura'):
+            print(f"--- [SERVICE] Asignando número secuencial a factura {id} ---")
+            
+            # Recuperar datos para el formato del número
+            punto = self.core.punto_emision_service.obtener_punto(factura['punto_emision_id'], usuario_actual)
+            establecimiento = self.core.establecimiento_service.obtener_establecimiento(factura['establecimiento_id'], usuario_actual)
+            
+            # Incrementar y obtener secuencial oficial
+            secuencial = self.core.punto_emision_repo.incrementar_secuencial(factura['punto_emision_id'])
+            if secuencial is None:
+                raise AppError("No se pudo obtener el secuencial del punto de emisión", 500)
+            
+            numero_factura = f"{establecimiento['codigo']}-{punto['codigo']}-{secuencial:09d}"
+            
+            # Actualizar campos en BD
+            update_data = {
+                "numero_factura": numero_factura,
+                "secuencial_punto_emision": secuencial
+            }
+            
+            # Actualizar también el snapshot del punto de emisión (para consistencia RIDE)
+            snapshot_pto = factura.get('snapshot_punto_emision', {})
+            snapshot_pto['secuencial_usado'] = secuencial
+            update_data['snapshot_punto_emision'] = snapshot_pto
+            
+            self.core.actualizar_factura(id, update_data)
+            print(f"Factura {id} ahora tiene el número {numero_factura}. Procediendo al SRI...")
         
-        return self.sri_facturacion.emitir_factura(id, usuario_actual)
+        return self.sri_facturacion.emitir_factura(id, usuario_contexto)
 
     def obtener_historial_emision(self, factura_id: UUID, usuario_actual: dict):
         self.obtener_factura(factura_id, usuario_actual)

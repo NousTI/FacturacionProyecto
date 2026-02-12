@@ -6,6 +6,7 @@ from lxml import etree
 from cryptography.hazmat.primitives.serialization import pkcs12
 from cryptography.hazmat.primitives import serialization, hashes
 from cryptography.hazmat.primitives.asymmetric import padding
+from .cert_utils import ExtractorCertificadoSRI
 
 class XMLSigner:
     NAMESPACES = {
@@ -40,9 +41,52 @@ class XMLSigner:
              raise ValueError("El certificado digital ha expirado.")
 
     def verify_ruc(self, expected_ruc: str):
-        subject = self._cert.subject.rfc4514_string()
-        if expected_ruc in subject:
+        """
+        Verifica si el RUC esperado está presente en el certificado.
+        Usa lógica extendida de ExtractorCertificadoSRI para buscar en Subject y Extensiones.
+        """
+        # 1. Usar el Extractor para obtener todos los metadatos posibles de forma robusta
+        try:
+            extractor = ExtractorCertificadoSRI(self.p12_data, self.p12_password)
+            meta = extractor.extraer_metadatos()
+            found_ruc = meta.get('ruc')
+        except Exception as e:
+            print(f"SRI Signer Warning: Fallo al extraer metadatos extendidos: {e}")
+            found_ruc = None
+
+        # 2. Comparación directa con el RUC extraído
+        if found_ruc == expected_ruc:
+            return True
+            
+        # 3. Comparación parcial (Cédula vs RUC)
+        # Si el RUC extraído es una cédula (10 dígitos), ver si coincide con los primeros 10 del esperado
+        if found_ruc and len(found_ruc) == 10 and expected_ruc.startswith(found_ruc):
+            return True
+
+        # 4. Fallback: Búsqueda heurística en el Subject (como antes)
+        subject_str = self._cert.subject.rfc4514_string()
+        if expected_ruc in subject_str:
              return True
+             
+        cedula = expected_ruc[:10]
+        if len(expected_ruc) == 13 and expected_ruc.endswith("001"):
+            if cedula in subject_str:
+                return True
+
+        # 5. Fallback profundo
+        for attr in self._cert.subject:
+            if attr.oid.dotted_string == "2.5.4.5": # serialNumber
+                if attr.value == expected_ruc or attr.value == cedula:
+                    return True
+            if attr.oid.dotted_string == "2.5.4.3": # commonName
+                if expected_ruc in attr.value or cedula in attr.value:
+                    return True
+
+        # Log for debugging
+        print(f"SRI Signer Error: RUC {expected_ruc} (CI: {cedula}) no encontrado.")
+        print(f"RUC extraído robustamente: {found_ruc}")
+        print(f"Subject del certificado: {subject_str}")
+        
         raise ValueError(f"Certificado no corresponde al emisor. RUC esperado: {expected_ruc}")
 
     def sign_xml(self, xml_bytes: bytes) -> bytes:
@@ -70,6 +114,8 @@ class XMLSigner:
             cert_digest_b64 = base64.b64encode(hashlib.sha256(cert_der).digest()).decode()
             serial_number = self._cert.serial_number
             issuer_name = self._cert.issuer.rfc4514_string() 
+            
+            # ... (Resto de la firma igual) ... 
 
             qualifying_props = etree.Element(f"{{{etsi}}}QualifyingProperties", Target=f"#{signature_id}", nsmap=nsmap)
             signed_props = etree.SubElement(qualifying_props, f"{{{etsi}}}SignedProperties", Id=signed_props_id)

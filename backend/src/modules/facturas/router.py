@@ -63,7 +63,14 @@ def crear_factura(
     
     **Requiere permiso:** FACTURAS_CREAR
     """
-    return servicio.crear_factura(datos, usuario)
+    print(f"--- [API] POST /facturas received ---")
+    print(f"Payload: {datos.dict()}")
+    print(f"Usuario requesting: {usuario.get('username', 'Unknown')}")
+    
+    result = servicio.crear_factura(datos, usuario)
+    
+    print(f"--- [API] Factura creada exitosamente. ID: {result['id']}, Numero: {result['numero_factura']} ---")
+    return result
 
 
 @router.get("/", response_model=List[FacturaLectura])
@@ -167,7 +174,13 @@ def actualizar_factura(
     
     **Requiere permiso:** FACTURAS_EDITAR
     """
-    return servicio.actualizar_factura(id, datos, usuario)
+
+    print(f"--- [API] PUT /facturas/{id} received ---")
+    print(f"Payload update: {datos.dict(exclude_unset=True)}")
+    
+    result = servicio.actualizar_factura(id, datos, usuario)
+    print(f"--- [API] Factura {id} actualizada ---")
+    return result
 
 
 @router.post("/{id}/anular", response_model=FacturaLectura)

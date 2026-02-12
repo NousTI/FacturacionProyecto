@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FacturasService } from '../../services/facturas.service';
 import { Factura, FacturaDetalle } from '../../../../../domain/models/factura.model';
@@ -217,7 +217,10 @@ export class ViewFacturaModalComponent implements OnInit {
   loadingDetalles = true;
   errorMessage: string = '';
 
-  constructor(private facturasService: FacturasService) { }
+  constructor(
+    private facturasService: FacturasService,
+    private cd: ChangeDetectorRef
+  ) { }
 
   ngOnInit() {
     this.loadFactura();
@@ -225,29 +228,38 @@ export class ViewFacturaModalComponent implements OnInit {
 
   loadFactura() {
     this.isLoading = true;
+    console.log('Cargando factura ID:', this.facturaId);
     this.facturasService.obtenerFactura(this.facturaId).subscribe({
       next: (factura) => {
+        console.log('Factura cargada:', factura);
         this.factura = factura;
         this.isLoading = false;
+        this.cd.detectChanges(); // Force update
         this.loadDetalles();
       },
       error: (err) => {
         console.error('Error cargando factura:', err);
+        this.errorMessage = 'No se pudo cargar la información de la factura.';
         this.isLoading = false;
+        this.cd.detectChanges();
       }
     });
   }
 
   loadDetalles() {
     this.loadingDetalles = true;
+    console.log('Cargando detalles de factura ID:', this.facturaId);
     this.facturasService.obtenerDetalles(this.facturaId).subscribe({
       next: (detalles) => {
+        console.log('Detalles cargados:', detalles);
         this.detalles = detalles;
         this.loadingDetalles = false;
+        this.cd.detectChanges(); // Force update
       },
       error: (err) => {
         console.error('Error cargando detalles:', err);
         this.loadingDetalles = false;
+        this.cd.detectChanges();
       }
     });
   }

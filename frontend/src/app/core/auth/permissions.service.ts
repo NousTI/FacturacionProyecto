@@ -2,6 +2,7 @@ import { Injectable, computed, signal } from '@angular/core';
 import { AuthService } from './auth.service';
 import { User } from '../../domain/models/user.model';
 import { UserRole } from '../../domain/enums/role.enum';
+import { Permiso } from '../../domain/models/perfil.model';
 
 @Injectable({
     providedIn: 'root'
@@ -13,7 +14,6 @@ export class PermissionsService {
     hasPermission(permission: string): boolean {
         const user = this.authService.getUser();
         if (!user) {
-            console.warn('PermissionsService: No user found in session');
             return false;
         }
 
@@ -22,17 +22,23 @@ export class PermissionsService {
             return true;
         }
 
-        // 2. Check granular permissions array (New System)
-        const hasGranular = user.permisos && user.permisos.includes(permission);
-        if (hasGranular) return true;
+        // 2. Check granular permissions (New System)
+        if (user.permisos && user.permisos.length > 0) {
+            const first = user.permisos[0];
 
-        // 3. Backward compatibility/Legacy
-        const hasLegacy = !!(user as any)[permission] || !!(user as any)[`puede_${permission}`];
-
-        if (!hasGranular && !hasLegacy && (permission.includes('EDITAR') || permission.includes('ELIMINAR'))) {
-            console.log(`Permission Denied for ${permission}. User perms:`, user.permisos);
+            // Case A: string array (codes from token)
+            if (typeof first === 'string') {
+                if ((user.permisos as string[]).includes(permission)) return true;
+            }
+            // Case B: Permiso object array (detailed from profile)
+            else {
+                const perms = user.permisos as Permiso[];
+                const found = perms.find(p => p.codigo === permission);
+                if (found && found.concedido) return true;
+            }
         }
 
-        return hasLegacy;
+        // 3. Backward compatibility/Legacy/Vendor flags
+        return !!(user as any)[permission] || !!(user as any)[`puede_${permission}`];
     }
 }

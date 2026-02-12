@@ -4,14 +4,15 @@ from uuid import UUID
 
 from .schemas import ClienteCreacion, ClienteLectura, ClienteStats, ClienteActualizacion
 from .controller import ClienteController
-from ..autenticacion.routes import obtener_usuario_actual
+from ..autenticacion.permissions import requerir_permiso
+from ...constants.permissions import PermissionCodes
 from ...utils.response_schemas import RespuestaBase
 
 router = APIRouter(tags=["Clientes"], redirect_slashes=False)
 
 @router.get("/stats", response_model=RespuestaBase[ClienteStats])
 def obtener_stats(
-    usuario: dict = Depends(obtener_usuario_actual),
+    usuario: dict = Depends(requerir_permiso(PermissionCodes.CLIENTES_VER)),
     controller: ClienteController = Depends()
 ):
     return controller.obtener_stats(usuario)
@@ -19,7 +20,7 @@ def obtener_stats(
 @router.get("", response_model=RespuestaBase[List[ClienteLectura]])
 def listar_clientes(
     empresa_id: Optional[UUID] = Query(None),
-    usuario: dict = Depends(obtener_usuario_actual),
+    usuario: dict = Depends(requerir_permiso(PermissionCodes.CLIENTES_VER)),
     controller: ClienteController = Depends()
 ):
     return controller.listar_clientes(usuario, empresa_id)
@@ -27,7 +28,7 @@ def listar_clientes(
 @router.post("", response_model=RespuestaBase[ClienteLectura], status_code=201)
 def crear_cliente(
     datos: ClienteCreacion,
-    usuario: dict = Depends(obtener_usuario_actual),
+    usuario: dict = Depends(requerir_permiso(PermissionCodes.CLIENTES_CREAR)),
     controller: ClienteController = Depends()
 ):
     return controller.crear_cliente(datos, usuario)
@@ -35,7 +36,7 @@ def crear_cliente(
 @router.get("/{id}", response_model=RespuestaBase[ClienteLectura])
 def obtener_cliente(
     id: UUID,
-    usuario: dict = Depends(obtener_usuario_actual),
+    usuario: dict = Depends(requerir_permiso(PermissionCodes.CLIENTES_VER)),
     controller: ClienteController = Depends()
 ):
     return controller.obtener_cliente(id, usuario)
@@ -44,7 +45,7 @@ def obtener_cliente(
 def actualizar_cliente(
     id: UUID,
     datos: ClienteActualizacion,
-    usuario: dict = Depends(obtener_usuario_actual),
+    usuario: dict = Depends(requerir_permiso(PermissionCodes.CLIENTES_EDITAR)),
     controller: ClienteController = Depends()
 ):
     return controller.actualizar_cliente(id, datos, usuario)
@@ -52,7 +53,7 @@ def actualizar_cliente(
 @router.delete("/{id}")
 def eliminar_cliente(
     id: UUID,
-    usuario: dict = Depends(obtener_usuario_actual),
+    usuario: dict = Depends(requerir_permiso(PermissionCodes.CLIENTES_ELIMINAR)),
     controller: ClienteController = Depends()
 ):
     return controller.eliminar_cliente(id, usuario)

@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators, FormArray } from '@angular/forms';
 import { FacturasService } from '../../services/facturas.service';
@@ -12,9 +12,9 @@ import { Cliente } from '../../../../../domain/models/cliente.model';
 import { Producto } from '../../../../../domain/models/producto.model';
 import { Establecimiento } from '../../../../../domain/models/establecimiento.model';
 import { PuntoEmision } from '../../../../../domain/models/punto-emision.model';
-import { FacturaCreacion, FacturaDetalleCreacion } from '../../../../../domain/models/factura.model';
+import { FacturaCreacion, FacturaDetalleCreacion, Factura, FacturaDetalle } from '../../../../../domain/models/factura.model';
 import { ConfigSRI } from '../../../certificado-sri/models/sri-config.model';
-import { forkJoin, switchMap, tap, catchError, of, filter, take } from 'rxjs';
+import { forkJoin, switchMap, tap, catchError, of, filter, take, map, Observable } from 'rxjs';
 
 @Component({
   selector: 'app-create-factura-modal',
@@ -29,7 +29,7 @@ import { forkJoin, switchMap, tap, catchError, of, filter, take } from 'rxjs';
           <!-- HEADER -->
           <div class="modal-header border-bottom-0 pb-0 d-flex justify-content-between align-items-center">
             <div>
-                 <h5 class="modal-title fw-bold text-dark d-inline-block me-2">Nueva Factura</h5>
+                 <h5 class="modal-title fw-bold text-dark d-inline-block me-2">{{ facturaId ? 'Editar Factura' : 'Nueva Factura' }}</h5>
                  <span *ngIf="sriConfig" class="badge rounded-pill" 
                        [ngClass]="sriConfig.ambiente === 'PRODUCCION' ? 'text-bg-success' : 'text-bg-warning'">
                     {{ sriConfig.ambiente }}
@@ -40,7 +40,13 @@ import { forkJoin, switchMap, tap, catchError, of, filter, take } from 'rxjs';
 
           <!-- BODY -->
           <div class="modal-body p-4">
-            <form [formGroup]="facturaForm">
+            <div *ngIf="isLoadingData" class="text-center py-5">
+              <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Cargando...</span>
+              </div>
+            </div>
+
+            <form [formGroup]="facturaForm" *ngIf="!isLoadingData">
               
               <!-- SECCIÓN 1: DATOS DE EMISIÓN -->
               <div class="row g-3 mb-4">
@@ -155,7 +161,7 @@ import { forkJoin, switchMap, tap, catchError, of, filter, take } from 'rxjs';
                              <select class="form-select form-select-sm" formControlName="tipo_iva">
                               <option value="0">0%</option>
                               <option value="2">12%</option>
-                              <option value="3">14%</option> <!-- Ajustar según vigencia -->
+                              <option value="3">14%</option>
                               <option value="4">15%</option>
                              </select>
                           </td>
@@ -224,10 +230,10 @@ import { forkJoin, switchMap, tap, catchError, of, filter, take } from 'rxjs';
           <div class="modal-footer border-top-0 pt-0 pb-4 pe-4">
              <button type="button" class="btn btn-light rounded-pill px-4" (click)="close()">Cancelar</button>
              <button type="button" class="btn btn-primary-premium rounded-pill px-4 ms-2" 
-                     [disabled]="facturaForm.invalid || isSaving || detalles.length === 0"
+                     [disabled]="facturaForm.invalid || isSaving || detalles.length === 0 || isLoadingData"
                      (click)="save()">
                <span *ngIf="isSaving" class="spinner-border spinner-border-sm me-2"></span>
-               Guardar Factura
+               {{ facturaId ? 'Actualizar Factura' : 'Crear Factura' }}
              </button>
           </div>
 
@@ -264,6 +270,7 @@ export class CreateFacturaModalComponent implements OnInit {
 
   facturaForm: FormGroup;
   isSaving = false;
+  isLoadingData = true;
 
   clientes: Cliente[] = [];
   productos: Producto[] = [];
@@ -272,6 +279,9 @@ export class CreateFacturaModalComponent implements OnInit {
   puntosEmisionFiltered: PuntoEmision[] = [];
 
   sriConfig: ConfigSRI | null = null;
+
+  // Guardar detalles originales para edición
+  originalDetalles: FacturaDetalle[] = [];
 
   totals = {
     subtotal_sin_iva: 0,
@@ -289,7 +299,8 @@ export class CreateFacturaModalComponent implements OnInit {
     private establecimientosService: EstablecimientosService,
     private puntosEmisionService: PuntosEmisionService,
     private sriConfigService: SriConfigService,
-    private uiService: UiService
+    private uiService: UiService,
+    private cd: ChangeDetectorRef
   ) {
     this.facturaForm = this.fb.group({
       establecimiento_id: [null, Validators.required],
@@ -313,14 +324,13 @@ export class CreateFacturaModalComponent implements OnInit {
 
   loadData() {
     console.log('--- INICIANDO CARGA DE CATALOGOS ---');
+    this.isLoadingData = true;
 
     // Force refresh first
     this.establecimientosService.refresh();
     this.puntosEmisionService.refresh();
 
-    // Use filter to wait for data (ignore initial empty cache if it exists)
-    // We add take(1) to ensure the observable completes for forkJoin
-    const waitForData = (obs: any, name: string) => obs.pipe(
+    const waitForData = (obs: Observable<any[]>, name: string) => obs.pipe(
       filter((d: any) => d && d.length > 0),
       take(1),
       tap((d: any[]) => console.log(`${name} cargados:`, d.length))
@@ -331,43 +341,99 @@ export class CreateFacturaModalComponent implements OnInit {
       productos: waitForData(this.productosService.getProductos(), 'Productos'),
       establecimientos: waitForData(this.establecimientosService.getEstablecimientos(), 'Establecimientos'),
       puntos: waitForData(this.puntosEmisionService.getPuntosEmision(), 'Puntos Emision'),
-      sri: this.sriConfigService.obtenerConfiguracion().pipe(tap(d => console.log('SRI Config:', d)), take(1))
+      sri: this.sriConfigService.obtenerConfiguracion().pipe(take(1))
     };
 
     forkJoin(reqs).subscribe({
       next: (resp: any) => {
-        console.log('--- DATOS COMPLETOS RECIBIDOS ---', resp);
-        this.clientes = resp.clientes as Cliente[];
-        this.productos = resp.productos as Producto[];
-        this.establecimientos = resp.establecimientos as Establecimiento[];
-        this.puntosEmision = resp.puntos as PuntoEmision[];
-        this.sriConfig = resp.sri as ConfigSRI;
+        console.log('Catalogos cargados', resp);
+        this.clientes = resp.clientes;
+        this.productos = resp.productos;
+        this.establecimientos = resp.establecimientos;
+        this.puntosEmision = resp.puntos;
+        this.sriConfig = resp.sri;
 
-        // Auto-select establishment if simple
-        if (this.establecimientos && this.establecimientos.length === 1) {
-          console.log('Auto-seleccionando establecimiento único:', this.establecimientos[0].id);
-          this.facturaForm.patchValue({ establecimiento_id: this.establecimientos[0].id });
+        if (this.facturaId) {
+          this.loadFacturaForEdit(this.facturaId);
+        } else {
+          // Modo creación: Autoseleccionar si solo hay 1 establecimiento
+          if (this.establecimientos && this.establecimientos.length === 1) {
+            this.facturaForm.patchValue({ establecimiento_id: this.establecimientos[0].id });
+          }
+          this.isLoadingData = false;
+          this.cd.detectChanges();
         }
       },
       error: (err) => {
         console.error('Error loading data', err);
-        // Even if error, we might have partial data or empty arrays are valid (e.g. no products yet)
-        if (err.name === 'EmptyError') {
-          console.warn('Algun catalogo esta vacio, continuando...');
-        } else {
+        // En modo desarrollo a veces los catalogos pueden estar vacios al inicio
+        // Si es un error de "EmptyError" de RxJS significa que no emitio nada, lo cual puede pasar si el filtro es estricto
+        // Pero si falla la carga completa, no podemos continuar bien.
+        if (err.name !== 'EmptyError') {
           this.uiService.showError(err, 'Error cargando catálogos');
+        } else {
+          // Si falla por vacio, intentamos cargar factura de todas formas si es edicion?
+          // No, necesitamos los catalogos para mostrar nombres.
         }
+        this.isLoadingData = false;
+        this.cd.detectChanges();
+      }
+    });
+  }
+
+  loadFacturaForEdit(id: string) {
+    console.log('Cargando factura para editar:', id);
+    forkJoin({
+      factura: this.facturasService.obtenerFactura(id),
+      detalles: this.facturasService.obtenerDetalles(id)
+    }).subscribe({
+      next: ({ factura, detalles }) => {
+        console.log('Factura y detalles cargados', factura, detalles);
+        this.originalDetalles = detalles;
+
+        // Parchar cabecera
+        this.facturaForm.patchValue({
+          establecimiento_id: factura.establecimiento_id,
+          // punto_emision: se setea despues al filtrar
+          fecha_emision: factura.fecha_emision.split('T')[0],
+          cliente_id: factura.cliente_id,
+          forma_pago_sri: factura.forma_pago_sri,
+          observaciones: factura.observaciones || ''
+        });
+
+        // Trigger filtro puntos y setear punto
+        this.filterPuntosEmision(factura.establecimiento_id);
+
+        // Timeout pequeno para asegurar que el control se habilito
+        setTimeout(() => {
+          this.facturaForm.patchValue({ punto_emision_id: factura.punto_emision_id });
+          this.cd.detectChanges();
+        }, 50);
+
+        // Cargar detalles
+        this.detalles.clear();
+        detalles.forEach(d => this.addDetalle(d));
+
+        // Calcular totales iniciales
+        setTimeout(() => {
+          this.calculateTotals();
+          this.isLoadingData = false;
+          this.cd.detectChanges();
+        }, 100);
+      },
+      error: (err) => {
+        console.error('Error loading factura details', err);
+        this.uiService.showError(err, 'Error cargando factura');
+        this.close();
       }
     });
   }
 
   setupListeners() {
-    // Filter Puntos Emisión based on Establecimiento
     this.facturaForm.get('establecimiento_id')?.valueChanges.subscribe(estabId => {
       this.filterPuntosEmision(estabId);
     });
 
-    // Recalculate totals on form changes
     this.facturaForm.valueChanges.subscribe(() => {
       this.calculateTotals();
     });
@@ -379,10 +445,17 @@ export class CreateFacturaModalComponent implements OnInit {
     const ptoControl = this.facturaForm.get('punto_emision_id');
     if (this.puntosEmisionFiltered.length > 0) {
       ptoControl?.enable();
-      if (this.puntosEmisionFiltered.length === 1) {
-        ptoControl?.setValue(this.puntosEmisionFiltered[0].id);
-      } else {
-        ptoControl?.setValue(null);
+      // Solo autoseleccionar si es creacion nueva o si el actual no es valido
+      // En modo edicion ya se setea manualmente, pero si cambia establecimiento reseteamos
+      const currentVal = ptoControl?.value;
+      const exists = this.puntosEmisionFiltered.find(p => p.id === currentVal);
+
+      if (!exists && !this.facturaId) { // Solo auto si NO es edicion (o si cambio y ya no existe)
+        if (this.puntosEmisionFiltered.length === 1) {
+          ptoControl?.setValue(this.puntosEmisionFiltered[0].id);
+        } else {
+          ptoControl?.setValue(null);
+        }
       }
     } else {
       ptoControl?.disable();
@@ -390,14 +463,14 @@ export class CreateFacturaModalComponent implements OnInit {
     }
   }
 
-  addDetalle() {
+  addDetalle(data?: any) {
     const detalleGroup = this.fb.group({
-      producto_id: [null],
-      descripcion: ['', Validators.required],
-      cantidad: [1, [Validators.required, Validators.min(0.01)]],
-      precio_unitario: [0, [Validators.required, Validators.min(0)]],
-      descuento: [0, [Validators.min(0)]],
-      tipo_iva: ['4', Validators.required]
+      producto_id: [data?.producto_id || null],
+      descripcion: [data?.descripcion || '', Validators.required],
+      cantidad: [data?.cantidad || 1, [Validators.required, Validators.min(0.01)]],
+      precio_unitario: [data?.precio_unitario || 0, [Validators.required, Validators.min(0)]],
+      descuento: [data?.descuento || 0, [Validators.min(0)]],
+      tipo_iva: [data?.tipo_iva || '4', Validators.required] // Default 15%
     });
 
     this.detalles.push(detalleGroup);
@@ -426,7 +499,7 @@ export class CreateFacturaModalComponent implements OnInit {
     if (percent === 12) return '2';
     if (percent === 14) return '3';
     if (percent === 15) return '4';
-    return '2';
+    return '4'; // Default
   }
 
   getIvaRate(code: string): number {
@@ -453,28 +526,24 @@ export class CreateFacturaModalComponent implements OnInit {
 
     this.detalles.controls.forEach(control => {
       const val = control.value;
-      // IMPORTANT: Backend expects GROSS amounts for subtotal groups
-      // GROSS Subtotal
-      const subtotal_linea_gross = (val.cantidad * val.precio_unitario);
+      const cantidad = parseFloat(val.cantidad) || 0;
+      const precio = parseFloat(val.precio_unitario) || 0;
+      const descuento_linea = parseFloat(val.descuento) || 0;
 
-      const descuento_linea = val.descuento || 0;
-
-      // Base Imponible (Net) for Tax Calculation
+      const subtotal_linea_gross = (cantidad * precio);
       const base_imponible = Math.max(0, subtotal_linea_gross - descuento_linea);
-
       const ivaRate = this.getIvaRate(val.tipo_iva);
 
       if (ivaRate === 0) {
-        sub_sin_iva += subtotal_linea_gross; // Accumulate GROSS
+        sub_sin_iva += subtotal_linea_gross;
       } else {
-        sub_con_iva += subtotal_linea_gross; // Accumulate GROSS
+        sub_con_iva += subtotal_linea_gross;
         total_iva += (base_imponible * ivaRate);
       }
 
       total_desc += descuento_linea;
     });
 
-    // Round intermediates to avoid floating point issues
     sub_sin_iva = Number(sub_sin_iva.toFixed(2));
     sub_con_iva = Number(sub_con_iva.toFixed(2));
     total_desc = Number(total_desc.toFixed(2));
@@ -496,31 +565,66 @@ export class CreateFacturaModalComponent implements OnInit {
     this.isSaving = true;
 
     const formVal = this.facturaForm.getRawValue();
+    console.log('--- INICIANDO GUARDADO DE FACTURA ---');
+    console.log('Datos del formulario:', formVal);
+    console.log('Totales calculados:', this.totals);
 
-    const nuevaFactura: FacturaCreacion = {
+    // Mapping a FacturaCreacion funciona tambien para Actualizacion parcial
+    const datosFactura: FacturaCreacion = {
       establecimiento_id: formVal.establecimiento_id,
       punto_emision_id: formVal.punto_emision_id,
       cliente_id: formVal.cliente_id,
       fecha_emision: formVal.fecha_emision,
       observaciones: formVal.observaciones,
-
       subtotal_sin_iva: Number(this.totals.subtotal_sin_iva.toFixed(2)),
       subtotal_con_iva: Number(this.totals.subtotal_con_iva.toFixed(2)),
       descuento: Number(this.totals.descuento.toFixed(2)),
       iva: Number(this.totals.iva.toFixed(2)),
       total: Number(this.totals.total.toFixed(2)),
-
       propina: 0,
       retencion_iva: 0,
       retencion_renta: 0,
-      ambiente: 1,
+      ambiente: 1, // Default, sera ignorado en update
       tipo_emision: 1,
       forma_pago_sri: formVal.forma_pago_sri,
       origen: 'MANUAL'
     };
 
-    this.facturasService.crearFactura(nuevaFactura).pipe(
-      switchMap((facturaCreada) => {
+    console.log('Payload de factura a enviar:', datosFactura);
+
+    let operacionPrincipal$: Observable<Factura>;
+
+    if (this.facturaId) {
+      // EDICION
+      console.log('Modo EDICIÓN - ID:', this.facturaId);
+      // @ts-ignore - Partial update fix types if needed
+      operacionPrincipal$ = this.facturasService.actualizarFactura(this.facturaId, datosFactura).pipe(
+        switchMap((facturaActualizada) => {
+          console.log('Factura actualizada (cabecera):', facturaActualizada);
+          // 1. Eliminar todos los detalles anteriores (para luego insertar los nuevos)
+          // Esta es la estrategia mas segura vs hacer diff
+          console.log('Eliminando detalles anteriores...', this.originalDetalles.length);
+          const deleteObs = this.originalDetalles.map(d => this.facturasService.eliminarDetalle(d.id));
+          return (deleteObs.length > 0 ? forkJoin(deleteObs) : of([])).pipe(
+            map(() => {
+              console.log('Detalles anteriores eliminados');
+              return facturaActualizada;
+            })
+          );
+        })
+      );
+    } else {
+      // CREACION
+      console.log('Modo CREACIÓN');
+      operacionPrincipal$ = this.facturasService.crearFactura(datosFactura).pipe(
+        tap(f => console.log('Factura creada (cabecera):', f))
+      );
+    }
+
+    operacionPrincipal$.pipe(
+      switchMap((factura) => {
+        // Guardar nuevos detalles
+        console.log('Procesando nuevos detalles:', formVal.detalles.length);
         const detalles = formVal.detalles.map((d: any) => {
           const product = this.productos.find(p => p.id === d.producto_id);
           const codigo_producto = product?.codigo || 'GENERICO';
@@ -535,17 +639,20 @@ export class CreateFacturaModalComponent implements OnInit {
             descuento: d.descuento || 0,
             tipo_iva: d.tipo_iva
           };
-          return this.facturasService.agregarDetalle(facturaCreada.id, detalleObs);
+          return this.facturasService.agregarDetalle(factura.id, detalleObs);
         });
 
         return detalles.length > 0 ? forkJoin(detalles) : of([]);
       }),
-      tap(() => {
-        this.uiService.showToast('Factura creada exitosamente', 'success');
+      tap((resDetalles) => {
+        console.log('Detalles guardados exitosamente:', resDetalles);
+        const msg = this.facturaId ? 'Factura actualizada exitosamente' : 'Factura creada exitosamente';
+        this.uiService.showToast(msg, 'success');
         this.isSaving = false;
         this.onClose.emit(true);
       }),
       catchError(err => {
+        console.error('ERROR EN PROCESO DE GUARDADO:', err);
         this.isSaving = false;
         this.uiService.showError(err, 'Error al guardar factura');
         return of(null);

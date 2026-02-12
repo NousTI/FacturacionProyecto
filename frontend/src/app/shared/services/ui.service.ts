@@ -15,6 +15,13 @@ export class UiService {
     private toastSubject = new BehaviorSubject<Toast | null>(null);
     toast$ = this.toastSubject.asObservable();
 
+    private pageHeaderSubject = new BehaviorSubject<{ title: string, description: string }>({ title: '', description: '' });
+    pageHeader$ = this.pageHeaderSubject.asObservable();
+
+    setPageHeader(title: string, description: string) {
+        this.pageHeaderSubject.next({ title, description });
+    }
+
     showToast(message: string, type: Toast['type'] = 'success', description?: string, duration: number = 5000) {
         this.toastSubject.next({ message, description, type, duration });
 

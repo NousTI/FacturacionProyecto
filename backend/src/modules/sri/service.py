@@ -143,8 +143,13 @@ class ServicioSRI:
             # 1. ENVIAR RECEPCIÓN
             res_rec = self.client_sri.validar_comprobante(xml_b64, ambiente)
             
-            if res_rec['estado'] != 'RECIBIDA':
-                # Registrar fallo en recepción
+            # CASO ESPECIAL SRI: Error 70 - Clave de acceso en procesamiento
+            # Significa que ya fue recibida anteriormente y está en cola. No debemos detenernos.
+            msg_rec = str(res_rec.get('mensaje', ''))
+            ya_en_procesamiento = "EN PROCESAMIENTO" in msg_rec.upper() or "70" in msg_rec
+            
+            if res_rec['estado'] != 'RECIBIDA' and not ya_en_procesamiento:
+                # Registrar fallo real en recepción
                 self.factura_repo.crear_log_emision({
                     "factura_id": factura_id,
                     "facturacion_programada_id": factura.get('facturacion_programada_id'),
@@ -157,6 +162,9 @@ class ServicioSRI:
                     "xml_respuesta": str(res_rec)
                 })
                 return res_rec
+            
+            if ya_en_procesamiento:
+                print(f"--- [SRI] La clave {factura.get('clave_acceso')} ya está en procesamiento (Error 70). Saltando a consulta de autorización. ---")
 
             # 2. PROCESAR AUTORIZACIÓN (Solo si fue RECIBIDA)
             clave_match = re.search(r'<claveAcceso>(.*?)</claveAcceso>', xml_str)
@@ -164,6 +172,10 @@ class ServicioSRI:
             
             if not clave:
                 raise AppError("No se pudo extraer la clave de acceso del XML", 500, "SRI_KEY_ERROR")
+            
+            import time
+            # Espera única estratégica para que el SRI procese
+            time.sleep(3)
             
             res_aut = self.client_sri.autorizar_comprobante(clave, ambiente)
             estado_aut = res_aut['estado']
@@ -183,22 +195,39 @@ class ServicioSRI:
             })
 
             # 4. GUARDAR EN TABLA DE AUTORIZACIONES (Verdad técnica final)
+            # Normalizamos el estado para la base de datos
+            estado_db = estado_aut.upper() if estado_aut else "DESCONOCIDO"
+            if estado_db == "DEVUELTA": estado_db = "DEVUELTO"
+            
             self.repo.crear_autorizacion({
                 "factura_id": factura_id,
                 "numero_autorizacion": res_aut.get('numeroAutorizacion'),
                 "fecha_autorizacion": datetime.fromisoformat(res_aut['fechaAutorizacion']) if res_aut.get('fechaAutorizacion') else None,
-                "estado": estado_aut,
+                "estado": estado_db,
                 "mensajes": res_aut.get('mensajes'),
                 "xml_enviado": xml_firmado.decode('utf-8', errors='ignore'),
                 "xml_respuesta": str(res_aut)
             })
             
+            # 5. ACTUALIZAR ESTADO DE LA FACTURA SEGÚN RESPUESTA
             if estado_aut == 'AUTORIZADO':
                 self.factura_repo.actualizar_factura(factura_id, {
                     "estado": "EMITIDA", 
                     "clave_acceso": clave,
                     "numero_autorizacion": res_aut.get('numeroAutorizacion'),
                     "fecha_autorizacion": res_aut.get('fechaAutorizacion')
+                })
+            elif estado_aut in ['DEVUELTA', 'DEVUELTO', 'NO AUTORIZADO']:
+                # Solo marcamos como RECHAZADA si el SRI explícitamente la rechazó
+                self.factura_repo.actualizar_factura(factura_id, {
+                    "estado": "RECHAZADA", 
+                    "clave_acceso": clave
+                })
+            else:
+                # Si sigue en PROCESAMIENTO o similar
+                self.factura_repo.actualizar_factura(factura_id, {
+                    "estado": "EN_PROCESO", 
+                    "clave_acceso": clave
                 })
             
             return res_aut

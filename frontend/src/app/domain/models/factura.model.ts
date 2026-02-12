@@ -59,7 +59,7 @@ export interface Factura {
     tipo_emision: number; // 1=Normal
     forma_pago_sri: string; // '01', etc
 
-    estado: 'BORRADOR' | 'EMITIDA' | 'ANULADA';
+    estado: 'BORRADOR' | 'EN_PROCESO' | 'EMITIDA' | 'RECHAZADA' | 'ANULADA';
     estado_pago: 'PENDIENTE' | 'PAGADO' | 'PARCIAL' | 'VENCIDO';
     razon_anulacion?: string;
 

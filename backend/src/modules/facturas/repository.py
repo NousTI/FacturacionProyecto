@@ -315,7 +315,7 @@ class RepositorioFacturas:
     def listar_logs_emision(self, factura_id: UUID) -> List[dict]:
         """Lista el historial de intentos de emisión de una factura."""
         query = """
-            SELECT l.*, u.nombre as usuario_nombre 
+            SELECT l.*, CONCAT(u.nombres, ' ', u.apellidos) as usuario_nombre 
             FROM sistema_facturacion.log_emision_facturas l
             LEFT JOIN sistema_facturacion.usuarios u ON l.usuario_id = u.id
             WHERE l.factura_id = %s 
@@ -400,7 +400,7 @@ class RepositorioFacturas:
     def listar_pagos(self, factura_id: UUID) -> List[dict]:
         """Lista el historial de pagos de una factura."""
         query = """
-            SELECT p.*, u.nombre as usuario_nombre 
+            SELECT p.*, CONCAT(u.nombres, ' ', u.apellidos) as usuario_nombre 
             FROM sistema_facturacion.log_pago_facturas p
             LEFT JOIN sistema_facturacion.usuarios u ON p.usuario_id = u.id
             WHERE p.factura_id = %s 

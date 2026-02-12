@@ -25,7 +25,7 @@ from .schemas_logs import AutorizacionSRIResumen, ResumenPagos
 # ENUMS DE ESTADO
 # ===================================================================
 
-EstadoFactura = Literal['BORRADOR', 'EMITIDA', 'ANULADA']
+EstadoFactura = Literal['BORRADOR', 'EN_PROCESO', 'EMITIDA', 'RECHAZADA', 'ANULADA']
 EstadoPago = Literal['PENDIENTE', 'PAGADO', 'PARCIAL', 'VENCIDO']
 # Ambiente: 1=Prueba, 2=Produccion
 # TipoEmision: 1=Normal, 2=Contingencia
@@ -45,7 +45,7 @@ class FacturaBase(BaseModel):
     
     # SRI ECUADOR
     tipo_documento: str = Field(default='01', pattern=r'^\d{2}$', description="01=Factura, 04=NC, 05=ND")
-    ambiente: int = Field(default=1, ge=1, le=2, description="1=Prueba, 2=Produccion")
+    ambiente: int = Field(default=1, description="1=Prueba, 2=Produccion (FORZADO A 1 POR SEGURIDAD)")
     tipo_emision: int = Field(default=1, ge=1, le=2, description="1=Normal, 2=Contingencia")
     forma_pago_sri: str = Field(default='01', pattern=r'^\d{2}$', description="Código SRI de forma de pago")
     
@@ -200,9 +200,9 @@ class FacturaLectura(BaseModel):
     cliente_id: UUID
     facturacion_programada_id: Optional[UUID] = None
     
-    # Número de factura formato SRI: NNN-NNN-NNNNNNNNN
-    numero_factura: str
-    secuencial_punto_emision: int
+    # Número de factura formato SRI: NNN-NNN-NNNNNNNNN (Opcional en borradores)
+    numero_factura: Optional[str] = None
+    secuencial_punto_emision: Optional[int] = None
     
     # Campos SRI
     clave_acceso: Optional[str] = None
@@ -300,7 +300,7 @@ class FacturaResumen(BaseModel):
     """Schema resumido para listados (sin snapshots completos)."""
     
     id: UUID
-    numero_factura: str
+    numero_factura: Optional[str] = None
     cliente_razon_social: str
     fecha_emision: date
     total: Decimal

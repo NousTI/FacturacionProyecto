@@ -332,6 +332,7 @@ export class EmpresaPage implements OnInit {
   ) { }
 
   ngOnInit(): void {
+    this.uiService.setPageHeader('Configuración de Empresa', 'Gestiona la información legal y operativa de tu negocio');
     this.loadEmpresa();
   }
 

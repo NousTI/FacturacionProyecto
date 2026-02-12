@@ -1,4 +1,5 @@
 import { UserRole } from "../enums/role.enum";
+import { Permiso } from "./perfil.model";
 
 export interface User {
     id: string;
@@ -11,9 +12,13 @@ export interface User {
     apellidos?: string;
     email?: string;
     last_login?: string;
+    is_superadmin?: boolean;
 
     telefono?: string;
     empresa_id?: string;
+    empresa_rol_id?: string;
+    rol_nombre?: string;
+    rol_codigo?: string;
     role?: UserRole | string;
 
     // Permisos Vendedor
@@ -23,5 +28,9 @@ export interface User {
     puede_ver_reportes?: boolean;
 
     // Permisos Granulares (Nuevo Sistema)
-    permisos?: string[];
+    // Puede venir como string[] (token) o Permiso[] (perfil completo)
+    permisos?: string[] | Permiso[];
+
+    activo?: boolean;
+    ultimo_acceso?: string;
 }

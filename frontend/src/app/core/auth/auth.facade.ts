@@ -99,16 +99,28 @@ export class AuthFacade {
         const user = this.getUser();
         if (!user) return false;
 
-        // Superadmin bypass
+        // 1. SuperAdmin bypass
         if (user.role === UserRole.SUPERADMIN || (user as any).is_superadmin) {
             return true;
         }
 
-        // Exact match in permissions array
-        if (user.permisos && user.permisos.includes(permission)) {
-            return true;
+        // 2. Check granular permissions (New System)
+        if (user.permisos && user.permisos.length > 0) {
+            const first = user.permisos[0];
+
+            // Case A: string array (codes from token)
+            if (typeof first === 'string') {
+                if ((user.permisos as string[]).includes(permission)) return true;
+            }
+            // Case B: Permiso object array (detailed from profile)
+            else {
+                const perms = user.permisos as any[]; // Use any to avoid complex casting in facade
+                const found = perms.find(p => p.codigo === permission);
+                if (found && found.concedido) return true;
+            }
         }
 
+        // 3. Backward compatibility/Legacy/Vendor flags
         return !!(user as any)[permission] || !!(user as any)[`puede_${permission}`];
     }
 

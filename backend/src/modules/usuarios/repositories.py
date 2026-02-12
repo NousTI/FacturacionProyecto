@@ -77,12 +77,14 @@ class RepositorioUsuarios:
             return dict(row) if row else None
     
     def obtener_usuario(self, id: UUID) -> Optional[dict]:
-        """Get user with role and email info"""
+        """Get user with role and email info and permissions"""
         query = """
             SELECT u.*, 
                    us.email,
                    er.nombre as rol_nombre,
                    er.codigo as rol_codigo,
+                   er.id as rol_id,
+                   e.id as empresa_id,
                    e.razon_social as empresa_nombre
             FROM sistema_facturacion.usuarios u
             JOIN sistema_facturacion.users us ON u.user_id = us.id
@@ -93,7 +95,13 @@ class RepositorioUsuarios:
         with self.db.cursor() as cur:
             cur.execute(query, (str(id),))
             row = cur.fetchone()
-            return dict(row) if row else None
+            if not row:
+                return None
+            
+            usuario = dict(row)
+            # Fetch permissions for this user's role
+            usuario['permisos'] = self.obtener_permisos_por_user_id(usuario['user_id'])
+            return usuario
     
     def obtener_por_user_id(self, user_id: UUID) -> Optional[dict]:
         """Get usuario by authentication user_id"""
@@ -287,18 +295,27 @@ class RepositorioUsuarios:
             return result
 
     def obtener_permisos_por_user_id(self, user_id: UUID) -> List[str]:
-        """Fetch only the permission codes for a user."""
-        query = """
-            SELECT p.codigo
-            FROM sistema_facturacion.usuarios u
-            JOIN sistema_facturacion.empresa_roles_permisos erp ON u.empresa_rol_id = erp.rol_id
-            JOIN sistema_facturacion.empresa_permisos p ON erp.permiso_id = p.id
-            WHERE u.user_id = %s AND erp.activo = TRUE
-        """
+        """Fetch only the permission codes for a user, handling SUPERADMIN override."""
+        # Check if user is system superadmin first
+        check_query = "SELECT role FROM sistema_facturacion.users WHERE id = %s"
         with self.db.cursor() as cur:
+            cur.execute(check_query, (str(user_id),))
+            user = cur.fetchone()
+            if user and user['role'] == RolCodigo.SUPERADMIN.value:
+                # Superadmin has ALL permissions
+                cur.execute("SELECT codigo FROM sistema_facturacion.empresa_permisos")
+                return [row['codigo'] for row in cur.fetchall()]
+
+            # Regular user: fetch via role
+            query = """
+                SELECT p.codigo
+                FROM sistema_facturacion.usuarios u
+                JOIN sistema_facturacion.empresa_roles_permisos erp ON u.empresa_rol_id = erp.rol_id
+                JOIN sistema_facturacion.empresa_permisos p ON erp.permiso_id = p.id
+                WHERE u.user_id = %s AND erp.activo = TRUE
+            """
             cur.execute(query, (str(user_id),))
             perms = [row['codigo'] for row in cur.fetchall()]
-            print(f"DEBUG: Permissions for user {user_id}: {perms}")
             return perms
 
     def listar_todos_usuarios_admin(self, vendedor_id: Optional[UUID] = None, actor_user_id: Optional[UUID] = None) -> List[dict]:

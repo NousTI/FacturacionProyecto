@@ -1,8 +1,9 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { AuthFacade } from '../../../core/auth/auth.facade';
-import { Observable, filter, map, mergeMap } from 'rxjs';
+import { Observable, filter, map, mergeMap, Subject, takeUntil } from 'rxjs';
 import { User } from '../../../domain/models/user.model';
 import { Router, NavigationEnd, ActivatedRoute } from '@angular/router';
+import { UiService } from '../../services/ui.service';
 
 @Component({
   selector: 'app-navbar',
@@ -117,22 +118,27 @@ import { Router, NavigationEnd, ActivatedRoute } from '@angular/router';
   `],
   standalone: false
 })
-export class NavbarComponent implements OnInit {
+export class NavbarComponent implements OnInit, OnDestroy {
   user$: Observable<User | null>;
   pageTitle: string = 'Inicio';
   pageDescription: string = 'Bienvenido al sistema';
   today = new Date();
 
+  private destroy$ = new Subject<void>();
+
   constructor(
     private authFacade: AuthFacade,
     private router: Router,
-    private activatedRoute: ActivatedRoute
+    private activatedRoute: ActivatedRoute,
+    private uiService: UiService
   ) {
     this.user$ = this.authFacade.user$;
   }
 
   ngOnInit() {
+    // 1. Subscribe to route data for initial/static titles
     this.router.events.pipe(
+      takeUntil(this.destroy$),
       filter(event => event instanceof NavigationEnd),
       map(() => this.activatedRoute),
       map(route => {
@@ -145,13 +151,30 @@ export class NavbarComponent implements OnInit {
       this.pageDescription = data['description'] || 'Bienvenido al sistema';
     });
 
-    // Initial load
+    // 2. Subscribe to Dynamic Page Headers from UiService (Overrides route data)
+    this.uiService.pageHeader$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(header => {
+        if (header.title) {
+          this.pageTitle = header.title;
+          this.pageDescription = header.description;
+        }
+      });
+
+    // Initial load from route
     let route = this.activatedRoute;
     while (route.firstChild) route = route.firstChild;
-    route.data.subscribe(data => {
-      this.pageTitle = data['title'] || 'Inicio';
-      this.pageDescription = data['description'] || 'Bienvenido al sistema';
+    route.data.pipe(takeUntil(this.destroy$)).subscribe(data => {
+      if (!this.pageTitle || this.pageTitle === 'Inicio') {
+        this.pageTitle = data['title'] || 'Inicio';
+        this.pageDescription = data['description'] || 'Bienvenido al sistema';
+      }
     });
+  }
+
+  ngOnDestroy() {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   logout() {

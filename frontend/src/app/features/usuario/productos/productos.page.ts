@@ -179,6 +179,7 @@ export class ProductosPage implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
+    this.uiService.setPageHeader('Catálogo de Productos', 'Gestiona tus productos, servicios e inventarios');
     this.productosService.loadInitialData();
 
     this.productos$

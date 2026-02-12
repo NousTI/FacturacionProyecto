@@ -56,6 +56,7 @@ class PermisoSchema(BaseModel):
     modulo: str
     tipo: str
     descripcion: Optional[str] = None
+    concedido: bool = False  # Indica si el usuario tiene este permiso otorgado
 
 class EmpresaInfoSchema(BaseModel):
     id: UUID
@@ -68,11 +69,11 @@ class EmpresaInfoSchema(BaseModel):
 
 class PerfilUsuarioLectura(BaseModel):
     # Datos del Usuario (Perfil)
-    id: UUID
+    id: Optional[UUID] = None # ID de perfil en empresa, puede ser nulo para superadmins
     user_id: UUID
     nombres: str
     apellidos: str
-    telefono: str
+    telefono: Optional[str] = None
     avatar_url: Optional[str] = None
     activo: bool # Estado en la empresa
     
@@ -85,11 +86,11 @@ class PerfilUsuarioLectura(BaseModel):
     updated_at: datetime
     
     # Datos de la Empresa
-    empresa: EmpresaInfoSchema
+    empresa: Optional[EmpresaInfoSchema] = None
     
     # Datos del Rol y Permisos
-    rol_nombre: str
-    rol_codigo: str
+    rol_nombre: Optional[str] = None
+    rol_codigo: Optional[str] = None
     permisos: list[PermisoSchema]
     
     class Config:

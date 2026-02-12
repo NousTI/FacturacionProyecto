@@ -60,18 +60,19 @@ import { SriConfigService } from '../certificado-sri/services/sri-config.service
          <!-- MODALS -->
          <app-create-factura-modal
             *ngIf="showCreateModal"
+            [facturaId]="selectedFactura?.id"
             (onClose)="closeCreateModal($event)"
          ></app-create-factura-modal>
 
          <app-confirm-modal
             *ngIf="showConfirmModal"
-            title="¿Eliminar Factura?"
-            [message]="'¿Estás seguro de que deseas eliminar la factura ' + (selectedFactura?.numero_factura || 'BORRADOR') + '?'"
-            confirmText="Eliminar"
-            type="danger"
-            icon="bi-trash3-fill"
+            [title]="confirmModalConfig.title"
+            [message]="confirmModalConfig.message"
+            [confirmText]="confirmModalConfig.confirmText"
+            [type]="confirmModalConfig.type"
+            [icon]="confirmModalConfig.icon"
             [loading]="isProcessing"
-            (onConfirm)="confirmDelete()"
+            (onConfirm)="handleModalConfirm()"
             (onCancel)="showConfirmModal = false"
          ></app-confirm-modal>
 
@@ -142,9 +143,19 @@ export class FacturacionPage implements OnInit {
 
   selectedFactura: Factura | null = null;
   isLoading: boolean = false;
-  isProcessing: boolean = false;
+  isProcessing: boolean = false; // Used for spinners
 
+  // MOdal Config
   showConfirmModal: boolean = false;
+  confirmModalConfig = {
+    title: '',
+    message: '',
+    confirmText: '',
+    type: 'danger' as 'danger' | 'primary',
+    icon: '',
+    action: '' as 'delete' | 'sri'
+  };
+
   showCreateModal: boolean = false;
   showViewModal: boolean = false;
 
@@ -160,6 +171,7 @@ export class FacturacionPage implements OnInit {
   ) { }
 
   ngOnInit() {
+    this.uiService.setPageHeader('Facturación Electrónica', 'Emite y gestiona tus comprobantes autorizados por el SRI');
     this.checkSriStatus();
     this.loadData();
   }
@@ -212,6 +224,7 @@ export class FacturacionPage implements OnInit {
     this.isLoading = true;
     this.facturasService.listarFacturas(params).subscribe({
       next: (data) => {
+        // Correct status mapping in case data logic differs
         this.facturas = data;
         this.calculateStats();
         this.applyFilters();
@@ -229,11 +242,11 @@ export class FacturacionPage implements OnInit {
     this.stats.totalCount = this.facturas.length;
     this.stats.totalAmount = this.facturas
       .filter(f => f.estado === 'EMITIDA')
-      .reduce((acc, curr) => acc + (curr.total || 0), 0);
+      .reduce((acc, curr) => acc + (parseFloat(curr.total as any) || 0), 0);
 
     this.stats.pendingAmount = this.facturas
       .filter(f => f.estado === 'EMITIDA' && f.estado_pago !== 'PAGADO')
-      .reduce((acc, curr) => acc + (curr.total || 0), 0);
+      .reduce((acc, curr) => acc + (parseFloat(curr.total as any) || 0), 0);
   }
 
   applyFilters() {
@@ -266,6 +279,7 @@ export class FacturacionPage implements OnInit {
       this.uiService.showToast(this.sriError, 'warning');
       return;
     }
+    this.selectedFactura = null; // Clear selected factura for new creations
     this.showCreateModal = true;
   }
 
@@ -290,9 +304,17 @@ export class FacturacionPage implements OnInit {
           this.uiService.showToast('No se puede editar: ' + this.sriError, 'warning');
           return;
         }
-        this.openCreateModal();
+        this.showCreateModal = true;
         break;
       case 'delete':
+        this.confirmModalConfig = {
+          title: '¿Eliminar Factura?',
+          message: '¿Estás seguro de que deseas eliminar la factura ' + (this.selectedFactura?.numero_factura || 'BORRADOR') + '?',
+          confirmText: 'Eliminar',
+          type: 'danger',
+          icon: 'bi-trash3-fill',
+          action: 'delete'
+        };
         this.showConfirmModal = true;
         break;
       case 'view':
@@ -303,7 +325,15 @@ export class FacturacionPage implements OnInit {
           this.uiService.showToast('No se puede enviar: ' + this.sriError, 'warning');
           return;
         }
-        this.enviarSri(event.factura.id);
+        this.confirmModalConfig = {
+          title: 'Confirmar Envío SRI',
+          message: '¿Está seguro de enviar la factura ' + this.selectedFactura?.numero_factura + ' al SRI? Esta acción no se puede deshacer.',
+          confirmText: 'Enviar y Autorizar',
+          type: 'primary',
+          icon: 'bi-cloud-upload-fill',
+          action: 'sri'
+        };
+        this.showConfirmModal = true;
         break;
       case 'pdf':
         this.descargarPdf(event.factura.id);
@@ -322,7 +352,17 @@ export class FacturacionPage implements OnInit {
     }
   }
 
-  confirmDelete() {
+  handleModalConfirm() {
+    if (!this.selectedFactura) return;
+
+    if (this.confirmModalConfig.action === 'delete') {
+      this.deleteFactura();
+    } else if (this.confirmModalConfig.action === 'sri') {
+      this.enviarSri();
+    }
+  }
+
+  deleteFactura() {
     if (!this.selectedFactura) return;
     this.isProcessing = true;
     this.facturasService.eliminarFactura(this.selectedFactura.id)
@@ -339,6 +379,54 @@ export class FacturacionPage implements OnInit {
       });
   }
 
+  enviarSri() {
+    if (!this.selectedFactura) return;
+    this.isProcessing = true;
+
+    this.facturasService.enviarSri(this.selectedFactura.id)
+      .pipe(finalize(() => {
+        this.isProcessing = false;
+        this.showConfirmModal = false;
+      }))
+      .subscribe({
+        next: (res: any) => {
+          // Actualizar estado localmente según respuesta
+          // Explicit casting to match Factura state type if needed, but strings usually work
+          const estado = res.estado === 'AUTORIZADO' ? 'EMITIDA' :
+            (res.estado === 'DEVUELTA' || res.estado === 'NO AUTORIZADO') ? 'RECHAZADA' : 'EN_PROCESO';
+
+          let msgType = 'success';
+          let msgText = 'Factura autorizada correctamente';
+
+          if (estado === 'RECHAZADA') {
+            msgType = 'error';
+            msgText = 'Factura devuelta por el SRI';
+          } else if (estado === 'EN_PROCESO') {
+            msgType = 'warning';
+            msgText = 'Factura en procesamiento por el SRI';
+          }
+
+          this.uiService.showToast(msgText, msgType as any);
+
+          // Actualizar en lista sin recargar todo si es posible
+          const index = this.facturas.findIndex(f => f.id === this.selectedFactura?.id);
+          if (index !== -1) {
+            this.facturas[index].estado = estado as any; // Cast to any or strict type
+            // Si fue autorizada, actualizar fecha y autorización
+            if (estado === 'EMITIDA') {
+              this.facturas[index].numero_autorizacion = res.numeroAutorizacion;
+              this.facturas[index].fecha_autorizacion = res.fechaAutorizacion;
+            }
+            this.calculateStats();
+            this.applyFilters();
+          } else {
+            this.loadData(); // Fallback
+          }
+        },
+        error: (err) => this.uiService.showError(err, 'Error envío SRI')
+      });
+  }
+
   anularFactura(id: string, razon: string) {
     this.isLoading = true;
     this.facturasService.anularFactura(id, razon)
@@ -352,22 +440,9 @@ export class FacturacionPage implements OnInit {
       });
   }
 
-  enviarSri(id: string) {
-    if (!confirm("¿CONFIRMAR ENVIO AL SRI?")) return;
-    this.isLoading = true;
-    this.facturasService.enviarSri(id)
-      .pipe(finalize(() => this.isLoading = false))
-      .subscribe({
-        next: () => {
-          this.uiService.showToast('Factura enviada al SRI', 'success');
-          this.loadData();
-        },
-        error: (err) => this.uiService.showError(err, 'Error envío SRI')
-      });
-  }
 
   descargarPdf(id: string) {
-    this.facturasService.descargarPdf(id).subscribe(blob => {
+    this.facturasService.descargarPdf(id).subscribe((blob: Blob) => {
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;

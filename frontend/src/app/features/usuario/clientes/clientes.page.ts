@@ -161,6 +161,7 @@ export class ClientesPage implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
+    this.uiService.setPageHeader('Gestión de Clientes', 'Administra la base de datos de tus clientes y sus créditos');
     // Initial data load (handles caching)
     this.clientesService.loadInitialData();
 
