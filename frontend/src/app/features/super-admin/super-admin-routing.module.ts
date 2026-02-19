@@ -6,6 +6,7 @@ import { SuscripcionesPage } from './suscripciones/suscripciones.page';
 import { ComisionesPage } from './comisiones/comisiones.page';
 import { PlanesPage } from './planes/planes.page';
 import { ClientesPage } from './clientes/clientes.page';
+import { PerfilPage } from './perfil/perfil.page';
 import { RoleGuard } from '../../core/guards/role.guard';
 import { UserRole } from '../../domain/enums/role.enum';
 
@@ -56,6 +57,12 @@ const routes: Routes = [
         component: PlanesPage,
         canActivate: [RoleGuard],
         data: { title: 'Planes y Límites', roles: [UserRole.SUPERADMIN], description: 'Configuración de paquetes' }
+    },
+    {
+        path: 'perfil',
+        component: PerfilPage,
+        canActivate: [RoleGuard],
+        data: { title: 'Mi Perfil', roles: [UserRole.SUPERADMIN], description: 'Información de cuenta super administrador' }
     }
 ];
 

@@ -9,14 +9,14 @@
 
   --card-shadow: 0 10px 25px -5px rgba(22, 29, 53, 0.05), 0 8px 10px -6px rgba(22, 29, 53, 0.05);
   --card-radius: 24px;
-  --bg-main: #f8fafc;
+  --bg-main: #f4f7fb;
 
   --primary-color: #161d35;
   --primary-hover: #1e293b;
   --text-main: #0f172a;
   --text-muted: #64748b;
   --border-color: #e2e8f0;
-  
+
   --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
   --shadow-premium: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
   --shadow-premium-lg: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.01);
@@ -26,22 +26,46 @@
 
 /* Animations */
 @keyframes fadeInScale {
-  from { opacity: 0; transform: scale(0.95); }
-  to { opacity: 1; transform: scale(1); }
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
 @keyframes slideUp {
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
 }
 
-.animate-fade-in-scale { animation: fadeInScale 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
-.animate-slide-up { animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+.animate-fade-in-scale {
+  animation: fadeInScale 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-slide-up {
+  animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
 
 .glass-morphism {
   background: var(--glass-bg);
@@ -50,8 +74,13 @@
   border: 1px solid var(--glass-border);
 }
 
-.shadow-premium { box-shadow: var(--shadow-premium); }
-.shadow-premium-lg { box-shadow: var(--shadow-premium-lg); }
+.shadow-premium {
+  box-shadow: var(--shadow-premium);
+}
+
+.shadow-premium-lg {
+  box-shadow: var(--shadow-premium-lg);
+}
 
 .btn-primary-gradient {
   background: var(--primary-gradient);
@@ -105,7 +134,7 @@ body {
 .soft-card {
   background: white;
   border-radius: 28px;
-  border: 1px solid rgba(0,0,0,0.02);
+  border: 1px solid rgba(0, 0, 0, 0.02);
   box-shadow: var(--shadow-premium);
   padding: 2rem;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -117,10 +146,19 @@ body {
 }
 
 /* Scrollbar Customization */
-::-webkit-scrollbar { width: 8px; }
-::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
 ::-webkit-scrollbar-thumb {
   background: #cbd5e1;
   border-radius: 10px;
 }
-::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}

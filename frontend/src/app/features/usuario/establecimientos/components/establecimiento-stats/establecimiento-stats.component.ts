@@ -51,7 +51,6 @@ import { CommonModule } from '@angular/common';
       display: flex;
       align-items: center;
       gap: 2rem;
-      box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.04);
       border: 1px solid #f1f5f9;
     }
 

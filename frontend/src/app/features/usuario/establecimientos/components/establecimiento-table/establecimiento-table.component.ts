@@ -9,7 +9,7 @@ import { Establecimiento } from '../../../../../domain/models/establecimiento.mo
   imports: [CommonModule],
   template: `
     <section class="module-table">
-      <div class="table-container border-0 shadow-premium">
+      <div class="table-container border-0">
         <div class="table-responsive-premium">
           <table class="table mb-0 align-middle">
             <thead>
@@ -82,7 +82,7 @@ import { Establecimiento } from '../../../../../domain/models/establecimiento.mo
                       <i class="bi bi-three-dots"></i>
                     </button>
                     <ul 
-                      class="dropdown-menu dropdown-menu-end shadow-premium-lg border-0 p-2 rounded-4" 
+                      class="dropdown-menu dropdown-menu-end border-0 p-2 rounded-4" 
                       [attr.aria-labelledby]="'actions-' + est.id"
                     >
                       <li>
@@ -124,7 +124,6 @@ import { Establecimiento } from '../../../../../domain/models/establecimiento.mo
     .module-table {
       background: white;
       border-radius: 24px;
-      box-shadow: 0 10px 25px -5px rgba(22, 29, 53, 0.05), 0 4px 6px -4px rgba(22, 29, 53, 0.05);
       border: 1px solid #f1f5f9;
       overflow: visible !important;
     }
@@ -242,7 +241,6 @@ import { Establecimiento } from '../../../../../domain/models/establecimiento.mo
     .dropdown-menu {
       border-radius: 16px;
       border: 1px solid #e2e8f0 !important;
-      box-shadow: 0 15px 35px rgba(22, 29, 53, 0.2) !important;
       z-index: 1000 !important;
       padding: 0.75rem !important;
     }

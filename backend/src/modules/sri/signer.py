@@ -35,10 +35,25 @@ class XMLSigner:
         except Exception as e:
             raise ValueError(f"Error al cargar credenciales .p12: {str(e)}")
 
-    def check_validity(self):
+    def check_validity(self, check_only: bool = False):
+        """
+        Verifica la validez temporal del certificado.
+        :param check_only: Si es True, solo lanza excepción si YA expiró.
+        """
         now = datetime.now(self._cert.not_valid_after_utc.tzinfo)
-        if self._cert.not_valid_after_utc < now:
+        
+        if now > self._cert.not_valid_after_utc:
              raise ValueError("El certificado digital ha expirado.")
+             
+        if now < self._cert.not_valid_before_utc:
+             raise ValueError("El certificado digital aún no es válido.")
+
+        # Alerta de proximidad (30 días)
+        time_left = self._cert.not_valid_after_utc - now
+        if time_left.days < 30 and not check_only:
+            print(f"[WARN] Certificado expira en {time_left.days} días. Renovar.")
+            # Aquí se podría lanzar una excepción custom si se quiere bloquear, 
+            # pero mejor solo loguear. El frontend debe consultar el estado.
 
     def verify_ruc(self, expected_ruc: str):
         """

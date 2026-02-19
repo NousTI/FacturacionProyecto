@@ -5,7 +5,7 @@ import { CommonModule } from '@angular/common';
   selector: 'app-empresa-table',
   template: `
     <section class="module-table">
-      <div class="table-container border-0 shadow-premium">
+      <div class="table-container border-0">
         <div class="table-responsive-premium">
           <table class="table mb-0 align-middle">
             <thead>
@@ -84,7 +84,7 @@ import { CommonModule } from '@angular/common';
                     >
                       <i class="bi bi-three-dots"></i>
                     </button>
-                    <ul class="dropdown-menu dropdown-menu-end shadow-premium-lg border-0 p-2 rounded-4" [attr.aria-labelledby]="'actions-' + empresa.id">
+                    <ul class="dropdown-menu dropdown-menu-end border-0 p-2 rounded-4" [attr.aria-labelledby]="'actions-' + empresa.id">
                       <li>
                         <a class="dropdown-item rounded-3 py-2" href="javascript:void(0)" (click)="onAction.emit({type: 'view_details', empresa})">
                           <i class="bi bi-eye text-corporate"></i>

@@ -1,6 +1,7 @@
 import requests
 from requests.exceptions import RequestException
 import xml.etree.ElementTree as ET
+from .constants import SRIEstadoRespuesta, SRI_TIMEOUT_SECONDS
 
 class ClienteSRI:
     URLS = {
@@ -26,16 +27,15 @@ class ClienteSRI:
         """
         try:
              headers = {'Content-Type': 'text/xml;charset=UTF-8'}
-             # AUMENTADO TIMEOUT A 30s (El SRI suele ser lento en recepción)
-             response = requests.post(url, data=soap_body, headers=headers, timeout=30)
+             response = requests.post(url, data=soap_body, headers=headers, timeout=SRI_TIMEOUT_SECONDS)
              response.raise_for_status()
              result = self._parse_recepcion(response.text)
              result['xml_respuesta_raw'] = response.text
              return result
         except requests.exceptions.Timeout:
-             return {"estado": "ERROR_TIMEOUT", "mensaje": "El SRI tardó demasiado en responder (Timeout). Posiblemente sí se recibió."}
+             return {"estado": SRIEstadoRespuesta.ERROR_TIMEOUT, "mensaje": "El SRI tardó demasiado en responder (Timeout). Posiblemente sí se recibió."}
         except RequestException as e:
-             return {"estado": "ERROR_CONEXION", "mensaje": str(e)}
+             return {"estado": SRIEstadoRespuesta.ERROR_CONEXION, "mensaje": str(e)}
 
     def autorizar_comprobante(self, clave_acceso: str, ambiente: str = '1') -> dict:
         url = self.URLS.get(ambiente, self.URLS['1'])['autorizacion']
@@ -49,16 +49,15 @@ class ClienteSRI:
         """
         try:
              headers = {'Content-Type': 'text/xml;charset=UTF-8'}
-             # AUMENTADO TIMEOUT A 30s
-             response = requests.post(url, data=soap_body, headers=headers, timeout=30)
+             response = requests.post(url, data=soap_body, headers=headers, timeout=SRI_TIMEOUT_SECONDS)
              response.raise_for_status()
              result = self._parse_autorizacion(response.text)
              result['xml_respuesta_raw'] = response.text
              return result
         except requests.exceptions.Timeout:
-             return {"estado": "ERROR_TIMEOUT", "mensaje": "El SRI tardó en autorizar."}
+             return {"estado": SRIEstadoRespuesta.ERROR_TIMEOUT, "mensaje": "El SRI tardó en autorizar."}
         except RequestException as e:
-             return {"estado": "ERROR_CONEXION", "mensaje": str(e)}
+             return {"estado": SRIEstadoRespuesta.ERROR_CONEXION, "mensaje": str(e)}
 
     def _parse_msg_node(self, root) -> tuple:
         codigos = []
@@ -103,7 +102,7 @@ class ClienteSRI:
                 "codigos": codigos
             }
         except:
-            return {"estado": "ERROR_PARSING", "mensaje": "Error parseando respuesta SRI", "codigos": []}
+            return {"estado": SRIEstadoRespuesta.ERROR_PARSING, "mensaje": "Error parseando respuesta SRI", "codigos": []}
 
     def _parse_autorizacion(self, xml_text: str) -> dict:
         try:
@@ -126,4 +125,4 @@ class ClienteSRI:
                 "codigos": codigos
             }
         except:
-            return {"estado": "ERROR_PARSING", "mensajes": ["Error parseando respuesta"], "codigos": []}
+            return {"estado": SRIEstadoRespuesta.ERROR_PARSING, "mensajes": ["Error parseando respuesta"], "codigos": []}

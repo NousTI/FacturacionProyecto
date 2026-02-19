@@ -94,78 +94,8 @@ interface EstablecimientoStats {
   styles: [`
     .establecimientos-page-container {
       min-height: 100vh;
-      background: #f8fafc;
-    }
-
-    .page-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      margin-bottom: 2rem;
-    }
-
-    .page-title {
-      font-size: 1.75rem;
-      font-weight: 900;
-      color: #161d35;
-      margin-bottom: 0.25rem;
-      letter-spacing: -0.01em;
-    }
-
-    .page-subtitle {
-      color: #94a3b8;
-      font-size: 0.95rem;
-      font-weight: 500;
-      margin: 0;
-    }
-
-    .btn-refresh-premium {
-      background: white;
-      border: 1px solid #e2e8f0;
-      width: 40px;
-      height: 40px;
-      border-radius: 12px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: #64748b;
-      cursor: pointer;
-      transition: all 0.2s;
-      font-size: 1rem;
-    }
-
-    .btn-refresh-premium:hover {
-      background: #f8fafc;
-      color: #161d35;
-      border-color: #cbd5e1;
-      transform: translateY(-2px);
-    }
-
-    .btn-refresh-premium.spinning i {
-      animation: spin 1s linear infinite;
-    }
-
-    @keyframes spin {
-      from {
-        transform: rotate(0deg);
-      }
-      to {
-        transform: rotate(360deg);
-      }
-    }
-
-    @media (max-width: 768px) {
-      .establecimientos-page-container {
-        background: #f8fafc;
-      }
-
-      .page-title {
-        font-size: 1.5rem;
-      }
-
-      .page-subtitle {
-        font-size: 0.85rem;
-      }
+      background: var(--bg-main);
+      padding: 0;
     }
   `]
 })

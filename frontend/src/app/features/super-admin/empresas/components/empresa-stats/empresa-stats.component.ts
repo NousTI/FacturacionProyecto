@@ -48,7 +48,7 @@ import { CommonModule } from '@angular/common';
       display: flex;
       align-items: center;
       justify-content: space-between;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+      /* box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03); */
       border: 1px solid #f1f5f9;
     }
     .stat-item-mini {

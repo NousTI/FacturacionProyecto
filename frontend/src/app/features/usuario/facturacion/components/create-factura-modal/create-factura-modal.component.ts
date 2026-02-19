@@ -83,13 +83,6 @@ import { forkJoin, switchMap, tap, catchError, of, filter, take, map, Observable
                   <label class="form-label fw-semibold text-muted small">Forma de Pago</label>
                   <select class="form-select" formControlName="forma_pago_sri">
                     <option value="01">Efectivo</option>
-                    <option value="16">Tarjeta de Débito</option>
-                    <option value="17">Tarjeta de Crédito</option>
-                    <option value="18">Tarjeta Prepago</option>
-                    <option value="19">Transferencia/Depósito</option>
-                    <option value="20">Otros con Sistema Financiero</option>
-                    <option value="15">Compensación de Deudas</option>
-                    <option value="21">Endoso de Títulos</option>
                   </select>
                 </div>
               </div>

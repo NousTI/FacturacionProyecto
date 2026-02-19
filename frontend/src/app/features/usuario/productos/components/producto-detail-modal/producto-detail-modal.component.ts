@@ -143,7 +143,7 @@ import { PermissionsService } from '../../../../../core/auth/permissions.service
       background: #ffffff; width: 850px;
       max-width: 95vw; max-height: 90vh; border-radius: 32px;
       display: flex; flex-direction: column; overflow: hidden;
-      box-shadow: 0 50px 100px -20px rgba(15, 23, 42, 0.3);
+      box-shadow: 0 50px 100px -20px rgba(15, 23, 42, 0.15);
       border: 1px solid rgba(255, 255, 255, 0.1);
     }
     .modal-header-final {
@@ -153,7 +153,7 @@ import { PermissionsService } from '../../../../../core/auth/permissions.service
     .avatar-badge {
       width: 64px; height: 64px; color: white;
       border-radius: 20px; display: flex; align-items: center; justify-content: center;
-      font-size: 1.5rem; font-weight: 800; box-shadow: 0 10px 20px rgba(22, 29, 53, 0.1);
+      font-size: 1.5rem; font-weight: 800;
     }
     .modal-title-final {
       font-size: 1.5rem; font-weight: 900; color: #1e293b; margin: 0;
@@ -191,7 +191,7 @@ import { PermissionsService } from '../../../../../core/auth/permissions.service
     .info-value.highlighted { color: #161d35; font-size: 1.1rem; }
 
     .card-premium-dark {
-      background: #1e293b; border-radius: 24px; box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+      background: #1e293b; border-radius: 24px;
     }
     .metric-item { display: flex; flex-direction: column; }
     .metric-label { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; margin-bottom: 0.25rem; }
@@ -218,7 +218,7 @@ import { PermissionsService } from '../../../../../core/auth/permissions.service
       background: #161d35; color: white; border: none; padding: 1rem 3rem; 
       border-radius: 16px; font-weight: 800; transition: all 0.2s;
     }
-    .btn-primary-final:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
+    .btn-primary-final:hover { transform: translateY(-2px); }
 
     .margen-success { color: #10b981; }
     .margen-warning { color: #f59e0b; }

@@ -56,6 +56,11 @@ export class EmpresaService {
             fechaVencimiento: e.fecha_fin ? new Date(e.fecha_fin) : null,
             ultimoPagoFecha: e.ultimo_pago_fecha ? new Date(e.ultimo_pago_fecha) : null,
             ultimoPagoMonto: e.ultimo_pago_monto || 0,
+            usage: {
+                usuarios: e.usuarios_count || 0,
+                establecimientos: e.establecimientos_count || 0,
+                facturas: e.facturas_mes_count || 0
+            },
             limits: {
                 max_usuarios: e.max_usuarios,
                 max_facturas: e.max_facturas_mes,

@@ -6,7 +6,7 @@ import { FormsModule } from '@angular/forms';
   selector: 'app-empresa-actions',
   template: `
     <section class="module-actions mb-4">
-      <div class="actions-bar-container shadow-sm py-2 px-4 rounded-4">
+      <div class="actions-bar-container py-2 px-4 rounded-4">
         <div class="row align-items-center g-3">
           <!-- Búsqueda Principal -->
           <div class="col-lg-5">
@@ -52,7 +52,7 @@ import { FormsModule } from '@angular/forms';
           <div class="col-lg-2 text-lg-end">
             <button 
               (click)="onCreate.emit()"
-              class="btn-system-action w-100 shadow-sm"
+              class="btn-system-action w-100"
             >
               <i class="bi bi-plus-lg me-2"></i>
               <span>Nueva Empresa</span>

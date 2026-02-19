@@ -37,7 +37,7 @@ import { Component } from '@angular/core';
       padding: 24px;
       flex-grow: 1;
       overflow-y: auto;
-      background-color: #f8fafc;
+      background-color: var(--bg-main);
       display: flex;
       flex-direction: column;
     }

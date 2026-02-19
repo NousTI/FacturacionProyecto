@@ -32,7 +32,7 @@ import { Producto, ProductoStats } from '../../../domain/models/producto.model';
   template: `
     <div class="productos-page-container">
 
-      <div class="px-4 pb-5 animate-fade-in">
+      <div class="animate-fade-in">
         <!-- ESTADÍSTICAS (Sectional Cards) -->
         <app-producto-stats
           *ngIf="stats$ | async as st"
@@ -43,21 +43,17 @@ import { Producto, ProductoStats } from '../../../domain/models/producto.model';
         ></app-producto-stats>
 
         <!-- TOOLBAR -->
-        <div class="toolbar-lux my-4 glass-morphism p-3 rounded-4 d-flex align-items-center gap-3">
+        <div class="toolbar-minimal my-4 border-bottom pb-3 d-flex align-items-center">
           <app-producto-actions
             class="flex-grow-1"
             [(searchQuery)]="searchQuery"
             (onFilterChangeEmit)="handleFilters($event)"
             (onCreate)="openCreateModal()"
           ></app-producto-actions>
-          
-          <button class="btn-refresh-lux shadow-sm" (click)="refreshData()" [class.spinning]="isLoading" title="Actualizar Datos">
-            <i class="bi bi-arrow-clockwise"></i>
-          </button>
         </div>
 
         <!-- MAIN CONTENT TABLE -->
-        <div class="table-lux shadow-premium-lg">
+        <div class="table-minimal">
           <app-producto-table
             [productos]="filteredProductos"
             (onAction)="handleAction($event)"
@@ -99,48 +95,36 @@ import { Producto, ProductoStats } from '../../../domain/models/producto.model';
   styles: [`
     .productos-page-container {
       min-height: 100vh;
+      background: var(--bg-main);
+    }
+    
+    .toolbar-minimal {
+      background: transparent;
+    }
+
+    .btn-refresh-minimal {
+      background: white;
+      border: 1px solid #e2e8f0;
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #64748b;
+      transition: all 0.2s;
+    }
+    .btn-refresh-minimal:hover {
       background: #f8fafc;
-      overflow-x: hidden;
-    }
-    
-    .header-premium {
-      border-radius: 0 0 32px 32px;
-      border-bottom: 1px solid rgba(255,255,255,0.1);
-      box-shadow: 0 10px 30px -10px rgba(0,0,0,0.05);
+      color: #161d35;
     }
 
-    .brand-icon-bg {
-      width: 64px; height: 64px;
-      background: #161d35;
+    .table-minimal {
+      background: white;
+      border: 1px solid #f1f5f9;
       border-radius: 20px;
-      display: flex; align-items: center; justify-content: center;
+      overflow: hidden;
     }
-    
-    .page-title {
-      font-size: 2.25rem; font-weight: 900;
-      color: #161d35; letter-spacing: -1px;
-    }
-    
-    .badge-premium {
-      background: rgba(22, 29, 53, 0.05);
-      color: #161d35; padding: 0.4rem 0.85rem;
-      border-radius: 10px; font-weight: 700; font-size: 0.75rem;
-      letter-spacing: 0.5px;
-    }
-
-    .btn-refresh-lux {
-      background: white; border: 1px solid #e2e8f0;
-      width: 48px; height: 48px; border-radius: 16px;
-      display: flex; align-items: center; justify-content: center;
-      color: #64748b; transition: all 0.3s;
-      font-size: 1.25rem;
-    }
-    .btn-refresh-lux:hover {
-      background: #161d35; color: white; transform: rotate(180deg);
-      border-color: #161d35;
-    }
-
-    .table-lux { border-radius: 32px; overflow: visible; background: white; position: relative; z-index: 1; }
 
     .spinning i { animation: spin 0.8s linear infinite; }
     @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }

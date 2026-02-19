@@ -96,7 +96,6 @@ import { Subject, takeUntil, finalize } from 'rxjs';
   `,
   styles: [`
     .empresas-page-container {
-      padding: 1.5rem 2rem;
       min-height: 100vh;
       background: #f8fafc;
     }

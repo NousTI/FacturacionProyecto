@@ -122,7 +122,7 @@ import { environment } from '../../../../environments/environment';
     </div>
   `,
   styles: [`
-    .clientes-page-container { padding: 1.5rem 2rem; }
+    .clientes-page-container { padding: 0; }
     .page-title { font-size: 1.5rem; font-weight: 800; color: #1e293b; margin-bottom: 0.25rem; }
     .page-subtitle { color: #64748b; font-size: 0.9rem; }
     

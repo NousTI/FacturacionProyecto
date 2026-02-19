@@ -25,7 +25,7 @@ import { PermissionsService } from '../../../../../core/auth/permissions.service
           <tr *ngFor="let producto of productos" class="row-lux animate-fade-in">
             <td class="ps-4">
               <div class="d-flex align-items-center">
-                <div class="item-icon-wrapper me-3 shadow-sm" [style.background]="getAvatarColor(producto.nombre, 0.1)" [style.color]="getAvatarColor(producto.nombre, 1)">
+                <div class="item-icon-wrapper me-3" [style.background]="getAvatarColor(producto.nombre, 0.1)" [style.color]="getAvatarColor(producto.nombre, 1)">
                   <i class="bi" [ngClass]="producto.tipo === 'SERVICIO' ? 'bi-lightning-charge-fill' : 'bi-box-seam-fill'"></i>
                 </div>
                 <div>
@@ -76,7 +76,7 @@ import { PermissionsService } from '../../../../../core/auth/permissions.service
                 >
                   <i class="bi bi-three-dots-vertical"></i>
                 </button>
-                <ul class="dropdown-menu dropdown-menu-end shadow-premium-lg border-0 p-2 rounded-4 animate-fade-in-scale" [attr.aria-labelledby]="'actions-p-' + producto.id">
+                <ul class="dropdown-menu dropdown-menu-end border-0 p-2 rounded-4 animate-fade-in-scale" [attr.aria-labelledby]="'actions-p-' + producto.id">
                   <li>
                     <a class="dropdown-item py-2" href="javascript:void(0)" (click)="onAction.emit({type: 'view', producto})">
                       <div class="icon-item bg-soft-info"><i class="bi bi-eye-fill"></i></div>
@@ -130,7 +130,7 @@ import { PermissionsService } from '../../../../../core/auth/permissions.service
     }
     
     .row-lux { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); border-bottom: 1px solid #f8fafc; cursor: default; }
-    .row-lux:hover { background: #fcfcfe; transform: scale(1.002); z-index: 5; position: relative; }
+    .row-lux:hover { background: #fcfcfe; }
     
     .row-lux td { padding: 1.25rem 1rem; }
     
@@ -184,7 +184,7 @@ import { PermissionsService } from '../../../../../core/auth/permissions.service
     }
     .btn-trigger-lux:hover { background: #f1f5f9; color: #161d35; }
 
-    .dropdown-menu { z-index: 100000 !important; min-width: 200px; border: 1px solid #e2e8f0 !important; box-shadow: 0 20px 40px -12px rgba(0,0,0,0.15) !important; }
+    .dropdown-menu { z-index: 100000 !important; min-width: 200px; border: 1px solid #e2e8f0 !important; }
     .dropdown-item {
       display: flex; align-items: center; font-size: 0.825rem;
       font-weight: 700; color: #475569; border-radius: 10px;

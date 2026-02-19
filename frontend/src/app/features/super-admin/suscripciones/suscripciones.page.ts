@@ -119,7 +119,7 @@ import { UiService } from '../../../shared/services/ui.service';
   `,
     styles: [`
     .suscripciones-page-container {
-      padding: 1.5rem 2rem;
+      padding: 0; 
       position: relative;
       min-height: 400px;
     }

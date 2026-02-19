@@ -59,7 +59,6 @@ import { CommonModule } from '@angular/common';
       background: white; border-radius: 20px;
       padding: 1.25rem 2rem; display: flex;
       align-items: center; justify-content: space-between;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
       border: 1px solid #f1f5f9;
     }
     .stat-item-mini { display: flex; align-items: center; gap: 1.1rem; flex: 1; }

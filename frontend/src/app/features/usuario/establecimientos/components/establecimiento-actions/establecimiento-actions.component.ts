@@ -92,7 +92,6 @@ import { FormsModule } from '@angular/forms';
     .search-input:focus {
       border-color: #161d35;
       outline: none;
-      box-shadow: 0 0 0 4px rgba(22, 29, 53, 0.05);
       background: #ffffff;
     }
 
@@ -134,7 +133,6 @@ import { FormsModule } from '@angular/forms';
     .filter-select:focus {
       border-color: #161d35;
       outline: none;
-      box-shadow: 0 0 0 4px rgba(22, 29, 53, 0.05);
     }
 
     .filter-select:hover {
@@ -159,8 +157,6 @@ import { FormsModule } from '@angular/forms';
 
     .btn-create-premium:hover {
       background: #232d4d;
-      transform: translateY(-1px);
-      box-shadow: 0 10px 25px -5px rgba(22, 29, 53, 0.15);
     }
 
     .btn-create-premium:active {

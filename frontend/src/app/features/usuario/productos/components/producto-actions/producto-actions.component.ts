@@ -9,7 +9,7 @@ import { PermissionsService } from '../../../../../core/auth/permissions.service
   imports: [CommonModule, FormsModule],
   template: `
     <section class="module-actions mb-4">
-      <div class="actions-bar-container shadow-sm py-2 px-4 rounded-4">
+      <div class="actions-bar-container py-2 px-4 rounded-4">
         <div class="row align-items-center g-3">
           <!-- Búsqueda Principal -->
           <div class="col-lg-5">
@@ -46,7 +46,7 @@ import { PermissionsService } from '../../../../../core/auth/permissions.service
             <button 
               *ngIf="canCreate"
               (click)="onCreate.emit()"
-              class="btn-system-action w-100 shadow-sm"
+              class="btn-system-action w-100"
             >
               <i class="bi bi-plus-lg me-2"></i>
               <span>Nuevo Item</span>
@@ -77,7 +77,7 @@ import { PermissionsService } from '../../../../../core/auth/permissions.service
       height: 40px; border-radius: 14px; font-weight: 700; display: inline-flex;
       align-items: center; justify-content: center; transition: all 0.2s; font-size: 0.9rem;
     }
-    .btn-system-action:hover { background: #232d4d; transform: translateY(-1px); box-shadow: 0 10px 15px -3px rgba(22, 29, 53, 0.2); }
+    .btn-system-action:hover { background: #232d4d; }
   `]
 })
 export class ProductoActionsComponent {

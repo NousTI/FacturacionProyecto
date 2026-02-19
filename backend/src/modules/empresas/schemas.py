@@ -75,6 +75,8 @@ class EmpresaLectura(EmpresaBase):
     firma_emisor: Optional[str] = None
     
     # Infraestructura real (conteo actual)
+    usuarios_count: int = 0
+    facturas_mes_count: int = 0
     establecimientos_count: int = 0
     puntos_emision_count: int = 0
     

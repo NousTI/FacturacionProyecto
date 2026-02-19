@@ -204,7 +204,7 @@ import { CommonModule } from '@angular/common';
       background: #ffffff; width: 850px; height: 650px;
       max-width: 95vw; max-height: 90vh; border-radius: 32px;
       display: flex; flex-direction: column; overflow: hidden;
-      box-shadow: 0 40px 80px -20px rgba(22, 29, 53, 0.25);
+      /* box-shadow: 0 40px 80px -20px rgba(22, 29, 53, 0.25); */
     }
     .modal-header-premium { padding: 2rem 2.5rem; display: flex; justify-content: space-between; align-items: center; }
     .modal-title-premium { font-size: 1.4rem; font-weight: 900; color: #161d35; margin: 0; }

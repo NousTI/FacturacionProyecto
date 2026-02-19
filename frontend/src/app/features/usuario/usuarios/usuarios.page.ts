@@ -32,7 +32,7 @@ import { User } from '../../../domain/models/user.model';
     ToastComponent
   ],
   template: `
-    <div class="usuarios-page-container p-4">
+    <div class="usuarios-page-container">
       <!-- ESTADÍSTICAS -->
       <app-usuario-stats
         *ngIf="stats$ | async as st"

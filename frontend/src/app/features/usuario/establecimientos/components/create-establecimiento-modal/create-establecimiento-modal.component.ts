@@ -156,7 +156,7 @@ import { Establecimiento } from '../../../../../domain/models/establecimiento.mo
       display: flex;
       flex-direction: column;
       overflow: hidden;
-      box-shadow: 0 40px 80px -20px rgba(22, 29, 53, 0.25);
+      box-shadow: 0 40px 80px -20px rgba(22, 29, 53, 0.1);
       animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
     }
 
@@ -261,7 +261,6 @@ import { Establecimiento } from '../../../../../domain/models/establecimiento.mo
     .input-final:focus {
       border-color: #161d35;
       outline: none;
-      box-shadow: 0 0 0 4px rgba(22, 29, 53, 0.05);
     }
 
     .input-final.is-invalid {
@@ -348,8 +347,6 @@ import { Establecimiento } from '../../../../../domain/models/establecimiento.mo
 
     .btn-submit-final:hover:not(:disabled) {
       background: #232d4d;
-      transform: translateY(-1px);
-      box-shadow: 0 10px 25px -5px rgba(22, 29, 53, 0.15);
     }
 
     .btn-submit-final:disabled {

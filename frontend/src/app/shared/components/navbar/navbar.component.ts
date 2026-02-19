@@ -8,7 +8,7 @@ import { UiService } from '../../services/ui.service';
 @Component({
   selector: 'app-navbar',
   template: `
-    <nav class="navbar navbar-expand-lg px-4 py-3 bg-white border-bottom shadow-sm">
+    <nav class="navbar navbar-expand-lg bg-white">
       <div class="container-fluid p-0">
         <!-- Page Header Info -->
         <div class="page-header-info d-none d-lg-block me-auto">
@@ -29,7 +29,7 @@ import { UiService } from '../../services/ui.service';
           </button>
           
           <div class="user-profile d-flex align-items-center" *ngIf="user$ | async as user" [attr.data-bs-toggle]="'dropdown'">
-            <div class="avatar-circle me-3 shadow-sm">
+            <div class="avatar-circle me-3">
               {{ (user.nombres?.charAt(0) || 'U') | uppercase }}
             </div>
             <div class="user-info">
@@ -38,7 +38,7 @@ import { UiService } from '../../services/ui.service';
             </div>
           </div>
 
-          <ul class="dropdown-menu dropdown-menu-end shadow border-0 rounded-4 mt-2">
+          <ul class="dropdown-menu dropdown-menu-end border-0 rounded-4 mt-2">
             <li><a class="dropdown-item py-2 px-3" routerLink="/perfil"><i class="bi bi-person me-2"></i> Perfil</a></li>
             <li><hr class="dropdown-divider mx-3"></li>
             <li><button class="dropdown-item py-2 px-3 text-danger" (click)="logout()"><i class="bi bi-box-arrow-right me-2"></i> Cerrar Sesión</button></li>
@@ -50,6 +50,11 @@ import { UiService } from '../../services/ui.service';
   styles: [`
     .navbar {
       height: 80px;
+      min-height: 80px;
+      max-height: 80px;
+      border-bottom: 1px solid #e2e8f0 !important;
+      padding: 0 1.5rem !important;
+      box-sizing: border-box !important;
     }
     .page-header-info h5 {
       font-size: 1.1rem;

@@ -54,6 +54,8 @@ class RepositorioEmpresas:
                     FROM sistema_facturacion.establecimientos est 
                     JOIN sistema_facturacion.puntos_emision pe ON est.id = pe.establecimiento_id 
                     WHERE est.empresa_id = e.id) as puntos_emision_count,
+                   (SELECT COUNT(*) FROM sistema_facturacion.usuarios WHERE empresa_id = e.id) as usuarios_count,
+                   (SELECT COUNT(*) FROM sistema_facturacion.facturas WHERE empresa_id = e.id AND date_trunc('month', created_at) = date_trunc('month', CURRENT_DATE)) as facturas_mes_count,
                    -- Pagos
                    (SELECT MAX(fecha_pago) FROM sistema_facturacion.pagos_suscripciones WHERE empresa_id = e.id) as ultimo_pago_fecha,
                    (SELECT monto FROM sistema_facturacion.pagos_suscripciones WHERE empresa_id = e.id ORDER BY fecha_pago DESC LIMIT 1) as ultimo_pago_monto
@@ -89,6 +91,9 @@ class RepositorioEmpresas:
                    p.max_establecimientos,
                    p.max_programaciones,
                    p.precio_mensual,
+                   (SELECT COUNT(*) FROM sistema_facturacion.usuarios WHERE empresa_id = e.id) as usuarios_count,
+                   (SELECT COUNT(*) FROM sistema_facturacion.establecimientos WHERE empresa_id = e.id) as establecimientos_count,
+                   (SELECT COUNT(*) FROM sistema_facturacion.facturas WHERE empresa_id = e.id AND date_trunc('month', created_at) = date_trunc('month', CURRENT_DATE)) as facturas_mes_count,
                    (SELECT MAX(fecha_pago) FROM sistema_facturacion.pagos_suscripciones WHERE empresa_id = e.id) as ultimo_pago_fecha,
                    (SELECT monto FROM sistema_facturacion.pagos_suscripciones WHERE empresa_id = e.id ORDER BY fecha_pago DESC LIMIT 1) as ultimo_pago_monto,
                    (SELECT estado FROM sistema_facturacion.pagos_suscripciones WHERE empresa_id = e.id ORDER BY fecha_pago DESC LIMIT 1) as ultimo_pago_estado

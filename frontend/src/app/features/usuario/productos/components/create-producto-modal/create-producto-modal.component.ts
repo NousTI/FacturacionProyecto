@@ -83,7 +83,7 @@ import { PermissionsService } from '../../../../../core/auth/permissions.service
                 </div>
                 <div class="col-md-6">
                   <label class="label-final">Margen Proyectado</label>
-                  <div class="margen-indicator-final shadow-sm" [ngClass]="getMargenClass()">
+                  <div class="margen-indicator-final" [ngClass]="getMargenClass()">
                     {{ calculateMargen() }}% Ganancia
                   </div>
                 </div>
@@ -128,7 +128,7 @@ import { PermissionsService } from '../../../../../core/auth/permissions.service
           <button type="button" class="btn-cancel-final" (click)="onClose.emit()" [disabled]="loading">Cerrar</button>
           <button type="submit" 
                   form="productoForm"
-                  class="btn-submit-final shadow-sm"
+                  class="btn-submit-final"
                   [disabled]="loading || !prodForm.valid">
             <span *ngIf="loading" class="spinner-border spinner-border-sm me-2"></span>
             {{ loading ? 'Guardando...' : (producto ? 'Guardar Cambios' : 'Crear Item') }}
@@ -149,7 +149,7 @@ import { PermissionsService } from '../../../../../core/auth/permissions.service
       background: #ffffff; width: 700px;
       max-width: 95vw; max-height: 90vh; border-radius: 28px;
       display: flex; flex-direction: column; overflow: hidden;
-      box-shadow: 0 40px 80px -20px rgba(22, 29, 53, 0.25);
+      box-shadow: 0 40px 80px -20px rgba(22, 29, 53, 0.1);
     }
     .modal-header-final {
       padding: 1.5rem 2.5rem; display: flex; justify-content: space-between; align-items: center;
@@ -178,7 +178,8 @@ import { PermissionsService } from '../../../../../core/auth/permissions.service
       transition: all 0.2s;
     }
     .input-final:focus, .select-final:focus {
-      border-color: #161d35; outline: none; box-shadow: 0 0 0 4px rgba(22, 29, 53, 0.05);
+      border-color: #161d35; outline: none;
+    }
     }
     .modal-footer-final {
       padding: 1.25rem 2.5rem; background: #ffffff; display: flex; justify-content: flex-end; gap: 1rem;

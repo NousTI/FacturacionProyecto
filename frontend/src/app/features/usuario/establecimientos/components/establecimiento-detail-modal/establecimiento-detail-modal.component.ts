@@ -132,7 +132,7 @@ import { Establecimiento } from '../../../../../domain/models/establecimiento.mo
       display: flex;
       flex-direction: column;
       overflow: hidden;
-      box-shadow: 0 40px 80px -20px rgba(22, 29, 53, 0.25);
+      box-shadow: 0 40px 80px -20px rgba(22, 29, 53, 0.1);
       animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
     }
 

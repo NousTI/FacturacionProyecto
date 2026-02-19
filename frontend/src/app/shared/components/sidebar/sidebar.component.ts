@@ -7,7 +7,7 @@ import { Observable, map } from 'rxjs';
   selector: 'app-sidebar',
   template: `
     <div class="h-100 d-flex flex-column">
-      <div class="p-4 mb-2">
+      <div class="sidebar-header px-4 d-flex align-items-center border-bottom">
         <div class="logo-text d-flex align-items-center">
             <div class="logo-icon me-2">
                 <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="width: 24px;">
@@ -15,7 +15,7 @@ import { Observable, map } from 'rxjs';
                     <path d="M7 18L12 13L17 18" stroke="#161d35" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" opacity="0.3"/>
                 </svg>
             </div>
-            <span class="fw-bold fs-5">NousTI</span>
+            <span class="fw-bold fs-5 text-corporate">NousTI</span>
         </div>
       </div>
 
@@ -151,6 +151,17 @@ import { Observable, map } from 'rxjs';
     </div>
   `,
   styles: [`
+    .sidebar-header {
+      height: 80px;
+      min-height: 80px;
+      max-height: 80px;
+      padding: 0 1.5rem !important;
+      border-bottom: 1px solid #e2e8f0 !important;
+      box-sizing: border-box !important;
+    }
+    .flex-grow-1 {
+      padding-top: 2rem;
+    }
     .menu-label {
       font-size: 0.65rem;
       letter-spacing: 1px;
@@ -173,7 +184,6 @@ import { Observable, map } from 'rxjs';
     .menu-item.active {
       background: #161d35;
       color: white;
-      box-shadow: 0 4px 12px rgba(22, 29, 53, 0.2);
     }
     .menu-item i {
       font-size: 1.1rem;
