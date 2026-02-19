@@ -26,11 +26,14 @@ class ClienteSRI:
         """
         try:
              headers = {'Content-Type': 'text/xml;charset=UTF-8'}
-             response = requests.post(url, data=soap_body, headers=headers, timeout=10)
+             # AUMENTADO TIMEOUT A 30s (El SRI suele ser lento en recepción)
+             response = requests.post(url, data=soap_body, headers=headers, timeout=30)
              response.raise_for_status()
              result = self._parse_recepcion(response.text)
              result['xml_respuesta_raw'] = response.text
              return result
+        except requests.exceptions.Timeout:
+             return {"estado": "ERROR_TIMEOUT", "mensaje": "El SRI tardó demasiado en responder (Timeout). Posiblemente sí se recibió."}
         except RequestException as e:
              return {"estado": "ERROR_CONEXION", "mensaje": str(e)}
 
@@ -46,11 +49,14 @@ class ClienteSRI:
         """
         try:
              headers = {'Content-Type': 'text/xml;charset=UTF-8'}
-             response = requests.post(url, data=soap_body, headers=headers, timeout=10)
+             # AUMENTADO TIMEOUT A 30s
+             response = requests.post(url, data=soap_body, headers=headers, timeout=30)
              response.raise_for_status()
              result = self._parse_autorizacion(response.text)
              result['xml_respuesta_raw'] = response.text
              return result
+        except requests.exceptions.Timeout:
+             return {"estado": "ERROR_TIMEOUT", "mensaje": "El SRI tardó en autorizar."}
         except RequestException as e:
              return {"estado": "ERROR_CONEXION", "mensaje": str(e)}
 

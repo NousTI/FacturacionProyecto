@@ -103,6 +103,10 @@ import { CommonModule } from '@angular/common';
       color: white;
       transition: all 0.2s;
     }
+    .btn-confirm-primary:disabled {
+      opacity: 0.7;
+      cursor: not-allowed;
+    }
     .btn-confirm-primary.danger { background: #ef4444; }
     .btn-confirm-primary.danger:hover { background: #dc2626; }
     .btn-confirm-primary.success { background: #10b981; }

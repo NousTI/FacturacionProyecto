@@ -113,6 +113,13 @@ class ServicioSRI:
         factura = self.factura_repo.obtener_por_id(factura_id)
         if not factura: raise AppError("Factura no encontrada", 404, "FACTURA_NOT_FOUND")
         
+        # --- PROTECCIÓN CONTRA DOBLE CHECK (Concurrency) ---
+        if factura['estado'] in ['EN_PROCESO', 'EMITIDA', 'AUTORIZADO']:
+            raise AppError("La factura ya está siendo procesada o fue emitida.", 409, "FACTURA_LOCKED")
+            
+        # Bloquear inmediatamente
+        self.factura_repo.actualizar_factura(factura_id, {"estado": "EN_PROCESO"})
+        
         empresa = self.empresa_repo.obtener_por_id(factura['empresa_id'])
         cliente = self.cliente_repo.obtener_por_id(factura['cliente_id'])
         detalles = self.factura_repo.listar_detalles(factura_id)
@@ -165,7 +172,14 @@ class ServicioSRI:
                 msg_rec = str(res_rec.get('mensaje', ''))
                 ya_en_procesamiento = "EN PROCESAMIENTO" in msg_rec.upper() or "70" in msg_rec
                 
-                if res_rec['estado'] != 'RECIBIDA' and not ya_en_procesamiento:
+                # CASO TIMEOUT: Si dio timeout, es posible que el SRI sí lo haya recibido.
+                # Intentamos consultar autorización por si acaso.
+                if res_rec['estado'] == 'ERROR_TIMEOUT':
+                    print(f"--- [SRI] Timeout en Recepción. Asumiendo posible recepción exitosa y consultando autorización. ---")
+                    # NO retornamos, dejamos que pase al bloque de autorización
+                    ya_en_procesamiento = True # Forzamos pase
+                
+                elif res_rec['estado'] != 'RECIBIDA' and not ya_en_procesamiento:
                     # Registrar fallo real en recepción
                     codigos_error = res_rec.get('codigos', [])
                     self.factura_repo.crear_log_emision({
@@ -184,9 +198,13 @@ class ServicioSRI:
                 
                 if ya_en_procesamiento:
                     # Si detectamos que ya está en procesamiento (70) o clave registrada (43), intentamos rescatar el código
-                    codigos = []
-                    if "70" in msg_rec: codigos.append("70")
-                    if "43" in msg_rec: codigos.append("43")
+                    codigos = res_rec.get('codigos', [])
+                    
+                    # Si no hay códigos formales pero el mensaje lo indica, forzamos
+                    if not codigos:
+                        if "70" in msg_rec or "PROCESAMIENTO" in msg_rec.upper(): codigos.append("70")
+                        if "43" in msg_rec: codigos.append("43")
+                        if res_rec.get('estado') == 'ERROR_TIMEOUT': codigos.append("TIMEOUT")
                     
                     print(f"--- [SRI] Clave {clave} en estado especial. Códigos detectados: {codigos}. Saltando a autorización. ---")
                     
@@ -220,8 +238,15 @@ class ServicioSRI:
             # Caso crítico: Si Autorización responde "AUTORIZADO", todo bien.
             # Pero si responde NO AUTORIZADO, revisar si es por duplicidad (que a veces el SRI responde raro)
             
-            log_estado = "EXITOSO" if estado_aut == "AUTORIZADO" else "ERROR_VALIDACION"
-            
+            # 3. REGISTRAR RESULTADO FINAL EN LOGS
+            # Mapeo más preciso del estado para el log
+            if estado_aut == "AUTORIZADO":
+                log_estado = "EXITOSO"
+            elif estado_aut in ["ERROR_TIMEOUT", "ERROR_CONEXION"]:
+                log_estado = "ERROR_CONECTIVIDAD"
+            else:
+                log_estado = "ERROR_VALIDACION" # DEVUELTA, NO AUTORIZADO, etc.
+
             self.factura_repo.crear_log_emision({
                 "factura_id": factura_id,
                 "facturacion_programada_id": factura.get('facturacion_programada_id'),
@@ -235,21 +260,25 @@ class ServicioSRI:
                 "xml_respuesta": res_aut.get('xml_respuesta_raw', str(res_aut))
             })
 
-            # 4. GUARDAR EN TABLA DE AUTORIZACIONES
-            estado_db = estado_aut.upper() if estado_aut else "DESCONOCIDO"
-            if estado_db == "DEVUELTA": estado_db = "DEVUELTO"
+            # 4. GUARDAR EN TABLA DE AUTORIZACIONES (Solo si es una respuesta válida del SRI)
+            # Evitamos guardar TIMEOUTS o errores de conexión como "autorizaciones vacías"
+            estados_validos_sri = ['AUTORIZADO', 'DEVUELTA', 'DEVUELTO', 'NO AUTORIZADO', 'EN PROCESO', 'RECIBIDA']
             
-            self.repo.crear_autorizacion({
-                "factura_id": factura_id,
-                "numero_autorizacion": res_aut.get('numeroAutorizacion'),
-                "fecha_autorizacion": datetime.fromisoformat(res_aut['fechaAutorizacion']) if res_aut.get('fechaAutorizacion') else None,
-                "estado": estado_db,
-                "mensajes": mensajes_aut,
-                "xml_enviado": xml_firmado.decode('utf-8', errors='ignore'),
-                "xml_respuesta": res_aut.get('xml_respuesta_raw', str(res_aut))
-            })
+            if estado_aut in estados_validos_sri or (estado_aut and estado_aut not in ["ERROR_TIMEOUT", "ERROR_CONEXION", "DESCONOCIDO", "ERROR_PARSING"]):
+                estado_db = estado_aut.upper()
+                if estado_db == "DEVUELTA": estado_db = "DEVUELTO"
+                
+                self.repo.crear_autorizacion({
+                    "factura_id": factura_id,
+                    "numero_autorizacion": res_aut.get('numeroAutorizacion'),
+                    "fecha_autorizacion": datetime.fromisoformat(res_aut['fechaAutorizacion']) if res_aut.get('fechaAutorizacion') else None,
+                    "estado": estado_db,
+                    "mensajes": mensajes_aut,
+                    "xml_enviado": xml_firmado.decode('utf-8', errors='ignore'),
+                    "xml_respuesta": res_aut.get('xml_respuesta_raw', str(res_aut))
+                })
             
-            # 5. ACTUALIZAR ESTADO DE LA FACTURA
+            # 5. ACTUALIZAR ESTADO DE LA FACTURA SEGÚN RESPUESTA
             if estado_aut == 'AUTORIZADO':
                 self.factura_repo.actualizar_factura(factura_id, {
                     "estado": "EMITIDA", 
@@ -258,12 +287,13 @@ class ServicioSRI:
                     "fecha_autorizacion": res_aut.get('fechaAutorizacion')
                 })
             elif estado_aut in ['DEVUELTA', 'DEVUELTO', 'NO AUTORIZADO', 'RECHAZADA']:
+                # Solo marcamos como RECHAZADA si el SRI explícitamente la rechazó
                 self.factura_repo.actualizar_factura(factura_id, {
                     "estado": "RECHAZADA", 
                     "clave_acceso": clave
                 })
             else:
-                # Si sigue en PROCESAMIENTO
+                # Si es TIMEOUT, ERROR_CONEXION o EN PROCESO, se queda EN_PROCESO para reintento posterior.
                 self.factura_repo.actualizar_factura(factura_id, {
                     "estado": "EN_PROCESO", 
                     "clave_acceso": clave
@@ -279,6 +309,8 @@ class ServicioSRI:
                 "intento_numero": intento_num,
                 "mensaje_error": f"EXCEPCIÓN: {str(e)[:500]}"
             })
+            # Revertir estado para permitir reintento
+            self.factura_repo.actualizar_factura(factura_id, {"estado": "ERROR_OTRO"})
             raise e
         finally:
             if signer:

@@ -353,7 +353,7 @@ export class FacturacionPage implements OnInit {
   }
 
   handleModalConfirm() {
-    if (!this.selectedFactura) return;
+    if (!this.selectedFactura || this.isProcessing) return; // Prevent double clicks
 
     if (this.confirmModalConfig.action === 'delete') {
       this.deleteFactura();
@@ -380,7 +380,7 @@ export class FacturacionPage implements OnInit {
   }
 
   enviarSri() {
-    if (!this.selectedFactura) return;
+    if (!this.selectedFactura || this.isProcessing) return; // Double protection
     this.isProcessing = true;
 
     this.facturasService.enviarSri(this.selectedFactura.id)
