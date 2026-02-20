@@ -21,12 +21,15 @@ export class RoleGuard implements CanActivate {
         // 1. Check Role-based access
         if (expectedRoles && expectedRoles.length > 0) {
             if (!expectedRoles.includes(userRole)) {
-                // Redirect to a safe route if unauthorized for this role
+                // Redirigir a "su casa" según el rol si no tiene acceso a esta ruta
                 if (userRole === UserRole.VENDEDOR) {
                     return this.router.createUrlTree(['/vendedor']);
                 } else if (userRole === UserRole.SUPERADMIN) {
                     return this.router.createUrlTree(['/']);
+                } else if (userRole === UserRole.USUARIO) {
+                    return this.router.createUrlTree(['/usuario']);
                 }
+
                 return this.router.createUrlTree(['/auth/login']);
             }
         }
@@ -34,13 +37,13 @@ export class RoleGuard implements CanActivate {
         // 2. Check Granular Permission
         const requiredPermission = route.data['permission'];
         if (requiredPermission && !this.authFacade.hasPermission(requiredPermission)) {
-            // If user has the role but lacks the specific permission
-            this.router.navigate(['/usuario/dashboard']); // Go back to dashboard or show error
+            // Si tiene el rol pero no el permiso específico
+            if (userRole === UserRole.USUARIO) {
+                return this.router.createUrlTree(['/usuario/dashboard']);
+            }
             return false;
         }
 
         return true;
-
-        return this.router.createUrlTree(['/auth/login']);
     }
 }

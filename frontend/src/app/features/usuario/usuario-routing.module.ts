@@ -26,6 +26,12 @@ const routes: Routes = [
         pathMatch: 'full'
     },
     {
+        path: 'dashboard',
+        component: DashboardComponent,
+        canActivate: [RoleGuard],
+        data: { title: 'Dashboard', roles: [UserRole.USUARIO] }
+    },
+    {
         path: 'empresa',
         component: EmpresaPage,
         canActivate: [RoleGuard],
