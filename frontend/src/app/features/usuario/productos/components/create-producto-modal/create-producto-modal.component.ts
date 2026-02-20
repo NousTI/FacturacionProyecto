@@ -180,7 +180,6 @@ import { PermissionsService } from '../../../../../core/auth/permissions.service
     .input-final:focus, .select-final:focus {
       border-color: #161d35; outline: none;
     }
-    }
     .modal-footer-final {
       padding: 1.25rem 2.5rem; background: #ffffff; display: flex; justify-content: flex-end; gap: 1rem;
       border-top: 1px solid #f1f5f9;

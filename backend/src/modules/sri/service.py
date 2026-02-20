@@ -223,35 +223,35 @@ class ServicioSRI:
                     
                     return res_rec
                 
+                # Caso especial: El SRI ya lo tiene o problemas de red que sugieren éxito previo
                 if ya_en_procesamiento:
-                    # ... [skipped for brevity, but needed in replacement]
+                    # Consistencia de estados para evitar confusión en DB (Fix solicitado)
+                    estado_final_para_log = "EN_PROCESO"
+                    res_rec['estado'] = estado_final_para_log
+                    
                     codigos = res_rec.get('codigos', [])
                     if not codigos:
                         if SRIErrorCodes.CLAVE_EN_PROCESAMIENTO in msg_rec or SRIErrorCodes.TXT_EN_PROCESAMIENTO in msg_rec.upper(): 
                             codigos.append(SRIErrorCodes.CLAVE_EN_PROCESAMIENTO)
-                        if SRIErrorCodes.CLAVE_ACCESO_REGISTRADA in msg_rec: 
-                            codigos.append(SRIErrorCodes.CLAVE_ACCESO_REGISTRADA)
-                        if res_rec.get('estado') in [SRIEstadoRespuesta.ERROR_TIMEOUT, SRIEstadoRespuesta.ERROR_CONEXION]: 
-                            codigos.append(SRIErrorCodes.TIMEOUT)
                     
-                    duration = int((time.time() - start_time) * 1000)
                     self.factura_repo.crear_log_emision({
                         "factura_id": factura_id,
-                        "facturacion_programada_id": factura.get('facturacion_programada_id'),
                         "usuario_id": usuario_actual.get('id'),
                         "ambiente": int(ambiente),
                         "clave_acceso": clave,
                         "estado": LogEstado.EN_PROCESO,
-                        "sri_estado_raw": res_rec['estado'],
-                        "fase_falla": "RECEPCION" if not ya_en_procesamiento else None,
-                        "tipo_intento": "INICIAL" if intento_num == 1 else "REINTENTO",
+                        "sri_estado_raw": "EN_PROCESO",
+                        "fase_falla": None,
                         "intento_numero": intento_num,
-                        "mensajes": [{"codigo": codigos[0] if codigos else None, "mensaje": f"Saltando Recepción por estado previo: {msg_rec}", "tipo": "INFO"}],
-                        "duracion_ms": duration,
+                        "mensajes": [{"codigo": codigos[0] if codigos else "70", "mensaje": f"Comprobante en procesamiento SRI", "tipo": "INFO"}],
+                        "duracion_ms": int((time.time() - start_time) * 1000),
                         "client_info": client_info,
                         "xml_enviado": xml_str,
                         "xml_respuesta": res_rec.get('xml_respuesta_raw', str(res_rec))
                     })
+                    
+                    # Asegurar estado local
+                    self.factura_repo.actualizar_factura(factura_id, {"estado": FacturaEstado.EN_PROCESO, "clave_acceso": clave})
 
             # 3. PROCESAR AUTORIZACIÓN
             time.sleep(SRI_TIME_SLEEP_AUTORIZACION)
@@ -294,8 +294,8 @@ class ServicioSRI:
                 "ambiente": int(ambiente),
                 "clave_acceso": clave,
                 "estado": log_estado,
-                "sri_estado_raw": estado_aut,
-                "fase_falla": "AUTORIZACION" if log_estado != LogEstado.EXITOSO else None,
+                "sri_estado_raw": "EN_PROCESO" if (log_estado == LogEstado.EN_PROCESO or ya_en_procesamiento) else estado_aut,
+                "fase_falla": "AUTORIZACION" if log_estado not in [LogEstado.EXITOSO, LogEstado.EN_PROCESO] else None,
                 "tipo_intento": "INICIAL" if intento_num == 1 else "REINTENTO",
                 "intento_numero": intento_num,
                 "mensajes": mensajes_list,
