@@ -45,7 +45,7 @@ import { HasPermissionDirective } from '../../../../../shared/directives/has-per
                 <li><h6 class="dropdown-header text-uppercase fs-xs fw-bold text-muted">Estado Emisión</h6></li>
                 <li><a class="dropdown-item rounded-3" [class.active]="filters.estado === 'ALL'" (click)="setFilter('estado', 'ALL')">Todos</a></li>
                 <li><a class="dropdown-item rounded-3" [class.active]="filters.estado === 'BORRADOR'" (click)="setFilter('estado', 'BORRADOR')">Borrador</a></li>
-                <li><a class="dropdown-item rounded-3" [class.active]="filters.estado === 'EMITIDA'" (click)="setFilter('estado', 'EMITIDA')">Emitida</a></li>
+                <li><a class="dropdown-item rounded-3" [class.active]="filters.estado === 'AUTORIZADA'" (click)="setFilter('estado', 'AUTORIZADA')">Autorizada</a></li>
                 <li><a class="dropdown-item rounded-3" [class.active]="filters.estado === 'ANULADA'" (click)="setFilter('estado', 'ANULADA')">Anulada</a></li>
               </ul>
             </div>
@@ -184,7 +184,7 @@ export class FacturaActionsComponent {
     const map: Record<string, string> = {
       'ALL': 'Todos los Estados',
       'BORRADOR': 'Borradores',
-      'EMITIDA': 'Emitidas',
+      'AUTORIZADA': 'Autorizadas',
       'ANULADA': 'Anuladas'
     };
     return map[value] || value;

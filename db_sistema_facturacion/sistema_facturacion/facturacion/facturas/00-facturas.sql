@@ -134,8 +134,8 @@ CREATE TABLE IF NOT EXISTS sistema_facturacion.facturas (
     -- EMITIDA: Enviada y autorizada por el SRI
     -- ANULADA: Cancelada (ver log_emision_facturas para detalles)
     estado VARCHAR(20) NOT NULL DEFAULT 'BORRADOR' 
-        CHECK (estado IN ('BORRADOR', 'EN_PROCESO', 'EMITIDA', 'RECHAZADA', 'ANULADA'))
-        COMMENT 'BORRADOR=creada, EN_PROCESO=enviada al SRI, EMITIDA=autorizada SRI, RECHAZADA=rechazada por SRI, ANULADA=cancelada',
+        CHECK (estado IN ('BORRADOR', 'EN_PROCESO', 'AUTORIZADA', 'DEVUELTA', 'NO_AUTORIZADA', 'ANULADA', 'ERROR_TECNICO'))
+        COMMENT 'BORRADOR=creada, EN_PROCESO=enviada al SRI, AUTORIZADA=autorizada SRI, DEVUELTA=error recepción, NO_AUTORIZADA=error legal autorización, ANULADA=cancelada, ERROR_TECNICO=error red',
     
     -- Estado de pago (independiente del estado de emisión)
     -- PENDIENTE: No pagada

@@ -27,16 +27,21 @@ class ServicioSRIXML:
         ET.SubElement(info_trib, 'nombreComercial').text = empresa.get('nombre_comercial') or empresa['razon_social']
         ET.SubElement(info_trib, 'ruc').text = empresa['ruc']
         
-        # Clave Acceso: Se genera después con todos los datos
+        # Preparar datos base
         f_emision = factura['fecha_emision']
         if isinstance(f_emision, str): f_emision = datetime.fromisoformat(f_emision)
         
-        estab = factura.get('establecimiento_codigo', '001').zfill(3)
-        pto_emi = factura.get('punto_emision_codigo', '001').zfill(3)
-        # Extraer último número del formato 001-001-000000001
-        secuencial = factura.get('numero_factura', '001-001-000000001').split('-')[-1].zfill(9)
+        num_factura = factura.get('numero_factura', '001-001-000000001')
+        parts = num_factura.split('-') if '-' in num_factura else ['001', '001', num_factura]
+        estab = parts[0].zfill(3) if len(parts) > 0 else '001'
+        pto_emi = parts[1].zfill(3) if len(parts) > 1 else '001'
+        secuencial = parts[2].zfill(9) if len(parts) > 2 else num_factura.zfill(9)
+
+        # Clave Acceso: Generación idempotente basada en el ID de la factura
+        id_str = str(factura.get('id', '0')).replace('-', '')
+        codigo_numerico = f"{int(id_str[-8:], 16) % 100000000:08d}"
         
-        clave = self.generar_clave_acceso(f_emision, SRICodigoDocumento.FACTURA, empresa['ruc'], ambiente, estab, pto_emi, secuencial)
+        clave = self.generar_clave_acceso(f_emision, SRICodigoDocumento.FACTURA, empresa['ruc'], ambiente, estab, pto_emi, secuencial, tipo_emision, codigo_numerico)
         
         ET.SubElement(info_trib, 'claveAcceso').text = clave
         ET.SubElement(info_trib, 'codDoc').text = SRICodigoDocumento.FACTURA
@@ -49,6 +54,9 @@ class ServicioSRIXML:
         tipo_cont = str(empresa.get('tipo_contribuyente', '')).upper()
         if 'RIMPE' in tipo_cont or empresa.get('contribuyente_rimpe'):
              ET.SubElement(info_trib, 'contribuyenteRimpe').text = 'CONTRIBUYENTE RÉGIMEN RIMPE'
+        
+        if empresa.get('agente_retencion_num'):
+            ET.SubElement(info_trib, 'agenteRetencion').text = str(empresa['agente_retencion_num'])
 
         # --- CÁLCULOS DE PRECISIÓN ---
         t_sin_impuestos = Decimal('0.00')
@@ -99,7 +107,7 @@ class ServicioSRIXML:
                 'impuesto': {
                     'codigo': SRICodigoImpuesto.IVA,
                     'codigoPorcentaje': cod_sri,
-                    'tarifa': str(porcentaje),
+                    'tarifa': f"{porcentaje:.2f}",
                     'baseImponible': subtotal,
                     'valor': valor_iva
                 }
@@ -114,6 +122,10 @@ class ServicioSRIXML:
         info_fac = ET.SubElement(root, 'infoFactura')
         ET.SubElement(info_fac, 'fechaEmision').text = f_emision.strftime('%d/%m/%Y')
         ET.SubElement(info_fac, 'dirEstablecimiento').text = empresa.get('direccion_sucursal') or empresa.get('direccion', 'S/N')
+        
+        if empresa.get('contribuyente_especial_num'):
+            ET.SubElement(info_fac, 'contribuyenteEspecial').text = str(empresa['contribuyente_especial_num'])
+            
         ET.SubElement(info_fac, 'obligadoContabilidad').text = 'SI' if empresa.get('obligado_contabilidad') else 'NO'
         
         tipo_id_raw = cliente.get('tipo_identificacion', '').upper()
@@ -155,8 +167,13 @@ class ServicioSRIXML:
         #        raise ValueError(f"Identificación inválida: {identificacion}") 
             
         ET.SubElement(info_fac, 'tipoIdentificacionComprador').text = tipo_id
-        ET.SubElement(info_fac, 'razonSocialComprador').text = cliente['razon_social']
+        
+        razon_comprador = "CONSUMIDOR FINAL" if identificacion == '9999999999999' else cliente['razon_social']
+        ET.SubElement(info_fac, 'razonSocialComprador').text = razon_comprador
         ET.SubElement(info_fac, 'identificacionComprador').text = identificacion
+        
+        if cliente.get('direccion'):
+            ET.SubElement(info_fac, 'direccionComprador').text = cliente['direccion']
         ET.SubElement(info_fac, 'totalSinImpuestos').text = f"{t_sin_impuestos:.2f}"
         ET.SubElement(info_fac, 'totalDescuento').text = f"{t_descuentos:.2f}"
         
@@ -166,6 +183,7 @@ class ServicioSRIXML:
             ET.SubElement(imp, 'codigo').text = SRICodigoImpuesto.IVA
             ET.SubElement(imp, 'codigoPorcentaje').text = cod
             ET.SubElement(imp, 'baseImponible').text = f"{data['base']:.2f}"
+            ET.SubElement(imp, 'tarifa').text = f"{data['tarifa']:.2f}"
             ET.SubElement(imp, 'valor').text = f"{data['valor']:.2f}"
         
         ET.SubElement(info_fac, 'propina').text = f"{t_propina:.2f}"
@@ -200,18 +218,24 @@ class ServicioSRIXML:
             ET.SubElement(im, 'baseImponible').text = f"{item['impuesto']['baseImponible']:.2f}"
             ET.SubElement(im, 'valor').text = f"{item['impuesto']['valor']:.2f}"
         
+        # Info Adicional (Email para notificación)
+        if cliente.get('email'):
+            info_adi = ET.SubElement(root, 'infoAdicional')
+            campo = ET.SubElement(info_adi, 'campoAdicional', nombre="Email")
+            campo.text = cliente['email']
+        
         return ET.tostring(root, encoding='unicode')
 
-    def generar_clave_acceso(self, fecha: datetime, tipo: str, ruc: str, ambiente: str, estab: str, pto: str, secuencial: str) -> str:
+    def generar_clave_acceso(self, fecha: datetime, tipo: str, ruc: str, ambiente: str, estab: str, pto: str, secuencial: str, tipo_emision: str = "1", codigo_numerico: str = None) -> str:
         """
         Genera la Clave de Acceso de 49 dígitos.
         Estructura: Fecha(8) + Tipo(2) + RUC(13) + Ambiente(1) + Serie(6) + Secuencial(9) + CodNum(8) + TipoEmision(1) + Digito(1)
         """
         fecha_str = fecha.strftime('%d%m%Y')
         
-        # Generación aleatoria del código numérico (8 dígitos)
-        codigo_numerico = f"{random.randint(0, 99999999):08d}"
-        tipo_emision = SRITipoEmision.NORMAL # Normal por defecto según refactorización
+        # Si no se provee, generar uno aleatorio (no recomendado para reintentos)
+        if not codigo_numerico:
+            codigo_numerico = f"{random.randint(0, 99999999):08d}"
         
         # Base de 48 dígitos
         base = f"{fecha_str}{tipo}{ruc}{ambiente}{estab}{pto}{secuencial}{codigo_numerico}{tipo_emision}"

@@ -1,68 +1,70 @@
 -- ===================================================================
--- TABLA: log_emision_facturas
+-- TABLA: log_emision_facturas (REFACTORIZADA)
 -- ===================================================================
--- Auditoría: Rastrean todo lo referente a la emisión al SRI
--- Una factura puede tener múltiples logs si se reintenta
+-- Auditoría de "Grano Fino": Rastra cada segundo y detalle del envío al SRI
 CREATE TABLE IF NOT EXISTS sistema_facturacion.log_emision_facturas (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-
-    facturacion_programada_id UUID REFERENCES sistema_facturacion.facturacion_programada(id) ON DELETE SET NULL,
     
-    factura_id UUID NOT NULL
+    -- Relaciones principales
+    factura_id UUID NOT NULL 
         REFERENCES sistema_facturacion.facturas(id) ON DELETE CASCADE,
+    facturacion_programada_id UUID 
+        REFERENCES sistema_facturacion.facturacion_programada(id) ON DELETE SET NULL,
 
-    -- Tipo de intento: INICIAL, REINTENTO, CONTINGENCIA, RECTIFICACION
-    tipo_intento VARCHAR(20) NOT NULL DEFAULT 'INICIAL'
-        CHECK (tipo_intento IN ('INICIAL', 'REINTENTO', 'CONTINGENCIA', 'RECTIFICACION'))
-        COMMENT 'Tipo de intento de emisión',
-    
-    -- Estado del intento: EN_PROCESO, EXITOSO, ERROR_VALIDACION, ERROR_CONECTIVIDAD, ERROR_OTRO
+    -- 1. CONTEXTO DEL INTENTO (¿Cómo y dónde?)
+    ambiente SMALLINT NOT NULL 
+        CHECK (ambiente IN (1, 2)) 
+        COMMENT '1=PRUEBAS, 2=PRODUCCION',
+    tipo_intento VARCHAR(30) NOT NULL DEFAULT 'INICIAL'
+        CHECK (tipo_intento IN ('INICIAL', 'REINTENTO', 'CONTINGENCIA', 'RECTIFICACION', 'CONSULTA')),
+    intento_numero INT NOT NULL DEFAULT 1 
+        CHECK (intento_numero >= 0),
+    clave_acceso VARCHAR(49) 
+        COMMENT 'Clave de acceso única enviada en este intento',
+
+    -- 2. RESULTADO DEL SISTEMA (¿Qué pasó?)
     estado VARCHAR(30) NOT NULL
-        CHECK (estado IN ('EN_PROCESO', 'EXITOSO', 'ERROR_VALIDACION', 'ERROR_CONECTIVIDAD', 'ERROR_OTRO'))
-        COMMENT 'En qué estado resultó el intento',
+        CHECK (estado IN ('EN_PROCESO', 'EXITOSO', 'ERROR_VALIDACION', 'ERROR_CONECTIVIDAD', 'ERROR_SISTEMA'))
+        COMMENT 'Estado interno simplificado para el sistema',
+    sri_estado_raw VARCHAR(30) 
+        COMMENT 'Estado crudo devuelto por el WS (ej: DEVUELTA, NO AUTORIZADO)',
+
+    -- 3. DETALLE TÉCNICO Y PERFORMANCE (Telemetría)
+    fase_falla VARCHAR(30) 
+        CHECK (fase_falla IN ('RECEPCION', 'AUTORIZACION', 'FIRMA', 'SISTEMA', 'AUTORIZACION_CONSULTA'))
+        COMMENT 'En qué etapa exacta falló el proceso',
+    duracion_ms INT 
+        COMMENT 'Tiempo total de respuesta del SRI en milisegundos',
     
-    -- Número secuencial de intento
-    intento_numero INT NOT NULL DEFAULT 1 CHECK (intento_numero > 0)
-        COMMENT 'Número de intento (1 = primer intento)',
-    
-    -- Códigos y mensajes de error
-    codigo_error VARCHAR(50)
-        COMMENT 'Código de error del SRI si aplica',
-    
-    mensaje_error TEXT
-        COMMENT 'Mensaje de error detallado',
-    
-    -- XMLs para auditoría completa
-    xml_enviado TEXT
-        COMMENT 'XML que se envió al SRI',
-    
-    xml_respuesta TEXT
-        COMMENT 'XML de respuesta del SRI',
-    
-    -- Auditoría
+    -- 4. MENSAJES ROBUSTOS (Estructura JSONB)
+    mensajes JSONB NOT NULL DEFAULT '[]'::jsonb
+        COMMENT 'Lista completa de errores y advertencias [{codigo, mensaje, tipo, info_adicional}]',
+
+    -- 5. TRAZABILIDAD DEL CLIENTE (Seguridad e IP)
+    client_info JSONB NOT NULL DEFAULT '{}'::jsonb
+        COMMENT 'Datos del emisor: {ip, user_agent, locale, version_app}',
+
+    -- 6. NOTIFICACIÓN AL CLIENTE (¿Se entregó la factura?)
+    notificado_cliente BOOLEAN DEFAULT FALSE,
+    mensaje_notificacion TEXT 
+        COMMENT 'Resultado del envío por email (ej: "Enviado con éxito" o error de SMTP)',
+
+    -- 7. AUDITORÍA FÍSICA (Documentos)
+    xml_enviado TEXT COMMENT 'Respaldo del XML firmado enviado',
+    xml_respuesta TEXT COMMENT 'Respaldo del XML recibido del SRI',
+
+    -- 8. METADATA DE CONTROL
     usuario_id UUID NOT NULL
         REFERENCES sistema_facturacion.usuarios(id) ON DELETE RESTRICT
-        COMMENT 'Usuario que realizó el intento',
-    
-    timestamp TIMESTAMPTZ NOT NULL DEFAULT NOW()
-        COMMENT 'Fecha/hora del intento',
-    
+        COMMENT 'Usuario que presionó el botón emitir',
+    timestamp TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     observaciones TEXT
-        COMMENT 'Notas adicionales del intento'
 );
 
-COMMENT ON TABLE sistema_facturacion.log_emision_facturas IS
-'Auditoría de intentos de emisión al SRI. Una factura puede tener múltiples registros si se reintenta.';
+-- Índices para reportes y diagnóstico rápido
+CREATE INDEX idx_log_factura_id ON sistema_facturacion.log_emision_facturas(factura_id);
+CREATE INDEX idx_log_estado_time ON sistema_facturacion.log_emision_facturas(estado, timestamp);
+CREATE INDEX idx_log_clave_acceso ON sistema_facturacion.log_emision_facturas(clave_acceso);
 
--- Índices
-CREATE INDEX IF NOT EXISTS idx_log_emision_factura_id 
-    ON sistema_facturacion.log_emision_facturas(factura_id)
-    COMMENT 'Búsqueda rápida por factura_id';
-
-CREATE INDEX IF NOT EXISTS idx_log_emision_estado 
-    ON sistema_facturacion.log_emision_facturas(estado)
-    COMMENT 'Búsqueda rápida de intentos por estado';
-
-CREATE INDEX IF NOT EXISTS idx_log_emision_timestamp 
-    ON sistema_facturacion.log_emision_facturas(timestamp)
-    COMMENT 'Búsqueda rápida por fecha/hora';
+COMMENT ON TABLE sistema_facturacion.log_emision_facturas IS 
+'Tabla de control total de emisiones. Soporta múltiples errores por JSONB, telemetría de red y auditoría de cliente (IP).';

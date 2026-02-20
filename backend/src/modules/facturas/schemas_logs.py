@@ -18,8 +18,9 @@ from pydantic import BaseModel, Field
 # ENUMS para validación
 # ===================================================================
 
-TipoIntentoEmision = Literal['INICIAL', 'REINTENTO', 'CONTINGENCIA', 'RECTIFICACION']
-EstadoIntentoEmision = Literal['EN_PROCESO', 'EXITOSO', 'ERROR_VALIDACION', 'ERROR_CONECTIVIDAD', 'ERROR_OTRO']
+TipoIntentoEmision = Literal['INICIAL', 'REINTENTO', 'CONTINGENCIA', 'RECTIFICACION', 'CONSULTA']
+EstadoIntentoEmision = Literal['EN_PROCESO', 'EXITOSO', 'ERROR_VALIDACION', 'ERROR_CONECTIVIDAD', 'ERROR_SISTEMA']
+FaseFallaEmision = Literal['RECEPCION', 'AUTORIZACION', 'FIRMA', 'SISTEMA', 'AUTORIZACION_CONSULTA']
 EstadoAutorizacion = Literal['AUTORIZADO', 'NO_AUTORIZADO', 'DEVUELTO', 'CANCELADO']
 MetodoPago = Literal['EFECTIVO', 'TRANSFERENCIA', 'TARJETA', 'CHEQUE', 'DEPOSITO', 'OTRO']
 
@@ -37,11 +38,18 @@ class LogEmisionBase(BaseModel):
     )
     estado: EstadoIntentoEmision = Field(
         ...,
-        description="EN_PROCESO | EXITOSO | ERROR_VALIDACION | ERROR_CONECTIVIDAD | ERROR_OTRO"
+        description="EN_PROCESO | EXITOSO | ERROR_VALIDACION | ERROR_CONECTIVIDAD | ERROR_SISTEMA"
     )
-    intento_numero: int = Field(default=1, ge=1, description="Número de intento (1 = primer intento)")
-    codigo_error: Optional[str] = Field(None, max_length=50, description="Código de error del SRI")
-    mensaje_error: Optional[str] = Field(None, description="Mensaje de error detallado")
+    ambiente: int = Field(1, description="1=PRUEBAS, 2=PRODUCCION")
+    clave_acceso: Optional[str] = Field(None, max_length=49)
+    sri_estado_raw: Optional[str] = Field(None, max_length=30)
+    fase_falla: Optional[FaseFallaEmision] = None
+    duracion_ms: Optional[int] = None
+    mensajes: List[dict] = Field(default_factory=list)
+    client_info: dict = Field(default_factory=dict)
+    notificado_cliente: bool = False
+    mensaje_notificacion: Optional[str] = None
+    intento_numero: int = Field(default=1, ge=0, description="Número de intento (0 = consulta manual, 1+ = envíos)")
     observaciones: Optional[str] = Field(None, description="Notas adicionales")
 
 
@@ -81,8 +89,7 @@ class LogEmisionListado(BaseModel):
     tipo_intento: str
     estado: str
     intento_numero: int
-    codigo_error: Optional[str] = None
-    mensaje_error: Optional[str] = None
+    mensajes: List[dict] = []
     usuario_nombre: Optional[str] = None
     timestamp: datetime
 

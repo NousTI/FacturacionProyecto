@@ -152,8 +152,8 @@ class ServicioFacturas:
 
     def anular_factura(self, id: UUID, datos: FacturaAnulacion, usuario_actual: dict):
         factura = self.obtener_factura(id, usuario_actual)
-        if factura.get('estado') != 'EMITIDA':
-            raise AppError("Solo facturas EMITIDAS pueden anularse", 400, "VAL_ERROR")
+        if factura.get('estado') != 'AUTORIZADA':
+            raise AppError("Solo facturas AUTORIZADAS pueden anularse", 400, "VAL_ERROR")
         
         return self.core.actualizar_factura(id, {
             "estado": "ANULADA",
@@ -227,7 +227,7 @@ class ServicioFacturas:
         res = self.sri_facturacion.registrar_autorizacion_final(datos)
         
         update_data = {
-            "estado": "EMITIDA",
+            "estado": "AUTORIZADA",
             "clave_acceso": datos.numero_autorizacion,
             "numero_autorizacion": datos.numero_autorizacion,
             "fecha_autorizacion": datos.fecha_autorizacion
@@ -287,6 +287,20 @@ class ServicioFacturas:
             print(f"Factura {id} ahora tiene el número {numero_factura}. Procediendo al SRI...")
         
         return self.sri_facturacion.emitir_factura(id, usuario_contexto)
+
+    def consultar_sri(self, id: UUID, usuario_actual: dict):
+        """Consulta el estado de una factura ya enviada."""
+        factura = self.obtener_factura(id, usuario_actual)
+        
+        # Resolver usuario_id de facturación (necesario para la FK en log_emision_facturas)
+        usuario_contexto = usuario_actual.copy()
+        if not usuario_actual.get('is_superadmin'):
+            auth_user_id = usuario_actual.get("id")
+            usuario_facturacion = self.usuario_repo.obtener_por_user_id(auth_user_id)
+            if usuario_facturacion:
+                usuario_contexto['id'] = usuario_facturacion['id']
+        
+        return self.sri_facturacion.consultar_estado(id, usuario_contexto)
 
     def obtener_historial_emision(self, factura_id: UUID, usuario_actual: dict):
         self.obtener_factura(factura_id, usuario_actual)

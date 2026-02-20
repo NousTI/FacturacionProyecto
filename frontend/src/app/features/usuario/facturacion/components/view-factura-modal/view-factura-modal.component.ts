@@ -22,9 +22,10 @@ import { Factura, FacturaDetalle } from '../../../../../domain/models/factura.mo
                   <div class="d-flex gap-2 align-items-center">
                     <span class="badge rounded-pill" 
                           [ngClass]="{
-                            'text-bg-secondary': factura?.estado === 'BORRADOR',
-                            'text-bg-success': factura?.estado === 'EMITIDA',
-                            'text-bg-danger': factura?.estado === 'ANULADA'
+                            'text-bg-secondary': factura?.estado === 'BORRADOR' || factura?.estado === 'EN_PROCESO',
+                            'text-bg-success': factura?.estado === 'AUTORIZADA',
+                            'text-bg-danger': factura?.estado === 'ANULADA' || factura?.estado === 'NO_AUTORIZADA',
+                            'text-bg-warning': factura?.estado === 'RECHAZADA' || factura?.estado === 'DEVUELTA' || factura?.estado === 'ERROR_TECNICO'
                           }">
                       {{ factura?.estado }}
                     </span>

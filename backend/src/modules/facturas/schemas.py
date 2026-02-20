@@ -25,7 +25,7 @@ from .schemas_logs import AutorizacionSRIResumen, ResumenPagos
 # ENUMS DE ESTADO
 # ===================================================================
 
-EstadoFactura = Literal['BORRADOR', 'EN_PROCESO', 'EMITIDA', 'RECHAZADA', 'ANULADA']
+EstadoFactura = Literal['BORRADOR', 'EN_PROCESO', 'AUTORIZADA', 'DEVUELTA', 'NO_AUTORIZADA', 'RECHAZADA', 'ANULADA', 'ERROR_TECNICO']
 EstadoPago = Literal['PENDIENTE', 'PAGADO', 'PARCIAL', 'VENCIDO']
 # Ambiente: 1=Prueba, 2=Produccion
 # TipoEmision: 1=Normal, 2=Contingencia
@@ -129,7 +129,7 @@ class FacturaActualizacion(BaseModel):
     
     RESTRICCIONES LEGALES:
     - Solo se puede actualizar si estado = BORRADOR
-    - Una vez EMITIDA, la factura es inmutable (solo se puede anular)
+    - Una vez AUTORIZADA, la factura es inmutable (solo se puede anular)
     """
     
     # Solo campos permitidos en BORRADOR
@@ -157,7 +157,7 @@ class FacturaAnulacion(BaseModel):
     Schema para anular una factura.
     
     RESTRICCIONES LEGALES:
-    - Solo se puede anular si estado = EMITIDA
+    - Solo se puede anular si estado = AUTORIZADA
     - Si estado = BORRADOR, debe eliminarse en su lugar
     - Si estado = ANULADA, no se puede volver a anular
     - La razón es obligatoria para auditoría SRI
@@ -318,8 +318,8 @@ class FacturaStats(BaseModel):
     
     total_facturas: int = 0
     total_borradores: int = 0
-    total_emitidas: int = 0
+    total_autorizadas: int = 0
     total_anuladas: int = 0
-    monto_total_emitido: Decimal = Decimal('0.00')
+    monto_total_autorizado: Decimal = Decimal('0.00')
     monto_total_cobrado: Decimal = Decimal('0.00')
     monto_pendiente: Decimal = Decimal('0.00')

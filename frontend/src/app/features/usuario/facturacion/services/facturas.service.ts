@@ -79,6 +79,10 @@ export class FacturasService {
         return this.http.post<any>(`${this.apiUrl}/${id}/enviar-sri`, {});
     }
 
+    consultarEstadoSri(id: string): Observable<any> {
+        return this.http.get<any>(`${this.apiUrl}/${id}/consultar-sri`);
+    }
+
     descargarPdf(id: string): Observable<Blob> {
         return this.http.get(`${this.apiUrl}/${id}/pdf`, { responseType: 'blob' });
     }

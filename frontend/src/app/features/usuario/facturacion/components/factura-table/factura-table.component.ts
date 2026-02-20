@@ -104,8 +104,8 @@ import { HasPermissionDirective } from '../../../../../shared/directives/has-per
                         </a>
                       </li>
 
-                      <!-- SRI (Solo si es Borrador) -->
-                       <li *ngIf="factura.estado === 'BORRADOR'">
+                      <!-- SRI (Borrador, Devuelta o Error Técnico) -->
+                       <li *ngIf="['BORRADOR', 'DEVUELTA', 'ERROR_TECNICO'].includes(factura.estado)">
                         <a 
                           *appHasPermission="'FACTURAS_ENVIAR_SRI'"
                           class="dropdown-item rounded-3 py-2 text-primary" href="javascript:void(0)" (click)="onAction.emit({type: 'sri', factura})">
@@ -113,9 +113,19 @@ import { HasPermissionDirective } from '../../../../../shared/directives/has-per
                           <span class="ms-2">Enviar al SRI</span>
                         </a>
                       </li>
+
+                      <!-- CONSULTAR SRI (Solo si está EN_PROCESO) -->
+                      <li *ngIf="factura.estado === 'EN_PROCESO'">
+                        <a 
+                          *appHasPermission="'FACTURAS_ENVIAR_SRI'"
+                          class="dropdown-item rounded-3 py-2 text-info" href="javascript:void(0)" (click)="onAction.emit({type: 'consultar', factura})">
+                          <i class="bi bi-arrow-clockwise"></i>
+                          <span class="ms-2">Consultar SRI</span>
+                        </a>
+                      </li>
                       
-                       <!-- PDF (Si es Emitida) -->
-                       <li *ngIf="factura.estado !== 'BORRADOR'">
+                       <!-- PDF (Si es Autorizada o Anulada) -->
+                       <li *ngIf="factura.estado === 'AUTORIZADA' || factura.estado === 'ANULADA'">
                         <a 
                           *appHasPermission="'FACTURAS_DESCARGAR_PDF'"
                           class="dropdown-item rounded-3 py-2" href="javascript:void(0)" (click)="onAction.emit({type: 'pdf', factura})">
@@ -124,8 +134,9 @@ import { HasPermissionDirective } from '../../../../../shared/directives/has-per
                         </a>
                       </li>
 
-                      <!-- EMAIL (Si es Emitida) -->
-                       <li *ngIf="factura.estado !== 'BORRADOR'">
+                      <!-- EMAIL (Si es Autorizada) -->
+                                             <li *ngIf="factura.estado === 'AUTORIZADA' || factura.estado === 'ANULADA'">
+
                         <a 
                           *appHasPermission="'FACTURAS_ENVIAR_EMAIL'"
                           class="dropdown-item rounded-3 py-2" href="javascript:void(0)" (click)="onAction.emit({type: 'email', factura})">
@@ -136,8 +147,8 @@ import { HasPermissionDirective } from '../../../../../shared/directives/has-per
 
                       <li><hr class="dropdown-divider mx-2"></li>
 
-                      <!-- ANULAR (Si es Emitida) -->
-                      <li *ngIf="factura.estado === 'EMITIDA'">
+                      <!-- ANULAR (Si es Autorizada) -->
+                      <li *ngIf="factura.estado === 'AUTORIZADA'">
                         <a 
                           *appHasPermission="'FACTURAS_ANULAR'"
                           class="dropdown-item rounded-3 py-2 text-danger" href="javascript:void(0)" (click)="onAction.emit({type: 'anular', factura})">
@@ -241,8 +252,12 @@ import { HasPermissionDirective } from '../../../../../shared/directives/has-per
 
     /* Custom Status Colors */
     .status-borrador { background: #f1f5f9; color: #64748b; }
-    .status-emitida { background: #dcfce7; color: #15803d; }
+    .status-autorizada { background: #dcfce7; color: #15803d; }
     .status-anulada { background: #fee2e2; color: #b91c1c; }
+    .status-proceso { background: #e0f2fe; color: #0369a1; }
+    .status-devuelta { background: #fef3c7; color: #92400e; }
+    .status-rechazada { background: #fff7ed; color: #c2410c; }
+    .status-error { background: #fee2e2; color: #991b1b; border: 1px dashed #f87171; }
 
     .payment-pendiente { background: #fff7ed; color: #c2410c; }
     .payment-pagado { background: #f0fdf4; color: #166534; }
@@ -278,8 +293,13 @@ export class FacturaTableComponent {
   getStatusClass(status: string): string {
     switch (status) {
       case 'BORRADOR': return 'status-borrador';
-      case 'EMITIDA': return 'status-emitida';
+      case 'AUTORIZADA': return 'status-autorizada';
       case 'ANULADA': return 'status-anulada';
+      case 'EN_PROCESO': return 'status-proceso';
+      case 'DEVUELTA': return 'status-devuelta';
+      case 'RECHAZADA':
+      case 'NO_AUTORIZADA': return 'status-rechazada';
+      case 'ERROR_TECNICO': return 'status-error';
       default: return '';
     }
   }

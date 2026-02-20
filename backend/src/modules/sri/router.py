@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, status, UploadFile, File, Form
+from fastapi import APIRouter, Depends, status, UploadFile, File, Form, Request
 from uuid import UUID
 from typing import List, Optional
 
@@ -47,10 +47,46 @@ def actualizar_parametros(
 @router.post("/facturas/{id}/enviar", response_model=RespuestaBase)
 def enviar_factura(
     id: UUID,
+    request: Request,
     usuario: dict = Depends(requerir_permiso(PermissionCodes.FACTURA_ENVIAR_SRI)),
     servicio: ServicioSRI = Depends()
 ):
+    # Enriquecer usuario con metadatos del request para auditoría técnica
+    # Intentar obtener IP real tras un proxy (X-Forwarded-For)
+    x_forwarded_for = request.headers.get("x-forwarded-for")
+    if x_forwarded_for:
+        ip = x_forwarded_for.split(",")[0].strip()
+    else:
+        ip = request.client.host if request.client else "desconocida"
+
+    usuario['ip'] = ip
+    usuario['user_agent'] = request.headers.get("user-agent", "desconocido")
+    usuario['version_app'] = request.headers.get("x-app-version", "1.0.0")
+    
     res = servicio.enviar_factura(id, usuario)
+    return RespuestaBase(detalles=res)
+
+
+@router.get("/facturas/{id}/consultar", response_model=RespuestaBase)
+def consultar_factura(
+    id: UUID,
+    request: Request,
+    usuario: dict = Depends(requerir_permiso(PermissionCodes.FACTURA_ENVIAR_SRI)),
+    servicio: ServicioSRI = Depends()
+):
+    """Consulta el estado de una factura ya enviada al SRI."""
+    # Enriquecer usuario con metadatos del request para auditoría técnica
+    x_forwarded_for = request.headers.get("x-forwarded-for")
+    if x_forwarded_for:
+        ip = x_forwarded_for.split(",")[0].strip()
+    else:
+        ip = request.client.host if request.client else "desconocida"
+
+    usuario['ip'] = ip
+    usuario['user_agent'] = request.headers.get("user-agent", "desconocido")
+    usuario['version_app'] = request.headers.get("x-app-version", "1.0.0")
+
+    res = servicio.consultar_estado_sri(id, usuario)
     return RespuestaBase(detalles=res)
 
 @router.get("/configuracion", response_model=RespuestaBase[Optional[ConfigSRILectura]])

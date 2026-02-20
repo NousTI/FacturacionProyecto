@@ -8,13 +8,13 @@ PERMISOS:
 - FACTURAS_VER_PROPIAS: Ver solo mis facturas
 - FACTURAS_CREAR: Crear nuevas facturas
 - FACTURAS_EDITAR: Editar facturas en BORRADOR
-- FACTURAS_ANULAR: Anular facturas EMITIDAS
+- FACTURAS_ANULAR: Anular facturas AUTORIZADAS
 - FACTURAS_ENVIAR_SRI: Enviar al SRI
 - FACTURAS_DESCARGAR_PDF: Descargar RIDE en PDF
 - FACTURAS_ENVIAR_EMAIL: Enviar factura por email
 """
 
-from fastapi import APIRouter, Depends, Query, status
+from fastapi import APIRouter, Depends, Query, status, Request
 from typing import List, Optional
 from uuid import UUID
 from datetime import date
@@ -78,7 +78,7 @@ def listar_facturas(
     limit: int = Query(100, ge=1, le=500, description="Máximo de resultados"),
     offset: int = Query(0, ge=0, description="Offset para paginación"),
     empresa_id: Optional[UUID] = Query(None, description="Filtrar por empresa (solo SUPERADMIN)"),
-    estado: Optional[str] = Query(None, description="Filtrar por estado: BORRADOR|EMITIDA|ANULADA"),
+    estado: Optional[str] = Query(None, description="Filtrar por estado: BORRADOR|AUTORIZADA|ANULADA"),
     estado_pago: Optional[str] = Query(None, description="Filtrar por estado pago: PENDIENTE|PAGADO|PARCIAL|VENCIDO"),
     fecha_desde: Optional[date] = Query(None, description="Fecha de emisión desde"),
     fecha_hasta: Optional[date] = Query(None, description="Fecha de emisión hasta"),
@@ -194,7 +194,7 @@ def anular_factura(
     Anula una factura emitida.
     
     **RESTRICCIONES LEGALES:**
-    - Solo facturas EMITIDAS pueden anularse
+    - Solo facturas AUTORIZADAS pueden anularse
     - Facturas en BORRADOR deben eliminarse (DELETE)
     - La razón de anulación es obligatoria (mín. 10 caracteres)
     
@@ -213,7 +213,7 @@ def eliminar_factura(
     Elimina una factura.
     
     **RESTRICCIÓN LEGAL:** Solo facturas en estado BORRADOR pueden eliminarse.
-    Las facturas EMITIDAS deben anularse.
+    Las facturas AUTORIZADAS deben anularse.
     
     **Requiere permiso:** FACTURAS_EDITAR
     """
@@ -228,23 +228,44 @@ def eliminar_factura(
 @router.post("/{id}/enviar-sri")
 def enviar_a_sri(
     id: UUID,
+    request: Request,
     usuario: dict = Depends(requerir_permiso(PermissionCodes.FACTURAS_ENVIAR_SRI)),
     servicio: ServicioFacturas = Depends()
 ):
-    """
-    Envía la factura al SRI para autorización.
+    # Enriquecer usuario con metadatos del request para auditoría técnica
+    x_forwarded_for = request.headers.get("x-forwarded-for")
+    if x_forwarded_for:
+        ip = x_forwarded_for.split(",")[0].strip()
+    else:
+        ip = request.client.host if request.client else "desconocida"
+
+    usuario['ip'] = ip
+    usuario['user_agent'] = request.headers.get("user-agent", "desconocido")
+    usuario['version_app'] = request.headers.get("x-app-version", "1.0.0")
     
-    FLUJO:
-    1. Valida que la factura esté en BORRADOR
-    2. Genera clave de acceso (49 dígitos)
-    3. Genera XML según especificaciones SRI
-    4. Firma XML con certificado .p12
-    5. Envía a WebService SRI
-    6. Actualiza estado según respuesta
-    
-    **Requiere permiso:** FACTURAS_ENVIAR_SRI
-    """
     return servicio.emitir_sri(id, usuario)
+    
+
+@router.get("/{id}/consultar-sri")
+def consultar_a_sri(
+    id: UUID,
+    request: Request,
+    usuario: dict = Depends(requerir_permiso(PermissionCodes.FACTURAS_ENVIAR_SRI)),
+    servicio: ServicioFacturas = Depends()
+):
+    """Consulta el estado de una factura en el SRI."""
+    # Enriquecer usuario con metadatos del request para auditoría técnica
+    x_forwarded_for = request.headers.get("x-forwarded-for")
+    if x_forwarded_for:
+        ip = x_forwarded_for.split(",")[0].strip()
+    else:
+        ip = request.client.host if request.client else "desconocida"
+
+    usuario['ip'] = ip
+    usuario['user_agent'] = request.headers.get("user-agent", "desconocido")
+    usuario['version_app'] = request.headers.get("x-app-version", "1.0.0")
+    
+    return servicio.consultar_sri(id, usuario)
 
 
 @router.get("/{id}/pdf")

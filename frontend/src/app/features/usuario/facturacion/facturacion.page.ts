@@ -241,11 +241,11 @@ export class FacturacionPage implements OnInit {
   calculateStats() {
     this.stats.totalCount = this.facturas.length;
     this.stats.totalAmount = this.facturas
-      .filter(f => f.estado === 'EMITIDA')
+      .filter(f => f.estado === 'AUTORIZADA')
       .reduce((acc, curr) => acc + (parseFloat(curr.total as any) || 0), 0);
 
     this.stats.pendingAmount = this.facturas
-      .filter(f => f.estado === 'EMITIDA' && f.estado_pago !== 'PAGADO')
+      .filter(f => f.estado === 'AUTORIZADA' && f.estado_pago !== 'PAGADO')
       .reduce((acc, curr) => acc + (parseFloat(curr.total as any) || 0), 0);
   }
 
@@ -349,6 +349,10 @@ export class FacturacionPage implements OnInit {
         const razon = prompt("Razón de anulación:");
         if (razon) this.anularFactura(event.factura.id, razon);
         break;
+      case 'consultar':
+        this.selectedFactura = event.factura;
+        this.consultarSri();
+        break;
     }
   }
 
@@ -391,19 +395,30 @@ export class FacturacionPage implements OnInit {
       .subscribe({
         next: (res: any) => {
           // Actualizar estado localmente según respuesta
-          // Explicit casting to match Factura state type if needed, but strings usually work
-          const estado = res.estado === 'AUTORIZADO' ? 'EMITIDA' :
-            (res.estado === 'DEVUELTA' || res.estado === 'NO AUTORIZADO') ? 'RECHAZADA' : 'EN_PROCESO';
+          // Mapeo detallado de estados SRI a estados locales
+          let estado: any = 'EN_PROCESO';
+          if (res.estado === 'AUTORIZADO' || res.estado === 'AUTORIZADA') {
+            estado = 'AUTORIZADA';
+          } else if (res.estado === 'DEVUELTA' || res.estado === 'DEVUELTO') {
+            estado = 'DEVUELTA';
+          } else if (res.estado === 'NO AUTORIZADO' || res.estado === 'NO_AUTORIZADO') {
+            estado = 'NO_AUTORIZADA';
+          } else if (res.estado?.includes('ERROR')) {
+            estado = 'ERROR_TECNICO';
+          }
 
-          let msgType = 'success';
+          let msgType: 'success' | 'warning' | 'error' = 'success';
           let msgText = 'Factura autorizada correctamente';
 
-          if (estado === 'RECHAZADA') {
+          if (estado === 'DEVUELTA') {
+            msgType = 'warning';
+            msgText = 'Factura devuelta por el SRI (Error en Recepción)';
+          } else if (estado === 'NO_AUTORIZADA') {
             msgType = 'error';
-            msgText = 'Factura devuelta por el SRI';
+            msgText = 'Factura no autorizada legalmente';
           } else if (estado === 'EN_PROCESO') {
             msgType = 'warning';
-            msgText = 'Factura en procesamiento por el SRI';
+            msgText = 'Factura todavía en procesamiento por el SRI';
           }
 
           this.uiService.showToast(msgText, msgType as any);
@@ -413,7 +428,7 @@ export class FacturacionPage implements OnInit {
           if (index !== -1) {
             this.facturas[index].estado = estado as any; // Cast to any or strict type
             // Si fue autorizada, actualizar fecha y autorización
-            if (estado === 'EMITIDA') {
+            if (estado === 'AUTORIZADA') {
               this.facturas[index].numero_autorizacion = res.numeroAutorizacion;
               this.facturas[index].fecha_autorizacion = res.fechaAutorizacion;
             }
@@ -437,6 +452,27 @@ export class FacturacionPage implements OnInit {
           this.loadData();
         },
         error: (err) => this.uiService.showError(err, 'Error al anular')
+      });
+  }
+
+  consultarSri(facturaId?: string) {
+    const id = facturaId || this.selectedFactura?.id;
+    if (!id || this.isProcessing) return;
+
+    this.isProcessing = true;
+    this.facturasService.consultarEstadoSri(id)
+      .pipe(finalize(() => this.isProcessing = false))
+      .subscribe({
+        next: (res: any) => {
+          // Re-mapear estado similar a enviarSri
+          let estado: any = (res.estado === 'AUTORIZADO' || res.estado === 'AUTORIZADA') ? 'AUTORIZADA' :
+            (res.estado === 'DEVUELTA' || res.estado === 'DEVUELTO') ? 'DEVUELTA' :
+              (res.estado === 'NO AUTORIZADO' || res.estado === 'NO_AUTORIZADO') ? 'NO_AUTORIZADA' : 'EN_PROCESO';
+
+          this.uiService.showToast(`Estado SRI: ${res.estado}`, estado === 'AUTORIZADA' ? 'success' : 'warning');
+          this.loadData(); // Recargar para ver cambios
+        },
+        error: (err) => this.uiService.showError(err, 'Error al consultar SRI')
       });
   }
 

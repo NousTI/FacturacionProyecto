@@ -61,3 +61,7 @@ class ServicioSRIFacturas:
         Delega en el ServicioSRI (módulo core).
         """
         return self.sri_core.enviar_factura(factura_id, usuario_actual)
+    
+    def consultar_estado(self, factura_id: UUID, usuario_actual: dict):
+        """Consulta el estado de una factura en el SRI core."""
+        return self.sri_core.consultar_estado_sri(factura_id, usuario_actual)

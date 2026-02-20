@@ -32,7 +32,7 @@ class ServicioFormasPago:
             if str(factura['empresa_id']) != str(empresa_id):
                  raise AppError("No tiene permiso para agregar pagos a esta factura", 403, "AUTH_FORBIDDEN")
         
-        if factura['estado'] in ['EMITIDA', 'ANULADA']:
+        if factura['estado'] in ['AUTORIZADA', 'ANULADA']:
               raise AppError("No se pueden modificar formas de pago de una factura emitida o anulada", 400, "VAL_ERROR")
 
         return self.repo.crear_pago(datos.model_dump())
@@ -62,7 +62,7 @@ class ServicioFormasPago:
             if str(factura['empresa_id']) != str(empresa_id):
                  raise AppError("No tiene permiso para editar este pago", 403, "AUTH_FORBIDDEN")
                  
-        if factura['estado'] not in ['BORRADOR', 'PENDIENTE']:
+        if factura['estado'] not in ['BORRADOR', 'ERROR_TECNICO']:
               raise AppError("No se puede editar pagos de facturas procesadas", 400, "VAL_ERROR")
 
         return self.repo.actualizar_pago(id, datos.model_dump(exclude_unset=True))
@@ -79,7 +79,7 @@ class ServicioFormasPago:
             if str(factura['empresa_id']) != str(empresa_id):
                  raise AppError("No tiene permiso para eliminar este pago", 403, "AUTH_FORBIDDEN")
         
-        if factura['estado'] not in ['BORRADOR', 'PENDIENTE']:
+        if factura['estado'] not in ['BORRADOR', 'ERROR_TECNICO']:
               raise AppError("No se puede eliminar pagos de facturas procesadas", 400, "VAL_ERROR")
 
         return self.repo.eliminar_pago(id)

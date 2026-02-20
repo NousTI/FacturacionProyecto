@@ -29,7 +29,8 @@ class RepositorioFacturas:
         'snapshot_establecimiento',
         'snapshot_punto_emision',
         'snapshot_usuario',
-        'mensajes'
+        'mensajes',
+        'client_info'
     }
     
     def __init__(self, db=Depends(get_db)):
@@ -48,8 +49,8 @@ class RepositorioFacturas:
         """
         if isinstance(value, UUID):
             return str(value)
-        if key in self.JSONB_FIELDS and isinstance(value, dict):
-            # Use json.dumps with default=str to handle datetime/date inside the dict
+        if key in self.JSONB_FIELDS and (isinstance(value, dict) or isinstance(value, list)):
+            # Use json.dumps with default=str to handle datetime/date inside the dict/list
             return json.dumps(value, default=str)
         return value
     

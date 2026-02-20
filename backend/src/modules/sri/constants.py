@@ -41,18 +41,19 @@ class LogEstado:
     EXITOSO = 'EXITOSO'
     ERROR_VALIDACION = 'ERROR_VALIDACION'
     ERROR_CONECTIVIDAD = 'ERROR_CONECTIVIDAD'
-    ERROR_OTRO = 'ERROR_OTRO'
-    EN_PROCESO = 'EN_PROCESO' # Informativo
+    ERROR_SISTEMA = 'ERROR_SISTEMA'
+    EN_PROCESO = 'EN_PROCESO'
 
 class FacturaEstado:
     """Estados de la factura en el sistema local."""
     BORRADOR = 'BORRADOR'
     EN_PROCESO = 'EN_PROCESO'
-    EMITIDA = 'EMITIDA'
+    AUTORIZADA = 'AUTORIZADA'
+    DEVUELTA = 'DEVUELTA'
+    NO_AUTORIZADA = 'NO_AUTORIZADA'
     RECHAZADA = 'RECHAZADA'
     ANULADA = 'ANULADA'
-    AUTORIZADO = 'AUTORIZADO'
-    ERROR_OTRO = 'ERROR_OTRO' # Estado de error técnico para permitir reintento # A veces usado intercambiablemente con EMITIDA en lógica vieja, normalizar a EMITIDA
+    ERROR_TECNICO = 'ERROR_TECNICO'
 
 # Configuración de Cliente
 SRI_TIMEOUT_SECONDS = 30
