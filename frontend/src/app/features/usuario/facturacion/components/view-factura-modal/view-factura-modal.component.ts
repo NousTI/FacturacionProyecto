@@ -108,6 +108,10 @@ import { Factura, FacturaDetalle } from '../../../../../domain/models/factura.mo
                   <label class="form-label fw-semibold text-muted small">Autorización SRI</label>
                   <p class="mb-0 small font-monospace">{{ factura.numero_autorizacion }}</p>
                 </div>
+                <div class="col-md-3">
+                  <label class="form-label fw-semibold text-muted small">Forma de Pago</label>
+                  <p class="mb-0">{{ getFormaPagoLabel(factura.forma_pago_sri) }}</p>
+                </div>
               </div>
 
               <!-- DETALLES DE PRODUCTOS -->
@@ -263,6 +267,20 @@ export class ViewFacturaModalComponent implements OnInit {
         this.cd.detectChanges();
       }
     });
+  }
+
+  getFormaPagoLabel(code: string): string {
+    const map: Record<string, string> = {
+      '01': 'Efectivo',
+      '16': 'Tarjeta de Débito',
+      '19': 'Tarjeta de Crédito',
+      '20': 'Transferencia / Otros (Sistema Financiero)',
+      '15': 'Compensación de deudas',
+      '17': 'Dinero Electrónico',
+      '18': 'Tarjeta Prepago',
+      '21': 'Endoso de Títulos'
+    };
+    return map[code] || 'Otros (' + code + ')';
   }
 
   close() {

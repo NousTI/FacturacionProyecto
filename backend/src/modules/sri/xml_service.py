@@ -181,9 +181,8 @@ class ServicioSRIXML:
         for cod, data in impuestos_map.items():
             imp = ET.SubElement(total_imp, 'totalImpuesto')
             ET.SubElement(imp, 'codigo').text = SRICodigoImpuesto.IVA
-            ET.SubElement(imp, 'codigoPorcentaje').text = cod
+            ET.SubElement(imp, 'codigoPorcentaje').text = str(cod)
             ET.SubElement(imp, 'baseImponible').text = f"{data['base']:.2f}"
-            ET.SubElement(imp, 'tarifa').text = f"{data['tarifa']:.2f}"
             ET.SubElement(imp, 'valor').text = f"{data['valor']:.2f}"
         
         ET.SubElement(info_fac, 'propina').text = f"{t_propina:.2f}"
@@ -192,11 +191,25 @@ class ServicioSRIXML:
 
         # Pagos usando Strategy Pattern
         pagos_node = ET.SubElement(info_fac, 'pagos')
-        codigo_pago = factura.get('forma_pago_sri', '01')
+        codigo_pago = str(factura.get('forma_pago_sri', '01')).strip()
         
+        # Calcular plazo si existe fecha de vencimiento
+        plazo_dias = None
+        f_venc = factura.get('fecha_vencimiento')
+        if f_venc:
+            try:
+                if isinstance(f_venc, str): f_venc = datetime.fromisoformat(f_venc)
+                # Asegurar que ambos sean objetos de fecha para la resta
+                d_venc = f_venc.date() if hasattr(f_venc, 'date') else f_venc
+                d_emis = f_emision.date() if hasattr(f_emision, 'date') else f_emision
+                plazo_dias = (d_venc - d_emis).days
+                if plazo_dias < 0: plazo_dias = 0
+            except:
+                plazo_dias = 0
+
         # Obtener estrategia
         estrategia = FactoryPagosSRI.obtener_estrategia(codigo_pago)
-        estrategia.generar_nodo(pagos_node, importe_total)
+        estrategia.generar_nodo(pagos_node, importe_total, plazo=plazo_dias)
 
         # Detalles
         detalles_node = ET.SubElement(root, 'detalles')
