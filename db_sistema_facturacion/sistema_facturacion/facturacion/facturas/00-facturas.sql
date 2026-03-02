@@ -66,9 +66,6 @@ CREATE TABLE IF NOT EXISTS sistema_facturacion.facturas (
         CHECK (tipo_documento IN ('01', '04', '05'))
         COMMENT '01=Factura, 04=Nota Crédito, 05=Nota Débito',
     
-    forma_pago_sri VARCHAR(2) NOT NULL DEFAULT '01'
-        COMMENT 'Código SRI de forma de pago (ej: 01=Efectivo, 16=Tarjeta, 20=Transferencia)',
-    
     -- Ambiente: 1=Prueba, 2=Producción
     ambiente INT DEFAULT 1 
         CHECK (ambiente IN (1, 2))
@@ -151,14 +148,20 @@ CREATE TABLE IF NOT EXISTS sistema_facturacion.facturas (
         CHECK (origen IN ('MANUAL', 'IMPORTADO', 'API', 'FACTURACION_PROGRAMADA'))
         COMMENT 'Cómo se creó: MANUAL, IMPORTADO, API, o FACTURACION_PROGRAMADA',
 
+    plazo INT 
+ 		CHECK (plazo >= 0),
+
+	unidad_tiempo VARCHAR(20)
+	    CHECK (unidad_tiempo IN ('DIAS', 'MESES', 'ANIOS')),
+	
     forma_pago_sri CHAR(2) NOT NULL DEFAULT '01'
         CHECK (forma_pago_sri IN (
             '01', -- SIN UTILIZACIÓN DEL SISTEMA FINANCIERO (EFECTIVO)
             '15', -- COMPENSACIÓN DE DEUDAS
             '16', -- TARJETA DE DÉBITO
-            '17', -- TARJETA DE CRÉDITO
+            '17', -- DINERO ELECTRONICO
             '18', -- TARJETA PREPAGO
-            '19', -- TRANSFERENCIA / DEPÓSITO
+            '19', -- TARJETA DE CRÉDITO
             '20', -- OTROS CON UTILIZACIÓN DEL SISTEMA FINANCIERO
             '21'  -- ENDOSO DE TÍTULOS
         )),

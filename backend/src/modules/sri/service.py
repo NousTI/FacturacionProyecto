@@ -284,8 +284,10 @@ class ServicioSRI:
                     mensajes_list.append({"codigo": "TIMEOUT", "mensaje": "El SRI no respondió a tiempo la consulta de autorización.", "tipo": "INFO"})
                 elif ya_en_procesamiento:
                     mensajes_list.append({"codigo": "70", "mensaje": "Comprobante en procesamiento en el SRI. Use el botón 'Consultar SRI' en unos minutos.", "tipo": "INFO"})
+                elif estado_aut == "NO_ENCONTRADO":
+                    mensajes_list.append({"codigo": "SRI_404", "mensaje": "El comprobante no consta en los registros del SRI. Verifique que no haya sido rechazado en la fase de recepción.", "tipo": "ERROR"})
                 elif estado_aut == "DESCONOCIDO":
-                    mensajes_list.append({"codigo": "SISTEMA", "mensaje": "El SRI devolvió un estado desconocido o vacío.", "tipo": "ERROR"})
+                    mensajes_list.append({"codigo": "SISTEMA", "mensaje": "El SRI devolvió un estado desconocido o una respuesta vacía.", "tipo": "ERROR"})
 
             self.factura_repo.crear_log_emision({
                 "factura_id": factura_id,
@@ -317,7 +319,7 @@ class ServicioSRI:
             
             # Verificar si es un estado válido de negocio (no error técnico)
             es_estado_valido = estado_aut in estados_validos_sri
-            es_error_tecnico = estado_aut in [SRIEstadoRespuesta.ERROR_TIMEOUT, SRIEstadoRespuesta.ERROR_CONEXION, "DESCONOCIDO", SRIEstadoRespuesta.ERROR_PARSING]
+            es_error_tecnico = estado_aut in [SRIEstadoRespuesta.ERROR_TIMEOUT, SRIEstadoRespuesta.ERROR_CONEXION, "DESCONOCIDO", "NO_ENCONTRADO", SRIEstadoRespuesta.ERROR_PARSING]
 
             if es_estado_valido or (estado_aut and not es_error_tecnico):
                 estado_db = estado_aut.upper()
@@ -356,6 +358,9 @@ class ServicioSRI:
                 # Si fue un error técnico REAL (timeout/conexión) marcamos ERROR_TECNICO para permitir reintento.
                 if ya_en_procesamiento or estado_aut == SRIEstadoRespuesta.EN_PROCESO:
                     estado_final = FacturaEstado.EN_PROCESO
+                elif estado_aut == "NO_ENCONTRADO":
+                    # Si no se encuentra en consulta de envío inicial, algo salió realmente mal en recepción
+                    estado_final = FacturaEstado.ERROR_TECNICO
                 else:
                     estado_final = FacturaEstado.ERROR_TECNICO if es_error_tecnico else FacturaEstado.EN_PROCESO
                 

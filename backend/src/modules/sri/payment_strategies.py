@@ -16,10 +16,10 @@ class EstrategiaPago:
         if self._requiere_plazo():
             # Si no vienen datos, ponemos defaults para evitar rechazo
             p_val = str(plazo) if plazo is not None else "0"
-            u_val = unidad_tiempo if unidad_tiempo else "dias"
+            u_val = unidad_tiempo if unidad_tiempo else "DIAS"
             
             ET.SubElement(pago, 'plazo').text = p_val
-            ET.SubElement(pago, 'unidadTiempo').text = u_val
+            ET.SubElement(pago, 'unidadTiempo').text = u_val.lower() # SRI espera minúsculas?
 
     def _requiere_plazo(self) -> bool:
         return False
@@ -57,7 +57,5 @@ class FactoryPagosSRI:
 
     @classmethod
     def obtener_estrategia(cls, codigo: str) -> EstrategiaPago:
-        # Si el código no existe en el mapa (ej: nuevos códigos SRI), 
-        # asumimos por defecto que es "Con Sistema Financiero" para no romper, 
-        # salvo que sea efectivo.
-        return cls._INSTANCIAS.get(codigo, PagoConSistemaFinanciero(codigo))
+        codigo_limpio = str(codigo).strip().zfill(2)
+        return cls._INSTANCIAS.get(codigo_limpio, PagoConSistemaFinanciero(codigo_limpio))

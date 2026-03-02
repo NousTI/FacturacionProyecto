@@ -58,6 +58,8 @@ export interface Factura {
     ambiente: number; // 1=Prueba, 2=Prod
     tipo_emision: number; // 1=Normal
     forma_pago_sri: string; // '01', etc
+    plazo?: number;
+    unidad_tiempo?: 'DIAS' | 'MESES' | 'ANIOS';
 
     estado: 'BORRADOR' | 'EN_PROCESO' | 'AUTORIZADA' | 'DEVUELTA' | 'NO_AUTORIZADA' | 'RECHAZADA' | 'ANULADA' | 'ERROR_TECNICO';
     estado_pago: 'PENDIENTE' | 'PAGADO' | 'PARCIAL' | 'VENCIDO';
@@ -103,6 +105,8 @@ export interface FacturaCreacion {
     ambiente?: number;
     tipo_emision?: number;
     forma_pago_sri?: string;
+    plazo?: number;
+    unidad_tiempo?: 'DIAS' | 'MESES' | 'ANIOS';
 
     fecha_emision: string;
     fecha_vencimiento?: string;

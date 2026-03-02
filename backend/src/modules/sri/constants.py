@@ -26,6 +26,7 @@ class SRIEstadoRespuesta:
     ERROR_TIMEOUT = 'ERROR_TIMEOUT'
     ERROR_CONEXION = 'ERROR_CONEXION'
     ERROR_PARSING = 'ERROR_PARSING'
+    NO_ENCONTRADO = 'NO_ENCONTRADO'
 
 class SRIErrorCodes:
     """Códigos de error y mensajes clave del SRI."""

@@ -110,7 +110,12 @@ import { Factura, FacturaDetalle } from '../../../../../domain/models/factura.mo
                 </div>
                 <div class="col-md-3">
                   <label class="form-label fw-semibold text-muted small">Forma de Pago</label>
-                  <p class="mb-0">{{ getFormaPagoLabel(factura.forma_pago_sri) }}</p>
+                  <p class="mb-0">
+                    {{ getFormaPagoLabel(factura.forma_pago_sri) }}
+                    <span *ngIf="factura.plazo" class="text-muted small ms-1">
+                      ({{ factura.plazo }} {{ factura.unidad_tiempo }})
+                    </span>
+                  </p>
                 </div>
               </div>
 
@@ -271,13 +276,13 @@ export class ViewFacturaModalComponent implements OnInit {
 
   getFormaPagoLabel(code: string): string {
     const map: Record<string, string> = {
-      '01': 'Efectivo',
-      '16': 'Tarjeta de Débito',
-      '19': 'Tarjeta de Crédito',
-      '20': 'Transferencia / Otros (Sistema Financiero)',
+      '01': 'Sin utilización del sistema financiero (Efectivo)',
       '15': 'Compensación de deudas',
+      '16': 'Tarjeta de Débito',
       '17': 'Dinero Electrónico',
       '18': 'Tarjeta Prepago',
+      '19': 'Tarjeta de Crédito',
+      '20': 'Otros con utilización del sistema financiero',
       '21': 'Endoso de Títulos'
     };
     return map[code] || 'Otros (' + code + ')';

@@ -85,21 +85,24 @@ class ClienteSRI:
     def _parse_msg_node(self, root) -> tuple:
         codigos = []
         mensajes = []
-        # Buscar nodos <mensaje> que tengan hijos (estructura compleja)
-        for msg in root.iter():
-            if 'mensaje' in msg.tag and len(list(msg)) > 0:
-                # Estructura típica: <identificador>43</identificador><mensaje>...</mensaje><tipo>ERROR</tipo>
+        
+        # Buscar todos los nodos que contengan información de mensaje
+        for node in root.iter():
+            tag_local = node.tag.split('}')[-1] if '}' in node.tag else node.tag
+            
+            # Caso 1: Estructura compleja de mensaje (con hijos como identificador, mensaje, etc.)
+            if tag_local == 'mensaje' and len(list(node)) > 0:
                 identificador = None
                 texto = None
                 tipo = None
                 info_adicional = None
                 
-                for child in msg:
-                    tag = child.tag.lower()
-                    if 'identificador' in tag: identificador = child.text
-                    elif 'mensaje' in tag: texto = child.text
-                    elif 'tipo' in tag: tipo = child.text
-                    elif 'informacionadicional' in tag: info_adicional = child.text
+                for child in node:
+                    c_tag = child.tag.split('}')[-1].lower() if '}' in child.tag else child.tag.lower()
+                    if 'identificador' in c_tag: identificador = child.text
+                    elif 'mensaje' in c_tag: texto = child.text
+                    elif 'tipo' in c_tag: tipo = child.text
+                    elif 'informacionadicional' in c_tag: info_adicional = child.text
                 
                 if identificador: codigos.append(identificador)
                 
@@ -107,25 +110,35 @@ class ClienteSRI:
                 if texto: full_msg += texto
                 if info_adicional: full_msg += f" ({info_adicional})"
                 if full_msg: mensajes.append(full_msg)
-        
+            
+            # Caso 2: Mensaje simple de texto (e.g. SOAP Fault o mensaje directo)
+            elif tag_local in ['mensaje', 'faultstring', 'message'] and len(list(node)) == 0 and node.text:
+                if node.text not in mensajes:
+                    mensajes.append(node.text)
+                    
         return codigos, mensajes
 
     def _parse_recepcion(self, xml_text: str) -> dict:
         try:
             root = ET.fromstring(xml_text)
             estado = "DESCONOCIDO"
+            
+            # Buscar estado de forma segura (ignorando namespaces)
             for elem in root.iter():
-                if 'estado' in elem.tag: estado = elem.text; break
+                tag_local = elem.tag.split('}')[-1].lower() if '}' in elem.tag else elem.tag.lower()
+                if tag_local == 'estado':
+                    estado = elem.text; break
             
             codigos, mensajes = self._parse_msg_node(root)
 
             return {
                 "estado": estado, 
-                "mensaje": "; ".join(mensajes) if mensajes else "Sin detalles",
+                "mensajes": mensajes,  # Cambiado de 'mensaje' a 'mensajes' para consistencia
+                "mensaje": "; ".join(mensajes) if mensajes else ("Sin detalles" if estado != "DESCONOCIDO" else "Error de comunicación o respuesta inesperada"),
                 "codigos": codigos
             }
-        except:
-            return {"estado": SRIEstadoRespuesta.ERROR_PARSING, "mensaje": "Error parseando respuesta SRI", "codigos": []}
+        except Exception as e:
+            return {"estado": SRIEstadoRespuesta.ERROR_PARSING, "mensaje": f"Error parseando respuesta SRI: {str(e)}", "mensajes": [str(e)], "codigos": []}
 
     def _parse_autorizacion(self, xml_text: str) -> dict:
         try:
@@ -133,19 +146,36 @@ class ClienteSRI:
             estado = "DESCONOCIDO"
             num_auth = None
             fecha_auth = None
+            clave_acceso_consultada = None
+            numero_comprobantes = "0"
+            
             for elem in root.iter():
-                if 'estado' in elem.tag: estado = elem.text
-                if 'numeroAutorizacion' in elem.tag: num_auth = elem.text
-                if 'fechaAutorizacion' in elem.tag: fecha_auth = elem.text
+                tag_local = elem.tag.split('}')[-1] if '}' in elem.tag else elem.tag
+                if tag_local == 'estado':
+                    estado = elem.text
+                elif tag_local == 'numeroAutorizacion':
+                    num_auth = elem.text
+                elif tag_local == 'fechaAutorizacion':
+                    fecha_auth = elem.text
+                elif tag_local == 'claveAccesoConsultada':
+                    clave_acceso_consultada = elem.text
+                elif tag_local == 'numeroComprobantes':
+                    numero_comprobantes = elem.text
 
+            # Si no hay comprobantes y el estado quedó en DESCONOCIDO, es un "No encontrado"
+            if numero_comprobantes == "0" and estado == "DESCONOCIDO":
+                estado = "NO_ENCONTRADO"
+                
             codigos, mensajes = self._parse_msg_node(root)
             
             return {
                 "estado": estado,
                 "numeroAutorizacion": num_auth,
                 "fechaAutorizacion": fecha_auth,
+                "claveAccesoConsultada": clave_acceso_consultada,
+                "numeroComprobantes": int(numero_comprobantes),
                 "mensajes": mensajes,
                 "codigos": codigos
             }
-        except:
-            return {"estado": SRIEstadoRespuesta.ERROR_PARSING, "mensajes": ["Error parseando respuesta"], "codigos": []}
+        except Exception as e:
+            return {"estado": SRIEstadoRespuesta.ERROR_PARSING, "mensajes": [f"Error de parseo: {str(e)}"], "codigos": []}

@@ -191,25 +191,37 @@ class ServicioSRIXML:
 
         # Pagos usando Strategy Pattern
         pagos_node = ET.SubElement(info_fac, 'pagos')
-        codigo_pago = str(factura.get('forma_pago_sri', '01')).strip()
+        codigo_pago = str(factura.get('forma_pago_sri', '01')).strip().zfill(2)
         
-        # Calcular plazo si existe fecha de vencimiento
-        plazo_dias = None
-        f_venc = factura.get('fecha_vencimiento')
-        if f_venc:
+        # Obtener datos de plazo/unidad o calcular si solo hay vencimiento
+        p_val = factura.get('plazo')
+        u_val = factura.get('unidad_tiempo')
+
+        # SI ES EFECTIVO (01), NO SE DEBE ENVIAR PLAZO NI UNIDAD SEGÚN SRI
+        if codigo_pago == '01':
+            p_val = None
+            u_val = None
+
+        if (p_val is None or p_val == 0) and factura.get('fecha_vencimiento'):
+            f_venc = factura.get('fecha_vencimiento')
             try:
                 if isinstance(f_venc, str): f_venc = datetime.fromisoformat(f_venc)
-                # Asegurar que ambos sean objetos de fecha para la resta
                 d_venc = f_venc.date() if hasattr(f_venc, 'date') else f_venc
                 d_emis = f_emision.date() if hasattr(f_emision, 'date') else f_emision
-                plazo_dias = (d_venc - d_emis).days
-                if plazo_dias < 0: plazo_dias = 0
+                p_val = (d_venc - d_emis).days
+                if p_val < 0: p_val = 0
+                u_val = 'DIAS'
             except:
-                plazo_dias = 0
+                p_val = 0
+                u_val = 'DIAS'
 
-        # Obtener estrategia
+        # Normalizar unidad a mayúsculas para DB (DIAS, MESES, ANIOS)
+        if u_val:
+            u_val = u_val.upper()
+
+        # Obtener estrategia y generar nodo
         estrategia = FactoryPagosSRI.obtener_estrategia(codigo_pago)
-        estrategia.generar_nodo(pagos_node, importe_total, plazo=plazo_dias)
+        estrategia.generar_nodo(pagos_node, importe_total, plazo=p_val, unidad_tiempo=u_val)
 
         # Detalles
         detalles_node = ET.SubElement(root, 'detalles')

@@ -82,10 +82,29 @@ import { forkJoin, switchMap, tap, catchError, of, filter, take, map, Observable
                 <div class="col-md-6 col-lg-3">
                   <label class="form-label fw-semibold text-muted small">Forma de Pago</label>
                   <select class="form-select" formControlName="forma_pago_sri">
-                    <option value="01">Efectivo</option>
+                    <option value="01">Sin utilización del sistema financiero (Efectivo)</option>
+                    <option value="15">Compensación de deudas</option>
                     <option value="16">Tarjeta de Débito</option>
+                    <option value="17">Dinero Electrónico</option>
+                    <option value="18">Tarjeta Prepago</option>
                     <option value="19">Tarjeta de Crédito</option>
-                    <option value="20">Transferencia / Otros (Sistema Financiero)</option>
+                    <option value="20">Otros con utilización del sistema financiero</option>
+                    <option value="21">Endoso de Títulos</option>
+                  </select>
+                </div>
+
+                <!-- PLAZO Y TIEMPO (Solo si no es efectivo) -->
+                <div class="col-md-6 col-lg-3" *ngIf="facturaForm.get('forma_pago_sri')?.value !== '01'">
+                  <label class="form-label fw-semibold text-muted small">Plazo</label>
+                  <input type="number" class="form-control" formControlName="plazo" min="0">
+                </div>
+
+                <div class="col-md-6 col-lg-3" *ngIf="facturaForm.get('forma_pago_sri')?.value !== '01'">
+                  <label class="form-label fw-semibold text-muted small">Unidad de Tiempo</label>
+                  <select class="form-select" formControlName="unidad_tiempo">
+                    <option value="DIAS">Días</option>
+                    <option value="MESES">Meses</option>
+                    <option value="ANIOS">Años</option>
                   </select>
                 </div>
               </div>
@@ -304,6 +323,8 @@ export class CreateFacturaModalComponent implements OnInit {
       fecha_emision: [new Date().toISOString().split('T')[0], Validators.required],
       cliente_id: [null, Validators.required],
       forma_pago_sri: ['01', Validators.required],
+      plazo: [0],
+      unidad_tiempo: ['DIAS'],
       observaciones: [''],
       detalles: this.fb.array([])
     });
@@ -394,6 +415,8 @@ export class CreateFacturaModalComponent implements OnInit {
           fecha_emision: factura.fecha_emision.split('T')[0],
           cliente_id: factura.cliente_id,
           forma_pago_sri: factura.forma_pago_sri,
+          plazo: factura.plazo || 0,
+          unidad_tiempo: factura.unidad_tiempo || 'DIAS',
           observaciones: factura.observaciones || ''
         });
 
@@ -583,6 +606,8 @@ export class CreateFacturaModalComponent implements OnInit {
       ambiente: 1, // Default, sera ignorado en update
       tipo_emision: 1,
       forma_pago_sri: formVal.forma_pago_sri,
+      plazo: formVal.forma_pago_sri !== '01' ? formVal.plazo : null,
+      unidad_tiempo: formVal.forma_pago_sri !== '01' ? formVal.unidad_tiempo : null,
       origen: 'MANUAL'
     };
 
