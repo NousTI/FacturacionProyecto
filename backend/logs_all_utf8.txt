@@ -1,0 +1,1 @@
+﻿('0303202601110198450600110010010000000993697472510', 'DEVUELTA', 'ERROR_VALIDACION', datetime.datetime(2026, 3, 3, 10, 13, 54, 707821, tzinfo=datetime.timezone(datetime.timedelta(days=-1, seconds=68400))))

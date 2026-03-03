@@ -253,14 +253,50 @@ class ServicioFacturas:
             usuario_contexto["id"] = usuario_facturacion['id']
             
         factura = self.obtener_factura(id, usuario_actual)
-        # Validaciones previas a emitir
-        if factura['estado'] != 'BORRADOR':
-             raise AppError("La factura ya fue emitida o anulada", 400)
+        
+        # --- PERMITIR REINTENTOS SI LA FASE PREVIA FALLÓ ---
+        # Estados permitidos para emitir: BORRADOR (nuevo), DEVUELTA (rechazo SRI), ERROR_TECNICO (timeout/conexión)
+        estados_permitidos = ['BORRADOR', 'DEVUELTA', 'ERROR_TECNICO']
+        if factura['estado'] not in estados_permitidos:
+             raise AppError(f"La factura está en estado {factura['estado']} y no puede ser emitida.", 400)
 
-        # --- ASIGNACIÓN DE SECUENCIAL COMPENSATORIO (Justo a tiempo) ---
+        # --- LÓGICA DE ASIGNACIÓN INTELIGENTE DE SECUENCIAL ---
+        debe_asignar_nuevo = False
+        
         if not factura.get('numero_factura'):
-            print(f"--- [SERVICE] Asignando número secuencial a factura {id} ---")
+            # Primer intento de emisión
+            debe_asignar_nuevo = True
+            print(f"--- [SERVICE] Primer intento para factura {id}. Asignando nuevo secuencial. ---")
+        elif factura['estado'] == 'DEVUELTA':
+            # Si fue devuelta, verificamos si es por Secuencial Registrado (Error 45)
+            historial = self.sri_facturacion.obtener_historial_emision(id)
+            if historial:
+                ultimo_log = historial[0]
+                mensajes = ultimo_log.get('mensajes', []) or []
+                es_error_45 = any(str(m.get('codigo')) == '45' or 'SECUENCIAL REGISTRADO' in str(m.get('mensaje', '')).upper() for m in mensajes)
+                
+                if es_error_45:
+                    print(f"--- [SERVICE] Detectado Error 45 previo en {id}. Intentando RESCATE por consulta... ---")
+                    try:
+                        # Intentar rescatar consultando directamente al SRI
+                        res_consulta = self.consultar_sri(id, usuario_actual)
+                        if res_consulta.get('estado') == 'AUTORIZADO':
+                            print(f"--- [SERVICE] ¡RESCATE EXITOSO! Secuencial {factura.get('numero_factura')} ya autorizado. ---")
+                            return res_consulta
+                        
+                        # Si la consulta NO confirma autorización, significa que el número realmente está bloqueado o es de otra factura
+                        # Solo en este caso saltamos al siguiente secuencial
+                        debe_asignar_nuevo = True
+                        print(f"--- [SERVICE] Rescate fallido para {id}. Forzando salto de secuencial para desbloquear. ---")
+                    except Exception as e:
+                        print(f"--- [SERVICE] Error durante intento de rescate: {str(e)}. No se saltará secuencial aún por seguridad. ---")
+                        debe_asignar_nuevo = False
             
+            if not debe_asignar_nuevo:
+                print(f"--- [SERVICE] Reintentando factura {id} (DEVUELTA) con el mismo número: {factura.get('numero_factura')} ---")
+
+        if debe_asignar_nuevo:
+            print(f"--- [SERVICE] Generando nuevo secuencial para factura {id} ---")
             # Recuperar datos para el formato del número
             punto = self.core.punto_emision_service.obtener_punto(factura['punto_emision_id'], usuario_actual)
             establecimiento = self.core.establecimiento_service.obtener_establecimiento(factura['establecimiento_id'], usuario_actual)
@@ -285,6 +321,8 @@ class ServicioFacturas:
             
             self.core.actualizar_factura(id, update_data)
             print(f"Factura {id} ahora tiene el número {numero_factura}. Procediendo al SRI...")
+        else:
+            print(f"--- [SERVICE] Reutilizando número {factura.get('numero_factura')} para factura {id}. Procediendo al SRI... ---")
         
         return self.sri_facturacion.emitir_factura(id, usuario_contexto)
 

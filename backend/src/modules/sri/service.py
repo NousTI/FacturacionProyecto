@@ -114,12 +114,12 @@ class ServicioSRI:
         except Exception as e:
             raise AppError("Error de seguridad al acceder a la firma", 500, "CRYPTO_ERROR")
 
-    def enviar_factura(self, factura_id: UUID, usuario_actual: dict):
+    def enviar_factura(self, factura_id: UUID, usuario_actual: dict, force_reemission: bool = False):
         factura = self.factura_repo.obtener_por_id(factura_id)
         if not factura: raise AppError("Factura no encontrada", 404, "FACTURA_NOT_FOUND")
         
         # --- PROTECCIÓN CONTRA DOBLE CHECK (Concurrency) ---
-        if factura['estado'] in [FacturaEstado.EN_PROCESO, FacturaEstado.AUTORIZADA]:
+        if not force_reemission and factura['estado'] in [FacturaEstado.EN_PROCESO, FacturaEstado.AUTORIZADA]:
             raise AppError("La factura ya está siendo procesada o fue emitida.", 409, "FACTURA_LOCKED")
             
         # Bloquear inmediatamente
@@ -170,16 +170,25 @@ class ServicioSRI:
             
             # Verificar estado local antes de enviar
             # Si ya tenemos la misma clave registrada y está en proceso o emitida, no reenviamos a recepción
-            if factura.get('clave_acceso') == clave and factura.get('estado') in [FacturaEstado.EN_PROCESO, FacturaEstado.AUTORIZADA]:
+            # A menos que sea una RE-EMISIÓN FORZADA (Rescue)
+            if not force_reemission and factura.get('clave_acceso') == clave and factura.get('estado') in [FacturaEstado.EN_PROCESO, FacturaEstado.AUTORIZADA]:
                 print(f"--- [SRI] Factura ya registrada localmente con clave {clave}. Saltando envío (Recepción). ---")
                 ya_en_procesamiento = True
             else:
                 # 1. ENVIAR RECEPCIÓN (Solo si no parece estar procesándose ya)
                 res_rec = self.client_sri.validar_comprobante(xml_b64, ambiente)
                 
-                # CASO ESPECIAL SRI: Error 70 - Clave de acceso en procesamiento
+                # CASO ESPECIAL SRI: Error 70 - Clave de acceso en procesamiento o Error 45 - Secuencial ya registrado
                 msg_rec = str(res_rec.get('mensaje', ''))
-                ya_en_procesamiento = SRIErrorCodes.TXT_EN_PROCESAMIENTO in msg_rec.upper() or SRIErrorCodes.CLAVE_EN_PROCESAMIENTO in msg_rec
+                cods_rec = res_rec.get('codigos', [])
+                
+                # Reportado como en procesamiento (70) o ya registrado (45)
+                ya_en_procesamiento = (
+                    SRIErrorCodes.TXT_EN_PROCESAMIENTO in msg_rec.upper() or 
+                    SRIErrorCodes.CLAVE_EN_PROCESAMIENTO in msg_rec or
+                    '45' in cods_rec or
+                    'SECUENCIAL REGISTRADO' in msg_rec.upper()
+                )
                 
                 # CASO TIMEOUT/CONEXIÓN: Si dio timeout o se cortó la conexión, es posible que el SRI sí lo haya recibido.
                 if res_rec['estado'] in [SRIEstadoRespuesta.ERROR_TIMEOUT, SRIEstadoRespuesta.ERROR_CONEXION]:
@@ -223,36 +232,6 @@ class ServicioSRI:
                     
                     return res_rec
                 
-                # Caso especial: El SRI ya lo tiene o problemas de red que sugieren éxito previo
-                if ya_en_procesamiento:
-                    # Consistencia de estados para evitar confusión en DB (Fix solicitado)
-                    estado_final_para_log = "EN_PROCESO"
-                    res_rec['estado'] = estado_final_para_log
-                    
-                    codigos = res_rec.get('codigos', [])
-                    if not codigos:
-                        if SRIErrorCodes.CLAVE_EN_PROCESAMIENTO in msg_rec or SRIErrorCodes.TXT_EN_PROCESAMIENTO in msg_rec.upper(): 
-                            codigos.append(SRIErrorCodes.CLAVE_EN_PROCESAMIENTO)
-                    
-                    self.factura_repo.crear_log_emision({
-                        "factura_id": factura_id,
-                        "usuario_id": usuario_actual.get('id'),
-                        "ambiente": int(ambiente),
-                        "clave_acceso": clave,
-                        "estado": LogEstado.EN_PROCESO,
-                        "sri_estado_raw": "EN_PROCESO",
-                        "fase_falla": None,
-                        "intento_numero": intento_num,
-                        "mensajes": [{"codigo": codigos[0] if codigos else "70", "mensaje": f"Comprobante en procesamiento SRI", "tipo": "INFO"}],
-                        "duracion_ms": int((time.time() - start_time) * 1000),
-                        "client_info": client_info,
-                        "xml_enviado": xml_str,
-                        "xml_respuesta": res_rec.get('xml_respuesta_raw', str(res_rec))
-                    })
-                    
-                    # Asegurar estado local
-                    self.factura_repo.actualizar_factura(factura_id, {"estado": FacturaEstado.EN_PROCESO, "clave_acceso": clave})
-
             # 3. PROCESAR AUTORIZACIÓN
             time.sleep(SRI_TIME_SLEEP_AUTORIZACION)
             
@@ -284,8 +263,12 @@ class ServicioSRI:
                     mensajes_list.append({"codigo": "TIMEOUT", "mensaje": "El SRI no respondió a tiempo la consulta de autorización.", "tipo": "INFO"})
                 elif ya_en_procesamiento:
                     mensajes_list.append({"codigo": "70", "mensaje": "Comprobante en procesamiento en el SRI. Use el botón 'Consultar SRI' en unos minutos.", "tipo": "INFO"})
-                elif estado_aut == "NO_ENCONTRADO":
-                    mensajes_list.append({"codigo": "SRI_404", "mensaje": "El comprobante no consta en los registros del SRI. Verifique que no haya sido rechazado en la fase de recepción.", "tipo": "ERROR"})
+                elif estado_aut == "NO_ENCONTRADO" or (res_aut.get('numeroComprobantes') == 0):
+                    mensajes_list.append({
+                        "codigo": "SRI_404", 
+                        "mensaje": "El SRI ha recibido el comprobante pero aún no lo ha indexado para consulta. Por favor, espere unos minutos antes de intentar consultar nuevamente.", 
+                        "tipo": "INFO"
+                    })
                 elif estado_aut == "DESCONOCIDO":
                     mensajes_list.append({"codigo": "SISTEMA", "mensaje": "El SRI devolvió un estado desconocido o una respuesta vacía.", "tipo": "ERROR"})
 
@@ -308,22 +291,10 @@ class ServicioSRI:
             })
 
             # 4. GUARDAR EN TABLA DE AUTORIZACIONES (Solo RESPUESTAS VÁLIDAS)
-            estados_validos_sri = [
-                SRIEstadoRespuesta.AUTORIZADO, 
-                SRIEstadoRespuesta.DEVUELTA, 
-                SRIEstadoRespuesta.DEVUELTO, 
-                SRIEstadoRespuesta.NO_AUTORIZADO, 
-                SRIEstadoRespuesta.EN_PROCESO, 
-                SRIEstadoRespuesta.RECIBIDA
-            ]
-            
-            # Verificar si es un estado válido de negocio (no error técnico)
-            es_estado_valido = estado_aut in estados_validos_sri
             es_error_tecnico = estado_aut in [SRIEstadoRespuesta.ERROR_TIMEOUT, SRIEstadoRespuesta.ERROR_CONEXION, "DESCONOCIDO", "NO_ENCONTRADO", SRIEstadoRespuesta.ERROR_PARSING]
 
-            if es_estado_valido or (estado_aut and not es_error_tecnico):
-                estado_db = estado_aut.upper()
-                if estado_db == "DEVUELTA": estado_db = "DEVUELTO"
+            if estado_aut in [SRIEstadoRespuesta.AUTORIZADO, SRIEstadoRespuesta.DEVUELTA, SRIEstadoRespuesta.DEVUELTO, SRIEstadoRespuesta.NO_AUTORIZADO, SRIEstadoRespuesta.EN_PROCESO]:
+                estado_db = estado_aut.upper() if estado_aut != "DEVUELTA" else "DEVUELTO"
                 
                 self.repo.crear_autorizacion({
                     "factura_id": factura_id,
@@ -336,38 +307,30 @@ class ServicioSRI:
                 })
             
             # 5. ACTUALIZAR ESTADO DE LA FACTURA
+            update_fields = {"clave_acceso": clave}
+            
             if estado_aut == SRIEstadoRespuesta.AUTORIZADO:
-                self.factura_repo.actualizar_factura(factura_id, {
-                    "estado": FacturaEstado.AUTORIZADA, 
-                    "clave_acceso": clave,
+                update_fields.update({
+                    "estado": FacturaEstado.AUTORIZADA,
                     "numero_autorizacion": res_aut.get('numeroAutorizacion'),
                     "fecha_autorizacion": res_aut.get('fechaAutorizacion')
                 })
             elif estado_aut in [SRIEstadoRespuesta.DEVUELTA, SRIEstadoRespuesta.DEVUELTO]:
-                self.factura_repo.actualizar_factura(factura_id, {
-                    "estado": FacturaEstado.DEVUELTA, 
-                    "clave_acceso": clave
-                })
+                update_fields["estado"] = FacturaEstado.DEVUELTA
             elif estado_aut == SRIEstadoRespuesta.NO_AUTORIZADO:
-                self.factura_repo.actualizar_factura(factura_id, {
-                    "estado": FacturaEstado.NO_AUTORIZADA, 
-                    "clave_acceso": clave
-                })
+                update_fields["estado"] = FacturaEstado.NO_AUTORIZADA
             else:
-                # Si está en procesamiento, mantenemos EN_PROCESO.
-                # Si fue un error técnico REAL (timeout/conexión) marcamos ERROR_TECNICO para permitir reintento.
                 if ya_en_procesamiento or estado_aut == SRIEstadoRespuesta.EN_PROCESO:
-                    estado_final = FacturaEstado.EN_PROCESO
+                    update_fields["estado"] = FacturaEstado.EN_PROCESO
                 elif estado_aut == "NO_ENCONTRADO":
-                    # Si no se encuentra en consulta de envío inicial, algo salió realmente mal en recepción
-                    estado_final = FacturaEstado.ERROR_TECNICO
+                    # El SRI aún no indexa el documento. Lo mantenemos en EN_PROCESO 
+                    # para que el usuario sepa que debe esperar y consultar más tarde.
+                    update_fields["estado"] = FacturaEstado.EN_PROCESO
                 else:
-                    estado_final = FacturaEstado.ERROR_TECNICO if es_error_tecnico else FacturaEstado.EN_PROCESO
-                
-                self.factura_repo.actualizar_factura(factura_id, {
-                    "estado": estado_final, 
-                    "clave_acceso": clave
-                })
+                    update_fields["estado"] = FacturaEstado.ERROR_TECNICO
+            
+            self.factura_repo.actualizar_factura(factura_id, update_fields)
+            return res_aut
             
             return res_aut
                 
@@ -422,13 +385,30 @@ class ServicioSRI:
             # --- MANEJO DE LOGS ---
             codigos_error = res_aut.get('codigos', [])
             mensajes_aut = res_aut.get('mensajes', [])
-            log_estado = LogEstado.EXITOSO if estado_aut == SRIEstadoRespuesta.AUTORIZADO else LogEstado.ERROR_VALIDACION
             
-            if estado_aut in [SRIEstadoRespuesta.ERROR_TIMEOUT, SRIEstadoRespuesta.ERROR_CONEXION]:
+            if estado_aut == SRIEstadoRespuesta.AUTORIZADO:
+                log_estado = LogEstado.EXITOSO
+            elif estado_aut in [SRIEstadoRespuesta.ERROR_TIMEOUT, SRIEstadoRespuesta.ERROR_CONEXION]:
                 log_estado = LogEstado.ERROR_CONECTIVIDAD
+            elif estado_aut in ["NO_ENCONTRADO", SRIEstadoRespuesta.NO_ENCONTRADO, SRIEstadoRespuesta.EN_PROCESO]:
+                log_estado = LogEstado.EN_PROCESO
+            else:
+                log_estado = LogEstado.ERROR_VALIDACION
 
             duration = int((time.time() - start_time) * 1000)
-            mensajes_list = [{"codigo": codigos_error[i] if i < len(codigos_error) else None, "mensaje": msg, "tipo": "ERROR"} for i, msg in enumerate(mensajes_aut)]
+            
+            mensajes_list = []
+            for i, msg in enumerate(mensajes_aut):
+                cod = codigos_error[i] if i < len(codigos_error) else None
+                mensajes_list.append({"codigo": cod, "mensaje": msg, "tipo": "ERROR"})
+            
+            if not mensajes_list:
+                if estado_aut in ["NO_ENCONTRADO", SRIEstadoRespuesta.NO_ENCONTRADO]:
+                    mensajes_list.append({
+                        "codigo": "SRI_404", 
+                        "mensaje": "El SRI aún no refleja el estado del comprobante. Esto es normal si acaba de ser enviado; la indexación puede tardar unos minutos.", 
+                        "tipo": "INFO"
+                    })
 
             self.factura_repo.crear_log_emision({
                 "factura_id": factura_id,
@@ -457,6 +437,11 @@ class ServicioSRI:
                 self.factura_repo.actualizar_factura(factura_id, {"estado": FacturaEstado.DEVUELTA})
             elif estado_aut == SRIEstadoRespuesta.NO_AUTORIZADO:
                 self.factura_repo.actualizar_factura(factura_id, {"estado": FacturaEstado.NO_AUTORIZADA})
+            elif estado_aut in ["NO_ENCONTRADO", SRIEstadoRespuesta.NO_ENCONTRADO]:
+                 # RESCATE ACTIVO: Si no se encuentra en consulta, intentamos una re-emisión forzada
+                 # Esto soluciona casos donde la recepción fue un falso positivo o se perdió el paquete.
+                 print(f"--- [SRI] No encontrado en consulta para {factura_id}. Iniciando re-emisión de rescate... ---")
+                 return self.enviar_factura(factura_id, usuario_actual, force_reemission=True)
             
             return res_aut
 

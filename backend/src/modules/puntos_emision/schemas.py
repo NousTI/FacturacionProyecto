@@ -16,6 +16,7 @@ class PuntoEmisionActualizacion(BaseModel):
     nombre: Optional[str] = None
     activo: Optional[bool] = None
     establecimiento_id: Optional[UUID] = None
+    secuencial_actual: Optional[int] = Field(None, ge=1, description="Próximo secuencial a emitir")
 
 class PuntoEmisionLectura(PuntoEmisionBase):
     id: UUID
