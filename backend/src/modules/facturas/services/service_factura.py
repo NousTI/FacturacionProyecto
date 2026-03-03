@@ -41,14 +41,6 @@ class ServicioFactura:
         punto = self.core.punto_emision_service.obtener_punto(datos.punto_emision_id, usuario_actual)
         empresa = self.core.empresa_service.obtener_empresa(empresa_id, usuario_actual)
 
-        snapshots = {
-            "snapshot_empresa": empresa,
-            "snapshot_cliente": cliente,
-            "snapshot_establecimiento": establecimiento,
-            "snapshot_punto_emision": {**punto, "secuencial_usado": None},
-            "snapshot_usuario": usuario_actual
-        }
-
         datos.empresa_id = empresa_id
         datos.usuario_id = usuario_id
         datos.ambiente = 1 # FORZAR A PRUEBAS POR SEGURIDAD
@@ -61,7 +53,7 @@ class ServicioFactura:
             "secuencial_punto_emision": None
         }
         
-        return self.core.crear_borrador(datos, usuario_actual, {**snapshots, **payload_extra})
+        return self.core.crear_borrador(datos, usuario_actual, payload_extra)
 
     def obtener_factura(self, id: UUID, usuario_actual: dict):
         return ValidacionesFactura.obtener_y_validar_factura(self.core, id, usuario_actual)
