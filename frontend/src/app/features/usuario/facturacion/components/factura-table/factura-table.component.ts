@@ -19,7 +19,6 @@ import { HasPermissionDirective } from '../../../../../shared/directives/has-per
                 <th>Fecha</th>
                 <th>Total</th>
                 <th>Estado Emisión</th>
-                <th>Estado Pago</th>
                 <th class="text-end" style="width: 80px">Acciones</th>
               </tr>
             </thead>
@@ -62,13 +61,6 @@ import { HasPermissionDirective } from '../../../../../shared/directives/has-per
                 <td>
                   <span class="badge-status-premium" [ngClass]="getStatusClass(factura.estado)">
                     {{ factura.estado }}
-                  </span>
-                </td>
-
-                 <!-- Estado Pago -->
-                 <td>
-                  <span class="badge-status-premium" [ngClass]="getPaymentStatusClass(factura.estado_pago)">
-                    {{ factura.estado_pago }}
                   </span>
                 </td>
 
@@ -297,7 +289,6 @@ export class FacturaTableComponent {
       case 'ANULADA': return 'status-anulada';
       case 'EN_PROCESO': return 'status-proceso';
       case 'DEVUELTA': return 'status-devuelta';
-      case 'RECHAZADA':
       case 'NO_AUTORIZADA': return 'status-rechazada';
       case 'ERROR_TECNICO': return 'status-error';
       default: return '';
