@@ -4,8 +4,11 @@ psycopg2-binary
 requests
 python-jose[cryptography]
 passlib[bcrypt]
-pydantic
+pydantic[email]
 pydantic-settings
 signxml
 lxml
 jinja2
+PyJWT
+email-validator
+python-multipart
