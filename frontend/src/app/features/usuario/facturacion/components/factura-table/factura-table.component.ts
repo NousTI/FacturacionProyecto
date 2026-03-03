@@ -18,6 +18,7 @@ import { HasPermissionDirective } from '../../../../../shared/directives/has-per
                 <th>Cliente</th>
                 <th>Fecha</th>
                 <th>Total</th>
+                <th>Método Pago</th>
                 <th>Estado Emisión</th>
                 <th class="text-end" style="width: 80px">Acciones</th>
               </tr>
@@ -55,6 +56,13 @@ import { HasPermissionDirective } from '../../../../../shared/directives/has-per
                  <!-- Total -->
                 <td>
                   <span class="fw-bold text-dark" style="font-size: 0.9rem;">{{ factura.total | currency:'USD' }}</span>
+                </td>
+
+                <!-- Método Pago -->
+                <td>
+                  <span class="text-muted fw-600" style="font-size: 0.8rem;">
+                    {{ getFormaPagoString(factura.forma_pago_sri) }}
+                  </span>
                 </td>
 
                 <!-- Estado Emisión -->
@@ -301,6 +309,20 @@ export class FacturaTableComponent {
       case 'PAGADO': return 'payment-pagado';
       case 'PARCIAL': return 'payment-parcial';
       default: return '';
+    }
+  }
+
+  getFormaPagoString(codigo: string): string {
+    switch (codigo) {
+      case '01': return 'Efectivo';
+      case '15': return 'Compens. Deudas';
+      case '16': return 'T. Débito';
+      case '17': return 'Dinero Electrónico';
+      case '18': return 'T. Prepago';
+      case '19': return 'T. Crédito';
+      case '20': return 'Otros S.F.';
+      case '21': return 'Endoso Títulos';
+      default: return 'No Definido';
     }
   }
 }

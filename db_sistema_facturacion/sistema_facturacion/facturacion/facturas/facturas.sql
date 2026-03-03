@@ -163,5 +163,13 @@ CREATE TABLE IF NOT EXISTS sistema_facturacion.facturas (
         COMMENT 'Timestamp de última modificación'
 );
 
-COMMENT ON TABLE sistema_facturacion.facturas IS
-'Tabla principal de facturas. Contiene 5 snapshots JSON independientes (empresa, cliente, establecimiento, punto_emision, usuario) para auditoría.';
+-- | Código | Forma de pago                                | ¿Requiere plazo/unidadTiempo?   |
+-- | ------ | -------------------------------------------- | ------------------------------- |
+-- | `01`   | Sin utilización del sistema financiero       | ❌ No                            |
+-- | `15`   | Compensación de deudas                       | ✅ Sí                            |
+-- | `16`   | Tarjeta de débito                            | ❌ No                            |
+-- | `17`   | Dinero electrónico                           | ❌ No                            |
+-- | `18`   | Tarjeta prepago                              | ❌ No                            |
+-- | `19`   | Tarjeta de crédito                           | ⚠️ Depende (sí si es diferido)  |
+-- | `20`   | Otros con utilización del sistema financiero | ⚠️ Depende (sí si es a crédito) |
+-- | `21`   | Endoso de títulos                            | ✅ Sí                            |
