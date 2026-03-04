@@ -46,6 +46,7 @@ import { SriConfigService } from '../certificado-sri/services/sri-config.service
         <!-- ACTIONS -->
         <app-factura-actions
           [(searchQuery)]="searchQuery"
+          (searchQueryChange)="applyFilters()"
           [sriError]="sriError"
           (onFilterChangeEmit)="handleFilters($event)"
           (onCreate)="openCreateModal()"
@@ -139,7 +140,7 @@ export class FacturacionPage implements OnInit {
   };
 
   searchQuery: string = '';
-  filters = { estado: 'ALL', estado_pago: 'ALL' };
+  filters = { estado: 'ALL', estado_pago: 'ALL', forma_pago: 'ALL' };
 
   selectedFactura: Factura | null = null;
   isLoading: boolean = false;
@@ -263,8 +264,9 @@ export class FacturacionPage implements OnInit {
 
       const matchEstado = this.filters.estado === 'ALL' || f.estado === this.filters.estado;
       const matchPago = this.filters.estado_pago === 'ALL' || f.estado_pago === this.filters.estado_pago;
+      const matchForma = this.filters.forma_pago === 'ALL' || f.forma_pago_sri === this.filters.forma_pago;
 
-      return matchSearch && matchEstado && matchPago;
+      return matchSearch && matchEstado && matchPago && matchForma;
     });
     this.cd.detectChanges();
   }

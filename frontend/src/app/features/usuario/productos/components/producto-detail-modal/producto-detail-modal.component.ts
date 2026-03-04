@@ -8,7 +8,7 @@ import { PermissionsService } from '../../../../../core/auth/permissions.service
   standalone: true,
   imports: [CommonModule],
   template: `
-    <div class="modal-overlay animate__animated animate__fadeIn animate__faster" (click)="onClose.emit()">
+    <div class="modal-overlay" (click)="onClose.emit()">
       <div class="modal-container-final" (click)="$event.stopPropagation()">
         
         <!-- Header -->

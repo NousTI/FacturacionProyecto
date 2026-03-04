@@ -80,13 +80,13 @@ import { PermissionsService } from '../../../../../core/auth/permissions.service
                   <li>
                     <a class="dropdown-item py-2" href="javascript:void(0)" (click)="onAction.emit({type: 'view', producto})">
                       <div class="icon-item bg-soft-info"><i class="bi bi-eye-fill"></i></div>
-                      <span class="ms-2">Ficha T&eacute;cnica</span>
+                      <span class="ms-2">Detalles</span>
                     </a>
                   </li>
                   <li *ngIf="canEdit">
                     <a class="dropdown-item py-2" href="javascript:void(0)" (click)="onAction.emit({type: 'edit', producto})">
                       <div class="icon-item bg-soft-primary"><i class="bi bi-pencil-fill"></i></div>
-                      <span class="ms-2">Modificar</span>
+                      <span class="ms-2">Editar</span>
                     </a>
                   </li>
                   <li *ngIf="canDelete"><hr class="dropdown-divider mx-2 opacity-10"></li>

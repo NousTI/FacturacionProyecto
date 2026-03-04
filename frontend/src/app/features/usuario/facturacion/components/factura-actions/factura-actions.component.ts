@@ -34,34 +34,58 @@ import { HasPermissionDirective } from '../../../../../shared/directives/has-per
 
         <!-- FILTROS -->
         <div class="col-12 col-md-7 col-lg-8">
-          <div class="d-flex gap-2 justify-content-md-end overflow-auto pb-1 pb-md-0">
+          <div class="d-flex gap-2 justify-content-md-end pb-1 pb-md-0">
             <!-- Filtro Estado Emisión -->
-            <div class="dropdown">
-              <button class="btn btn-filter-premium dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <div class="dropdown" [class.show]="openDropdowns['estado']">
+              <button class="btn btn-filter-premium dropdown-toggle" type="button" (click)="toggleDropdown('estado', $event)">
                 <i class="bi bi-funnel"></i>
                 {{ getFilterLabel(filters.estado) }}
               </button>
-              <ul class="dropdown-menu shadow-premium border-0 p-2 rounded-4">
+              <ul class="dropdown-menu shadow-premium border-0 p-2 rounded-4" [class.show]="openDropdowns['estado']">
                 <li><h6 class="dropdown-header text-uppercase fs-xs fw-bold text-muted">Estado Emisión</h6></li>
                 <li><a class="dropdown-item rounded-3" [class.active]="filters.estado === 'ALL'" (click)="setFilter('estado', 'ALL')">Todos</a></li>
                 <li><a class="dropdown-item rounded-3" [class.active]="filters.estado === 'BORRADOR'" (click)="setFilter('estado', 'BORRADOR')">Borrador</a></li>
+                <li><a class="dropdown-item rounded-3" [class.active]="filters.estado === 'EN_PROCESO'" (click)="setFilter('estado', 'EN_PROCESO')">En Proceso</a></li>
                 <li><a class="dropdown-item rounded-3" [class.active]="filters.estado === 'AUTORIZADA'" (click)="setFilter('estado', 'AUTORIZADA')">Autorizada</a></li>
+                <li><a class="dropdown-item rounded-3" [class.active]="filters.estado === 'DEVUELTA'" (click)="setFilter('estado', 'DEVUELTA')">Devuelta</a></li>
+                <li><a class="dropdown-item rounded-3" [class.active]="filters.estado === 'NO_AUTORIZADA'" (click)="setFilter('estado', 'NO_AUTORIZADA')">No Autorizada</a></li>
+                <li><a class="dropdown-item rounded-3" [class.active]="filters.estado === 'ERROR_TECNICO'" (click)="setFilter('estado', 'ERROR_TECNICO')">Error Técnico</a></li>
                 <li><a class="dropdown-item rounded-3" [class.active]="filters.estado === 'ANULADA'" (click)="setFilter('estado', 'ANULADA')">Anulada</a></li>
               </ul>
             </div>
 
             <!-- Filtro Estado Pago -->
-             <div class="dropdown">
-              <button class="btn btn-filter-premium dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+             <div class="dropdown" [class.show]="openDropdowns['pago']">
+              <button class="btn btn-filter-premium dropdown-toggle" type="button" (click)="toggleDropdown('pago', $event)">
                 <i class="bi bi-currency-dollar"></i>
                 {{ getPaymentFilterLabel(filters.estado_pago) }}
               </button>
-              <ul class="dropdown-menu shadow-premium border-0 p-2 rounded-4">
+              <ul class="dropdown-menu shadow-premium border-0 p-2 rounded-4" [class.show]="openDropdowns['pago']">
                  <li><h6 class="dropdown-header text-uppercase fs-xs fw-bold text-muted">Estado Pago</h6></li>
                 <li><a class="dropdown-item rounded-3" [class.active]="filters.estado_pago === 'ALL'" (click)="setFilter('estado_pago', 'ALL')">Todos</a></li>
                 <li><a class="dropdown-item rounded-3" [class.active]="filters.estado_pago === 'PENDIENTE'" (click)="setFilter('estado_pago', 'PENDIENTE')">Pendiente</a></li>
                 <li><a class="dropdown-item rounded-3" [class.active]="filters.estado_pago === 'PAGADO'" (click)="setFilter('estado_pago', 'PAGADO')">Pagado</a></li>
                 <li><a class="dropdown-item rounded-3" [class.active]="filters.estado_pago === 'PARCIAL'" (click)="setFilter('estado_pago', 'PARCIAL')">Parcial</a></li>
+              </ul>
+            </div>
+
+            <!-- Filtro Método de Pago -->
+            <div class="dropdown" [class.show]="openDropdowns['forma']">
+              <button class="btn btn-filter-premium dropdown-toggle" type="button" (click)="toggleDropdown('forma', $event)">
+                <i class="bi bi-wallet2"></i>
+                {{ getFormaPagoFilterLabel(filters.forma_pago) }}
+              </button>
+              <ul class="dropdown-menu shadow-premium border-0 p-2 rounded-4" [class.show]="openDropdowns['forma']">
+                <li><h6 class="dropdown-header text-uppercase fs-xs fw-bold text-muted">Método de Pago</h6></li>
+                <li><a class="dropdown-item rounded-3" [class.active]="filters.forma_pago === 'ALL'" (click)="setFilter('forma_pago', 'ALL')">Todos los Métodos</a></li>
+                <li><a class="dropdown-item rounded-3" [class.active]="filters.forma_pago === '01'" (click)="setFilter('forma_pago', '01')">Efectivo</a></li>
+                <li><a class="dropdown-item rounded-3" [class.active]="filters.forma_pago === '15'" (click)="setFilter('forma_pago', '15')">Compensación Deudas</a></li>
+                <li><a class="dropdown-item rounded-3" [class.active]="filters.forma_pago === '16'" (click)="setFilter('forma_pago', '16')">Tarjeta Débito</a></li>
+                <li><a class="dropdown-item rounded-3" [class.active]="filters.forma_pago === '17'" (click)="setFilter('forma_pago', '17')">Dinero Electrónico</a></li>
+                <li><a class="dropdown-item rounded-3" [class.active]="filters.forma_pago === '18'" (click)="setFilter('forma_pago', '18')">Tarjeta Prepago</a></li>
+                <li><a class="dropdown-item rounded-3" [class.active]="filters.forma_pago === '19'" (click)="setFilter('forma_pago', '19')">Tarjeta Crédito</a></li>
+                <li><a class="dropdown-item rounded-3" [class.active]="filters.forma_pago === '20'" (click)="setFilter('forma_pago', '20')">Transf./Otros Sist. Finan.</a></li>
+                <li><a class="dropdown-item rounded-3" [class.active]="filters.forma_pago === '21'" (click)="setFilter('forma_pago', '21')">Endoso Títulos</a></li>
               </ul>
             </div>
 
@@ -168,23 +192,45 @@ export class FacturaActionsComponent {
 
   filters = {
     estado: 'ALL',
-    estado_pago: 'ALL'
+    estado_pago: 'ALL',
+    forma_pago: 'ALL'
   };
+
+  openDropdowns: { [key: string]: boolean } = {
+    estado: false,
+    pago: false,
+    forma: false
+  };
+
+  toggleDropdown(key: string, event: Event) {
+    event.stopPropagation();
+    // Cerrar los demás primero
+    Object.keys(this.openDropdowns).forEach(k => {
+      if (k !== key) this.openDropdowns[k] = false;
+    });
+    this.openDropdowns[key] = !this.openDropdowns[key];
+  }
 
   onSearchChange(value: string) {
     this.searchQueryChange.emit(value);
   }
 
-  setFilter(type: 'estado' | 'estado_pago', value: string) {
+  setFilter(type: 'estado' | 'estado_pago' | 'forma_pago', value: string) {
     this.filters[type] = value;
     this.onFilterChangeEmit.emit(this.filters);
+    // Cerrar todos los dropdowns tras seleccionar
+    Object.keys(this.openDropdowns).forEach(k => this.openDropdowns[k] = false);
   }
 
   getFilterLabel(value: string): string {
     const map: Record<string, string> = {
       'ALL': 'Todos los Estados',
       'BORRADOR': 'Borradores',
+      'EN_PROCESO': 'En Proceso',
       'AUTORIZADA': 'Autorizadas',
+      'DEVUELTA': 'Devueltas',
+      'NO_AUTORIZADA': 'No Autorizadas',
+      'ERROR_TECNICO': 'Error Técnico',
       'ANULADA': 'Anuladas'
     };
     return map[value] || value;
@@ -198,5 +244,27 @@ export class FacturaActionsComponent {
       'PARCIAL': 'Parciales'
     };
     return map[value] || value;
+  }
+
+  getFormaPagoFilterLabel(value: string): string {
+    const map: Record<string, string> = {
+      'ALL': 'Métodos Pago',
+      '01': 'Efectivo',
+      '15': 'Compensación',
+      '16': 'Tarjeta Débito',
+      '17': 'Dinero Electr.',
+      '18': 'Tarjeta Prepago',
+      '19': 'Tarjeta Crédito',
+      '20': 'Transf./Otros',
+      '21': 'Endoso Títulos'
+    };
+    return map[value] || value;
+  }
+
+  // Cerrar dropdowns si se hace clic afuera
+  constructor() {
+    window.addEventListener('click', () => {
+      Object.keys(this.openDropdowns).forEach(k => this.openDropdowns[k] = false);
+    });
   }
 }

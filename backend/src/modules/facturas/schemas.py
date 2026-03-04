@@ -235,6 +235,8 @@ class FacturaLectura(BaseModel):
     ambiente: int
     tipo_emision: int
     forma_pago_sri: str
+    plazo: Optional[int] = 0
+    unidad_tiempo: Optional[str] = 'DIAS'
     
     # Estados
     estado: EstadoFactura
