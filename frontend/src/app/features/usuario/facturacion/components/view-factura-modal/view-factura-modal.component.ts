@@ -95,9 +95,9 @@ import { Factura, FacturaDetalle } from '../../../../../domain/models/factura.mo
                   <h6 class="text-uppercase text-muted fw-bold mb-2" style="font-size: 0.75rem; letter-spacing: 1px;">Forma de Pago SRI</h6>
                   <div class="text-dark" style="font-size: 0.9rem;">{{ getFormaPagoLabel(factura.forma_pago_sri) }}</div>
                  </div>
-                 <div class="col-md-4" *ngIf="factura.plazo !== undefined && factura.plazo !== null">
+                 <div class="col-md-4" *ngIf="factura.plazo">
                   <h6 class="text-uppercase text-muted fw-bold mb-2" style="font-size: 0.75rem; letter-spacing: 1px;">Plazo</h6>
-                  <div class="text-dark" style="font-size: 0.9rem;">{{ factura.plazo }} {{ factura.unidad_tiempo || 'Días' }}</div>
+                  <div class="text-dark" style="font-size: 0.9rem;">{{ factura.plazo }} {{ factura.unidad_tiempo }}</div>
                  </div>
               </div>
 

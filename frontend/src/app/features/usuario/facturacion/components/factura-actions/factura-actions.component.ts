@@ -8,178 +8,227 @@ import { HasPermissionDirective } from '../../../../../shared/directives/has-per
   standalone: true,
   imports: [CommonModule, FormsModule, HasPermissionDirective],
   template: `
-    <div class="actions-container mb-4">
+    <div class="actions-container">
       <!-- SRI WARNING -->
-      <div *ngIf="sriError" class="alert alert-warning d-flex align-items-center mb-3 shadow-sm border-warning rounded-3" role="alert">
-        <i class="bi bi-exclamation-triangle-fill flex-shrink-0 me-2 fs-4"></i>
-        <div>
-          <strong>Atención:</strong> {{ sriError }}
-        </div>
+      <div *ngIf="sriError" class="alert-sri-lux mb-4">
+        <i class="bi bi-shield-lock-fill"></i>
+        <span>{{ sriError }}</span>
       </div>
 
-      <div class="row g-3 align-items-center">
-        <!-- BUSCADOR -->
-        <div class="col-12 col-md-5 col-lg-4">
-          <div class="search-box-premium">
-            <i class="bi bi-search text-muted"></i>
-            <input 
-              type="text" 
-              class="form-control" 
-              placeholder="Buscar por número, cliente o CI/RUC..." 
-              [(ngModel)]="searchQuery"
-              (ngModelChange)="onSearchChange($event)"
-            >
+      <div class="actions-box-lux">
+        <div class="row g-3 align-items-center">
+          <!-- BUSCADOR -->
+          <div class="col-12 col-md-4">
+            <div class="search-input-wrapper">
+              <i class="bi bi-search"></i>
+              <input 
+                type="text" 
+                class="search-input-lux" 
+                placeholder="Buscar comprobantes..." 
+                [(ngModel)]="searchQuery"
+                (ngModelChange)="onSearchChange($event)"
+              >
+            </div>
           </div>
-        </div>
 
-        <!-- FILTROS -->
-        <div class="col-12 col-md-7 col-lg-8">
-          <div class="d-flex gap-2 justify-content-md-end pb-1 pb-md-0">
-            <!-- Filtro Estado Emisión -->
-            <div class="dropdown" [class.show]="openDropdowns['estado']">
-              <button class="btn btn-filter-premium dropdown-toggle" type="button" (click)="toggleDropdown('estado', $event)">
-                <i class="bi bi-funnel"></i>
-                {{ getFilterLabel(filters.estado) }}
-              </button>
-              <ul class="dropdown-menu shadow-premium border-0 p-2 rounded-4" [class.show]="openDropdowns['estado']">
-                <li><h6 class="dropdown-header text-uppercase fs-xs fw-bold text-muted">Estado Emisión</h6></li>
-                <li><a class="dropdown-item rounded-3" [class.active]="filters.estado === 'ALL'" (click)="setFilter('estado', 'ALL')">Todos</a></li>
-                <li><a class="dropdown-item rounded-3" [class.active]="filters.estado === 'BORRADOR'" (click)="setFilter('estado', 'BORRADOR')">Borrador</a></li>
-                <li><a class="dropdown-item rounded-3" [class.active]="filters.estado === 'EN_PROCESO'" (click)="setFilter('estado', 'EN_PROCESO')">En Proceso</a></li>
-                <li><a class="dropdown-item rounded-3" [class.active]="filters.estado === 'AUTORIZADA'" (click)="setFilter('estado', 'AUTORIZADA')">Autorizada</a></li>
-                <li><a class="dropdown-item rounded-3" [class.active]="filters.estado === 'DEVUELTA'" (click)="setFilter('estado', 'DEVUELTA')">Devuelta</a></li>
-                <li><a class="dropdown-item rounded-3" [class.active]="filters.estado === 'NO_AUTORIZADA'" (click)="setFilter('estado', 'NO_AUTORIZADA')">No Autorizada</a></li>
-                <li><a class="dropdown-item rounded-3" [class.active]="filters.estado === 'ERROR_TECNICO'" (click)="setFilter('estado', 'ERROR_TECNICO')">Error Técnico</a></li>
-                <li><a class="dropdown-item rounded-3" [class.active]="filters.estado === 'ANULADA'" (click)="setFilter('estado', 'ANULADA')">Anulada</a></li>
-              </ul>
+          <!-- FILTROS -->
+          <div class="col-12 col-md-8">
+            <div class="d-flex gap-2 justify-content-md-end flex-wrap">
+              <!-- Filtro Estado Emisión -->
+              <div class="dropdown" [class.show]="openDropdowns['estado']">
+                <button class="btn-filter-lux" type="button" (click)="toggleDropdown('estado', $event)">
+                  <i class="bi bi-funnel"></i>
+                  {{ getFilterLabel(filters.estado) }}
+                </button>
+                <ul class="dropdown-menu border-0 p-2 rounded-4" [class.show]="openDropdowns['estado']">
+                  <li><h6 class="dropdown-header text-uppercase fs-xs fw-bold text-muted mb-2" style="font-size: 0.65rem;">Estado Emisión</h6></li>
+                  <li><a class="dropdown-item" [class.active]="filters.estado === 'ALL'" (click)="setFilter('estado', 'ALL')">Todos los Estados</a></li>
+                  <li><a class="dropdown-item" [class.active]="filters.estado === 'BORRADOR'" (click)="setFilter('estado', 'BORRADOR')">Borrador</a></li>
+                  <li><a class="dropdown-item" [class.active]="filters.estado === 'EN_PROCESO'" (click)="setFilter('estado', 'EN_PROCESO')">En Proceso</a></li>
+                  <li><a class="dropdown-item" [class.active]="filters.estado === 'AUTORIZADA'" (click)="setFilter('estado', 'AUTORIZADA')">Autorizada</a></li>
+                  <li><a class="dropdown-item" [class.active]="filters.estado === 'DEVUELTA'" (click)="setFilter('estado', 'DEVUELTA')">Devuelta</a></li>
+                  <li><a class="dropdown-item" [class.active]="filters.estado === 'NO_AUTORIZADA'" (click)="setFilter('estado', 'NO_AUTORIZADA')">No Autorizada</a></li>
+                  <li><a class="dropdown-item" [class.active]="filters.estado === 'ERROR_TECNICO'" (click)="setFilter('estado', 'ERROR_TECNICO')">Error Técnico</a></li>
+                  <li><a class="dropdown-item" [class.active]="filters.estado === 'ANULADA'" (click)="setFilter('estado', 'ANULADA')">Anulada</a></li>
+                </ul>
+              </div>
+
+              <!-- Filtro Estado Pago -->
+               <div class="dropdown" [class.show]="openDropdowns['pago']">
+                <button class="btn-filter-lux" type="button" (click)="toggleDropdown('pago', $event)">
+                  <i class="bi bi-credit-card"></i>
+                  {{ getPaymentFilterLabel(filters.estado_pago) }}
+                </button>
+                <ul class="dropdown-menu border-0 p-2 rounded-4" [class.show]="openDropdowns['pago']">
+                  <li><h6 class="dropdown-header text-uppercase fs-xs fw-bold text-muted mb-2" style="font-size: 0.65rem;">Estado Pago</h6></li>
+                  <li><a class="dropdown-item" [class.active]="filters.estado_pago === 'ALL'" (click)="setFilter('estado_pago', 'ALL')">Todos los Pagos</a></li>
+                  <li><a class="dropdown-item" [class.active]="filters.estado_pago === 'PENDIENTE'" (click)="setFilter('estado_pago', 'PENDIENTE')">Pendiente</a></li>
+                  <li><a class="dropdown-item" [class.active]="filters.estado_pago === 'PAGADO'" (click)="setFilter('estado_pago', 'PAGADO')">Pagado</a></li>
+                  <li><a class="dropdown-item" [class.active]="filters.estado_pago === 'PARCIAL'" (click)="setFilter('estado_pago', 'PARCIAL')">Parcial</a></li>
+                </ul>
+              </div>
+
+              <!-- Filtro Método de Pago -->
+              <div class="dropdown" [class.show]="openDropdowns['forma']">
+                <button class="btn-filter-lux" type="button" (click)="toggleDropdown('forma', $event)">
+                  <i class="bi bi-wallet2"></i>
+                  {{ getFormaPagoFilterLabel(filters.forma_pago) }}
+                </button>
+                <ul class="dropdown-menu border-0 p-2 rounded-4" [class.show]="openDropdowns['forma']">
+                  <li><h6 class="dropdown-header text-uppercase fs-xs fw-bold text-muted mb-2" style="font-size: 0.65rem;">Método de Pago</h6></li>
+                  <li><a class="dropdown-item" [class.active]="filters.forma_pago === 'ALL'" (click)="setFilter('forma_pago', 'ALL')">Todos los Métodos</a></li>
+                  <li><a class="dropdown-item" [class.active]="filters.forma_pago === '01'" (click)="setFilter('forma_pago', '01')">Efectivo</a></li>
+                  <li><a class="dropdown-item" [class.active]="filters.forma_pago === '15'" (click)="setFilter('forma_pago', '15')">Compensación Deudas</a></li>
+                  <li><a class="dropdown-item" [class.active]="filters.forma_pago === '16'" (click)="setFilter('forma_pago', '16')">Tarjeta Débito</a></li>
+                  <li><a class="dropdown-item" [class.active]="filters.forma_pago === '17'" (click)="setFilter('forma_pago', '17')">Dinero Electrónico</a></li>
+                  <li><a class="dropdown-item" [class.active]="filters.forma_pago === '18'" (click)="setFilter('forma_pago', '18')">Tarjeta Prepago</a></li>
+                  <li><a class="dropdown-item" [class.active]="filters.forma_pago === '19'" (click)="setFilter('forma_pago', '19')">Tarjeta Crédito</a></li>
+                  <li><a class="dropdown-item" [class.active]="filters.forma_pago === '20'" (click)="setFilter('forma_pago', '20')">Transf./Otros</a></li>
+                  <li><a class="dropdown-item" [class.active]="filters.forma_pago === '21'" (click)="setFilter('forma_pago', '21')">Endoso Títulos</a></li>
+                </ul>
+              </div>
+
+              <div class="ms-md-2">
+                <button 
+                  *appHasPermission="'FACTURAS_CREAR'"
+                  class="btn-create-lux" 
+                  [disabled]="!!sriError"
+                  (click)="!sriError && onCreate.emit()">
+                  <i class="bi bi-plus-lg"></i>
+                  <span>Nueva Factura</span>
+                </button>
+              </div>
             </div>
-
-            <!-- Filtro Estado Pago -->
-             <div class="dropdown" [class.show]="openDropdowns['pago']">
-              <button class="btn btn-filter-premium dropdown-toggle" type="button" (click)="toggleDropdown('pago', $event)">
-                <i class="bi bi-currency-dollar"></i>
-                {{ getPaymentFilterLabel(filters.estado_pago) }}
-              </button>
-              <ul class="dropdown-menu shadow-premium border-0 p-2 rounded-4" [class.show]="openDropdowns['pago']">
-                 <li><h6 class="dropdown-header text-uppercase fs-xs fw-bold text-muted">Estado Pago</h6></li>
-                <li><a class="dropdown-item rounded-3" [class.active]="filters.estado_pago === 'ALL'" (click)="setFilter('estado_pago', 'ALL')">Todos</a></li>
-                <li><a class="dropdown-item rounded-3" [class.active]="filters.estado_pago === 'PENDIENTE'" (click)="setFilter('estado_pago', 'PENDIENTE')">Pendiente</a></li>
-                <li><a class="dropdown-item rounded-3" [class.active]="filters.estado_pago === 'PAGADO'" (click)="setFilter('estado_pago', 'PAGADO')">Pagado</a></li>
-                <li><a class="dropdown-item rounded-3" [class.active]="filters.estado_pago === 'PARCIAL'" (click)="setFilter('estado_pago', 'PARCIAL')">Parcial</a></li>
-              </ul>
-            </div>
-
-            <!-- Filtro Método de Pago -->
-            <div class="dropdown" [class.show]="openDropdowns['forma']">
-              <button class="btn btn-filter-premium dropdown-toggle" type="button" (click)="toggleDropdown('forma', $event)">
-                <i class="bi bi-wallet2"></i>
-                {{ getFormaPagoFilterLabel(filters.forma_pago) }}
-              </button>
-              <ul class="dropdown-menu shadow-premium border-0 p-2 rounded-4" [class.show]="openDropdowns['forma']">
-                <li><h6 class="dropdown-header text-uppercase fs-xs fw-bold text-muted">Método de Pago</h6></li>
-                <li><a class="dropdown-item rounded-3" [class.active]="filters.forma_pago === 'ALL'" (click)="setFilter('forma_pago', 'ALL')">Todos los Métodos</a></li>
-                <li><a class="dropdown-item rounded-3" [class.active]="filters.forma_pago === '01'" (click)="setFilter('forma_pago', '01')">Efectivo</a></li>
-                <li><a class="dropdown-item rounded-3" [class.active]="filters.forma_pago === '15'" (click)="setFilter('forma_pago', '15')">Compensación Deudas</a></li>
-                <li><a class="dropdown-item rounded-3" [class.active]="filters.forma_pago === '16'" (click)="setFilter('forma_pago', '16')">Tarjeta Débito</a></li>
-                <li><a class="dropdown-item rounded-3" [class.active]="filters.forma_pago === '17'" (click)="setFilter('forma_pago', '17')">Dinero Electrónico</a></li>
-                <li><a class="dropdown-item rounded-3" [class.active]="filters.forma_pago === '18'" (click)="setFilter('forma_pago', '18')">Tarjeta Prepago</a></li>
-                <li><a class="dropdown-item rounded-3" [class.active]="filters.forma_pago === '19'" (click)="setFilter('forma_pago', '19')">Tarjeta Crédito</a></li>
-                <li><a class="dropdown-item rounded-3" [class.active]="filters.forma_pago === '20'" (click)="setFilter('forma_pago', '20')">Transf./Otros Sist. Finan.</a></li>
-                <li><a class="dropdown-item rounded-3" [class.active]="filters.forma_pago === '21'" (click)="setFilter('forma_pago', '21')">Endoso Títulos</a></li>
-              </ul>
-            </div>
-
-            <!-- BOTÓN NUEVA FACTURA -->
-            <button 
-              *appHasPermission="'FACTURAS_CREAR'"
-              class="btn btn-primary-premium d-flex align-items-center gap-2" 
-              [disabled]="!!sriError"
-              [title]="sriError || 'Crear nueva factura'"
-              (click)="!sriError && onCreate.emit()">
-              <i class="bi bi-plus-lg"></i>
-              <span class="d-none d-sm-inline">Nueva Factura</span>
-            </button>
           </div>
         </div>
       </div>
     </div>
   `,
   styles: [`
-    .search-box-premium {
+    .actions-box-lux {
       background: white;
-      border: 1px solid #e2e8f0;
-      border-radius: 12px;
-      padding: 0.6rem 1rem;
+      border: 1px solid #f1f5f9;
+      border-radius: 20px;
+      padding: 1rem 1.5rem;
+      margin-bottom: 2rem;
+    }
+
+    .search-input-wrapper {
+      position: relative;
       display: flex;
       align-items: center;
-      gap: 0.75rem;
+    }
+
+    .search-input-wrapper i {
+      position: absolute;
+      left: 1rem;
+      color: #94a3b8;
+      font-size: 1.1rem;
+    }
+
+    .search-input-lux {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 14px;
+      padding: 0.75rem 1rem 0.75rem 2.8rem;
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: #1e293b;
+      width: 100%;
+      outline: none;
       transition: all 0.2s;
     }
-    .search-box-premium:focus-within {
-      border-color: #6366f1;
-      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
-    }
-    .search-box-premium input {
-      border: none;
-      outline: none;
-      width: 100%;
-      font-size: 0.9rem;
-      color: #1e293b;
-    }
-    .search-box-premium input::placeholder { color: #94a3b8; }
 
-    .btn-filter-premium {
+    .search-input-lux:focus {
+      border-color: #161d35;
+      background: white;
+      box-shadow: 0 0 0 4px rgba(22, 29, 53, 0.05);
+    }
+
+    .btn-filter-lux {
       background: white;
       border: 1px solid #e2e8f0;
       color: #64748b;
-      padding: 0.6rem 1rem;
-      border-radius: 12px;
-      font-weight: 600;
-      font-size: 0.9rem;
+      padding: 0.75rem 1.25rem;
+      border-radius: 14px;
+      font-weight: 700;
+      font-size: 0.825rem;
       display: flex;
       align-items: center;
-      gap: 0.5rem;
+      gap: 0.6rem;
       transition: all 0.2s;
     }
-    .btn-filter-premium:hover, .btn-filter-premium.show {
+
+    .btn-filter-lux:hover, .btn-filter-lux.active {
       background: #f8fafc;
       border-color: #cbd5e1;
-      color: #1e293b;
+      color: #161d35;
     }
 
-    .btn-primary-premium {
+    .btn-create-lux {
       background: #161d35;
       color: white;
       border: none;
-      padding: 0.6rem 1.25rem;
-      border-radius: 12px;
-      font-weight: 600;
-      font-size: 0.9rem;
+      padding: 0.75rem 1.5rem;
+      border-radius: 14px;
+      font-weight: 700;
+      font-size: 0.875rem;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
       transition: all 0.2s;
-      box-shadow: 0 4px 12px rgba(22, 29, 53, 0.15);
-    }
-    .btn-primary-premium:hover {
-      background: #252f50;
-      transform: translateY(-1px);
-    }
-    .btn-primary-premium:disabled {
-      background: #cbd5e1;
-      cursor: not-allowed;
-      box-shadow: none;
     }
 
-    .dropdown-menu { z-index: 1050; }
-    .dropdown-item.active {
-      background-color: #f1f5f9;
-      color: #161d35;
-      font-weight: 700;
+    .btn-create-lux:hover {
+      background: #232d4b;
+      transform: translateY(-1px);
     }
-    .fs-xs { font-size: 0.75rem; }
-    
-    .alert-warning {
-        background-color: #fffbeb;
-        border-color: #fcd34d;
-        color: #92400e;
+
+    .btn-create-lux:disabled {
+      background: #cbd5e1;
+      transform: none;
+      cursor: not-allowed;
+    }
+
+    .dropdown-menu { 
+      z-index: 10000; 
+      min-width: 220px;
+      border: 1px solid #e2e8f0 !important;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.08) !important;
+      padding: 0.5rem;
+    }
+
+    .dropdown-item {
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: #475569;
+      padding: 0.7rem 1rem;
+      border-radius: 10px;
+      margin-bottom: 2px;
+    }
+
+    .dropdown-item:hover {
+      background: #f8fafc;
+      color: #161d35;
+    }
+
+    .dropdown-item.active {
+      background: #f1f5f9;
+      color: #161d35;
+    }
+
+    .alert-sri-lux {
+      background: #fffbeb;
+      border: 1px solid #fef3c7;
+      border-radius: 14px;
+      padding: 1rem 1.25rem;
+      margin-bottom: 1.5rem;
+      color: #92400e;
+      font-size: 0.875rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
     }
   `]
 })
@@ -196,19 +245,13 @@ export class FacturaActionsComponent {
     forma_pago: 'ALL'
   };
 
-  openDropdowns: { [key: string]: boolean } = {
-    estado: false,
-    pago: false,
-    forma: false
-  };
+  openDropdowns: { [key: string]: boolean } = {};
 
   toggleDropdown(key: string, event: Event) {
     event.stopPropagation();
-    // Cerrar los demás primero
-    Object.keys(this.openDropdowns).forEach(k => {
-      if (k !== key) this.openDropdowns[k] = false;
-    });
-    this.openDropdowns[key] = !this.openDropdowns[key];
+    const current = !!this.openDropdowns[key];
+    this.openDropdowns = {}; // close others
+    this.openDropdowns[key] = !current;
   }
 
   onSearchChange(value: string) {
@@ -217,9 +260,8 @@ export class FacturaActionsComponent {
 
   setFilter(type: 'estado' | 'estado_pago' | 'forma_pago', value: string) {
     this.filters[type] = value;
+    this.openDropdowns = {}; // close on select
     this.onFilterChangeEmit.emit(this.filters);
-    // Cerrar todos los dropdowns tras seleccionar
-    Object.keys(this.openDropdowns).forEach(k => this.openDropdowns[k] = false);
   }
 
   getFilterLabel(value: string): string {
@@ -230,8 +272,8 @@ export class FacturaActionsComponent {
       'AUTORIZADA': 'Autorizadas',
       'DEVUELTA': 'Devueltas',
       'NO_AUTORIZADA': 'No Autorizadas',
-      'ERROR_TECNICO': 'Error Técnico',
-      'ANULADA': 'Anuladas'
+      'ANULADA': 'Anuladas',
+      'ERROR_TECNICO': 'Error Técnico'
     };
     return map[value] || value;
   }
@@ -246,25 +288,18 @@ export class FacturaActionsComponent {
     return map[value] || value;
   }
 
-  getFormaPagoFilterLabel(value: string): string {
+  getFormaPagoFilterLabel(codigo: string): string {
     const map: Record<string, string> = {
-      'ALL': 'Métodos Pago',
+      'ALL': 'Todos los Métodos',
       '01': 'Efectivo',
       '15': 'Compensación',
-      '16': 'Tarjeta Débito',
+      '16': 'T. Débito',
       '17': 'Dinero Electr.',
-      '18': 'Tarjeta Prepago',
-      '19': 'Tarjeta Crédito',
-      '20': 'Transf./Otros',
+      '18': 'T. Prepago',
+      '19': 'T. Crédito',
+      '20': 'Otros Sist. Fin.',
       '21': 'Endoso Títulos'
     };
-    return map[value] || value;
-  }
-
-  // Cerrar dropdowns si se hace clic afuera
-  constructor() {
-    window.addEventListener('click', () => {
-      Object.keys(this.openDropdowns).forEach(k => this.openDropdowns[k] = false);
-    });
+    return map[codigo] || 'Método Pago';
   }
 }
