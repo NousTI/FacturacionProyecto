@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, Query, Request
+from fastapi import APIRouter, Depends, Query, Request, Response
 from typing import Optional
 from uuid import UUID
 
@@ -6,7 +6,9 @@ from ..services.service_autorizacion import ServicioAutorizacion
 from ..services.service_factura import ServicioFactura
 from ...autenticacion.routes import requerir_permiso
 from ....constants.permissions import PermissionCodes
+from ....utils import pdf_generator
 
+# Incluir sub-routers
 router = APIRouter()
 
 @router.post("/{id}/enviar-sri")
@@ -61,10 +63,22 @@ def descargar_pdf(
     
     **Requiere permiso:** FACTURAS_DESCARGAR_PDF
     """
-    # Validar que tiene acceso a la factura
-    servicio.obtener_factura(id, usuario)
-    # TODO: Implementar generación de PDF del RIDE
-    return {"message": "Endpoint en desarrollo (Generación PDF RIDE pendiente)", "factura_id": id}
+    # 1. Obtener datos completos (Factura + Detalles)
+    factura = servicio.obtener_detalle_completo(id, usuario)
+    
+    # 2. Generar el binario del PDF usando el utilitario
+    pdf_buffer = pdf_generator.crear_ride_factura(factura)
+    
+    # 3. Retornar el archivo binario
+    filename = f"Factura-{factura.get('numero_factura') or str(id)[:8]}.pdf"
+    
+    return Response(
+        content=pdf_buffer.getvalue(),
+        media_type="application/pdf",
+        headers={
+            "Content-Disposition": f"attachment; filename={filename}"
+        }
+    )
 
 @router.post("/{id}/enviar-email")
 def enviar_por_email(

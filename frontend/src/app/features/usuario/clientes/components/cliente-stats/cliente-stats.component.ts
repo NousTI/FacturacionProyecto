@@ -6,101 +6,109 @@ import { CommonModule } from '@angular/common';
     standalone: true,
     imports: [CommonModule],
     template: `
-    <div class="stats-compact-row mb-4">
-      <div class="stat-item-mini">
-        <div class="icon-circle" style="background: rgba(22, 29, 53, 0.05); color: #161d35;">
+    <div class="stats-lux-container mb-4">
+      <!-- Total Clientes -->
+      <div class="stat-lux-card">
+        <div class="icon-box-lux primary">
           <i class="bi bi-people-fill"></i>
         </div>
-        <div class="stat-info">
-          <span class="stat-label">Total Clientes</span>
-          <span class="stat-value">{{ total }}</span>
+        <div class="stat-content-lux">
+          <span class="stat-label-lux">Total Clientes</span>
+          <span class="stat-value-lux">{{ total }}</span>
         </div>
       </div>
 
-      <div class="stat-divider"></div>
-
-      <div class="stat-item-mini">
-        <div class="icon-circle" style="background: rgba(16, 185, 129, 0.1); color: #10b981;">
+      <!-- Activos -->
+      <div class="stat-lux-card">
+        <div class="icon-box-lux success">
           <i class="bi bi-person-check-fill"></i>
         </div>
-        <div class="stat-info">
-          <span class="stat-label">Activos</span>
-          <span class="stat-value">{{ active }}</span>
+        <div class="stat-content-lux">
+          <span class="stat-label-lux">Usuarios Activos</span>
+          <span class="stat-value-lux">{{ active }}</span>
         </div>
       </div>
 
-      <div class="stat-divider"></div>
-
-      <div class="stat-item-mini">
-        <div class="icon-circle" style="background: rgba(99, 102, 241, 0.1); color: #6366f1;">
+      <!-- Con Crédito -->
+      <div class="stat-lux-card">
+        <div class="icon-box-lux info">
           <i class="bi bi-credit-card-fill"></i>
         </div>
-        <div class="stat-info">
-          <span class="stat-label">Con Crédito</span>
-          <span class="stat-value">{{ credit }}</span>
+        <div class="stat-content-lux">
+          <span class="stat-label-lux">Clientes con Crédito</span>
+          <span class="stat-value-lux">{{ credit }}</span>
         </div>
       </div>
     </div>
   `,
     styles: [`
-    .stats-compact-row {
+    .stats-lux-container {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.5rem;
+    }
+
+    .stat-lux-card {
       background: white;
-      border-radius: 20px;
-      padding: 1.25rem 2rem;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
       border: 1px solid #f1f5f9;
-    }
-    .stat-item-mini {
+      border-radius: 24px;
+      padding: 1.5rem 1.75rem;
       display: flex;
       align-items: center;
-      gap: 1.1rem;
-      flex: 1;
+      gap: 1.25rem;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     }
-    .icon-circle {
-      width: 42px;
-      height: 42px;
-      border-radius: 12px;
+
+    .stat-lux-card:hover {
+      border-color: #e2e8f0;
+      box-shadow: 0 10px 20px -5px rgba(15, 23, 42, 0.04);
+      transform: translateY(-2px);
+    }
+
+    .icon-box-lux {
+      width: 52px;
+      height: 52px;
+      border-radius: 16px;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 1.2rem;
+      font-size: 1.35rem;
     }
-    .stat-info {
+
+    .icon-box-lux.primary { background: #eff6ff; color: #3b82f6; }
+    .icon-box-lux.success { background: #ecfdf5; color: #10b981; }
+    .icon-box-lux.info { background: #fdf2f8; color: #ec4899; }
+
+    .stat-content-lux {
       display: flex;
       flex-direction: column;
+      gap: 0.15rem;
     }
-    .stat-label {
-      font-size: 0.65rem;
-      font-weight: 800;
-      color: #94a3b8;
+
+    .stat-label-lux {
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: #64748b;
       text-transform: uppercase;
       letter-spacing: 0.5px;
     }
-    .stat-value {
-      font-size: 1.35rem;
+
+    .stat-value-lux {
+      font-size: 1.5rem;
       font-weight: 800;
-      color: #1e293b;
-      line-height: 1.2;
+      color: #161d35;
+      letter-spacing: -0.5px;
     }
-    .stat-divider {
-      width: 1px;
-      height: 35px;
-      background: #f1f5f9;
-      margin: 0 1.5rem;
-    }
+
     @media (max-width: 992px) {
-      .stats-compact-row {
-        flex-wrap: wrap;
-        gap: 1.5rem;
+      .stats-lux-container {
+        grid-template-columns: 1fr 1fr;
       }
-      .stat-divider {
-        display: none;
-      }
-      .stat-item-mini {
-        min-width: 45%;
+    }
+
+    @media (max-width: 576px) {
+      .stats-lux-container {
+        grid-template-columns: 1fr;
       }
     }
   `]

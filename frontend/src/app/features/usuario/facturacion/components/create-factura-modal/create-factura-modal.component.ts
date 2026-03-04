@@ -14,225 +14,246 @@ import { Establecimiento } from '../../../../../domain/models/establecimiento.mo
 import { PuntoEmision } from '../../../../../domain/models/punto-emision.model';
 import { FacturaCreacion, FacturaDetalleCreacion, Factura, FacturaDetalle } from '../../../../../domain/models/factura.model';
 import { ConfigSRI } from '../../../certificado-sri/models/sri-config.model';
+import { ConfirmModalComponent } from '../../../../../shared/components/confirm-modal/confirm-modal.component';
 import { forkJoin, switchMap, tap, catchError, of, filter, take, map, Observable } from 'rxjs';
 
 @Component({
   selector: 'app-create-factura-modal',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, ConfirmModalComponent],
   template: `
-    <div class="modal-backdrop fade show" style="display: block;"></div>
+    <div class="modal-backdrop fade show" style="display: block; background-color: rgba(0,0,0,0.4); backdrop-filter: blur(4px);"></div>
     <div class="modal fade show" style="display: block;" tabindex="-1">
-      <div class="modal-dialog modal-xl modal-dialog-centered">
-        <div class="modal-content border-0 shadow-lg rounded-4">
+      <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content border-0 rounded-4 shadow-lg overflow-hidden">
           
-          <!-- HEADER -->
-          <div class="modal-header border-bottom-0 pb-0 d-flex justify-content-between align-items-center">
-            <div>
-                 <h5 class="modal-title fw-bold text-dark d-inline-block me-2">{{ facturaId ? 'Editar Factura' : 'Nueva Factura' }}</h5>
-                 <span *ngIf="sriConfig" class="badge rounded-pill" 
-                       [ngClass]="sriConfig.ambiente === 'PRODUCCION' ? 'text-bg-success' : 'text-bg-warning'">
-                    {{ sriConfig.ambiente }}
-                 </span>
+          <!-- 1. HEADER: TITULO - AMBIENTE -->
+          <div class="modal-header border-0 p-4 pb-0 d-flex justify-content-between align-items-start">
+            <div class="d-flex align-items-center gap-3">
+              <div class="icon-header-lux">
+                <i class="bi bi-file-earmark-plus-fill"></i>
+              </div>
+              <div>
+                <h5 class="fw-900 mb-1 text-dark" style="letter-spacing: -0.5px;">{{ facturaId ? 'Actualizar Comprobante' : 'Nueva Factura Electrónica' }}</h5>
+                <div class="d-flex align-items-center gap-2">
+                   <span class="text-muted tiny-cap">Ambiente del SRI</span>
+                   <span *ngIf="sriConfig" class="badge-ambiente-lux" 
+                         [ngClass]="sriConfig.ambiente === 'PRODUCCION' ? 'ambiente-produccion' : 'ambiente-pruebas'">
+                      <div class="dot"></div>
+                      {{ sriConfig.ambiente }}
+                   </span>
+                </div>
+              </div>
             </div>
-            <button type="button" class="btn-close" (click)="close()"></button>
+            <button type="button" class="btn-close-lux" (click)="close()">
+              <i class="bi bi-x"></i>
+            </button>
           </div>
 
-          <!-- BODY -->
-          <div class="modal-body p-4">
+          <!-- 2. CONTENIDO (Cuerpo con scroll) -->
+          <div class="modal-body p-4 custom-scrollbar">
             <div *ngIf="isLoadingData" class="text-center py-5">
-              <div class="spinner-border text-primary" role="status">
-                <span class="visually-hidden">Cargando...</span>
+              <div class="loader-lux-wrapper">
+                <div class="spinner-border text-dark" role="status"></div>
+                <p class="mt-3 text-muted fw-bold small">Preparando catálogos...</p>
               </div>
             </div>
 
             <form [formGroup]="facturaForm" *ngIf="!isLoadingData">
               
-              <!-- SECCIÓN 1: DATOS DE EMISIÓN -->
-              <div class="row g-3 mb-4">
-                <div class="col-md-6 col-lg-3">
-                  <label class="form-label fw-semibold text-muted small">Establecimiento</label>
-                  <select class="form-select" formControlName="establecimiento_id">
-                    <option [ngValue]="null" disabled>Seleccione...</option>
-                    <option *ngFor="let est of establecimientos" [value]="est.id">{{ est.nombre }} ({{ est.codigo }})</option>
-                  </select>
-                </div>
-                
-                <div class="col-md-6 col-lg-3">
-                  <label class="form-label fw-semibold text-muted small">Punto de Emisión</label>
-                  <select class="form-select" formControlName="punto_emision_id">
-                    <option [ngValue]="null" disabled>Seleccione...</option>
-                    <option *ngFor="let pto of puntosEmisionFiltered" [value]="pto.id">{{ pto.codigo }}</option>
-                  </select>
-                </div>
+              <!-- CABECERA UNIFICADA (Cliente, Emisión y Pago) -->
+              <div class="section-lux mb-3 py-3">
+                <div class="row g-2 align-items-end">
+                  
+                  <!-- FILA 1: CLIENTE (PRIORIDAD) -->
+                  <div class="col-md-12 col-lg-6">
+                    <label class="form-label-lux">Cliente / Receptor</label>
+                    <div class="select-lux-wrapper">
+                      <select class="select-lux input-sm" formControlName="cliente_id">
+                        <option [ngValue]="null" disabled>Seleccione Cliente...</option>
+                        <option *ngFor="let cli of clientes" [value]="cli.id">{{ cli.razon_social }} ({{ cli.identificacion }})</option>
+                      </select>
+                    </div>
+                  </div>
 
-                <div class="col-md-6 col-lg-3">
-                  <label class="form-label fw-semibold text-muted small">Fecha Emisión</label>
-                  <input type="date" class="form-control" formControlName="fecha_emision">
-                </div>
+                  <div class="col-md-6 col-lg-3">
+                    <label class="form-label-lux">Establecimiento</label>
+                    <div class="select-lux-wrapper">
+                      <select class="select-lux input-sm" formControlName="establecimiento_id">
+                        <option [ngValue]="null" disabled>Seleccione...</option>
+                        <option *ngFor="let est of establecimientos" [value]="est.id">{{ est.nombre }} ({{ est.codigo }})</option>
+                      </select>
+                    </div>
+                  </div>
+                  
+                  <div class="col-md-6 col-lg-3">
+                    <label class="form-label-lux">Punto Emisión</label>
+                    <div class="select-lux-wrapper">
+                      <select class="select-lux input-sm" formControlName="punto_emision_id">
+                        <option [ngValue]="null" disabled>Seleccione...</option>
+                        <option *ngFor="let pto of puntosEmisionFiltered" [value]="pto.id">{{ pto.codigo }}</option>
+                      </select>
+                    </div>
+                  </div>
 
-                <div class="col-md-6 col-lg-3">
-                  <label class="form-label fw-semibold text-muted small">Cliente</label>
-                  <select class="form-select" formControlName="cliente_id">
-                    <option [ngValue]="null" disabled>Seleccione Cliente...</option>
-                    <option *ngFor="let cli of clientes" [value]="cli.id">{{ cli.razon_social }} ({{ cli.identificacion }})</option>
-                  </select>
-                </div>
+                  <!-- FILA 2: FECHA Y PAGO -->
+                  <div class="col-md-12 col-lg-3">
+                    <label class="form-label-lux">Fecha Emisión</label>
+                    <div class="input-lux-wrapper input-sm">
+                      <i class="bi bi-calendar-event"></i>
+                      <input type="date" class="input-lux" formControlName="fecha_emision">
+                    </div>
+                  </div>
 
-                <div class="col-md-6 col-lg-3">
-                  <label class="form-label fw-semibold text-muted small">Forma de Pago</label>
-                  <select class="form-select" formControlName="forma_pago_sri">
-                    <option value="01">Sin utilización del sistema financiero (Efectivo)</option>
-                    <option value="15">Compensación de deudas</option>
-                    <option value="16">Tarjeta de Débito</option>
-                    <option value="17">Dinero Electrónico</option>
-                    <option value="18">Tarjeta Prepago</option>
-                    <option value="19">Tarjeta de Crédito</option>
-                    <option value="20">Otros con utilización del sistema financiero</option>
-                    <option value="21">Endoso de Títulos</option>
-                  </select>
-                </div>
+                  <div class="col-md-12 col-lg-5">
+                    <label class="form-label-lux">Forma de Pago SRI</label>
+                    <div class="select-lux-wrapper">
+                      <select class="select-lux input-sm" formControlName="forma_pago_sri">
+                        <option value="01">SIN UTILIZACIÓN DEL SISTEMA FINANCIERO (EFECTIVO)</option>
+                        <option value="15">COMPENSACIÓN DE DEUDAS</option>
+                        <option value="16">TARJETA DE DÉBITO</option>
+                        <option value="17">DINERO ELECTRÓNICO</option>
+                        <option value="18">TARJETA PREPAGO</option>
+                        <option value="19">TARJETA DE CRÉDITO</option>
+                        <option value="20">OTROS CON UTILIZACIÓN DEL SISTEMA FINANCIERO</option>
+                        <option value="21">ENDOSO DE TÍTULOS</option>
+                      </select>
+                    </div>
+                  </div>
 
-                <!-- PLAZO Y TIEMPO (Solo si no es efectivo) -->
-                <div class="col-md-6 col-lg-3" *ngIf="facturaForm.get('forma_pago_sri')?.value !== '01'">
-                  <label class="form-label fw-semibold text-muted small">Plazo</label>
-                  <input type="number" class="form-control" formControlName="plazo" min="0">
-                </div>
+                  <div class="col-md-6 col-lg-2" *ngIf="facturaForm.get('forma_pago_sri')?.value !== '01'">
+                    <label class="form-label-lux">Plazo</label>
+                    <input type="number" class="input-lux input-sm" formControlName="plazo" min="0" placeholder="0">
+                  </div>
 
-                <div class="col-md-6 col-lg-3" *ngIf="facturaForm.get('forma_pago_sri')?.value !== '01'">
-                  <label class="form-label fw-semibold text-muted small">Unidad de Tiempo</label>
-                  <select class="form-select" formControlName="unidad_tiempo">
-                    <option value="DIAS">Días</option>
-                    <option value="MESES">Meses</option>
-                    <option value="ANIOS">Años</option>
-                  </select>
+                  <div class="col-md-6 col-lg-2" *ngIf="facturaForm.get('forma_pago_sri')?.value !== '01'">
+                    <label class="form-label-lux">Unidad</label>
+                    <div class="select-lux-wrapper">
+                      <select class="select-lux input-sm" formControlName="unidad_tiempo">
+                        <option value="DIAS">Días</option>
+                        <option value="MESES">Meses</option>
+                      </select>
+                    </div>
+                  </div>
+
                 </div>
               </div>
 
-              <!-- SECCIÓN 2: DETALLES PRODUCTOS -->
-              <div class="card border-0 bg-light rounded-4 mb-4">
-                <div class="card-body p-3">
-                  <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h6 class="fw-bold mb-0 text-dark">Detalle de Productos</h6>
-                    <button type="button" class="btn btn-sm btn-outline-primary rounded-pill px-3" (click)="addDetalle()">
-                      <i class="bi bi-plus-lg me-1"></i> Agregar Item
-                    </button>
+              <!-- DETALLES PRODUCTOS -->
+              <div class="section-lux mb-4">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                  <div class="section-title-lux mb-0">
+                    <i class="bi bi-cart-fill me-2"></i> Detalle de Productos
                   </div>
+                  <button type="button" class="btn btn-add-lux-white" (click)="addDetalle()">
+                    <i class="bi bi-plus-lg"></i> Agregar Item
+                  </button>
+                </div>
 
-                  <div class="table-responsive">
-                    <table class="table table-borderless align-middle mb-0">
-                      <thead class="text-muted small text-uppercase">
-                        <tr>
-                          <th style="min-width: 250px;">Producto / Servicio</th>
-                          <th style="width: 100px;">Cant.</th>
-                          <th style="width: 120px;">Precio Unit.</th>
-                          <th style="width: 120px;">Desc. ($)</th>
-                          <th style="width: 100px;">IVA</th>
-                          <th style="width: 120px;" class="text-end">Subtotal</th>
-                          <th style="width: 50px;"></th>
-                        </tr>
-                      </thead>
-                      <tbody formArrayName="detalles">
-                        <tr *ngFor="let item of detalles.controls; let i=index" [formGroupName]="i" class="border-bottom border-light">
-                          
-                          <!-- Producto Select -->
-                          <td>
-                            <select class="form-select form-select-sm" formControlName="producto_id" (change)="onProductoSelect(i)">
+                <div class="table-responsive rounded-3 overflow-hidden border">
+                  <table class="table table-lux-white align-middle mb-0">
+                    <thead>
+                      <tr>
+                        <th style="min-width: 300px;">Producto / Descripción</th>
+                        <th style="width: 100px;">Cant.</th>
+                        <th style="width: 140px;">P. Unit ($)</th>
+                        <th style="width: 120px;">Desc. ($)</th>
+                        <th style="width: 110px;">IVA</th>
+                        <th style="width: 140px;" class="text-end">Subtotal</th>
+                        <th style="width: 60px;"></th>
+                      </tr>
+                    </thead>
+                    <tbody formArrayName="detalles">
+                      <tr *ngFor="let item of detalles.controls; let i=index" [formGroupName]="i" class="border-bottom-light">
+                        <td>
+                          <div class="select-lux-wrapper">
+                            <select class="select-lux input-sm" formControlName="producto_id" (change)="onProductoSelect(i)">
                               <option [ngValue]="null">Seleccione Producto...</option>
                               <option *ngFor="let prod of productos" [value]="prod.id">{{ prod.nombre }}</option>
                             </select>
-                            <input *ngIf="!item.get('producto_id')?.value" type="text" 
-                                   class="form-control form-control-sm mt-1" 
-                                   placeholder="Descripción manual" 
-                                   formControlName="descripcion">
-                          </td>
-                          
-                          <!-- Cantidad -->
-                          <td>
-                            <input type="number" class="form-control form-control-sm" 
-                                   formControlName="cantidad" min="1">
-                          </td>
-                          
-                          <!-- Precio -->
-                          <td>
-                            <div class="input-group input-group-sm">
-                              <span class="input-group-text bg-white border-end-0 text-muted">$</span>
-                              <input type="number" class="form-control border-start-0 ps-1" 
-                                     formControlName="precio_unitario" min="0">
-                            </div>
-                          </td>
-
-                           <!-- Descuento -->
-                           <td>
-                            <div class="input-group input-group-sm">
-                              <span class="input-group-text bg-white border-end-0 text-muted">$</span>
-                              <input type="number" class="form-control border-start-0 ps-1" 
-                                     formControlName="descuento" min="0">
-                            </div>
-                          </td>
-
-                          <!-- IVA Checkbox (Simplificado para UI, backend recibe código) -->
-                          <td>
-                             <select class="form-select form-select-sm" formControlName="tipo_iva">
+                          </div>
+                          <input *ngIf="!item.get('producto_id')?.value" type="text" 
+                                 class="input-lux input-sm mt-2" 
+                                 placeholder="Descripción manual..." 
+                                 formControlName="descripcion">
+                        </td>
+                        <td>
+                          <input type="number" class="input-lux input-sm text-center" 
+                                 formControlName="cantidad" min="1">
+                        </td>
+                        <td>
+                          <div class="input-lux-wrapper input-sm">
+                            <span class="prefix">$</span>
+                            <input type="number" class="input-lux" 
+                                   formControlName="precio_unitario" min="0">
+                          </div>
+                        </td>
+                         <td>
+                          <div class="input-lux-wrapper input-sm">
+                            <span class="prefix">$</span>
+                            <input type="number" class="input-lux" 
+                                   formControlName="descuento" min="0">
+                          </div>
+                        </td>
+                        <td>
+                          <div class="select-lux-wrapper">
+                            <select class="select-lux input-sm" formControlName="tipo_iva">
                               <option value="0">0%</option>
                               <option value="2">12%</option>
                               <option value="3">14%</option>
                               <option value="4">15%</option>
-                             </select>
-                          </td>
-
-                          <!-- Subtotal Row Calc -->
-                          <td class="text-end fw-semibold">
-                            {{ calculateRowTotal(i) | currency:'USD' }}
-                          </td>
-
-                          <!-- Eliminar -->
-                          <td class="text-end">
-                            <button type="button" class="btn btn-link text-danger p-0" (click)="removeDetalle(i)">
-                              <i class="bi bi-trash"></i>
-                            </button>
-                          </td>
-                        </tr>
-                      </tbody>
-                    </table>
-                  </div>
-                  
-                  <div *ngIf="detalles.length === 0" class="text-center py-4 text-muted">
-                    <i class="bi bi-cart-x fs-1 d-block mb-2"></i>
-                    No hay productos en la factura
-                  </div>
-
+                            </select>
+                          </div>
+                        </td>
+                        <td class="text-end fw-bold text-dark fs-6">
+                          {{ calculateRowTotal(i) | currency:'USD' }}
+                        </td>
+                        <td class="text-center">
+                          <button type="button" class="btn-delete-lux" (click)="removeDetalle(i)">
+                            <i class="bi bi-trash-fill"></i>
+                          </button>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+                
+                <div *ngIf="detalles.length === 0" class="empty-state-lux py-5 text-center">
+                  <i class="bi bi-bag-plus text-muted mb-3 d-block" style="font-size: 2.5rem;"></i>
+                  <p class="text-muted small fw-bold mb-0">No se han agregado productos a la factura</p>
                 </div>
               </div>
 
-              <!-- SECCIÓN 3: TOTALES Y OBSERVACIONES -->
-              <div class="row">
-                <div class="col-lg-6">
-                  <label class="form-label fw-semibold text-muted small">Observaciones</label>
-                  <textarea class="form-control" rows="3" formControlName="observaciones" placeholder="Notas adicionales..."></textarea>
+              <!-- BOTTOM: TOTALS AND OBS -->
+              <div class="row g-4">
+                <div class="col-lg-7">
+                  <div class="section-lux h-100">
+                    <div class="section-title-lux mb-3">Observaciones</div>
+                    <textarea class="input-lux" rows="6" formControlName="observaciones" placeholder="Ej: Pago contra entrega, referencia bancaria..."></textarea>
+                  </div>
                 </div>
-                <div class="col-lg-4 offset-lg-2">
-                   <div class="bg-white p-3 rounded-4 border border-light">
-                      <div class="d-flex justify-content-between mb-2 text-muted">
-                        <span>Subtotal Sin IVA</span>
-                        <span>{{ totals.subtotal_sin_iva | currency:'USD' }}</span>
+                <div class="col-lg-5">
+                   <div class="totals-card-lux">
+                      <div class="d-flex justify-content-between mb-2">
+                        <span class="text-muted small-cap">Subtotal Sin IVA</span>
+                        <span class="fw-bold">{{ totals.subtotal_sin_iva | currency:'USD' }}</span>
                       </div>
-                      <div class="d-flex justify-content-between mb-2 text-muted">
-                        <span>Subtotal Con IVA</span>
-                        <span>{{ totals.subtotal_con_iva | currency:'USD' }}</span>
+                      <div class="d-flex justify-content-between mb-2">
+                        <span class="text-muted small-cap">Subtotal Con IVA</span>
+                        <span class="fw-bold">{{ totals.subtotal_con_iva | currency:'USD' }}</span>
                       </div>
-                       <div class="d-flex justify-content-between mb-2 text-muted">
-                        <span>Descuento</span>
-                        <span class="text-danger">- {{ totals.descuento | currency:'USD' }}</span>
+                       <div class="d-flex justify-content-between mb-2">
+                        <span class="text-muted small-cap">Descuento Total</span>
+                        <span class="text-danger fw-bold">- {{ totals.descuento | currency:'USD' }}</span>
                       </div>
-                      <div class="d-flex justify-content-between mb-2 text-muted">
-                        <span>IVA</span>
-                        <span>{{ totals.iva | currency:'USD' }}</span>
+                      <div class="d-flex justify-content-between mb-3">
+                        <span class="text-muted small-cap">IVA Acumulado</span>
+                        <span class="fw-bold text-dark">{{ totals.iva | currency:'USD' }}</span>
                       </div>
-                      <div class="border-top my-2"></div>
-                      <div class="d-flex justify-content-between fw-bold fs-5 text-dark">
-                        <span>TOTAL</span>
-                        <span>{{ totals.total | currency:'USD' }}</span>
+                      <div class="total-divider mb-3"></div>
+                      <div class="d-flex justify-content-between align-items-center">
+                        <span class="fw-900 fs-5 text-dark">TOTAL PAGAR</span>
+                        <span class="fw-900 fs-3 text-dark">{{ totals.total | currency:'USD' }}</span>
                       </div>
                    </div>
                 </div>
@@ -241,42 +262,229 @@ import { forkJoin, switchMap, tap, catchError, of, filter, take, map, Observable
             </form>
           </div>
 
-          <!-- FOOTER -->
-          <div class="modal-footer border-top-0 pt-0 pb-4 pe-4">
-             <button type="button" class="btn btn-light rounded-pill px-4" (click)="close()">Cancelar</button>
-             <button type="button" class="btn btn-primary-premium rounded-pill px-4 ms-2" 
+          <!-- 3. FOOTER: BOTONES DE ACCION -->
+          <div class="modal-footer border-0 p-4 bg-light-soft">
+             <button type="button" class="btn-cancel-lux" (click)="close()">Cancelar</button>
+             <button type="button" class="btn-save-lux ms-3" 
                      [disabled]="facturaForm.invalid || isSaving || detalles.length === 0 || isLoadingData"
                      (click)="save()">
                <span *ngIf="isSaving" class="spinner-border spinner-border-sm me-2"></span>
-               {{ facturaId ? 'Actualizar Factura' : 'Crear Factura' }}
+               <i *ngIf="!isSaving" class="bi bi-check-circle-fill me-2"></i>
+               {{ facturaId ? 'Actualizar Factura' : 'Guardar Factura' }}
              </button>
           </div>
 
         </div>
       </div>
     </div>
+
+    <!-- Modal de confirmación para eliminar ítem -->
+    <app-confirm-modal
+      *ngIf="showConfirmDelete"
+      title="¿Eliminar ítem?"
+      message="Este ítem contiene datos. Si lo eliminas, se perderá la información ingresada."
+      confirmText="Eliminar"
+      type="danger"
+      (onConfirm)="confirmDelete()"
+      (onCancel)="showConfirmDelete = false"
+    ></app-confirm-modal>
   `,
   styles: [`
-    .btn-primary-premium {
+    /* LUX BASE STYLES */
+    .fw-900 { font-weight: 900; }
+    .tiny-cap { text-transform: uppercase; font-size: 0.65rem; letter-spacing: 0.8px; font-weight: 800; }
+    .small-cap { text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.5px; font-weight: 700; }
+    
+    .icon-header-lux {
+      width: 48px;
+      height: 48px;
+      background: #161d35;
+      color: white;
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+    }
+
+    .btn-close-lux {
+      background: #f1f5f9;
+      border: none;
+      width: 36px;
+      height: 36px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #64748b;
+      transition: all 0.2s;
+    }
+    .btn-close-lux:hover { background: #e2e8f0; color: #1e293b; }
+
+    .badge-ambiente-lux {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.3rem 0.6rem;
+      border-radius: 8px;
+      font-size: 0.65rem;
+      font-weight: 800;
+      text-transform: uppercase;
+    }
+    .badge-ambiente-lux .dot { width: 6px; height: 6px; border-radius: 50%; }
+    .ambiente-produccion { background: #ecfdf5; color: #065f46; }
+    .ambiente-produccion .dot { background: #10b981; }
+    .ambiente-pruebas { background: #fff7ed; color: #9a3412; }
+    .ambiente-pruebas .dot { background: #f97316; }
+
+    /* SECTIONS */
+    .section-lux {
+      background: #ffffff;
+      border: 1px solid #f1f5f9;
+      border-radius: 18px;
+      padding: 1.25rem;
+    }
+    .section-lux-dark {
+      background: #161d35;
+      border-radius: 18px;
+      padding: 1.25rem;
+    }
+    .section-title-lux {
+      font-size: 0.75rem;
+      font-weight: 800;
+      color: #94a3b8;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      border-bottom: 1px solid #f1f5f9;
+      padding-bottom: 0.75rem;
+      margin-bottom: 1rem;
+    }
+
+    /* FORMS LUX */
+    .form-label-lux {
+      font-size: 0.7rem;
+      font-weight: 800;
+      color: #94a3b8;
+      text-transform: uppercase;
+      margin-bottom: 0.4rem;
+      display: block;
+    }
+    .input-lux-wrapper { position: relative; display: flex; align-items: center; }
+    .input-lux-wrapper i { position: absolute; left: 0.85rem; color: #94a3b8; font-size: 0.9rem; }
+    .input-lux-wrapper .prefix { position: absolute; left: 0.85rem; color: #94a3b8; font-weight: 600; font-size: 0.85rem; }
+    
+    .input-lux, .select-lux {
+      width: 100%;
+      background: #f8fafc;
+      border: 1.5px solid #f1f5f9;
+      border-radius: 12px;
+      padding: 0.65rem 0.85rem;
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: #1e293b;
+      outline: none;
+      transition: all 0.2s;
+    }
+    .input-lux-wrapper .input-lux { padding-left: 2.5rem; }
+    .input-lux:focus, .select-lux:focus {
+      border-color: #161d35;
+      background: white;
+      box-shadow: 0 0 0 4px rgba(22, 29, 53, 0.05);
+    }
+    .input-sm { padding: 0.5rem 0.75rem; font-size: 0.8rem; }
+    .input-lux-wrapper.input-sm .input-lux { padding-left: 1.75rem; }
+    .input-lux-wrapper.input-sm .prefix { left: 0.65rem; }
+
+    .select-lux-wrapper { position: relative; }
+    .select-lux-wrapper::after {
+      content: '▼'; font-size: 0.6rem; color: #94a3b8;
+      position: absolute; right: 1rem; top: 50%; transform: translateY(-50%);
+      pointer-events: none;
+    }
+    .select-lux { appearance: none; padding-right: 2.5rem; }
+
+    /* TABLE WHITE LUX */
+    .table-lux-white { color: #1e293b; background: white; }
+    .table-lux-white thead th {
+      background: #f8fafc;
+      border: none;
+      padding: 1rem;
+      font-size: 0.65rem;
+      font-weight: 800;
+      color: #64748b;
+      text-transform: uppercase;
+    }
+    .table-lux-white tbody td {
+      border-bottom: 1px solid #f1f5f9;
+      padding: 0.75rem 0.5rem;
+    }
+    
+    .border-bottom-light { border-bottom: 1px solid #f1f5f9; }
+
+    /* BUTTONS LUX */
+    .btn-add-lux-white {
       background: #161d35;
       color: white;
       border: none;
-      box-shadow: 0 4px 12px rgba(22, 29, 53, 0.15);
+      border-radius: 10px;
+      padding: 0.45rem 1rem;
+      font-size: 0.75rem;
+      font-weight: 700;
       transition: all 0.2s;
     }
-    .btn-primary-premium:hover {
-      background: #252f50;
-      transform: translateY(-1px);
+    .btn-add-lux-white:hover { background: #232d4b; transform: scale(1.02); }
+
+    .btn-delete-lux {
+      background: rgba(239, 68, 68, 0.1);
+      color: #ef4444;
+      border: none;
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
     }
-    .btn-primary-premium:disabled {
-      background: #cbd5e1;
-      cursor: not-allowed;
-      transform: none;
-      box-shadow: none;
+    .btn-delete-lux:hover { background: #ef4444; color: white; }
+
+    .totals-card-lux {
+      background: #f8fafc;
+      border: 1px solid #f1f5f9;
+      border-radius: 18px;
+      padding: 1.5rem;
     }
-    .form-label { margin-bottom: 0.25rem; }
-    .table > :not(caption) > * > * { padding: 0.75rem 0.5rem; }
-    .modal-backdrop { opacity: 0.5; }
+    .total-divider { border-top: 2px dashed #e2e8f0; }
+
+    .btn-save-lux {
+      background: #161d35;
+      color: white;
+      border: none;
+      padding: 0.75rem 2rem;
+      border-radius: 12px;
+      font-weight: 800;
+      transition: all 0.2s;
+    }
+    .btn-save-lux:hover:not(:disabled) { background: #232d4b; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(22, 29, 53, 0.15); }
+    .btn-save-lux:disabled { background: #cbd5e1; cursor: not-allowed; }
+
+    .btn-cancel-lux {
+      background: #f1f5f9;
+      color: #64748b;
+      border: none;
+      padding: 0.75rem 1.5rem;
+      border-radius: 12px;
+      font-weight: 700;
+      transition: all 0.2s;
+    }
+    .btn-cancel-lux:hover { background: #e2e8f0; color: #1e293b; }
+
+    /* UTILS */
+    .bg-light-soft { background-color: #fcfdfe; }
+    .custom-scrollbar { max-height: 70vh; overflow-y: auto; }
+    .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+    .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+    .custom-scrollbar::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
   `]
 })
 export class CreateFacturaModalComponent implements OnInit {
@@ -286,6 +494,10 @@ export class CreateFacturaModalComponent implements OnInit {
   facturaForm: FormGroup;
   isSaving = false;
   isLoadingData = true;
+
+  // Confirmación de eliminación de ítem
+  showConfirmDelete: boolean = false;
+  indexToDelete: number | null = null;
 
   clientes: Cliente[] = [];
   productos: Producto[] = [];
@@ -496,7 +708,25 @@ export class CreateFacturaModalComponent implements OnInit {
   }
 
   removeDetalle(index: number) {
-    this.detalles.removeAt(index);
+    const group = this.detalles.at(index);
+    const hasData = group.get('producto_id')?.value || 
+                   (group.get('descripcion')?.value && group.get('descripcion')?.value !== '') || 
+                   group.get('precio_unitario')?.value > 0;
+
+    if (hasData) {
+      this.indexToDelete = index;
+      this.showConfirmDelete = true;
+    } else {
+      this.detalles.removeAt(index);
+    }
+  }
+
+  confirmDelete() {
+    if (this.indexToDelete !== null) {
+      this.detalles.removeAt(this.indexToDelete);
+      this.indexToDelete = null;
+    }
+    this.showConfirmDelete = false;
   }
 
   onProductoSelect(index: number) {

@@ -7,37 +7,42 @@ import { FormsModule } from '@angular/forms';
     standalone: true,
     imports: [CommonModule, FormsModule],
     template: `
-    <section class="module-actions mb-4">
-      <div class="actions-bar-container shadow-sm py-2 px-4 rounded-4">
-        <div class="row align-items-center g-3">
-          <!-- Búsqueda Principal -->
-          <div class="col-lg-7">
-            <div class="search-box-premium">
-              <i class="bi bi-search"></i>
-              <input 
-                type="text" 
-                [(ngModel)]="searchQuery" 
-                (ngModelChange)="onSearchChange($event)"
-                placeholder="Buscar por razón social, identificación o email..." 
-                class="form-control-premium-search"
-              >
+    <div class="actions-box-lux">
+      <div class="row align-items-center g-3">
+        <!-- BUSCADOR -->
+        <div class="col-12 col-lg-7">
+          <div class="search-input-wrapper">
+            <i class="bi bi-search search-icon"></i>
+            <input 
+              type="text" 
+              [(ngModel)]="searchQuery" 
+              (ngModelChange)="onSearchChange($event)"
+              placeholder="Buscar por cliente, identificación o email..." 
+              class="search-input-lux"
+            >
+          </div>
+        </div>
+
+        <!-- FILTROS Y ACCIÓN -->
+        <div class="col-12 col-lg-5">
+          <div class="d-flex gap-2 justify-content-lg-end align-items-center">
+            
+            <!-- FILTRO ESTADO -->
+            <div class="dropdown">
+              <button class="btn-filter-lux" type="button" data-bs-toggle="dropdown">
+                <i class="bi bi-filter me-2"></i>
+                {{ filters.estado === 'ALL' ? 'Todos los Estados' : (filters.estado === 'ACTIVO' ? 'Activos' : 'Inactivos') }}
+              </button>
+              <ul class="dropdown-menu dropdown-menu-end shadow-premium-lux border-0 p-2">
+                <li><a class="dropdown-item" (click)="setFilter('ALL')">Todos los Estados</a></li>
+                <li><a class="dropdown-item" (click)="setFilter('ACTIVO')">Activos</a></li>
+                <li><a class="dropdown-item" (click)="setFilter('INACTIVO')">Inactivos</a></li>
+              </ul>
             </div>
-          </div>
 
-          <!-- Filtros Rápidos -->
-          <div class="col-lg-3">
-            <select class="form-select-premium" [(ngModel)]="filters.estado" (change)="onFilterChange()">
-              <option value="ALL">Todos los Estados</option>
-              <option value="ACTIVO">Activos</option>
-              <option value="INACTIVO">Inactivos</option>
-            </select>
-          </div>
-
-          <!-- Botón de Acción -->
-          <div class="col-lg-2 text-lg-end">
             <button 
               (click)="onCreate.emit()"
-              class="btn-system-action w-100 shadow-sm"
+              class="btn-create-lux"
             >
               <i class="bi bi-plus-lg me-2"></i>
               <span>Nuevo Cliente</span>
@@ -45,78 +50,110 @@ import { FormsModule } from '@angular/forms';
           </div>
         </div>
       </div>
-    </section>
+    </div>
   `,
-    styles: [`
-    .actions-bar-container {
-      background: #ffffff;
-      border: 1px solid rgba(0, 0, 0, 0.05);
+  styles: [`
+    .actions-box-lux {
+      background: white;
+      border: 1px solid #f1f5f9;
+      border-radius: 20px;
+      padding: 1rem 1.5rem;
+      margin-bottom: 2rem;
     }
-    .search-box-premium {
+
+    .search-input-wrapper {
       position: relative;
-      width: 100%;
+      display: flex;
+      align-items: center;
     }
-    .search-box-premium i {
+
+    .search-icon {
       position: absolute;
       left: 1.25rem;
-      top: 50%;
-      transform: translateY(-50%);
       color: #94a3b8;
-      font-size: 1.1rem;
+      font-size: 1rem;
+      pointer-events: none;
     }
-    .form-control-premium-search {
+
+    .search-input-lux {
+      width: 100%;
       background: #f8fafc;
-      border: 1.5px solid rgba(0, 0, 0, 0.05);
+      border: 1px solid #f1f5f9;
       border-radius: 14px;
-      padding: 0 1.25rem 0 3.25rem;
-      height: 40px;
+      padding: 0.7rem 1rem 0.7rem 3rem;
       font-size: 0.9rem;
       font-weight: 500;
-      color: #161d35;
+      color: #1e293b;
       transition: all 0.2s;
-      width: 100%;
     }
-    .form-control-premium-search:focus {
-      background: #ffffff;
-      border-color: #161d35;
-      box-shadow: 0 0 0 4px rgba(22, 29, 53, 0.05);
+
+    .search-input-lux:focus {
+      background: white;
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.05);
       outline: none;
     }
-    .form-select-premium {
-      background: #f8fafc;
-      border: 1.5px solid rgba(0, 0, 0, 0.05);
+
+    .btn-filter-lux {
+      background: white;
+      border: 1px solid #f1f5f9;
+      padding: 0.7rem 1.25rem;
       border-radius: 14px;
-      padding: 0 1rem;
-      height: 40px;
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: #64748b;
+      display: flex;
+      align-items: center;
+      transition: all 0.2s;
+    }
+
+    .btn-filter-lux:hover {
+      background: #f8fafc;
+      color: #161d35;
+      border-color: #cbd5e1;
+    }
+
+    .btn-create-lux {
+      background: #161d35;
+      color: white;
+      border: none;
+      padding: 0.7rem 1.5rem;
+      border-radius: 14px;
+      font-size: 0.85rem;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .btn-create-lux:hover {
+      background: #232d4b;
+      transform: translateY(-2px);
+      box-shadow: 0 10px 20px -5px rgba(22, 29, 53, 0.3);
+    }
+
+    .dropdown-menu {
+      border-radius: 16px;
+      padding: 0.5rem;
+      min-width: 220px;
+    }
+
+    .dropdown-item {
+      padding: 0.7rem 1rem;
+      border-radius: 10px;
       font-size: 0.85rem;
       font-weight: 600;
       color: #475569;
-      width: 100%;
       cursor: pointer;
-      transition: all 0.2s;
     }
-    .form-select-premium:focus {
-      border-color: #161d35;
-      outline: none;
+
+    .dropdown-item:hover {
+      background: #f8fafc;
+      color: #161d35;
     }
-    .btn-system-action {
-      background: #161d35;
-      color: #ffffff;
-      border: 1.5px solid transparent;
-      padding: 0 1.5rem;
-      height: 40px;
-      border-radius: 14px;
-      font-weight: 700;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      transition: all 0.2s;
-      font-size: 0.9rem;
-    }
-    .btn-system-action:hover {
-      background: #232d4d;
-      transform: translateY(-1px);
-      box-shadow: 0 10px 15px -3px rgba(22, 29, 53, 0.2);
+
+    .shadow-premium-lux {
+      box-shadow: 0 15px 35px rgba(22, 29, 53, 0.15);
     }
   `]
 })
@@ -134,7 +171,8 @@ export class ClienteActionsComponent {
         this.searchQueryChange.emit(value);
     }
 
-    onFilterChange() {
+    setFilter(estado: string) {
+        this.filters.estado = estado;
         this.onFilterChangeEmit.emit(this.filters);
     }
 }

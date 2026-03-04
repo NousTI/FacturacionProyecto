@@ -31,7 +31,6 @@ import { Cliente, ClienteStats } from '../../../domain/models/cliente.model';
   ],
   template: `
     <div class="clientes-page-container">
-      
 
       <!-- ESTADÍSTICAS -->
       <app-cliente-stats
@@ -89,43 +88,31 @@ import { Cliente, ClienteStats } from '../../../domain/models/cliente.model';
   styles: [`
     .clientes-page-container {
       min-height: 100vh;
-      background: #f8fafc;
     }
-    .page-title {
-      font-size: 1.75rem;
+
+    .lux-page-header {
+      padding-bottom: 2rem;
+      border-bottom: 1px solid #f1f5f9;
+    }
+
+    .lux-title-gradient {
+      font-size: 2.25rem;
       font-weight: 900;
-      color: #161d35;
-      margin-bottom: 0.25rem;
+      background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      letter-spacing: -1px;
+      margin-bottom: 0.5rem;
     }
-    .page-subtitle {
+
+    .lux-description {
+      font-size: 1rem;
       color: #94a3b8;
-      font-size: 0.95rem;
       font-weight: 500;
+      margin: 0;
     }
-    .btn-refresh-premium {
-      background: white;
-      border: 1px solid #e2e8f0;
-      width: 40px;
-      height: 40px;
-      border-radius: 12px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: #64748b;
-      transition: all 0.2s;
-    }
-    .btn-refresh-premium:hover {
-      background: #f8fafc;
-      color: #161d35;
-      border-color: #cbd5e1;
-    }
-    .spinning i {
-      animation: spin 1s linear infinite;
-    }
-    @keyframes spin {
-      from { transform: rotate(0deg); }
-      to { transform: rotate(360deg); }
-    }
+
+    .fw-800 { font-weight: 800; }
   `]
 })
 export class ClientesPage implements OnInit, OnDestroy {

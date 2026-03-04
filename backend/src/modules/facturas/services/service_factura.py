@@ -92,3 +92,10 @@ class ServicioFactura:
             "estado": "ANULADA",
             "razon_anulacion": datos.razon_anulacion
         })
+
+    def obtener_detalle_completo(self, id: UUID, usuario_actual: dict):
+        """Obtiene la factura y todos sus detalles (útil para RIDE/PDF)."""
+        factura = self.obtener_factura(id, usuario_actual)
+        detalles = self.core.repo.listar_detalles(id)
+        factura['detalles'] = detalles
+        return factura

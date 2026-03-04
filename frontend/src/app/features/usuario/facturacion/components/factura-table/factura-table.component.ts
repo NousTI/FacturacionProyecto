@@ -143,17 +143,6 @@ import { HasPermissionDirective } from '../../../../../shared/directives/has-per
                     </a>
                   </li>
 
-                  <li *ngIf="canAnular(factura)"><hr class="dropdown-divider mx-2 opacity-10"></li>
-
-                  <li *ngIf="factura.estado === 'AUTORIZADA'">
-                    <a 
-                      *appHasPermission="'FACTURAS_ANULAR'"
-                      class="dropdown-item py-2 text-danger" href="javascript:void(0)" (click)="onAction.emit({type: 'anular', factura})">
-                      <div class="icon-item bg-soft-danger"><i class="bi bi-x-circle-fill"></i></div>
-                      <span class="ms-2">Anular</span>
-                    </a>
-                  </li>
-                  
                   <li *ngIf="factura.estado === 'BORRADOR'">
                     <a 
                       *appHasPermission="'FACTURAS_EDITAR'"

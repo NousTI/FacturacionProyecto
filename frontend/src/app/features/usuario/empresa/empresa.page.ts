@@ -25,7 +25,7 @@ import { Empresa } from '../../../domain/models/empresa.model';
   template: `
     <div class="empresa-page-container">
       
-      <div class="px-3 px-md-4 pb-5 animate-fade-in">
+      <div class="container-fluid px-4 py-4 animate-fade-in">
         <!-- Loading State -->
         <div *ngIf="loading && !empresa" class="loading-state p-5 text-center">
           <div class="spinner-premium mb-3"></div>
@@ -40,53 +40,70 @@ import { Empresa } from '../../../domain/models/empresa.model';
               (onEdit)="showEditModal = true">
             </app-empresa-info-card>
             
-            <!-- Additional Operational Info -->
-            <div class="operational-stats mt-4 animate-fade-in" style="animation-delay: 0.2s">
-              <div class="row g-3">
-                <div class="col-md-6 col-lg-3">
-                  <div class="stat-mini-card shadow-sm">
-                    <span class="label">Establecimientos registrados</span>
-                    <span class="value">{{ empresa.establecimientos_count }}</span>
-                  </div>
+            <!-- STATS Compact Row -->
+            <div class="stats-compact-row mt-4">
+              <div class="stat-item-mini">
+                <div class="icon-circle" style="background: rgba(22, 29, 53, 0.05); color: #161d35;">
+                  <i class="bi bi-houses"></i>
                 </div>
-                <div class="col-md-6 col-lg-3">
-                  <div class="stat-mini-card shadow-sm">
-                    <span class="label">Puntos de Emisión</span>
-                    <span class="value">{{ empresa.puntos_emision_count }}</span>
-                  </div>
+                <div class="stat-info">
+                  <span class="stat-label">Establecimientos</span>
+                  <span class="stat-value">{{ empresa.establecimientos_count }}</span>
                 </div>
-                <div class="col-md-6 col-lg-3">
-                  <div class="stat-mini-card shadow-sm">
-                    <span class="label">Ambiente SRI</span>
-                    <span class="value" [ngClass]="empresa.sri_ambiente === 'PRODUCCION' ? 'text-success' : 'text-warning'">
-                      {{ empresa.sri_ambiente || 'PENDIENTE' }}
-                    </span>
-                  </div>
+              </div>
+
+              <div class="stat-divider"></div>
+
+              <div class="stat-item-mini">
+                <div class="icon-circle" style="background: rgba(16, 185, 129, 0.1); color: #10b981;">
+                  <i class="bi bi-broadcast-pin"></i>
                 </div>
-                <div class="col-md-6 col-lg-3">
-                  <div class="stat-mini-card shadow-sm">
-                    <span class="label">Firma Electrónica</span>
-                    <span class="value" [ngClass]="empresa.firma_expiracion ? 'text-success' : 'text-danger'">
-                      {{ empresa.firma_expiracion ? (empresa.firma_expiracion | date:'dd/MM/yy') : 'NO CARGADA' }}
-                    </span>
-                  </div>
+                <div class="stat-info">
+                  <span class="stat-label">Puntos Emisión</span>
+                  <span class="stat-value">{{ empresa.puntos_emision_count }}</span>
+                </div>
+              </div>
+
+              <div class="stat-divider"></div>
+
+              <div class="stat-item-mini">
+                <div class="icon-circle" [style.background]="empresa.sri_ambiente === 'PRODUCCION' ? 'rgba(16, 185, 129, 0.1)' : 'rgba(245, 158, 11, 0.1)'" 
+                                    [style.color]="empresa.sri_ambiente === 'PRODUCCION' ? '#10b981' : '#f59e0b'">
+                  <i class="bi bi-cloud-check"></i>
+                </div>
+                <div class="stat-info">
+                  <span class="stat-label">Ambiente SRI</span>
+                  <span class="stat-value text-uppercase" style="font-size: 1rem;">{{ empresa.sri_ambiente || 'PENDIENTE' }}</span>
+                </div>
+              </div>
+
+              <div class="stat-divider d-none d-lg-block"></div>
+
+              <div class="stat-item-mini">
+                <div class="icon-circle" [style.background]="empresa.firma_expiracion ? 'rgba(37, 99, 235, 0.1)' : 'rgba(239, 68, 68, 0.1)'" 
+                                    [style.color]="empresa.firma_expiracion ? '#2563eb' : '#ef4444'">
+                  <i class="bi bi-key"></i>
+                </div>
+                <div class="stat-info">
+                  <span class="stat-label">Firma Elec.</span>
+                  <span class="stat-value text-nowrap">{{ empresa.firma_expiracion ? (empresa.firma_expiracion | date:'dd/MM/yy') : 'N/A' }}</span>
                 </div>
               </div>
             </div>
 
             <!-- Payment Info if exists -->
-            <div *ngIf="empresa.ultimo_pago_monto" class="payment-banner-lux mt-4 p-3 rounded-4 d-flex align-items-center justify-content-between animate-fade-in">
+            <div *ngIf="empresa.ultimo_pago_monto" class="payment-banner-lux mt-4">
               <div class="d-flex align-items-center gap-3">
                 <div class="payment-icon">
-                  <i class="bi bi-credit-card-2-back"></i>
+                  <i class="bi bi-patch-check-fill"></i>
                 </div>
                 <div>
-                  <p class="m-0 fw-bold" style="font-size: 0.9rem;">Último pago registrado</p>
-                  <p class="m-0 text-muted" style="font-size: 0.8rem;">Procesado el {{ empresa.ultimo_pago_fecha | date:'dd/MM/yyyy' }}</p>
+                  <p class="m-0 fw-800" style="font-size: 0.95rem; color: #1e293b;">Último pago registrado</p>
+                  <p class="m-0 text-muted" style="font-size: 0.8rem; font-weight: 500;">Procesado el {{ empresa.ultimo_pago_fecha | date:'dd MMM, yyyy' }}</p>
                 </div>
               </div>
               <div class="text-end">
-                <span class="badge bg-success-subtle text-success rounded-pill px-3 py-2 fw-bold">
+                <span class="badge-premium-success">
                   {{ empresa.ultimo_pago_monto | currency:'USD' }}
                 </span>
               </div>
@@ -96,70 +113,61 @@ import { Empresa } from '../../../domain/models/empresa.model';
           <div class="col-12 col-xl-4">
             <div class="sidebar-wrapper d-flex flex-column gap-4">
               
-              <!-- Account Status Card -->
-              <div class="summary-card-lux p-4 rounded-4 shadow-sm border-0">
-                <h5 class="section-title mb-3">Estado de Suscripción</h5>
-                <div class="status-indicator mb-3" [ngClass]="empresa.activo ? 'status-active' : 'status-inactive'">
-                  <div class="pulse-dot"></div>
-                  <span class="text-uppercase" style="font-size: 0.75rem; letter-spacing: 0.5px;">
-                    {{ empresa.activo ? (empresa.suscripcion_estado === 'active' || empresa.suscripcion_estado === 'ACTIVA' ? 'Suscripción Activa' : (empresa.suscripcion_estado || 'Activo')) : 'Inactivo' }}
-                  </span>
+              <!-- Subscription Status -->
+              <div class="summary-card-lux">
+                <div class="card-header-mini">
+                  <h5 class="section-title m-0">Estado de Suscripción</h5>
+                  <div class="status-badge" [ngClass]="empresa.activo ? 'status-active' : 'status-inactive'">
+                    <span class="pulse-dot"></span>
+                    {{ empresa.activo ? 'ACTIVA' : 'INACTIVA' }}
+                  </div>
                 </div>
                 
-                <div class="details-list">
-                  <div class="detail-item">
-                    <span class="label">Plan Actual:</span>
-                    <span class="value text-primary fw-800">{{ empresa.plan_nombre || 'Plan Gratuito' }}</span>
+                <div class="card-content-lux">
+                  <div class="detail-row">
+                    <span class="label">Plan Actual</span>
+                    <span class="value text-primary">{{ empresa.plan_nombre || 'Plan Gratuito' }}</span>
                   </div>
-                  <div class="detail-item">
-                    <span class="label">Fecha Registro:</span>
+                  <div class="detail-row">
+                    <span class="label">Desde</span>
                     <span class="value">{{ (empresa.created_at | date:'dd MMM, yyyy') || 'N/A' }}</span>
                   </div>
-                  <div class="detail-item" *ngIf="empresa.fecha_fin">
-                    <span class="label">Próximo Vencimiento:</span>
-                    <span class="value text-danger">{{ empresa.fecha_fin | date:'dd/MM/yyyy' }}</span>
+                  <div class="detail-row" *ngIf="empresa.fecha_fin">
+                    <span class="label">Vencimiento</span>
+                    <span class="value text-danger">{{ empresa.fecha_fin | date:'dd MMM, yyyy' }}</span>
                   </div>
                 </div>
               </div>
 
-              <!-- Usage Limits Card -->
-              <div class="summary-card-lux p-4 rounded-4 shadow-sm border-0 secondary-soft">
-                <h5 class="section-title mb-3">Capacidad del Plan</h5>
+              <!-- Usage Limits -->
+              <div class="summary-card-lux secondary-soft">
+                <h5 class="section-title mb-3">Límites y Capacidad</h5>
                 
-                <div class="usage-item mb-3">
-                  <div class="d-flex justify-content-between mb-1">
-                    <span class="caption">Comprobantes Mensuales</span>
-                    <span class="fw-bold fs-7">{{ empresa.max_facturas_mes || 'Sin límite' }}</span>
+                <div class="usage-meter mb-4">
+                  <div class="d-flex justify-content-between mb-2">
+                    <span class="meter-label">Comprobantes / mes</span>
+                    <span class="meter-value">{{ empresa.max_facturas_mes || '∞' }}</span>
                   </div>
-                  <div class="progress" style="height: 6px; border-radius: 10px; background: #e2e8f0;">
-                    <div class="progress-bar bg-primary" role="progressbar" 
-                         [style.width.%]="empresa.max_facturas_mes ? 15 : 100" 
-                         style="border-radius: 10px;"></div>
+                  <div class="progress-premium">
+                    <div class="progress-bar-lux" [style.width.%]="empresa.max_facturas_mes ? 15 : 100"></div>
                   </div>
                 </div>
 
-                <div class="usage-item">
-                  <div class="d-flex justify-content-between mb-1">
-                    <span class="caption">Colaboradores</span>
-                    <span class="fw-bold fs-7">{{ empresa.establecimientos_count }} / {{ empresa.max_establecimientos || '1' }} Locales</span>
+                <div class="usage-meter">
+                  <div class="d-flex justify-content-between mb-2">
+                    <span class="meter-label">Establecimientos</span>
+                    <span class="meter-value">{{ empresa.establecimientos_count }} / {{ empresa.max_establecimientos || '1' }}</span>
                   </div>
-                  <div class="progress" style="height: 6px; border-radius: 10px; background: #e2e8f0;">
-                    <div class="progress-bar bg-info" role="progressbar" 
-                         [style.width.%]="empresa.max_establecimientos ? (empresa.establecimientos_count / empresa.max_establecimientos * 100) : 100" 
-                         style="border-radius: 10px;"></div>
+                  <div class="progress-premium">
+                    <div class="progress-bar-lux bg-info" [style.width.%]="empresa.max_establecimientos ? (empresa.establecimientos_count / empresa.max_establecimientos * 100) : 100"></div>
                   </div>
                 </div>
 
-                <hr class="my-3 opacity-10">
-                
-                <div class="info-row-lux">
-                  <div class="icon-box bg-white text-success">
-                    <i class="bi bi-patch-check"></i>
-                  </div>
-                  <div>
-                    <p class="caption m-0">Tipo Contribuyente</p>
-                    <p class="main-info m-0" style="font-size: 0.85rem;">{{ empresa.tipo_contribuyente || 'No definido' }}</p>
-                  </div>
+                <div class="info-footer-lux mt-4">
+                   <div class="d-flex align-items-center gap-2">
+                      <i class="bi bi-shield-check text-success fs-5"></i>
+                      <span class="text-muted" style="font-size: 0.8rem; font-weight: 600;">Contribuyente: <b>{{ empresa.tipo_contribuyente || 'No definido' }}</b></span>
+                   </div>
                 </div>
               </div>
 
@@ -194,128 +202,178 @@ import { Empresa } from '../../../domain/models/empresa.model';
     .empresa-page-container {
       min-height: 100vh;
       background: #f8fafc;
-      overflow-x: hidden;
     }
-    
-    .header-premium {
+
+    /* STATS ROW - Inspired by facturacion */
+    .stats-compact-row {
       background: white;
-      border-radius: 0 0 32px 32px;
-      box-shadow: 0 10px 40px -10px rgba(0,0,0,0.04);
-      border-bottom: 1px solid #f1f5f9;
-    }
-
-    .brand-icon-bg {
-      width: 60px; height: 60px;
-      background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
-      border-radius: 18px;
-      display: flex; align-items: center; justify-content: center;
-    }
-    
-    .page-title {
-      font-size: 1.75rem; font-weight: 800;
-      color: #0f172a; letter-spacing: -0.5px;
-    }
-
-    .text-subtitle {
-      font-size: 0.95rem; color: #64748b; font-weight: 500;
-    }
-
-    .btn-refresh-lux {
-      background: white; border: 1.5px solid #e2e8f0;
-      width: 44px; height: 44px; border-radius: 12px;
-      display: flex; align-items: center; justify-content: center;
-      color: #64748b; transition: all 0.3s; font-size: 1.2rem;
-    }
-    .btn-refresh-lux:hover {
-      background: #1e293b; color: white; border-color: #1e293b; transform: rotate(180deg);
-    }
-    .spinning i { animation: spin 0.8s linear infinite; }
-
-    /* Summary Cards */
-    .summary-card-lux {
-      background: white;
+      border-radius: 20px;
+      padding: 1.25rem 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
       border: 1px solid #f1f5f9;
     }
-    .secondary-soft { background: #f1f5f9; }
-
-    .section-title { font-size: 0.95rem; font-weight: 800; color: #1e293b; }
-    
-    .status-indicator {
-      display: flex; align-items: center; gap: 10px;
-      padding: 10px 14px; border-radius: 12px; font-weight: 700; font-size: 0.85rem;
+    .stat-item-mini {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      flex: 1;
     }
-    .status-active { background: #ecfdf5; color: #059669; }
-    .status-inactive { background: #fef2f2; color: #dc2626; }
+    .icon-circle {
+      width: 42px;
+      height: 42px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2rem;
+    }
+    .stat-info {
+      display: flex;
+      flex-direction: column;
+    }
+    .stat-label {
+      font-size: 0.65rem;
+      font-weight: 800;
+      color: #94a3b8;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .stat-value {
+      font-size: 1.1rem;
+      font-weight: 800;
+      color: #1e293b;
+      line-height: 1.2;
+    }
+    .stat-divider {
+      width: 1px;
+      height: 35px;
+      background: #f1f5f9;
+      margin: 0 1.5rem;
+    }
 
+    /* Sidebar Cards */
+    .summary-card-lux {
+      background: white;
+      border-radius: 24px;
+      padding: 2rem;
+      border: 1px solid #f1f5f9;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.02);
+    }
+    .secondary-soft { background: #f1f5f9; border: none; }
+    
+    .card-header-mini {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.5rem;
+    }
+    .section-title {
+      font-size: 0.9rem;
+      font-weight: 900;
+      color: #1e293b;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .status-badge {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 12px;
+      border-radius: 10px;
+      font-size: 0.7rem;
+      font-weight: 800;
+    }
+    .status-active { background: #ecfdf5; color: #10b981; }
+    .status-inactive { background: #fef2f2; color: #ef4444; }
     .pulse-dot {
-      width: 8px; height: 8px; border-radius: 50%; background: currentColor;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: currentColor;
       animation: pulse 2s infinite;
     }
 
-    .details-list { display: flex; flex-direction: column; gap: 8px; }
-    .detail-item { display: flex; justify-content: space-between; font-size: 0.85rem; }
-    .detail-item .label { color: #64748b; font-weight: 500; }
-    .detail-item .value { color: #1e293b; font-weight: 700; }
-
-    .info-row-lux { display: flex; align-items: center; gap: 12px; }
-    .icon-box {
-      width: 40px; height: 40px; border-radius: 10px;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 1.25rem; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
-    }
-    .caption { font-size: 0.75rem; color: #64748b; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
-    .main-info { font-size: 0.9rem; font-weight: 700; color: #1e293b; }
-
-    /* Operational Stats */
-    .stat-mini-card {
-      background: white;
-      padding: 1.25rem;
-      border-radius: 20px;
-      border: 1px solid #f1f5f9;
+    .detail-row {
       display: flex;
-      flex-direction: column;
-      gap: 4px;
+      justify-content: space-between;
+      padding: 0.75rem 0;
+      border-bottom: 1px solid #f8fafc;
     }
-    .stat-mini-card .label {
-      font-size: 0.7rem;
-      font-weight: 700;
-      color: #94a3b8;
-      text-transform: uppercase;
-    }
-    .stat-mini-card .value {
-      font-size: 1rem;
-      font-weight: 800;
-      color: #1e293b;
-    }
+    .detail-row:last-child { border-bottom: none; }
+    .detail-row .label { font-size: 0.85rem; color: #64748b; font-weight: 500; }
+    .detail-row .value { font-size: 0.85rem; color: #1e293b; font-weight: 800; }
 
-    /* Usage items */
-    .usage-item .caption { font-size: 0.7rem; margin-bottom: 4px; display: block; }
-    .fs-7 { font-size: 0.85rem !important; }
+    /* Usage Meter */
+    .meter-label { font-size: 0.75rem; color: #64748b; font-weight: 700; }
+    .meter-value { font-size: 0.75rem; color: #1e293b; font-weight: 800; }
+    .progress-premium {
+      height: 6px;
+      background: #e2e8f0;
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    .progress-bar-lux {
+      height: 100%;
+      background: #161d35;
+      border-radius: 10px;
+      transition: width 0.3s ease;
+    }
 
     /* Payment Banner */
     .payment-banner-lux {
-      background: white; border: 1px solid #ecfdf5;
+      background: white;
+      border-radius: 20px;
+      padding: 1.25rem 1.75rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border: 1px solid #f1f5f9;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.02);
     }
     .payment-icon {
-      width: 40px; height: 40px; background: #ecfdf5; color: #059669;
-      border-radius: 12px; display: flex; align-items: center; justify-content: center;
-      font-size: 1.25rem;
+      width: 44px;
+      height: 44px;
+      background: #ecfdf5;
+      color: #10b981;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.3rem;
+    }
+    .badge-premium-success {
+      background: #ecfdf5;
+      color: #10b981;
+      padding: 0.5rem 1rem;
+      border-radius: 12px;
+      font-weight: 800;
+      font-size: 0.9rem;
     }
 
-    /* states */
+    .fw-800 { font-weight: 800; }
+
     .spinner-premium {
       width: 40px; height: 40px; border: 3px solid #f1f5f9; border-top-color: #1e293b;
       border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto;
-    }
-
-    .empty-icon-wrapper {
-      font-size: 3rem; color: #e2e8f0;
     }
 
     @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
     @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.4; } 100% { opacity: 1; } }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     .animate-fade-in { animation: fadeIn 0.4s ease-out forwards; }
+
+    @media (max-width: 992px) {
+      .stats-compact-row {
+        flex-wrap: wrap;
+        gap: 1.25rem;
+        padding: 1.25rem;
+      }
+      .stat-divider { display: none; }
+      .stat-item-mini { min-width: 45%; }
+    }
   `]
 })
 export class EmpresaPage implements OnInit {

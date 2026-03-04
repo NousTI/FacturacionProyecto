@@ -9,116 +9,95 @@ import { Cliente } from '../../../../../domain/models/cliente.model';
     imports: [CommonModule, ReactiveFormsModule],
     template: `
     <div class="modal-overlay animate__animated animate__fadeIn animate__faster" (click)="close()">
-      <div class="modal-container-final" (click)="$event.stopPropagation()">
+      <div class="modal-lux-container" (click)="$event.stopPropagation()">
         
         <!-- Header -->
-        <div class="modal-header-final">
-          <h2 class="modal-title-final">{{ cliente ? 'Editar Cliente' : 'Registro de Cliente' }}</h2>
-          <button (click)="close()" class="btn-close-final" [disabled]="loading">
+        <div class="modal-lux-header">
+          <div>
+            <h2 class="modal-lux-title">{{ cliente ? 'Editar Perfil' : 'Nuevo Cliente' }}</h2>
+            <p class="modal-lux-subtitle">Completa la información legal y de contacto</p>
+          </div>
+          <button (click)="close()" class="btn-close-lux" [disabled]="loading">
             <i class="bi bi-x"></i>
           </button>
         </div>
 
-        <div class="modal-body-final scroll-custom">
+        <div class="modal-lux-body scroll-custom">
           <form [formGroup]="clienteForm" (ngSubmit)="submit()">
             
             <!-- IDENTIFICACIÓN -->
-            <div class="form-section-final">
-              <h3 class="section-header-final">Identificación Legal</h3>
+            <div class="lux-form-section">
+              <h3 class="lux-section-header">Identificación Legal</h3>
               <div class="row g-3">
                 <div class="col-md-6">
-                  <label class="label-final">Tipo de Identificación *</label>
-                  <select formControlName="tipo_identificacion" class="select-final">
+                  <label class="lux-label">Tipo de documento *</label>
+                  <select formControlName="tipo_identificacion" class="lux-select">
                     <option value="CEDULA">Cédula</option>
                     <option value="RUC">RUC</option>
                     <option value="PASAPORTE">Pasaporte</option>
                   </select>
                 </div>
                 <div class="col-md-6">
-                  <label class="label-final">Identificación *</label>
+                  <label class="lux-label">Número de identificación *</label>
                   <input 
                     type="text" 
                     formControlName="identificacion" 
-                    class="input-final" 
+                    class="lux-input" 
                     [class.is-invalid]="clienteForm.get('identificacion')?.invalid && clienteForm.get('identificacion')?.touched"
                     placeholder="Ej: 1712345678001"
                   >
-                  <div class="error-feedback" *ngIf="clienteForm.get('identificacion')?.invalid && clienteForm.get('identificacion')?.touched">
-                    Identificación es requerida
-                  </div>
                 </div>
               </div>
             </div>
 
             <!-- INFORMACIÓN GENERAL -->
-            <div class="form-section-final">
-              <h3 class="section-header-final">Datos Generales</h3>
+            <div class="lux-form-section">
+              <h3 class="lux-section-header">Razón Social y Comercial</h3>
               <div class="row g-3">
                 <div class="col-12">
-                  <label class="label-final">Razón Social / Nombres Completos *</label>
-                  <input type="text" formControlName="razon_social" class="input-final" placeholder="Ej: Juan Perez o Empresa S.A.">
-                  <div class="error-feedback" *ngIf="clienteForm.get('razon_social')?.invalid && clienteForm.get('razon_social')?.touched">
-                    Razón social es requerida
-                  </div>
+                  <label class="lux-label">Razón Social / Nombres Completos *</label>
+                  <input type="text" formControlName="razon_social" class="lux-input" placeholder="Ej: Importadora Lux S.A.">
                 </div>
                 <div class="col-md-12">
-                  <label class="label-final">Nombre Comercial</label>
-                  <input type="text" formControlName="nombre_comercial" class="input-final" placeholder="Ej: Tienda de Juan">
+                  <label class="lux-label">Nombre Comercial</label>
+                  <input type="text" formControlName="nombre_comercial" class="lux-input" placeholder="Ej: Tienda Lux">
                 </div>
               </div>
             </div>
 
-            <!-- CONTACTO Y UBICACIÓN -->
-            <div class="form-section-final">
-              <h3 class="section-header-final">Contacto & Ubicación</h3>
+            <!-- CONTACTO -->
+            <div class="lux-form-section">
+              <h3 class="lux-section-header">Información de Contacto</h3>
               <div class="row g-3">
-                <div class="col-md-6">
-                  <label class="label-final">Email *</label>
-                  <input type="email" formControlName="email" class="input-final" placeholder="ejemplo@correo.com">
-                  <div class="error-feedback" *ngIf="clienteForm.get('email')?.invalid && clienteForm.get('email')?.touched">
-                    Email válido es requerido
-                  </div>
+                <div class="col-md-7">
+                  <label class="lux-label">Correo Electrónico *</label>
+                  <input type="email" formControlName="email" class="lux-input" placeholder="cliente@ejemplo.com">
                 </div>
-                <div class="col-md-6">
-                  <label class="label-final">Teléfono</label>
-                  <input type="text" formControlName="telefono" class="input-final" placeholder="Ej: 0999999999">
+                <div class="col-md-5">
+                  <label class="lux-label">Teléfono</label>
+                  <input type="text" formControlName="telefono" class="lux-input" placeholder="Ej: 0987654321">
                 </div>
                 <div class="col-12">
-                  <label class="label-final">Dirección</label>
-                  <input type="text" formControlName="direccion" class="input-final" placeholder="Calle A y Calle B">
-                </div>
-                <div class="col-md-4">
-                  <label class="label-final">Ciudad</label>
-                  <input type="text" formControlName="ciudad" class="input-final" placeholder="Quito">
-                </div>
-                <div class="col-md-4">
-                  <label class="label-final">Provincia</label>
-                  <input type="text" formControlName="provincia" class="input-final" placeholder="Pichincha">
-                </div>
-                <div class="col-md-4">
-                  <label class="label-final">País</label>
-                  <input type="text" formControlName="pais" class="input-final" placeholder="Ecuador">
+                  <label class="lux-label">Dirección Fiscal / Residencia</label>
+                  <input type="text" formControlName="direccion" class="lux-input" placeholder="Av. Principal N23 y Calle B">
                 </div>
               </div>
             </div>
 
             <!-- CRÉDITO -->
-            <div class="form-section-final border-0 mb-0 pb-0">
-               <h3 class="section-header-final">Condiciones de Crédito</h3>
+            <div class="lux-form-section border-0 mb-0 pb-0">
+               <h3 class="lux-section-header">Condiciones de Crédito</h3>
                <div class="row g-3 align-items-center">
-                  <div class="col-md-4">
-                    <label class="label-final">Límite de Crédito ($)</label>
-                    <input type="number" formControlName="limite_credito" class="input-final" placeholder="0.00">
-                  </div>
-                  <div class="col-md-4">
-                    <label class="label-final">Días de Crédito</label>
-                    <input type="number" formControlName="dias_credito" class="input-final" placeholder="0">
-                  </div>
-                  <div class="col-md-4">
-                    <div class="form-check form-switch mt-4 switch-final">
-                       <input class="form-check-input" type="checkbox" formControlName="activo" id="activoCheck">
-                       <label class="form-check-label ms-2" for="activoCheck">Cliente Activo</label>
+                  <div class="col-md-6">
+                    <label class="lux-label">Límite de Crédito Autorizado ($)</label>
+                    <div class="lux-input-group">
+                      <span class="prefix">$</span>
+                      <input type="number" formControlName="limite_credito" class="lux-input ps-4" placeholder="0.00">
                     </div>
+                  </div>
+                  <div class="col-md-6">
+                    <label class="lux-label">Días de Crédito Plazo</label>
+                    <input type="number" formControlName="dias_credito" class="lux-input" placeholder="0">
                   </div>
                </div>
             </div>
@@ -127,14 +106,23 @@ import { Cliente } from '../../../../../domain/models/cliente.model';
         </div>
 
         <!-- Footer -->
-        <div class="modal-footer-final">
-          <button (click)="close()" class="btn-cancel-final" [disabled]="loading">Cancelar</button>
-          <button (click)="submit()" 
-                  [disabled]="clienteForm.invalid || (cliente && clienteForm.pristine) || loading" 
-                  class="btn-submit-final d-flex align-items-center gap-2">
-            <span *ngIf="loading" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-            {{ loading ? 'Guardando...' : (cliente ? 'Guardar Cambios' : 'Crear Cliente') }}
-          </button>
+        <div class="modal-lux-footer">
+          <div class="d-flex align-items-center gap-3 w-100">
+            <div class="form-check form-switch lux-switch mb-0">
+              <input class="form-check-input" type="checkbox" formControlName="activo" id="activoCheck">
+              <label class="form-check-label ms-2" for="activoCheck">Cliente Habilitado</label>
+            </div>
+            
+            <div class="ms-auto d-flex gap-3">
+              <button (click)="close()" class="btn-lux-outline" [disabled]="loading">Cancelar</button>
+              <button (click)="submit()" 
+                      [disabled]="clienteForm.invalid || (cliente && clienteForm.pristine) || loading" 
+                      class="btn-lux-submit">
+                <span *ngIf="loading" class="spinner-border spinner-border-sm me-2"></span>
+                {{ loading ? 'Guardando...' : (cliente ? 'Guardar Cambios' : 'Crear Cliente') }}
+              </button>
+            </div>
+          </div>
         </div>
 
       </div>
@@ -143,67 +131,192 @@ import { Cliente } from '../../../../../domain/models/cliente.model';
     styles: [`
     .modal-overlay {
       position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-      background: rgba(15, 23, 53, 0.4); backdrop-filter: blur(8px);
+      background: rgba(15, 23, 42, 0.3); backdrop-filter: blur(8px);
       display: flex; align-items: center; justify-content: center; z-index: 10000;
       padding: 1rem;
     }
-    .modal-container-final {
-      background: #ffffff; width: 700px;
-      max-width: 95vw; max-height: 90vh; border-radius: 28px;
-      display: flex; flex-direction: column; overflow: hidden;
-      box-shadow: 0 40px 80px -20px rgba(22, 29, 53, 0.25);
+
+    .modal-lux-container {
+      background: white;
+      width: 720px;
+      max-width: 95vw;
+      max-height: 90vh;
+      border-radius: 32px;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      box-shadow: 0 40px 100px -20px rgba(15, 23, 42, 0.2);
     }
-    .modal-header-final {
-      padding: 1.5rem 2.5rem; display: flex; justify-content: space-between; align-items: center;
+
+    .modal-lux-header {
+      padding: 2rem 2.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      border-bottom: 1px solid #f1f5f9;
     }
-    .modal-title-final {
-      font-size: 1.25rem; font-weight: 800; color: #161d35; margin: 0;
+
+    .modal-lux-title {
+      font-size: 1.5rem;
+      font-weight: 800;
+      color: #1e293b;
+      margin: 0;
+      letter-spacing: -0.5px;
     }
-    .btn-close-final {
-      background: none; border: none; font-size: 1.5rem; color: #94a3b8; cursor: pointer;
+
+    .modal-lux-subtitle {
+      font-size: 0.85rem;
+      color: #94a3b8;
+      margin: 0.25rem 0 0 0;
+      font-weight: 500;
     }
-    .modal-body-final {
-      padding: 0 2.5rem 2rem; overflow-y: auto; flex: 1;
-    }
-    .form-section-final {
-      margin-bottom: 1.5rem; padding-bottom: 1.5rem; border-bottom: 1px solid #f1f5f9;
-    }
-    .section-header-final {
-      font-size: 1rem; font-weight: 800; color: #1e293b; margin-bottom: 1.25rem;
-    }
-    .label-final {
-      font-size: 0.8rem; font-weight: 700; color: #64748b; margin-bottom: 0.5rem; display: block;
-    }
-    .input-final, .select-final {
-      width: 100%; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px;
-      padding: 0.75rem 1.25rem; font-size: 0.9rem; color: #475569; font-weight: 600;
+
+    .btn-close-lux {
+      background: #f8fafc;
+      border: none;
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      color: #94a3b8;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       transition: all 0.2s;
     }
-    .input-final:focus, .select-final:focus {
-      border-color: #161d35; outline: none; box-shadow: 0 0 0 4px rgba(22, 29, 53, 0.05);
+
+    .btn-close-lux:hover {
+      background: #f1f5f9;
+      color: #1e293b;
     }
-    .modal-footer-final {
-      padding: 1.25rem 2.5rem; background: #ffffff; display: flex; justify-content: flex-end; gap: 1rem;
+
+    .modal-lux-body {
+      padding: 2rem 2.5rem;
+      overflow-y: auto;
+      flex: 1;
+    }
+
+    .lux-form-section {
+      margin-bottom: 2rem;
+      padding-bottom: 2rem;
+      border-bottom: 1px solid #f1f5f9;
+    }
+
+    .lux-section-header {
+      font-size: 0.85rem;
+      font-weight: 800;
+      color: #94a3b8;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 1.5rem;
+    }
+
+    .lux-label {
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: #64748b;
+      margin-bottom: 0.6rem;
+      display: block;
+    }
+
+    .lux-input, .lux-select {
+      width: 100%;
+      background: #f8fafc;
+      border: 1px solid #f1f5f9;
+      border-radius: 14px;
+      padding: 0.75rem 1.25rem;
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: #1e293b;
+      transition: all 0.2s;
+    }
+
+    .lux-input:focus, .lux-select:focus {
+      background: white;
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.05);
+      outline: none;
+    }
+
+    .lux-input-group {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+
+    .lux-input-group .prefix {
+      position: absolute;
+      left: 1.25rem;
+      font-weight: 700;
+      color: #94a3b8;
+      font-size: 0.95rem;
+    }
+
+    .modal-lux-footer {
+      padding: 1.5rem 2.5rem;
+      background: white;
       border-top: 1px solid #f1f5f9;
     }
-    .btn-submit-final {
-      background: #161d35; color: #ffffff; border: none; padding: 0.75rem 2rem; border-radius: 12px;
-      font-weight: 700; transition: all 0.2s;
+
+    .btn-lux-submit {
+      background: #161d35;
+      color: white;
+      border: none;
+      padding: 0.85rem 2rem;
+      border-radius: 16px;
+      font-weight: 800;
+      font-size: 0.9rem;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     }
-    .btn-submit-final:hover:not(:disabled) {
-      background: #232d4d; transform: translateY(-1px);
+
+    .btn-lux-submit:hover:not(:disabled) {
+      background: #232d4b;
+      transform: translateY(-2px);
+      box-shadow: 0 10px 20px -5px rgba(22, 29, 53, 0.3);
     }
-    .btn-submit-final:disabled {
-      opacity: 0.5; cursor: not-allowed;
+
+    .btn-lux-submit:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
     }
-    .btn-cancel-final {
-      background: #ffffff; color: #64748b; border: 1px solid #e2e8f0; padding: 0.75rem 1.5rem;
-      border-radius: 12px; font-weight: 600;
+
+    .btn-lux-outline {
+      background: white;
+      color: #64748b;
+      border: 1px solid #f1f5f9;
+      padding: 0.85rem 1.75rem;
+      border-radius: 16px;
+      font-weight: 700;
+      font-size: 0.9rem;
+      transition: all 0.2s;
     }
-    .error-feedback { color: #ef4444; font-size: 0.75rem; font-weight: 700; margin-top: 0.35rem; }
-    .scroll-custom::-webkit-scrollbar { width: 5px; }
+
+    .btn-lux-outline:hover:not(:disabled) {
+      background: #f8fafc;
+      color: #1e293b;
+      border-color: #cbd5e1;
+    }
+
+    .lux-switch .form-check-input {
+      width: 3.2rem;
+      height: 1.6rem;
+      cursor: pointer;
+    }
+
+    .lux-switch .form-check-input:checked {
+      background-color: #111827;
+      border-color: #111827;
+    }
+
+    .lux-switch .form-check-label {
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: #475569;
+      cursor: pointer;
+      line-height: 1.6rem;
+    }
+
+    .scroll-custom::-webkit-scrollbar { width: 6px; }
     .scroll-custom::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
-    .switch-final .form-check-input:checked { background-color: #161d35; border-color: #161d35; }
   `]
 })
 export class CreateClienteModalComponent implements OnInit, OnDestroy {

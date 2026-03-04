@@ -8,6 +8,7 @@ import { FacturaActionsComponent } from './components/factura-actions/factura-ac
 import { FacturaTableComponent } from './components/factura-table/factura-table.component';
 import { CreateFacturaModalComponent } from './components/create-factura-modal/create-factura-modal.component';
 import { ViewFacturaModalComponent } from './components/view-factura-modal/view-factura-modal.component';
+import { EmailFacturaModalComponent } from './components/email-factura-modal/email-factura-modal.component';
 import { ToastComponent } from '../../../shared/components/toast/toast.component';
 import { ConfirmModalComponent } from '../../../shared/components/confirm-modal/confirm-modal.component';
 
@@ -29,12 +30,13 @@ import { SriConfigService } from '../certificado-sri/services/sri-config.service
     FacturaTableComponent,
     CreateFacturaModalComponent,
     ViewFacturaModalComponent,
+    EmailFacturaModalComponent,
     ToastComponent,
     ConfirmModalComponent
   ],
   template: `
     <div class="facturas-page-container">
-      <div class="container-fluid px-4 py-4">
+      <div class="container-fluid p-0">
 
         <!-- STATS -->
         <app-factura-stats
@@ -46,6 +48,7 @@ import { SriConfigService } from '../certificado-sri/services/sri-config.service
         <!-- ACTIONS -->
         <app-factura-actions
           [(searchQuery)]="searchQuery"
+          (searchQueryChange)="applyFilters()"
           [sriError]="sriError"
           (onFilterChangeEmit)="handleFilters($event)"
           (onCreate)="openCreateModal()"
@@ -81,6 +84,12 @@ import { SriConfigService } from '../certificado-sri/services/sri-config.service
             [facturaId]="selectedFactura.id"
             (onClose)="closeViewModal()"
          ></app-view-factura-modal>
+
+         <app-email-factura-modal
+            *ngIf="showEmailModal && selectedFactura"
+            [factura]="selectedFactura"
+            (close)="closeEmailModal($event)"
+         ></app-email-factura-modal>
         
          <app-toast></app-toast>
       </div>
@@ -158,6 +167,7 @@ export class FacturacionPage implements OnInit {
 
   showCreateModal: boolean = false;
   showViewModal: boolean = false;
+  showEmailModal: boolean = false;
 
   // SRI Status
   sriError: string | null = null;
@@ -251,15 +261,19 @@ export class FacturacionPage implements OnInit {
 
   applyFilters() {
     this.filteredFacturas = this.facturas.filter(f => {
-      const query = this.searchQuery.toLowerCase();
+      const query = this.searchQuery.trim().toLowerCase();
+      if (!query) return true;
+
       const clientName = f.snapshot_cliente?.razon_social?.toLowerCase() || '';
       const clientIdent = f.snapshot_cliente?.identificacion || '';
       const numFactura = f.numero_factura?.toLowerCase() || '';
+      const idStr = f.id?.toLowerCase() || '';
 
-      const matchSearch = !query ||
+      const matchSearch = 
         clientName.includes(query) ||
         clientIdent.includes(query) ||
-        numFactura.includes(query);
+        numFactura.includes(query) ||
+        idStr.includes(query);
 
       const matchEstado = this.filters.estado === 'ALL' || f.estado === this.filters.estado;
       const matchPago = this.filters.estado_pago === 'ALL' || f.estado_pago === this.filters.estado_pago;
@@ -339,7 +353,7 @@ export class FacturacionPage implements OnInit {
         this.descargarPdf(event.factura.id);
         break;
       case 'email':
-        this.enviarEmail(event.factura.id);
+        this.showEmailModal = true;
         break;
       case 'anular':
         if (this.sriError) {
@@ -487,10 +501,15 @@ export class FacturacionPage implements OnInit {
     });
   }
 
-  enviarEmail(id: string) {
-    const email = prompt("Ingrese email (dejar vacio para usar email del cliente):");
-    if (email === null) return;
-    this.facturasService.enviarEmail(id, email || undefined).subscribe({
+  closeEmailModal(email: string | null) {
+    this.showEmailModal = false;
+    if (email) {
+      this.enviarEmail(this.selectedFactura!.id, email);
+    }
+  }
+
+  enviarEmail(id: string, email?: string) {
+    this.facturasService.enviarEmail(id, email).subscribe({
       next: () => this.uiService.showToast('Correo enviado', 'success'),
       error: (err) => this.uiService.showError(err, 'Error enviando correo')
     });
