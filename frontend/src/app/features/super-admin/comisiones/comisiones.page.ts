@@ -3,7 +3,6 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ComisionesService, Comision, ComisionStats } from './services/comisiones.service';
 import { ComisionesStatsComponent } from './components/comisiones-stats/comisiones-stats.component';
-import { ComisionesActionsComponent } from './components/comisiones-actions/comisiones-actions.component';
 import { ComisionesTableComponent } from './components/comisiones-table/comisiones-table.component';
 import { ComisionesDetailsModalComponent } from './components/comisiones-details-modal/comisiones-details-modal.component';
 import { ComisionesActionModalComponent, ActionType } from './components/comisiones-action-modal/comisiones-action-modal.component';
@@ -24,28 +23,59 @@ import { UiService } from '../../../shared/services/ui.service';
         [pagados]="stats.pagados"
       ></app-comisiones-stats>
 
-      <!-- 2. TABS NAV -->
-      <div class="tabs-container mb-4">
-        <ul class="nav nav-pills custom-pills">
-          <li class="nav-item" *ngFor="let tab of tabs">
-            <a 
-              class="nav-link" 
-              [class.active]="currentTab === tab.id"
-              (click)="selectTab(tab.id)"
-              href="javascript:void(0)"
-            >
-              {{ tab.label }}
-            </a>
-          </li>
-        </ul>
-      </div>
+      <!-- 2. Actions (Search & Filters) -->
+      <div class="actions-box-lux">
+        <div class="row g-3 align-items-center">
+          <!-- BUSCADOR -->
+          <div class="col-12 col-md-3">
+            <div class="search-input-wrapper">
+              <i class="bi bi-search"></i>
+              <input 
+                type="text" 
+                class="search-input-lux" 
+                placeholder="Buscar vendedor o concepto..."
+                [(ngModel)]="searchQuery"
+                (ngModelChange)="filterComisiones()"
+              >
+            </div>
+          </div>
 
-      <!-- 3. ACTIONS -->
-      <app-comisiones-actions
-        [(searchQuery)]="searchQuery"
-        (searchQueryChange)="filterComisiones()"
-        (searchQueryChange)="filterComisiones()"
-      ></app-comisiones-actions>
+          <!-- FILTROS (TABS) Y ACTUALIZAR -->
+          <div class="col-12 col-md-9">
+            <div class="d-flex gap-2 justify-content-md-end flex-wrap align-items-center">
+                <!-- Dropdown de Filtros estilo lux -->
+                <div class="dropdown">
+                  <button class="btn-filter-lux dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="bi bi-funnel"></i> Estado: {{ getTabLabel(currentTab) }}
+                  </button>
+                  <ul class="dropdown-menu dropdown-menu-end border-0 shadow-sm rounded-3 mt-2">
+                    <li *ngFor="let tab of statusTabs">
+                      <a 
+                        class="dropdown-item py-2" 
+                        [class.active]="currentTab === tab.id" 
+                        href="javascript:void(0)"
+                        (click)="selectTab(tab.id)"
+                      >
+                        {{ tab.label }}
+                      </a>
+                    </li>
+                  </ul>
+                </div>
+                
+                <!-- Botones separados para Reglas y Auditoría -->
+                <ng-container *ngFor="let tab of otherTabs">
+                  <button 
+                      class="btn-filter-lux" 
+                      [class.active]="currentTab === tab.id" 
+                      (click)="selectTab(tab.id)">
+                      <i class="bi" [ngClass]="{'bi-gear-wide-connected': tab.id === 'RULES', 'bi-clock-history': tab.id === 'AUDIT'}"></i>
+                      <span class="d-none d-sm-inline">{{ tab.label }}</span>
+                  </button>
+                </ng-container>
+            </div>
+          </div>
+        </div>
+      </div>
 
       <!-- 4. CONTENT -->
       
@@ -105,35 +135,40 @@ import { UiService } from '../../../shared/services/ui.service';
   `,
   styles: [`
     .comisiones-page-container {
-    }
-    .tabs-container {
-      overflow-x: auto;
-      padding-bottom: 0.5rem;
-    }
-    .custom-pills {
-      gap: 0.5rem;
-      flex-wrap: nowrap;
-    }
-    .custom-pills .nav-link {
+      min-height: 100vh;
       background: #f8fafc;
-      color: #64748b;
-      font-weight: 600;
-      font-size: 0.9rem;
-      border-radius: 12px;
-      padding: 0.6rem 1.2rem;
-      border: 1px solid transparent;
-      transition: all 0.2s;
-      white-space: nowrap;
     }
-    .custom-pills .nav-link:hover {
-      background: #f1f5f9;
-      color: #1e293b;
+    
+    .actions-box-lux {
+      background: white; border: 1px solid #f1f5f9;
+      border-radius: 20px; padding: 1rem 1.5rem;
+      margin-bottom: 2rem;
     }
-    .custom-pills .nav-link.active {
-      background: #161d35;
-      color: #ffffff;
-      box-shadow: 0 4px 12px rgba(22, 29, 53, 0.15);
+    
+    .search-input-wrapper {
+      position: relative; display: flex; align-items: center;
     }
+    .search-input-wrapper i {
+      position: absolute; left: 1rem; color: #94a3b8; font-size: 1.1rem;
+    }
+    .search-input-lux {
+      background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 14px;
+      padding: 0.75rem 1rem 0.75rem 2.8rem; font-size: 0.9rem; font-weight: 600;
+      color: #1e293b; width: 100%; outline: none; transition: all 0.2s;
+    }
+    .search-input-lux:focus {
+      border-color: #161d35; background: white; box-shadow: 0 0 0 4px rgba(22, 29, 53, 0.05);
+    }
+    
+    .btn-filter-lux {
+      background: white; border: 1px solid #e2e8f0; color: #64748b;
+      padding: 0.75rem 1.25rem; border-radius: 14px; font-weight: 700; font-size: 0.825rem;
+      display: flex; align-items: center; gap: 0.6rem; transition: all 0.2s;
+    }
+    .btn-filter-lux:hover, .btn-filter-lux.active {
+      background: #f8fafc; border-color: #cbd5e1; color: #161d35;
+    }
+
     .placeholder-module {
       background: white;
       border-radius: 20px;
@@ -147,7 +182,6 @@ import { UiService } from '../../../shared/services/ui.service';
     CommonModule,
     FormsModule,
     ComisionesStatsComponent,
-    ComisionesActionsComponent,
     ComisionesTableComponent,
     ComisionesDetailsModalComponent,
     ComisionesActionModalComponent,
@@ -172,16 +206,28 @@ export class ComisionesPage implements OnInit {
   auditLogs: any[] = [];
   loadingAudit: boolean = false;
 
-  tabs = [
+  statusTabs = [
     { id: 'ALL', label: 'Todas Generadas' },
     { id: 'PENDING', label: 'Por Aprobar' },
     { id: 'APPROVED', label: 'Por Pagar' },
     { id: 'PAID', label: 'Historial Pagos' },
-    { id: 'REJECTED', label: 'Rechazadas' },
+    { id: 'REJECTED', label: 'Rechazadas' }
+  ];
+  
+  otherTabs = [
     { id: 'RULES', label: 'Reglas de Comisión' },
     { id: 'AUDIT', label: 'Auditoría' }
   ];
+  
   currentTab: string = 'ALL';
+
+  getTabLabel(id: string): string {
+    const tab = this.statusTabs.find(t => t.id === id);
+    if (tab) return tab.label;
+    if (id === 'RULES') return 'Reglas de Comisión';
+    if (id === 'AUDIT') return 'Auditoría';
+    return 'Filtro';
+  }
 
   constructor(
     private comisionesService: ComisionesService,

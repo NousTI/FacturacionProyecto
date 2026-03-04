@@ -33,6 +33,8 @@ class ConfigSRILectura(ConfigSRIBase):
     id: UUID
     created_at: datetime
     updated_at: datetime
+    empresa_nombre: Optional[str] = None
+    empresa_ruc: Optional[str] = None
 
     class Config:
         from_attributes = True

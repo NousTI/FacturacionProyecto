@@ -1,6 +1,8 @@
 import { Injectable } from '@angular/core';
-import { Observable, BehaviorSubject, of } from 'rxjs';
-import { map, delay } from 'rxjs/operators';
+import { HttpClient } from '@angular/common/http';
+import { Observable, BehaviorSubject, of, throwError } from 'rxjs';
+import { map, delay, catchError } from 'rxjs/operators';
+import { environment } from '../../../../../environments/environment';
 
 export interface SriCertConfig {
     id: string;
@@ -9,12 +11,14 @@ export interface SriCertConfig {
     empresa_ruc: string;    // Joined field
     ambiente: 'PRUEBAS' | 'PRODUCCION';
     tipo_emision: 'NORMAL' | 'CONTINGENCIA';
-    fecha_expiracion_cert: Date;
+    fecha_expiracion_cert: Date | string;
+    fecha_activacion_cert?: Date | string;
     estado: 'ACTIVO' | 'INACTIVO' | 'EXPIRADO' | 'REVOCADO';
     cert_serial: string;
     cert_emisor: string;
     cert_sujeto: string;
-    updated_at: Date;
+    updated_at: Date | string;
+    created_at?: Date | string;
     days_until_expiry?: number; // Calculated
 }
 
@@ -23,7 +27,7 @@ export interface SriCertAudit {
     configuracion_sri_id: string;
     empresa_id: string;
     user_id?: string;
-    user_name?: string; // Mocked
+    user_name?: string;
     accion: 'CREATE' | 'UPDATE' | 'DELETE';
     snapshot_before?: any;
     snapshot_after?: any;
@@ -35,97 +39,65 @@ export interface SriCertAudit {
     providedIn: 'root'
 })
 export class SriCertService {
-    private mockData: SriCertConfig[] = [];
-    private mockAudit: SriCertAudit[] = [];
+    private apiUrl = `${environment.apiUrl}/sri`;
+    
+    // Store temporary data to mock audit logs and calculate stats if needed
+    private curCerts: SriCertConfig[] = [];
 
-    constructor() {
-        this.generateMockData();
-    }
-
-    private generateMockData() {
-        const companies = [
-            { name: 'Tech Solutions S.A.', ruc: '1792134567001' },
-            { name: 'Distribuidora Global', ruc: '0990012345001' },
-            { name: 'Consultora Expertos', ruc: '0190054321001' },
-            { name: 'MegaMarket Ecuador', ruc: '1191234567001' },
-            { name: 'Servicios Rápidos', ruc: '1798765432001' },
-            { name: 'Farmacias Unidas', ruc: '0998761234001' },
-            { name: 'Constructora Elite', ruc: '0191239876001' },
-            { name: 'Restaurante Delicias', ruc: '1790011223001' },
-            { name: 'Transportes Veloces', ruc: '0992233445001' },
-            { name: 'Inmobiliaria Futuro', ruc: '0193344556001' },
-            { name: 'Importadora y Exportadora XYZ', ruc: '1799988776001' },
-            { name: 'SoftDev Corp', ruc: '0998877665001' }
-        ];
-
-        const now = new Date();
-
-        this.mockData = companies.map((comp, index) => {
-            // Randomize expiration dates
-            const daysOffset = Math.floor(Math.random() * 400) - 50; // -50 to +350 days
-            const expiryDate = new Date(now);
-            expiryDate.setDate(now.getDate() + daysOffset);
-
-            let estado: any = 'ACTIVO';
-            if (daysOffset < 0) estado = 'EXPIRADO';
-            else if (Math.random() > 0.9) estado = 'INACTIVO';
-
-            return {
-                id: `cert-${index + 1}`,
-                empresa_id: `emp-${index + 1}`,
-                empresa_nombre: comp.name,
-                empresa_ruc: comp.ruc,
-                ambiente: Math.random() > 0.2 ? 'PRODUCCION' : 'PRUEBAS',
-                tipo_emision: 'NORMAL',
-                fecha_expiracion_cert: expiryDate,
-                estado: estado,
-                cert_serial: `2024-${1000 + index}`,
-                cert_emisor: 'BANCO CENTRAL DEL ECUADOR',
-                cert_sujeto: `CN=${comp.name},OU=Firma Digital,O=Security Data`,
-                updated_at: new Date(now.getTime() - Math.floor(Math.random() * 1000000000))
-            };
-        });
-
-        // Generate Audit Logs
-        this.mockAudit = Array.from({ length: 50 }).map((_, i) => ({
-            id: `audit-${i}`,
-            configuracion_sri_id: `cert-${Math.floor(Math.random() * this.mockData.length) + 1}`,
-            empresa_id: `emp-${Math.floor(Math.random() * this.mockData.length) + 1}`,
-            user_name: 'Admin Sistema',
-            accion: Math.random() > 0.7 ? 'UPDATE' : 'CREATE',
-            created_at: new Date(now.getTime() - Math.floor(Math.random() * 5000000000)),
-            ip_origen: '192.168.1.10'
-        }));
-    }
+    constructor(private http: HttpClient) {}
 
     getCerts(): Observable<SriCertConfig[]> {
-        // Recalculate days until expiry dynamically
-        const now = new Date();
-        const data = this.mockData.map(c => {
-            const diffTime = c.fecha_expiracion_cert.getTime() - now.getTime();
-            const days = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-            return { ...c, days_until_expiry: days };
-        });
-        return of(data).pipe(delay(600)); // Simulate latency
+        return this.http.get<any>(`${this.apiUrl}/configuracion/list`).pipe(
+            map(response => {
+                let certs: SriCertConfig[] = response.detalles || [];
+                
+                // Recalculate days until expiry dynamically
+                const now = new Date();
+                certs = certs.map(c => {
+                    let days = 0;
+                    if (c.fecha_expiracion_cert) {
+                        const expiry = new Date(c.fecha_expiracion_cert);
+                        const diffTime = expiry.getTime() - now.getTime();
+                        days = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                    }
+                    return { ...c, days_until_expiry: days };
+                });
+                
+                this.curCerts = certs;
+                return certs;
+            }),
+            catchError(err => {
+                console.error("Error al obtener certificados:", err);
+                return throwError(() => err);
+            })
+        );
     }
 
     getStats(): Observable<any> {
-        return this.getCerts().pipe(
-            map(certs => {
-                const total = certs.length;
-                const active = certs.filter(c => c.estado === 'ACTIVO' && (c.days_until_expiry || 0) > 30).length;
-                const expiring = certs.filter(c => c.estado === 'ACTIVO' && (c.days_until_expiry || 0) <= 30 && (c.days_until_expiry || 0) >= 0).length;
-                const expired = certs.filter(c => c.estado === 'EXPIRADO' || (c.days_until_expiry || 0) < 0).length;
-
-                return { total, active, expiring, expired };
+        return this.http.get<any>(`${this.apiUrl}/configuracion/stats`).pipe(
+            map(response => response.detalles || { total: 0, active: 0, expiring: 0, expired: 0 }),
+            catchError(err => {
+                console.error("Error al obtener estadísticas:", err);
+                return throwError(() => err);
             })
         );
     }
 
     getAuditLogs(certId: string): Observable<SriCertAudit[]> {
-        return of(this.mockAudit
-            .filter(a => a.configuracion_sri_id === certId)
-            .sort((a, b) => b.created_at.getTime() - a.created_at.getTime())
-        ).pipe(delay(400));
+        // En un caso real, llamar a un endpoint como `/sri/configuracion/${certId}/audit`
+        // Como no está implementado en la especificación, devolvemos un log simulado genérico para la demo
+        const now = new Date();
+        const mockAudit: SriCertAudit[] = [
+            {
+                id: `audit-1`,
+                configuracion_sri_id: certId,
+                empresa_id: 'emp-unknown',
+                user_name: 'SysAdmin',
+                accion: 'CREATE',
+                created_at: new Date(now.getTime() - 86400000), // Ayer
+                ip_origen: 'Sistema'
+            }
+        ];
+        return of(mockAudit).pipe(delay(400));
     }
 }

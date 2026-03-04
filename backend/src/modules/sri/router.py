@@ -111,6 +111,14 @@ def listar_todas_las_configs(
     res = servicio.repo.listar_configs()
     return RespuestaBase(detalles=res)
 
+@router.get("/configuracion/stats", response_model=RespuestaBase)
+def obtener_stats_certificados(
+    usuario: dict = Depends(requerir_superadmin),
+    servicio: ServicioSRI = Depends()
+):
+    res = servicio.repo.obtener_stats_certificados()
+    return RespuestaBase(detalles=res)
+
 @router.get("/configuracion/{empresa_id}", response_model=RespuestaBase[Optional[ConfigSRILectura]])
 def obtener_config_por_id(
     empresa_id: UUID,

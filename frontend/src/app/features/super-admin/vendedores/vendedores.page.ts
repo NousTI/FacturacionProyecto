@@ -4,7 +4,6 @@ import { FormsModule } from '@angular/forms';
 import { VendedorService, VendedorStats, Vendedor } from './services/vendedor.service';
 import { UiService } from '../../../shared/services/ui.service';
 import { VendedorStatsComponent } from './components/vendedor-stats/vendedor-stats.component';
-import { VendedorActionsComponent } from './components/vendedor-actions/vendedor-actions.component';
 import { VendedorTableComponent } from './components/vendedor-table/vendedor-table.component';
 import { VendedorFormModalComponent } from './components/vendedor-form-modal/vendedor-form-modal.component';
 import { VendedorDetailsModalComponent } from './components/vendedor-details-modal/vendedor-details-modal.component';
@@ -24,11 +23,54 @@ import { ConfirmModalComponent } from '../../../shared/components/confirm-modal/
 
       <!-- 2. MÓDULO DE BÚSQUEDA Y ACCIONES (STICKY) -->
       <div class="sticky-actions">
-        <app-vendedor-actions
-          [(searchQuery)]="searchQuery"
-          (onCreate)="openCreateModal()"
-          class="d-block shadow-sm"
-        ></app-vendedor-actions>
+        <div class="actions-box-lux shadow-sm">
+          <div class="row g-3 align-items-center">
+            <!-- BUSCADOR -->
+            <div class="col-12 col-md-5">
+              <div class="search-input-wrapper">
+                <i class="bi bi-search"></i>
+                <input 
+                  type="text" 
+                  class="search-input-lux" 
+                  placeholder="Buscar por nombre, email o DNI..."
+                  [(ngModel)]="searchQuery"
+                >
+              </div>
+            </div>
+
+            <!-- FILTROS Y REGISTRAR -->
+            <div class="col-12 col-md-7">
+              <div class="d-flex gap-2 justify-content-md-end flex-wrap align-items-center">
+                  <!-- Dropdown de Filtros estilo lux -->
+                  <div class="dropdown">
+                    <button class="btn-filter-lux dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                      <i class="bi bi-funnel"></i> Estado: {{ getTabLabel(currentTab) }}
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end border-0 shadow-sm rounded-3 mt-2">
+                      <li *ngFor="let tab of statusTabs">
+                        <a 
+                          class="dropdown-item py-2" 
+                          [class.active]="currentTab === tab.id" 
+                          href="javascript:void(0)"
+                          (click)="selectTab(tab.id)"
+                        >
+                          {{ tab.label }}
+                        </a>
+                      </li>
+                    </ul>
+                  </div>
+
+                  <div class="ms-md-2 border-start ps-3 border-light opacity-50 d-none d-md-block" style="height: 30px;"></div>
+
+                  <div class="ms-md-2">
+                    <button class="btn-system-action" (click)="openCreateModal()">
+                      <i class="bi bi-person-plus-fill me-2"></i> Registrar Vendedor
+                    </button>
+                  </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
 
       <!-- 3. MÓDULO DE TABLA DE DATOS -->
@@ -109,8 +151,39 @@ import { ConfirmModalComponent } from '../../../shared/components/confirm-modal/
         position: relative;
         z-index: 1;
     }
-    .shadow-premium {
-        box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.04);
+    .shadow-premium { box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.04); }
+
+    /* Actions Box Lux Styles */
+    .actions-box-lux {
+      background: white; border: 1px solid #f1f5f9;
+      border-radius: 20px; padding: 1.25rem 1.5rem;
+    }
+    .search-input-wrapper { position: relative; display: flex; align-items: center; }
+    .search-input-wrapper i { position: absolute; left: 1rem; color: #94a3b8; font-size: 1.1rem; }
+    .search-input-lux {
+      background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 14px;
+      padding: 0.75rem 1rem 0.75rem 2.8rem; font-size: 0.9rem; font-weight: 600;
+      color: #1e293b; width: 100%; outline: none; transition: all 0.2s;
+    }
+    .search-input-lux:focus {
+      border-color: #161d35; background: white; box-shadow: 0 0 0 4px rgba(22, 29, 53, 0.05);
+    }
+    .btn-filter-lux {
+      background: white; border: 1px solid #e2e8f0; color: #64748b;
+      padding: 0.75rem 1.25rem; border-radius: 14px; font-weight: 700; font-size: 0.825rem;
+      display: flex; align-items: center; gap: 0.6rem; transition: all 0.2s;
+    }
+    .btn-filter-lux:hover, .btn-filter-lux.active {
+      background: #f8fafc; border-color: #cbd5e1; color: #161d35;
+    }
+    .btn-system-action {
+      background: #161d35; color: #ffffff; border: none;
+      padding: 0.8rem 1.5rem; border-radius: 14px; font-weight: 700; font-size: 0.85rem;
+      display: flex; align-items: center; justify-content: center; transition: all 0.2s;
+    }
+    .btn-system-action:hover {
+      background: #232d4d; transform: translateY(-1px);
+      box-shadow: 0 10px 15px -3px rgba(22, 29, 53, 0.2);
     }
   `],
     standalone: true,
@@ -118,7 +191,6 @@ import { ConfirmModalComponent } from '../../../shared/components/confirm-modal/
         CommonModule,
         FormsModule,
         VendedorStatsComponent,
-        VendedorActionsComponent,
         VendedorTableComponent,
         VendedorFormModalComponent,
         VendedorDetailsModalComponent,
@@ -148,6 +220,13 @@ export class VendedoresPage implements OnInit {
     selectedVendedorData: any = {};
     vendedorEmpresas: any[] = [];
 
+    statusTabs = [
+        { id: 'ALL', label: 'Todos' },
+        { id: 'ACTIVE', label: 'Activos' },
+        { id: 'INACTIVE', label: 'Inactivos' }
+    ];
+    currentTab: string = 'ALL';
+
     constructor(
         private vendedorService: VendedorService,
         private uiService: UiService,
@@ -162,14 +241,33 @@ export class VendedoresPage implements OnInit {
         return this.vendedores.filter(v => v.id !== this.selectedVendedor?.id);
     }
 
+    getTabLabel(id: string): string {
+        const tab = this.statusTabs.find(t => t.id === id);
+        return tab ? tab.label : 'Filtro';
+    }
+
+    selectTab(tabId: string) {
+        this.currentTab = tabId;
+    }
+
     get filteringVendedores() {
-        if (!this.searchQuery) return this.vendedores;
-        const q = this.searchQuery.toLowerCase();
-        return this.vendedores.filter(v =>
-            v.nombre.toLowerCase().includes(q) ||
-            v.email.toLowerCase().includes(q) ||
-            v.documento_identidad.includes(q)
-        );
+        let temp = this.vendedores;
+
+        // Apply Tab Filter
+        if (this.currentTab === 'ACTIVE') temp = temp.filter(v => v.activo);
+        else if (this.currentTab === 'INACTIVE') temp = temp.filter(v => !v.activo);
+
+        // Apply Search Filter
+        if (this.searchQuery) {
+            const q = this.searchQuery.toLowerCase();
+            temp = temp.filter(v =>
+                v.nombre.toLowerCase().includes(q) ||
+                v.email.toLowerCase().includes(q) ||
+                v.documento_identidad.includes(q)
+            );
+        }
+
+        return temp;
     }
 
     loadData() {

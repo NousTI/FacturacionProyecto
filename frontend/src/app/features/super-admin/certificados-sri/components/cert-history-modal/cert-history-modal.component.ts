@@ -8,7 +8,7 @@ import { Observable, of } from 'rxjs';
     standalone: true,
     imports: [CommonModule],
     template: `
-    <div class="modal-overlay animate__animated animate__fadeIn animate__faster" (click)="close()">
+    <div class="modal-overlay" (click)="close()">
       <div class="modal-container" (click)="$event.stopPropagation()">
         
         <!-- Header -->
@@ -97,19 +97,14 @@ import { Observable, of } from 'rxjs';
     .modal-container {
       background: #ffffff; width: 500px; height: 100vh;
       box-shadow: -10px 0 30px rgba(0,0,0,0.1); display: flex; flex-direction: column;
-      animation: slideInRight 0.3s ease-out;
-    }
-    @keyframes slideInRight {
-        from { transform: translateX(100%); }
-        to { transform: translateX(0); }
     }
 
     .modal-header { padding: 1.5rem; border-bottom: 1px solid #f1f5f9; display: flex; justify-content: space-between; align-items: center; }
     .btn-close-custom { background: none; border: none; font-size: 1.2rem; color: #94a3b8; transition: color 0.2s; }
     .btn-close-custom:hover { color: #dc2626; }
 
-    .hover-card { transition: transform 0.2s; }
-    .hover-card:hover { transform: translateX(5px); }
+    .hover-card {}
+    .hover-card:hover {}
 
     .custom-scrollbar::-webkit-scrollbar { width: 5px; }
     .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }

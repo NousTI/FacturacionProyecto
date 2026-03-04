@@ -56,9 +56,33 @@ class RepositorioSRI:
             row = cur.fetchone()
             return dict(row) if row else None
 
+    def obtener_stats_certificados(self) -> dict:
+        query = """
+            SELECT 
+                COUNT(*) as total,
+                SUM(CASE WHEN estado = 'ACTIVO' AND fecha_expiracion_cert > CURRENT_DATE + interval '30 days' THEN 1 ELSE 0 END) as active,
+                SUM(CASE WHEN estado = 'ACTIVO' AND fecha_expiracion_cert <= CURRENT_DATE + interval '30 days' AND fecha_expiracion_cert >= CURRENT_DATE THEN 1 ELSE 0 END) as expiring,
+                SUM(CASE WHEN (estado IN ('EXPIRADO', 'REVOCADO') OR estado IS NULL) OR fecha_expiracion_cert < CURRENT_DATE THEN 1 ELSE 0 END) as expired
+            FROM sistema_facturacion.configuraciones_sri
+        """
+        with self.db.cursor(cursor_factory=RealDictCursor) as cur:
+            cur.execute(query)
+            row = cur.fetchone()
+            return {
+                "total": int(row['total'] or 0) if row else 0,
+                "active": int(row['active'] or 0) if row else 0,
+                "expiring": int(row['expiring'] or 0) if row else 0,
+                "expired": int(row['expired'] or 0) if row else 0
+            }
+
     def listar_configs(self) -> List[dict]:
-        fields = "id, empresa_id, ambiente, tipo_emision, fecha_activacion_cert, fecha_expiracion_cert, cert_serial, cert_sujeto, cert_emisor, estado, created_at, updated_at"
-        query = f"SELECT {fields} FROM sistema_facturacion.configuraciones_sri"
+        fields = "c.id, c.empresa_id, c.ambiente, c.tipo_emision, c.fecha_activacion_cert, c.fecha_expiracion_cert, c.cert_serial, c.cert_sujeto, c.cert_emisor, c.estado, c.created_at, c.updated_at, e.razon_social as empresa_nombre, e.ruc as empresa_ruc"
+        query = f"""
+            SELECT {fields} 
+            FROM sistema_facturacion.configuraciones_sri c
+            LEFT JOIN sistema_facturacion.empresas e ON c.empresa_id = e.id
+            ORDER BY c.created_at DESC
+        """
         with self.db.cursor(cursor_factory=RealDictCursor) as cur:
             cur.execute(query)
             return [dict(row) for row in cur.fetchall()]

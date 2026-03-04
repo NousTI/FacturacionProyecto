@@ -49,15 +49,15 @@ import { Factura, FacturaDetalle } from '../../../../../domain/models/factura.mo
             <div *ngIf="!isLoading && factura">
               
               <!-- DATOS SRI SIMPLES -->
-              <div class="row mb-5 pb-4 border-bottom" *ngIf="factura?.clave_acceso || factura?.numero_autorizacion">
+              <div class="row mb-5 pb-4 border-bottom" *ngIf="factura.clave_acceso || factura.numero_autorizacion">
                 <div class="col-md-12 mb-2">
                   <h6 class="text-uppercase text-muted fw-bold mb-3" style="font-size: 0.75rem; letter-spacing: 1px;">Documento SRI</h6>
                 </div>
-                <div class="col-md-6 mb-3 mb-md-0" *ngIf="factura?.clave_acceso">
+                <div class="col-md-6 mb-3 mb-md-0" *ngIf="factura.clave_acceso">
                   <div class="text-muted mb-1" style="font-size: 0.8rem;">Clave de Acceso</div>
                   <div class="text-dark font-monospace" style="font-size: 0.9rem;">{{ factura.clave_acceso }}</div>
                 </div>
-                <div class="col-md-6" *ngIf="factura?.numero_autorizacion">
+                <div class="col-md-6" *ngIf="factura.numero_autorizacion">
                    <div class="text-muted mb-1" style="font-size: 0.8rem;">Autorización SRI</div>
                    <div class="text-dark font-monospace" style="font-size: 0.9rem;">{{ factura.numero_autorizacion }}</div>
                 </div>

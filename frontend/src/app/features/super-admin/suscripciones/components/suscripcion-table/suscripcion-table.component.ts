@@ -21,7 +21,7 @@ import { Suscripcion } from '../../services/suscripcion.service';
               </tr>
             </thead>
             <tbody>
-              <tr *ngFor="let sub of suscripciones; trackBy: trackById" class="animate__animated animate__fadeIn">
+              <tr *ngFor="let sub of suscripciones; trackBy: trackById" class="">
                 <td>
                   <div class="d-flex align-items-center">
                     <div class="empresa-icon me-3">

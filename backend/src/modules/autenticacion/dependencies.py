@@ -21,7 +21,8 @@ from fastapi import HTTPException, status
 
 def requerir_rol(rol: str):
     def rol_dependency(current_user: dict = Depends(get_current_user)):
-        if current_user.get("rol") != rol:
+        user_role = str(current_user.get("role") or current_user.get("rol") or "").upper()
+        if user_role != rol.upper():
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail=f"Se requieren permisos de {rol}"
@@ -30,7 +31,8 @@ def requerir_rol(rol: str):
     return rol_dependency
 
 def requerir_superadmin(current_user: dict = Depends(get_current_user)):
-    if current_user.get("rol") != "SUPERADMIN":
+    role = str(current_user.get("role") or current_user.get("rol") or "").upper()
+    if role != "SUPERADMIN" and not current_user.get("is_superadmin"):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Se requieren permisos de Super Administrador"
