@@ -113,7 +113,8 @@ import { Factura, FacturaDetalle } from '../../../../../domain/models/factura.mo
                   <table class="table table-sm border-bottom">
                     <thead>
                       <tr class="text-muted text-uppercase" style="font-size: 0.75rem;">
-                        <th class="border-top-0 border-bottom-1 fw-bold pb-2 w-50">Descripción</th>
+                        <th class="border-top-0 border-bottom-1 fw-bold pb-2 w-25">Descripción</th>
+                        <th class="border-top-0 border-bottom-1 fw-bold pb-2">Código</th>
                         <th class="border-top-0 border-bottom-1 fw-bold text-center pb-2">Cant.</th>
                         <th class="border-top-0 border-bottom-1 fw-bold text-end pb-2">Precio</th>
                         <th class="border-top-0 border-bottom-1 fw-bold text-end pb-2">Desc.</th>
@@ -122,10 +123,8 @@ import { Factura, FacturaDetalle } from '../../../../../domain/models/factura.mo
                     </thead>
                     <tbody style="border-top: 2px solid #000;">
                       <tr *ngFor="let d of detalles" style="font-size: 0.95rem;">
-                        <td class="pt-3 pb-3">
-                          <span class="d-block text-dark">{{ d.nombre }}</span>
-                          <span class="text-muted" style="font-size: 0.8rem;">Código: {{ d.codigo_producto }}</span>
-                        </td>
+                        <td class="pt-3 pb-3 text-dark">{{ d.nombre }}</td>
+                        <td class="pt-3 pb-3 text-muted" style="font-size: 0.85rem;">{{ d.codigo_producto }}</td>
                         <td class="text-center pt-3 pb-3">{{ d.cantidad }}</td>
                         <td class="text-end pt-3 pb-3">{{ d.precio_unitario | currency:'USD' }}</td>
                         <td class="text-end pt-3 pb-3 text-muted">{{ d.descuento > 0 ? (d.descuento | currency:'USD') : '-' }}</td>

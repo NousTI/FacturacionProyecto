@@ -81,19 +81,62 @@ class RepositorioFacturas:
         with db_transaction(self.db) as cur:
             cur.execute(query, tuple(values))
             row = cur.fetchone()
-            return dict(row) if row else None
+            if not row:
+                return None
+            return self.obtener_por_id(row['id'])
 
     def obtener_por_id(self, id: UUID) -> Optional[dict]:
         """
-        Obtiene una factura por ID incluyendo snapshots.
-        
-        PostgreSQL automáticamente deserializa JSONB a dict.
+        Obtiene una factura por ID incluyendo snapshots o datos del cliente via JOIN.
         """
-        query = "SELECT * FROM sistema_facturacion.facturas WHERE id = %s"
+        query = """
+            SELECT f.*, 
+                   c.razon_social as cliente_nombre, 
+                   c.identificacion as cliente_identificacion,
+                   c.tipo_identificacion as cliente_tipo_identificacion,
+                   c.email as cliente_email,
+                   c.direccion as cliente_direccion,
+                   e.razon_social as emisor_nombre,
+                   e.ruc as emisor_ruc,
+                   e.direccion as emisor_direccion,
+                   e.email as emisor_email,
+                   e.tipo_contribuyente as emisor_tipo,
+                   e.obligado_contabilidad as emisor_obligado,
+                   e.logo_url as emisor_logo
+            FROM sistema_facturacion.facturas f
+            LEFT JOIN sistema_facturacion.clientes c ON f.cliente_id = c.id
+            LEFT JOIN sistema_facturacion.empresas e ON f.empresa_id = e.id
+            WHERE f.id = %s
+        """
         with self.db.cursor() as cur:
             cur.execute(query, (str(id),))
             row = cur.fetchone()
-            return dict(row) if row else None
+            if not row:
+                return None
+            
+            data = dict(row)
+            # Si el snapshot está vacío, lo poblamos con datos del JOIN para el frontend
+            if not data.get('snapshot_cliente'):
+                data['snapshot_cliente'] = {
+                    'razon_social': data.get('cliente_nombre'),
+                    'identificacion': data.get('cliente_identificacion'),
+                    'numero_identificacion': data.get('cliente_identificacion'), # Alias para frontend
+                    'tipo_identificacion': data.get('cliente_tipo_identificacion') or 'CEDULA', # Fallback seguro
+                    'email': data.get('cliente_email'),
+                    'direccion': data.get('cliente_direccion')
+                }
+            
+            if not data.get('snapshot_empresa'):
+                data['snapshot_empresa'] = {
+                    'razon_social': data.get('emisor_nombre'),
+                    'ruc': data.get('emisor_ruc'),
+                    'direccion': data.get('emisor_direccion'),
+                    'email': data.get('emisor_email'),
+                    'tipo_contribuyente': data.get('emisor_tipo') or 'NATURAL',
+                    'obligado_contabilidad': data.get('emisor_obligado') or False,
+                    'logo_url': data.get('emisor_logo')
+                }
+            return data
 
     def listar_facturas(
         self,
@@ -116,17 +159,35 @@ class RepositorioFacturas:
         Returns:
             Lista de facturas
         """
-        query = "SELECT * FROM sistema_facturacion.facturas WHERE 1=1"
+        query = """
+            SELECT f.*, 
+                   c.razon_social as cliente_nombre, 
+                   c.identificacion as cliente_identificacion,
+                   c.tipo_identificacion as cliente_tipo_identificacion,
+                   c.email as cliente_email,
+                   c.direccion as cliente_direccion,
+                   e.razon_social as emisor_nombre,
+                   e.ruc as emisor_ruc,
+                   e.direccion as emisor_direccion,
+                   e.email as emisor_email,
+                   e.tipo_contribuyente as emisor_tipo,
+                   e.obligado_contabilidad as emisor_obligado,
+                   e.logo_url as emisor_logo
+            FROM sistema_facturacion.facturas f
+            LEFT JOIN sistema_facturacion.clientes c ON f.cliente_id = c.id
+            LEFT JOIN sistema_facturacion.empresas e ON f.empresa_id = e.id
+            WHERE 1=1
+        """
         params = []
         
         # Filtro por empresa
         if empresa_id:
-            query += " AND empresa_id = %s"
+            query += " AND f.empresa_id = %s"
             params.append(str(empresa_id))
         
         # Filtro por usuario (solo_propias)
         if usuario_id:
-            query += " AND usuario_id = %s"
+            query += " AND f.usuario_id = %s"
             params.append(str(usuario_id))
         
         # Filtros adicionales
@@ -148,23 +209,47 @@ class RepositorioFacturas:
                 params.append(filtros.fecha_hasta)
             
             if filtros.cliente_id:
-                query += " AND cliente_id = %s"
+                query += " AND f.cliente_id = %s"
                 params.append(str(filtros.cliente_id))
             
             if filtros.establecimiento_id:
-                query += " AND establecimiento_id = %s"
+                query += " AND f.establecimiento_id = %s"
                 params.append(str(filtros.establecimiento_id))
             
             if filtros.punto_emision_id:
-                query += " AND punto_emision_id = %s"
+                query += " AND f.punto_emision_id = %s"
                 params.append(str(filtros.punto_emision_id))
         
-        query += " ORDER BY created_at DESC LIMIT %s OFFSET %s"
+        query += " ORDER BY f.created_at DESC LIMIT %s OFFSET %s"
         params.extend([limit, offset])
         
         with self.db.cursor() as cur:
             cur.execute(query, tuple(params))
-            return [dict(row) for row in cur.fetchall()]
+            rows = [dict(row) for row in cur.fetchall()]
+            
+            # Post-procesamiento para inyectar datos del cliente si falta el snapshot
+            for r in rows:
+                if not r.get('snapshot_cliente'):
+                    r['snapshot_cliente'] = {
+                        'razon_social': r.get('cliente_nombre'),
+                        'identificacion': r.get('cliente_identificacion'),
+                        'numero_identificacion': r.get('cliente_identificacion'), # Alias para frontend
+                        'tipo_identificacion': r.get('cliente_tipo_identificacion') or 'CEDULA',
+                        'email': r.get('cliente_email'),
+                        'direccion': r.get('cliente_direccion')
+                    }
+                
+                if not r.get('snapshot_empresa'):
+                    r['snapshot_empresa'] = {
+                        'razon_social': r.get('emisor_nombre'),
+                        'ruc': r.get('emisor_ruc'),
+                        'direccion': r.get('emisor_direccion'),
+                        'email': r.get('emisor_email'),
+                        'tipo_contribuyente': r.get('emisor_tipo') or 'NATURAL',
+                        'obligado_contabilidad': r.get('emisor_obligado') or False,
+                        'logo_url': r.get('emisor_logo')
+                    }
+            return rows
 
     def actualizar_factura(self, id: UUID, data: dict) -> Optional[dict]:
         """
