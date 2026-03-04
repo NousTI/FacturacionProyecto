@@ -38,15 +38,27 @@ import { UiService } from '../../../shared/services/ui.service';
 
       <!-- 2. CONTROL Y FILTROS -->
       <div class="d-flex justify-content-between align-items-center mb-4">
-        <!-- Search -->
-        <div class="search-box">
-          <i class="bi bi-search search-icon"></i>
-          <input 
-            type="text" 
-            class="form-control search-input" 
-            placeholder="Buscar empresa..."
-            [(ngModel)]="searchQuery"
+        <!-- Search and Maintenance -->
+        <div class="d-flex align-items-center gap-3">
+          <div class="search-box">
+            <i class="bi bi-search search-icon"></i>
+            <input 
+              type="text" 
+              class="form-control search-input" 
+              placeholder="Buscar empresa..."
+              [(ngModel)]="searchQuery"
+            >
+          </div>
+          
+          <button 
+            class="btn-maintenance" 
+            (click)="ejecutarMantenimiento()" 
+            [disabled]="isRunningMaintenance"
+            title="Ejecutar limpieza de vencimientos"
           >
+            <i class="bi" [class.bi-gear-fill]="!isRunningMaintenance" [class.spinner-border]="isRunningMaintenance" [class.spinner-border-sm]="isRunningMaintenance"></i>
+            <span class="ms-2 d-none d-md-inline">{{ isRunningMaintenance ? 'Procesando...' : 'Mantenimiento' }}</span>
+          </button>
         </div>
 
         <!-- Filter Tabs -->
@@ -147,6 +159,16 @@ import { UiService } from '../../../shared/services/ui.service';
     }
     .btn-tab:hover:not(.active) { background: #f8fafc; }
 
+    .btn-maintenance {
+      background: #f8fafc; border: 1px solid #e2e8f0; color: #1e293b;
+      padding: 0.5rem 1rem; border-radius: 12px; font-weight: 700; font-size: 0.85rem;
+      transition: all 0.2s; display: flex; align-items: center; justify-content: center;
+      height: 46px;
+    }
+    .btn-maintenance:hover:not(:disabled) { background: #f1f5f9; border-color: #cbd5e1; transform: translateY(-1px); }
+    .btn-maintenance:disabled { opacity: 0.6; cursor: not-allowed; }
+    .btn-maintenance i { font-size: 1.1rem; }
+
     .loading-overlay {
       position: absolute; top: 0; left: 0; width: 100%; height: 100%;
       background: rgba(255,255,255,0.8); backdrop-filter: blur(2px);
@@ -186,6 +208,8 @@ export class SuscripcionesPage implements OnInit {
     confirmType: 'primary' | 'danger' | 'success' = 'primary';
     confirmIcon = '';
     pendingAction: () => void = () => { };
+
+    isRunningMaintenance = false;
 
     constructor(
         private susService: SuscripcionService,
@@ -254,17 +278,14 @@ export class SuscripcionesPage implements OnInit {
     }
 
     mapCompanyToSuscripcion(c: any): Suscripcion {
-        // Inference logic
+        // Real state from DB
+        let estado: any = c.estado || (c.activo ? 'ACTIVA' : 'SUSPENDIDA');
+        
+        // Logical check for UI indicators (overdue badge)
         const isOverdue = c.fecha_vencimiento ? new Date(c.fecha_vencimiento) < new Date() : false;
-        let estado: any = c.activo ? 'ACTIVA' : 'SUSPENDIDA';
-
-        // If active but overdue, mark as VENCIDA
-        if (c.activo && isOverdue) {
-            estado = 'VENCIDA';
-        }
 
         return {
-            id: c.suscripcion_id || c.id, // Ensure we have a subscription ID or use comp ID as fallback
+            id: c.suscripcion_id || c.id, 
             empresa_id: c.id,
             empresa_nombre: c.razon_social || c.nombre_comercial,
             plan_id: c.plan_id,
@@ -273,7 +294,7 @@ export class SuscripcionesPage implements OnInit {
             fecha_inicio: c.fecha_inicio || c.created_at,
             fecha_fin: c.fecha_vencimiento,
             estado: estado,
-            estado_pago: isOverdue ? 'PENDIENTE' : 'PAGADO', // Simple inference for now
+            estado_pago: isOverdue ? 'PENDIENTE' : 'PAGADO',
             created_at: c.created_at || '',
             updated_at: ''
         };
@@ -434,5 +455,21 @@ export class SuscripcionesPage implements OnInit {
 
     executeConfirmedAction() {
         this.pendingAction();
+    }
+
+    ejecutarMantenimiento() {
+        this.isRunningMaintenance = true;
+        this.susService.runMaintenance().subscribe({
+            next: (res) => {
+                const count = res.detalles?.procesados || 0;
+                this.uiService.showToast(`Mantenimiento completado: ${count} suscripciones actualizadas.`, 'success');
+                this.isRunningMaintenance = false;
+                this.loadData();
+            },
+            error: (err) => {
+                this.isRunningMaintenance = false;
+                this.uiService.showError(err, 'Error en mantenimiento');
+            }
+        });
     }
 }

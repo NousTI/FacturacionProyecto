@@ -4,13 +4,20 @@ from typing import Optional
 import logging
 
 from .repositories import SuperadminRepository
+from ..empresas.repositories import RepositorioEmpresas
 from ...errors.app_error import AppError
+from ...constants.enums import AuthKeys
 
 logger = logging.getLogger("facturacion_api")
 
 class SuperadminServices:
-    def __init__(self, repo: SuperadminRepository = Depends()):
+    def __init__(
+        self, 
+        repo: SuperadminRepository = Depends(),
+        repo_empresa: RepositorioEmpresas = Depends()
+    ):
         self.repo = repo
+        self.repo_empresa = repo_empresa
 
     def obtener_perfil(self, user_id: UUID):
         perfil = self.repo.obtener_perfil_por_user_id(user_id)
@@ -37,3 +44,14 @@ class SuperadminServices:
         if not perfil or not perfil.get('profile_id'):
             return self.repo.crear_perfil(user_id, nombres, apellidos)
         return perfil
+
+    def ejecutar_limpieza_suscripciones(self, usuario_actual: dict):
+        """Llamada manual para procesar vencimientos de suscripciones."""
+        if not usuario_actual.get(AuthKeys.IS_SUPERADMIN):
+            raise AppError("No autorizado para realizar mantenimiento", 403)
+            
+        count = self.repo_empresa.check_expired_subscriptions()
+        return {
+            "procesados": count,
+            "mensaje": f"Se han marcado {count} suscripciones como vencidas."
+        }

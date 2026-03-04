@@ -117,9 +117,9 @@ import { Empresa } from '../../../domain/models/empresa.model';
               <div class="summary-card-lux">
                 <div class="card-header-mini">
                   <h5 class="section-title m-0">Estado de Suscripción</h5>
-                  <div class="status-badge" [ngClass]="empresa.activo ? 'status-active' : 'status-inactive'">
+                  <div class="status-badge" [ngClass]="getStatusClass(empresa.suscripcion_estado)">
                     <span class="pulse-dot"></span>
-                    {{ empresa.activo ? 'ACTIVA' : 'INACTIVA' }}
+                    {{ empresa.suscripcion_estado || (empresa.activo ? 'ACTIVA' : 'INACTIVA') }}
                   </div>
                 </div>
                 
@@ -134,7 +134,10 @@ import { Empresa } from '../../../domain/models/empresa.model';
                   </div>
                   <div class="detail-row" *ngIf="empresa.fecha_fin">
                     <span class="label">Vencimiento</span>
-                    <span class="value text-danger">{{ empresa.fecha_fin | date:'dd MMM, yyyy' }}</span>
+                    <span class="value" [class.text-danger]="isOverdue(empresa.fecha_fin)">
+                      {{ empresa.fecha_fin | date:'dd MMM, yyyy' }}
+                      <i *ngIf="isOverdue(empresa.fecha_fin)" class="bi bi-exclamation-triangle-fill ms-1"></i>
+                    </span>
                   </div>
                 </div>
               </div>
@@ -288,6 +291,9 @@ import { Empresa } from '../../../domain/models/empresa.model';
     }
     .status-active { background: #ecfdf5; color: #10b981; }
     .status-inactive { background: #fef2f2; color: #ef4444; }
+    .status-vencida { background: #fff7ed; color: #f59e0b; }
+    .status-cancelada { background: #f1f5f9; color: #64748b; }
+    .status-suspendida { background: #fee2e2; color: #b91c1c; }
     .pulse-dot {
       width: 6px;
       height: 6px;
@@ -474,5 +480,20 @@ export class EmpresaPage implements OnInit {
 
   refreshData(): void {
     this.loadEmpresa();
+  }
+
+  getStatusClass(estado: string | null | undefined): string {
+    if (!estado) return 'status-active';
+    const s = estado.toLowerCase();
+    if (s === 'activa') return 'status-active';
+    if (s === 'vencida') return 'status-vencida';
+    if (s === 'cancelada') return 'status-cancelada';
+    if (s === 'suspendida') return 'status-suspendida';
+    return 'status-inactive';
+  }
+
+  isOverdue(fecha: string | null): boolean {
+    if (!fecha) return false;
+    return new Date(fecha) < new Date();
   }
 }

@@ -21,3 +21,11 @@ def actualizar_mi_perfil(
     controller: SuperadminController = Depends()
 ):
     return controller.actualizar_mi_perfil(usuario.get("id"), body)
+
+@router.post("/mantenimiento/suscripciones/check-expired", response_model=RespuestaBase)
+def disparar_chequeo_suscripciones(
+    usuario: dict = Depends(get_current_user),
+    controller: SuperadminController = Depends()
+):
+    """Acción manual solo para superadmins para procesar vencimientos."""
+    return controller.ejecutar_limpieza_suscripciones(usuario)

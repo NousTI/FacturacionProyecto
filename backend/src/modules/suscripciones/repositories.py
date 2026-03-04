@@ -76,12 +76,10 @@ class RepositorioSuscripciones:
         query = """
             SELECT e.id, e.razon_social, e.nombre_comercial, e.ruc, e.email, e.telefono, 
                    s.fecha_inicio as fecha_activacion, s.fecha_fin as fecha_vencimiento, 
-                   e.activo, e.created_at
+                   s.estado, e.activo, e.created_at
             FROM sistema_facturacion.empresas e
             JOIN sistema_facturacion.suscripciones s ON e.id = s.empresa_id
             WHERE s.plan_id = %s
-            AND s.estado = 'ACTIVA'
-            AND s.fecha_fin >= CURRENT_DATE
         """
         params = [str(plan_id)]
         

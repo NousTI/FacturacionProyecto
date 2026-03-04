@@ -85,11 +85,7 @@ import { Suscripcion } from '../../services/suscripcion.service';
                       </li>
                       <li><hr class="dropdown-divider mx-2"></li>
                       <li>
-                         <a *ngIf="sub.estado !== 'ACTIVA'" class="dropdown-item rounded-3 py-2" href="javascript:void(0)" (click)="onActivar.emit(sub)">
-                          <i class="bi bi-check-circle-fill text-success"></i>
-                          <span class="ms-2">Activar Suscripción</span>
-                        </a>
-                        <a *ngIf="sub.estado !== 'CANCELADA'" class="dropdown-item rounded-3 py-2" href="javascript:void(0)" (click)="onCancelar.emit(sub)">
+                         <a *ngIf="sub.estado !== 'CANCELADA' && sub.estado !== 'VENCIDA'" class="dropdown-item rounded-3 py-2" href="javascript:void(0)" (click)="onCancelar.emit(sub)">
                           <i class="bi bi-x-circle-fill text-danger"></i>
                           <span class="ms-2">Cancelar Suscripción</span>
                         </a>

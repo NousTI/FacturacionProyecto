@@ -66,7 +66,7 @@ import { UsuariosService } from '../../services/usuarios.service';
                   [disabled]="loading || isInitialLoading || !selectedRoleId || selectedRoleId === usuario.empresa_rol_id" 
                   class="btn-submit-role d-flex align-items-center gap-2">
             <span *ngIf="loading" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-            {{ loading ? 'Actualizando...' : 'Guardar Nuevo Rol' }}
+            {{ loading ? 'Actualizando...' : 'Guardar' }}
           </button>
         </div>
 

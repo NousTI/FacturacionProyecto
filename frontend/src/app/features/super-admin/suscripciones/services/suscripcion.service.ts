@@ -132,6 +132,11 @@ export class SuscripcionService {
         return this.http.post(`${this.apiUrl}/verificar-vencimientos`, {});
     }
 
+    runMaintenance(): Observable<any> {
+        const url = `${environment.apiUrl}/superadmin/mantenimiento/suscripciones/check-expired`;
+        return this.http.post<any>(url, {});
+    }
+
     getHistorialCambios(empresaId: string): Observable<any[]> {
         return this.http.get<any>(`${this.apiUrl}/${empresaId}/historial`).pipe(
             map(res => res.detalles || [])

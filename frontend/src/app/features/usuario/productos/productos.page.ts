@@ -32,7 +32,7 @@ import { Producto, ProductoStats } from '../../../domain/models/producto.model';
   template: `
     <div class="productos-page-container">
 
-      <div class="animate-fade-in">
+      <div class="">
         <!-- ESTADÍSTICAS (Sectional Cards) -->
         <app-producto-stats
           *ngIf="stats$ | async as st"

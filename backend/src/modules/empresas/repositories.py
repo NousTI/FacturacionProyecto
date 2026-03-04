@@ -160,11 +160,52 @@ class RepositorioEmpresas:
             return dict(row) if row else None
 
     def check_expired_subscriptions(self, tolerance_days: int = 0) -> int:
+        """
+        Busca suscripciones vencidas, las cambia a estado 'VENCIDA' 
+        y genera automáticamente el registro en el historial (log).
+        """
         query = """
-            UPDATE sistema_facturacion.suscripciones 
-            SET estado = 'VENCIDA', updated_at = NOW() 
-            WHERE estado = 'ACTIVA' 
-            AND (fecha_fin + (interval '1 day' * %s)) < NOW()
+            WITH to_expire AS (
+                SELECT s.*, CURRENT_TIMESTAMP as now_ts
+                FROM sistema_facturacion.suscripciones s
+                WHERE s.estado = 'ACTIVA' 
+                AND s.fecha_fin < (CURRENT_TIMESTAMP - (interval '1 day' * %s))
+            ),
+            updated_subs AS (
+                UPDATE sistema_facturacion.suscripciones s
+                SET estado = 'VENCIDA', 
+                    updated_at = NOW(),
+                    observaciones = 'Vencimiento automático por fin de periodo'
+                FROM to_expire te
+                WHERE s.id = te.id
+                RETURNING te.*
+            )
+            INSERT INTO sistema_facturacion.suscripciones_log (
+                suscripcion_id, 
+                estado_anterior, 
+                estado_nuevo, 
+                plan_anterior, 
+                plan_nuevo, 
+                fecha_inicio_anterior, 
+                fecha_fin_anterior, 
+                fecha_inicio_nuevo, 
+                fecha_fin_nuevo, 
+                origen, 
+                motivo
+            )
+            SELECT 
+                id, 
+                estado, 
+                'VENCIDA', 
+                plan_id, 
+                plan_id, 
+                fecha_inicio, 
+                fecha_fin, 
+                fecha_inicio, 
+                fecha_fin, 
+                'SISTEMA', 
+                'Vencimiento automático por fin de periodo'
+            FROM updated_subs;
         """
         with db_transaction(self.db) as cur:
             cur.execute(query, (tolerance_days,))
