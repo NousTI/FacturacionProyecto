@@ -27,8 +27,6 @@ const routes: Routes = [
     },
     // Shared / Global Maintenance routes
     { path: 'finanzas', component: MaintenanceComponent, data: { title: 'Finanzas', description: 'Estado financiero global' } },
-    { path: 'reportes', component: MaintenanceComponent, data: { title: 'Reportes', description: 'Analítica y estadísticas' } },
-    { path: 'auditoria', component: MaintenanceComponent, data: { title: 'Auditoría', description: 'Registros de actividad' } }
 ];
 
 @NgModule({

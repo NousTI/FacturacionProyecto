@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends
 from typing import List
 from uuid import UUID
-from .schemas import VendedorCreacion, VendedorActualizacion, VendedorLectura, VendedorStats, ReasignacionEmpresas
+from .schemas import VendedorCreacion, VendedorActualizacion, VendedorLectura, VendedorStats, ReasignacionEmpresas, VendedorPerfilActualizacion
 from .controller import VendedorController
 from ..autenticacion.routes import obtener_usuario_actual
 from ...utils.response_schemas import RespuestaBase
@@ -29,6 +29,30 @@ def listar_vendedores(
     controller: VendedorController = Depends()
 ):
     return controller.listar_vendedores(usuario)
+
+@router.get("/me", response_model=RespuestaBase[VendedorLectura])
+def obtener_mi_perfil(
+    usuario: dict = Depends(obtener_usuario_actual),
+    controller: VendedorController = Depends()
+):
+    return controller.obtener_mi_perfil(usuario)
+
+from .schemas import VendedorHomeData
+
+@router.get("/me/home-data", response_model=RespuestaBase[VendedorHomeData])
+def obtener_home_data(
+    usuario: dict = Depends(obtener_usuario_actual),
+    controller: VendedorController = Depends()
+):
+    return controller.obtener_home_data(usuario)
+
+@router.patch("/me", response_model=RespuestaBase[VendedorLectura])
+def actualizar_mi_perfil(
+    datos: VendedorPerfilActualizacion,
+    usuario: dict = Depends(obtener_usuario_actual),
+    controller: VendedorController = Depends()
+):
+    return controller.actualizar_mi_perfil(datos, usuario)
 
 @router.get("/{id}", response_model=RespuestaBase[VendedorLectura])
 def obtener_vendedor(

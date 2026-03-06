@@ -6,10 +6,11 @@ import logging
 from .repositories import RepositorioVendedores
 from ..empresas.repositories import RepositorioEmpresas
 from ..usuarios.repositories import RepositorioUsuarios
-from .schemas import VendedorCreacion, VendedorActualizacion, ReasignacionEmpresas
+from .schemas import VendedorCreacion, VendedorActualizacion, ReasignacionEmpresas, VendedorPerfilActualizacion
 from ...utils.password import get_password_hash
 from ...constants.enums import AuthKeys
 from ...errors.app_error import AppError
+from ..logs.service import ServicioLogs
 
 from ...constants.error_codes import ErrorCodes
 from ...constants.messages import AppMessages
@@ -17,10 +18,14 @@ from ...constants.messages import AppMessages
 logger = logging.getLogger("facturacion_api")
 
 class ServicioVendedores:
-    def __init__(self, repo: RepositorioVendedores = Depends(), repo_empresa: RepositorioEmpresas = Depends(), repo_usuarios: RepositorioUsuarios = Depends()):
+    def __init__(self, repo: RepositorioVendedores = Depends(),        repo_empresa: RepositorioEmpresas = Depends(), 
+        repo_usuarios: RepositorioUsuarios = Depends(),
+        logs_service: ServicioLogs = Depends()
+    ):
         self.repo = repo
         self.repo_empresa = repo_empresa
         self.repo_usuarios = repo_usuarios
+        self.logs_service = logs_service
 
     def _sanitize(self, vendedor: dict) -> dict:
         if not vendedor: return None
@@ -98,6 +103,40 @@ class ServicioVendedores:
              )
         return self._sanitize(vendedor)
 
+    def obtener_mi_perfil(self, usuario_actual: dict):
+        if not usuario_actual.get(AuthKeys.IS_VENDEDOR):
+             raise AppError(
+                 message=AppMessages.PERM_FORBIDDEN, 
+                 status_code=403, 
+                 code=ErrorCodes.PERM_FORBIDDEN
+             )
+        vendedor = self.repo.obtener_por_user_id(usuario_actual.get('id'))
+        if not vendedor:
+             raise AppError(
+                 message=AppMessages.AUTH_USER_NOT_FOUND, 
+                 status_code=404, 
+                 code=ErrorCodes.AUTH_USER_NOT_FOUND
+             )
+        return self._sanitize(self.repo.obtener_por_id(vendedor['id']))
+
+    def actualizar_mi_perfil(self, datos: VendedorPerfilActualizacion, usuario_actual: dict):
+        if not usuario_actual.get(AuthKeys.IS_VENDEDOR):
+             raise AppError(
+                 message=AppMessages.PERM_FORBIDDEN, 
+                 status_code=403, 
+                 code=ErrorCodes.PERM_FORBIDDEN
+             )
+        vendedor = self.repo.obtener_por_user_id(usuario_actual.get('id'))
+        if not vendedor:
+             raise AppError(
+                 message=AppMessages.AUTH_USER_NOT_FOUND, 
+                 status_code=404, 
+                 code=ErrorCodes.AUTH_USER_NOT_FOUND
+             )
+        datos_dict = datos.model_dump(exclude_unset=True)
+        self.repo.actualizar(vendedor['id'], datos_dict)
+        return self._sanitize(self.repo.obtener_por_id(vendedor['id']))
+
     def actualizar_vendedor(self, id: UUID, datos: VendedorActualizacion, usuario_actual: dict):
         if not usuario_actual.get(AuthKeys.IS_SUPERADMIN) and str(usuario_actual.get('id')) != str(id):
              raise AppError(
@@ -116,6 +155,14 @@ class ServicioVendedores:
         
         datos_dict = datos.model_dump(exclude_unset=True)
         res = self.repo.actualizar(id, datos_dict)
+        
+        self.logs_service.registrar_evento(
+            user_id=usuario_actual.get('id'),
+            evento='VENDEDOR_ACTUALIZADO',
+            detail=f"Se actualizaron datos del vendedor {vendedor.get('nombres')} {vendedor.get('apellidos')}",
+            origen='SUPERADMIN'
+        )
+
         return self._sanitize(res)
 
     def obtener_stats_vendedores(self, usuario_actual: dict):
@@ -170,6 +217,17 @@ class ServicioVendedores:
             )
             
         count = self.repo.reasignar_empresas(id, id_destino, empresa_ids=datos.empresa_ids)
+        
+        v_orig = self.repo.obtener_por_id(id)
+        v_dest = self.repo.obtener_por_id(id_destino)
+
+        self.logs_service.registrar_evento(
+            user_id=usuario_actual.get('id'),
+            evento='VENDEDOR_REASIGNACION_MASIVA',
+            detail=f"Se reasignaron {count} empresas de {v_orig['nombres']} a {v_dest['nombres']}",
+            origen='SUPERADMIN'
+        )
+
         return {"cantidad_reasignada": count, "message": f"Se reasignaron {count} empresas exitosamente."}
 
     def obtener_empresas_vendedor(self, id: UUID, usuario_actual: dict):
@@ -189,3 +247,19 @@ class ServicioVendedores:
                 code=ErrorCodes.PERM_FORBIDDEN
             )
         return self.repo.eliminar(id)
+
+    def obtener_home_data(self, usuario_actual: dict):
+        if not usuario_actual.get(AuthKeys.IS_VENDEDOR):
+             raise AppError(
+                 message=AppMessages.PERM_FORBIDDEN, 
+                 status_code=403, 
+                 code=ErrorCodes.PERM_FORBIDDEN
+             )
+        vendedor = self.repo.obtener_por_user_id(usuario_actual.get('id'))
+        if not vendedor:
+             raise AppError(
+                 message=AppMessages.AUTH_USER_NOT_FOUND, 
+                 status_code=404, 
+                 code=ErrorCodes.AUTH_USER_NOT_FOUND
+             )
+        return self.repo.obtener_home_data(vendedor['id'])

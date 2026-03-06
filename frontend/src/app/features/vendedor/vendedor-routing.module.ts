@@ -31,6 +31,16 @@ const routes: Routes = [
         path: 'clientes',
         loadComponent: () => import('./clientes/vendedor-clientes.page').then(m => m.VendedorClientesPage),
         data: { title: 'Clientes', description: 'Gestión de usuarios de tus empresas' }
+    },
+    {
+        path: 'perfil',
+        loadComponent: () => import('./perfil/perfil.page').then(m => m.VendedorPerfilPage),
+        data: { title: 'Mi Perfil', description: 'Información personal y opciones de cuenta' }
+    },
+    {
+        path: 'reportes',
+        loadComponent: () => import('./reportes/vendedor-reportes.page').then(m => m.VendedorReportesPage),
+        data: { title: 'Reportes', description: 'Dashboard y generación de archivos' }
     }
 ];
 

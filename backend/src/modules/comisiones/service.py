@@ -221,9 +221,10 @@ class ServicioComisiones:
              return comision_anterior
 
         # Inject approval metadata
-        if estado_nuevo == CommissionStatus.APROBADA:
+        if estado_nuevo in [CommissionStatus.APROBADA, CommissionStatus.RECHAZADA, 'APROBADA', 'RECHAZADA']:
             update_data['aprobado_por'] = usuario_actual['id']
-            update_data['fecha_aprobacion'] = datetime.now()
+            if estado_nuevo in [CommissionStatus.APROBADA, 'APROBADA']:
+                update_data['fecha_aprobacion'] = datetime.now()
             
         updated = self.repo.actualizar_comision(id, update_data)
         

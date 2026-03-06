@@ -10,7 +10,9 @@ import { ClientesStatsComponent } from './components/clientes-stats.component';
 import { ClienteDetailsModalComponent } from './components/cliente-details-modal.component';
 import { UiService } from '../../../shared/services/ui.service';
 import { AuthFacade } from '../../../core/auth/auth.facade';
+import { PermissionsService } from '../../../core/auth/permissions.service';
 import { ToastComponent } from '../../../shared/components/toast/toast.component';
+import { ClienteModalComponent } from '../../super-admin/clientes/components/cliente-modal.component';
 
 interface ClienteStats {
   total: number;
@@ -27,6 +29,7 @@ interface ClienteStats {
     VendedorClientesTableComponent,
     ClientesStatsComponent,
     ClienteDetailsModalComponent,
+    ClienteModalComponent,
     ToastComponent
   ],
   template: `
@@ -57,12 +60,28 @@ interface ClienteStats {
             </div>
 
             <!-- Filtros -->
-            <div class="col-lg-7">
+            <div class="col-lg-4">
                 <select class="form-select-premium" [(ngModel)]="filterEstado">
                     <option value="ALL">Todos los Estados</option>
                     <option value="ACTIVO">Activos</option>
                     <option value="INACTIVO">Inactivos</option>
                 </select>
+            </div>
+
+            <!-- Botón de Acción -->
+            <div class="col-lg-3 text-lg-end">
+                <div class="d-inline-block w-100" [title]="!canCreate ? 'No tienes permiso para crear usuarios' : ''">
+                    <button 
+                        [disabled]="!canCreate"
+                        [class.restricted-btn]="!canCreate"
+                        class="btn-premium-primary w-100 justify-content-center"
+                        (click)="openCreateModal()"
+                        style="height: 40px;"
+                    >
+                        <i class="bi" [ngClass]="canCreate ? 'bi-plus-lg' : 'bi-lock-fill'"></i>
+                        <span class="ms-2">{{ canCreate ? 'Nuevo Usuario' : 'Creación Restringida' }}</span>
+                    </button>
+                </div>
             </div>
             
             </div>
@@ -81,6 +100,15 @@ interface ClienteStats {
         [cliente]="selectedCliente"
         (onClose)="closeDetailsModal()"
       ></app-cliente-details-modal>
+
+      <!-- MODAL CREATE -->
+      <app-cliente-modal
+        *ngIf="showModal"
+        [empresas]="empresas"
+        [allRoles]="roles"
+        (onSave)="crearCliente($event)"
+        (onClose)="showModal = false"
+      ></app-cliente-modal>
 
       <app-toast></app-toast>
     </div>
@@ -162,6 +190,17 @@ interface ClienteStats {
         box-shadow: 0 20px 30px -8px rgba(22, 29, 53, 0.4);
         background: #232d4d;
     }
+    
+    /* RESTRICTED STATE */
+    .restricted-btn {
+        background: #94a3b8 !important;
+        cursor: not-allowed !important;
+        box-shadow: none !important;
+        opacity: 0.7;
+    }
+    .restricted-btn:hover {
+        transform: none !important;
+    }
   `]
 })
 export class VendedorClientesPage implements OnInit, OnDestroy {
@@ -176,6 +215,8 @@ export class VendedorClientesPage implements OnInit, OnDestroy {
   showDetailsModal = false;
   selectedCliente: any = null;
 
+  canCreate = false;
+
   private destroy$ = new Subject<void>();
 
   constructor(
@@ -184,10 +225,12 @@ export class VendedorClientesPage implements OnInit, OnDestroy {
     private rolesService: RolesService,
     private uiService: UiService,
     private authFacade: AuthFacade,
+    private permissionsService: PermissionsService,
     private cd: ChangeDetectorRef
   ) { }
 
   ngOnInit() {
+    this.canCreate = this.permissionsService.hasPermission('crear_empresas');
     this.loadData();
 
     this.clientesService.clientes$
@@ -246,6 +289,11 @@ export class VendedorClientesPage implements OnInit, OnDestroy {
 
       return matchSearch && matchEstado;
     });
+  }
+
+  openCreateModal() {
+    if (!this.canCreate) return;
+    this.showModal = true;
   }
 
   crearCliente(datos: any) {

@@ -62,3 +62,8 @@ class EmpresaController:
         # Fetch updated empresa to return it
         actualizada = self.service.obtener_empresa(empresa_id, usuario_actual)
         return success_response(actualizada, "Plan actualizado correctamente")
+
+    def acceder_empresa(self, empresa_id: UUID, usuario_actual: dict):
+        # Todo: Implement impersonation logic here
+        return success_response(None, "Acceso a empresa correcto (Pendiente de implementación)")
+

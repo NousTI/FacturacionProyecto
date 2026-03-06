@@ -10,6 +10,7 @@ from ..empresa_roles.services import ServicioRoles
 from .schemas import EmpresaCreacion, EmpresaActualizacion
 from ...constants.enums import AuthKeys, SubscriptionStatus
 from ...errors.app_error import AppError
+from ..logs.service import ServicioLogs
 
 from ...constants.error_codes import ErrorCodes
 from ...constants.messages import AppMessages
@@ -21,11 +22,13 @@ class ServicioEmpresas:
         self, 
         repo: RepositorioEmpresas = Depends(), 
         vendedor_repo: RepositorioVendedores = Depends(),
-        roles_service: ServicioRoles = Depends()
+        roles_service: ServicioRoles = Depends(),
+        logs_service: ServicioLogs = Depends()
     ):
         self.repo = repo
         self.vendedor_repo = vendedor_repo
         self.roles_service = roles_service
+        self.logs_service = logs_service
 
     def _get_context(self, current_user: dict):
         ctx = {
@@ -237,6 +240,14 @@ class ServicioEmpresas:
                  )
 
         self.repo.actualizar_empresa(empresa_id, payload)
+        
+        self.logs_service.registrar_evento(
+            user_id=usuario_actual.get('id'),
+            evento='EMPRESA_ACTUALIZADA',
+            detail=f"Se actualizaron los datos fiscales/comerciales de {current.get('razon_social')}",
+            origen='SUPERADMIN'
+        )
+
         logger.info(f"[ÉXITO] Empresa actualizada - ID: {empresa_id}")
         return self.obtener_empresa(empresa_id, usuario_actual)
 
@@ -286,6 +297,14 @@ class ServicioEmpresas:
         
         new_status = not empresa.get("activo", True)
         self.repo.actualizar_empresa(empresa_id, {"activo": new_status})
+        
+        self.logs_service.registrar_evento(
+            user_id=usuario_actual.get('id'),
+            evento='EMPRESA_ESTADO_CAMBIADO',
+            detail=f"Empresa {empresa.get('razon_social')} cambiada a {'ACTIVA' if new_status else 'INACTIVA'}",
+            origen='SUPERADMIN'
+        )
+
         logger.info(f"[ÉXITO] Estado activo cambiado a {new_status} - ID: {empresa_id}")
         return self.obtener_empresa(empresa_id, usuario_actual)
 
@@ -313,6 +332,19 @@ class ServicioEmpresas:
 
         try:
              self.repo.asignar_vendedor(empresa_id, vendedor_id)
+             
+             vendedor_nombre = "Sistema (Sin Vendedor)"
+             if vendedor_id:
+                 v = self.vendedor_repo.obtener_por_id(vendedor_id)
+                 if v: vendedor_nombre = f"{v['nombres']} {v['apellidos']}"
+
+             self.logs_service.registrar_evento(
+                 user_id=usuario_actual.get('id'),
+                 evento='EMPRESA_VENDEDOR_ASIGNADO',
+                 detail=f"Empresa {current.get('razon_social')} asignada a {vendedor_nombre}",
+                 origen='SUPERADMIN'
+             )
+
              logger.info(f"[ÉXITO] Vendedor asignado a empresa - empresa ID: {empresa_id}, vendedor ID: {vendedor_id}")
              return self.obtener_empresa(empresa_id, usuario_actual)
         except Exception as e:

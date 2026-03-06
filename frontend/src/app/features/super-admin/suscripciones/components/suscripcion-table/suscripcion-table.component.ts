@@ -72,7 +72,7 @@ import { Suscripcion } from '../../services/suscripcion.service';
                     </button>
                     <ul class="dropdown-menu dropdown-menu-end shadow-premium-lg border-0 p-2 rounded-4" [attr.aria-labelledby]="'actions-' + sub.id">
                       <li>
-                        <a class="dropdown-item rounded-3 py-2" href="javascript:void(0)" (click)="onRegistrarPago.emit(sub)">
+                        <a *ngIf="sub.estado_pago !== 'PAGADO'" class="dropdown-item rounded-3 py-2" href="javascript:void(0)" (click)="onRegistrarPago.emit(sub)">
                           <i class="bi bi-currency-dollar text-success"></i>
                           <span class="ms-2">Registrar Pago</span>
                         </a>

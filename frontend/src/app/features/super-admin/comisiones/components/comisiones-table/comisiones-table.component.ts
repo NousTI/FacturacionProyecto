@@ -56,18 +56,15 @@ import { CommonModule } from '@angular/common';
                       <i class="bi bi-three-dots"></i>
                     </button>
                     <ul class="dropdown-menu dropdown-menu-end shadow-premium-lg border-0 p-2 rounded-4" [attr.aria-labelledby]="'actions-' + comision.id">
-                      <!-- AUDIT MODE ACTIONS -->
-                      <li *ngIf="isAudit">
+                      <li>
                         <a class="dropdown-item rounded-3 py-2" href="javascript:void(0)" (click)="onAction.emit({type: 'view_logs', comision: comision})">
                           <i class="bi bi-clock-history text-corporate"></i>
                           <div class="ms-2 d-flex flex-column">
-                            <span>Ver Logs</span>
+                            <span>Auditoría</span>
                           </div>
                         </a>
                       </li>
 
-                      <!-- STANDARD ACTIONS -->
-                      <ng-container *ngIf="!isAudit">
                         <li *ngIf="comision.estado === 'PENDIENTE'">
                           <a class="dropdown-item rounded-3 py-2" href="javascript:void(0)" (click)="onAction.emit({type: 'approve', comision: comision})">
                             <i class="bi bi-check-circle text-success"></i>
@@ -95,7 +92,6 @@ import { CommonModule } from '@angular/common';
                             </div>
                           </a>
                         </li>
-                      </ng-container>
                     </ul>
                   </div>
                 </td>

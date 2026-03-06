@@ -10,7 +10,7 @@ import { CommonModule } from '@angular/common';
     <div class="card-premium h-100">
       <div class="card-body p-4">
         <div class="text-center mb-4">
-          <div class="avatar-circle mx-auto mb-3 animate__animated animate__zoomIn">
+          <div class="avatar-circle mx-auto mb-3">
             {{ getInitials(nombres, apellidos) }}
           </div>
           <h3 class="fw-bold mb-1 header-font">{{ nombres }} {{ apellidos }}</h3>

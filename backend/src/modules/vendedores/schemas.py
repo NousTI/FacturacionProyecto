@@ -47,6 +47,11 @@ class VendedorActualizacion(BaseModel):
     activo: Optional[bool] = None
     configuracion: Optional[Dict[str, Any]] = None
 
+class VendedorPerfilActualizacion(BaseModel):
+    nombres: Optional[str] = None
+    apellidos: Optional[str] = None
+    telefono: Optional[str] = Field(None, pattern=r"^([0-9]{10})?$")
+
 class VendedorLectura(VendedorBase):
     id: UUID
     email: Optional[str] = None
@@ -68,3 +73,14 @@ class VendedorStats(BaseModel):
 class ReasignacionEmpresas(BaseModel):
     vendedor_destino_id: UUID
     empresa_ids: Optional[List[UUID]] = None
+
+class AlertaVendedor(BaseModel):
+    id: UUID
+    tipo: str  # 'RENOVACION_PROXIMA', 'COMISION_APROBADA'
+    titulo: str
+    descripcion: str
+    fecha: str
+    accion_url: Optional[str] = None
+
+class VendedorHomeData(BaseModel):
+    alertas: List[AlertaVendedor]

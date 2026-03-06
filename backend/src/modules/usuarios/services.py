@@ -8,6 +8,7 @@ from ..empresa_roles.repositories import RepositorioRoles
 from .schemas import UsuarioCreacion, UsuarioActualizacion
 from ...constants.enums import AuthKeys
 from ...errors.app_error import AppError
+from ..logs.service import ServicioLogs
 from ...utils.password import get_password_hash
 
 logger = logging.getLogger("facturacion_api")
@@ -16,10 +17,12 @@ class ServicioUsuarios:
     def __init__(
         self, 
         repo: RepositorioUsuarios = Depends(),
-        roles_repo: RepositorioRoles = Depends()
+        roles_repo: RepositorioRoles = Depends(),
+        logs_service: ServicioLogs = Depends()
     ):
         self.repo = repo
         self.roles_repo = roles_repo
+        self.logs_service = logs_service
     
     def listar_usuarios(self, usuario_actual: dict):
         """List users in current user's empresa"""
@@ -70,7 +73,8 @@ class ServicioUsuarios:
         user_data = {
             'email': data.email,
             'password_hash': get_password_hash(data.password),
-            'is_active': True,
+            'estado': 'ACTIVA',
+            'requiere_cambio_password': True,
             'role': 'USUARIO'  # Generic role in users table
         }
         
@@ -127,7 +131,15 @@ class ServicioUsuarios:
         usuario = self.obtener_usuario(id, usuario_actual)
         
         update_data = data.model_dump(exclude_unset=True)
-        return self.repo.actualizar_usuario(id, update_data)
+        res = self.repo.actualizar_usuario(id, update_data)
+        
+        self.logs_service.registrar_evento(
+            user_id=usuario_actual.get('id'),
+            evento='USUARIO_ACTUALIZADO',
+            detail=f"Se actualizaron datos del usuario {usuario.get('nombres')} {usuario.get('apellidos')} ({usuario.get('email')})",
+            origen='SUPERADMIN' if usuario_actual.get(AuthKeys.IS_SUPERADMIN) else 'ADMIN_EMPRESA'
+        )
+        return res
     
     def eliminar_usuario(self, id: UUID, usuario_actual: dict):
         """Delete user (admin only)"""
@@ -184,6 +196,14 @@ class ServicioUsuarios:
         usuario = self.obtener_usuario(id, usuario_actual)
         nuevo_estado = not usuario['activo']
         self.repo.actualizar_usuario(id, {'activo': nuevo_estado})
+        
+        self.logs_service.registrar_evento(
+            user_id=usuario_actual.get('id'),
+            evento='USUARIO_ESTADO_CAMBIADO',
+            detail=f"Usuario {usuario.get('email')} cambiado a {'ACTIVO' if nuevo_estado else 'INACTIVO'}",
+            origen='SUPERADMIN'
+        )
+
         return self.obtener_usuario_admin(id)
 
     def reasignar_empresa_admin(self, id: UUID, nueva_empresa_id: UUID, usuario_actual: dict):

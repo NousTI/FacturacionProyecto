@@ -29,3 +29,98 @@ class RepositorioLogs:
         with self.db.cursor() as cur:
             cur.execute(query, (str(factura_id),))
             return [dict(row) for row in cur.fetchall()]
+
+    # --- Auditoría General de Seguridad ---
+
+    def listar_auditoria(self, filters: dict = None, limit: int = 100, offset: int = 0) -> List[dict]:
+        # El usuario quiere ver logs de seguridad (login), comisiones, suscripciones y creación de usuarios.
+        # Unificamos las tablas de logs en una sola vista de auditoría.
+        
+        query_base = """
+            WITH unified_logs AS (
+                -- 1. Logs de Usuario/Seguridad
+                SELECT 
+                    l.id, l.created_at, l.user_id, l.evento, l.origen, l.motivo, 
+                    l.ip_address, l.user_agent, 'SEGURIDAD' as modulo
+                FROM sistema_facturacion.users_logs l
+                
+                UNION ALL
+                
+                -- 2. Logs de Comisiones
+                SELECT 
+                    cl.id, cl.created_at, cl.responsable_id as user_id, 
+                    'COMISION_' || COALESCE(cl.estado_nuevo, 'ACCION') as evento, 
+                    cl.rol_responsable as origen, 
+                    cl.observaciones as motivo, 
+                    NULL as ip_address, NULL as user_agent, 'COMISIONES' as modulo
+                FROM sistema_facturacion.comisiones_logs cl
+                
+                UNION ALL
+                
+                -- 3. Logs de Suscripciones
+                SELECT 
+                    sl.id, sl.created_at, sl.cambiado_por as user_id, 
+                    'PLAN_' || COALESCE(sl.estado_nuevo, 'CAMBIO') as evento, 
+                    sl.origen, 
+                    sl.motivo, 
+                    NULL as ip_address, NULL as user_agent, 'SUSCRIPCIONES' as modulo
+                FROM sistema_facturacion.suscripciones_log sl
+
+                UNION ALL
+                
+                -- 4. Logs de Creación de Usuarios
+                SELECT 
+                    ucl.id, ucl.created_at, ucl.actor_user_id as user_id, 
+                    'USUARIO_CREADO' as evento, 
+                    ucl.origen, 
+                    'Se creó el usuario ' || CAST(ucl.usuario_id AS TEXT) as motivo, 
+                    NULL as ip_address, NULL as user_agent, 'USUARIOS' as modulo
+                FROM sistema_facturacion.usuario_creacion_logs ucl
+            )
+            SELECT l.*, u.email as actor_email,
+                   COALESCE(s.nombres || ' ' || s.apellidos, v.nombres || ' ' || v.apellidos, us.nombres || ' ' || us.apellidos, 'SISTEMA') as actor_nombre
+            FROM unified_logs l
+            LEFT JOIN sistema_facturacion.users u ON l.user_id = u.id
+            LEFT JOIN sistema_facturacion.superadmin s ON u.id = s.user_id
+            LEFT JOIN sistema_facturacion.vendedores v ON u.id = v.user_id
+            LEFT JOIN sistema_facturacion.usuarios us ON u.id = us.user_id
+        """
+        
+        conditions = []
+        params = []
+
+        if filters:
+            if filters.get('usuario'):
+                conditions.append("(u.email ILIKE %s OR s.nombres ILIKE %s OR s.apellidos ILIKE %s)")
+                val = f"%{filters['usuario']}%"
+                params.extend([val, val, val])
+            
+            if filters.get('fecha_inicio'):
+                conditions.append("l.created_at >= %s")
+                params.append(filters['fecha_inicio'])
+            
+            if filters.get('fecha_fin'):
+                conditions.append("l.created_at <= %s")
+                params.append(filters['fecha_fin'])
+            
+            if filters.get('evento'):
+                conditions.append("l.evento = %s")
+                params.append(filters['evento'])
+
+        if conditions:
+            query_base += " WHERE " + " AND ".join(conditions)
+
+        query_base += " ORDER BY l.created_at DESC LIMIT %s OFFSET %s"
+        params.extend([limit, offset])
+
+        with self.db.cursor() as cur:
+            cur.execute(query_base, tuple(params))
+            return [dict(row) for row in cur.fetchall()]
+
+    def registrar_evento(self, user_id: UUID, evento: str, detail: str = None, ip: str = None, ua: str = None, origen: str = 'SISTEMA'):
+        query = """
+            INSERT INTO sistema_facturacion.users_logs (user_id, evento, origen, motivo, ip_address, user_agent)
+            VALUES (%s, %s, %s, %s, %s, %s)
+        """
+        with db_transaction(self.db) as cur:
+            cur.execute(query, (str(user_id) if user_id else None, evento, origen, detail, ip, ua))

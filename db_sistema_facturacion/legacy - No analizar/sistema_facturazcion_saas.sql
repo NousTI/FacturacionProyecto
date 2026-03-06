@@ -124,12 +124,12 @@ CREATE TABLE IF NOT EXISTS public.pago_factura (
 -- =====================================================
 -- TABLA: REPORTE_GENERADO
 -- =====================================================
-CREATE TABLE IF NOT EXISTS public.reporte_generado (
+CREATE TABLE IF NOT EXISTS sistema_facturacion.reporte_generado (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
 
-    empresa_id UUID NOT NULL REFERENCES public.empresa(id) ON DELETE CASCADE,
+    empresa_id UUID NOT NULL REFERENCES sistema_facturacion.empresas(id) ON DELETE CASCADE,
 
-    usuario_id UUID NOT NULL REFERENCES public.usuario(id) ON DELETE RESTRICT,
+    usuario_id UUID NOT NULL REFERENCES sistema_facturacion.usuarios(id) ON DELETE RESTRICT,
 
     tipo_reporte TEXT NOT NULL,
     nombre TEXT NOT NULL,

@@ -102,13 +102,6 @@ import { Suscripcion } from '../../services/vendedor-suscripcion.service';
                             </a>
                           </li>
 
-                      <!-- NOTAS DE SEGUIMIENTO -->
-                      <li>
-                        <a class="dropdown-item rounded-3 py-2" href="javascript:void(0)" (click)="onNotas.emit(sub)">
-                          <i class="bi bi-journal-text text-primary"></i>
-                          <span class="ms-2">Notas de Seguimiento</span>
-                        </a>
-                      </li>
                       
                       <!-- RESTRICTED/VISUAL ONLY -->
                       <li><hr class="dropdown-divider mx-2"></li>

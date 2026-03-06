@@ -21,6 +21,7 @@ from ...utils.crypto import CryptoService
 from ...config.env import env
 from ...constants.enums import AuthKeys
 from ...errors.app_error import AppError
+from ..logs.service import ServicioLogs
 
 logger = logging.getLogger("facturacion_api")
 
@@ -39,7 +40,8 @@ class ServicioSRI:
         cliente_repo: RepositorioClientes = Depends(),
         log_repo: RepositorioLogs = Depends(),
         client_sri: ClienteSRI = Depends(),
-        xml_service: ServicioSRIXML = Depends()
+        xml_service: ServicioSRIXML = Depends(),
+        logs_service: ServicioLogs = Depends()
     ):
         self.repo = repo
         self.factura_repo = factura_repo
@@ -47,6 +49,7 @@ class ServicioSRI:
         self.cliente_repo = cliente_repo
         self.log_repo = log_repo
         self.client_sri = client_sri
+        self.logs_service = logs_service
         self.xml_service = xml_service
         self.crypto = CryptoService(env.CERT_MASTER_KEY)
 
@@ -61,6 +64,12 @@ class ServicioSRI:
             signer.check_validity()
             signer.cleanup()
         except Exception as e:
+            self.logs_service.registrar_evento(
+                user_id=None, # System/Contextual
+                evento='SRI_CERTIFICADO_FALLIDO',
+                detail=f"Fallo al cargar certificado para empresa {empresa_id}: {str(e)}",
+                origen='SISTEMA'
+            )
             raise AppError(f"Certificado inválido o clave incorrecta: {str(e)}", 400, "CERT_INVALID")
 
         data = {
@@ -88,8 +97,17 @@ class ServicioSRI:
 
         existing = self.repo.obtener_config(empresa_id)
         if existing:
-            return self.repo.actualizar_config(existing['id'], data)
-        return self.repo.crear_config(data)
+            res = self.repo.actualizar_config(existing['id'], data)
+        else:
+            res = self.repo.crear_config(data)
+            
+        self.logs_service.registrar_evento(
+            user_id=None, 
+            evento='SRI_CERTIFICADO_ACTUALIZADO',
+            detail=f"Certificado SRI actualizado exitosamente para empresa {empresa_id}. Vence: {meta['fecha_expiracion']}",
+            origen='SISTEMA'
+        )
+        return res
 
     def actualizar_parametros(self, empresa_id: UUID, params: ConfigSRIActualizacionParametros):
         existing = self.repo.obtener_config(empresa_id)

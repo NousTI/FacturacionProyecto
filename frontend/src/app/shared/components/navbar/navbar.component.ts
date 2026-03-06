@@ -4,6 +4,7 @@ import { Observable, filter, map, mergeMap, Subject, takeUntil } from 'rxjs';
 import { User } from '../../../domain/models/user.model';
 import { Router, NavigationEnd, ActivatedRoute } from '@angular/router';
 import { UiService } from '../../services/ui.service';
+import { ChangeDetectorRef } from '@angular/core';
 
 @Component({
   selector: 'app-navbar',
@@ -135,7 +136,8 @@ export class NavbarComponent implements OnInit, OnDestroy {
     private authFacade: AuthFacade,
     private router: Router,
     private activatedRoute: ActivatedRoute,
-    private uiService: UiService
+    private uiService: UiService,
+    private cdr: ChangeDetectorRef
   ) {
     this.user$ = this.authFacade.user$;
   }
@@ -152,28 +154,34 @@ export class NavbarComponent implements OnInit, OnDestroy {
       }),
       mergeMap(route => route.data)
     ).subscribe(data => {
-      this.pageTitle = data['title'] || 'Inicio';
-      this.pageDescription = data['description'] || 'Bienvenido al sistema';
+      Promise.resolve().then(() => {
+        this.pageTitle = data['title'] || 'Inicio';
+        this.pageDescription = data['description'] || 'Bienvenido al sistema';
+      });
     });
 
     // 2. Subscribe to Dynamic Page Headers from UiService (Overrides route data)
     this.uiService.pageHeader$
       .pipe(takeUntil(this.destroy$))
       .subscribe(header => {
-        if (header.title) {
-          this.pageTitle = header.title;
-          this.pageDescription = header.description;
-        }
+        Promise.resolve().then(() => {
+          if (header.title) {
+            this.pageTitle = header.title;
+            this.pageDescription = header.description;
+          }
+        });
       });
 
     // Initial load from route
     let route = this.activatedRoute;
     while (route.firstChild) route = route.firstChild;
     route.data.pipe(takeUntil(this.destroy$)).subscribe(data => {
-      if (!this.pageTitle || this.pageTitle === 'Inicio') {
-        this.pageTitle = data['title'] || 'Inicio';
-        this.pageDescription = data['description'] || 'Bienvenido al sistema';
-      }
+      Promise.resolve().then(() => {
+        if (!this.pageTitle || this.pageTitle === 'Inicio') {
+          this.pageTitle = data['title'] || 'Inicio';
+          this.pageDescription = data['description'] || 'Bienvenido al sistema';
+        }
+      });
     });
   }
 

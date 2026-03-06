@@ -121,3 +121,61 @@ class RepositorioVendedores:
         with db_transaction(self.db) as cur:
             cur.execute(query, (str(id),))
             return cur.rowcount > 0
+
+    def obtener_home_data(self, vendedor_id: UUID) -> dict:
+        alertas = []
+
+        query_vencidas = """
+            SELECT s.id, e.razon_social, TO_CHAR(s.fecha_fin, 'YYYY-MM-DD') as fecha
+            FROM sistema_facturacion.suscripciones s
+            JOIN sistema_facturacion.empresas e ON s.empresa_id = e.id
+            WHERE e.vendedor_id = %s
+              AND s.estado = 'ACTIVA' 
+              AND s.fecha_fin BETWEEN NOW() AND NOW() + INTERVAL '48 hours'
+            ORDER BY s.fecha_fin ASC
+        """
+
+        query_comisiones = """
+            SELECT c.id, e.razon_social, c.monto, TO_CHAR(c.fecha_generacion, 'YYYY-MM-DD') as fecha
+            FROM sistema_facturacion.comisiones c
+            JOIN sistema_facturacion.pagos_suscripciones ps ON c.pago_suscripcion_id = ps.id
+            JOIN sistema_facturacion.empresas e ON ps.empresa_id = e.id
+            WHERE c.vendedor_id = %s
+            ORDER BY c.fecha_generacion DESC
+            LIMIT 3
+        """
+
+        with self.db.cursor() as cur:
+            # 1. Alertas: Vencimientos cercanos (Envuelto en try-except por si la tabla no existe o hay error)
+            try:
+                cur.execute(query_vencidas, (str(vendedor_id),))
+                for row in cur.fetchall():
+                    alertas.append({
+                        "id": str(row['id']),
+                        "tipo": "RENOVACION_PROXIMA",
+                        "titulo": f"Renovación Crítica: {row['razon_social']}",
+                        "descripcion": "El plan vence en menos de 48 horas.",
+                        "fecha": v.strftime("%Y-%m-%d") if (v := row['fecha']) else "",
+                        "accion_url": f"/vendedor/clientes/{row['id']}"
+                    })
+            except Exception:
+                self.db.rollback()
+
+            # 2. Alertas: Comisiones Recientes
+            try:
+                cur.execute(query_comisiones, (str(vendedor_id),))
+                for row in cur.fetchall():
+                    alertas.append({
+                        "id": str(row['id']),
+                        "tipo": "COMISION_APROBADA",
+                        "titulo": f"Comisión Aprobada: ${row['monto']}",
+                        "descripcion": f"Pago confirmado de {row['razon_social']}",
+                        "fecha": v.strftime("%Y-%m-%d") if (v := row['fecha']) else "",
+                        "accion_url": None
+                    })
+            except Exception:
+                self.db.rollback()
+
+            return {
+                "alertas": alertas
+            }

@@ -166,7 +166,7 @@ import { SriValidators } from '../../../../../shared/utils/sri-validators';
                 <p class="text-secondary small mb-3">Control de acceso y capacidades operativas del asesor.</p>
                 
                 <div class="permission-stack">
-                  <!-- Registrar Clientes -->
+                  <!-- Registrar Empresas -->
                   <div class="permission-horizontal-card" 
                        [class.active]="vendedorForm.get('puede_crear_empresas')?.value"
                        (click)="togglePermission('puede_crear_empresas')">
@@ -175,7 +175,7 @@ import { SriValidators } from '../../../../../shared/utils/sri-validators';
                         <i class="bi bi-building-add"></i>
                       </div>
                       <div class="perm-info">
-                        <span class="perm-title">Registrar Clientes</span>
+                        <span class="perm-title">Registrar Empresas</span>
                         <span class="perm-desc">Permite crear nuevas empresas en el sistema.</span>
                       </div>
                     </div>
@@ -184,25 +184,7 @@ import { SriValidators } from '../../../../../shared/utils/sri-validators';
                     </div>
                   </div>
 
-                  <!-- Ver Expedientes -->
-                  <div class="permission-horizontal-card" 
-                       [class.active]="vendedorForm.get('puede_acceder_empresas')?.value"
-                       (click)="togglePermission('puede_acceder_empresas')">
-                    <div class="d-flex align-items-center gap-3">
-                      <div class="perm-icon-wrapper">
-                        <i class="bi bi-folder2-open"></i>
-                      </div>
-                      <div class="perm-info">
-                        <span class="perm-title">Ver Expedientes</span>
-                        <span class="perm-desc">Acceso a la información técnica de sus clientes.</span>
-                      </div>
-                    </div>
-                    <div class="plan-check">
-                      <i class="bi" [ngClass]="vendedorForm.get('puede_acceder_empresas')?.value ? 'bi-check-circle-fill' : 'bi-circle'"></i>
-                    </div>
-                  </div>
-
-                  <!-- Gestionar Suscripciones -->
+                  <!-- Gestionar Planes -->
                   <div class="permission-horizontal-card" 
                        [class.active]="vendedorForm.get('puede_gestionar_planes')?.value"
                        (click)="togglePermission('puede_gestionar_planes')">
@@ -211,12 +193,30 @@ import { SriValidators } from '../../../../../shared/utils/sri-validators';
                         <i class="bi bi-arrow-left-right"></i>
                       </div>
                       <div class="perm-info">
-                        <span class="perm-title">Gestionar Suscripciones</span>
+                        <span class="perm-title">Gestionar Planes</span>
                         <span class="perm-desc">Habilitar cambios de plan y renovaciones manuales.</span>
                       </div>
                     </div>
                     <div class="plan-check">
                       <i class="bi" [ngClass]="vendedorForm.get('puede_gestionar_planes')?.value ? 'bi-check-circle-fill' : 'bi-circle'"></i>
+                    </div>
+                  </div>
+
+                  <!-- ACCEDER A EMPRESAS -->
+                  <div class="permission-horizontal-card" 
+                       [class.active]="vendedorForm.get('puede_acceder_empresas')?.value"
+                       (click)="togglePermission('puede_acceder_empresas')">
+                    <div class="d-flex align-items-center gap-3">
+                      <div class="perm-icon-wrapper">
+                        <i class="bi bi-folder2-open"></i>
+                      </div>
+                      <div class="perm-info">
+                        <span class="perm-title">Acceder a Empresas</span>
+                        <span class="perm-desc">Acceso a la información técnica de las empresas de sus clientes.</span>
+                      </div>
+                    </div>
+                    <div class="plan-check">
+                      <i class="bi" [ngClass]="vendedorForm.get('puede_acceder_empresas')?.value ? 'bi-check-circle-fill' : 'bi-circle'"></i>
                     </div>
                   </div>
 
@@ -229,7 +229,7 @@ import { SriValidators } from '../../../../../shared/utils/sri-validators';
                         <i class="bi bi-bar-chart-line"></i>
                       </div>
                       <div class="perm-info">
-                        <span class="perm-title">Reportes de Desempeño</span>
+                        <span class="perm-title">Ver Reportes</span>
                         <span class="perm-desc">Visualización de estadísticas y comisiones propias.</span>
                       </div>
                     </div>

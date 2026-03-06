@@ -96,14 +96,7 @@ import { UiService } from '../../../shared/services/ui.service';
         </div>
       </div>
 
-      <!-- Audit Tab / List -->
-      <div *ngIf="currentTab === 'AUDIT'">
-         <app-comisiones-table
-          [comisiones]="filteredComisiones"
-          [isAudit]="true"
-          (onAction)="handleTableAction($event)"
-        ></app-comisiones-table>
-      </div>
+
 
       <!-- DETAILS MODAL -->
       <app-comisiones-details-modal
@@ -215,8 +208,7 @@ export class ComisionesPage implements OnInit {
   ];
   
   otherTabs = [
-    { id: 'RULES', label: 'Reglas de Comisión' },
-    { id: 'AUDIT', label: 'Auditoría' }
+    { id: 'RULES', label: 'Reglas de Comisión' }
   ];
   
   currentTab: string = 'ALL';
@@ -225,7 +217,6 @@ export class ComisionesPage implements OnInit {
     const tab = this.statusTabs.find(t => t.id === id);
     if (tab) return tab.label;
     if (id === 'RULES') return 'Reglas de Comisión';
-    if (id === 'AUDIT') return 'Auditoría';
     return 'Filtro';
   }
 
@@ -264,11 +255,7 @@ export class ComisionesPage implements OnInit {
   filterComisiones() {
     let temp = [...this.allComisiones];
 
-    if (this.currentTab === 'AUDIT') {
-      // Show all or maybe filter by recently changed? 
-      // For now show all, user asked to see cards and click for log.
-      // We reuse temp which has all.
-    } else if (this.currentTab !== 'ALL' && this.isListView()) {
+    if (this.currentTab !== 'ALL' && this.isListView()) {
       if (this.currentTab === 'PENDING') temp = temp.filter(c => c.estado === 'PENDIENTE');
       if (this.currentTab === 'APPROVED') temp = temp.filter(c => c.estado === 'APROBADA');
       if (this.currentTab === 'PAID') temp = temp.filter(c => c.estado === 'PAGADA');

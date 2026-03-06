@@ -20,3 +20,19 @@ class LogEmisionLectura(LogEmisionBase):
 
     class Config:
         from_attributes = True
+
+class LogAuditoriaLectura(BaseModel):
+    id: UUID
+    user_id: Optional[UUID] = None
+    evento: str
+    origen: str
+    motivo: Optional[str] = None
+    ip_address: Optional[str] = None
+    user_agent: Optional[str] = None
+    modulo: Optional[str] = None
+    created_at: datetime
+    actor_email: Optional[str] = None
+    actor_nombre: Optional[str] = None
+
+    class Config:
+        from_attributes = True

@@ -72,6 +72,9 @@ import { Observable, map } from 'rxjs';
                <a *appHasPermission="'ver_reportes'" routerLink="/vendedor/reportes" routerLinkActive="active" class="menu-item px-3 mb-1">
                  <i class="bi bi-bar-chart me-3"></i> Reportes
                </a>
+               <a routerLink="/vendedor/perfil" routerLinkActive="active" class="menu-item px-3 mb-1">
+                 <i class="bi bi-person-circle me-3"></i> Mi Perfil
+               </a>
             </ng-container>
 
             <!-- Removed vendor specific links for now as per "ONLY Dashboard" instruction -->
@@ -134,7 +137,7 @@ import { Observable, map } from 'rxjs';
               <i class="bi bi-bar-chart me-3"></i> Reportes
             </a>
             <a routerLink="/auditoria" routerLinkActive="active" class="menu-item px-3 mb-1">
-              <i class="bi bi-journal-text me-3"></i> Auditoría
+              <i class="bi bi-shield-lock me-3"></i> Auditoría
             </a>
           </div>
         </div>

@@ -104,7 +104,11 @@ export class VendedorEmpresaService {
             ultimoPagoFecha: e.ultimo_pago_fecha ? new Date(e.ultimo_pago_fecha) : null,
             ultimoPagoMonto: e.ultimo_pago_monto || 0,
             ultimoPagoEstado: e.ultimo_pago_estado || 'PENDIENTE',
-            usage: e.usage || {},
+            usage: {
+                usuarios: e.usuarios_count || 0,
+                facturas: e.facturas_mes_count || 0,
+                establecimientos: e.establecimientos_count || 0
+            },
             limits: {
                 max_usuarios: e.max_usuarios,
                 max_facturas: e.max_facturas_mes,
@@ -112,5 +116,11 @@ export class VendedorEmpresaService {
                 max_programaciones: e.max_programaciones
             }
         };
+    }
+
+    accederEmpresa(empresaId: string): Observable<any> {
+        return this.http.post(`${this.apiUrl}/${empresaId}/access`, {}).pipe(
+            map((res: any) => res.mensaje || 'Solicitud de acceso enviada')
+        );
     }
 }

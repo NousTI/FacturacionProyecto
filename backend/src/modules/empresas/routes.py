@@ -79,7 +79,17 @@ def assign_vendor(
 def cambiar_plan(
     empresa_id: UUID,
     datos: dict,
+    permiso: dict = Depends(requerir_permiso(PermisosVendedor.GESTIONAR_PLANES)),
     usuario: dict = Depends(obtener_usuario_actual),
     controller: EmpresaController = Depends()
 ):
     return controller.cambiar_plan(empresa_id, datos, usuario)
+
+@router.post("/{empresa_id}/access", response_model=RespuestaBase)
+def acceder_empresa(
+    empresa_id: UUID,
+    permiso: dict = Depends(requerir_permiso(PermisosVendedor.ACCEDER_EMPRESAS)),
+    usuario: dict = Depends(obtener_usuario_actual),
+    controller: EmpresaController = Depends()
+):
+    return controller.acceder_empresa(empresa_id, usuario)

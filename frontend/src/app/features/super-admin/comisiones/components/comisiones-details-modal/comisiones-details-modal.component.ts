@@ -49,11 +49,11 @@ import { Comision } from '../../services/comisiones.service';
             </div>
 
             <!-- Approval Info (Only for APPROVED or PAID) -->
-            <div class="row g-3 mt-1" *ngIf="comision?.aprobado_por_nombre && (comision?.estado === 'APROBADA' || comision?.estado === 'PAGADA')">
+            <div class="row g-3 mt-1" *ngIf="comision?.estado === 'APROBADA' || comision?.estado === 'PAGADA'">
               <div class="col-md-6">
-                <label class="label-final">Aprobado Por</label>
+                <label class="label-final">Responsable</label>
                 <div class="value-display-premium font-mono text-corporate">
-                  <i class="bi bi-shield-check me-2"></i>{{ comision?.aprobado_por_nombre }}
+                  <i class="bi bi-person-badge me-2"></i>{{ comision?.aprobado_por_nombre || 'Sistema' }}
                 </div>
               </div>
               <div class="col-md-6">
@@ -66,8 +66,14 @@ import { Comision } from '../../services/comisiones.service';
             
             <!-- Rejection Info (Only for REJECTED) -->
             <div class="row g-3 mt-1" *ngIf="comision?.estado === 'RECHAZADA'">
-              <div class="col-12">
-                <label class="label-final">Motivo de Rechazo / Observaciones</label>
+              <div class="col-md-6">
+                <label class="label-final">Responsable</label>
+                <div class="value-display-premium font-mono text-corporate">
+                  <i class="bi bi-person-badge me-2"></i>{{ comision?.aprobado_por_nombre || 'Sistema' }}
+                </div>
+              </div>
+              <div class="col-md-6">
+                <label class="label-final">Motivo de Rechazo</label>
                 <div class="value-display-premium text-danger fw-bold border-danger-soft">
                   {{ comision?.observaciones || 'Sin observaciones especificadas' }}
                 </div>

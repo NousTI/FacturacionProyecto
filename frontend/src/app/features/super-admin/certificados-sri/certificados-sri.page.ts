@@ -61,12 +61,6 @@ import { CertHistoryModalComponent } from './components/cert-history-modal/cert-
                 </button>
                 
                 <div class="ms-md-2 border-start ps-3 border-light opacity-50 d-none d-md-block" style="height: 30px;"></div>
-
-                <div class="ms-md-2">
-                    <button class="btn-refresh-premium" (click)="loadData()" title="Actualizar Datos">
-                        <i class="bi bi-arrow-clockwise fs-5" [class.spinning]="loading"></i>
-                    </button>
-                </div>
             </div>
           </div>
         </div>

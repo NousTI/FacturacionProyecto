@@ -30,7 +30,7 @@ import { UiService } from '../../../shared/services/ui.service';
       </div>
 
       <!-- Content -->
-      <div *ngIf="perfil && !loading" class="animate__animated animate__fadeIn">
+      <div *ngIf="perfil && !loading">
         <h2 class="fw-bold mb-4 text-dark px-2">Mi Perfil</h2>
         
         <div class="row g-4">

@@ -30,7 +30,7 @@ export interface VendedorPerfil {
     providedIn: 'root'
 })
 export class VendedorPerfilService {
-    private apiUrl = `${environment.apiUrl}/vendedores/perfil`;
+    private apiUrl = `${environment.apiUrl}/vendedores/me`;
 
     constructor(private http: HttpClient) { }
 

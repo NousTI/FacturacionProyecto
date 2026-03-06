@@ -1,6 +1,6 @@
 from fastapi import Depends
 from .services import ServicioVendedores
-from .schemas import VendedorCreacion, VendedorActualizacion, ReasignacionEmpresas
+from .schemas import VendedorCreacion, VendedorActualizacion, ReasignacionEmpresas, VendedorPerfilActualizacion
 from uuid import UUID
 from ...utils.response import success_response
 
@@ -19,6 +19,18 @@ class VendedorController:
     def obtener_vendedor(self, id: UUID, usuario_actual: dict):
         vendedor = self.service.obtener_vendedor(id, usuario_actual)
         return success_response(vendedor)
+
+    def obtener_mi_perfil(self, usuario_actual: dict):
+        vendedor = self.service.obtener_mi_perfil(usuario_actual)
+        return success_response(vendedor)
+
+    def obtener_home_data(self, usuario_actual: dict):
+        home_data = self.service.obtener_home_data(usuario_actual)
+        return success_response(home_data)
+
+    def actualizar_mi_perfil(self, body: VendedorPerfilActualizacion, usuario_actual: dict):
+        vendedor = self.service.actualizar_mi_perfil(body, usuario_actual)
+        return success_response(vendedor, "Perfil actualizado correctamente")
 
     def obtener_stats(self, usuario_actual: dict):
         stats = self.service.obtener_stats_vendedores(usuario_actual)

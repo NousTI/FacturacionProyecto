@@ -12,12 +12,19 @@ class RepositorioComisiones:
         query = """
             SELECT c.*, v.nombres || ' ' || v.apellidos as vendedor_nombre,
                    e.nombre_comercial as empresa_nombre, p.monto as monto_pago,
-                   u.email as aprobado_por_nombre
+                   COALESCE(u.email, u_log.email) as aprobado_por_nombre
             FROM sistema_facturacion.comisiones c
             LEFT JOIN sistema_facturacion.vendedores v ON c.vendedor_id = v.id
             LEFT JOIN sistema_facturacion.pagos_suscripciones p ON c.pago_suscripcion_id = p.id
             LEFT JOIN sistema_facturacion.empresas e ON p.empresa_id = e.id
             LEFT JOIN sistema_facturacion.users u ON c.aprobado_por = u.id
+            LEFT JOIN LATERAL (
+                SELECT responsable_id 
+                FROM sistema_facturacion.comisiones_logs l 
+                WHERE l.comision_id = c.id 
+                ORDER BY created_at DESC LIMIT 1
+            ) last_log ON true
+            LEFT JOIN sistema_facturacion.users u_log ON last_log.responsable_id = u_log.id
         """
         params = []
         if vendedor_id:
@@ -55,13 +62,20 @@ class RepositorioComisiones:
                    v.nombres as vendedor_nombres, v.apellidos as vendedor_apellidos,
                    v.documento_identidad, v.telefono, uv.email as vendedor_email,
                    e.nombre_comercial as empresa_nombre, p.monto as monto_pago,
-                   u.email as aprobado_por_nombre 
+                   COALESCE(u.email, u_log.email) as aprobado_por_nombre 
             FROM sistema_facturacion.comisiones c
             LEFT JOIN sistema_facturacion.vendedores v ON c.vendedor_id = v.id
             LEFT JOIN sistema_facturacion.users uv ON v.user_id = uv.id
             LEFT JOIN sistema_facturacion.pagos_suscripciones p ON c.pago_suscripcion_id = p.id
             LEFT JOIN sistema_facturacion.empresas e ON p.empresa_id = e.id
             LEFT JOIN sistema_facturacion.users u ON c.aprobado_por = u.id
+            LEFT JOIN LATERAL (
+                SELECT responsable_id 
+                FROM sistema_facturacion.comisiones_logs l 
+                WHERE l.comision_id = c.id 
+                ORDER BY created_at DESC LIMIT 1
+            ) last_log ON true
+            LEFT JOIN sistema_facturacion.users u_log ON last_log.responsable_id = u_log.id
             WHERE c.id = %s
         """
         with self.db.cursor() as cur:

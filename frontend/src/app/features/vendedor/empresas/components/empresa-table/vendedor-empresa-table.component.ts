@@ -41,7 +41,6 @@ import { CommonModule } from '@angular/common';
                 <td>
                   <div class="d-flex flex-column">
                     <span class="text-corporate fw-800" style="font-size: 0.85rem;">{{ empresa.plan || 'Sin Plan' }}</span>
-                    <small class="text-muted" style="font-size: 0.7rem;">{{ empresa.tipo_contribuyente }}</small>
                   </div>
                 </td>
                 <td>
@@ -107,16 +106,6 @@ import { CommonModule } from '@angular/common';
                            <i class="bi bi-lock-fill ms-auto text-muted" style="font-size: 0.7rem;"></i>
                         </a>
                       </li>
-
-                      <!-- RESTRICTED ACTIONS -->
-                      <li>
-                        <a class="dropdown-item rounded-3 py-2 disabled-action" href="javascript:void(0)" title="No tienes permisos para desactivar empresas">
-                           <i class="bi bi-toggle-off text-muted"></i>
-                           <span class="ms-2">Desactivar</span>
-                           <i class="bi bi-lock-fill ms-auto text-muted" style="font-size: 0.7rem;"></i>
-                        </a>
-                      </li>
-
                     </ul>
                   </div>
                 </td>

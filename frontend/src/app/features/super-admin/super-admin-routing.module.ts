@@ -7,10 +7,24 @@ import { ComisionesPage } from './comisiones/comisiones.page';
 import { PlanesPage } from './planes/planes.page';
 import { ClientesPage } from './clientes/clientes.page';
 import { PerfilPage } from './perfil/perfil.page';
+import { SuperAdminReportesPage } from './reportes/super-admin-reportes.page';
+import { AuditoriaPage } from './auditoria/auditoria.page';
 import { RoleGuard } from '../../core/guards/role.guard';
 import { UserRole } from '../../domain/enums/role.enum';
 
 const routes: Routes = [
+    {
+        path: 'auditoria',
+        component: AuditoriaPage,
+        canActivate: [RoleGuard],
+        data: { title: 'Auditoría de Seguridad', roles: [UserRole.SUPERADMIN], description: 'Caja negra del sistema' }
+    },
+    {
+        path: 'reportes',
+        component: SuperAdminReportesPage,
+        canActivate: [RoleGuard],
+        data: { title: 'Reportes y Analítica', roles: [UserRole.SUPERADMIN], description: 'Ingresos y comisiones' }
+    },
     {
         path: 'empresas',
         component: EmpresasPage,

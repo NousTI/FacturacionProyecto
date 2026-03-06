@@ -14,7 +14,7 @@ class UsuarioBase(BaseModel):
 
 class UsuarioCreacion(BaseModel):
     email: EmailStr
-    password: str
+    password: str = "password"
     empresa_id: UUID
     empresa_rol_id: Optional[UUID] = None
     nombres: str
@@ -37,6 +37,7 @@ class UsuarioLectura(UsuarioBase):
     empresa_nombre: Optional[str] = None
     rol_nombre: Optional[str] = None
     rol_codigo: Optional[str] = None
+    ultimo_acceso: Optional[datetime] = None
     created_at: datetime
     updated_at: datetime
     

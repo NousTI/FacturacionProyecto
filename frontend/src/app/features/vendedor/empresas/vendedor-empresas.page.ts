@@ -319,8 +319,16 @@ export class VendedorEmpresasPage implements OnInit, OnDestroy {
                 break;
             case 'access_company':
                 if (this.canAccess) {
-                    this.uiService.showToast('Accediendo a sistema de la empresa...', 'info');
-                    // Aqui iria la logica de impersonation o redireccion
+                    this.uiService.showToast('Solicitando acceso...', 'info');
+                    this.vendedorService.accederEmpresa(event.empresa.id).subscribe({
+                        next: (res: any) => {
+                            this.uiService.showToast(res, 'success');
+                            // Logic for impersonation comes later
+                        },
+                        error: (err: any) => {
+                            this.uiService.showError(err, 'Error al acceder a la empresa');
+                        }
+                    });
                 } else {
                     this.uiService.showToast('No tienes permiso para acceder.', 'warning');
                 }

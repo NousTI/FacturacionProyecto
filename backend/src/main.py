@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.exceptions import RequestValidationError
 from .config.env import env
@@ -30,6 +31,11 @@ app.add_exception_handler(Exception, general_exception_handler)
 
 # 3. Rutas
 app.include_router(api_router, prefix="/api")
+
+# Directorio de reportes estáticos
+import os
+os.makedirs("static/reportes", exist_ok=True)
+app.mount("/static", StaticFiles(directory="static"), name="static")
 
 # 4. Eventos
 @app.on_event("startup")

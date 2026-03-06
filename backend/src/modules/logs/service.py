@@ -20,3 +20,9 @@ class ServicioLogs:
 
     def obtener_por_factura(self, factura_id: UUID):
         return self.repo.obtener_por_factura(factura_id)
+
+    def listar_auditoria(self, filters: dict = None, limit: int = 100, offset: int = 0):
+        return self.repo.listar_auditoria(filters, limit, offset)
+
+    def registrar_evento(self, user_id: UUID, evento: str, detail: str = None, ip: str = None, ua: str = None, origen: str = 'SISTEMA'):
+        return self.repo.registrar_evento(user_id, evento, detail, ip, ua, origen)

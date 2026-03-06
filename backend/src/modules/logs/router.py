@@ -3,8 +3,8 @@ from typing import List
 from uuid import UUID
 
 from .service import ServicioLogs
-from .schemas import LogEmisionLectura, LogEmisionCreacion
-from ..autenticacion.routes import obtener_usuario_actual, requerir_permiso
+from .schemas import LogEmisionLectura, LogEmisionCreacion, LogAuditoriaLectura
+from ..autenticacion.routes import obtener_usuario_actual, requerir_permiso, requerir_superadmin
 from ...constants.permissions import PermissionCodes
 
 router = APIRouter()
@@ -33,3 +33,22 @@ def crear_log(
     servicio: ServicioLogs = Depends()
 ):
     return servicio.crear_log(datos)
+
+@router.get("/auditoria", response_model=List[LogAuditoriaLectura])
+def listar_auditoria(
+    usuario: str = None,
+    evento: str = None,
+    fecha_inicio: str = None,
+    fecha_fin: str = None,
+    limit: int = 100,
+    offset: int = 0,
+    admin: dict = Depends(requerir_superadmin),
+    servicio: ServicioLogs = Depends()
+):
+    filters = {
+        "usuario": usuario,
+        "evento": evento,
+        "fecha_inicio": fecha_inicio,
+        "fecha_fin": fecha_fin
+    }
+    return servicio.listar_auditoria(filters, limit, offset)
