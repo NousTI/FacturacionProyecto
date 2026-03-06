@@ -1,6 +1,7 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import { User } from '../../../../../domain/models/user.model';
+import { AuthService } from '../../../../../core/auth/auth.service';
 
 @Component({
     selector: 'app-usuario-table',
@@ -39,8 +40,10 @@ import { User } from '../../../../../domain/models/user.model';
                   </div>
                 </td>
                 <td>
-                  <span class="badge-role" [ngClass]="usuario.rol_codigo || usuario.role || 'USUARIO'">
-                    {{ usuario.rol_nombre || usuario.role || 'USUARIO' }}
+                  <span class="badge-role" 
+                        [style.background]="getRolBadgeBg(usuario.rol_codigo || usuario.role)"
+                        [style.color]="getRolBadgeColor(usuario.rol_codigo || usuario.role)">
+                    {{ usuario.rol_nombre || usuario.role || 'Sin rol' }}
                   </span>
                 </td>
                 <td>
@@ -83,15 +86,21 @@ import { User } from '../../../../../domain/models/user.model';
                           <span class="ms-2">Editar Datos</span>
                         </a>
                       </li>
-                      <li>
-                        <a class="dropdown-item rounded-3 py-2" href="javascript:void(0)" (click)="onAction.emit({type: 'role', usuario})">
+                      <li *ngIf="canManageUsers(usuario)">
+                        <a class="dropdown-item rounded-3 py-2" 
+                           [class.disabled]="isCurrentUser(usuario)"
+                           href="javascript:void(0)" 
+                           (click)="!isCurrentUser(usuario) && onAction.emit({type: 'role', usuario})">
                           <i class="bi bi-person-badge text-corporate"></i>
                           <span class="ms-2">Cambiar Rol</span>
                         </a>
                       </li>
                       <li><hr class="dropdown-divider mx-2"></li>
-                      <li>
-                        <a class="dropdown-item rounded-3 py-2 text-danger" href="javascript:void(0)" (click)="onAction.emit({type: 'delete', usuario})">
+                      <li *ngIf="canManageUsers(usuario)">
+                        <a class="dropdown-item rounded-3 py-2 text-danger" 
+                           [class.disabled]="isCurrentUser(usuario)"
+                           href="javascript:void(0)" 
+                           (click)="!isCurrentUser(usuario) && onAction.emit({type: 'delete', usuario})">
                           <i class="bi bi-trash"></i>
                           <span class="ms-2">Eliminar</span>
                         </a>
@@ -194,6 +203,44 @@ import { User } from '../../../../../domain/models/user.model';
 export class UsuarioTableComponent {
     @Input() usuarios: User[] = [];
     @Output() onAction = new EventEmitter<{ type: string, usuario: User }>();
+
+    constructor(private authService: AuthService) {}
+
+    isCurrentUser(usuario: User): boolean {
+        const currentUser = this.authService.getUser();
+        if (!currentUser) return false;
+        
+        // Comparar el ID de usuario de negocio (usuarios.id)
+        const sessionUsuarioId = (currentUser as any).usuario_id;
+        return usuario.id === sessionUsuarioId;
+    }
+
+    canManageUsers(usuario: User): boolean {
+        const currentUser = this.authService.getUser();
+        if (!currentUser) return false;
+        
+        // Only admins or users with CONFIG_USUARIOS can manage
+        const hasPermission = currentUser.permisos?.some((p: any) => p.codigo === 'CONFIG_USUARIOS');
+        const isAdmin = currentUser.rol_codigo === 'ADMIN' || currentUser.role === 'ADMIN';
+        
+        return isAdmin || hasPermission || false;
+    }
+
+    getRolBadgeBg(code: string | undefined): string {
+        if (!code) return '#f1f5f9';
+        const c = code.toUpperCase();
+        if (c.includes('ADMIN')) return '#ede9fe';
+        if (c.includes('VEND')) return '#e0f2fe';
+        return '#f1f5f9';
+    }
+
+    getRolBadgeColor(code: string | undefined): string {
+        if (!code) return '#475569';
+        const c = code.toUpperCase();
+        if (c.includes('ADMIN')) return '#6d28d9';
+        if (c.includes('VEND')) return '#0369a1';
+        return '#475569';
+    }
 
     getInitials(name: string): string {
         if (!name) return '??';

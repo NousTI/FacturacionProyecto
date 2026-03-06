@@ -65,15 +65,6 @@ import { UiService } from '../../../shared/services/ui.service';
         ></app-vendedor-comisiones-table>
       </ng-container>
 
-      <!-- Placeholders for other modules as per Superadmin clone -->
-      <div *ngIf="currentTab === 'RULES'" class="placeholder-module">
-        <div class="text-center py-5">
-          <i class="bi bi-gear-wide-connected fs-1 text-muted mb-3 d-block"></i>
-          <h5 class="text-dark fw-bold">Reglas de Comisión</h5>
-          <p class="text-muted">Configuración de porcentajes y condiciones (Próximamente)</p>
-        </div>
-      </div>
-
       <!-- Audit Tab / List -->
       <div *ngIf="currentTab === 'AUDIT'">
          <app-vendedor-comisiones-table
@@ -161,7 +152,6 @@ export class VendedorComisionesPage implements OnInit {
     { id: 'APPROVED', label: 'Por Pagar' },
     { id: 'PAID', label: 'Historial Pagos' },
     { id: 'REJECTED', label: 'Rechazadas' },
-    { id: 'RULES', label: 'Reglas de Comisión' },
     { id: 'AUDIT', label: 'Auditoría' }
   ];
   currentTab = 'ALL';

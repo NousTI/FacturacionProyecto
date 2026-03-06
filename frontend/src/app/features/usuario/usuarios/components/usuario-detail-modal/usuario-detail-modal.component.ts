@@ -7,156 +7,143 @@ import { User } from '../../../../../domain/models/user.model';
   standalone: true,
   imports: [CommonModule],
   template: `
-    <div class="modal-overlay animate__animated animate__fadeIn animate__faster" (click)="close()">
-      <div class="modal-container-lux" (click)="$event.stopPropagation()">
-        
-        <!-- Header con gradiente -->
-        <div class="modal-header-lux">
-          <div class="user-profile-header">
-            <div class="user-avatar-large shadow-sm">
-              <i class="bi bi-person-fill"></i>
-            </div>
-            <div class="user-info-text">
-              <h2 class="user-name">{{ usuario.nombre || usuario.nombres }} {{ usuario.apellido || usuario.apellidos }}</h2>
-              <span class="badge-role" [ngClass]="usuario.rol_codigo || usuario.role || 'USUARIO'">
-                {{ usuario.rol_nombre || usuario.role || 'USUARIO' }}
+    <div class="overlay" (click)="close()">
+      <div class="modal-card" (click)="$event.stopPropagation()">
+
+        <!-- Close -->
+        <button class="btn-x" (click)="close()"><i class="bi bi-x"></i></button>
+
+        <!-- Profile Header -->
+        <div class="profile-section">
+          <div class="avatar-xl">
+            {{ getInitials(usuario.nombre || usuario.nombres || 'U') }}
+          </div>
+          <div class="profile-meta">
+            <h2 class="profile-name">{{ usuario.nombre || usuario.nombres }} {{ usuario.apellido || usuario.apellidos }}</h2>
+            <div class="profile-tags">
+              <span class="tag-role">{{ usuario.rol_nombre || usuario.role || '—' }}</span>
+              <span class="tag-status" [class.is-active]="usuario.activo !== false">
+                <i class="bi bi-circle-fill me-1" style="font-size:6px; vertical-align: middle;"></i>
+                {{ usuario.activo !== false ? 'Activo' : 'Inactivo' }}
               </span>
             </div>
           </div>
-          <button (click)="close()" class="btn-close-lux">
-            <i class="bi bi-x"></i>
-          </button>
         </div>
 
-        <div class="modal-body-lux scroll-custom">
-          <div class="row g-4">
-            <!-- Columna Izquierda: Información Principal -->
-            <div class="col-md-7">
-              <div class="detail-section mb-4">
-                <h3 class="section-title"><i class="bi bi-info-circle me-2"></i>Información de Acceso</h3>
-                <div class="info-grid">
-                  <div class="info-item">
-                    <span class="label">Correo Electrónico</span>
-                    <span class="value">{{ usuario.correo || usuario.email }}</span>
-                  </div>
-                  <div class="info-item">
-                    <span class="label">Teléfono / Celular</span>
-                    <span class="value">{{ usuario.telefono || 'No registrado' }}</span>
-                  </div>
-                  <div class="info-item">
-                    <span class="label">Estado de Cuenta</span>
-                    <span class="value" [class.text-success]="usuario.activo !== false" [class.text-danger]="usuario.activo === false">
-                      <i class="bi bi-circle-fill fs-xs me-1"></i>
-                      {{ usuario.activo !== false ? 'Cuenta Activa' : 'Cuenta Suspendida' }}
-                    </span>
-                  </div>
-                </div>
-              </div>
+        <!-- Divider -->
+        <div class="divider"></div>
 
-              <div class="detail-section">
-                <h3 class="section-title"><i class="bi bi-calendar-event me-2"></i>Actividad Local</h3>
-                <div class="info-grid">
-                  <div class="info-item">
-                    <span class="label">Último Acceso</span>
-                    <span class="value">{{ (usuario.ultimo_acceso | date:'dd MMM yyyy, HH:mm') || 'Nunca' }}</span>
-                  </div>
-                  <div class="info-item">
-                    <span class="label">ID de Usuario</span>
-                    <span class="value">{{ usuario.id }}</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Columna Derecha: Estadísticas rápidas o info adicional -->
-            <div class="col-md-5">
-              <div class="summary-card shadow-sm p-4 rounded-4 mb-4">
-                <h4 class="card-title-sm mb-3">Empresa Vinculada</h4>
-                <div class="d-flex align-items-center gap-3">
-                  <div class="company-icon">
-                    <i class="bi bi-building"></i>
-                  </div>
-                  <div>
-                    <p class="m-0 fw-bold">Empresa Activa</p>
-                    <p class="m-0 text-muted small">ID Empresa: {{ usuario.empresa_id || 'N/A' }}</p>
-                  </div>
-                </div>
-              </div>
-
-            </div>
+        <!-- Data Grid -->
+        <div class="data-grid">
+          <div class="data-item">
+            <span class="data-label">Correo electrónico</span>
+            <span class="data-value">{{ usuario.correo || usuario.email || '—' }}</span>
+          </div>
+          <div class="data-item">
+            <span class="data-label">Teléfono</span>
+            <span class="data-value">{{ usuario.telefono || '—' }}</span>
+          </div>
+          <div class="data-item">
+            <span class="data-label">Último acceso</span>
+            <span class="data-value">{{ usuario.ultimo_acceso ? (usuario.ultimo_acceso | date:'dd MMM yyyy · HH:mm') : 'Nunca' }}</span>
+          </div>
+          <div class="data-item">
+            <span class="data-label">ID de usuario</span>
+            <span class="data-value mono">{{ usuario.id }}</span>
           </div>
         </div>
 
         <!-- Footer -->
-        <div class="modal-footer-lux">
-          <button (click)="close()" class="btn-primary-lux px-4">Cerrar Detalle</button>
+        <div class="modal-foot">
+          <button class="btn-close-modal" (click)="close()">Cerrar</button>
         </div>
 
       </div>
     </div>
   `,
   styles: [`
-    .modal-overlay {
-      position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-      background: rgba(15, 23, 53, 0.4); backdrop-filter: blur(10px);
-      display: flex; align-items: center; justify-content: center; z-index: 10000; padding: 1rem;
+    .overlay {
+      position: fixed; inset: 0;
+      background: rgba(10, 10, 20, 0.45); backdrop-filter: blur(14px);
+      display: flex; align-items: center; justify-content: center;
+      z-index: 10000; padding: 1rem;
     }
-    .modal-container-lux {
-      background: #ffffff; width: 850px;
-      max-width: 95vw; max-height: 90vh; border-radius: 32px;
-      display: flex; flex-direction: column; overflow: hidden;
-      box-shadow: 0 50px 100px -20px rgba(15, 23, 53, 0.3);
+    .modal-card {
+      position: relative;
+      background: #ffffff; width: 520px; max-width: 96vw;
+      border-radius: 28px; overflow: hidden;
+      box-shadow: 0 32px 80px -12px rgba(0,0,0,0.18), 0 0 0 1px rgba(0,0,0,0.05);
+      display: flex; flex-direction: column;
     }
-    .modal-header-lux {
-      background: linear-gradient(to right, #f8fafc, #ffffff);
-      padding: 2.5rem; display: flex; justify-content: space-between; align-items: flex-start;
-      border-bottom: 1px solid #f1f5f9;
+    .btn-x {
+      position: absolute; top: 1.5rem; right: 1.5rem;
+      background: #f8fafc; border: 1px solid #e2e8f0;
+      width: 36px; height: 36px; border-radius: 10px;
+      color: #64748b; font-size: 1.1rem;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; line-height: 1; transition: all 0.15s;
     }
-    .user-profile-header { display: flex; align-items: center; gap: 1.5rem; }
-    .user-avatar-large {
-      width: 80px; height: 80px; background: #161d35; color: white;
-      border-radius: 24px; display: flex; align-items: center; justify-content: center;
-      font-size: 2.5rem;
-    }
-    .user-name { font-size: 1.75rem; font-weight: 800; color: #161d35; margin: 0; letter-spacing: -0.5px; }
-    .badge-role {
-      display: inline-block; padding: 4px 12px; border-radius: 8px; font-weight: 700; font-size: 0.75rem;
-      text-transform: uppercase; margin-top: 8px;
-    }
-    .badge-role.ADMIN { background: #fee2e2; color: #ef4444; }
-    .badge-role.VENDEDOR { background: #dcfce7; color: #22c55e; }
-    .badge-role.USUARIO { background: #e0f2fe; color: #0ea5e9; }
-    .badge-role.SUPERADMIN { background: #161d35; color: #ffffff; }
+    .btn-x:hover { background: #f1f5f9; color: #1e293b; }
 
-    .btn-close-lux { background: white; border: 1.5px solid #f1f5f9; width: 44px; height: 44px; border-radius: 12px; color: #64748b; font-size: 1.25rem; }
-    
-    .modal-body-lux { padding: 2.5rem; overflow-y: auto; flex: 1; }
-    .section-title { font-size: 1rem; font-weight: 800; color: #1e293b; margin-bottom: 1.5rem; }
-    .info-grid { display: grid; gap: 1.25rem; }
-    .info-item { display: flex; flex-direction: column; gap: 4px; }
-    .info-item .label { font-size: 0.75rem; font-weight: 700; color: #94a3b8; text-transform: uppercase; }
-    .info-item .value { font-size: 1rem; font-weight: 600; color: #334155; }
-    
-    .summary-card { background: #f8fafc; border: 1px solid #f1f5f9; }
-    .card-title-sm { font-size: 0.85rem; font-weight: 800; color: #64748b; text-transform: uppercase; }
-    .company-icon { width: 40px; height: 40px; background: white; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.25rem; color: #161d35; }
-    
-    .permissions-preview-lux { background: #161d35; color: white; }
-    .permissions-preview-lux .card-title-sm { color: #94a3b8; }
-    .perm-mini-tag { display: inline-block; background: rgba(255,255,255,0.1); padding: 4px 10px; border-radius: 6px; font-size: 0.7rem; font-weight: 600; margin: 0 6px 6px 0; border: 1px solid rgba(255,255,255,0.1); }
-    .perm-more { font-size: 0.75rem; color: #94a3b8; font-weight: 600; margin-top: 4px; }
+    /* Profile */
+    .profile-section {
+      display: flex; align-items: center; gap: 1.25rem;
+      padding: 2rem 2rem 1.5rem;
+    }
+    .avatar-xl {
+      width: 64px; height: 64px; flex-shrink: 0;
+      background: #161d35; color: #ffffff;
+      border-radius: 18px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.4rem; font-weight: 800; letter-spacing: -1px;
+    }
+    .profile-name {
+      font-size: 1.3rem; font-weight: 800; color: #0f172a;
+      margin: 0 0 0.5rem; letter-spacing: -0.3px; line-height: 1.2;
+    }
+    .profile-tags { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
+    .tag-role {
+      background: #f1f5f9; color: #334155;
+      padding: 3px 10px; border-radius: 6px;
+      font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;
+    }
+    .tag-status {
+      padding: 3px 10px; border-radius: 6px;
+      font-size: 0.72rem; font-weight: 700;
+      background: #fef2f2; color: #dc2626;
+    }
+    .tag-status.is-active { background: #f0fdf4; color: #16a34a; }
 
-    .modal-footer-lux { padding: 1.5rem 2.5rem; border-top: 1px solid #f1f5f9; display: flex; justify-content: flex-end; }
-    .btn-primary-lux { background: #161d35; color: white; border: none; height: 48px; border-radius: 14px; font-weight: 700; }
-    
-    .fs-xs { font-size: 0.6rem; }
-    .scroll-custom::-webkit-scrollbar { width: 5px; }
-    .scroll-custom::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
+    .divider { height: 1px; background: #f1f5f9; margin: 0 2rem; }
+
+    /* Data */
+    .data-grid { padding: 1.5rem 2rem; display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem 1rem; }
+    .data-item { display: flex; flex-direction: column; gap: 4px; }
+    .data-label { font-size: 0.7rem; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.6px; }
+    .data-value { font-size: 0.9rem; font-weight: 600; color: #1e293b; word-break: break-all; }
+    .data-value.mono { font-family: monospace; font-size: 0.75rem; color: #64748b; }
+
+    /* Footer */
+    .modal-foot {
+      padding: 1.25rem 2rem; border-top: 1px solid #f1f5f9;
+      display: flex; justify-content: flex-end;
+    }
+    .btn-close-modal {
+      background: #0f172a; color: #ffffff; border: none;
+      padding: 0.6rem 1.75rem; border-radius: 10px;
+      font-size: 0.875rem; font-weight: 700; cursor: pointer;
+      transition: opacity 0.15s;
+    }
+    .btn-close-modal:hover { opacity: 0.85; }
   `]
 })
 export class UsuarioDetailModalComponent implements OnInit, OnDestroy {
   @Input({ required: true }) usuario!: User;
   @Output() onClose = new EventEmitter<void>();
+
+  getInitials(name: string): string {
+    return name.split(' ').slice(0, 2).map(n => n[0]).join('').toUpperCase();
+  }
 
   ngOnInit() { document.body.style.overflow = 'hidden'; }
   ngOnDestroy() { document.body.style.overflow = 'auto'; }

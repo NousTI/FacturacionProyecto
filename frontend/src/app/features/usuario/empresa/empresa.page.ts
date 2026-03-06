@@ -25,7 +25,7 @@ import { Empresa } from '../../../domain/models/empresa.model';
   template: `
     <div class="empresa-page-container">
       
-      <div class="container-fluid px-4 py-4 animate-fade-in">
+      <div class="container-fluid px-4 py-4">
         <!-- Loading State -->
         <div *ngIf="loading && !empresa" class="loading-state p-5 text-center">
           <div class="spinner-premium mb-3"></div>
@@ -299,7 +299,6 @@ import { Empresa } from '../../../domain/models/empresa.model';
       height: 6px;
       border-radius: 50%;
       background: currentColor;
-      animation: pulse 2s infinite;
     }
 
     .detail-row {
@@ -369,7 +368,6 @@ import { Empresa } from '../../../domain/models/empresa.model';
     @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
     @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.4; } 100% { opacity: 1; } }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-    .animate-fade-in { animation: fadeIn 0.4s ease-out forwards; }
 
     @media (max-width: 992px) {
       .stats-compact-row {

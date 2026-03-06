@@ -136,6 +136,16 @@ import { forkJoin, switchMap, tap, catchError, of, filter, take, map, Observable
                     </div>
                   </div>
 
+                  <div class="col-md-12 col-lg-2">
+                    <label class="form-label-lux">Estado Pago</label>
+                    <div class="select-lux-wrapper">
+                      <select class="select-lux input-sm" formControlName="estado_pago">
+                        <option value="PENDIENTE">PENDIENTE</option>
+                        <option value="PAGADO">PAGADO</option>
+                      </select>
+                    </div>
+                  </div>
+
                 </div>
               </div>
 
@@ -535,6 +545,7 @@ export class CreateFacturaModalComponent implements OnInit {
       fecha_emision: [new Date().toISOString().split('T')[0], Validators.required],
       cliente_id: [null, Validators.required],
       forma_pago_sri: ['01', Validators.required],
+      estado_pago: ['PENDIENTE', Validators.required],
       plazo: [0],
       unidad_tiempo: ['DIAS'],
       observaciones: [''],
@@ -627,6 +638,7 @@ export class CreateFacturaModalComponent implements OnInit {
           fecha_emision: factura.fecha_emision.split('T')[0],
           cliente_id: factura.cliente_id,
           forma_pago_sri: factura.forma_pago_sri,
+          estado_pago: factura.estado_pago || 'PENDIENTE',
           plazo: factura.plazo || 0,
           unidad_tiempo: factura.unidad_tiempo || 'DIAS',
           observaciones: factura.observaciones || ''
@@ -824,6 +836,7 @@ export class CreateFacturaModalComponent implements OnInit {
       punto_emision_id: formVal.punto_emision_id,
       cliente_id: formVal.cliente_id,
       fecha_emision: formVal.fecha_emision,
+      estado_pago: formVal.estado_pago,
       observaciones: formVal.observaciones,
       subtotal_sin_iva: Number(this.totals.subtotal_sin_iva.toFixed(2)),
       subtotal_con_iva: Number(this.totals.subtotal_con_iva.toFixed(2)),

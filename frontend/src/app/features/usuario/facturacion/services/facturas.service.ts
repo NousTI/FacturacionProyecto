@@ -105,4 +105,8 @@ export class FacturasService {
     listarPagos(facturaId: string): Observable<any[]> {
         return this.http.get<any[]>(`${this.apiUrl}/${facturaId}/pagos`);
     }
+
+    actualizarEstadoPago(id: string, estado_pago: string): Observable<Factura> {
+        return this.http.patch<Factura>(`${this.apiUrl}/${id}/estado-pago`, { estado_pago });
+    }
 }

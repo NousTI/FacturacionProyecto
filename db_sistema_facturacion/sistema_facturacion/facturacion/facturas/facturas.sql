@@ -39,7 +39,7 @@ CREATE TABLE IF NOT EXISTS sistema_facturacion.facturas (
     clave_acceso VARCHAR(49) UNIQUE
         COMMENT 'Clave de acceso SRI (49 dígitos) - se genera al emitir',
     
-    numero_autorizacion VARCHAR(49)
+    numero_autorizacion VARCHAR(49) UNIQUE
         COMMENT 'Número de autorización SRI - se obtiene tras validación exitosa',
     
     -- Tipo de documento SRI: 01=Factura, 04=Nota Crédito, 05=Nota Débito
@@ -108,18 +108,11 @@ CREATE TABLE IF NOT EXISTS sistema_facturacion.facturas (
     -- =============================================
     -- ESTADOS: Ciclo de vida de la factura
     -- =============================================
-    -- BORRADOR: Creada pero aún no emitida al SRI
-    -- EMITIDA: Enviada y autorizada por el SRI
-    -- ANULADA: Cancelada (ver log_emision_facturas para detalles)
     estado VARCHAR(20) NOT NULL DEFAULT 'BORRADOR' 
         CHECK (estado IN ('BORRADOR', 'EN_PROCESO', 'AUTORIZADA', 'DEVUELTA', 'NO_AUTORIZADA', 'ANULADA', 'ERROR_TECNICO'))
         COMMENT 'BORRADOR=creada, EN_PROCESO=enviada al SRI, AUTORIZADA=autorizada SRI, DEVUELTA=error recepción, NO_AUTORIZADA=error legal autorización, ANULADA=cancelada, ERROR_TECNICO=error red',
     
     -- Estado de pago (independiente del estado de emisión)
-    -- PENDIENTE: No pagada
-    -- PAGADO: Pagada en su totalidad
-    -- PARCIAL: Pagada parcialmente
-    -- VENCIDO: Pasó fecha vencimiento sin pagar
     estado_pago VARCHAR(20) NOT NULL DEFAULT 'PENDIENTE' 
         CHECK (estado_pago IN ('PENDIENTE', 'PAGADO', 'PARCIAL', 'VENCIDO'))
         COMMENT 'PENDIENTE, PAGADO, PARCIAL, VENCIDO',
@@ -162,14 +155,3 @@ CREATE TABLE IF NOT EXISTS sistema_facturacion.facturas (
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
         COMMENT 'Timestamp de última modificación'
 );
-
--- | Código | Forma de pago                                | ¿Requiere plazo/unidadTiempo?   |
--- | ------ | -------------------------------------------- | ------------------------------- |
--- | `01`   | Sin utilización del sistema financiero       | ❌ No                            |
--- | `15`   | Compensación de deudas                       | ✅ Sí                            |
--- | `16`   | Tarjeta de débito                            | ❌ No                            |
--- | `17`   | Dinero electrónico                           | ❌ No                            |
--- | `18`   | Tarjeta prepago                              | ❌ No                            |
--- | `19`   | Tarjeta de crédito                           | ⚠️ Depende (sí si es diferido)  |
--- | `20`   | Otros con utilización del sistema financiero | ⚠️ Depende (sí si es a crédito) |
--- | `21`   | Endoso de títulos                            | ✅ Sí                            |

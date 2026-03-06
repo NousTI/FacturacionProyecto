@@ -71,9 +71,13 @@ import { HasPermissionDirective } from '../../../../../shared/directives/has-per
 
             <!-- Estado Emisión -->
             <td>
-              <div class="badge-status-lux" [ngClass]="getStatusClass(factura.estado)">
+              <div class="badge-status-lux mb-1" [ngClass]="getStatusClass(factura.estado)">
                 <div class="dot"></div>
                 {{ factura.estado }}
+              </div>
+              <div class="badge-status-lux w-100" [ngClass]="getPaymentStatusClass(factura.estado_pago)">
+                <i class="bi bi-cash-stack me-1" style="font-size: 0.8rem;"></i>
+                {{ factura.estado_pago }}
               </div>
             </td>
 
@@ -140,6 +144,15 @@ import { HasPermissionDirective } from '../../../../../shared/directives/has-per
                       class="dropdown-item py-2" href="javascript:void(0)" (click)="onAction.emit({type: 'email', factura})">
                       <div class="icon-item bg-soft-secondary"><i class="bi bi-envelope-fill"></i></div>
                       <span class="ms-2">Enviar Email</span>
+                    </a>
+                  </li>
+
+                  <li *appHasPermission="'FACTURAS_EDITAR'">
+                    <a class="dropdown-item py-2" href="javascript:void(0)" (click)="onAction.emit({type: 'toggle-pago', factura})">
+                      <div class="icon-item" [ngClass]="factura.estado_pago === 'PAGADO' ? 'bg-soft-warning' : 'bg-soft-success'">
+                         <i class="bi" [ngClass]="factura.estado_pago === 'PAGADO' ? 'bi-clock-history' : 'bi-cash-coin'"></i>
+                      </div>
+                      <span class="ms-2">{{ factura.estado_pago === 'PAGADO' ? 'Marcar como Pendiente' : 'Marcar como Pagada' }}</span>
                     </a>
                   </li>
 
@@ -280,6 +293,11 @@ import { HasPermissionDirective } from '../../../../../shared/directives/has-per
 
     .status-error { background: #fef2f2; color: #991b1b; border: 1px dashed #fca5a5; }
     .status-error .dot { background: #ef4444; }
+
+    /* Estados Pago Lux */
+    .payment-pendiente { background: #fff7ed; color: #9a3412; }
+    .payment-pagado { background: #ecfdf5; color: #047857; }
+    .payment-parcial { background: #eff6ff; color: #1e40af; }
 
     .btn-trigger-lux {
       background: transparent;

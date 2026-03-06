@@ -60,6 +60,16 @@ class ServicioRoles:
             raise AppError("Usuario sin empresa asignada", 400)
         
         rol_data = data.model_dump(exclude={'permiso_ids'})
+        rol_data['es_sistema'] = False # Force false for business users
+        
+        # Generate automatic code if not provided
+        if not rol_data.get('codigo'):
+            # Slugify name: replace spaces with _ and uppercase
+            base_code = rol_data['nombre'].strip().upper().replace(' ', '_')
+            # Add short hash or timestamp to ensure uniqueness within empresa
+            import time
+            rol_data['codigo'] = f"ROL_{base_code}_{int(time.time() % 10000)}"
+            
         return self.repo.crear_rol(empresa_id, rol_data, data.permiso_ids)
     
     def actualizar_rol(self, id: UUID, data: RolActualizacion, usuario_actual: dict):

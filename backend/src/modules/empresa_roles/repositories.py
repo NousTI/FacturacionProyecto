@@ -46,6 +46,7 @@ class RepositorioRoles:
         """List roles for an empresa with their permissions"""
         query = """
             SELECT r.*, 
+                   (SELECT COUNT(*) FROM sistema_facturacion.usuarios WHERE empresa_rol_id = r.id) as num_usuarios,
                    COALESCE(
                        json_agg(
                            json_build_object(

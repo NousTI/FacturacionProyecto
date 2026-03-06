@@ -45,3 +45,28 @@ class PermissionChecker:
 
 # Alias for easy import
 requerir_permiso = PermissionChecker
+
+def requerir_gestion_roles(usuario: dict = Depends(get_current_user)):
+    """
+    Requirement: Only an empresa admin OR a user with CONFIG_ROLES permission can manage roles.
+    Superadmins always have access.
+    """
+    if usuario.get(AuthKeys.IS_SUPERADMIN):
+        return usuario
+    
+    # 1. Check granular permission
+    granular_perms = usuario.get("permisos", [])
+    if "CONFIG_ROLES" in granular_perms:
+        return usuario
+        
+    # 2. Check if user has an ADMIN role code for their empresa
+    rol_codigo = usuario.get("rol_codigo")
+    if rol_codigo and (rol_codigo.startswith("ADMIN_") or rol_codigo == "ADMIN"):
+        return usuario
+        
+    # 3. No permission found
+    raise AppError(
+        message="No tienes permisos para gestionar roles de empresa. Solo administradores pueden realizar esta acción.",
+        status_code=403,
+        code=ErrorCodes.PERM_FORBIDDEN
+    )

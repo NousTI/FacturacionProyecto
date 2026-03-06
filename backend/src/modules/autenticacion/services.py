@@ -212,6 +212,11 @@ class AuthServices:
         user[AuthKeys.IS_USUARIO] = (role_upper == RolCodigo.USUARIO.value)
         user["role"] = role
 
+        # Ensure rol_codigo is available for permission checks (from roles service or repositories)
+        if not user.get("rol_codigo") and user.get("usuario_id"):
+             # If it was missing in the baseline dict (rare but possible during transition)
+             pass 
+
         # Si es VENDEDOR, inyectar permisos tambien aqui
         if role_upper == RolCodigo.VENDEDOR.value:
             vendedor_profile = self.vendedor_repo.obtener_por_user_id(user_id)

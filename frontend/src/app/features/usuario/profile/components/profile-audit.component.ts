@@ -17,7 +17,7 @@ import { PerfilUsuario } from '../../../../domain/models/perfil.model';
         </div>
         <div class="col-md-3">
           <div class="audit-item">
-            <span class="l">Fecha de Alta</span>
+            <span class="l">Fecha de creacion</span>
             <span class="v">{{ perfil.created_at | date:'longDate' }}</span>
           </div>
         </div>

@@ -8,6 +8,7 @@ from ..schemas import (
     FacturaLectura,
     FacturaActualizacion,
     FacturaAnulacion,
+    FacturaUpdateEstadoPago,
     FacturaListadoFiltros
 )
 from ..services.service_factura import ServicioFactura
@@ -167,6 +168,20 @@ def anular_factura(
     **Requiere permiso:** FACTURAS_ANULAR
     """
     return servicio.anular_factura(id, datos, usuario)
+    
+@router.patch("/{id}/estado-pago", response_model=FacturaLectura)
+def actualizar_estado_pago(
+    id: UUID,
+    datos: FacturaUpdateEstadoPago,
+    usuario: dict = Depends(requerir_permiso(PermissionCodes.FACTURAS_EDITAR)),
+    servicio: ServicioFactura = Depends()
+):
+    """
+    Actualiza el estado de pago de una factura de forma directa.
+    
+    **Requiere permiso:** FACTURAS_EDITAR
+    """
+    return servicio.actualizar_estado_pago(id, datos.estado_pago, usuario)
 
 @router.delete("/{id}")
 def eliminar_factura(

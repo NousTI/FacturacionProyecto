@@ -17,7 +17,6 @@ import { SriCertConfig } from '../../services/sri-cert.service';
               <th>Vencimiento</th>
               <th>Días Restantes</th>
               <th>Emisor</th>
-              <th class="pe-4 text-end">Acciones</th>
             </tr>
           </thead>
           <tbody>
@@ -87,13 +86,6 @@ import { SriCertConfig } from '../../services/sri-cert.service';
                     {{ cert.cert_emisor }}
                 </span>
                 <span class="text-muted" style="font-size: 0.7rem;">Serial: {{ cert.cert_serial }}</span>
-              </td>
-
-              <!-- Acciones -->
-              <td class="pe-4 text-end">
-                <button class="btn-trigger-lux" title="Ver Historial" (click)="onViewHistory.emit(cert)">
-                  <i class="bi bi-clock-history"></i>
-                </button>
               </td>
 
             </tr>

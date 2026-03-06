@@ -6,7 +6,6 @@ import { UiService } from '../../../shared/services/ui.service';
 import { SriCertService, SriCertConfig } from './services/sri-cert.service';
 import { CertStatsComponent } from './components/cert-stats/cert-stats.component';
 import { CertTableComponent } from './components/cert-table/cert-table.component';
-import { CertHistoryModalComponent } from './components/cert-history-modal/cert-history-modal.component';
 
 @Component({
     selector: 'app-certificados-sri',
@@ -16,7 +15,6 @@ import { CertHistoryModalComponent } from './components/cert-history-modal/cert-
         FormsModule,
         CertStatsComponent,
         CertTableComponent,
-        CertHistoryModalComponent
     ],
     template: `
     <div class="facturas-page-container">
@@ -77,14 +75,6 @@ import { CertHistoryModalComponent } from './components/cert-history-modal/cert-
         [certificados]="filteredCerts"
         (onViewHistory)="openHistory($event)"
       ></app-cert-table>
-
-      <!-- 4. Modal -->
-      <app-cert-history-modal
-        *ngIf="showHistoryModal"
-        [cert]="selectedCert"
-        (onClose)="showHistoryModal = false"
-      ></app-cert-history-modal>
-
     </div>
     </div>
   `,

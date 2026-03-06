@@ -41,7 +41,7 @@ class ServicioFacturaCore:
         payload = datos.model_dump()
         payload.update({
             "estado": 'BORRADOR',
-            "estado_pago": 'PENDIENTE',
+            "estado_pago": datos.estado_pago or 'PENDIENTE',
             **snapshots_logic
         })
         

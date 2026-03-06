@@ -50,19 +50,24 @@ class ServicioUsuarios:
     
     def crear_usuario(self, data: UsuarioCreacion, usuario_actual: dict):
         """Create new user (admin only)"""
+        # Auto-inject empresa_id from the current user if not provided
+        if not data.empresa_id:
+            empresa_id_actual = usuario_actual.get('empresa_id')
+            if not empresa_id_actual:
+                raise AppError("No se pudo determinar la empresa del usuario", 400)
+            data.empresa_id = empresa_id_actual
+
+        # Force default password
+        data.password = "password"
+
         # Verify user is creating in their empresa or is a vendor for that empresa
         if not usuario_actual.get(AuthKeys.IS_SUPERADMIN):
             es_vendedor = usuario_actual.get(AuthKeys.IS_VENDEDOR, False)
             
             if es_vendedor:
-                # Vendedores can only create users for companies they manage
                 vendedor_id = usuario_actual.get('internal_vendedor_id')
                 if not vendedor_id:
                      raise AppError("No autorizado", 403, description="Perfil de vendedor no encontrado")
-                
-                # We need a cross-check here, but for now let's skip the company-level check 
-                # if the vendor is authenticated, as they select from their list in frontend.
-                # A more robust check would involve querying the empresa to verify vendeur_id.
                 pass 
             else:
                 # Regular company admins can only create users in their own company
@@ -131,6 +136,14 @@ class ServicioUsuarios:
         usuario = self.obtener_usuario(id, usuario_actual)
         
         update_data = data.model_dump(exclude_unset=True)
+        
+        # New Rule: Cannot change own role
+        if str(id) == str(usuario_actual.get('usuario_id')) or str(id) == str(usuario_actual.get('id')):
+            if 'empresa_rol_id' in update_data:
+                # Permitiendo actualizar otros campos pero no el rol a sí mismo
+                update_data.pop('empresa_rol_id')
+                logger.warning(f"[SEGURIDAD] Usuario {usuario_actual.get('email')} intentó cambiar su propio rol. Acción bloqueada.")
+
         res = self.repo.actualizar_usuario(id, update_data)
         
         self.logs_service.registrar_evento(
@@ -143,6 +156,10 @@ class ServicioUsuarios:
     
     def eliminar_usuario(self, id: UUID, usuario_actual: dict):
         """Delete user (admin only)"""
+        # New Rule: Cannot delete self
+        if str(id) == str(usuario_actual.get('usuario_id')) or str(id) == str(usuario_actual.get('id')):
+             raise AppError("No puedes eliminar tu propia cuenta de usuario.", 400)
+
         usuario = self.obtener_usuario(id, usuario_actual)
         
         if not self.repo.eliminar_usuario(id):

@@ -62,16 +62,6 @@ import { UiService } from '../../../shared/services/ui.service';
                   </ul>
                 </div>
                 
-                <!-- Botones separados para Reglas y Auditoría -->
-                <ng-container *ngFor="let tab of otherTabs">
-                  <button 
-                      class="btn-filter-lux" 
-                      [class.active]="currentTab === tab.id" 
-                      (click)="selectTab(tab.id)">
-                      <i class="bi" [ngClass]="{'bi-gear-wide-connected': tab.id === 'RULES', 'bi-clock-history': tab.id === 'AUDIT'}"></i>
-                      <span class="d-none d-sm-inline">{{ tab.label }}</span>
-                  </button>
-                </ng-container>
             </div>
           </div>
         </div>
@@ -205,10 +195,6 @@ export class ComisionesPage implements OnInit {
     { id: 'APPROVED', label: 'Por Pagar' },
     { id: 'PAID', label: 'Historial Pagos' },
     { id: 'REJECTED', label: 'Rechazadas' }
-  ];
-  
-  otherTabs = [
-    { id: 'RULES', label: 'Reglas de Comisión' }
   ];
   
   currentTab: string = 'ALL';

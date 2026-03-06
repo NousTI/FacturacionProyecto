@@ -20,6 +20,7 @@ export interface User {
     rol_nombre?: string;
     rol_codigo?: string;
     role?: UserRole | string;
+    ultimo_acceso?: string;
 
     // Permisos Vendedor
     puede_crear_empresas?: boolean;
@@ -32,5 +33,4 @@ export interface User {
     permisos?: string[] | Permiso[];
 
     activo?: boolean;
-    ultimo_acceso?: string;
 }

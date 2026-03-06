@@ -67,6 +67,7 @@ class FacturaBase(BaseModel):
     total: Decimal = Field(..., ge=0)
     
     origen: Optional[str] = Field(None, description="MANUAL | IMPORTADO | API | FACTURACION_PROGRAMADA")
+    estado_pago: Optional[EstadoPago] = Field(default='PENDIENTE')
     observaciones: Optional[str] = None
 
     @field_validator('fecha_vencimiento')
@@ -160,6 +161,7 @@ class FacturaActualizacion(BaseModel):
     plazo: Optional[int] = Field(None, ge=0)
     unidad_tiempo: Optional[str] = None
     origen: Optional[str] = None
+    estado_pago: Optional[EstadoPago] = None
     observaciones: Optional[str] = None
     
     @model_validator(mode='after')
@@ -202,6 +204,11 @@ class FacturaAnulacion(BaseModel):
         if len(v) < 10:
             raise ValueError('La razón de anulación debe tener al menos 10 caracteres')
         return v
+
+
+class FacturaUpdateEstadoPago(BaseModel):
+    """Schema para actualizar solo el estado de pago."""
+    estado_pago: EstadoPago
 
 
 # ===================================================================

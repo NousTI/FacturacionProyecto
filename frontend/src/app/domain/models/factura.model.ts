@@ -121,6 +121,7 @@ export interface FacturaCreacion {
     total: number;
 
     origen?: string; // MANUAL
+    estado_pago?: 'PENDIENTE' | 'PAGADO' | 'PARCIAL' | 'VENCIDO';
     observaciones?: string;
 }
 

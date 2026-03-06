@@ -15,11 +15,11 @@ class UsuarioBase(BaseModel):
 class UsuarioCreacion(BaseModel):
     email: EmailStr
     password: str = "password"
-    empresa_id: UUID
+    empresa_id: Optional[UUID] = None   # Se inyecta automáticamente desde el usuario actual si no se provee
     empresa_rol_id: Optional[UUID] = None
     nombres: str
     apellidos: str
-    telefono: str
+    telefono: Optional[str] = None
     avatar_url: Optional[str] = None
 
 class UsuarioActualizacion(BaseModel):

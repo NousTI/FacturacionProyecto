@@ -19,13 +19,6 @@ import { FormsModule } from '@angular/forms';
         >
       </div>
 
-      <div class="button-group">
-        <!-- Restricted: No "Nuevo Plan" button for vendors -->
-        <div class="info-badge-premium">
-          <i class="bi bi-info-circle me-2"></i>
-          Catálogo de Planes
-        </div>
-      </div>
     </div>
   `,
     styles: [`

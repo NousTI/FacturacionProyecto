@@ -15,6 +15,7 @@ import { ToastComponent } from '../../../shared/components/toast/toast.component
 import { UsuariosService, UsuariosStats } from './services/usuarios.service';
 import { UiService } from '../../../shared/services/ui.service';
 import { User } from '../../../domain/models/user.model';
+import { AuthService } from '../../../core/auth/auth.service';
 
 @Component({
   selector: 'app-usuario-usuarios',
@@ -130,6 +131,7 @@ export class UsuariosPage implements OnInit, OnDestroy {
   constructor(
     private usuariosService: UsuariosService,
     private uiService: UiService,
+    private authService: AuthService,
     private cd: ChangeDetectorRef
   ) {
     this.usuarios$ = this.usuariosService.usuarios$;
@@ -191,16 +193,26 @@ export class UsuariosPage implements OnInit, OnDestroy {
   }
 
   handleAction(event: { type: string, usuario: User }) {
+    const currentUser = this.authService.getUser();
+    const currentUserId = currentUser?.id || (currentUser as any)?.usuario_id;
+    const isSelf = event.usuario.id === currentUserId;
+
     if (event.type === 'edit') {
       this.selectedUsuario = event.usuario;
       this.showFormModal = true;
-    } else if (event.type === 'view' || event.type === 'role') {
+    } else if (event.type === 'delete') {
+      if (isSelf) {
+        this.uiService.showToast('No puedes eliminar tu propia cuenta', 'warning');
+        return;
+      }
+      this.selectedUsuario = event.usuario;
+      this.showConfirmModal = true;
+    } else if (event.type === 'view') {
       this.isLoading = true;
       this.usuariosService.obtenerUsuario(event.usuario.id).subscribe({
         next: (fullUser) => {
           this.selectedUsuario = fullUser;
-          if (event.type === 'view') this.showDetailModal = true;
-          if (event.type === 'role') this.showRoleModal = true;
+          this.showDetailModal = true;
           this.isLoading = false;
           this.cd.detectChanges();
         },
@@ -210,9 +222,25 @@ export class UsuariosPage implements OnInit, OnDestroy {
           this.cd.detectChanges();
         }
       });
-    } else if (event.type === 'delete') {
-      this.selectedUsuario = event.usuario;
-      this.showConfirmModal = true;
+    } else if (event.type === 'role') {
+      if (isSelf) {
+        this.uiService.showToast('No puedes cambiar tu propio rol', 'warning');
+        return;
+      }
+      this.isLoading = true;
+      this.usuariosService.obtenerUsuario(event.usuario.id).subscribe({
+        next: (fullUser) => {
+          this.selectedUsuario = fullUser;
+          this.showRoleModal = true;
+          this.isLoading = false;
+          this.cd.detectChanges();
+        },
+        error: (err) => {
+          this.uiService.showError(err, 'Error al cargar detalles del usuario');
+          this.isLoading = false;
+          this.cd.detectChanges();
+        }
+      });
     }
   }
 

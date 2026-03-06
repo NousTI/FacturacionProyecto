@@ -1,17 +1,17 @@
 import { Component, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Permiso } from '../../../../domain/models/perfil.model';
-import { PermissionItemComponent } from './permission-item.component';
+import { ProfilePermissionsModalComponent } from './profile-permissions-modal.component';
 
 @Component({
     selector: 'app-profile-permissions',
     standalone: true,
-    imports: [CommonModule, PermissionItemComponent],
+    imports: [CommonModule, ProfilePermissionsModalComponent],
     template: `
     <div class="card card-detail">
       <div class="card-header-premium">
         <div class="d-flex justify-content-between align-items-center w-100">
-          <span><i class="bi bi-shield-lock me-2"></i> Mis Atribuciones y Permisos</span>
+          <span><i class="bi bi-shield-lock me-2"></i> Mis Permisos</span>
           <div class="header-stats">
             <span class="badge-stats granted">{{ countGranted(permisos) }} Activos</span>
             <span class="badge-stats total">{{ permisos.length }} Totales</span>
@@ -20,28 +20,22 @@ import { PermissionItemComponent } from './permission-item.component';
       </div>
       
       <div class="card-body p-4 pt-0">
-        <div class="accordion-premium">
-          <div *ngFor="let module of getModules(permisos)" class="accordion-item-premium" [class.active]="activeModule === module">
-            <div class="accordion-header-premium" (click)="toggleModule(module)">
-              <div class="d-flex align-items-center">
-                <div class="module-icon" [ngClass]="getModuleIcon(module)">
-                  <i class="bi" [ngClass]="getModuleIconClass(module)"></i>
-                </div>
-                <div>
-                  <span class="module-name text-uppercase">{{ module }}</span>
-                  <span class="module-count">{{ getPermisosByModulo(permisos, module).length }} ítems en este módulo</span>
-                </div>
+        <div class="modules-list">
+          <div *ngFor="let module of getModules(permisos)" 
+               class="module-item-premium animate__animated animate__fadeInUp" 
+               (click)="openModal(module)">
+            <div class="d-flex align-items-center">
+              <div class="module-icon" [ngClass]="getModuleIcon(module)">
+                <i class="bi" [ngClass]="getModuleIconClass(module)"></i>
               </div>
-              <i class="bi bi-chevron-down chevron-icon"></i>
+              <div class="module-text-container">
+                <span class="module-name text-uppercase">{{ module }}</span>
+                <span class="module-count">{{ getPermisosByModulo(permisos, module).length }} permisos en este módulo</span>
+              </div>
             </div>
-            
-            <div class="accordion-content-premium">
-              <div class="permisos-grid">
-                <app-permission-item 
-                  *ngFor="let perm of getPermisosByModulo(permisos, module)" 
-                  [permiso]="perm">
-                </app-permission-item>
-              </div>
+            <div class="action-hint">
+              <span class="me-2 d-none d-sm-inline">Ver detalles</span>
+              <i class="bi bi-arrow-right-short fs-4"></i>
             </div>
           </div>
 
@@ -52,6 +46,14 @@ import { PermissionItemComponent } from './permission-item.component';
         </div>
       </div>
     </div>
+
+    <!-- Permission Modal -->
+    <app-profile-permissions-modal
+      *ngIf="selectedModule"
+      [modulo]="selectedModule"
+      [permisos]="getPermisosByModulo(permisos, selectedModule)"
+      (onClose)="selectedModule = null">
+    </app-profile-permissions-modal>
   `,
     styles: [`
     .card-detail {
@@ -60,6 +62,7 @@ import { PermissionItemComponent } from './permission-item.component';
       border-radius: 24px;
       box-shadow: 0 4px 20px rgba(0,0,0,0.02);
       overflow: hidden;
+      height: 100%;
     }
     .card-header-premium {
       padding: 1.75rem;
@@ -80,34 +83,33 @@ import { PermissionItemComponent } from './permission-item.component';
     .badge-stats.granted { background: #dcfce7; color: #166534; }
     .badge-stats.total { background: #f1f5f9; color: #475569; }
 
-    .accordion-premium { display: flex; flex-direction: column; gap: 12px; }
-    .accordion-item-premium {
+    .modules-list { display: flex; flex-direction: column; gap: 12px; }
+    
+    .module-item-premium {
       border: 1px solid #f1f5f9;
       border-radius: 20px;
-      overflow: hidden;
-      transition: all 0.3s ease;
-      background: #ffffff;
-    }
-    .accordion-item-premium.active {
-      border-color: #161d35;
-      box-shadow: 0 10px 30px rgba(15, 23, 42, 0.05);
-    }
-    .accordion-header-premium {
       padding: 1.25rem 1.5rem;
       cursor: pointer;
       display: flex;
       justify-content: space-between;
       align-items: center;
       background: white;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     }
-    .accordion-header-premium:hover { background: #fcfdfe; }
+    .module-item-premium:hover {
+      border-color: #161d35;
+      background: #fcfdfe;
+      transform: translateX(8px);
+      box-shadow: 0 10px 30px rgba(15, 23, 42, 0.05);
+    }
 
     .module-icon {
-      width: 44px; height: 44px;
-      border-radius: 14px;
+      width: 48px; height: 48px;
+      border-radius: 16px;
       display: flex; align-items: center; justify-content: center;
       margin-right: 1.25rem;
-      font-size: 1.25rem;
+      font-size: 1.4rem;
+      flex-shrink: 0;
     }
     .module-icon.clientes { background: #eff6ff; color: #2563eb; }
     .module-icon.productos { background: #fdf2f8; color: #db2777; }
@@ -115,44 +117,40 @@ import { PermissionItemComponent } from './permission-item.component';
     .module-icon.configuracion { background: #f1f5f9; color: #475569; }
     .module-icon.default { background: #f8fafc; color: #94a3b8; }
 
+    .module-text-container { display: flex; flex-direction: column; gap: 2px; }
     .module-name {
-      display: block; font-weight: 900; font-size: 0.9rem;
+      display: block; font-weight: 900; font-size: 0.95rem;
       color: #1e293b; letter-spacing: 0.5px;
     }
-    .module-count { font-size: 0.75rem; color: #94a3b8; font-weight: 600; }
+    .module-count { font-size: 0.8rem; color: #94a3b8; font-weight: 600; }
 
-    .chevron-icon { font-size: 1.1rem; color: #cbd5e1; transition: transform 0.3s; }
-    .active .chevron-icon { transform: rotate(180deg); color: #161d35; }
-
-    .accordion-content-premium {
-      max-height: 0;
-      overflow: hidden;
-      transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-      background: #fafbfc;
+    .action-hint {
+      display: flex;
+      align-items: center;
+      color: #cbd5e1;
+      font-size: 0.8rem;
+      font-weight: 700;
+      transition: all 0.3s;
     }
-    .active .accordion-content-premium {
-      max-height: 2000px;
-      border-top: 1px solid #f1f5f9;
-    }
-
-    .permisos-grid {
-      padding: 1.5rem;
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-      gap: 1rem;
+    .module-item-premium:hover .action-hint {
+      color: #161d35;
+      transform: translateX(4px);
     }
 
-    @media (max-width: 768px) {
-      .permisos-grid { grid-template-columns: 1fr; }
+    @media (max-width: 576px) {
+      .module-item-premium { padding: 1rem; }
+      .module-icon { width: 40px; height: 40px; font-size: 1.1rem; margin-right: 0.75rem; }
+      .module-name { font-size: 0.85rem; }
+      .module-count { font-size: 0.7rem; }
     }
   `]
 })
 export class ProfilePermissionsComponent {
     @Input() permisos: Permiso[] = [];
-    activeModule: string | null = null;
+    selectedModule: string | null = null;
 
-    toggleModule(moduleName: string) {
-        this.activeModule = this.activeModule === moduleName ? null : moduleName;
+    openModal(moduleName: string) {
+        this.selectedModule = moduleName;
     }
 
     getModules(permisos: Permiso[]): string[] {
@@ -186,3 +184,4 @@ export class ProfilePermissionsComponent {
         return 'bi-folder-fill';
     }
 }
+

@@ -25,12 +25,12 @@ import { Observable, map } from 'rxjs';
           <div class="list-group list-group-flush border-0">
             <!-- SuperAdmin Home -->
             <a *ngIf="isSuperadmin$ | async" routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" class="menu-item px-3 mb-1">
-              <i class="bi bi-grid-fill me-3"></i> Inicio
+              <i class="bi bi-grid-fill me-3"></i> Dashboard
             </a>
 
             <!-- Vendedor Home -->
             <a *ngIf="isVendedor$ | async" routerLink="/vendedor" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" class="menu-item px-3 mb-1">
-              <i class="bi bi-grid-fill me-3"></i> Inicio
+              <i class="bi bi-grid-fill me-3"></i> Dashboard
             </a>
             
             <ng-container *ngIf="isSuperadmin$ | async">
@@ -46,9 +46,6 @@ import { Observable, map } from 'rxjs';
               </a>
               <a routerLink="/suscripciones" routerLinkActive="active" class="menu-item px-3 mb-1">
                 <i class="bi bi-credit-card me-3"></i> Suscripciones y Pagos
-              </a>
-              <a routerLink="/finanzas" routerLinkActive="active" class="menu-item px-3 mb-1">
-                <i class="bi bi-wallet2 me-3"></i> Finanzas
               </a>
             </ng-container>
 
@@ -88,6 +85,9 @@ import { Observable, map } from 'rxjs';
                 </a>
               <a routerLink="/usuario/usuarios" routerLinkActive="active" class="menu-item px-3 mb-1">
                 <i class="bi bi-person me-3"></i> Usuarios
+              </a>
+              <a routerLink="/usuario/roles" routerLinkActive="active" class="menu-item px-3 mb-1">
+                <i class="bi bi-shield-check me-3"></i> Roles y Permisos
               </a>
               <a routerLink="/usuario/clientes" routerLinkActive="active" class="menu-item px-3 mb-1">
                 <i class="bi bi-people me-3"></i> Clientes
@@ -138,15 +138,6 @@ import { Observable, map } from 'rxjs';
             </a>
             <a routerLink="/auditoria" routerLinkActive="active" class="menu-item px-3 mb-1">
               <i class="bi bi-shield-lock me-3"></i> Auditoría
-            </a>
-          </div>
-        </div>
-
-        <div class="menu-section mb-4" *ngIf="isSuperadmin$ | async">
-          <span class="menu-label px-3 text-muted mb-2 d-block">OTROS</span>
-          <div class="list-group list-group-flush border-0">
-            <a routerLink="/config" routerLinkActive="active" class="menu-item px-3 mb-1">
-              <i class="bi bi-gear me-3"></i> Configuración
             </a>
           </div>
         </div>

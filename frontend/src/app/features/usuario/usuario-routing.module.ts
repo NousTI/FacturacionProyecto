@@ -18,6 +18,7 @@ import { ConfiguracionPage } from './configuracion/configuracion.page';
 import { UsuariosPage } from './usuarios/usuarios.page';
 import { CertificadoSriPage } from './certificado-sri/certificado-sri.page';
 import { EmpresaPage } from './empresa/empresa.page';
+import { RolesPermisosPage } from './roles/roles.page';
 
 const routes: Routes = [
     {
@@ -30,6 +31,12 @@ const routes: Routes = [
         component: DashboardComponent,
         canActivate: [RoleGuard],
         data: { title: 'Dashboard', roles: [UserRole.USUARIO] }
+    },
+    {
+        path: 'roles',
+        component: RolesPermisosPage,
+        canActivate: [RoleGuard],
+        data: { title: 'Roles y Permisos', roles: [UserRole.USUARIO], permission: 'CONFIG_ROLES' }
     },
     {
         path: 'empresa',

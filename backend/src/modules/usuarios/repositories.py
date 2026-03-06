@@ -14,6 +14,7 @@ class RepositorioUsuarios:
         query = """
             SELECT u.*, 
                    us.email,
+                   us.ultimo_acceso,
                    er.nombre as rol_nombre,
                    er.codigo as rol_codigo
             FROM sistema_facturacion.usuarios u

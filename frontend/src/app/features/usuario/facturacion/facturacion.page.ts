@@ -367,6 +367,9 @@ export class FacturacionPage implements OnInit {
         this.selectedFactura = event.factura;
         this.consultarSri();
         break;
+      case 'toggle-pago':
+        this.toggleEstadoPago(event.factura);
+        break;
     }
   }
 
@@ -513,5 +516,26 @@ export class FacturacionPage implements OnInit {
       next: () => this.uiService.showToast('Correo enviado', 'success'),
       error: (err) => this.uiService.showError(err, 'Error enviando correo')
     });
+  }
+
+  toggleEstadoPago(factura: Factura) {
+    const nuevoEstado = factura.estado_pago === 'PAGADO' ? 'PENDIENTE' : 'PAGADO';
+    this.isLoading = true;
+    
+    this.facturasService.actualizarEstadoPago(factura.id, nuevoEstado)
+      .pipe(finalize(() => this.isLoading = false))
+      .subscribe({
+        next: (facturaActualizada) => {
+          this.uiService.showToast(`Estado cambiado a ${nuevoEstado}`, 'success');
+          // Actualizar localmente
+          const index = this.facturas.findIndex(f => f.id === factura.id);
+          if (index !== -1) {
+            this.facturas[index].estado_pago = facturaActualizada.estado_pago;
+            this.calculateStats();
+            this.applyFilters();
+          }
+        },
+        error: (err) => this.uiService.showError(err, 'No se pudo cambiar el estado de pago')
+      });
   }
 }

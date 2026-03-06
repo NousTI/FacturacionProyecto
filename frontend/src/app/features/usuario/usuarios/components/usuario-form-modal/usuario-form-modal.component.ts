@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { User } from '../../../../../domain/models/user.model';
 import { UsuariosService } from '../../services/usuarios.service';
+import { AuthService } from '../../../../../core/auth/auth.service';
 
 @Component({
   selector: 'app-usuario-form-modal',
@@ -69,15 +70,21 @@ import { UsuariosService } from '../../services/usuarios.service';
                   <label class="label-final">Teléfono</label>
                   <input type="text" formControlName="telefono" class="input-final" placeholder="0999999999">
                 </div>
-                <div class="col-md-6" *ngIf="!usuario">
-                   <label class="label-final">Contraseña *</label>
-                   <input type="password" formControlName="password" class="input-final" placeholder="••••••••">
+                <!-- Info: sin campo de contraseña -->
+                <div class="col-md-12" *ngIf="!usuario">
+                  <div class="info-password-notice">
+                    <i class="bi bi-shield-lock-fill"></i>
+                    <div>
+                      <strong>Contraseña por defecto</strong>
+                      <p>El nuevo usuario recibirá la contraseña <code>password</code>. Deberá cambiarla en su primer acceso.</p>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
 
             <!-- ROL Y ESTADO -->
-            <div class="form-section-final border-0 mb-0">
+            <div class="form-section-final border-0 mb-0" *ngIf="!isSelf()">
               <h3 class="section-header-final">Configuración de Cuenta</h3>
               <div class="row g-3 align-items-center">
                 <div class="col-md-6">
@@ -161,6 +168,15 @@ import { UsuariosService } from '../../services/usuarios.service';
       border-color: #161d35; outline: none; box-shadow: 0 0 0 4px rgba(22, 29, 53, 0.05);
     }
     .input-final[readonly] { background: #f8fafc; cursor: not-allowed; }
+    .info-password-notice {
+      display: flex; align-items: flex-start; gap: 0.75rem;
+      background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 12px;
+      padding: 1rem 1.25rem; margin-top: 0.5rem;
+    }
+    .info-password-notice i { color: #3b82f6; font-size: 1.3rem; margin-top: 2px; flex-shrink: 0; }
+    .info-password-notice strong { display: block; font-size: 0.8rem; font-weight: 800; color: #1e3a8a; }
+    .info-password-notice p { font-size: 0.78rem; color: #1d4ed8; margin: 4px 0 0; }
+    .info-password-notice code { background: #dbeafe; padding: 1px 6px; border-radius: 4px; font-weight: 700; }
     .modal-footer-final {
       padding: 1.25rem 2.5rem; background: #ffffff; display: flex; justify-content: flex-end; gap: 1rem;
       border-top: 1px solid #f1f5f9;
@@ -197,6 +213,7 @@ export class UsuarioFormModalComponent implements OnInit, OnDestroy {
   constructor(
     private fb: FormBuilder,
     private usuariosService: UsuariosService,
+    private authService: AuthService,
     private cd: ChangeDetectorRef
   ) {
     this.userForm = this.fb.group({
@@ -205,8 +222,7 @@ export class UsuarioFormModalComponent implements OnInit, OnDestroy {
       correo: ['', [Validators.required, Validators.email]],
       telefono: [''],
       empresa_rol_id: ['', [Validators.required]],
-      activo: [true],
-      password: ['']
+      activo: [true]
     });
   }
 
@@ -223,11 +239,11 @@ export class UsuarioFormModalComponent implements OnInit, OnDestroy {
         empresa_rol_id: this.usuario.empresa_rol_id,
         activo: this.usuario.activo !== false
       });
-      this.userForm.get('password')?.clearValidators();
     } else {
-      this.userForm.get('password')?.setValidators([Validators.required, Validators.minLength(6)]);
+      // For new users, empresa_rol_id is required
+      this.userForm.get('empresa_rol_id')?.setValidators([Validators.required]);
     }
-    this.userForm.get('password')?.updateValueAndValidity();
+    this.userForm.get('empresa_rol_id')?.updateValueAndValidity();
   }
 
   fetchRoles() {
@@ -257,10 +273,22 @@ export class UsuarioFormModalComponent implements OnInit, OnDestroy {
 
   submit() {
     if (this.userForm.valid) {
-      const formValue = { ...this.userForm.value };
+      const raw = this.userForm.value;
+      const formValue: any = {
+        nombres: raw.nombre,
+        apellidos: raw.apellido,
+        email: raw.correo,
+        telefono: raw.telefono,
+      };
       if (this.usuario) {
-        delete formValue.password;
-        delete formValue.correo;
+        // Editing: include rol and activo only if visible (non-self)
+        if (!this.isSelf()) {
+          formValue.empresa_rol_id = raw.empresa_rol_id;
+          formValue.activo = raw.activo;
+        }
+      } else {
+        // Creating: always include rol
+        formValue.empresa_rol_id = raw.empresa_rol_id;
       }
       this.onSave.emit(formValue);
     }
@@ -270,5 +298,15 @@ export class UsuarioFormModalComponent implements OnInit, OnDestroy {
     if (!this.loading) {
       this.onClose.emit();
     }
+  }
+
+  isSelf(): boolean {
+    if (!this.usuario) return false;
+    const currentUser = this.authService.getUser();
+    if (!currentUser) return false;
+    
+    // En el sistema de gestión, comparamos el ID de la tabla 'usuarios'
+    const sessionUsuarioId = (currentUser as any).usuario_id;
+    return this.usuario.id === sessionUsuarioId;
   }
 }

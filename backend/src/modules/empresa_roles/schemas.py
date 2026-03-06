@@ -31,7 +31,7 @@ class RolBase(BaseModel):
     activo: bool = True
 
 class RolCreacion(BaseModel):
-    codigo: str
+    codigo: Optional[str] = None
     nombre: str
     descripcion: Optional[str] = None
     permiso_ids: List[UUID] = []
@@ -45,6 +45,7 @@ class RolActualizacion(BaseModel):
 class RolLectura(RolBase):
     id: UUID
     empresa_id: UUID
+    num_usuarios: int = 0
     permisos: List[PermisoLectura] = []
     created_at: datetime
     updated_at: datetime

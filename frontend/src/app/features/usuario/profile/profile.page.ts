@@ -24,33 +24,35 @@ import { ProfileAuditComponent } from './components/profile-audit.component';
     ProfileAuditComponent
   ],
   template: `
-    <div class="profile-container animate-fade-in">
+    <div class="profile-container">
       
       <!-- HEADER & MAIN DATA -->
       <ng-container *ngIf="perfil$ | async as perfil; else loadingTpl">
         
-        <app-profile-header 
-            [perfil]="perfil"
-            [loading]="(loading$ | async) || false"
-            (onRefresh)="refreshProfile()"
-            (onLogout)="logout()">
-        </app-profile-header>
+        <div class="animate-fade-in">
+          <app-profile-header 
+              [perfil]="perfil"
+              [loading]="(loading$ | async) || false"
+              (onRefresh)="refreshProfile()"
+              (onLogout)="logout()">
+          </app-profile-header>
 
-        <div class="row g-4">
-          <!-- LEFT: Info Summary -->
-          <div class="col-lg-12">
-            <app-profile-info-cards [perfil]="perfil"></app-profile-info-cards>
-          </div>
+          <div class="row g-4">
+            <!-- LEFT: Info Summary -->
+            <div class="col-lg-12">
+              <app-profile-info-cards [perfil]="perfil"></app-profile-info-cards>
+            </div>
 
-          <!-- BOTTOM LEFT: Empresa & Audit -->
-          <div class="col-lg-5">
-            <app-profile-empresa [perfil]="perfil"></app-profile-empresa>
-            <app-profile-audit [perfil]="perfil"></app-profile-audit>
-          </div>
+            <!-- BOTTOM LEFT: Empresa & Audit -->
+            <div class="col-lg-5">
+              <app-profile-empresa [perfil]="perfil"></app-profile-empresa>
+              <app-profile-audit [perfil]="perfil"></app-profile-audit>
+            </div>
 
-          <!-- RIGHT: Permissions Accordion -->
-          <div class="col-lg-7">
-            <app-profile-permissions [permisos]="perfil.permisos"></app-profile-permissions>
+            <!-- RIGHT: Permissions Accordion -->
+            <div class="col-lg-7">
+              <app-profile-permissions [permisos]="perfil.permisos"></app-profile-permissions>
+            </div>
           </div>
         </div>
 
@@ -71,6 +73,7 @@ import { ProfileAuditComponent } from './components/profile-audit.component';
       max-width: 1400px;
       margin: 0 auto;
       padding: 1.5rem;
+      position: relative;
     }
 
     .loading-full {

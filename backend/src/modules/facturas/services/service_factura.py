@@ -93,6 +93,11 @@ class ServicioFactura:
             "razon_anulacion": datos.razon_anulacion
         })
 
+    def actualizar_estado_pago(self, id: UUID, estado_pago: str, usuario_actual: dict):
+        """Actualiza el estado de pago de una factura."""
+        self.obtener_factura(id, usuario_actual) # Valida existencia y pertenencia
+        return self.core.actualizar_factura(id, {"estado_pago": estado_pago})
+
     def obtener_detalle_completo(self, id: UUID, usuario_actual: dict):
         """Obtiene la factura y todos sus detalles (útil para RIDE/PDF)."""
         factura = self.obtener_factura(id, usuario_actual)

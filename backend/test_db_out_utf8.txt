@@ -1,5 +1,0 @@
-=== EMPRESAS ===
-{'id': '1ac954c9-2506-413f-bcee-674fafeef2a0', 'razon_social': 'Bridge', 'vendedor_id': '6f2c35a3-5a9b-4a64-9034-4806a023a59a'}
-=== VENDEDORES ===
-{'id': '6f2c35a3-5a9b-4a64-9034-4806a023a59a', 'user_id': '5bb20284-0a2d-416c-b6fc-da8add39d9dd'}
-{'id': '4c86575a-5318-4970-9cfa-cc0bb52e8446', 'user_id': 'fe7d72d0-343b-46d6-adf9-d84d5e4517bf'}

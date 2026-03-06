@@ -1,6 +1,6 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
-import { DashboardHomePage } from '../super-admin/home/dashboard-home.page';
+import { DashboardHomePage } from '../super-admin/dashboard/dashboard-home.page';
 import { MaintenanceComponent } from '../../shared/components/maintenance/maintenance.component';
 import { RoleGuard } from '../../core/guards/role.guard';
 import { UserRole } from '../../domain/enums/role.enum';
@@ -25,8 +25,6 @@ const routes: Routes = [
         canActivate: [RoleGuard],
         data: { roles: [UserRole.VENDEDOR] }
     },
-    // Shared / Global Maintenance routes
-    { path: 'finanzas', component: MaintenanceComponent, data: { title: 'Finanzas', description: 'Estado financiero global' } },
 ];
 
 @NgModule({

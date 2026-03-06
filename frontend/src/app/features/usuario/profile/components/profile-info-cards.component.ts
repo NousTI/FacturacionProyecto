@@ -12,7 +12,7 @@ import { PerfilUsuario } from '../../../../domain/models/perfil.model';
         <div class="info-card-lux">
           <div class="icon-lux blue"><i class="bi bi-phone"></i></div>
           <div class="content">
-            <label>Contacto Directo</label>
+            <label>Contacto</label>
             <span class="value">{{ perfil.telefono || 'Sin registrar' }}</span>
           </div>
         </div>
@@ -22,7 +22,7 @@ import { PerfilUsuario } from '../../../../domain/models/perfil.model';
           <div class="icon-lux green"><i class="bi bi-shield-check"></i></div>
           <div class="content">
             <label>Estado Laboral</label>
-            <span class="value">{{ perfil.activo ? 'Activo en Nómina' : 'Desactivado' }}</span>
+            <span class="value">{{ perfil.activo ? 'Activo' : 'Inactivo' }}</span>
           </div>
         </div>
       </div>

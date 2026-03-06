@@ -97,6 +97,7 @@ class RepositorioFacturas:
                    c.email as cliente_email,
                    c.direccion as cliente_direccion,
                    e.razon_social as emisor_nombre,
+                   e.nombre_comercial as emisor_nombre_comercial,
                    e.ruc as emisor_ruc,
                    e.direccion as emisor_direccion,
                    e.email as emisor_email,
@@ -129,6 +130,7 @@ class RepositorioFacturas:
             if not data.get('snapshot_empresa'):
                 data['snapshot_empresa'] = {
                     'razon_social': data.get('emisor_nombre'),
+                    'nombre_comercial': data.get('emisor_nombre_comercial'),
                     'ruc': data.get('emisor_ruc'),
                     'direccion': data.get('emisor_direccion'),
                     'email': data.get('emisor_email'),
@@ -167,6 +169,7 @@ class RepositorioFacturas:
                    c.email as cliente_email,
                    c.direccion as cliente_direccion,
                    e.razon_social as emisor_nombre,
+                   e.nombre_comercial as emisor_nombre_comercial,
                    e.ruc as emisor_ruc,
                    e.direccion as emisor_direccion,
                    e.email as emisor_email,
@@ -242,6 +245,7 @@ class RepositorioFacturas:
                 if not r.get('snapshot_empresa'):
                     r['snapshot_empresa'] = {
                         'razon_social': r.get('emisor_nombre'),
+                        'nombre_comercial': r.get('emisor_nombre_comercial'),
                         'ruc': r.get('emisor_ruc'),
                         'direccion': r.get('emisor_direccion'),
                         'email': r.get('emisor_email'),
