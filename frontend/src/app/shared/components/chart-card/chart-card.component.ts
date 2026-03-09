@@ -6,71 +6,82 @@ import { CommonModule } from '@angular/common';
   template: `
     <div class="soft-card h-100 d-flex flex-column">
       <div class="d-flex justify-content-between align-items-center mb-4 flex-shrink-0">
-        <h5 class="fw-bold mb-0 text-dark">{{ title }}</h5>
-        <div class="dropdown">
-          <button class="btn btn-sm btn-light rounded-pill px-3" type="button">
-            Este mes <i class="bi bi-chevron-down ms-1"></i>
-          </button>
+        <div class="d-flex align-items-center gap-1">
+          <h5 class="fw-bold mb-0 text-dark">{{ title }}</h5>
+          <ng-content></ng-content>
         </div>
       </div>
       
       <!-- Chart Area -->
       <div class="chart-wrapper flex-grow-1 position-relative d-flex">
-        <!-- Y-Axis (Left) -->
-        <div class="y-axis d-flex flex-column justify-content-between text-muted pe-3" 
-             style="font-size: 0.75rem; min-width: 40px; text-align: right; padding-bottom: 24px;"> <!-- Added padding bottom for alignment with plot area -->
-           <span *ngFor="let tick of ticks">{{ tick }}</span>
-        </div>
+        <ng-container *ngIf="data && data.length > 0; else noData">
+          <!-- Y-Axis (Left) -->
+          <div class="y-axis d-flex flex-column justify-content-between text-muted pe-3" 
+               style="font-size: 0.75rem; min-width: 40px; text-align: right; padding-bottom: 24px;"> <!-- Added padding bottom for alignment with plot area -->
+             <span *ngFor="let tick of ticks">{{ tick }}</span>
+          </div>
 
-        <!-- Graph Content Column -->
-        <div class="flex-grow-1 d-flex flex-column" style="min-width: 0;">
-           
-           <!-- Plot Area (Grid + Bars) -->
-           <div class="plot-area flex-grow-1 position-relative w-100">
-              <!-- Grid Lines -->
-              <div class="grid-lines position-absolute w-100 h-100 d-flex flex-column justify-content-between" style="z-index: 0;">
-                 <div *ngFor="let tick of ticks" class="border-bottom border-light w-100" style="height: 0px; border-color: #f1f5f9 !important;"></div>
-              </div>
+          <!-- Graph Content Column -->
+          <div class="flex-grow-1 d-flex flex-column" style="min-width: 0;">
+             
+             <!-- Plot Area (Grid + Bars) -->
+             <div class="plot-area flex-grow-1 position-relative w-100">
+                <!-- Grid Lines -->
+                <div class="grid-lines position-absolute w-100 h-100 d-flex flex-column justify-content-between" style="z-index: 0;">
+                   <div *ngFor="let tick of ticks" class="border-bottom border-light w-100" style="height: 0px; border-color: #f1f5f9 !important;"></div>
+                </div>
 
-              <!-- Bars Container -->
-              <div class="bars-container d-flex align-items-end justify-content-between h-100 w-100 px-2 position-relative" style="z-index: 1;">
-                 <div *ngFor="let item of data" 
-                      class="bar-wrapper d-flex flex-column align-items-center justify-content-end h-100" 
-                      [style.width.%]="100 / data.length">
-                      
-                    <div class="bar rounded-pill w-50 position-relative group" 
-                         [style.height.%]="getBarHeight(item.value)"
-                         [style.background]="barColor"
-                         [title]="item.label + ': ' + item.value">
-                         
-                         <!-- Tooltip -->
-                         <div class="tooltip-val position-absolute start-50 translate-middle-x badge bg-dark text-white rounded-pill px-2 py-1"
-                              style="bottom: 100%; margin-bottom: 5px; opacity: 0; transition: opacity 0.2s; white-space: nowrap;">
-                            {{ item.value | number }}
-                         </div>
-                    </div>
-                 </div>
-              </div>
+                <!-- Bars Container -->
+                <div class="bars-container d-flex align-items-end justify-content-between h-100 w-100 px-2 position-relative" style="z-index: 1;">
+                   <div *ngFor="let item of data" 
+                        class="bar-wrapper d-flex flex-column align-items-center justify-content-end h-100" 
+                        [style.width.%]="100 / data.length">
+                        
+                      <div class="bar rounded-pill w-50 position-relative group" 
+                           [style.height.%]="getBarHeight(item.value)"
+                           [style.background]="barColor"
+                           [title]="item.label + ': ' + item.value">
+                           
+                           <!-- Tooltip -->
+                           <div class="tooltip-val position-absolute start-50 translate-middle-x badge bg-dark text-white rounded-pill px-2 py-1"
+                                style="bottom: 100%; margin-bottom: 5px; opacity: 0; transition: opacity 0.2s; white-space: nowrap;">
+                              {{ item.value | number }}
+                           </div>
+                      </div>
+                   </div>
+                </div>
+             </div>
+
+             <!-- X-Axis Labels -->
+             <div class="labels-container d-flex justify-content-between w-100 px-2 mt-2">
+                <div *ngFor="let item of data" 
+                     class="label-wrapper text-center d-flex justify-content-center"
+                     [style.width.%]="100 / data.length">
+                   <span class="text-muted text-truncate" style="font-size: 0.7rem;">
+                      {{ item.label }}
+                   </span>
+                </div>
+             </div>
+
+          </div>
+        </ng-container>
+
+        <ng-template #noData>
+           <div class="w-100 d-flex flex-column align-items-center justify-content-center text-muted">
+              <i class="bi bi-bar-chart fs-1 mb-2 opacity-25"></i>
+              <p class="small fw-medium mb-0">No hay datos para este periodo</p>
            </div>
-
-           <!-- X-Axis Labels -->
-           <div class="labels-container d-flex justify-content-between w-100 px-2 mt-2">
-              <div *ngFor="let item of data" 
-                   class="label-wrapper text-center d-flex justify-content-center"
-                   [style.width.%]="100 / data.length">
-                 <span class="text-muted text-truncate" style="font-size: 0.7rem;">
-                    {{ item.label }}
-                 </span>
-              </div>
-           </div>
-
-        </div>
+        </ng-template>
       </div>
     </div>
   `,
   styles: [`
     .soft-card {
         min-height: 320px;
+    }
+    /* Desactivar el transform del hover global para no romper position:fixed del tooltip */
+    .soft-card:hover {
+        transform: none !important;
     }
     .bar {
       min-height: 4px;

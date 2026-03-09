@@ -82,5 +82,20 @@ class AlertaVendedor(BaseModel):
     fecha: str
     accion_url: Optional[str] = None
 
+class VendedorHomeStats(BaseModel):
+    empresas_asignadas: int
+    comisiones_pendientes: float
+    ingresos_generados: float
+    renovaciones_proximas: int
+
+class EmpresaResumen(BaseModel):
+    id: UUID
+    razon_social: str
+    plan_nombre: Optional[str] = None
+    estado_suscripcion: Optional[str] = None
+    fecha_vencimiento: Optional[str] = None
+
 class VendedorHomeData(BaseModel):
+    stats: VendedorHomeStats
     alertas: List[AlertaVendedor]
+    empresas: List[EmpresaResumen]

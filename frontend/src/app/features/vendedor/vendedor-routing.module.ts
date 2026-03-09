@@ -1,6 +1,6 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
-import { VendedorHomeComponent } from './home/vendedor-home.component';
+import { VendedorHomeComponent } from './dashboard/vendedor-home.component';
 
 const routes: Routes = [
     {

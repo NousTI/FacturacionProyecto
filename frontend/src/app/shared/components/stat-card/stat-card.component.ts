@@ -15,7 +15,9 @@ import { CommonModule } from '@angular/common';
       </div>
       <div>
         <h3 class="stat-value mb-1">{{ value }}</h3>
-        <p class="stat-label mb-0 text-uppercase">{{ title }}</p>
+        <p class="stat-label mb-0 text-uppercase d-flex align-items-center gap-1">
+          {{ title }}<ng-content></ng-content>
+        </p>
       </div>
     </div>
   `,

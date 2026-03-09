@@ -124,9 +124,30 @@ class RepositorioVendedores:
 
     def obtener_home_data(self, vendedor_id: UUID) -> dict:
         alertas = []
+        stats = {
+            "empresas_asignadas": 0,
+            "comisiones_pendientes": 0.0,
+            "ingresos_generados": 0.0,
+            "renovaciones_proximas": 0
+        }
+        empresas = []
 
+        # 1. Estadísticas
+        query_stats = """
+            SELECT 
+                (SELECT COUNT(*) FROM sistema_facturacion.empresas WHERE vendedor_id = %s) as empresas_asignadas,
+                (SELECT COALESCE(SUM(monto), 0) FROM sistema_facturacion.comisiones WHERE vendedor_id = %s AND estado = 'PENDIENTE') as comisiones_pendientes,
+                (SELECT COALESCE(SUM(ps.monto), 0) FROM sistema_facturacion.pagos_suscripciones ps 
+                 JOIN sistema_facturacion.comisiones c ON c.pago_suscripcion_id = ps.id 
+                 WHERE c.vendedor_id = %s AND ps.estado = 'PAGADO') as ingresos_generados,
+                (SELECT COUNT(*) FROM sistema_facturacion.suscripciones s
+                 JOIN sistema_facturacion.empresas e ON s.empresa_id = e.id
+                 WHERE e.vendedor_id = %s AND s.estado = 'ACTIVA' AND s.fecha_fin <= NOW() + INTERVAL '15 days') as renovaciones_proximas
+        """
+
+        # 2. Alertas: Vencimientos cercanos
         query_vencidas = """
-            SELECT s.id, e.razon_social, TO_CHAR(s.fecha_fin, 'YYYY-MM-DD') as fecha
+            SELECT s.empresa_id as id, e.razon_social, TO_CHAR(s.fecha_fin, 'YYYY-MM-DD') as fecha
             FROM sistema_facturacion.suscripciones s
             JOIN sistema_facturacion.empresas e ON s.empresa_id = e.id
             WHERE e.vendedor_id = %s
@@ -135,6 +156,7 @@ class RepositorioVendedores:
             ORDER BY s.fecha_fin ASC
         """
 
+        # 3. Alertas: Comisiones Recientes
         query_comisiones = """
             SELECT c.id, e.razon_social, c.monto, TO_CHAR(c.fecha_generacion, 'YYYY-MM-DD') as fecha
             FROM sistema_facturacion.comisiones c
@@ -145,8 +167,26 @@ class RepositorioVendedores:
             LIMIT 3
         """
 
+        # 4. Listado de empresas
+        query_empresas = """
+            SELECT e.id, e.razon_social, p.nombre as plan_nombre, s.estado as estado_suscripcion, 
+                   TO_CHAR(s.fecha_fin, 'YYYY-MM-DD') as fecha_vencimiento
+            FROM sistema_facturacion.empresas e
+            LEFT JOIN sistema_facturacion.suscripciones s ON e.id = s.empresa_id
+            LEFT JOIN sistema_facturacion.planes p ON s.plan_id = p.id
+            WHERE e.vendedor_id = %s
+            ORDER BY e.created_at DESC
+            LIMIT 5
+        """
+
         with self.db.cursor() as cur:
-            # 1. Alertas: Vencimientos cercanos (Envuelto en try-except por si la tabla no existe o hay error)
+            # Stats
+            cur.execute(query_stats, (str(vendedor_id), str(vendedor_id), str(vendedor_id), str(vendedor_id)))
+            row_stats = cur.fetchone()
+            if row_stats:
+                stats = dict(row_stats)
+
+            # Alertas Vencidas
             try:
                 cur.execute(query_vencidas, (str(vendedor_id),))
                 for row in cur.fetchall():
@@ -155,27 +195,37 @@ class RepositorioVendedores:
                         "tipo": "RENOVACION_PROXIMA",
                         "titulo": f"Renovación Crítica: {row['razon_social']}",
                         "descripcion": "El plan vence en menos de 48 horas.",
-                        "fecha": v.strftime("%Y-%m-%d") if (v := row['fecha']) else "",
+                        "fecha": row['fecha'],
                         "accion_url": f"/vendedor/clientes/{row['id']}"
                     })
             except Exception:
                 self.db.rollback()
 
-            # 2. Alertas: Comisiones Recientes
+            # Alertas Comisiones
             try:
                 cur.execute(query_comisiones, (str(vendedor_id),))
                 for row in cur.fetchall():
                     alertas.append({
                         "id": str(row['id']),
                         "tipo": "COMISION_APROBADA",
-                        "titulo": f"Comisión Aprobada: ${row['monto']}",
-                        "descripcion": f"Pago confirmado de {row['razon_social']}",
-                        "fecha": v.strftime("%Y-%m-%d") if (v := row['fecha']) else "",
+                        "titulo": f"Comisión Generada: ${row['monto']}",
+                        "descripcion": f"Venta registrada de {row['razon_social']}",
+                        "fecha": row['fecha'],
                         "accion_url": None
                     })
             except Exception:
                 self.db.rollback()
 
-            return {
-                "alertas": alertas
-            }
+            # Empresas
+            try:
+                cur.execute(query_empresas, (str(vendedor_id),))
+                for row in cur.fetchall():
+                    empresas.append(dict(row))
+            except Exception:
+                self.db.rollback()
+
+        return {
+            "stats": stats,
+            "alertas": alertas,
+            "empresas": empresas
+        }

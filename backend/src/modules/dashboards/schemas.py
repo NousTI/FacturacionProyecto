@@ -31,6 +31,7 @@ class DashboardAlertas(BaseModel):
 class DashboardOverview(BaseModel):
     kpis: DashboardKPIs
     alertas: DashboardAlertas
+    empresas_recientes: Optional[List[Dict[str, Any]]] = None
 
 class ResumenDashboard(BaseModel):
     total_empresas: int

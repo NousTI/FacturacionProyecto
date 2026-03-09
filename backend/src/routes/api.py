@@ -71,7 +71,7 @@ from ..modules.vendedores.routes import router as vendedores_router
 api_router.include_router(vendedores_router, prefix="/vendedores", tags=["Vendedores"])
 
 from ..modules.dashboards.router import router as dashboards_router
-api_router.include_router(dashboards_router, prefix="/dashboard", tags=["Dashboard"])
+api_router.include_router(dashboards_router, prefix="/dashboards", tags=["Dashboard"])
 
 from ..modules.reportes.router import router as reportes_router
 api_router.include_router(reportes_router, prefix="/reportes", tags=["Reportes"])

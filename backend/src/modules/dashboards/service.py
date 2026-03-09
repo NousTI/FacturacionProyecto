@@ -14,9 +14,9 @@ class ServicioDashboards:
         empresa_id = usuario.get('empresa_id') if usuario.get(AuthKeys.IS_USUARIO) else None
         return vendedor_id, empresa_id
 
-    def obtener_kpis(self, usuario: dict) -> DashboardKPIs:
+    def obtener_kpis(self, usuario: dict, periodo: str = 'month') -> DashboardKPIs:
         v_id, e_id = self._get_ids(usuario)
-        base_kpis = self.repo.obtener_kpis_principales(vendedor_id=v_id, empresa_id=e_id)
+        base_kpis = self.repo.obtener_kpis_principales(vendedor_id=v_id, empresa_id=e_id, periodo=periodo)
         
         # Variación solo para superadmin/vendedor (SaaS context)
         variacion = 0
@@ -35,11 +35,17 @@ class ServicioDashboards:
             informativas=[DashboardAlerta(**a) for a in raw_alerts['informativas']]
         )
 
-    def obtener_overview(self, usuario: dict) -> DashboardOverview:
-        return DashboardOverview(
-            kpis=self.obtener_kpis(usuario),
+    def obtener_overview(self, usuario: dict, periodo: str = 'month') -> DashboardOverview:
+        v_id, e_id = self._get_ids(usuario)
+        ov = DashboardOverview(
+            kpis=self.obtener_kpis(usuario, periodo=periodo),
             alertas=self.obtener_alertas(usuario)
         )
+        # Solo para superadmin agregamos empresas recientes
+        if not v_id and not e_id:
+            ov.empresas_recientes = self.repo.obtener_empresas_recientes()
+            
+        return ov
 
     def obtener_resumen(self, usuario: dict) -> Dict[str, Any]:
         """Solo para Superadmin (Compatibilidad)"""
@@ -52,20 +58,20 @@ class ServicioDashboards:
             "empresas_activas": stats['empresas_activas'],
             "empresas_inactivas": stats['total_empresas'] - stats['empresas_activas'],
             "total_usuarios": stats['total_usuarios'],
-            "total_facturas": "En PROCESO", 
+            "total_facturas": stats['total_facturas'], 
             "ingresos_totales": stats['total_ingresos'],
             "comisiones_pendientes_monto": stats['comisiones_pendientes_monto'],
             "comisiones_pendientes_count": stats['comisiones_pendientes_count'],
-            "errores_sri_msg": "En PROCESO",
-            "certificados_msg": "En PROCESO"
+            "errores_sri_msg": f"{stats['errores_sri_count']} errores en últimas 24h" if stats['errores_sri_count'] > 0 else "Sin errores críticos",
+            "certificados_msg": f"{stats['certificados_vencer']} firmas por expirar" if stats['certificados_vencer'] > 0 else "Todos los certificados al día"
         }
 
-    def obtener_graficos(self, usuario: dict) -> Dict[str, Any]:
+    def obtener_graficos(self, usuario: dict, periodo: str = 'month') -> Dict[str, Any]:
         v_id, e_id = self._get_ids(usuario)
         
         res = {
-            "facturas_mes": self.repo.obtener_facturas_mensuales(empresa_id=e_id),
-            "ingresos_saas": self.repo.obtener_ingresos_mensuales(vendedor_id=v_id),
+            "facturas_mes": self.repo.obtener_facturas_mensuales(empresa_id=e_id, periodo=periodo),
+            "ingresos_saas": self.repo.obtener_ingresos_mensuales(vendedor_id=v_id, periodo=periodo),
             "empresas_by_plan": [],
             "sri_trend": [0] * 12
         }
@@ -77,8 +83,8 @@ class ServicioDashboards:
              
              for i, item in enumerate(plan_data):
                  res["empresas_by_plan"].append({
-                     "name": item['name'],
-                     "count": item['count'],
+                     "label": item['name'],
+                     "value": item['count'],
                      "percent": round((item['count'] / total * 100), 1) if total > 0 else 0,
                      "color": colors[i % len(colors)]
                  })

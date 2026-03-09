@@ -10,97 +10,154 @@ class RepositorioDashboards:
     def obtener_estadisticas_generales(self) -> Dict[str, Any]:
         stats = {}
         with self.db.cursor() as cur:
-            cur.execute("SELECT COUNT(*) as count FROM empresa")
+            cur.execute("SELECT COUNT(*) as count FROM sistema_facturacion.empresas")
             stats['total_empresas'] = cur.fetchone()['count']
             
-            cur.execute("SELECT COUNT(*) as count FROM empresa WHERE activo = true")
+            cur.execute("SELECT COUNT(*) as count FROM sistema_facturacion.empresas WHERE activo = true")
             stats['empresas_activas'] = cur.fetchone()['count']
             
-            cur.execute("SELECT COUNT(*) as count FROM usuario")
+            cur.execute("SELECT COUNT(*) as count FROM sistema_facturacion.usuarios")
             stats['total_usuarios'] = cur.fetchone()['count']
             
-            cur.execute("SELECT COALESCE(SUM(monto), 0) as total FROM pago_suscripcion WHERE estado = 'PAGADO'")
+            cur.execute("SELECT COALESCE(SUM(monto), 0) as total FROM sistema_facturacion.pagos_suscripciones WHERE estado = 'PAGADO'")
             stats['total_ingresos'] = float(cur.fetchone()['total'])
             
-            cur.execute("SELECT COALESCE(SUM(monto), 0) as total FROM comision WHERE estado = 'PENDIENTE'")
+            cur.execute("SELECT COALESCE(SUM(monto), 0) as total FROM sistema_facturacion.comisiones WHERE estado = 'PENDIENTE'")
             stats['comisiones_pendientes_monto'] = float(cur.fetchone()['total'])
             
-            cur.execute("SELECT COUNT(*) as count FROM comision WHERE estado = 'PENDIENTE'")
+            cur.execute("SELECT COUNT(*) as count FROM sistema_facturacion.comisiones WHERE estado = 'PENDIENTE'")
             stats['comisiones_pendientes_count'] = cur.fetchone()['count']
+
+            # Facturas totales del sistema
+            cur.execute("SELECT COUNT(*) as count FROM sistema_facturacion.facturas WHERE estado != 'ANULADA'")
+            stats['total_facturas'] = cur.fetchone()['count']
+
+            # Errores SRI recientes
+            cur.execute("""
+                SELECT COUNT(*) as count FROM sistema_facturacion.autorizaciones_sri 
+                WHERE estado = 'RECHAZADO' AND created_at > CURRENT_DATE - INTERVAL '24 hours'
+            """)
+            stats['errores_sri_count'] = cur.fetchone()['count']
+
+            # Certificados por vencer
+            cur.execute("""
+                SELECT COUNT(*) as count FROM sistema_facturacion.configuraciones_sri 
+                WHERE fecha_expiracion_cert <= CURRENT_DATE + INTERVAL '10 days' AND estado = 'ACTIVO'
+            """)
+            stats['certificados_vencer'] = cur.fetchone()['count']
 
         return stats
 
-    def obtener_kpis_principales(self, vendedor_id=None, empresa_id=None) -> Dict[str, Any]:
-        """Obtiene métricas principales para los KPIs."""
+    def obtener_kpis_principales(self, vendedor_id=None, empresa_id=None, periodo: str = 'month') -> Dict[str, Any]:
+        """Obtiene métricas principales para los KPIs filtrados por periodo."""
         kpis = {}
+        
+        # Mapeo de periodos a intervalos de PostgreSQL
+        intervals = {
+            'today': "CURRENT_DATE",
+            'week': "DATE_TRUNC('week', CURRENT_DATE)",
+            'month': "DATE_TRUNC('month', CURRENT_DATE)",
+            'year': "DATE_TRUNC('year', CURRENT_DATE)",
+            'last_month': "DATE_TRUNC('month', CURRENT_DATE - INTERVAL '1 month')",
+            'all': "TO_DATE('2000-01-01', 'YYYY-MM-DD')"
+        }
+        
+        # Para filtros que no son truncamiento (como 'all'), usaremos una condición diferente
+        period_condition = intervals.get(periodo, intervals['month'])
+        
+        # Filtro de fecha base
+        if periodo == 'today':
+            date_filter = "fecha_emision::date = CURRENT_DATE"
+            susc_filter = "fecha_pago::date = CURRENT_DATE"
+            expired_filter = "s.fecha_fin < CURRENT_DATE"
+        elif periodo == 'all':
+            date_filter = "1=1"
+            susc_filter = "1=1"
+            expired_filter = "s.fecha_fin < CURRENT_DATE"
+        else:
+            date_filter = f"DATE_TRUNC('{periodo if periodo in ['week', 'month', 'year'] else 'month'}', fecha_emision) = {period_condition}"
+            susc_filter = f"DATE_TRUNC('{periodo if periodo in ['week', 'month', 'year'] else 'month'}', fecha_pago) = {period_condition}"
+            expired_filter = f"s.fecha_fin < CURRENT_DATE"
+
         with self.db.cursor() as cur:
             if empresa_id:
                 # KPIs para Empresa
-                # 1. Ventas mes actual (Facturas no anuladas)
-                cur.execute("""
+                cur.execute(f"""
                     SELECT COALESCE(SUM(total), 0) as total 
-                    FROM factura 
+                    FROM sistema_facturacion.facturas 
                     WHERE empresa_id = %s 
                     AND estado != 'ANULADA'
-                    AND DATE_TRUNC('month', fecha_emision) = DATE_TRUNC('month', CURRENT_DATE)
+                    AND {date_filter}
                 """, (empresa_id,))
-                kpis['ventas_mes'] = float(cur.fetchone()['total'])
+                kpis['ventas_periodo'] = float(cur.fetchone()['total'])
 
-                # 2. Ventas hoy
                 cur.execute("""
                     SELECT COALESCE(SUM(total), 0) as total 
-                    FROM factura 
+                    FROM sistema_facturacion.facturas 
                     WHERE empresa_id = %s 
                     AND estado != 'ANULADA'
                     AND fecha_emision::date = CURRENT_DATE
                 """, (empresa_id,))
                 kpis['ventas_hoy'] = float(cur.fetchone()['total'])
 
-                # 3. Cuentas por cobrar (Facturas con saldo > 0)
-                cur.execute("SELECT COALESCE(SUM(total), 0) as total FROM factura WHERE empresa_id = %s AND estado = 'AUTORIZADO'", (empresa_id,))
+                cur.execute("SELECT COALESCE(SUM(total), 0) as total FROM sistema_facturacion.facturas WHERE empresa_id = %s AND estado = 'AUTORIZADO'", (empresa_id,))
                 kpis['cuentas_cobrar'] = float(cur.fetchone()['total'])
                 
-                kpis['productos_stock_bajo'] = 0 # Placeholder
-                kpis['facturas_rechazadas'] = 0 # Placeholder
+                kpis['productos_stock_bajo'] = 0
+                kpis['facturas_rechazadas'] = 0
 
             elif vendedor_id:
                 # KPIs para Vendedor
-                cur.execute("SELECT COUNT(*) as count FROM empresa WHERE vendedor_id = %s AND activo = true", (vendedor_id,))
+                cur.execute("SELECT COUNT(*) as count FROM sistema_facturacion.empresas WHERE vendedor_id = %s AND activo = true", (vendedor_id,))
                 kpis['empresas_activas'] = cur.fetchone()['count']
 
-                cur.execute("""
-                    SELECT COALESCE(SUM(monto), 0) as total FROM comision 
+                cur.execute(f"""
+                    SELECT COALESCE(SUM(monto), 0) as total FROM sistema_facturacion.comisiones 
                     WHERE vendedor_id = %s AND estado = 'PENDIENTE'
                 """, (vendedor_id,))
                 kpis['comisiones_pendientes'] = float(cur.fetchone()['total'])
 
-                cur.execute("""
-                    SELECT COUNT(*) as count FROM empresa 
-                    WHERE vendedor_id = %s AND fecha_vencimiento < CURRENT_DATE AND activo = true
+                cur.execute(f"""
+                    SELECT COUNT(*) as count 
+                    FROM sistema_facturacion.empresas e
+                    JOIN sistema_facturacion.suscripciones s ON e.id = s.empresa_id
+                    WHERE e.vendedor_id = %s AND {expired_filter} AND e.activo = true
                 """, (vendedor_id,))
                 kpis['pagos_atrasados'] = cur.fetchone()['count']
             else:
                 # KPIs Globales (Superadmin)
-                cur.execute("SELECT COUNT(*) as count FROM empresa WHERE activo = true")
+                cur.execute("SELECT COUNT(*) as count FROM sistema_facturacion.empresas WHERE activo = true")
                 kpis['empresas_activas'] = cur.fetchone()['count']
 
-                cur.execute("""
+                cur.execute(f"""
                     SELECT COALESCE(SUM(monto), 0) as total 
-                    FROM pago_suscripcion 
+                    FROM sistema_facturacion.pagos_suscripciones 
                     WHERE estado = 'PAGADO'
-                    AND DATE_TRUNC('month', fecha_pago) = DATE_TRUNC('month', CURRENT_DATE)
+                    AND {susc_filter}
                 """)
                 kpis['ingresos_mensuales'] = float(cur.fetchone()['total'])
 
-                cur.execute("SELECT COALESCE(SUM(monto), 0) as total FROM comision WHERE estado = 'PENDIENTE'")
+                cur.execute("SELECT COALESCE(SUM(monto), 0) as total FROM sistema_facturacion.comisiones WHERE estado = 'PENDIENTE'")
                 kpis['comisiones_pendientes'] = float(cur.fetchone()['total'])
 
                 cur.execute("""
-                    SELECT COUNT(DISTINCT e.id) as count FROM empresa e
-                    WHERE e.activo = true AND e.fecha_vencimiento > CURRENT_DATE 
-                    AND e.fecha_vencimiento <= CURRENT_DATE + INTERVAL '7 days'
+                    SELECT COUNT(DISTINCT e.id) as count 
+                    FROM sistema_facturacion.empresas e
+                    JOIN sistema_facturacion.suscripciones s ON e.id = s.empresa_id
+                    WHERE e.activo = true AND s.fecha_fin > CURRENT_DATE 
+                    AND s.fecha_fin <= CURRENT_DATE + INTERVAL '7 days'
+                    AND s.estado = 'ACTIVA'
                 """)
                 kpis['empresas_por_vencer'] = cur.fetchone()['count']
+
+                cur.execute(f"""
+                    SELECT COUNT(*) as count 
+                    FROM sistema_facturacion.empresas e
+                    JOIN sistema_facturacion.suscripciones s ON e.id = s.empresa_id
+                    WHERE {expired_filter} AND e.activo = true
+                    AND s.estado = 'ACTIVA'
+                """)
+                kpis['pagos_atrasados'] = cur.fetchone()['count']
 
         return kpis
 
@@ -110,7 +167,7 @@ class RepositorioDashboards:
             # Mes actual
             cur.execute("""
                 SELECT COALESCE(SUM(monto), 0) as total 
-                FROM pago_suscripcion 
+                FROM sistema_facturacion.pagos_suscripciones 
                 WHERE estado = 'PAGADO'
                 AND DATE_TRUNC('month', fecha_pago) = DATE_TRUNC('month', CURRENT_DATE)
             """)
@@ -119,7 +176,7 @@ class RepositorioDashboards:
             # Mes anterior
             cur.execute("""
                 SELECT COALESCE(SUM(monto), 0) as total 
-                FROM pago_suscripcion 
+                FROM sistema_facturacion.pagos_suscripciones 
                 WHERE estado = 'PAGADO'
                 AND DATE_TRUNC('month', fecha_pago) = DATE_TRUNC('month', CURRENT_DATE - INTERVAL '1 month')
             """)
@@ -135,9 +192,11 @@ class RepositorioDashboards:
         with self.db.cursor() as cur:
             cur.execute("""
                 SELECT COUNT(*) as count 
-                FROM empresa 
-                WHERE fecha_vencimiento < CURRENT_DATE
-                AND activo = true
+                FROM sistema_facturacion.empresas e
+                JOIN sistema_facturacion.suscripciones s ON e.id = s.empresa_id
+                WHERE s.fecha_fin < CURRENT_DATE
+                AND e.activo = true
+                AND s.estado = 'ACTIVA'
             """)
             return cur.fetchone()['count']
 
@@ -148,7 +207,11 @@ class RepositorioDashboards:
         with self.db.cursor() as cur:
             if empresa_id:
                 # Alertas para Empresa
-                cur.execute("SELECT fecha_vencimiento FROM empresa WHERE id = %s", (empresa_id,))
+                cur.execute("""
+                    SELECT s.fecha_fin as fecha_vencimiento 
+                    FROM sistema_facturacion.suscripciones s 
+                    WHERE s.empresa_id = %s AND s.estado = 'ACTIVA'
+                """, (empresa_id,))
                 row = cur.fetchone()
                 if row and row['fecha_vencimiento'] and row['fecha_vencimiento'] < (datetime.now().date() + timedelta(days=7)):
                      alertas["criticas"].append({
@@ -161,8 +224,10 @@ class RepositorioDashboards:
             elif vendedor_id:
                 # Alertas para Vendedor (Sus clientes)
                 cur.execute("""
-                    SELECT COUNT(*) as count FROM empresa 
-                    WHERE vendedor_id = %s AND fecha_vencimiento < CURRENT_DATE AND activo = true
+                    SELECT COUNT(*) as count 
+                    FROM sistema_facturacion.empresas e
+                    JOIN sistema_facturacion.suscripciones s ON e.id = s.empresa_id
+                    WHERE e.vendedor_id = %s AND s.fecha_fin < CURRENT_DATE AND e.activo = true
                 """, (vendedor_id,))
                 vencidas = cur.fetchone()['count']
                 if vencidas > 0:
@@ -175,8 +240,8 @@ class RepositorioDashboards:
             else:
                 # Alertas Globales (Superadmin)
                 cur.execute("""
-                    SELECT COUNT(*) as count FROM empresa 
-                    WHERE id NOT IN (SELECT DISTINCT empresa_id FROM factura WHERE fecha_emision > CURRENT_DATE - INTERVAL '30 days')
+                    SELECT COUNT(*) as count FROM sistema_facturacion.empresas 
+                    WHERE id NOT IN (SELECT DISTINCT empresa_id FROM sistema_facturacion.facturas WHERE fecha_emision > CURRENT_DATE - INTERVAL '30 days')
                 """)
                 inactivas = cur.fetchone()['count']
                 if inactivas > 0:
@@ -187,30 +252,61 @@ class RepositorioDashboards:
                         "mensaje": f"{inactivas} empresas sin facturación en 30 días"
                     })
 
-                cur.execute("SELECT COUNT(*) as count FROM comision WHERE estado = 'PENDIENTE'")
+                cur.execute("SELECT COUNT(*) as count FROM sistema_facturacion.comisiones WHERE estado = 'PENDIENTE'")
                 comisiones = cur.fetchone()['count']
                 if comisiones > 0:
                     alertas["informativas"].append({
                         "tipo": "Comisiones",
                         "cantidad": comisiones,
                         "nivel": "info",
-                        "mensaje": f"{comisiones} comisiones pendientes"
+                        "mensaje": f"{comisiones} comisiones por liquidar a vendedores"
                     })
+
+                # Alerta de Certificados SRI por expirar
+                try:
+                    cur.execute("""
+                        SELECT COUNT(*) as count 
+                        FROM sistema_facturacion.configuraciones_sri 
+                        WHERE fecha_expiracion_cert <= CURRENT_DATE + INTERVAL '15 days'
+                        AND estado = 'ACTIVO'
+                    """)
+                    cert_vencidos = cur.fetchone()['count']
+                    if cert_vencidos > 0:
+                        alertas["criticas"].append({
+                            "tipo": "Certificados SRI",
+                            "cantidad": cert_vencidos,
+                            "nivel": "critical",
+                            "mensaje": f"{cert_vencidos} empresas con firma electrónica próxima a vencer"
+                        })
+                except:
+                    pass # Evitar que falle si la tabla no existe o no tiene permisos
 
         return alertas
 
-    def obtener_facturas_mensuales(self, limite: int = 6, empresa_id=None) -> List[Dict[str, Any]]:
+    def obtener_facturas_mensuales(self, limite: int = 6, empresa_id=None, periodo: str = 'month') -> List[Dict[str, Any]]:
         where_clause = "AND f.empresa_id = %s" if empresa_id else ""
+        
+        # Ajustar intervalo según periodo para el gráfico
+        if periodo == 'year':
+             interval = '1 month'
+             limite = 12
+        elif periodo == 'week':
+             interval = '1 day'
+             limite = 7
+        else:
+             interval = '1 month'
+             limite = 6
+
         params = (limite - 1, empresa_id) if empresa_id else (limite - 1,)
         
         query = f"""
             WITH months AS (
-                SELECT generate_series(DATE_TRUNC('month', CURRENT_DATE) - (INTERVAL '1 month' * %s),
-                                     DATE_TRUNC('month', CURRENT_DATE), '1 month'::interval) as month
+                SELECT generate_series(DATE_TRUNC('{"month" if interval == "1 month" else "day"}', CURRENT_DATE) - (INTERVAL '{interval}' * %s),
+                                     DATE_TRUNC('{"month" if interval == "1 month" else "day"}', CURRENT_DATE), '{interval}'::interval) as month
             )
-            SELECT TO_CHAR(m.month, 'Mon') as label, COALESCE(COUNT(f.id), 0) as value
+            SELECT TO_CHAR(m.month, '{"Mon" if interval == "1 month" else "DD/MM"}') as label, COALESCE(COUNT(f.id), 0) as value
             FROM months m
-            LEFT JOIN factura f ON DATE_TRUNC('month', f.fecha_emision) = m.month 
+            LEFT JOIN sistema_facturacion.facturas f ON DATE_TRUNC('{"month" if interval == "1 month" else "day"}', f.fecha_emision) = m.month 
                  AND f.estado != 'ANULADA' {where_clause}
             GROUP BY m.month ORDER BY m.month ASC
         """
@@ -218,30 +314,44 @@ class RepositorioDashboards:
             cur.execute(query, params)
             return [{"label": r['label'], "value": r['value']} for r in cur.fetchall()]
 
-    def obtener_ingresos_mensuales(self, limite: int = 6, vendedor_id=None) -> List[Dict[str, Any]]:
+    def obtener_ingresos_mensuales(self, limite: int = 6, vendedor_id=None, periodo: str = 'month') -> List[Dict[str, Any]]:
+        # Ajustar intervalo según periodo para el gráfico
+        if periodo == 'year':
+             interval = '1 month' # Para año mostrar meses tiene sentido
+             limite = 12
+        elif periodo == 'week':
+             interval = '1 day'
+             limite = 7
+        else:
+             interval = '1 month'
+             limite = 6
+
+        trunc_type = "month" if interval == "1 month" else "day"
+        format_type = "Mon" if interval == "1 month" else "DD/MM"
+
         # Para vendedor son sus comisiones, para superadmin son suscripciones
         if vendedor_id:
-             query = """
+             query = f"""
                 WITH months AS (
-                    SELECT generate_series(DATE_TRUNC('month', CURRENT_DATE) - (INTERVAL '1 month' * %s),
-                                         DATE_TRUNC('month', CURRENT_DATE), '1 month'::interval) as month
+                    SELECT generate_series(DATE_TRUNC('{trunc_type}', CURRENT_DATE) - (INTERVAL '{interval}' * %s),
+                                         DATE_TRUNC('{trunc_type}', CURRENT_DATE), '{interval}'::interval) as month
                 )
-                SELECT TO_CHAR(m.month, 'Mon') as label, COALESCE(SUM(c.monto), 0) as value
+                SELECT TO_CHAR(m.month, '{format_type}') as label, COALESCE(SUM(c.monto), 0) as value
                 FROM months m
-                LEFT JOIN comision c ON DATE_TRUNC('month', c.fecha_creacion) = m.month 
+                LEFT JOIN sistema_facturacion.comisiones c ON DATE_TRUNC('{trunc_type}', c.fecha_creacion) = m.month 
                      AND c.vendedor_id = %s AND c.estado = 'PAGADA'
                 GROUP BY m.month ORDER BY m.month ASC
             """
              params = (limite - 1, vendedor_id)
         else:
-            query = """
+            query = f"""
                 WITH months AS (
-                    SELECT generate_series(DATE_TRUNC('month', CURRENT_DATE) - (INTERVAL '1 month' * %s),
-                                         DATE_TRUNC('month', CURRENT_DATE), '1 month'::interval) as month
+                    SELECT generate_series(DATE_TRUNC('{trunc_type}', CURRENT_DATE) - (INTERVAL '{interval}' * %s),
+                                         DATE_TRUNC('{trunc_type}', CURRENT_DATE), '{interval}'::interval) as month
                 )
-                SELECT TO_CHAR(m.month, 'Mon') as label, COALESCE(SUM(p.monto), 0) as value
+                SELECT TO_CHAR(m.month, '{format_type}') as label, COALESCE(SUM(p.monto), 0) as value
                 FROM months m
-                LEFT JOIN pago_suscripcion p ON DATE_TRUNC('month', p.fecha_pago) = m.month 
+                LEFT JOIN sistema_facturacion.pagos_suscripciones p ON DATE_TRUNC('{trunc_type}', p.fecha_pago) = m.month 
                      AND p.estado = 'PAGADO'
                 GROUP BY m.month ORDER BY m.month ASC
             """
@@ -255,13 +365,31 @@ class RepositorioDashboards:
         query = """
             WITH LatestSubscription AS (
                 SELECT DISTINCT ON (empresa_id) empresa_id, plan_id
-                FROM pago_suscripcion WHERE estado = 'PAGADO'
+                FROM sistema_facturacion.pagos_suscripciones WHERE estado = 'PAGADO'
                 ORDER BY empresa_id, fecha_inicio_periodo DESC
             )
             SELECT p.nombre, COUNT(ls.empresa_id) as count
-            FROM plan p LEFT JOIN LatestSubscription ls ON p.id = ls.plan_id
+            FROM sistema_facturacion.planes p LEFT JOIN LatestSubscription ls ON p.id = ls.plan_id
             GROUP BY p.nombre ORDER BY count DESC
         """
         with self.db.cursor() as cur:
             cur.execute(query)
             return [{"name": r['nombre'], "count": r['count']} for r in cur.fetchall()]
+
+    def obtener_empresas_recientes(self, limite: int = 5) -> List[Dict[str, Any]]:
+        query = """
+            SELECT 
+                e.id, 
+                e.nombre_comercial, 
+                e.activo, 
+                e.created_at as fecha_registro,
+                p.nombre as plan_nombre
+            FROM sistema_facturacion.empresas e
+            LEFT JOIN sistema_facturacion.suscripciones s ON e.id = s.empresa_id AND s.estado = 'ACTIVA'
+            LEFT JOIN sistema_facturacion.planes p ON s.plan_id = p.id
+            ORDER BY e.created_at DESC
+            LIMIT %s
+        """
+        with self.db.cursor() as cur:
+            cur.execute(query, (limite,))
+            return [dict(r) for r in cur.fetchall()]

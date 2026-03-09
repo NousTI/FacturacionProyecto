@@ -20,18 +20,20 @@ def obtener_resumen(
 
 @router.get("/charts", response_model=DashboardGraficos)
 def obtener_graficos(
+    periodo: str = 'month',
     usuario: dict = Depends(obtener_usuario_actual),
     servicio: ServicioDashboards = Depends()
 ):
-    return servicio.obtener_graficos(usuario)
+    return servicio.obtener_graficos(usuario, periodo=periodo)
 
 @router.get("/kpis", response_model=DashboardKPIs)
 def obtener_kpis(
+    periodo: str = 'month',
     usuario: dict = Depends(obtener_usuario_actual),
     servicio: ServicioDashboards = Depends()
 ):
     """Retorna KPIs principales del dashboard adaptados al rol."""
-    return servicio.obtener_kpis(usuario)
+    return servicio.obtener_kpis(usuario, periodo=periodo)
 
 @router.get("/alertas", response_model=DashboardAlertas)
 def obtener_alertas(
@@ -43,8 +45,9 @@ def obtener_alertas(
 
 @router.get("/overview", response_model=DashboardOverview)
 def obtener_overview(
+    periodo: str = 'month',
     usuario: dict = Depends(obtener_usuario_actual),
     servicio: ServicioDashboards = Depends()
 ):
     """Objeto agregado para carga inicial adaptado al rol."""
-    return servicio.obtener_overview(usuario)
+    return servicio.obtener_overview(usuario, periodo=periodo)

@@ -1,6 +1,14 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
 
+export interface DashboardActions {
+  show: boolean;
+  selectedPeriod?: string;
+  loading?: boolean;
+  onPeriodChange?: (period: string) => void;
+  onRefresh?: () => void;
+}
+
 export interface Toast {
     message: string;
     description?: string;
@@ -18,8 +26,19 @@ export class UiService {
     private pageHeaderSubject = new BehaviorSubject<{ title: string, description: string }>({ title: '', description: '' });
     pageHeader$ = this.pageHeaderSubject.asObservable();
 
+    private dashboardActionsSubject = new BehaviorSubject<DashboardActions>({ show: false });
+    dashboardActions$ = this.dashboardActionsSubject.asObservable();
+
     setPageHeader(title: string, description: string) {
         this.pageHeaderSubject.next({ title, description });
+    }
+
+    setDashboardActions(actions: Omit<DashboardActions, 'show'>) {
+        this.dashboardActionsSubject.next({ show: true, ...actions });
+    }
+
+    clearDashboardActions() {
+        this.dashboardActionsSubject.next({ show: false });
     }
 
     showToast(message: string, type: Toast['type'] = 'success', description?: string, duration: number = 5000) {

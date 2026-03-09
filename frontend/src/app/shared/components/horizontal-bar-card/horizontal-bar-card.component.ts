@@ -13,11 +13,9 @@ export interface HorizontalBarData {
     template: `
     <div class="soft-card h-100 d-flex flex-column">
       <div class="d-flex justify-content-between align-items-center mb-4 flex-shrink-0">
-        <h5 class="fw-bold mb-0 text-dark">{{ title }}</h5>
-        <div class="dropdown">
-          <button class="btn btn-sm btn-light rounded-pill px-3" type="button">
-            Este mes <i class="bi bi-chevron-down ms-1"></i>
-          </button>
+        <div class="d-flex align-items-center gap-1">
+          <h5 class="fw-bold mb-0 text-dark">{{ title }}</h5>
+          <ng-content></ng-content>
         </div>
       </div>
       
@@ -52,6 +50,10 @@ export interface HorizontalBarData {
         background: white;
         border-radius: 1rem;
         box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+    }
+    /* Desactivar el transform del hover global para no romper position:fixed del tooltip */
+    .soft-card:hover {
+        transform: none !important;
     }
     .progress-bar {
         transition: width 1s ease-in-out;

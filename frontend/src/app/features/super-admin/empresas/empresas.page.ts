@@ -13,6 +13,7 @@ import { EmpresaDetailsModalComponent } from './components/empresa-details-modal
 import { UiService } from '../../../shared/services/ui.service';
 import { EmpresaService, EmpresaStats } from './services/empresa.service';
 import { OnInit, ChangeDetectorRef, OnDestroy } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
 import { Subject, takeUntil, finalize } from 'rxjs';
 
 @Component({
@@ -150,13 +151,21 @@ export class EmpresasPage implements OnInit, OnDestroy {
   constructor(
     private uiService: UiService,
     private empresaService: EmpresaService,
-    private cd: ChangeDetectorRef
+    private cd: ChangeDetectorRef,
+    private route: ActivatedRoute
   ) { }
 
   ngOnInit() {
     this.initSubscriptions();
     this.empresaService.loadData();
     this.loadSupportData();
+    
+    // Abrir modal si viene por parámetro
+    this.route.queryParams.pipe(takeUntil(this.destroy$)).subscribe(params => {
+      if (params['new'] === 'true') {
+        this.openModal();
+      }
+    });
   }
 
   ngOnDestroy() {
