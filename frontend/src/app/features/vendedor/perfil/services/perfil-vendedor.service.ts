@@ -46,4 +46,15 @@ export class VendedorPerfilService {
             })
         );
     }
+
+    actualizarPerfil(datos: { nombres?: string; apellidos?: string; telefono?: string }): Observable<VendedorPerfil> {
+        return this.http.patch<ApiResponse<VendedorPerfil>>(this.apiUrl, datos).pipe(
+            map(response => {
+                if (!response.ok) {
+                    throw new Error(response.mensaje || 'Error al actualizar perfil');
+                }
+                return response.detalles;
+            })
+        );
+    }
 }

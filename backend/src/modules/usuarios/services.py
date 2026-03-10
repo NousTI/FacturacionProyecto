@@ -1,4 +1,4 @@
-from fastapi import Depends
+from fastapi import Depends, Request
 from typing import List, Optional
 from uuid import UUID
 import logging
@@ -48,8 +48,40 @@ class ServicioUsuarios:
         
         return usuario
     
-    def crear_usuario(self, data: UsuarioCreacion, usuario_actual: dict):
+    def crear_usuario(self, data: UsuarioCreacion, usuario_actual: dict, request: Request):
         """Create new user (admin only)"""
+        import uuid
+        import unicodedata
+        import re
+        from urllib.parse import urlparse
+
+        # Get domain from request
+        domain = request.headers.get("origin")
+        if domain:
+            domain_name = urlparse(domain).hostname
+        else:
+            domain_name = request.url.hostname
+        if not domain_name:
+            domain_name = "nousesaas.com"
+            
+        # Ensure it has an extension (e.g. localhost -> localhost.com)
+        if "." not in domain_name:
+            domain_name = f"{domain_name}.com"
+
+        # clean name for email
+        def _clean_str(s):
+            if not s: return ""
+            s = ''.join(c for c in unicodedata.normalize('NFD', s) if unicodedata.category(c) != 'Mn')
+            s = s.lower()
+            return re.sub(r'[^a-z0-9]', '', s)
+            
+        # Dynamically generate email to not allow frontend email
+        base_name = _clean_str(data.nombres.split()[0]) if data.nombres else "usuario"
+        base_last = _clean_str(data.apellidos.split()[0]) if getattr(data, 'apellidos', None) else ""
+        random_str = uuid.uuid4().hex[:4]
+        
+        prefix = f"{base_name}.{base_last}" if base_last else base_name
+        data.email = f"{prefix}.{random_str}@{domain_name}"
         # Auto-inject empresa_id from the current user if not provided
         if not data.empresa_id:
             empresa_id_actual = usuario_actual.get('empresa_id')
@@ -146,12 +178,7 @@ class ServicioUsuarios:
 
         res = self.repo.actualizar_usuario(id, update_data)
         
-        self.logs_service.registrar_evento(
-            user_id=usuario_actual.get('id'),
-            evento='USUARIO_ACTUALIZADO',
-            detail=f"Se actualizaron datos del usuario {usuario.get('nombres')} {usuario.get('apellidos')} ({usuario.get('email')})",
-            origen='SUPERADMIN' if usuario_actual.get(AuthKeys.IS_SUPERADMIN) else 'ADMIN_EMPRESA'
-        )
+        # Note: No registramos en users_logs porque esa tabla es solo para eventos de autenticación
         return res
     
     def eliminar_usuario(self, id: UUID, usuario_actual: dict):
@@ -214,11 +241,13 @@ class ServicioUsuarios:
         nuevo_estado = not usuario['activo']
         self.repo.actualizar_usuario(id, {'activo': nuevo_estado})
         
+        evento_auth = 'CUENTA_DESBLOQUEADA' if nuevo_estado else 'CUENTA_DESHABILITADA'
+        op_origen = 'SUPERADMIN' if usuario_actual.get(AuthKeys.IS_SUPERADMIN) else 'USUARIO'
         self.logs_service.registrar_evento(
             user_id=usuario_actual.get('id'),
-            evento='USUARIO_ESTADO_CAMBIADO',
+            evento=evento_auth,
             detail=f"Usuario {usuario.get('email')} cambiado a {'ACTIVO' if nuevo_estado else 'INACTIVO'}",
-            origen='SUPERADMIN'
+            origen=op_origen
         )
 
         return self.obtener_usuario_admin(id)

@@ -30,7 +30,7 @@ import { InfoTooltipComponent } from '../../../../shared/components/info-tooltip
       </div>
 
       <!-- Lista de alertas -->
-      <div class="alerts-list" *ngIf="!isLoading && alertas?.length">
+      <div class="alerts-list" *ngIf="!isLoading && alertas.length">
         <div class="alert-row"
              *ngFor="let alerta of alertas"
              [ngClass]="{
@@ -59,7 +59,7 @@ import { InfoTooltipComponent } from '../../../../shared/components/info-tooltip
       </div>
 
       <!-- Empty state -->
-      <div class="empty-state" *ngIf="!isLoading && !alertas?.length">
+      <div class="empty-state" *ngIf="!isLoading && !alertas.length">
         <i class="bi bi-shield-check" style="font-size:2.5rem; color:#10b981"></i>
         <h5>Todo bajo control</h5>
         <p>No tienes tareas urgentes pendientes.</p>

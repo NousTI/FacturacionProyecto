@@ -17,6 +17,15 @@ def obtener_stats(
 ):
     return controller.obtener_stats(usuario)
 
+@router.get("/exportar")
+def exportar_clientes(
+    start_date: Optional[str] = Query(None),
+    end_date: Optional[str] = Query(None),
+    usuario: dict = Depends(requerir_permiso(PermissionCodes.CLIENTES_EXPORTAR)),
+    controller: ClienteController = Depends()
+):
+    return controller.exportar_clientes(usuario, start_date, end_date)
+
 @router.get("", response_model=RespuestaBase[List[ClienteLectura]])
 def listar_clientes(
     empresa_id: Optional[UUID] = Query(None),

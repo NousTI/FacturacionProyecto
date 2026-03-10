@@ -1,11 +1,12 @@
 import { Component, EventEmitter, Output, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { HasPermissionDirective } from '../../../../../core/directives/has-permission.directive';
 
 @Component({
   selector: 'app-usuario-actions',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, HasPermissionDirective],
   template: `
     <section class="module-actions mb-4">
       <div class="actions-bar-container shadow-sm py-2 px-4 rounded-4">
@@ -37,6 +38,7 @@ import { FormsModule } from '@angular/forms';
           <!-- Botón de Acción -->
           <div class="col-lg-3 text-lg-end d-flex gap-2">
             <button 
+              *hasPermission="'CONFIG_USUARIOS'"
               (click)="onCreate.emit()"
               class="btn-system-action flex-grow-1 shadow-sm"
             >

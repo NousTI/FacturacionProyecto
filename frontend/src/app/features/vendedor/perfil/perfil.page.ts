@@ -47,6 +47,8 @@ import { UiService } from '../../../shared/services/ui.service';
               [fecha_registro]="perfil.fecha_registro"
               [empresas_asignadas]="perfil.empresas_asignadas"
               [ingresos_generados]="perfil.ingresos_generados"
+              [isSaving]="isSaving"
+              (onUpdate)="guardarPerfil($event)"
             ></app-profile-card>
           </div>
 
@@ -76,6 +78,7 @@ export class VendedorPerfilPage implements OnInit {
   perfil: VendedorPerfil | null = null;
   loading: boolean = true;
   error: string | null = null;
+  isSaving: boolean = false;
 
   constructor(
     private perfilService: VendedorPerfilService,
@@ -102,6 +105,34 @@ export class VendedorPerfilPage implements OnInit {
         this.error = 'No se pudo cargar la información del perfil. Intente nuevamente.';
         this.loading = false;
         this.uiService.showError(err, 'Error de conexión');
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  guardarPerfil(datos: { nombres: string, apellidos: string, telefono: string }) {
+    this.isSaving = true;
+    this.perfilService.actualizarPerfil({
+      nombres: datos.nombres,
+      apellidos: datos.apellidos,
+      telefono: datos.telefono
+    }).subscribe({
+      next: (perfilActualizado) => {
+        // Actualizamos nuestro estado local
+        this.perfil = { ...this.perfil, ...perfilActualizado } as VendedorPerfil;
+        this.isSaving = false;
+        
+        // El ProfileCardComponent maneja su propio estado isEditing a public, pero lo resetearemos recargando o usando su local
+        // Es más fácil que el view vuelva a solo lectura actualizando o forzando si usáramos la referencia, 
+        // pero podemos recargar el perfil o simplemente dejar que el componente resetee isEditing. 
+        // Como no pasamos isEditing por @Input (lo maneja interno el card), tenemos que 
+        // decirle al child que se apagó. Pero para no complicarnos, podemos hacer un `cargarPerfil` de nuevo.
+        this.uiService.showToast('Perfil actualizado correctamente', 'success');
+        this.cargarPerfil(); // recargar para asegurar sincronización y resetear el componente de vista
+      },
+      error: (err) => {
+        this.isSaving = false;
+        this.uiService.showError(err, 'Error al actualizar perfil');
         this.cdr.detectChanges();
       }
     });

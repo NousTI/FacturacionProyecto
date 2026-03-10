@@ -5,6 +5,7 @@ from uuid import UUID
 from .repository import RepositorioInventarios
 from .schemas import MovimientoInventarioCreacion
 from ...constants.enums import AuthKeys
+from ...constants.permissions import PermissionCodes
 from ...errors.app_error import AppError
 
 class ServicioInventarios:
@@ -40,7 +41,18 @@ class ServicioInventarios:
         
         res = self.repo.crear_movimiento(dict_m)
         self.repo.actualizar_stock(datos.producto_id, stock_nuevo)
-        return res
+        return self._filtrar_costos(res, usuario_actual)
+
+    def _filtrar_costos(self, item: dict, usuario_actual: dict):
+        if not item: return item
+        if usuario_actual.get(AuthKeys.IS_SUPERADMIN):
+            return item
+        
+        permisos = usuario_actual.get("permisos", [])
+        if PermissionCodes.PRODUCTOS_VER_COSTOS not in permisos:
+            item['costo_unitario'] = None
+            item['costo_total'] = None
+        return item
 
     def listar_por_producto(self, producto_id: UUID, usuario_actual: dict):
         producto = self.repo.obtener_producto(producto_id)
@@ -50,9 +62,11 @@ class ServicioInventarios:
             if str(producto['empresa_id']) != str(usuario_actual.get('empresa_id')):
                 raise AppError("No autorizado", 403, "AUTH_FORBIDDEN")
                 
-        return self.repo.listar_por_producto(producto_id)
+        movimientos = self.repo.listar_por_producto(producto_id)
+        return [self._filtrar_costos(m, usuario_actual) for m in movimientos]
 
     def listar_todos(self, usuario_actual: dict):
         if not usuario_actual.get(AuthKeys.IS_SUPERADMIN):
             raise AppError("Solo superadmin", 403, "AUTH_FORBIDDEN")
-        return self.repo.listar_todos()
+        movimientos = self.repo.listar_todos()
+        return [self._filtrar_costos(m, usuario_actual) for m in movimientos]

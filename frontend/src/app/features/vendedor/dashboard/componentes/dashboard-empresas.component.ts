@@ -39,7 +39,7 @@ import { InfoTooltipComponent } from '../../../../shared/components/info-tooltip
               </td>
               <td class="text-end text-muted small">{{ emp.fecha_vencimiento || '--' }}</td>
             </tr>
-            <tr *ngIf="!isLoading && !empresas?.length">
+            <tr *ngIf="!isLoading && !empresas.length">
               <td colspan="4" class="text-center py-4 text-muted small">No hay empresas asignadas</td>
             </tr>
           </tbody>

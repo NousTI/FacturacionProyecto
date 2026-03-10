@@ -7,7 +7,7 @@ import { environment } from '../../../../../environments/environment';
     providedIn: 'root'
 })
 export class PerfilService {
-    private apiUrl = `${environment.apiUrl}/superadmin/perfil`;
+    private apiUrl = `${environment.apiUrl}/superadmin/me`;
 
     private _perfil$ = new BehaviorSubject<any>(null);
 
@@ -18,27 +18,23 @@ export class PerfilService {
     }
 
     loadPerfil() {
-        // Placeholder for actual implementation
-        // this.http.get<any>(this.apiUrl).subscribe(perfil => {
-        //   this._perfil$.next(perfil);
-        // });
-
-        // Mock data for UI development
-        this._perfil$.next({
-            id: 'mock-id',
-            email: 'admin@nousti.com',
-            nombres: 'Super',
-            apellidos: 'Administrador',
-            role: 'SUPERADMIN',
-            estado: 'ACTIVA',
-            activo: true,
-            ultimo_acceso: new Date().toISOString(),
-            created_at: new Date('2024-01-01').toISOString(),
-            updated_at: new Date().toISOString()
+        this.http.get<any>(this.apiUrl).subscribe(response => {
+           if (response && response.detalles) {
+               this._perfil$.next(response.detalles);
+           } else {
+               this._perfil$.next(response);
+           }
         });
     }
 
     updatePerfil(data: any): Observable<any> {
-        return this.http.patch<any>(this.apiUrl, data);
+        return this.http.patch<any>(this.apiUrl, data).pipe(
+            map(response => {
+                if (response && response.detalles) {
+                    return response.detalles;
+                }
+                return response;
+            })
+        );
     }
 }

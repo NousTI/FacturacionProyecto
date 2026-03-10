@@ -1,4 +1,4 @@
-from fastapi import Depends
+from fastapi import Depends, Request
 from uuid import UUID
 from typing import List, Optional
 import logging
@@ -32,13 +32,45 @@ class ServicioVendedores:
         vendedor.pop("password_hash", None)
         return vendedor
 
-    def crear_vendedor(self, datos: VendedorCreacion, usuario_actual: dict):
+    def crear_vendedor(self, datos: VendedorCreacion, usuario_actual: dict, request: Request):
         if not usuario_actual.get(AuthKeys.IS_SUPERADMIN):
             raise AppError(
                 message=AppMessages.PERM_FORBIDDEN, 
                 status_code=403, 
                 code=ErrorCodes.PERM_FORBIDDEN
             )
+            
+        import uuid
+        import unicodedata
+        import re
+        from urllib.parse import urlparse
+
+        # Get domain from request
+        domain = request.headers.get("origin")
+        if domain:
+            domain_name = urlparse(domain).hostname
+        else:
+            domain_name = request.url.hostname
+        if not domain_name:
+            domain_name = "nousesaas.com"
+            
+        if "." not in domain_name:
+            domain_name = f"{domain_name}.com"
+
+        # clean name for email
+        def _clean_str(s):
+            if not s: return ""
+            s = ''.join(c for c in unicodedata.normalize('NFD', s) if unicodedata.category(c) != 'Mn')
+            s = s.lower()
+            return re.sub(r'[^a-z0-9]', '', s)
+            
+        # Dynamically generate email to not allow frontend email
+        base_name = _clean_str(datos.nombres.split()[0]) if datos.nombres else "vendedor"
+        base_last = _clean_str(datos.apellidos.split()[0]) if getattr(datos, 'apellidos', None) else ""
+        random_str = uuid.uuid4().hex[:4]
+        
+        prefix = f"{base_name}.{base_last}" if base_last else base_name
+        datos.email = f"{prefix}.{random_str}@{domain_name}"
         
         # Check if email already exists in users table
         if self.repo_usuarios.obtener_por_correo(datos.email):
@@ -86,13 +118,6 @@ class ServicioVendedores:
         return [self._sanitize(v) for v in self.repo.listar_todos()]
 
     def obtener_vendedor(self, id: UUID, usuario_actual: dict):
-        if not usuario_actual.get(AuthKeys.IS_SUPERADMIN) and str(usuario_actual.get('id')) != str(id):
-             raise AppError(
-                 message=AppMessages.PERM_FORBIDDEN, 
-                 status_code=403, 
-                 code=ErrorCodes.PERM_FORBIDDEN
-             )
-            
         vendedor = self.repo.obtener_por_id(id)
         if not vendedor: 
              raise AppError(
@@ -101,6 +126,17 @@ class ServicioVendedores:
                  code=ErrorCodes.AUTH_USER_NOT_FOUND,
                  level="WARNING"
              )
+             
+        is_superadmin = usuario_actual.get(AuthKeys.IS_SUPERADMIN)
+        is_owner = str(vendedor.get('user_id')) == str(usuario_actual.get('id'))
+        
+        if not is_superadmin and not is_owner:
+             raise AppError(
+                 message=AppMessages.PERM_FORBIDDEN, 
+                 status_code=403, 
+                 code=ErrorCodes.PERM_FORBIDDEN
+             )
+            
         return self._sanitize(vendedor)
 
     def obtener_mi_perfil(self, usuario_actual: dict):
@@ -138,13 +174,6 @@ class ServicioVendedores:
         return self._sanitize(self.repo.obtener_por_id(vendedor['id']))
 
     def actualizar_vendedor(self, id: UUID, datos: VendedorActualizacion, usuario_actual: dict):
-        if not usuario_actual.get(AuthKeys.IS_SUPERADMIN) and str(usuario_actual.get('id')) != str(id):
-             raise AppError(
-                 message=AppMessages.PERM_FORBIDDEN, 
-                 status_code=403, 
-                 code=ErrorCodes.PERM_FORBIDDEN
-             )
-            
         vendedor = self.repo.obtener_por_id(id)
         if not vendedor: 
              raise AppError(
@@ -152,17 +181,30 @@ class ServicioVendedores:
                  status_code=404, 
                  code=ErrorCodes.AUTH_USER_NOT_FOUND
              )
+
+        is_superadmin = usuario_actual.get(AuthKeys.IS_SUPERADMIN)
+        is_owner = str(vendedor.get('user_id')) == str(usuario_actual.get('id'))
+        
+        if not is_superadmin and not is_owner:
+             raise AppError(
+                 message=AppMessages.PERM_FORBIDDEN, 
+                 status_code=403, 
+                 code=ErrorCodes.PERM_FORBIDDEN
+             )
         
         datos_dict = datos.model_dump(exclude_unset=True)
-        res = self.repo.actualizar(id, datos_dict)
         
-        self.logs_service.registrar_evento(
-            user_id=usuario_actual.get('id'),
-            evento='VENDEDOR_ACTUALIZADO',
-            detail=f"Se actualizaron datos del vendedor {vendedor.get('nombres')} {vendedor.get('apellidos')}",
-            origen='SUPERADMIN'
-        )
+        if is_owner and not is_superadmin:
+            # Si es únicamente el vendedor, solo puede editar su nombre y teléfono
+            allowed_fields = {'nombres', 'apellidos', 'telefono'}
+            for k in list(datos_dict.keys()):
+                if k not in allowed_fields:
+                    del datos_dict[k]
+            
+            if not datos_dict:
+                return self._sanitize(vendedor)
 
+        res = self.repo.actualizar(id, datos_dict)
         return self._sanitize(res)
 
     def obtener_stats_vendedores(self, usuario_actual: dict):
@@ -221,12 +263,7 @@ class ServicioVendedores:
         v_orig = self.repo.obtener_por_id(id)
         v_dest = self.repo.obtener_por_id(id_destino)
 
-        self.logs_service.registrar_evento(
-            user_id=usuario_actual.get('id'),
-            evento='VENDEDOR_REASIGNACION_MASIVA',
-            detail=f"Se reasignaron {count} empresas de {v_orig['nombres']} a {v_dest['nombres']}",
-            origen='SUPERADMIN'
-        )
+        # No registramos en users_logs porque esa tabla es solo para eventos de autenticación
 
         return {"cantidad_reasignada": count, "message": f"Se reasignaron {count} empresas exitosamente."}
 

@@ -2,6 +2,9 @@ from fastapi import Depends
 from uuid import UUID
 from typing import List, Optional
 import logging
+import io
+import pandas as pd
+from datetime import datetime, date
 
 from .repository import RepositorioClientes
 from .schemas import ClienteCreacion, ClienteActualizacion
@@ -179,4 +182,58 @@ class ServicioClientes:
         result = self.repo.obtener_stats(empresa_id)
         logger.info(f"[ÉXITO] Estadísticas obtenidas")
         return result
+
+    def exportar_clientes(self, usuario_actual: dict, start_date: Optional[str] = None, end_date: Optional[str] = None):
+        """Genera un archivo Excel con el listado de clientes"""
+        logger.info("[EXPORTAR] Generando reporte de clientes")
+        ctx = self._get_context(usuario_actual)
+        
+        # Validar empresa para exportar
+        if not ctx["empresa_id"]:
+            if ctx["is_superadmin"] or ctx["is_vendedor"]:
+                raise AppError("Debe proporcionar contexto de empresa para exportar", 400)
+            raise AppError("No autorizado", 403)
+            
+        clientes = self.repo.listar_para_exportar(ctx["empresa_id"], start_date, end_date)
+        
+        if not clientes:
+            raise AppError("No se encontraron clientes para exportar en el rango seleccionado", 404)
+            
+        # Transformar a DataFrame
+        df = pd.DataFrame(clientes)
+        
+        # Eliminar zona horaria de las fechas (Excel no las soporta)
+        if 'created_at' in df.columns:
+            df['created_at'] = pd.to_datetime(df['created_at']).dt.tz_localize(None)
+        
+        # Mapeo de columnas para que se vean bien en el excel
+        columnas_visible = {
+            'identificacion': 'Identificación',
+            'tipo_identificacion': 'Tipo ID',
+            'razon_social': 'Razón Social',
+            'nombre_comercial': 'Nombre Comercial',
+            'email': 'Email',
+            'telefono': 'Teléfono',
+            'direccion': 'Dirección',
+            'ciudad': 'Ciudad',
+            'provincia': 'Provincia',
+            'dias_credito': 'Días Crédito',
+            'limite_credito': 'Límite Crédito',
+            'activo': 'Activo',
+            'created_at': 'Fecha Registro'
+        }
+        
+        # Filtrar solo las que queremos y renombrar
+        df = df[list(columnas_visible.keys())].rename(columns=columnas_visible)
+        
+        # Formatear booleano 'Activo'
+        df['Activo'] = df['Activo'].apply(lambda x: 'Sí' if x else 'No')
+
+        # Escribir a buffer de memoria
+        output = io.BytesIO()
+        with pd.ExcelWriter(output, engine='openpyxl') as writer:
+            df.to_excel(writer, index=False, sheet_name='Clientes')
+            
+        output.seek(0)
+        return output
 

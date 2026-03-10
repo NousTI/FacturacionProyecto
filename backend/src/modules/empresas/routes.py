@@ -5,6 +5,7 @@ from .schemas import EmpresaCreacion, EmpresaActualizacion, EmpresaLectura, Empr
 from .controller import EmpresaController
 from ..autenticacion.routes import obtener_usuario_actual, requerir_permiso
 from ..permisos.constants import PermisosVendedor
+from ...constants.permissions import PermissionCodes
 from ...utils.response_schemas import RespuestaBase
 
 router = APIRouter(redirect_slashes=False)
@@ -36,7 +37,7 @@ def listar_empresas(
 @router.get("/{empresa_id}", response_model=RespuestaBase[EmpresaLectura])
 def obtener_empresa(
     empresa_id: UUID,
-    usuario: dict = Depends(obtener_usuario_actual),
+    usuario: dict = Depends(requerir_permiso([PermissionCodes.CONFIG_EMPRESA, PermisosVendedor.ACCEDER_EMPRESAS])),
     controller: EmpresaController = Depends()
 ):
     return controller.obtener_empresa(empresa_id, usuario)
@@ -45,7 +46,7 @@ def obtener_empresa(
 def actualizar_empresa(
     empresa_id: UUID,
     datos: EmpresaActualizacion,
-    usuario: dict = Depends(obtener_usuario_actual),
+    usuario: dict = Depends(requerir_permiso([PermissionCodes.CONFIG_EMPRESA, PermisosVendedor.ACCEDER_EMPRESAS])),
     controller: EmpresaController = Depends()
 ):
     return controller.actualizar_empresa(empresa_id, datos, usuario)

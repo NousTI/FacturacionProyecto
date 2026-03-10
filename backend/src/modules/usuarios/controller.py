@@ -1,4 +1,4 @@
-from fastapi import Depends
+from fastapi import Depends, Request
 from uuid import UUID
 from .services import ServicioUsuarios
 from .schemas import UsuarioCreacion, UsuarioActualizacion
@@ -16,8 +16,8 @@ class UsuarioController:
         usuario = self.service.obtener_usuario(id, usuario_actual)
         return success_response(usuario)
     
-    def crear_usuario(self, body: UsuarioCreacion, usuario_actual: dict):
-        usuario = self.service.crear_usuario(body, usuario_actual)
+    def crear_usuario(self, body: UsuarioCreacion, usuario_actual: dict, request: Request):
+        usuario = self.service.crear_usuario(body, usuario_actual, request)
         return success_response(usuario, "Usuario creado")
     
     def actualizar_usuario(self, id: UUID, body: UsuarioActualizacion, usuario_actual: dict):

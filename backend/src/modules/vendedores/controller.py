@@ -1,4 +1,4 @@
-from fastapi import Depends
+from fastapi import Depends, Request
 from .services import ServicioVendedores
 from .schemas import VendedorCreacion, VendedorActualizacion, ReasignacionEmpresas, VendedorPerfilActualizacion
 from uuid import UUID
@@ -8,8 +8,8 @@ class VendedorController:
     def __init__(self, service: ServicioVendedores = Depends()):
         self.service = service
 
-    def crear_vendedor(self, body: VendedorCreacion, usuario_actual: dict):
-        nuevo = self.service.crear_vendedor(body, usuario_actual)
+    def crear_vendedor(self, body: VendedorCreacion, usuario_actual: dict, request: Request):
+        nuevo = self.service.crear_vendedor(body, usuario_actual, request)
         return success_response(nuevo, "Vendedor creado exitosamente")
 
     def listar_vendedores(self, usuario_actual: dict):

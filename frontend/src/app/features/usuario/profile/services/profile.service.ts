@@ -60,4 +60,24 @@ export class ProfileService extends BaseApiService {
     refresh(): void {
         this.loadProfile(true);
     }
+
+    /**
+     * Updates user's profile info (nombres, apellidos, telefono only)
+     */
+    updateProfile(data: { nombres: string, apellidos: string, telefono: string }): Observable<any> {
+        // According to routes.js, the update endpoint for a user inside an empresa needs the user's UUID.
+        // Wait, routes.py has: PATCH /usuarios/{id}
+        // Let's check how the current user retrieves their id.
+        // The endpoint GET /perfil works without ID, but there is no PATCH /perfil.
+        // Wait, looking at the backend, there is no PATCH /perfil for the user. We must use PATCH /usuarios/{id}
+        // or we need to add a PATCH /perfil in the backend. 
+        // Let's add the PATCH /perfil to the backend to make it smooth, or just grab the ID from the current profile.
+        const currentProfile = this._perfil$.getValue();
+        if (!currentProfile || !currentProfile.id) {
+            throw new Error('No profile loaded');
+        }
+        return this.patch<any>(`usuarios/${currentProfile.id}`, data).pipe(
+            tap(() => this.refresh())
+        );
+    }
 }

@@ -4,6 +4,7 @@ import { Subject, Observable } from 'rxjs';
 import { AuthFacade } from '../../../core/auth/auth.facade';
 import { ProfileService } from './services/profile.service';
 import { PerfilUsuario } from '../../../domain/models/perfil.model';
+import { UiService } from '../../../shared/services/ui.service';
 
 // Components
 import { ProfileHeaderComponent } from './components/profile-header.component';
@@ -33,8 +34,10 @@ import { ProfileAuditComponent } from './components/profile-audit.component';
           <app-profile-header 
               [perfil]="perfil"
               [loading]="(loading$ | async) || false"
+              [isSaving]="isSaving"
               (onRefresh)="refreshProfile()"
-              (onLogout)="logout()">
+              (onLogout)="logout()"
+              (onUpdate)="updateProfile($event)">
           </app-profile-header>
 
           <div class="row g-4">
@@ -100,11 +103,13 @@ import { ProfileAuditComponent } from './components/profile-audit.component';
 export class ProfilePage implements OnInit, OnDestroy {
   perfil$: Observable<PerfilUsuario | null>;
   loading$: Observable<boolean>;
+  isSaving = false;
   private destroy$ = new Subject<void>();
 
   constructor(
     private profileService: ProfileService,
-    private authFacade: AuthFacade
+    private authFacade: AuthFacade,
+    private uiService: UiService
   ) {
     this.perfil$ = this.profileService.perfil$;
     this.loading$ = this.profileService.loading$;
@@ -126,5 +131,19 @@ export class ProfilePage implements OnInit, OnDestroy {
   logout() {
     this.profileService.clearCache();
     this.authFacade.logout();
+  }
+
+  updateProfile(datos: { nombres: string, apellidos: string, telefono: string }) {
+    this.isSaving = true;
+    this.profileService.updateProfile(datos).subscribe({
+      next: () => {
+        this.uiService.showToast('Perfil actualizado correctamente', 'success');
+        this.isSaving = false;
+      },
+      error: (err) => {
+        this.isSaving = false;
+        this.uiService.showError(err, 'Error al actualizar perfil');
+      }
+    });
   }
 }

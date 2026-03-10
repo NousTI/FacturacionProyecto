@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, Query, Request
 from typing import List, Optional
 from uuid import UUID
 from .schemas import UsuarioCreacion, UsuarioActualizacion, UsuarioLectura, PerfilUsuarioLectura, UsuarioAdminLectura
@@ -74,12 +74,13 @@ def obtener_usuario(
 
 @router.post("/", response_model=RespuestaBase[UsuarioLectura], status_code=201)
 def crear_usuario(
+    request: Request,
     datos: UsuarioCreacion,
     usuario: dict = Depends(requerir_permiso([PermissionCodes.CONFIG_USUARIOS, PermisosVendedor.CREAR_EMPRESAS])),
     controller: UsuarioController = Depends()
 ):
     """Create new user in empresa"""
-    return controller.crear_usuario(datos, usuario)
+    return controller.crear_usuario(datos, usuario, request)
 
 @router.patch("/{id}", response_model=RespuestaBase[UsuarioLectura])
 def actualizar_usuario(

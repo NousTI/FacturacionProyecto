@@ -80,19 +80,19 @@ import { Observable, map } from 'rxjs';
               <a routerLink="/usuario/dashboard" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" class="menu-item px-3 mb-1">
                 <i class="bi bi-grid-fill me-3"></i> Dashboard
               </a>
-                <a routerLink="/usuario/empresa" routerLinkActive="active" class="menu-item px-3 mb-1">
+                <a *appHasPermission="'CONFIG_EMPRESA'" routerLink="/usuario/empresa" routerLinkActive="active" class="menu-item px-3 mb-1">
                   <i class="bi bi-building me-3"></i> Empresa
                 </a>
-              <a routerLink="/usuario/usuarios" routerLinkActive="active" class="menu-item px-3 mb-1">
+              <a *appHasPermission="'CONFIG_USUARIOS'" routerLink="/usuario/usuarios" routerLinkActive="active" class="menu-item px-3 mb-1">
                 <i class="bi bi-person me-3"></i> Usuarios
               </a>
-              <a routerLink="/usuario/roles" routerLinkActive="active" class="menu-item px-3 mb-1">
+              <a *appHasPermission="'CONFIG_ROLES'" routerLink="/usuario/roles" routerLinkActive="active" class="menu-item px-3 mb-1">
                 <i class="bi bi-shield-check me-3"></i> Roles y Permisos
               </a>
-              <a routerLink="/usuario/clientes" routerLinkActive="active" class="menu-item px-3 mb-1">
+              <a *appHasPermission="'CLIENTES_VER'" routerLink="/usuario/clientes" routerLinkActive="active" class="menu-item px-3 mb-1">
                 <i class="bi bi-people me-3"></i> Clientes
               </a>
-              <a routerLink="/usuario/productos" routerLinkActive="active" class="menu-item px-3 mb-1">
+              <a *appHasPermission="'PRODUCTOS_VER'" routerLink="/usuario/productos" routerLinkActive="active" class="menu-item px-3 mb-1">
                 <i class="bi bi-box-seam me-3"></i> Productos
               </a>
               <a routerLink="/usuario/facturacion" routerLinkActive="active" class="menu-item px-3 mb-1">
@@ -104,10 +104,10 @@ import { Observable, map } from 'rxjs';
               <a routerLink="/usuario/reportes" routerLinkActive="active" class="menu-item px-3 mb-1">
                 <i class="bi bi-bar-chart me-3"></i> Reportes
               </a>
-              <a routerLink="/usuario/establecimientos" routerLinkActive="active" class="menu-item px-3 mb-1">
+              <a *appHasPermission="'CONFIG_ESTABLECIMIENTOS'" routerLink="/usuario/establecimientos" routerLinkActive="active" class="menu-item px-3 mb-1">
                 <i class="bi bi-shop me-3"></i> Establecimientos
               </a>
-              <a routerLink="/usuario/puntos-emision" routerLinkActive="active" class="menu-item px-3 mb-1">
+              <a *appHasPermission="'CONFIG_ESTABLECIMIENTOS'" routerLink="/usuario/puntos-emision" routerLinkActive="active" class="menu-item px-3 mb-1">
                 <i class="bi bi-printer me-3"></i> Puntos Emisión
               </a>
                <a routerLink="/usuario/configuracion" routerLinkActive="active" class="menu-item px-3 mb-1">
@@ -138,6 +138,9 @@ import { Observable, map } from 'rxjs';
             </a>
             <a routerLink="/auditoria" routerLinkActive="active" class="menu-item px-3 mb-1">
               <i class="bi bi-shield-lock me-3"></i> Auditoría
+            </a>
+            <a routerLink="/perfil" routerLinkActive="active" class="menu-item px-3 mb-1">
+              <i class="bi bi-person-circle me-3"></i> Mi Perfil
             </a>
           </div>
         </div>

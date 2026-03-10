@@ -48,19 +48,19 @@ const routes: Routes = [
         path: 'usuarios',
         component: UsuariosPage,
         canActivate: [RoleGuard],
-        data: { title: 'Usuarios', roles: [UserRole.USUARIO] }
+        data: { title: 'Usuarios', roles: [UserRole.USUARIO], permission: 'CONFIG_USUARIOS' }
     },
     {
         path: 'clientes',
         component: ClientesPage,
         canActivate: [RoleGuard],
-        data: { title: 'Clientes', roles: [UserRole.USUARIO, UserRole.VENDEDOR] }
+        data: { title: 'Clientes', roles: [UserRole.USUARIO, UserRole.VENDEDOR], permission: 'CLIENTES_VER' }
     },
     {
         path: 'productos',
         component: ProductosPage,
         canActivate: [RoleGuard],
-        data: { title: 'Productos', roles: [UserRole.USUARIO] }
+        data: { title: 'Productos', roles: [UserRole.USUARIO], permission: 'PRODUCTOS_VER' }
     },
     {
         path: 'facturacion',
@@ -84,13 +84,13 @@ const routes: Routes = [
         path: 'establecimientos',
         component: EstablecimientosPage,
         canActivate: [RoleGuard],
-        data: { title: 'Establecimientos', roles: [UserRole.USUARIO] }
+        data: { title: 'Establecimientos', roles: [UserRole.USUARIO], permission: 'CONFIG_ESTABLECIMIENTOS' }
     },
     {
         path: 'puntos-emision',
         component: PuntosEmisionPage,
         canActivate: [RoleGuard],
-        data: { title: 'Puntos de Emisión', roles: [UserRole.USUARIO] }
+        data: { title: 'Puntos de Emisión', roles: [UserRole.USUARIO], permission: 'CONFIG_ESTABLECIMIENTOS' }
     },
     {
         path: 'configuracion',

@@ -8,6 +8,7 @@ import { ClienteActionsComponent } from './components/cliente-actions/cliente-ac
 import { ClienteTableComponent } from './components/cliente-table/cliente-table.component';
 import { CreateClienteModalComponent } from './components/create-cliente-modal/create-cliente-modal.component';
 import { ClienteDetailModalComponent } from './components/cliente-detail-modal/cliente-detail-modal.component';
+import { ExportClientesModalComponent } from './components/export-clientes-modal/export-clientes-modal.component';
 import { ConfirmModalComponent } from '../../../shared/components/confirm-modal/confirm-modal.component';
 import { ToastComponent } from '../../../shared/components/toast/toast.component';
 
@@ -26,12 +27,12 @@ import { Cliente, ClienteStats } from '../../../domain/models/cliente.model';
     ClienteTableComponent,
     CreateClienteModalComponent,
     ClienteDetailModalComponent,
+    ExportClientesModalComponent,
     ConfirmModalComponent,
     ToastComponent
   ],
   template: `
     <div class="clientes-page-container">
-
       <!-- ESTADÍSTICAS -->
       <app-cliente-stats
         *ngIf="stats$ | async as st"
@@ -45,6 +46,7 @@ import { Cliente, ClienteStats } from '../../../domain/models/cliente.model';
         [(searchQuery)]="searchQuery"
         (onFilterChangeEmit)="handleFilters($event)"
         (onCreate)="openCreateModal()"
+        (onExport)="showExportModal = true"
       ></app-cliente-actions>
 
       <!-- TABLA DE CLIENTES -->
@@ -68,6 +70,14 @@ import { Cliente, ClienteStats } from '../../../domain/models/cliente.model';
         [cliente]="selectedCliente"
         (onClose)="showDetailModal = false"
       ></app-cliente-detail-modal>
+
+      <!-- MODAL DE EXPORTACIÓN -->
+      <app-export-clientes-modal
+        *ngIf="showExportModal"
+        [loading]="isExporting"
+        (onExport)="handleExport($event)"
+        (onClose)="showExportModal = false"
+      ></app-export-clientes-modal>
 
       <!-- MODAL DE CONFIRMACIÓN PARA ELIMINAR -->
       <app-confirm-modal
@@ -129,12 +139,14 @@ export class ClientesPage implements OnInit, OnDestroy {
   showCreateModal: boolean = false;
   showDetailModal: boolean = false;
   showConfirmModal: boolean = false;
+  showExportModal: boolean = false;
   selectedCliente: Cliente | null = null;
 
   // Loading States
   isLoading: boolean = false;
   isSaving: boolean = false;
   isDeleting: boolean = false;
+  isExporting: boolean = false;
 
   private destroy$ = new Subject<void>();
 
@@ -232,6 +244,30 @@ export class ClientesPage implements OnInit, OnDestroy {
         },
         error: (err) => {
           this.uiService.showError(err, 'Error al guardar cliente');
+        }
+      });
+  }
+
+  handleExport(dates: { startDate?: string, endDate?: string }) {
+    this.isExporting = true;
+    this.clientesService.exportClientes(dates.startDate, dates.endDate)
+      .pipe(finalize(() => {
+        this.isExporting = false;
+        this.cd.detectChanges();
+      }))
+      .subscribe({
+        next: (blob) => {
+          const url = window.URL.createObjectURL(blob);
+          const link = document.createElement('a');
+          link.href = url;
+          link.download = `clientes_${new Date().getTime()}.xlsx`;
+          link.click();
+          window.URL.revokeObjectURL(url);
+          this.showExportModal = false;
+          this.uiService.showToast('Reporte generado correctamente', 'success');
+        },
+        error: (err) => {
+          this.uiService.showError(err, 'Error al exportar clientes');
         }
       });
   }

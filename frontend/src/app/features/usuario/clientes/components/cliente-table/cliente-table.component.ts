@@ -1,11 +1,12 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Cliente } from '../../../../../domain/models/cliente.model';
+import { HasPermissionDirective } from '../../../../../shared/directives/has-permission.directive';
 
 @Component({
     selector: 'app-cliente-table',
     standalone: true,
-    imports: [CommonModule],
+    imports: [CommonModule, HasPermissionDirective],
     template: `
     <div class="table-container-lux">
       <div class="table-responsive">
@@ -91,14 +92,14 @@ import { Cliente } from '../../../../../domain/models/cliente.model';
                         <span>Ver Perfil</span>
                       </button>
                     </li>
-                    <li>
+                    <li *appHasPermission="'CLIENTES_EDITAR'">
                       <button class="dropdown-item" (click)="onAction.emit({type: 'edit', cliente})">
                         <i class="bi bi-pencil-square"></i>
                         <span>Editar</span>
                       </button>
                     </li>
-                    <li><hr class="dropdown-divider"></li>
-                    <li>
+                    <li *appHasPermission="'CLIENTES_ELIMINAR'"><hr class="dropdown-divider"></li>
+                    <li *appHasPermission="'CLIENTES_ELIMINAR'">
                       <button class="dropdown-item text-danger" (click)="onAction.emit({type: 'delete', cliente})">
                         <i class="bi bi-trash3"></i>
                         <span>Eliminar</span>

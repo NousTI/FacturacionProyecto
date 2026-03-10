@@ -49,19 +49,7 @@ import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } 
                 >
               </div>
               
-              <!-- Email -->
-              <div class="col-12">
-                <label class="form-label">Correo Electrónico *</label>
-                <input 
-                  type="email"
-                  class="form-control-premium"
-                  formControlName="email" 
-                  placeholder="correo@ejemplo.com"
-                >
-                <div class="invalid-feedback" *ngIf="clienteForm.get('email')?.invalid && clienteForm.get('email')?.touched">
-                  Ingrese un email válido
-                </div>
-              </div>
+
               
               <!-- Teléfono -->
               <div class="col-12">
@@ -358,7 +346,7 @@ export class ClienteModalComponent implements OnInit {
     this.clienteForm = this.fb.group({
       nombres: ['', Validators.required],
       apellidos: ['', Validators.required],
-      email: ['', [Validators.required, Validators.email]],
+
       telefono: ['', Validators.required],
       empresa_id: [null, Validators.required],
       avatar_url: [null],

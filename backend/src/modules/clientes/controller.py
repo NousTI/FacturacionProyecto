@@ -1,4 +1,6 @@
 from fastapi import Depends
+from fastapi.responses import StreamingResponse
+from datetime import datetime
 from .services import ServicioClientes
 from .schemas import ClienteCreacion, ClienteActualizacion
 from uuid import UUID
@@ -32,3 +34,12 @@ class ClienteController:
     def obtener_stats(self, usuario_actual: dict):
         stats = self.service.obtener_stats(usuario_actual)
         return success_response(stats)
+
+    def exportar_clientes(self, usuario_actual: dict, start_date: Optional[str] = None, end_date: Optional[str] = None):
+        output = self.service.exportar_clientes(usuario_actual, start_date, end_date)
+        filename = f"clientes_{datetime.now().strftime('%Y%m%d_%H%M%S')}.xlsx"
+        return StreamingResponse(
+            output,
+            media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            headers={"Content-Disposition": f"attachment; filename={filename}"}
+        )

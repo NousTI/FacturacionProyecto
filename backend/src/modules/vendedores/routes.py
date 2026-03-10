@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Request
 from typing import List
 from uuid import UUID
 from .schemas import VendedorCreacion, VendedorActualizacion, VendedorLectura, VendedorStats, ReasignacionEmpresas, VendedorPerfilActualizacion
@@ -17,11 +17,12 @@ def obtener_stats(
 
 @router.post("", response_model=RespuestaBase[VendedorLectura], status_code=201)
 def crear_vendedor(
+    request: Request,
     datos: VendedorCreacion,
     usuario: dict = Depends(obtener_usuario_actual),
     controller: VendedorController = Depends()
 ):
-    return controller.crear_vendedor(datos, usuario)
+    return controller.crear_vendedor(datos, usuario, request)
 
 @router.get("", response_model=RespuestaBase[List[VendedorLectura]])
 def listar_vendedores(

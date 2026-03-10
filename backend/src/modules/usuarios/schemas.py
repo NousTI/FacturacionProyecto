@@ -13,7 +13,7 @@ class UsuarioBase(BaseModel):
     activo: bool = True
 
 class UsuarioCreacion(BaseModel):
-    email: EmailStr
+    email: Optional[EmailStr] = None
     password: str = "password"
     empresa_id: Optional[UUID] = None   # Se inyecta automáticamente desde el usuario actual si no se provee
     empresa_rol_id: Optional[UUID] = None

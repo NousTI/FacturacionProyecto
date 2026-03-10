@@ -28,7 +28,7 @@ class VendedorBase(BaseModel):
         return v
 
 class VendedorCreacion(VendedorBase):
-    email: EmailStr
+    email: Optional[EmailStr] = None
     password: Optional[str] = Field(None, min_length=6)
 
 class VendedorActualizacion(BaseModel):

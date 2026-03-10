@@ -86,16 +86,12 @@ import { SriValidators } from '../../../../../shared/utils/sri-validators';
               </div>
 
               <!-- Email -->
-              <div class="col-md-6">
-                <label class="form-label-premium">Email Corporativo *</label>
-                <div class="input-premium-group">
+              <div class="col-md-6" *ngIf="editing">
+                <label class="form-label-premium">Email Corporativo</label>
+                <div class="input-premium-group" style="opacity: 0.8">
                   <i class="bi bi-envelope input-icon"></i>
                   <input type="email" formControlName="email" class="form-control-premium" 
-                    [class.is-invalid]="vendedorForm.get('email')?.invalid && vendedorForm.get('email')?.touched"
-                    placeholder="juan@nousti.com" [disabled]="saving">
-                </div>
-                <div class="error-feedback" *ngIf="vendedorForm.get('email')?.invalid && vendedorForm.get('email')?.touched">
-                  Correo electrónico inválido
+                    placeholder="juan@nousti.com" [readonly]="true">
                 </div>
               </div>
 
@@ -426,7 +422,7 @@ export class VendedorFormModalComponent {
       nombres: ['', [Validators.required, Validators.minLength(3)]],
       apellidos: ['', [Validators.required, Validators.minLength(3)]],
       documento_identidad: ['', [Validators.required, SriValidators.identificacionEcuador()]],
-      email: ['', [Validators.required, Validators.email]],
+      email: [''],
       telefono: ['', [Validators.required, Validators.pattern(/^[0-9]{10}$/)]],
       // Comisiones
       tipo_comision: ['PORCENTAJE', Validators.required],
@@ -524,7 +520,11 @@ export class VendedorFormModalComponent {
 
         this.onSave.emit(changedFields);
       } else {
-        this.onSave.emit(this.vendedorForm.value);
+        const formValue = { ...this.vendedorForm.value };
+        if (!formValue.email) {
+          delete formValue.email;
+        }
+        this.onSave.emit(formValue);
       }
     } else {
       this.vendedorForm.markAllAsTouched();

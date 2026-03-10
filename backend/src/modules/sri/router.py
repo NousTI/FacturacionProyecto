@@ -20,7 +20,7 @@ async def configurar_sri(
     ambiente: str = Form("PRUEBAS"),
     tipo_emision: str = Form("NORMAL"),
     empresa_id: Optional[UUID] = Form(None),
-    usuario: dict = Depends(obtener_usuario_actual),
+    usuario: dict = Depends(requerir_permiso(PermissionCodes.CONFIG_SRI)),
     servicio: ServicioSRI = Depends()
 ):
     target_id = empresa_id if usuario.get('is_superadmin') else usuario.get('empresa_id')
@@ -35,7 +35,7 @@ async def configurar_sri(
 @router.patch("/configuracion/parametros", response_model=RespuestaBase[ConfigSRILectura])
 def actualizar_parametros(
     params: ConfigSRIActualizacionParametros,
-    usuario: dict = Depends(obtener_usuario_actual),
+    usuario: dict = Depends(requerir_permiso(PermissionCodes.CONFIG_SRI)),
     servicio: ServicioSRI = Depends()
 ):
     target_id = usuario.get('empresa_id')
@@ -91,7 +91,7 @@ def consultar_factura(
 
 @router.get("/configuracion", response_model=RespuestaBase[Optional[ConfigSRILectura]])
 def obtener_config_actual(
-    usuario: dict = Depends(obtener_usuario_actual),
+    usuario: dict = Depends(requerir_permiso(PermissionCodes.CONFIG_SRI)),
     servicio: ServicioSRI = Depends()
 ):
     empresa_id = usuario.get('empresa_id')
@@ -122,7 +122,7 @@ def obtener_stats_certificados(
 @router.get("/configuracion/{empresa_id}", response_model=RespuestaBase[Optional[ConfigSRILectura]])
 def obtener_config_por_id(
     empresa_id: UUID,
-    usuario: dict = Depends(obtener_usuario_actual),
+    usuario: dict = Depends(requerir_permiso(PermissionCodes.CONFIG_SRI)),
     servicio: ServicioSRI = Depends()
 ):
     if not usuario.get('is_superadmin') and str(usuario.get('empresa_id')) != str(empresa_id):

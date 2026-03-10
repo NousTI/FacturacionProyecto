@@ -135,6 +135,20 @@ export class ClientesService extends BaseApiService {
     }
 
     /**
+     * Export clients as Excel
+     */
+    exportClientes(startDate?: string, endDate?: string): Observable<Blob> {
+        let params: any = {};
+        if (startDate) params.start_date = startDate;
+        if (endDate) params.end_date = endDate;
+
+        return this.http.get(`${this.apiUrl}/${this.ENDPOINT}/exportar`, {
+            params,
+            responseType: 'blob'
+        });
+    }
+
+    /**
      * Forces a refresh from the server
      */
     refresh(): void {

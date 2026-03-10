@@ -73,6 +73,12 @@ class ServicioProductos:
 
         payload = datos.model_dump()
         payload["empresa_id"] = empresa_id
+        
+        # Blindly assigning cost only if authorized
+        if not usuario_actual.get(AuthKeys.IS_SUPERADMIN):
+            permisos = usuario_actual.get("permisos", [])
+            if PermissionCodes.PRODUCTOS_VER_COSTOS not in permisos:
+                payload.pop("costo", None) # Don't allow setting cost if can't see it
             
         return self.repo.crear_producto(payload)
 
@@ -82,6 +88,12 @@ class ServicioProductos:
         payload = datos.model_dump(exclude_unset=True)
         if not payload:
              return existing
+
+        # Proteccion de costos en actualizacion
+        if 'costo' in payload and not usuario_actual.get(AuthKeys.IS_SUPERADMIN):
+            permisos = usuario_actual.get("permisos", [])
+            if PermissionCodes.PRODUCTOS_VER_COSTOS not in permisos:
+                payload.pop('costo')
 
         if 'codigo' in payload and payload['codigo'] != existing['codigo']:
              empresa_id = usuario_actual.get("empresa_id")

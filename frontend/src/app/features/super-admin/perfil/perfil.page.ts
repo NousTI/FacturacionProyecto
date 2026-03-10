@@ -2,7 +2,8 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { PerfilService } from './services/perfil.service';
-import { Observable } from 'rxjs';
+import { Observable, take } from 'rxjs';
+import { UiService } from '../../../shared/services/ui.service';
 
 @Component({
   selector: 'app-perfil-page',
@@ -56,49 +57,75 @@ import { Observable } from 'rxjs';
         <!-- Columna Derecha: Detalles y Seguridad -->
         <div class="col-lg-8">
           <div class="minimal-card mb-5">
-            <div class="card-header-minimal px-4">
-              <i class="bi bi-person-lines-fill me-2"></i> Datos Personales
+            <div class="card-header-minimal px-4 d-flex justify-content-between align-items-center">
+              <div><i class="bi bi-person-lines-fill me-2"></i> Datos Personales</div>
+              <button *ngIf="!isEditing" class="btn btn-sm btn-outline-primary rounded-circle" 
+                      (click)="startEdit()" 
+                      title="Editar Perfil"
+                      style="width: 32px; height: 32px; padding: 0; display: flex; align-items: center; justify-content: center;">
+                <i class="bi bi-pencil-fill"></i>
+              </button>
             </div>
+            
             <div class="card-body-minimal p-4">
-              <div class="row g-4">
-                <div class="col-md-6">
-                  <div class="info-row">
-                    <label>Nombres Completos</label>
-                    <div class="value">{{ (perfil$ | async)?.nombres }}</div>
+              <!-- Vista de solo lectura -->
+              <ng-container *ngIf="!isEditing">
+                <div class="row g-4">
+                  <div class="col-md-6">
+                    <div class="info-row">
+                      <label>Nombres Completos</label>
+                      <div class="value">{{ (perfil$ | async)?.nombres }}</div>
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <div class="info-row">
+                      <label>Apellidos Completos</label>
+                      <div class="value">{{ (perfil$ | async)?.apellidos }}</div>
+                    </div>
+                  </div>
+                  <div class="col-12">
+                    <div class="info-row">
+                      <label>Correo Electrónico de Acceso</label>
+                      <div class="value text-corporate">{{ (perfil$ | async)?.email }}</div>
+                    </div>
                   </div>
                 </div>
-                <div class="col-md-6">
-                  <div class="info-row">
-                    <label>Apellidos Completos</label>
-                    <div class="value">{{ (perfil$ | async)?.apellidos }}</div>
-                  </div>
-                </div>
-                <div class="col-12">
-                  <div class="info-row">
-                    <label>Correo Electrónico de Acceso</label>
-                    <div class="value text-corporate">{{ (perfil$ | async)?.email }}</div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
+              </ng-container>
 
-          <div class="minimal-card">
-            <div class="card-header-minimal px-4">
-              <i class="bi bi-shield-lock me-2"></i> Seguridad de la Cuenta
-            </div>
-            <div class="card-body-minimal p-4">
-              <div class="row g-4">
-                <div class="col-md-6">
-                  <div class="info-row mb-0">
-                    <label>Cambiar Contraseña</label>
-                    <p class="text-muted small mb-3">Se recomienda actualizar tu clave periódicamente para mantener la seguridad.</p>
-                    <input type="password" class="form-control-minimal mb-2" placeholder="Nueva contraseña">
-                    <input type="password" class="form-control-minimal mb-3" placeholder="Repetir nueva contraseña">
-                    <button class="btn-minimal-action">Actualizar Clave</button>
+              <!-- Vista de Edición -->
+              <ng-container *ngIf="isEditing">
+                <form (ngSubmit)="saveEdit()" #editForm="ngForm">
+                  <div class="row g-4">
+                    <div class="col-md-6">
+                      <div class="info-row">
+                        <label>Nombres Completos</label>
+                        <input type="text" class="form-control-minimal" [(ngModel)]="editData.nombres" name="nombres" required>
+                      </div>
+                    </div>
+                    <div class="col-md-6">
+                      <div class="info-row">
+                        <label>Apellidos Completos</label>
+                        <input type="text" class="form-control-minimal" [(ngModel)]="editData.apellidos" name="apellidos" required>
+                      </div>
+                    </div>
+                    <div class="col-12">
+                      <div class="info-row">
+                        <label>Correo Electrónico de Acceso</label>
+                        <div class="value text-corporate">{{ (perfil$ | async)?.email }}</div>
+                        <small class="text-muted" style="font-size: 0.75rem;">El correo electrónico no se puede cambiar por seguridad.</small>
+                      </div>
+                    </div>
                   </div>
-                </div>
-              </div>
+                  
+                  <div class="d-flex justify-content-end gap-2 mt-4 pt-3 border-top">
+                    <button type="button" class="btn btn-light rounded-3" (click)="cancelEdit()">Cancelar</button>
+                    <button type="submit" class="btn btn-primary rounded-3" [disabled]="!editForm.form.valid || isSaving">
+                      <span *ngIf="isSaving" class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                      {{ isSaving ? 'Guardando...' : 'Guardar Cambios' }}
+                    </button>
+                  </div>
+                </form>
+              </ng-container>
             </div>
           </div>
         </div>
@@ -209,12 +236,55 @@ import { Observable } from 'rxjs';
 })
 export class PerfilPage implements OnInit {
   perfil$: Observable<any>;
+  
+  isEditing = false;
+  isSaving = false;
+  
+  editData = {
+    nombres: '',
+    apellidos: ''
+  };
 
-  constructor(private perfilService: PerfilService) {
+  constructor(
+    private perfilService: PerfilService,
+    private uiService: UiService
+  ) {
     this.perfil$ = this.perfilService.getPerfil();
   }
 
   ngOnInit() {
     this.perfilService.loadPerfil();
+  }
+
+  startEdit() {
+    // Tomamos el snapshot actual para pasarlo al formulario
+    this.perfil$.pipe(take(1)).subscribe(perfil => {
+      if (perfil) {
+        this.editData.nombres = perfil.nombres;
+        this.editData.apellidos = perfil.apellidos;
+        this.isEditing = true;
+      }
+    });
+  }
+
+  cancelEdit() {
+    this.isEditing = false;
+  }
+
+  saveEdit() {
+    this.isSaving = true;
+    this.perfilService.updatePerfil(this.editData).subscribe({
+      next: () => {
+        this.uiService.showToast('Perfil actualizado correctamente', 'success');
+        this.isSaving = false;
+        this.isEditing = false;
+        // Recargar los datos actualizados
+        this.perfilService.loadPerfil();
+      },
+      error: (err) => {
+        this.isSaving = false;
+        this.uiService.showError(err, 'Error al actualizar perfil');
+      }
+    });
   }
 }

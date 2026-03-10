@@ -19,6 +19,27 @@ class RepositorioClientes:
             cur.execute(query, (str(empresa_id),))
             return [dict(row) for row in cur.fetchall()]
 
+    def listar_para_exportar(self, empresa_id: UUID, start_date: Optional[str] = None, end_date: Optional[str] = None) -> List[dict]:
+        """Obtiene clientes filtrados por fecha para exportación"""
+        query = "SELECT * FROM sistema_facturacion.clientes WHERE empresa_id = %s"
+        params = [str(empresa_id)]
+
+        if start_date:
+            query += " AND created_at >= %s"
+            params.append(start_date)
+        if end_date:
+            # Add 23:59:59 if it's just a date to include the whole day
+            if " " not in end_date:
+                end_date += " 23:59:59"
+            query += " AND created_at <= %s"
+            params.append(end_date)
+
+        query += " ORDER BY created_at DESC"
+
+        with self.db.cursor() as cur:
+            cur.execute(query, tuple(params))
+            return [dict(row) for row in cur.fetchall()]
+
     def obtener_por_id(self, id: UUID, empresa_id: Optional[UUID] = None) -> Optional[dict]:
         """Obtiene un cliente por ID, opcionalmente verifica que pertenezca a la empresa"""
         query = "SELECT * FROM sistema_facturacion.clientes WHERE id = %s"

@@ -55,16 +55,16 @@ import { AuthService } from '../../../../../core/auth/auth.service';
             <div class="form-section-final">
               <h3 class="section-header-final">Acceso y Contacto</h3>
               <div class="row g-3">
-                <div class="col-md-12">
-                  <label class="label-final">Correo Electrónico *</label>
+                <div class="col-md-12" *ngIf="usuario">
+                  <label class="label-final">Correo Electrónico</label>
                   <input 
                     type="email" 
                     formControlName="correo" 
                     class="input-final" 
                     placeholder="juan.perez@empresa.com"
-                    [readonly]="!!usuario"
+                    [readonly]="true"
                   >
-                  <small class="text-muted" *ngIf="usuario">El correo no se puede cambiar por seguridad.</small>
+                  <small class="text-muted">El correo no se puede cambiar por seguridad.</small>
                 </div>
                 <div class="col-md-6">
                   <label class="label-final">Teléfono</label>
@@ -219,7 +219,7 @@ export class UsuarioFormModalComponent implements OnInit, OnDestroy {
     this.userForm = this.fb.group({
       nombre: ['', [Validators.required]],
       apellido: ['', [Validators.required]],
-      correo: ['', [Validators.required, Validators.email]],
+      correo: [''],
       telefono: [''],
       empresa_rol_id: ['', [Validators.required]],
       activo: [true]
@@ -277,9 +277,15 @@ export class UsuarioFormModalComponent implements OnInit, OnDestroy {
       const formValue: any = {
         nombres: raw.nombre,
         apellidos: raw.apellido,
-        email: raw.correo,
         telefono: raw.telefono,
       };
+      
+      if (!this.usuario) {
+        // If creating, do not send email as backend generates it
+        delete formValue.email;
+      } else {
+        formValue.email = raw.correo;
+      }
       if (this.usuario) {
         // Editing: include rol and activo only if visible (non-self)
         if (!this.isSelf()) {

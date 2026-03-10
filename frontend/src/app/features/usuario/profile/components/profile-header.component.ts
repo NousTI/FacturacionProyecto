@@ -1,11 +1,12 @@
-import { Component, Input, Output, EventEmitter } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { PerfilUsuario } from '../../../../domain/models/perfil.model';
 
 @Component({
     selector: 'app-profile-header',
     standalone: true,
-    imports: [CommonModule],
+    imports: [CommonModule, FormsModule],
     template: `
     <div class="header-card card-premium overflow-hidden mb-4">
       <div class="row g-0 align-items-center">
@@ -22,12 +23,49 @@ import { PerfilUsuario } from '../../../../domain/models/perfil.model';
         <!-- Name & Info Section -->
         <div class="col-md px-4 py-4 py-md-0 border-start-md">
           <div class="d-flex justify-content-between align-items-start">
-            <div>
-                <h1 class="user-name">{{ perfil.nombres }} {{ perfil.apellidos }}</h1>
+            <div *ngIf="!isEditing" style="flex: 1;">
+                <h1 class="user-name d-flex align-items-center mb-1">
+                  {{ perfil.nombres }} {{ perfil.apellidos }}
+                  <button class="btn btn-sm btn-outline-primary ms-3 rounded-circle d-flex align-items-center justify-content-center" 
+                          (click)="startEdit()" 
+                          title="Editar Perfil"
+                          style="width: 32px; height: 32px; padding: 0;">
+                    <i class="bi bi-pencil-fill" style="font-size: 0.85rem;"></i>
+                  </button>
+                </h1>
                 <div class="d-flex align-items-center gap-3 mt-1">
-                    <span class="role-badge">{{ perfil.rol_nombre }}</span>
-                    <span class="email-text"><i class="bi bi-envelope me-1"></i> {{ perfil.email }}</span>
+                    <span class="role-badge" title="Rol">{{ perfil.rol_nombre }}</span>
+                    <span class="email-text" title="Correo de acceso"><i class="bi bi-envelope me-1"></i> {{ perfil.email }}</span>
+                    <span class="email-text" title="Teléfono"><i class="bi bi-telephone ms-2 me-1"></i> {{ perfil.telefono || 'Sin registrar' }}</span>
                 </div>
+            </div>
+
+            <div *ngIf="isEditing" class="w-100 me-3" style="max-width: 500px;">
+               <h4 class="fw-bold mb-3 header-font" style="color: #161d35;">Mis Datos Personales</h4>
+               <form (ngSubmit)="saveEdit()" #editForm="ngForm">
+                 <div class="row g-3">
+                   <div class="col-sm-6">
+                     <label class="form-label" style="font-size: 0.8rem; font-weight: 700;">Nombres</label>
+                     <input type="text" class="form-control" [(ngModel)]="editData.nombres" name="nombres" required>
+                   </div>
+                   <div class="col-sm-6">
+                     <label class="form-label" style="font-size: 0.8rem; font-weight: 700;">Apellidos</label>
+                     <input type="text" class="form-control" [(ngModel)]="editData.apellidos" name="apellidos" required>
+                   </div>
+                   <div class="col-12">
+                     <label class="form-label" style="font-size: 0.8rem; font-weight: 700;">Teléfono</label>
+                     <input type="text" class="form-control" [(ngModel)]="editData.telefono" name="telefono" pattern="^([0-9]{10})?$">
+                   </div>
+                 </div>
+
+                 <div class="mt-3 d-flex gap-2">
+                   <button type="submit" class="btn btn-primary px-4 py-2" style="border-radius: 12px; font-weight: 700; font-size: 0.85rem;" [disabled]="!editForm.form.valid || isSaving">
+                     <span *ngIf="isSaving" class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                     {{ isSaving ? 'Guardando...' : 'Guardar' }}
+                   </button>
+                   <button type="button" class="btn btn-light px-4 py-2" style="border-radius: 12px; font-weight: 700; font-size: 0.85rem;" [disabled]="isSaving" (click)="cancelEdit()">Cancelar</button>
+                 </div>
+               </form>
             </div>
             <div class="d-flex gap-2">
                 <button (click)="onRefresh.emit()" class="btn-action-header" [class.loading]="loading">
@@ -89,13 +127,49 @@ import { PerfilUsuario } from '../../../../domain/models/perfil.model';
     }
   `]
 })
-export class ProfileHeaderComponent {
+export class ProfileHeaderComponent implements OnChanges {
     @Input() perfil!: PerfilUsuario;
     @Input() loading: boolean = false;
     @Output() onRefresh = new EventEmitter<void>();
     @Output() onLogout = new EventEmitter<void>();
+    @Output() onUpdate = new EventEmitter<{nombres: string, apellidos: string, telefono: string}>();
+
+    @Input() isSaving: boolean = false;
+    
+    isEditing: boolean = false;
+    editData = {
+        nombres: '',
+        apellidos: '',
+        telefono: ''
+    };
+
+    ngOnChanges(changes: SimpleChanges) {
+        if (changes['isSaving']) {
+            // Si pasamos de estar guardando (true) a no guardando (false), cerramos el editor
+            if (changes['isSaving'].previousValue === true && changes['isSaving'].currentValue === false) {
+                this.isEditing = false;
+            }
+        }
+    }
 
     getInitials(perfil: PerfilUsuario): string {
         return (perfil.nombres?.charAt(0) || '') + (perfil.apellidos?.charAt(0) || '');
+    }
+
+    startEdit() {
+        this.editData = {
+            nombres: this.perfil.nombres || '',
+            apellidos: this.perfil.apellidos || '',
+            telefono: this.perfil.telefono || ''
+        };
+        this.isEditing = true;
+    }
+
+    cancelEdit() {
+        this.isEditing = false;
+    }
+
+    saveEdit() {
+        this.onUpdate.emit(this.editData);
     }
 }

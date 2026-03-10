@@ -1,11 +1,12 @@
 import { Component, EventEmitter, Output, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { HasPermissionDirective } from '../../../../../shared/directives/has-permission.directive';
 
 @Component({
     selector: 'app-cliente-actions',
     standalone: true,
-    imports: [CommonModule, FormsModule],
+    imports: [CommonModule, FormsModule, HasPermissionDirective],
     template: `
     <div class="actions-box-lux">
       <div class="row align-items-center g-3">
@@ -41,6 +42,16 @@ import { FormsModule } from '@angular/forms';
             </div>
 
             <button 
+              *appHasPermission="'CLIENTES_EXPORTAR'"
+              (click)="onExport.emit()"
+              class="btn-export-lux"
+            >
+              <i class="bi bi-download me-2"></i>
+              <span>Exportar</span>
+            </button>
+
+            <button 
+              *appHasPermission="'CLIENTES_CREAR'"
               (click)="onCreate.emit()"
               class="btn-create-lux"
             >
@@ -113,6 +124,26 @@ import { FormsModule } from '@angular/forms';
       border-color: #cbd5e1;
     }
 
+    .btn-export-lux {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      padding: 0.7rem 1.25rem;
+      border-radius: 14px;
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: #334155;
+      display: flex;
+      align-items: center;
+      transition: all 0.2s;
+    }
+
+    .btn-export-lux:hover {
+      background: #f1f5f9;
+      color: #1e293b;
+      border-color: #cbd5e1;
+      transform: translateY(-2px);
+    }
+
     .btn-create-lux {
       background: #161d35;
       color: white;
@@ -162,6 +193,7 @@ export class ClienteActionsComponent {
     @Output() searchQueryChange = new EventEmitter<string>();
     @Output() onFilterChangeEmit = new EventEmitter<any>();
     @Output() onCreate = new EventEmitter<void>();
+    @Output() onExport = new EventEmitter<void>();
 
     filters = {
         estado: 'ALL'

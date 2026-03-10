@@ -64,7 +64,8 @@ interface Rol {
                   class="form-control-premium"
                   [(ngModel)]="formData.email" 
                   name="email" 
-                  required
+                  readonly
+                  disabled
                   placeholder="correo@ejemplo.com"
                 >
               </div>
