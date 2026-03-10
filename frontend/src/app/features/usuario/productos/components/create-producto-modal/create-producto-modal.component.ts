@@ -52,7 +52,7 @@ import { PermissionsService } from '../../../../../core/auth/permissions.service
                 <div class="col-md-6 d-flex align-items-center pt-3">
                   <div class="form-check form-switch custom-switch">
                     <input class="form-check-input" type="checkbox" [(ngModel)]="formData.activo" name="activo" id="activoCheck">
-                    <label class="form-check-label dashboard-label ms-2 mb-0" for="activoCheck">Estado del Item</label>
+                    <label class="form-check-label dashboard-label ms-2 mb-0" for="activoCheck">Activo</label>
                   </div>
                 </div>
               </div>
@@ -100,7 +100,7 @@ import { PermissionsService } from '../../../../../core/auth/permissions.service
               <div class="d-flex align-items-center mb-4 gap-3 bg-light-soft p-3 rounded-4">
                  <div class="form-check form-switch custom-switch">
                     <input class="form-check-input" type="checkbox" [(ngModel)]="formData.maneja_inventario" name="maneja_inventario" id="inventarioCheck">
-                    <label class="dashboard-label ms-1 mb-0" for="inventarioCheck">Habilitar seguimiento de stock</label>
+                    <label class="dashboard-label ms-1 mb-0" for="inventarioCheck">Meneja inventario</label>
                  </div>
               </div>
               

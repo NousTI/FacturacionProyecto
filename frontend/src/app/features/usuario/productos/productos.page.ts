@@ -123,7 +123,7 @@ import { Producto, ProductoStats } from '../../../domain/models/producto.model';
       background: white;
       border: 1px solid #f1f5f9;
       border-radius: 20px;
-      overflow: hidden;
+      overflow: visible;
     }
 
     .spinning i { animation: spin 0.8s linear infinite; }

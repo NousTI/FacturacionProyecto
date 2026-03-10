@@ -128,7 +128,11 @@ import { HasPermissionDirective } from '../../../../../shared/directives/has-per
       background: white;
       border: 1px solid #f1f5f9;
       border-radius: 20px;
-      overflow: hidden;
+      overflow: visible;
+    }
+
+    .table-responsive {
+      overflow: visible !important;
     }
 
     .table thead th {
@@ -269,6 +273,7 @@ import { HasPermissionDirective } from '../../../../../shared/directives/has-per
       min-width: 180px;
       border: 1px solid #f1f5f9;
       box-shadow: 0 15px 35px rgba(22, 29, 53, 0.1);
+      z-index: 9999 !important;
     }
 
     .dropdown-item {

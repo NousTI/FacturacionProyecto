@@ -57,21 +57,29 @@ class ServicioPuntosEmision:
             
         return punto
 
-    def listar_puntos(self, usuario_actual: dict, establecimiento_id: Optional[UUID] = None, limit: int = 100, offset: int = 0):
+    def listar_puntos(
+        self, 
+        usuario_actual: dict, 
+        establecimiento_id: Optional[UUID] = None, 
+        limit: int = 100, 
+        offset: int = 0,
+        solo_activos: bool = False
+    ):
         if establecimiento_id:
             # Si especifica establecimiento_id, verificar que le pertenece y listar sus puntos
             self.establecimiento_service.obtener_establecimiento(establecimiento_id, usuario_actual)
-            return self.repo.listar_puntos(establecimiento_id, limit, offset)
+            return self.repo.listar_puntos(establecimiento_id, limit, offset, solo_activos)
         else:
             # Si no especifica, obtener todos sus establecimientos y luego todos sus puntos
-            establecimientos = self.establecimiento_service.listar_establecimientos(usuario_actual)
+            # Para puntos de emisión, si pedimos solo_activos, probablemente queremos solo de establecimientos activos también
+            establecimientos = self.establecimiento_service.listar_establecimientos(usuario_actual, solo_activos=solo_activos)
             if not establecimientos:
                 return []
             
             # Listar todos los puntos de todos los establecimientos del usuario
             todos_puntos = []
             for est in establecimientos:
-                puntos = self.repo.listar_puntos(est['id'], limit=10000, offset=0)  # Sin límite de página
+                puntos = self.repo.listar_puntos(est['id'], limit=10000, offset=0, solo_activos=solo_activos)  # Sin límite de página
                 todos_puntos.extend(puntos)
             
             return todos_puntos[:limit] if limit else todos_puntos

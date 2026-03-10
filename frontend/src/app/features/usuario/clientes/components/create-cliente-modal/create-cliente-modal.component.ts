@@ -108,7 +108,9 @@ import { Cliente } from '../../../../../domain/models/cliente.model';
         <!-- Footer -->
         <div class="modal-lux-footer">
           <div class="d-flex align-items-center gap-3 w-100">
-            <div class="form-check form-switch lux-switch mb-0">
+            <!-- Poner el switch dentro de un div que esté vinculado al form si es necesario, 
+                 pero mover el cierre del form es más limpio para que todo sea parte del mismo grupo -->
+            <div class="form-check form-switch lux-switch mb-0" [formGroup]="clienteForm">
               <input class="form-check-input" type="checkbox" formControlName="activo" id="activoCheck">
               <label class="form-check-label ms-2" for="activoCheck">Cliente Habilitado</label>
             </div>
@@ -338,7 +340,6 @@ export class CreateClienteModalComponent implements OnInit, OnDestroy {
             direccion: [''],
             ciudad: [''],
             provincia: [''],
-            pais: ['Ecuador'],
             dias_credito: [0, [Validators.min(0)]],
             limite_credito: [0.0, [Validators.min(0)]],
             activo: [true]
@@ -358,7 +359,8 @@ export class CreateClienteModalComponent implements OnInit, OnDestroy {
 
     submit() {
         if (this.clienteForm.valid) {
-            this.onSave.emit(this.clienteForm.value);
+            const { pais, ...data } = this.clienteForm.value;
+            this.onSave.emit(data);
         }
     }
 

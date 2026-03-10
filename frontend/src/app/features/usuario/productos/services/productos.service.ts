@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, BehaviorSubject, tap, map } from 'rxjs';
+import { Observable, BehaviorSubject, tap, map, filter } from 'rxjs';
 import { BaseApiService } from '../../../../core/api/base-api.service';
 import { Producto, ProductoStats } from '../../../../domain/models/producto.model';
 import { ApiResponse } from '../../../../core/api/api-response.model';
@@ -12,7 +12,7 @@ export class ProductosService extends BaseApiService {
     private readonly ENDPOINT = 'productos';
 
     // Caching State
-    private _productos$ = new BehaviorSubject<Producto[]>([]);
+    private _productos$ = new BehaviorSubject<Producto[] | null>(null);
     private _stats$ = new BehaviorSubject<ProductoStats | null>(null);
     private _loaded = false;
 
@@ -21,7 +21,12 @@ export class ProductosService extends BaseApiService {
     }
 
     // Getters for the state
-    get productos$() { return this._productos$.asObservable(); }
+    get productos$() { 
+        return this._productos$.pipe(
+            filter(data => data !== null),
+            map(data => data as Producto[])
+        ); 
+    }
     get stats$() { return this._stats$.asObservable(); }
 
     /**
@@ -56,14 +61,21 @@ export class ProductosService extends BaseApiService {
         return this.productos$;
     }
 
+    getActivos(): Observable<Producto[]> {
+        return this.getProductos().pipe(
+            filter(data => data !== null),
+            map((list: Producto[]) => list.filter((p: Producto) => p.activo))
+        );
+    }
+
     createProducto(producto: Partial<Producto>): Observable<Producto> {
         return this.post<ApiResponse<Producto>>(this.ENDPOINT, producto).pipe(
             map(resp => resp.detalles),
             tap(newProd => {
                 if (newProd) {
-                    const current = this._productos$.value;
+                    const current = this._productos$.value || [];
                     this._productos$.next([newProd, ...current]);
-                    this._calculateStatsLocally(this._productos$.value);
+                    this._calculateStatsLocally(this._productos$.value || []);
                 }
             })
         );
@@ -74,7 +86,7 @@ export class ProductosService extends BaseApiService {
             map(resp => resp.detalles),
             tap(updatedProd => {
                 if (updatedProd) {
-                    const current = this._productos$.value;
+                    const current = this._productos$.value || [];
                     const index = current.findIndex(p => p.id === id);
                     if (index !== -1) {
                         current[index] = { ...current[index], ...updatedProd };
@@ -89,9 +101,9 @@ export class ProductosService extends BaseApiService {
     deleteProducto(id: string): Observable<ApiResponse<null>> {
         return this.delete<ApiResponse<null>>(`${this.ENDPOINT}/${id}`).pipe(
             tap(() => {
-                const current = this._productos$.value;
+                const current = this._productos$.value || [];
                 this._productos$.next(current.filter(p => p.id !== id));
-                this._calculateStatsLocally(this._productos$.value);
+                this._calculateStatsLocally(this._productos$.value || []);
             })
         );
     }

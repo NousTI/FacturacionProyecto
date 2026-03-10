@@ -24,13 +24,17 @@ export class PuntosEmisionApiService extends BaseApiService {
      * @param offset - Número de elementos a saltar (default: 0)
      * @param establecimiento_id - Filtrar por establecimiento (opcional)
      */
-    listar(limit: number = 100, offset: number = 0, establecimiento_id?: string): Observable<PuntoEmision[]> {
+    listar(limit: number = 100, offset: number = 0, establecimiento_id?: string, solo_activos: boolean = false): Observable<PuntoEmision[]> {
         let params = new HttpParams()
             .set('limit', limit.toString())
             .set('offset', offset.toString());
 
         if (establecimiento_id) {
             params = params.set('establecimiento_id', establecimiento_id);
+        }
+
+        if (solo_activos) {
+            params = params.set('solo_activos', 'true');
         }
 
         return this.get<ApiResponse<PuntoEmision[]>>(ApiConstants.PUNTOS_EMISION, params)

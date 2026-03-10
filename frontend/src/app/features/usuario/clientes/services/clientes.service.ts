@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, BehaviorSubject, tap } from 'rxjs';
+import { Observable, BehaviorSubject, tap, map, filter } from 'rxjs';
 import { BaseApiService } from '../../../../core/api/base-api.service';
 import { Cliente, ClienteCreate, ClienteUpdate, ClienteStats } from '../../../../domain/models/cliente.model';
 
@@ -13,7 +13,7 @@ export class ClientesService extends BaseApiService {
     private readonly ENDPOINT = 'clientes';
 
     // Caching State
-    private _clientes$ = new BehaviorSubject<Cliente[]>([]);
+    private _clientes$ = new BehaviorSubject<Cliente[] | null>(null);
     private _stats$ = new BehaviorSubject<ClienteStats | null>(null);
     private _loaded = false;
 
@@ -22,7 +22,12 @@ export class ClientesService extends BaseApiService {
     }
 
     // Getters for the state
-    get clientes$() { return this._clientes$.asObservable(); }
+    get clientes$() { 
+        return this._clientes$.pipe(
+            filter(data => data !== null),
+            map(data => data as Cliente[])
+        ); 
+    }
     get stats$() { return this._stats$.asObservable(); }
 
     /**
@@ -55,6 +60,13 @@ export class ClientesService extends BaseApiService {
         return this.clientes$;
     }
 
+    getActivos(): Observable<Cliente[]> {
+        return this.getClientes().pipe(
+            filter(data => data !== null),
+            map((list: Cliente[]) => list.filter((c: Cliente) => c.activo))
+        );
+    }
+
     getStats(): Observable<ClienteStats | null> {
         if (!this._loaded) {
             this.loadInitialData();
@@ -66,7 +78,7 @@ export class ClientesService extends BaseApiService {
         return this.post<ApiResponse<Cliente>>(this.ENDPOINT, cliente).pipe(
             tap(resp => {
                 if (resp && resp.detalles) {
-                    const current = this._clientes$.value;
+                    const current = this._clientes$.value || [];
                     this._clientes$.next([resp.detalles, ...current]);
                     this._updateStatsLocally('create', resp.detalles);
                 }
@@ -78,7 +90,7 @@ export class ClientesService extends BaseApiService {
         return this.put<ApiResponse<Cliente>>(`${this.ENDPOINT}/${id}`, cliente).pipe(
             tap(resp => {
                 if (resp && resp.detalles) {
-                    const current = this._clientes$.value;
+                    const current = this._clientes$.value || [];
                     const index = current.findIndex(c => c.id === id);
                     if (index !== -1) {
                         const oldCliente = current[index];
@@ -94,7 +106,7 @@ export class ClientesService extends BaseApiService {
     deleteCliente(id: string): Observable<ApiResponse<null>> {
         return this.delete<ApiResponse<null>>(`${this.ENDPOINT}/${id}`).pipe(
             tap(() => {
-                const current = this._clientes$.value;
+                const current = this._clientes$.value || [];
                 const clienteToDelete = current.find(c => c.id === id);
                 if (clienteToDelete) {
                     this._clientes$.next(current.filter(c => c.id !== id));

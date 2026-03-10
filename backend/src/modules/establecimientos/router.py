@@ -25,10 +25,11 @@ def listar_establecimientos(
     limit: int = Query(100, ge=1),
     offset: int = Query(0, ge=0),
     empresa_id: Optional[UUID] = Query(None),
+    solo_activos: bool = Query(False),
     usuario: dict = Depends(requerir_permiso(PermissionCodes.ESTABLECIMIENTO_VER)),
     servicio: ServicioEstablecimientos = Depends()
 ):
-    establecimientos = servicio.listar_establecimientos(usuario, empresa_id, limit, offset)
+    establecimientos = servicio.listar_establecimientos(usuario, empresa_id, limit, offset, solo_activos)
     return success_response(establecimientos, "Establecimientos listados correctamente")
 
 @router.get("/stats", response_model=RespuestaBase[dict])

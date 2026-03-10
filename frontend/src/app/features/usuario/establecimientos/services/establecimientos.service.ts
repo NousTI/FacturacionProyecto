@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Observable, of, BehaviorSubject } from 'rxjs';
-import { tap, catchError, shareReplay, switchMap } from 'rxjs/operators';
+import { tap, catchError, shareReplay, switchMap, map, filter } from 'rxjs/operators';
 import { EstablecimientosApiService } from '../../../../core/api/establecimientos-api.service';
 import { UiService } from '../../../../shared/services/ui.service';
 import {
@@ -20,7 +20,7 @@ interface EstablecimientoStats {
 })
 export class EstablecimientosService {
   // Cache con datos
-  private establecimientosCache$ = new BehaviorSubject<Establecimiento[]>([]);
+  private establecimientosCache$ = new BehaviorSubject<Establecimiento[] | null>(null);
   private statsCache$ = new BehaviorSubject<EstablecimientoStats | null>(null);
 
   // Trigger para refresh
@@ -56,7 +56,20 @@ export class EstablecimientosService {
    * Obtiene el listado completo de establecimientos (desde caché)
    */
   getEstablecimientos(): Observable<Establecimiento[]> {
-    return this.establecimientosCache$.asObservable();
+    return this.establecimientosCache$.pipe(
+      filter(data => data !== null),
+      map(data => data as Establecimiento[])
+    );
+  }
+
+  /**
+   * Obtiene solo los establecimientos activos (desde caché)
+   */
+  getActivos(): Observable<Establecimiento[]> {
+    return this.establecimientosCache$.pipe(
+      filter(data => data !== null),
+      map(list => (list as Establecimiento[]).filter((e: Establecimiento) => e.activo))
+    );
   }
 
   /**
@@ -67,7 +80,7 @@ export class EstablecimientosService {
       tap((response) => {
         this.uiService.showToast(`✅ Establecimiento creado`, 'success', `El establecimiento "${datos.nombre}" ha sido registrado exitosamente.`);
         // Actualizar caché solo con el nuevo elemento
-        const current = this.establecimientosCache$.value;
+        const current = this.establecimientosCache$.value || [];
         this.establecimientosCache$.next([...current, response as any]);
         // Actualizar stats
         this.actualizarStats();
@@ -88,7 +101,7 @@ export class EstablecimientosService {
       tap((response) => {
         this.uiService.showToast('✅ Cambios guardados', 'success', 'Los datos del establecimiento se actualizaron correctamente.');
         // Actualizar el elemento en caché sin recargar todo
-        const current = this.establecimientosCache$.value;
+        const current = this.establecimientosCache$.value || [];
         const index = current.findIndex(e => e.id === id);
         if (index !== -1) {
           const updated = [...current];
@@ -112,7 +125,7 @@ export class EstablecimientosService {
       tap(() => {
         this.uiService.showToast('✅ Eliminado correctamente', 'success', `El establecimiento "${nombre}" ha sido removido del sistema.`);
         // Remover del caché sin recargar todo
-        const current = this.establecimientosCache$.value;
+        const current = this.establecimientosCache$.value || [];
         const filtered = current.filter(e => e.id !== id);
         this.establecimientosCache$.next(filtered);
         // Actualizar stats
@@ -137,7 +150,7 @@ export class EstablecimientosService {
    * Actualiza las estadísticas internamente
    */
   private actualizarStats(): void {
-    const establecimientos = this.establecimientosCache$.value;
+    const establecimientos = this.establecimientosCache$.value || [];
     const stats: EstablecimientoStats = {
       total: establecimientos.length,
       activos: establecimientos.filter(e => e.activo).length,

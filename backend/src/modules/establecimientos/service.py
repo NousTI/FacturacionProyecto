@@ -73,7 +73,7 @@ class ServicioEstablecimientos:
             
         return establecimiento
 
-    def listar_establecimientos(self, usuario_actual: dict, empresa_id: Optional[UUID] = None, limit: int = 100, offset: int = 0):
+    def listar_establecimientos(self, usuario_actual: dict, empresa_id: Optional[UUID] = None, limit: int = 100, offset: int = 0, solo_activos: bool = False):
         is_superadmin = usuario_actual.get(AuthKeys.IS_SUPERADMIN, False)
         target_empresa_id = None
         
@@ -82,7 +82,7 @@ class ServicioEstablecimientos:
         else:
              target_empresa_id = usuario_actual.get("empresa_id")
 
-        return self.repo.listar_establecimientos(target_empresa_id, limit, offset)
+        return self.repo.listar_establecimientos(target_empresa_id, limit, offset, solo_activos)
 
     def actualizar_establecimiento(self, establecimiento_id: UUID, datos: EstablecimientoActualizacion, usuario_actual: dict):
         self.obtener_establecimiento(establecimiento_id, usuario_actual)

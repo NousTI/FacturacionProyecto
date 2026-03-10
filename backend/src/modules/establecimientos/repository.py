@@ -46,7 +46,7 @@ class RepositorioEstablecimientos:
             row = cur.fetchone()
             return dict(row) if row else None
 
-    def listar_establecimientos(self, empresa_id: Optional[UUID] = None, limit: int = 100, offset: int = 0) -> List[dict]:
+    def listar_establecimientos(self, empresa_id: Optional[UUID] = None, limit: int = 100, offset: int = 0, solo_activos: bool = False) -> List[dict]:
         query = """
             SELECT 
                 e.*,
@@ -56,10 +56,17 @@ class RepositorioEstablecimientos:
             LEFT JOIN sistema_facturacion.puntos_emision pe ON e.id = pe.establecimiento_id
         """
         params = []
+        where_clauses = []
         
         if empresa_id:
-            query += " WHERE e.empresa_id = %s"
+            where_clauses.append("e.empresa_id = %s")
             params.append(str(empresa_id))
+            
+        if solo_activos:
+            where_clauses.append("e.activo = TRUE")
+
+        if where_clauses:
+            query += " WHERE " + " AND ".join(where_clauses)
             
         query += " GROUP BY e.id ORDER BY e.codigo ASC LIMIT %s OFFSET %s"
         params.extend([limit, offset])

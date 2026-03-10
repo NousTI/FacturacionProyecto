@@ -571,16 +571,16 @@ export class CreateFacturaModalComponent implements OnInit {
     this.puntosEmisionService.refresh();
 
     const waitForData = (obs: Observable<any[]>, name: string) => obs.pipe(
-      filter((d: any) => d && d.length > 0),
+      filter((d: any) => d !== null && d !== undefined),
       take(1),
       tap((d: any[]) => console.log(`${name} cargados:`, d.length))
     );
 
     const reqs = {
-      clientes: waitForData(this.clientesService.getClientes(), 'Clientes'),
-      productos: waitForData(this.productosService.getProductos(), 'Productos'),
-      establecimientos: waitForData(this.establecimientosService.getEstablecimientos(), 'Establecimientos'),
-      puntos: waitForData(this.puntosEmisionService.getPuntosEmision(), 'Puntos Emision'),
+      clientes: waitForData(this.clientesService.getActivos(), 'Clientes'),
+      productos: waitForData(this.productosService.getActivos(), 'Productos'),
+      establecimientos: waitForData(this.establecimientosService.getActivos(), 'Establecimientos'),
+      puntos: waitForData(this.puntosEmisionService.getActivos(), 'Puntos Emision'),
       sri: this.sriConfigService.obtenerConfiguracion().pipe(take(1))
     };
 

@@ -126,7 +126,7 @@ import { PermissionsService } from '../../../../../core/auth/permissions.service
       border-bottom: 2px solid #f8fafc;
       position: sticky;
       top: 0;
-      z-index: 10;
+      z-index: 1;
     }
     
     .row-lux { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); border-bottom: 1px solid #f8fafc; cursor: default; }
@@ -184,14 +184,19 @@ import { PermissionsService } from '../../../../../core/auth/permissions.service
     }
     .btn-trigger-lux:hover { background: #f1f5f9; color: #161d35; }
 
-    .dropdown-menu { z-index: 100000 !important; min-width: 200px; border: 1px solid #e2e8f0 !important; }
+    .dropdown-menu { 
+      z-index: 9999 !important; 
+      min-width: 200px; 
+      border: 1px solid #e2e8f0 !important;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.12) !important;
+    }
     .dropdown-item {
       display: flex; align-items: center; font-size: 0.825rem;
       font-weight: 700; color: #475569; border-radius: 10px;
-      margin-bottom: 2px; transition: all 0.2s;
+      margin-bottom: 2px; transition: background 0.2s, color 0.2s;
       cursor: pointer;
     }
-    .dropdown-item:hover { background: #f8fafc; color: #161d35; transform: translateX(4px); }
+    .dropdown-item:hover { background: #f8fafc; color: #161d35; }
     
     .icon-item {
       width: 28px; height: 28px; border-radius: 8px;

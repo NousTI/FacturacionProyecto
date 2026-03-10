@@ -194,7 +194,7 @@ import { HasPermissionDirective } from '../../../../../shared/directives/has-per
       background: white;
       border: 1px solid #f1f5f9;
       border-radius: 24px;
-      overflow: hidden;
+      overflow: visible;
       margin-top: 1rem;
     }
 
@@ -324,7 +324,7 @@ import { HasPermissionDirective } from '../../../../../shared/directives/has-per
     }
 
     .dropdown-menu {
-      z-index: 1000;
+      z-index: 9999 !important;
       min-width: 200px;
       border: 1px solid #e2e8f0 !important;
       box-shadow: 0 10px 30px rgba(0,0,0,0.08) !important;

@@ -24,13 +24,17 @@ export class EstablecimientosApiService extends BaseApiService {
      * @param offset - Número de elementos a saltar (default: 0)
      * @param empresa_id - Filtrar por empresa (opcional)
      */
-    listar(limit: number = 100, offset: number = 0, empresa_id?: string): Observable<Establecimiento[]> {
+    listar(limit: number = 100, offset: number = 0, empresa_id?: string, solo_activos: boolean = false): Observable<Establecimiento[]> {
         let params = new HttpParams()
             .set('limit', limit.toString())
             .set('offset', offset.toString());
 
         if (empresa_id) {
             params = params.set('empresa_id', empresa_id);
+        }
+
+        if (solo_activos) {
+            params = params.set('solo_activos', 'true');
         }
 
         return this.get<ApiResponse<Establecimiento[]>>(ApiConstants.ESTABLECIMIENTOS, params)

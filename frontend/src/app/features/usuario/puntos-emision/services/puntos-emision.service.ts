@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Observable, of, BehaviorSubject } from 'rxjs';
-import { tap, catchError, shareReplay, switchMap } from 'rxjs/operators';
+import { tap, catchError, shareReplay, switchMap, map, filter } from 'rxjs/operators';
 import { PuntosEmisionApiService } from '../../../../core/api/puntos-emision-api.service';
 import { UiService } from '../../../../shared/services/ui.service';
 import {
@@ -20,7 +20,7 @@ interface PuntosEmisionStats {
 })
 export class PuntosEmisionService {
   // Cache con datos
-  private puntosEmisionCache$ = new BehaviorSubject<PuntoEmision[]>([]);
+  private puntosEmisionCache$ = new BehaviorSubject<PuntoEmision[] | null>(null);
   private statsCache$ = new BehaviorSubject<PuntosEmisionStats | null>(null);
 
   // Trigger para refresh
@@ -53,7 +53,20 @@ export class PuntosEmisionService {
    * Obtiene el listado completo de puntos emisión (desde caché)
    */
   getPuntosEmision(): Observable<PuntoEmision[]> {
-    return this.puntosEmisionCache$.asObservable();
+    return this.puntosEmisionCache$.pipe(
+      filter(data => data !== null),
+      map(data => data as PuntoEmision[])
+    );
+  }
+
+  /**
+   * Obtiene solo los puntos de emisión activos (desde caché)
+   */
+  getActivos(): Observable<PuntoEmision[]> {
+    return this.puntosEmisionCache$.pipe(
+      filter(data => data !== null),
+      map(list => (list as PuntoEmision[]).filter((pe: PuntoEmision) => pe.activo))
+    );
   }
 
   /**
@@ -64,7 +77,7 @@ export class PuntosEmisionService {
       tap((response) => {
         this.uiService.showToast(`✅ Punto de Emisión creado`, 'success', `El punto de emisión "${datos.nombre}" ha sido registrado exitosamente.`);
         // Actualizar caché solo con el nuevo elemento
-        const current = this.puntosEmisionCache$.value;
+        const current = this.puntosEmisionCache$.value || [];
         this.puntosEmisionCache$.next([...current, response as any]);
         // Actualizar stats
         this.actualizarStats();
@@ -85,7 +98,7 @@ export class PuntosEmisionService {
       tap((response) => {
         this.uiService.showToast('✅ Cambios guardados', 'success', 'Los datos del punto de emisión se actualizaron correctamente.');
         // Actualizar el elemento en caché sin recargar todo
-        const current = this.puntosEmisionCache$.value;
+        const current = this.puntosEmisionCache$.value || [];
         const index = current.findIndex(pe => pe.id === id);
         if (index !== -1) {
           const updated = [...current];
@@ -109,7 +122,7 @@ export class PuntosEmisionService {
       tap(() => {
         this.uiService.showToast('✅ Eliminado correctamente', 'success', `El punto de emisión "${nombre}" ha sido removido del sistema.`);
         // Remover del caché sin recargar todo
-        const current = this.puntosEmisionCache$.value;
+        const current = this.puntosEmisionCache$.value || [];
         const filtered = current.filter(pe => pe.id !== id);
         this.puntosEmisionCache$.next(filtered);
         // Actualizar stats
@@ -134,7 +147,7 @@ export class PuntosEmisionService {
    * Actualiza las estadísticas internamente
    */
   private actualizarStats(): void {
-    const puntosEmision = this.puntosEmisionCache$.value;
+    const puntosEmision = this.puntosEmisionCache$.value || [];
     const stats: PuntosEmisionStats = {
       total: puntosEmision.length,
       activos: puntosEmision.filter(pe => pe.activo).length,

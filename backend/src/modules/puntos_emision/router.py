@@ -25,10 +25,11 @@ def listar_puntos(
     establecimiento_id: Optional[UUID] = Query(None),
     limit: int = Query(100, ge=1),
     offset: int = Query(0, ge=0),
+    solo_activos: bool = Query(False),
     usuario: dict = Depends(requerir_permiso(PermissionCodes.PUNTO_EMISION_VER)),
     servicio: ServicioPuntosEmision = Depends()
 ):
-    puntos = servicio.listar_puntos(usuario, establecimiento_id, limit, offset)
+    puntos = servicio.listar_puntos(usuario, establecimiento_id, limit, offset, solo_activos)
     return success_response(puntos, "Puntos de emisión listados correctamente")
 
 @router.get("/{punto_id}", response_model=RespuestaBase[PuntoEmisionLectura])

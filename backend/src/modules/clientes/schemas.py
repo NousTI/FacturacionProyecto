@@ -13,7 +13,6 @@ class ClienteBase(BaseModel):
     direccion: Optional[str] = None
     ciudad: Optional[str] = None
     provincia: Optional[str] = None
-    pais: str = "Ecuador"
     dias_credito: int = Field(default=0, ge=0)
     limite_credito: float = Field(default=0.0, ge=0)
     activo: bool = True
@@ -31,7 +30,6 @@ class ClienteActualizacion(BaseModel):
     direccion: Optional[str] = None
     ciudad: Optional[str] = None
     provincia: Optional[str] = None
-    pais: Optional[str] = None
     dias_credito: Optional[int] = Field(None, ge=0)
     limite_credito: Optional[float] = Field(None, ge=0)
     activo: Optional[bool] = None
