@@ -95,13 +95,13 @@ import { Observable, map } from 'rxjs';
               <a *appHasPermission="'PRODUCTOS_VER'" routerLink="/usuario/productos" routerLinkActive="active" class="menu-item px-3 mb-1">
                 <i class="bi bi-box-seam me-3"></i> Productos
               </a>
-              <a routerLink="/usuario/facturacion" routerLinkActive="active" class="menu-item px-3 mb-1">
+              <a *appHasPermission="['FACTURAS_VER_TODAS', 'FACTURAS_VER_PROPIAS', 'FACTURAS_CREAR']" routerLink="/usuario/facturacion" routerLinkActive="active" class="menu-item px-3 mb-1">
                 <i class="bi bi-receipt me-3"></i> Facturación
               </a>
-              <a routerLink="/usuario/facturacion-recurrente" routerLinkActive="active" class="menu-item px-3 mb-1">
+              <a *appHasPermission="'FACTURA_PROGRAMADA_VER'" routerLink="/usuario/facturacion-recurrente" routerLinkActive="active" class="menu-item px-3 mb-1">
                 <i class="bi bi-arrow-repeat me-3"></i> Fac. Recurrente
               </a>
-              <a routerLink="/usuario/reportes" routerLinkActive="active" class="menu-item px-3 mb-1">
+              <a *appHasPermission="['REPORTES_VER', 'REPORTES_EXPORTAR']" routerLink="/usuario/reportes" routerLinkActive="active" class="menu-item px-3 mb-1">
                 <i class="bi bi-bar-chart me-3"></i> Reportes
               </a>
               <a *appHasPermission="'CONFIG_ESTABLECIMIENTOS'" routerLink="/usuario/establecimientos" routerLinkActive="active" class="menu-item px-3 mb-1">
@@ -110,9 +110,7 @@ import { Observable, map } from 'rxjs';
               <a *appHasPermission="'CONFIG_ESTABLECIMIENTOS'" routerLink="/usuario/puntos-emision" routerLinkActive="active" class="menu-item px-3 mb-1">
                 <i class="bi bi-printer me-3"></i> Puntos Emisión
               </a>
-               <a routerLink="/usuario/configuracion" routerLinkActive="active" class="menu-item px-3 mb-1">
-                <i class="bi bi-gear me-3"></i> Configuración
-              </a>
+
               <a *appHasPermission="'CONFIG_SRI'" routerLink="/usuario/certificado-sri" routerLinkActive="active" class="menu-item px-3 mb-1">
                 <i class="bi bi-shield-lock me-3"></i> Certificado SRI
               </a>

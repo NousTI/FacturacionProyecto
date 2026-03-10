@@ -56,7 +56,7 @@ def listar_facturas(
     fecha_hasta: Optional[date] = Query(None, description="Fecha de emisión hasta"),
     cliente_id: Optional[UUID] = Query(None, description="Filtrar por cliente"),
     establecimiento_id: Optional[UUID] = Query(None, description="Filtrar por establecimiento"),
-    usuario: dict = Depends(requerir_permiso(PermissionCodes.FACTURAS_VER_TODAS)),
+    usuario: dict = Depends(requerir_permiso([PermissionCodes.FACTURAS_VER_TODAS, PermissionCodes.FACTURAS_VER_PROPIAS])),
     servicio: ServicioFactura = Depends()
 ):
     """
@@ -119,7 +119,7 @@ def listar_mis_facturas(
 @router.get("/{id}", response_model=FacturaLectura)
 def obtener_factura(
     id: UUID,
-    usuario: dict = Depends(requerir_permiso(PermissionCodes.FACTURAS_VER_TODAS)),
+    usuario: dict = Depends(requerir_permiso([PermissionCodes.FACTURAS_VER_TODAS, PermissionCodes.FACTURAS_VER_PROPIAS])),
     servicio: ServicioFactura = Depends()
 ):
     """

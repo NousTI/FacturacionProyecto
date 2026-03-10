@@ -14,7 +14,7 @@ import { FacturacionRecurrentePage } from './facturacion-recurrente/facturacion-
 import { ReportesPage } from './reportes/reportes.page';
 import { EstablecimientosPage } from './establecimientos/establecimientos.page';
 import { PuntosEmisionPage } from './puntos-emision/puntos-emision.page';
-import { ConfiguracionPage } from './configuracion/configuracion.page';
+
 import { UsuariosPage } from './usuarios/usuarios.page';
 import { CertificadoSriPage } from './certificado-sri/certificado-sri.page';
 import { EmpresaPage } from './empresa/empresa.page';
@@ -66,19 +66,19 @@ const routes: Routes = [
         path: 'facturacion',
         component: FacturacionPage,
         canActivate: [RoleGuard],
-        data: { title: 'Facturación', roles: [UserRole.USUARIO] }
+        data: { title: 'Facturación', roles: [UserRole.USUARIO], permission: ['FACTURAS_VER_TODAS', 'FACTURAS_VER_PROPIAS', 'FACTURAS_CREAR'] }
     },
     {
         path: 'facturacion-recurrente',
         component: FacturacionRecurrentePage,
         canActivate: [RoleGuard],
-        data: { title: 'Facturación Recurrente', roles: [UserRole.USUARIO] }
+        data: { title: 'Facturación Recurrente', roles: [UserRole.USUARIO], permission: 'FACTURA_PROGRAMADA_VER' }
     },
     {
         path: 'reportes',
         component: ReportesPage,
         canActivate: [RoleGuard],
-        data: { title: 'Reportes', roles: [UserRole.USUARIO] }
+        data: { title: 'Reportes', roles: [UserRole.USUARIO], permission: ['REPORTES_VER', 'REPORTES_EXPORTAR'] }
     },
     {
         path: 'establecimientos',
@@ -92,12 +92,7 @@ const routes: Routes = [
         canActivate: [RoleGuard],
         data: { title: 'Puntos de Emisión', roles: [UserRole.USUARIO], permission: 'CONFIG_ESTABLECIMIENTOS' }
     },
-    {
-        path: 'configuracion',
-        component: ConfiguracionPage,
-        canActivate: [RoleGuard],
-        data: { title: 'Configuración', roles: [UserRole.USUARIO] }
-    },
+
     {
         path: 'perfil',
         component: ProfilePage,

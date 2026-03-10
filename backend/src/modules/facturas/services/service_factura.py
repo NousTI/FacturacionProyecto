@@ -56,13 +56,32 @@ class ServicioFactura:
         return self.core.crear_borrador(datos, usuario_actual, payload_extra)
 
     def obtener_factura(self, id: UUID, usuario_actual: dict):
+        if not usuario_actual.get(AuthKeys.IS_SUPERADMIN):
+            u_fact = self.usuario_repo.obtener_por_user_id(usuario_actual['id'])
+            if u_fact:
+                usuario_actual['usuario_facturacion_id'] = u_fact['id']
         return ValidacionesFactura.obtener_y_validar_factura(self.core, id, usuario_actual)
 
     def listar_facturas(self, usuario_actual: dict, empresa_id: Optional[UUID] = None, filtros: Optional[FacturaListadoFiltros] = None, solo_propias: bool = False, limit: int = 100, offset: int = 0):
+        from ....constants.permissions import PermissionCodes
         is_superadmin = usuario_actual.get(AuthKeys.IS_SUPERADMIN, False)
         target_empresa_id = empresa_id if is_superadmin else usuario_actual.get("empresa_id")
-        target_usuario_id = usuario_actual.get("id") if solo_propias else None
         
+        target_usuario_id = None
+        if not is_superadmin:
+            permisos = usuario_actual.get("permisos", [])
+            
+            # Resolve internal user id for facturacion module
+            usuario_fact = self.usuario_repo.obtener_por_user_id(usuario_actual['id'])
+            internal_user_id = usuario_fact['id'] if usuario_fact else None
+            
+            # Enforce "own only" if they don't have "view all"
+            if PermissionCodes.FACTURAS_VER_TODAS not in permisos:
+                solo_propias = True
+            
+            if solo_propias:
+                target_usuario_id = internal_user_id
+
         return self.core.repo.listar_facturas(
             empresa_id=target_empresa_id,
             usuario_id=target_usuario_id,

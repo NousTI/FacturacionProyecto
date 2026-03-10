@@ -150,14 +150,14 @@ import { ChangeDetectorRef } from '@angular/core';
       </div>
 
       <!-- MODAL PERMISOS -->
-      <div class="modal-overlay" *ngIf="showPermissionsModal" (click)="closePermissionsModal()">
+      <div class="modal-overlay" *ngIf="showPermissionsModal" (click)="cancelPermissionsModal()">
         <div class="modal-content-minimal wide" (click)="$event.stopPropagation()">
           <div class="modal-header-minimal border-bottom align-items-center">
             <div class="d-flex align-items-center gap-3">
               <div class="module-marker" [ngClass]="currentModule?.toLowerCase()"></div>
               <h5 class="m-0 fw-bold">{{ currentModule }}</h5>
             </div>
-            <button class="btn-close-minimal" (click)="closePermissionsModal()"><i class="bi bi-x"></i></button>
+            <button class="btn-close-minimal" (click)="cancelPermissionsModal()"><i class="bi bi-x"></i></button>
           </div>
           <div class="modal-body-minimal p-0 overflow-auto" style="max-height: 50vh;">
             <div class="minimal-permission-list">
@@ -175,9 +175,11 @@ import { ChangeDetectorRef } from '@angular/core';
             </div>
           </div>
           <div class="modal-footer-minimal p-4 border-top bg-light-soft justify-content-center">
-             <button class="btn btn-minimal-dark px-5" (click)="closePermissionsModal()" [disabled]="saving">
+             <button class="btn btn-minimal-dark px-5" 
+                     (click)="savePermissions()" 
+                     [disabled]="saving || (!selectedRole?.es_sistema && !hasPermissionChanges())">
                <span *ngIf="saving" class="spinner-border spinner-border-sm me-2"></span>
-               {{ selectedRole?.es_sistema ? 'CERRAR' : (saving ? 'GUARDANDO...' : 'LISTO') }}
+               {{ selectedRole?.es_sistema ? 'CERRAR' : (saving ? 'GUARDANDO...' : 'GUARDAR') }}
              </button>
           </div>
         </div>
@@ -384,6 +386,7 @@ export class RolesPermisosPage implements OnInit {
   showDeleteModal = false;
   editingRole = false;
   currentModule: string | null = null;
+  initialPermissionsState: { [key: string]: boolean } = {};
   roleToDelete: Rol | null = null;
   roleForm = { nombre: '', descripcion: '', activo: true };
 
@@ -457,14 +460,31 @@ export class RolesPermisosPage implements OnInit {
 
   openPermissionsModal(modulo: string) {
     this.currentModule = modulo;
+    // Guardar estado inicial para detectar cambios
+    this.initialPermissionsState = {};
+    const modulePerms = this.getPermisosByModulo(modulo);
+    modulePerms.forEach(p => {
+      this.initialPermissionsState[p.id] = p.selected || false;
+    });
     this.showPermissionsModal = true;
   }
 
-  closePermissionsModal() {
-    if (this.selectedRole && !this.selectedRole.es_sistema) {
-      this.savePermissions();
+  hasPermissionChanges(): boolean {
+    if (!this.currentModule) return false;
+    const modulePerms = this.getPermisosByModulo(this.currentModule);
+    return modulePerms.some(p => (p.selected || false) !== this.initialPermissionsState[p.id]);
+  }
+
+  cancelPermissionsModal() {
+    // Restaurar estado si se cancela
+    if (this.currentModule && !this.selectedRole?.es_sistema) {
+      const modulePerms = this.getPermisosByModulo(this.currentModule);
+      modulePerms.forEach(p => {
+        p.selected = this.initialPermissionsState[p.id];
+      });
     }
     this.showPermissionsModal = false;
+    this.currentModule = null;
   }
 
   getModuleIcon(modulo: string) {
@@ -585,7 +605,14 @@ export class RolesPermisosPage implements OnInit {
   }
 
   savePermissions() {
-    if (!this.selectedRole || this.selectedRole.es_sistema) return;
+    if (!this.selectedRole) return;
+    
+    // Si es rol de sistema solo cerramos el modal
+    if (this.selectedRole.es_sistema) {
+      this.showPermissionsModal = false;
+      this.currentModule = null;
+      return;
+    }
     
     this.saving = true;
     const selectedIds = this.permisosDisponibles
@@ -606,6 +633,8 @@ export class RolesPermisosPage implements OnInit {
         this.roles[index] = updated;
         this.selectedRole = updated;
         this.uiService.showToast('Configuración sincronizada', 'success');
+        this.showPermissionsModal = false;
+        this.currentModule = null;
       },
       error: (err) => {
         console.error('[RolesModule] Error sincronizando permisos:', err);
