@@ -5,7 +5,6 @@ import { Observable } from 'rxjs';
 
 // Shared Components
 import { ChartCardComponent } from '../../../shared/components/chart-card/chart-card.component';
-import { PieChartComponent } from '../../../shared/components/pie-chart/pie-chart.component';
 
 // Feature Components
 import { PeriodSelectorComponent } from './components/period-selector/period-selector.component';
@@ -27,7 +26,6 @@ import { DashboardOverview } from '../../../shared/services/dashboard.service';
     CommonModule,
     RouterModule,
     ChartCardComponent,
-    PieChartComponent,
     PeriodSelectorComponent,
     DashboardKpisComponent,
     RecentInvoicesComponent,
@@ -59,18 +57,12 @@ import { DashboardOverview } from '../../../shared/services/dashboard.service';
 
         <!-- ── FILA 2: GRÁFICOS ── -->
         <div class="row g-3 mb-4">
-          <div class="col-lg-8">
+          <div class="col-12">
             <app-chart-card 
               [title]="'Tendencia de Ventas (vs Anterior)'"
               [data]="overview.ventas_tendencia || []"
               barColor="linear-gradient(135deg, #6366f1 0%, #a855f7 100%)">
             </app-chart-card>
-          </div>
-          <div class="col-lg-4">
-            <app-pie-chart 
-              title="Métodos de Pago" 
-              [data]="overview.distribucion_pagos || []">
-            </app-pie-chart>
           </div>
         </div>
 
