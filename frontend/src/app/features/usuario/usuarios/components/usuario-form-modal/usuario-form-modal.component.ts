@@ -311,8 +311,7 @@ export class UsuarioFormModalComponent implements OnInit, OnDestroy {
     const currentUser = this.authService.getUser();
     if (!currentUser) return false;
     
-    // En el sistema de gestión, comparamos el ID de la tabla 'usuarios'
-    const sessionUsuarioId = (currentUser as any).usuario_id;
-    return this.usuario.id === sessionUsuarioId;
+    const currentUserId = currentUser.id || (currentUser as any).usuario_id;
+    return this.usuario.id === currentUserId;
   }
 }

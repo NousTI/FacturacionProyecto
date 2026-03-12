@@ -74,7 +74,83 @@ import { CertTableComponent } from './components/cert-table/cert-table.component
         *ngIf="!loading"
         [certificados]="filteredCerts"
         (onViewHistory)="openHistory($event)"
+        (onViewDetails)="openDetails($event)"
       ></app-cert-table>
+
+      <!-- Modal Detalles -->
+      <div class="modal fade" [class.show]="showDetailsModal" [style.display]="showDetailsModal ? 'block' : 'none'" tabindex="-1" style="background: rgba(0,0,0,0.5);">
+         <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content border-0 rounded-4 shadow-lg">
+               <div class="modal-header border-bottom-0 pb-0 pt-4 px-4">
+                  <h5 class="modal-title fw-bold">Detalles del Certificado</h5>
+                  <button type="button" class="btn-close" (click)="closeDetails()"></button>
+               </div>
+               <div class="modal-body p-4" *ngIf="selectedDetailCert">
+                  <div class="row g-4">
+                     <!-- Info Empresa -->
+                     <div class="col-md-6">
+                        <h6 class="text-uppercase text-secondary fw-bold mb-3" style="font-size: 0.75rem;">Información de la Empresa</h6>
+                        <ul class="list-group list-group-flush">
+                           <li class="list-group-item px-0 d-flex justify-content-between border-light">
+                              <span class="text-muted">Empresa</span>
+                              <span class="fw-bold">{{selectedDetailCert.empresa_nombre || 'No asignada'}}</span>
+                           </li>
+                           <li class="list-group-item px-0 d-flex justify-content-between border-light">
+                              <span class="text-muted">RUC</span>
+                              <span class="fw-bold">{{selectedDetailCert.empresa_ruc || 'Sin RUC'}}</span>
+                           </li>
+                           <li class="list-group-item px-0 d-flex justify-content-between border-light">
+                              <span class="text-muted">Ambiente</span>
+                              <span class="fw-bold">{{selectedDetailCert.ambiente}}</span>
+                           </li>
+                           <li class="list-group-item px-0 d-flex justify-content-between border-light">
+                              <span class="text-muted">Emisión</span>
+                              <span class="fw-bold">{{selectedDetailCert.tipo_emision}}</span>
+                           </li>
+                           <li class="list-group-item px-0 d-flex justify-content-between border-light">
+                              <span class="text-muted">Estado</span>
+                              <span class="fw-bold" [ngClass]="{
+                                 'text-success': selectedDetailCert.estado === 'ACTIVO',
+                                 'text-danger': selectedDetailCert.estado !== 'ACTIVO'
+                              }">{{selectedDetailCert.estado}}</span>
+                           </li>
+                        </ul>
+                     </div>
+
+                     <!-- Info Certificado -->
+                     <div class="col-md-6">
+                        <h6 class="text-uppercase text-secondary fw-bold mb-3" style="font-size: 0.75rem;">Detalles del Archivo P12</h6>
+                        <ul class="list-group list-group-flush">
+                           <li class="list-group-item px-0 d-flex flex-column gap-1 border-light">
+                              <span class="text-muted small">Emisor</span>
+                              <span class="fw-bold text-break" style="font-size: 0.9rem;">{{selectedDetailCert.cert_emisor}}</span>
+                           </li>
+                           <li class="list-group-item px-0 d-flex flex-column gap-1 border-light">
+                              <span class="text-muted small">Sujeto</span>
+                              <span class="fw-bold text-break" style="font-size: 0.85rem;">{{selectedDetailCert.cert_sujeto}}</span>
+                           </li>
+                           <li class="list-group-item px-0 d-flex justify-content-between border-light">
+                              <span class="text-muted">Serial</span>
+                              <span class="fw-bold text-truncate" style="max-width: 130px;" title="{{selectedDetailCert.cert_serial}}">{{selectedDetailCert.cert_serial}}</span>
+                           </li>
+                           <li class="list-group-item px-0 d-flex justify-content-between border-light">
+                              <span class="text-muted">Activación</span>
+                              <span class="fw-bold" style="font-size: 0.85rem;">{{ selectedDetailCert.fecha_activacion_cert ? (selectedDetailCert.fecha_activacion_cert | date:'medium') : 'No registrada' }}</span>
+                           </li>
+                           <li class="list-group-item px-0 d-flex justify-content-between border-light">
+                              <span class="text-muted">Vencimiento</span>
+                              <span class="fw-bold text-danger" style="font-size: 0.85rem;">{{selectedDetailCert.fecha_expiracion_cert | date:'medium'}}</span>
+                           </li>
+                        </ul>
+                     </div>
+                  </div>
+               </div>
+               <div class="modal-footer border-top-0 pb-4 px-4 pt-0">
+                  <button type="button" class="btn btn-light px-4 py-2 rounded-3 fw-bold" (click)="closeDetails()">Cerrar</button>
+               </div>
+            </div>
+         </div>
+      </div>
     </div>
     </div>
   `,
@@ -133,6 +209,9 @@ export class CertificadosSriPage implements OnInit {
 
     showHistoryModal = false;
     selectedCert: SriCertConfig | null = null;
+    
+    showDetailsModal = false;
+    selectedDetailCert: SriCertConfig | null = null;
 
     constructor(
         private sriService: SriCertService,
@@ -197,5 +276,15 @@ export class CertificadosSriPage implements OnInit {
     openHistory(cert: SriCertConfig) {
         this.selectedCert = cert;
         this.showHistoryModal = true;
+    }
+
+    openDetails(cert: SriCertConfig) {
+        this.selectedDetailCert = cert;
+        this.showDetailsModal = true;
+    }
+
+    closeDetails() {
+        this.showDetailsModal = false;
+        this.selectedDetailCert = null;
     }
 }

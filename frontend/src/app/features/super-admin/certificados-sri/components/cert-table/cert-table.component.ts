@@ -16,7 +16,7 @@ import { SriCertConfig } from '../../services/sri-cert.service';
               <th>Estado SRI</th>
               <th>Vencimiento</th>
               <th>Días Restantes</th>
-              <th>Emisor</th>
+              <th class="pe-4 text-end">Acciones</th>
             </tr>
           </thead>
           <tbody>
@@ -80,12 +80,20 @@ import { SriCertConfig } from '../../services/sri-cert.service';
                 </div>
               </td>
 
-              <!-- Emisor -->
-              <td>
-                <span class="text-secondary small fw-bold d-block text-truncate" style="max-width: 150px;" title="{{cert.cert_emisor}}">
-                    {{ cert.cert_emisor }}
-                </span>
-                <span class="text-muted" style="font-size: 0.7rem;">Serial: {{ cert.cert_serial }}</span>
+              <!-- Acciones -->
+              <td class="text-end pe-4">
+                 <div class="dropdown">
+                    <button class="btn-trigger-lux dropdown-toggle-kebab" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                       <i class="bi bi-three-dots-vertical"></i>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end border-0 shadow-sm rounded-4" style="min-width: 180px;">
+                       <li>
+                          <button class="dropdown-item d-flex align-items-center gap-2 py-2" (click)="onViewDetails.emit(cert)">
+                             <i class="bi bi-eye text-primary"></i> Ver detalles
+                          </button>
+                       </li>
+                    </ul>
+                 </div>
               </td>
 
             </tr>
@@ -109,8 +117,9 @@ import { SriCertConfig } from '../../services/sri-cert.service';
     styles: [`
     .table-container-lux {
       background: white; border: 1px solid #f1f5f9; border-radius: 24px;
-      overflow: hidden; margin-top: 1rem;
+      overflow: visible; margin-top: 1rem;
     }
+    .table-responsive { overflow: visible; }
     .table thead th {
       background: #fcfdfe; padding: 1.25rem 1rem; font-size: 0.65rem;
       text-transform: uppercase; letter-spacing: 1px; color: #94a3b8;
@@ -143,11 +152,17 @@ import { SriCertConfig } from '../../services/sri-cert.service';
       border-radius: 8px; color: #94a3b8; transition: all 0.2s;
     }
     .btn-trigger-lux:hover { background: #f1f5f9; color: #161d35; }
+    
+    /* Hide dropdown toggle caret */
+    .dropdown-toggle-kebab::after {
+      display: none;
+    }
   `]
 })
 export class CertTableComponent {
     @Input() certificados: SriCertConfig[] = [];
     @Output() onViewHistory = new EventEmitter<SriCertConfig>();
+    @Output() onViewDetails = new EventEmitter<SriCertConfig>();
 
     getStatusClass(cert: SriCertConfig): string {
         if (cert.estado === 'ACTIVO' && (cert.days_until_expiry || 0) > 30) return 'status-autorizada';

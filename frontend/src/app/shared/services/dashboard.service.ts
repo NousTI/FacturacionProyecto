@@ -10,7 +10,15 @@ export interface DashboardKPIs {
     pagos_atrasados: number;
     empresas_por_vencer: number;
     variacion_ingresos: number;
+    firma_expiracion_dias?: number;
+    ventas_periodo?: number;
+    ventas_hoy?: number;
+    cuentas_cobrar?: number;
+    productos_stock_bajo?: number;
+    facturas_rechazadas?: number;
 }
+
+
 
 export interface DashboardAlerta {
     tipo: string;
@@ -28,7 +36,11 @@ export interface DashboardAlertas {
 export interface DashboardOverview {
     kpis: DashboardKPIs;
     alertas: DashboardAlertas;
+    consumo_plan?: { actual: number; limite: number };
+    top_productos?: any[];
+    firma_info?: { fecha: string; dias_restantes: number };
 }
+
 
 // Chart interfaces
 export interface ChartData {
@@ -47,23 +59,25 @@ export interface DashboardGraficos {
     providedIn: 'root'
 })
 export class DashboardService {
-    private apiUrl = `${environment.apiUrl}/dashboard`;
+    private apiUrl = `${environment.apiUrl}/dashboards`;
+
 
     constructor(private http: HttpClient) { }
 
-    getOverview(): Observable<DashboardOverview> {
-        return this.http.get<DashboardOverview>(`${this.apiUrl}/overview`);
+    getOverview(periodo: string = 'month'): Observable<DashboardOverview> {
+        return this.http.get<DashboardOverview>(`${this.apiUrl}/overview`, { params: { periodo } });
     }
 
-    getKPIs(): Observable<DashboardKPIs> {
-        return this.http.get<DashboardKPIs>(`${this.apiUrl}/kpis`);
+    getKPIs(periodo: string = 'month'): Observable<DashboardKPIs> {
+        return this.http.get<DashboardKPIs>(`${this.apiUrl}/kpis`, { params: { periodo } });
     }
 
     getAlertas(): Observable<DashboardAlertas> {
         return this.http.get<DashboardAlertas>(`${this.apiUrl}/alertas`);
     }
 
-    getChartsData(): Observable<DashboardGraficos> {
-        return this.http.get<DashboardGraficos>(`${this.apiUrl}/charts`);
+    getChartsData(periodo: string = 'month'): Observable<DashboardGraficos> {
+        return this.http.get<DashboardGraficos>(`${this.apiUrl}/charts`, { params: { periodo } });
     }
 }
+

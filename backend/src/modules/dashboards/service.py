@@ -22,8 +22,15 @@ class ServicioDashboards:
         variacion = 0
         if not e_id:
             variacion = self.repo.obtener_variacion_ingresos()
+        
+        # Firma info para Empresa
+        firma_dias = None
+        if e_id:
+            firma_data = self.repo.obtener_info_firma(e_id)
+            firma_dias = firma_data.get('dias_restantes')
             
-        return DashboardKPIs(**base_kpis, variacion_ingresos=round(variacion, 2))
+        return DashboardKPIs(**base_kpis, variacion_ingresos=round(variacion, 2), firma_expiracion_dias=firma_dias)
+
 
     def obtener_alertas(self, usuario: dict) -> DashboardAlertas:
         v_id, e_id = self._get_ids(usuario)
@@ -45,7 +52,14 @@ class ServicioDashboards:
         if not v_id and not e_id:
             ov.empresas_recientes = self.repo.obtener_empresas_recientes()
             
+        # Para Empresa agregamos info extra
+        if e_id:
+            ov.consumo_plan = self.repo.obtener_consumo_plan(e_id)
+            ov.top_productos = self.repo.obtener_top_productos(e_id)
+            ov.firma_info = self.repo.obtener_info_firma(e_id)
+            
         return ov
+
 
     def obtener_resumen(self, usuario: dict) -> Dict[str, Any]:
         """Solo para Superadmin (Compatibilidad)"""

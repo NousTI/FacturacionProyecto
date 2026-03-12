@@ -20,7 +20,7 @@ import { finalize, Subscription, switchMap, of } from 'rxjs';
             </div>
 
             <!-- SETUP VIEW (NO CONFIG) -->
-            <div *ngIf="!loading && !config" class="setup-view">
+            <div *ngIf="!loading && (!config || isReplacing)" class="setup-view">
                 <div class="row justify-content-center">
                     <div class="col-xl-5 col-lg-7">
                         <div class="mono-card shadow-premium">
@@ -33,7 +33,7 @@ import { finalize, Subscription, switchMap, of } from 'rxjs';
                                     <p class="text-muted small">Configure su certificado .p12 para emitir comprobantes.</p>
                                 </div>
 
-                                <form (ngSubmit)="onUpload()" #uploadForm="ngForm">
+                                <form (ngSubmit)="triggerUpload()" #uploadForm="ngForm">
                                     <div class="upload-area mb-4" 
                                          [class.is-dragging]="isDragging"
                                          [class.has-file]="fileSelected"
@@ -77,11 +77,16 @@ import { finalize, Subscription, switchMap, of } from 'rxjs';
                                         </div>
                                     </div>
 
-                                    <button type="submit" class="btn-mono-primary w-100 py-3" 
-                                            [disabled]="isSaving || !fileSelected || !password">
-                                        <span *ngIf="isSaving" class="spinner-border spinner-border-sm me-2"></span>
-                                        {{ isSaving ? 'ACTIVANDO...' : 'ACTIVAR FIRMA' }}
-                                    </button>
+                                    <div class="d-flex gap-3">
+                                        <button *ngIf="isReplacing" type="button" class="btn btn-light py-3 fw-bold" style="border-radius: 12px; width: 40%;" [disabled]="isSaving" (click)="cancelReplaceBtn()">
+                                            CANCELAR
+                                        </button>
+                                        <button type="submit" class="btn-mono-primary py-3" [style.width]="isReplacing ? '60%' : '100%'"
+                                                [disabled]="isSaving || !fileSelected || !password">
+                                            <span *ngIf="isSaving" class="spinner-border spinner-border-sm me-2"></span>
+                                            {{ isSaving ? 'ACTIVANDO...' : 'ACTIVAR FIRMA' }}
+                                        </button>
+                                    </div>
                                 </form>
                             </div>
                         </div>
@@ -90,98 +95,218 @@ import { finalize, Subscription, switchMap, of } from 'rxjs';
             </div>
 
             <!-- DASHBOARD VIEW (HAS CONFIG) -->
-            <div *ngIf="!loading && config" class="dashboard-view">
-                <div class="row g-4 justify-content-center">
-                    <div class="col-lg-8">
-                        <div class="mono-card shadow-premium">
-                            <div class="p-4 border-bottom d-flex justify-content-between align-items-center">
-                                <div class="d-flex align-items-center">
-                                    <div class="icon-square-small me-3">
-                                        <i class="bi bi-check2-all"></i>
-                                    </div>
-                                    <h3 class="h6 fw-bold mb-0">ESTADO DE FACTURACIÓN</h3>
-                                </div>
-                                <div class="d-flex gap-2">
-                                    <button *ngIf="!isEditing" class="btn-mono-outline btn-sm" (click)="isEditing = true">
-                                        <i class="bi bi-pencil me-1"></i> EDITAR
-                                    </button>
-                                    <button *ngIf="isEditing" class="btn-mono-outline btn-sm" (click)="isEditing = false">
-                                        CANCELAR
-                                    </button>
-                                    <button class="btn-mono-danger btn-sm" (click)="resetConfig()">
-                                        <i class="bi bi-trash"></i>
-                                    </button>
-                                </div>
-                            </div>
-                            
-                            <div class="p-5">
-                                <div class="row g-5">
-                                    <!-- INFO LEFT -->
-                                    <div class="col-md-7">
-                                        <div class="info-group mb-4">
-                                            <label class="label-mono">TITULAR</label>
-                                            <p class="detail-value text-uppercase">{{ config.cert_sujeto || 'S/N' }}</p>
-                                        </div>
-                                        <div class="info-group mb-4">
-                                            <label class="label-mono">ENTIDAD</label>
-                                            <p class="detail-value small">{{ config.cert_emisor || 'S/E' }}</p>
-                                        </div>
-                                        <div class="row">
-                                            <div class="col-6">
-                                                <label class="label-mono">ACTIVACIÓN</label>
-                                                <p class="detail-value small">{{ config.fecha_activacion_cert | date:'dd/MM/yyyy' }}</p>
-                                            </div>
-                                            <div class="col-6">
-                                                <label class="label-mono">EXPIRACIÓN</label>
-                                                <p class="detail-value small" [class.text-danger]="isExpired">
-                                                    {{ config.fecha_expiracion_cert | date:'dd/MM/yyyy' }}
-                                                </p>
-                                            </div>
-                                        </div>
-                                    </div>
+            <div *ngIf="!loading && config && !isReplacing" class="dashboard-view-premium">
 
-                                    <!-- SRI PARAMS RIGHT -->
-                                    <div class="col-md-5 border-start-mono">
-                                        <div *ngIf="!isEditing" class="sri-display-mode fade-in">
-                                            <div class="info-group mb-4">
-                                                <label class="label-mono">AMBIENTE</label>
-                                                <div class="mono-badge" [class.badge-active]="config.ambiente === 'PRODUCCION'">
-                                                    {{ config.ambiente }}
-                                                </div>
-                                            </div>
-                                            <div class="info-group">
-                                                <label class="label-mono">EMISIÓN</label>
-                                                <div class="mono-badge">
-                                                    {{ config.tipo_emision }}
-                                                </div>
-                                            </div>
-                                        </div>
+                <div class="row g-4">
+                    <!-- TARJETA PRINCIPAL DEL CERTIFICADO -->
+                    <div class="col-xl-8 col-lg-7">
+                        <div class="card-premium h-100">
+                           <div class="card-header-glass d-flex justify-content-between align-items-center">
+                              <h5 class="mb-0 fw-bold d-flex align-items-center gap-2" style="font-size: 0.95rem; color: #1e293b;">
+                                 <i class="bi bi-file-earmark-lock-fill text-primary"></i> 
+                                 Detalles del Certificado
+                              </h5>
+                              <div class="d-flex align-items-center gap-3">
+                                  <button class="btn btn-sm btn-outline-dark d-flex align-items-center gap-2 fw-bold px-3" style="border-radius: 10px; font-size: 0.75rem;" (click)="reemplazarCertificado()">
+                                      <i class="bi bi-cloud-arrow-up-fill"></i> REEMPLAZAR
+                                  </button>
+                                  <div class="status-badge" [ngClass]="isExpired ? 'bg-danger-soft text-danger' : 'bg-success-soft text-success'">
+                                      <div class="status-dot"></div>
+                                      {{ isExpired ? 'VENCIDO' : 'VIGENTE' }}
+                                  </div>
+                              </div>
+                           </div>
+                           
+                           <div class="card-body p-4 p-md-5">
+                               <div class="row g-4">
+                                   <div class="col-md-6">
+                                       <div class="info-block">
+                                          <span class="info-label">TITULAR Y RAZÓN SOCIAL</span>
+                                          <p class="info-value text-uppercase fw-bold text-dark">{{ config.cert_sujeto || 'Desconocido' }}</p>
+                                       </div>
+                                   </div>
+                                   <div class="col-md-6">
+                                       <div class="info-block">
+                                          <span class="info-label">ENTIDAD CERTIFICADORA (EMISOR)</span>
+                                          <p class="info-value text-secondary">{{ config.cert_emisor || 'Desconocido' }}</p>
+                                       </div>
+                                   </div>
+                               </div>
 
-                                        <div *ngIf="isEditing" class="sri-edit-mode fade-in">
-                                            <form (ngSubmit)="onUpdateParams()">
-                                                <div class="mb-4">
-                                                    <label class="label-mono">AMBIENTE</label>
-                                                    <select class="input-mono" [(ngModel)]="updateParams.ambiente" name="upd_ambiente">
-                                                        <option value="PRUEBAS">PRUEBAS</option>
-                                                        <option value="PRODUCCION">PRODUCCION</option>
-                                                    </select>
-                                                </div>
-                                                <div class="mb-5">
-                                                    <label class="label-mono">EMISIÓN</label>
-                                                    <select class="input-mono" [(ngModel)]="updateParams.tipo_emision" name="upd_emision">
-                                                        <option value="NORMAL">NORMAL</option>
-                                                        <option value="CONTINGENCIA">CONTINGENCIA</option>
-                                                    </select>
-                                                </div>
-                                                <button type="submit" class="btn-mono-primary w-100" [disabled]="isUpdating">
-                                                    {{ isUpdating ? 'GUARDANDO...' : 'GUARDAR' }}
-                                                </button>
-                                            </form>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
+                               <hr class="my-4 border-light opacity-50">
+
+                               <!-- FECHAS Y SERIAL -->
+                               <div class="row g-4">
+                                   <div class="col-sm-4">
+                                       <div class="info-block text-center text-sm-start">
+                                          <div class="icon-wrapper mb-2 text-primary bg-primary-soft mx-auto mx-sm-0">
+                                             <i class="bi bi-calendar-check"></i>
+                                          </div>
+                                          <span class="info-label">FECHA DE ACTIVACIÓN</span>
+                                          <p class="info-value fw-medium">{{ config.fecha_activacion_cert ? (config.fecha_activacion_cert | date:'dd MMM yyyy') : 'N/A' }}</p>
+                                       </div>
+                                   </div>
+                                   <div class="col-sm-4">
+                                       <div class="info-block text-center text-sm-start">
+                                          <div class="icon-wrapper mb-2 flex mx-auto mx-sm-0" [ngClass]="isExpired ? 'bg-danger-soft text-danger' : 'bg-warning-soft text-warning'">
+                                             <i class="bi bi-clock-history"></i>
+                                          </div>
+                                          <span class="info-label">FECHA DE VENCIMIENTO</span>
+                                          <p class="info-value fw-bold" [ngClass]="{'text-danger': isExpired}">
+                                              {{ config.fecha_expiracion_cert | date:'dd MMM yyyy' }}
+                                              <small *ngIf="isExpired" class="d-block mt-1 badge bg-danger text-white rounded-pill px-2">Requiere renovación</small>
+                                          </p>
+                                       </div>
+                                   </div>
+                                   <div class="col-sm-4">
+                                       <div class="info-block text-center text-sm-start">
+                                          <div class="icon-wrapper mb-2 text-dark bg-light mx-auto mx-sm-0">
+                                             <i class="bi bi-hash"></i>
+                                          </div>
+                                          <span class="info-label">SERIAL INTERNO</span>
+                                          <p class="info-value small text-truncate text-secondary" title="{{ config.cert_serial }}">
+                                            {{ config.cert_serial || 'No disponible' }}
+                                          </p>
+                                       </div>
+                                   </div>
+                               </div>
+                           </div>
                         </div>
+                    </div>
+
+                    <!-- TARJETA DE EDICIÓN SRI -->
+                    <div class="col-xl-4 col-lg-5">
+                        <div class="card-premium h-100 sri-params-card">
+                           <div class="card-header-glass d-flex justify-content-between align-items-center">
+                              <h5 class="mb-0 fw-bold d-flex align-items-center gap-2" style="font-size: 0.95rem; color: #1e293b;">
+                                 <i class="bi bi-sliders text-dark"></i> 
+                                 Parámetros SRI
+                              </h5>
+                              <button *ngIf="!isEditing" class="btn-action-light" (click)="isEditing = true" title="Editar">
+                                  <i class="bi bi-pencil-square"></i>
+                              </button>
+                           </div>
+
+                           <div class="card-body p-4 d-flex flex-column h-100">
+                               
+                               <!-- MODO LECTURA -->
+                               <div *ngIf="!isEditing" class="read-mode fade-in d-flex flex-column">
+                                  <div class="param-row mb-4 p-3 bg-light rounded-4 d-flex justify-content-between align-items-center border border-white shadow-sm">
+                                      <div class="d-flex align-items-center gap-3">
+                                          <div class="param-icon bg-white text-dark shadow-sm">
+                                              <i class="bi bi-hdd-network"></i>
+                                          </div>
+                                          <div>
+                                              <span class="info-label d-block mb-1">AMBIENTE</span>
+                                              <span class="badge rounded-pill fw-bold fs-7 px-3 py-2 border" 
+                                                    [ngClass]="config.ambiente === 'PRODUCCION' ? 'bg-success text-white border-success' : 'bg-warning-soft text-warning border-warning border-opacity-50'">
+                                                  {{ config.ambiente }}
+                                              </span>
+                                          </div>
+                                      </div>
+                                  </div>
+
+                                  <div class="param-row p-3 bg-light rounded-4 d-flex justify-content-between align-items-center border border-white shadow-sm">
+                                      <div class="d-flex align-items-center gap-3">
+                                          <div class="param-icon bg-white text-dark shadow-sm">
+                                              <i class="bi bi-broadcast"></i>
+                                          </div>
+                                          <div>
+                                              <span class="info-label d-block mb-1">TIPO EMISIÓN</span>
+                                              <span class="badge bg-dark rounded-pill fw-bold fs-7 px-3 py-2 border border-dark">
+                                                  {{ config.tipo_emision }}
+                                              </span>
+                                          </div>
+                                      </div>
+                                  </div>
+                               </div>
+
+                               <!-- MODO EDICIÓN -->
+                               <div *ngIf="isEditing" class="edit-mode fade-in">
+                                  <form (ngSubmit)="onUpdateParams()" class="d-flex flex-column">
+                                      <div class="mb-3">
+                                          <label class="form-label text-uppercase text-secondary fw-bold" style="font-size: 0.7rem; letter-spacing: 0.5px;">Seleccionar Ambiente</label>
+                                          <div class="modern-select-wrapper">
+                                              <i class="bi bi-hdd-network dropdown-icon"></i>
+                                              <select class="form-select form-select-lg modern-select" [(ngModel)]="updateParams.ambiente" name="upd_ambiente">
+                                                  <option value="PRUEBAS">PRUEBAS</option>
+                                                  <option value="PRODUCCION">PRODUCCION</option>
+                                              </select>
+                                          </div>
+                                      </div>
+                                      <div class="mb-3">
+                                          <label class="form-label text-uppercase text-secondary fw-bold" style="font-size: 0.7rem; letter-spacing: 0.5px;">Tipo de Emisión</label>
+                                          <div class="modern-select-wrapper">
+                                              <i class="bi bi-broadcast dropdown-icon"></i>
+                                              <select class="form-select form-select-lg modern-select" [(ngModel)]="updateParams.tipo_emision" name="upd_emision">
+                                                  <option value="NORMAL">NORMAL</option>
+                                                  <option value="CONTINGENCIA">CONTINGENCIA</option>
+                                              </select>
+                                          </div>
+                                      </div>
+                                      
+                                      <div class="d-flex gap-2 mt-4">
+                                          <button type="button" class="btn btn-light w-50 fw-bold rounded-3 py-2" (click)="isEditing = false" [disabled]="isUpdating">
+                                              Cancelar
+                                          </button>
+                                          <button type="submit" class="btn btn-dark w-50 fw-bold rounded-3 py-2 d-flex align-items-center justify-content-center gap-2" [disabled]="isUpdating || !hasChanges">
+                                              <span *ngIf="isUpdating" class="spinner-border spinner-border-sm"></span>
+                                              {{ isUpdating ? 'Guardando...' : 'Guardar' }}
+                                          </button>
+                                      </div>
+                                  </form>
+                               </div>
+                           </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- MODAL REEMPLAZAR -->
+            <div class="modal-overlay" *ngIf="showReplaceModal">
+                <div class="modal-content bg-white border-0 shadow-premium p-4 p-md-5 text-center mx-3" style="border-radius: 20px; max-width: 420px; width: 100%;">
+                    <i class="bi bi-exclamation-triangle-fill text-warning mb-3" style="font-size: 3rem;"></i>
+                    <h4 class="fw-bold mb-3">Reemplazar Certificado</h4>
+                    <p class="text-secondary mb-4" style="font-size: 0.95rem;">
+                        ¿Estás seguro de que deseas reemplazar la firma digital?<br><br>
+                        <strong class="text-dark">Nota:</strong> Tus datos actuales se mantendrán intactos hasta que actives la nueva firma.
+                    </p>
+                    <div class="d-flex gap-3 justify-content-center">
+                        <button type="button" class="btn btn-light fw-bold" style="border-radius: 12px; width: 130px;" (click)="showReplaceModal = false">Cancelar</button>
+                        <button type="button" class="btn btn-warning fw-bold" style="border-radius: 12px; width: 130px;" (click)="confirmReplace()">Reemplazar</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- MODAL CANCELAR REEMPLAZO -->
+            <div class="modal-overlay" *ngIf="showCancelReplaceModal">
+                <div class="modal-content bg-white border-0 shadow-premium p-4 text-center mx-3" style="border-radius: 20px; max-width: 360px; width: 100%;">
+                    <i class="bi bi-x-circle text-secondary mb-3" style="font-size: 2.5rem;"></i>
+                    <h5 class="fw-bold mb-3">¿Cancelar reemplazo?</h5>
+                    <p class="text-secondary mb-4 small">
+                        Perderás el archivo que hayas seleccionado y volverás a la vista anterior.
+                    </p>
+                    <div class="d-flex gap-2 justify-content-center">
+                        <button type="button" class="btn btn-light w-50 fw-bold" style="border-radius: 10px;" (click)="showCancelReplaceModal = false">No</button>
+                        <button type="button" class="btn btn-dark w-50 fw-bold" style="border-radius: 10px;" (click)="confirmCancelReplace()">Sí, Cancelar</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- MODAL GUARDAR NUEVO CERTIFICADO -->
+            <div class="modal-overlay" *ngIf="showSaveReplaceModal">
+                <div class="modal-content bg-white border-0 shadow-premium p-4 p-md-5 text-center mx-3" style="border-radius: 20px; max-width: 420px; width: 100%;">
+                    <i class="bi bi-shield-check text-primary mb-3" style="font-size: 3rem;"></i>
+                    <h4 class="fw-bold mb-3">Confirmar Activación</h4>
+                    <p class="text-secondary mb-4" style="font-size: 0.95rem;">
+                        Estás a punto de activar tu nueva firma.<br>Esto sobreescribirá los datos del SRI de forma permanente.
+                    </p>
+                    <div class="d-flex gap-3 justify-content-center">
+                        <button type="button" class="btn btn-light fw-bold" style="border-radius: 12px; width: 130px;" [disabled]="isSaving" (click)="showSaveReplaceModal = false">Cancelar</button>
+                        <button type="button" class="btn btn-primary fw-bold" style="border-radius: 12px; width: 130px;" [disabled]="isSaving" (click)="confirmSaveReplace()">
+                            <span *ngIf="isSaving" class="spinner-border spinner-border-sm"></span>
+                            {{ isSaving ? '' : 'Guardar' }}
+                        </button>
                     </div>
                 </div>
             </div>
@@ -189,6 +314,12 @@ import { finalize, Subscription, switchMap, of } from 'rxjs';
     </div>
   `,
     styles: [`
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background: rgba(15, 23, 42, 0.4); backdrop-filter: blur(8px);
+            z-index: 9999; display: flex; align-items: center; justify-content: center;
+            animation: fadeIn 0.3s ease;
+        }
         .sri-dashboard { padding: 2rem; color: #1a1a1a; }
         
         .mono-card {
@@ -262,23 +393,101 @@ import { finalize, Subscription, switchMap, of } from 'rxjs';
         .btn-mono-primary:hover:not(:disabled) { opacity: 0.8; }
         .btn-mono-primary:disabled { opacity: 0.3; cursor: not-allowed; }
 
-        .btn-mono-outline {
-            background: transparent; color: #000; border: 1px solid #000;
-            border-radius: 6px; padding: 0.4rem 0.8rem; font-weight: 700;
-            font-size: 0.7rem; transition: all 0.2s;
+        .card-premium {
+            background: #ffffff;
+            border-radius: 24px;
+            border: 1px solid rgba(226, 232, 240, 0.8);
+            box-shadow: 0 10px 30px -5px rgba(15, 23, 42, 0.04), 0 4px 10px -5px rgba(15, 23, 42, 0.02);
+            overflow: hidden;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
         }
 
-        .btn-mono-outline:hover { background: #000; color: #fff; }
-
-        .btn-mono-danger {
-            background: transparent; color: #e53e3e; border: 1px solid #e53e3e;
-            border-radius: 6px; padding: 0.4rem 0.6rem; font-size: 0.8rem;
+        .card-premium:hover {
+            box-shadow: 0 20px 40px -10px rgba(15, 23, 42, 0.08), 0 10px 20px -10px rgba(15, 23, 42, 0.04);
+            transform: translateY(-2px);
         }
 
-        .btn-mono-danger:hover { background: #e53e3e; color: #fff; }
+        .card-header-glass {
+            background: rgba(248, 250, 252, 0.8);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(226, 232, 240, 0.8);
+            padding: 1.25rem 1.5rem;
+        }
 
-        .detail-value { font-weight: 700; color: #111; margin-bottom: 0; }
-        .x-small { font-size: 0.7rem; }
+        .icon-circle-mini {
+            width: 32px; height: 32px;
+            border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.1rem;
+            box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.2);
+        }
+
+        .info-block {
+            display: flex; flex-direction: column; gap: 0.25rem;
+        }
+
+        .info-label {
+            font-size: 0.65rem; font-weight: 800; color: #94a3b8;
+            letter-spacing: 1px; text-transform: uppercase;
+        }
+
+        .info-value {
+            font-size: 0.95rem; margin-bottom: 0; word-break: break-word; line-height: 1.4;
+        }
+
+        .icon-wrapper {
+            width: 40px; height: 40px;
+            border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.1rem;
+        }
+
+        .status-badge {
+            display: inline-flex; align-items: center; gap: 0.35rem;
+            padding: 0.35rem 0.75rem; border-radius: 50rem;
+            font-size: 0.65rem; font-weight: 800; letter-spacing: 0.5px;
+        }
+
+        .status-dot {
+            width: 6px; height: 6px; border-radius: 50%; background-color: currentColor;
+        }
+
+        .bg-success-soft { background: #ecfdf5; }
+        .bg-danger-soft { background: #fef2f2; }
+        .bg-warning-soft { background: #fffbeb; }
+        .bg-primary-soft { background: #eff6ff; }
+
+        .btn-action-light {
+            background: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px;
+            width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;
+            color: #64748b; transition: all 0.2s; cursor: pointer;
+        }
+
+        .btn-action-light:hover {
+            background: #f8fafc; color: #0f172a; border-color: #cbd5e1;
+        }
+
+        .param-icon {
+            width: 36px; height: 36px; border-radius: 10px;
+            display: flex; align-items: center; justify-content: center; font-size: 1rem;
+        }
+        
+        .fs-7 { font-size: 0.75rem; }
+
+        /* Modern Select inside edit mode */
+        .modern-select-wrapper { position: relative; }
+        .modern-select {
+            padding-left: 2.5rem; border-radius: 12px; border: 1px solid #e2e8f0;
+            background-color: #f8fafc; font-size: 0.85rem; font-weight: 600;
+            color: #0f172a; box-shadow: none; transition: all 0.2s;
+        }
+        .modern-select:focus { 
+            background-color: #ffffff; border-color: #0f172a; outline: none; box-shadow: 0 0 0 3px rgba(15, 23, 42, 0.05);
+        }
+        .dropdown-icon {
+            position: absolute; left: 1rem; top: 50%; transform: translateY(-50%);
+            color: #64748b; font-size: 1.1rem; pointer-events: none;
+        }
 
         .border-start-mono { border-left: 1px solid #f0f0f0; padding-left: 2rem; }
 
@@ -308,6 +517,12 @@ export class CertificadoSriPage implements OnInit, OnDestroy {
     isEditing = false;
     isDragging = false;
     showPassword = false;
+
+    // Modals & Replace logic
+    isReplacing = false;
+    showReplaceModal = false;
+    showCancelReplaceModal = false;
+    showSaveReplaceModal = false;
 
     // Setup State
     password = '';
@@ -346,6 +561,12 @@ export class CertificadoSriPage implements OnInit, OnDestroy {
     get isExpired(): boolean {
         if (!this.config) return false;
         return new Date(this.config.fecha_expiracion_cert) < new Date();
+    }
+
+    get hasChanges(): boolean {
+        if (!this.config) return false;
+        return this.config.ambiente !== this.updateParams.ambiente || 
+               this.config.tipo_emision !== this.updateParams.tipo_emision;
     }
 
     private cargarConfiguracion() {
@@ -468,12 +689,41 @@ export class CertificadoSriPage implements OnInit, OnDestroy {
             });
     }
 
-    resetConfig() {
-        if (confirm('¿Desea eliminar esta configuración y vincular una nueva firma?')) {
-            this.config = null;
-            this.fileSelected = false;
-            this.selectedFileName = '';
-            this.password = '';
+    reemplazarCertificado() {
+        this.showReplaceModal = true;
+    }
+
+    confirmReplace() {
+        this.isReplacing = true;
+        this.showReplaceModal = false;
+        this.fileSelected = false;
+        this.selectedFileName = '';
+        this.password = '';
+    }
+
+    cancelReplaceBtn() {
+        this.showCancelReplaceModal = true;
+    }
+
+    confirmCancelReplace() {
+        this.isReplacing = false;
+        this.showCancelReplaceModal = false;
+        this.fileSelected = false;
+        this.selectedFileName = '';
+        this.password = '';
+    }
+
+    triggerUpload() {
+        if (!this.selectedFile || !this.password) return;
+        if (this.isReplacing) {
+            this.showSaveReplaceModal = true;
+        } else {
+            this.onUpload();
         }
+    }
+
+    confirmSaveReplace() {
+        this.showSaveReplaceModal = false;
+        this.onUpload();
     }
 }

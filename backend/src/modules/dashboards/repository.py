@@ -213,7 +213,14 @@ class RepositorioDashboards:
                     WHERE s.empresa_id = %s AND s.estado = 'ACTIVA'
                 """, (empresa_id,))
                 row = cur.fetchone()
-                if row and row['fecha_vencimiento'] and row['fecha_vencimiento'] < (datetime.now().date() + timedelta(days=7)):
+                if row and row['fecha_vencimiento']:
+                    fecha_venc = row['fecha_vencimiento']
+                    # Asegurar comparación entre objetos del mismo tipo (date)
+                    if hasattr(fecha_venc, 'date'):
+                        fecha_venc = fecha_venc.date()
+                        
+                    if fecha_venc < (datetime.now().date() + timedelta(days=7)):
+
                      alertas["criticas"].append({
                         "tipo": "Suscripción",
                         "cantidad": 1,
@@ -393,3 +400,76 @@ class RepositorioDashboards:
         with self.db.cursor() as cur:
             cur.execute(query, (limite,))
             return [dict(r) for r in cur.fetchall()]
+
+    # =========================================================
+    # METODOS DASHBOARD USUARIO (MOCKUP IMPLEMENTATION)
+    # =========================================================
+
+    def obtener_consumo_plan(self, empresa_id: str) -> Dict[str, Any]:
+        """Obtiene el consumo de facturas del mes vs el límite del plan."""
+        query = """
+            SELECT 
+                COALESCE(p.max_facturas_mes, 0) as limite,
+                (SELECT COUNT(*) FROM sistema_facturacion.facturas f 
+                 WHERE f.empresa_id = s.empresa_id 
+                 AND DATE_TRUNC('month', f.fecha_emision) = DATE_TRUNC('month', CURRENT_DATE)
+                 AND f.estado != 'ANULADA') as actual
+            FROM sistema_facturacion.suscripciones s
+            JOIN sistema_facturacion.planes p ON s.plan_id = p.id
+            WHERE s.empresa_id = %s AND s.estado = 'ACTIVA'
+            LIMIT 1
+        """
+        with self.db.cursor() as cur:
+            cur.execute(query, (empresa_id,))
+            res = cur.fetchone()
+            if res:
+                return {"actual": res['actual'], "limite": res['limite']}
+            return {"actual": 0, "limite": 0}
+
+    def obtener_info_firma(self, empresa_id: str) -> Dict[str, Any]:
+        """Obtiene días restantes y fecha de expiración de la firma."""
+        query = """
+            SELECT 
+                fecha_expiracion_cert as fecha,
+                EXTRACT(DAY FROM (fecha_expiracion_cert - CURRENT_DATE)) as dias_restantes
+            FROM sistema_facturacion.configuraciones_sri
+            WHERE empresa_id = %s AND estado = 'ACTIVO'
+            LIMIT 1
+        """
+        with self.db.cursor() as cur:
+            cur.execute(query, (empresa_id,))
+            res = cur.fetchone()
+            if res:
+                return {
+                    "fecha": res['fecha'].isoformat() if res['fecha'] and hasattr(res['fecha'], 'isoformat') else str(res['fecha']),
+                    "dias_restantes": int(res['dias_restantes']) if res['dias_restantes'] is not None else -1
+                }
+            return {"fecha": None, "dias_restantes": -1}
+
+    def obtener_top_productos(self, empresa_id: str, limite: int = 3) -> List[Dict[str, Any]]:
+        """Obtiene los productos más vendidos por monto total."""
+        query = """
+            SELECT 
+                p.nombre,
+                SUM(d.cantidad) as cantidad,
+                SUM(d.subtotal + d.valor_iva) as total
+            FROM sistema_facturacion.facturas_detalle d
+
+            JOIN sistema_facturacion.facturas f ON d.factura_id = f.id
+            JOIN sistema_facturacion.productos p ON d.producto_id = p.id
+            WHERE f.empresa_id = %s AND f.estado != 'ANULADA'
+            GROUP BY p.nombre
+            ORDER BY total DESC
+            LIMIT %s
+        """
+        with self.db.cursor() as cur:
+            cur.execute(query, (empresa_id, limite))
+            return [
+                {
+                    "nombre": r['nombre'], 
+                    "cantidad": int(r['cantidad']) if r['cantidad'] else 0, 
+                    "total": float(r['total']) if r['total'] else 0.0
+                } for r in cur.fetchall()
+            ]
+
+

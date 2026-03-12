@@ -11,11 +11,14 @@ class DashboardKPIs(BaseModel):
     variacion_ingresos: Optional[float] = 0.0
     
     # Empresa
-    ventas_mes: Optional[float] = None
+    ventas_periodo: Optional[float] = None
+
     ventas_hoy: Optional[float] = None
     cuentas_cobrar: Optional[float] = None
     productos_stock_bajo: Optional[int] = None
     facturas_rechazadas: Optional[int] = None
+    firma_expiracion_dias: Optional[int] = None
+
 
 class DashboardAlerta(BaseModel):
     tipo: str
@@ -32,6 +35,12 @@ class DashboardOverview(BaseModel):
     kpis: DashboardKPIs
     alertas: DashboardAlertas
     empresas_recientes: Optional[List[Dict[str, Any]]] = None
+    
+    # Usuario Empresa Extra
+    consumo_plan: Optional[Dict[str, Any]] = None
+    top_productos: Optional[List[Dict[str, Any]]] = None
+    firma_info: Optional[Dict[str, Any]] = None
+
 
 class ResumenDashboard(BaseModel):
     total_empresas: int

@@ -3,11 +3,16 @@ import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { StatCardComponent } from '../../../shared/components/stat-card/stat-card.component';
 import { UiService } from '../../../shared/services/ui.service';
+import { DashboardService, DashboardOverview } from '../../../shared/services/dashboard.service';
+import { CurrencyPipe, DecimalPipe } from '@angular/common';
+
 
 @Component({
   selector: 'app-usuario-dashboard',
   standalone: true,
   imports: [CommonModule, RouterModule, StatCardComponent],
+  providers: [CurrencyPipe, DecimalPipe],
+
   template: `
     <div class="dash-wrap">
 
@@ -16,7 +21,7 @@ import { UiService } from '../../../shared/services/ui.service';
         <div class="col-6 col-lg-3">
           <app-stat-card
             title="Facturas del Mes"
-            value="--"
+            [value]="(overview?.kpis?.ventas_periodo | currency:'USD':'symbol':'1.2-2') || '$0.00'"
             icon="bi-receipt"
             iconBg="rgba(99,102,241,.1)"
             iconColor="#6366f1">
@@ -24,8 +29,8 @@ import { UiService } from '../../../shared/services/ui.service';
         </div>
         <div class="col-6 col-lg-3">
           <app-stat-card
-            title="Monto Autorizado"
-            value="$--"
+            title="Ventas de Hoy"
+            [value]="(overview?.kpis?.ventas_hoy | currency:'USD':'symbol':'1.2-2') || '$0.00'"
             icon="bi-check-circle"
             iconBg="rgba(16,185,129,.1)"
             iconColor="#10b981">
@@ -33,22 +38,24 @@ import { UiService } from '../../../shared/services/ui.service';
         </div>
         <div class="col-6 col-lg-3">
           <app-stat-card
-            title="Pendiente de Cobro"
-            value="$--"
+            title="Saldos Pendientes"
+            [value]="(overview?.kpis?.cuentas_cobrar | currency:'USD':'symbol':'1.2-2') || '$0.00'"
             icon="bi-hourglass-split"
             iconBg="rgba(245,158,11,.1)"
             iconColor="#f59e0b">
           </app-stat-card>
         </div>
+
         <div class="col-6 col-lg-3">
           <app-stat-card
-            title="Total Clientes"
-            value="--"
-            icon="bi-people"
+            title="Stock Bajo"
+            [value]="overview?.kpis?.productos_stock_bajo?.toString() || '0'"
+            icon="bi-box-seam"
             iconBg="rgba(14,165,233,.1)"
             iconColor="#0ea5e9">
           </app-stat-card>
         </div>
+
       </div>
 
       <!-- ── FILA 2: Últimas facturas + Accesos rápidos ── -->
@@ -91,52 +98,106 @@ import { UiService } from '../../../shared/services/ui.service';
           </div>
         </div>
 
-        <!-- Accesos Rápidos -->
+        <!-- ── Accesos Rápidos + Estado de Firma/Plan ── -->
         <div class="col-lg-4">
-          <div class="panel h-100">
-            <div class="panel-header">
-              <span><i class="bi bi-lightning-charge me-2"></i>Accesos Rápidos</span>
+          <div class="d-flex flex-column gap-3">
+            
+            <!-- 1. Firma Electrónica -->
+            <div class="panel p-3 border-start border-4" 
+                 [ngClass]="(overview?.firma_info?.dias_restantes || 0) < 15 ? 'border-danger' : 'border-warning'">
+              <div class="d-flex align-items-center gap-3">
+                <div class="ql-icon" 
+                     [style.color]="(overview?.firma_info?.dias_restantes || 0) < 15 ? '#ef4444' : '#f59e0b'"
+                     [style.background]="(overview?.firma_info?.dias_restantes || 0) < 15 ? 'rgba(239,68,68,.1)' : 'rgba(245,158,11,.1)'">
+                  <i class="bi bi-key-fill"></i>
+                </div>
+                <div *ngIf="overview?.firma_info; else noFirma">
+                  <div class="small text-muted fw-bold" style="font-size: 0.65rem;">FIRMA ELECTRÓNICA</div>
+                  <div class="fw-bold" style="font-size: 0.9rem;">
+                    {{ (overview?.firma_info?.dias_restantes || 0) > 0 ? 'Expira en ' + overview?.firma_info?.dias_restantes + ' días' : 'Firma Expirada' }}
+                  </div>
+                  <div class="text-muted" style="font-size: 0.7rem;">Vencimiento: {{ overview?.firma_info?.fecha | date:'dd/MM/yyyy' }}</div>
+                </div>
+                <ng-template #noFirma>
+                  <div>
+                    <div class="small text-muted fw-bold" style="font-size: 0.65rem;">FIRMA ELECTRÓNICA</div>
+                    <div class="fw-bold text-danger" style="font-size: 0.9rem;">No configurada</div>
+                  </div>
+                </ng-template>
+              </div>
             </div>
-            <div class="quick-links">
-              <a routerLink="/usuario/facturacion" class="quick-link">
-                <div class="ql-icon" style="color:#6366f1; background:rgba(99,102,241,.1)">
-                  <i class="bi bi-plus-circle-fill"></i>
-                </div>
-                <span>Nueva Factura</span>
-                <i class="bi bi-chevron-right ms-auto text-muted"></i>
-              </a>
-              <a routerLink="/usuario/clientes" class="quick-link">
-                <div class="ql-icon" style="color:#0ea5e9; background:rgba(14,165,233,.1)">
-                  <i class="bi bi-person-plus-fill"></i>
-                </div>
-                <span>Nuevo Cliente</span>
-                <i class="bi bi-chevron-right ms-auto text-muted"></i>
-              </a>
-              <a routerLink="/usuario/productos" class="quick-link">
-                <div class="ql-icon" style="color:#ec4899; background:rgba(236,72,153,.1)">
-                  <i class="bi bi-box-seam-fill"></i>
-                </div>
-                <span>Productos</span>
-                <i class="bi bi-chevron-right ms-auto text-muted"></i>
-              </a>
-              <a routerLink="/usuario/reportes" class="quick-link">
-                <div class="ql-icon" style="color:#f59e0b; background:rgba(245,158,11,.1)">
-                  <i class="bi bi-bar-chart-fill"></i>
-                </div>
-                <span>Reportes</span>
-                <i class="bi bi-chevron-right ms-auto text-muted"></i>
-              </a>
-              <a routerLink="/usuario/certificado-sri" class="quick-link">
-                <div class="ql-icon" style="color:#10b981; background:rgba(16,185,129,.1)">
-                  <i class="bi bi-shield-check-fill"></i>
-                </div>
-                <span>Certificado SRI</span>
-                <i class="bi bi-chevron-right ms-auto text-muted"></i>
-              </a>
+
+            <!-- 5. Consumo de Plan -->
+            <div class="panel p-3" *ngIf="overview?.consumo_plan">
+              <div class="d-flex justify-content-between mb-1">
+                <span class="small fw-bold text-muted" style="font-size: 0.65rem;">CONSUMO DE PLAN</span>
+                <span class="small fw-bold">{{ overview?.consumo_plan?.actual }} / {{ overview?.consumo_plan?.limite }}</span>
+              </div>
+              <div class="progress mb-1" style="height: 6px;">
+                <div class="progress-bar bg-success" 
+                     [style.width.%]="((overview?.consumo_plan?.actual || 0) / (overview?.consumo_plan?.limite || 1)) * 100"></div>
+              </div>
+              <div class="text-muted" style="font-size: 0.65rem;">
+                {{ (overview?.consumo_plan?.limite || 0) - (overview?.consumo_plan?.actual || 0) }} documentos restantes
+              </div>
+            </div>
+
+
+            <!-- Accesos Rápidos originales -->
+            <div class="panel">
+              <div class="panel-header">
+                <span><i class="bi bi-lightning-charge me-2"></i>Accesos Rápidos</span>
+              </div>
+              <div class="quick-links">
+                <a routerLink="/usuario/facturacion" class="quick-link">
+                  <div class="ql-icon" style="color:#6366f1; background:rgba(99,102,241,.1)">
+                    <i class="bi bi-plus-circle-fill"></i>
+                  </div>
+                  <span>Nueva Factura</span>
+                </a>
+                <a routerLink="/usuario/clientes" class="quick-link">
+                  <div class="ql-icon" style="color:#0ea5e9; background:rgba(14,165,233,.1)">
+                    <i class="bi bi-person-plus-fill"></i>
+                  </div>
+                  <span>Nuevo Cliente</span>
+                </a>
+              </div>
             </div>
           </div>
         </div>
       </div>
+
+      <!-- ── FILA 3: Top Ventas ── -->
+      <div class="row g-3 mb-4">
+        <div class="col-12">
+          <div class="panel">
+            <div class="panel-header">
+              <span><i class="bi bi-graph-up-arrow me-2"></i>Productos más vendidos</span>
+            </div>
+            <div class="p-3">
+              <div class="row" *ngIf="overview?.top_productos?.length; else noProducts">
+                <div *ngFor="let p of overview?.top_productos" class="col-md-4 mb-3 mb-md-0">
+                  <div class="d-flex justify-content-between mb-1">
+                    <span class="small fw-bold text-truncate" style="max-width: 150px;">{{ p.nombre }}</span>
+                    <span class="small fw-bold text-dark">{{ p.total | currency:'USD':'symbol':'1.2-2' }}</span>
+                  </div>
+                  <div class="progress" style="height: 4px;">
+                    <div class="progress-bar bg-primary" 
+                         [style.width.%]="((p.total || 0) / (overview?.top_productos?.[0]?.total || 1)) * 100"></div>
+                  </div>
+                  <div class="text-muted mt-1" style="font-size: 0.65rem;">{{ p.cantidad }} unidades vendidas</div>
+                </div>
+              </div>
+              <ng-template #noProducts>
+                <div class="text-center py-3 text-muted small">Aún no hay datos de ventas para este periodo.</div>
+              </ng-template>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+
 
       <!-- ── FILA 3: Alertas del sistema ── -->
       <div class="row g-3">
@@ -271,19 +332,39 @@ import { UiService } from '../../../shared/services/ui.service';
   `]
 })
 export class DashboardComponent implements OnInit {
+  overview?: DashboardOverview;
+  loading = true;
 
-  // Datos mock para previsualizar el layout
+  // Datos mock para facturas (hasta conectar facturas list)
   mockFacturas = [
     { numero: '001-001-000000001', cliente: 'Juan Carlos Pérez', total: '$145.00', estado: 'AUTORIZADA', estadoClass: 'estado-badge badge-autorizada', fecha: 'Hoy' },
     { numero: '001-001-000000002', cliente: 'Empresa Demo S.A.', total: '$320.50', estado: 'AUTORIZADA', estadoClass: 'estado-badge badge-autorizada', fecha: 'Hoy' },
     { numero: '001-001-000000003', cliente: 'María López', total: '$89.00', estado: 'BORRADOR', estadoClass: 'estado-badge badge-borrador', fecha: 'Ayer' },
-    { numero: '001-001-000000004', cliente: 'Comercial XYZ', total: '$560.00', estado: 'EN PROCESO', estadoClass: 'estado-badge badge-proceso', fecha: 'Ayer' },
-    { numero: '001-001-000000005', cliente: 'Ana Martínez', total: '$210.00', estado: 'ANULADA', estadoClass: 'estado-badge badge-anulada', fecha: '04/03' },
   ];
 
-  constructor(private uiService: UiService) {}
+  constructor(
+    private uiService: UiService,
+    private dashboardService: DashboardService
+  ) {}
 
   ngOnInit() {
     this.uiService.setPageHeader('Dashboard', 'Resumen general de tu actividad');
+    this.cargarDatos();
   }
+
+  cargarDatos() {
+    this.loading = true;
+    this.dashboardService.getOverview('month').subscribe({
+      next: (data) => {
+        this.overview = data;
+        this.loading = false;
+      },
+      error: (err) => {
+        console.error('Error al cargar dashboard:', err);
+        this.loading = false;
+      }
+    });
+  }
+
+
 }
