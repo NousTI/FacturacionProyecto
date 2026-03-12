@@ -25,7 +25,48 @@ import { CommonModule } from '@angular/common';
     :host {
       display: block;
     }
+    .soft-card {
+      background: white;
+      border-radius: 20px;
+      padding: 1.25rem;
+      border: 1px solid #f1f5f9;
+      box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+      transition: all 0.3s ease;
+    }
+    .soft-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+    }
+    .icon-box {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .stat-value {
+      font-size: 1.75rem;
+      font-weight: 800;
+      color: #1e293b;
+      margin: 0;
+    }
+    .stat-label {
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: #64748b;
+      letter-spacing: 0.5px;
+    }
+    .trend-badge {
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 4px 8px;
+      border-radius: 8px;
+    }
+    .trend-up { background: #ecfdf5; color: #10b981; }
+    .trend-down { background: #fef2f2; color: #ef4444; }
   `],
+
     standalone: true,
     imports: [CommonModule]
 })

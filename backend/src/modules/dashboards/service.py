@@ -57,8 +57,10 @@ class ServicioDashboards:
             ov.consumo_plan = self.repo.obtener_consumo_plan(e_id)
             ov.top_productos = self.repo.obtener_top_productos(e_id)
             ov.firma_info = self.repo.obtener_info_firma(e_id)
+            ov.facturas_recientes = self.repo.obtener_facturas_recientes(e_id)
             
         return ov
+
 
 
     def obtener_resumen(self, usuario: dict) -> Dict[str, Any]:

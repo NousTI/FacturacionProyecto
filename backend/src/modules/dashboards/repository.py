@@ -100,11 +100,28 @@ class RepositorioDashboards:
                 """, (empresa_id,))
                 kpis['ventas_hoy'] = float(cur.fetchone()['total'])
 
-                cur.execute("SELECT COALESCE(SUM(total), 0) as total FROM sistema_facturacion.facturas WHERE empresa_id = %s AND estado = 'AUTORIZADO'", (empresa_id,))
+                cur.execute("SELECT COALESCE(SUM(total), 0) as total FROM sistema_facturacion.facturas WHERE empresa_id = %s AND estado = 'AUTORIZADA' AND estado_pago != 'PAGADO'", (empresa_id,))
                 kpis['cuentas_cobrar'] = float(cur.fetchone()['total'])
                 
-                kpis['productos_stock_bajo'] = 0
-                kpis['facturas_rechazadas'] = 0
+                cur.execute("""
+                    SELECT COUNT(*) as count 
+                    FROM sistema_facturacion.productos 
+                    WHERE empresa_id = %s 
+                    AND activo = TRUE 
+                    AND maneja_inventario = TRUE 
+                    AND stock_actual <= stock_minimo
+                """, (empresa_id,))
+                kpis['productos_stock_bajo'] = cur.fetchone()['count']
+
+                cur.execute(f"""
+                    SELECT COUNT(*) as count 
+                    FROM sistema_facturacion.facturas 
+                    WHERE empresa_id = %s 
+                    AND estado = 'RECHAZADA'
+                    AND {date_filter}
+                """, (empresa_id,))
+                kpis['facturas_rechazadas'] = cur.fetchone()['count']
+
 
             elif vendedor_id:
                 # KPIs para Vendedor
@@ -471,5 +488,36 @@ class RepositorioDashboards:
                     "total": float(r['total']) if r['total'] else 0.0
                 } for r in cur.fetchall()
             ]
+
+    def obtener_facturas_recientes(self, empresa_id: str, limite: int = 5) -> List[Dict[str, Any]]:
+        """Obtiene las últimas facturas emitidas por la empresa."""
+        query = """
+            SELECT 
+                f.id,
+                f.numero_factura as numero,
+                c.razon_social as cliente,
+                f.total as total,
+                f.estado,
+                f.fecha_emision as fecha
+            FROM sistema_facturacion.facturas f
+
+            JOIN sistema_facturacion.clientes c ON f.cliente_id = c.id
+            WHERE f.empresa_id = %s
+            ORDER BY f.fecha_emision DESC, f.created_at DESC
+            LIMIT %s
+        """
+        with self.db.cursor() as cur:
+            cur.execute(query, (empresa_id, limite))
+            return [
+                {
+                    "id": str(r['id']),
+                    "numero": r['numero'],
+                    "cliente": r['cliente'],
+                    "total": float(r['total']),
+                    "estado": r['estado'],
+                    "fecha": r['fecha'].isoformat() if hasattr(r['fecha'], 'isoformat') else str(r['fecha'])
+                } for r in cur.fetchall()
+            ]
+
 
 

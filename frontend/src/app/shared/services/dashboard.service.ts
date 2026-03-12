@@ -39,7 +39,9 @@ export interface DashboardOverview {
     consumo_plan?: { actual: number; limite: number };
     top_productos?: any[];
     firma_info?: { fecha: string; dias_restantes: number };
+    facturas_recientes?: any[];
 }
+
 
 
 // Chart interfaces

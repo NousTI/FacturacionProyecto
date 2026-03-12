@@ -40,6 +40,8 @@ class DashboardOverview(BaseModel):
     consumo_plan: Optional[Dict[str, Any]] = None
     top_productos: Optional[List[Dict[str, Any]]] = None
     firma_info: Optional[Dict[str, Any]] = None
+    facturas_recientes: Optional[List[Dict[str, Any]]] = None
+
 
 
 class ResumenDashboard(BaseModel):
