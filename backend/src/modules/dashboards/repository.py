@@ -338,6 +338,79 @@ class RepositorioDashboards:
             cur.execute(query, params)
             return [{"label": r['label'], "value": r['value']} for r in cur.fetchall()]
 
+    def obtener_ventas_tendencia(self, empresa_id: str, periodo: str = 'month') -> List[Dict[str, Any]]:
+        """Obtiene la tendencia de ventas (monto) para el periodo seleccionado con comparación."""
+        if periodo == 'year':
+            interval = '1 month'
+            limite = 12
+            trunc = 'month'
+            format_str = 'Mon'
+            comp_interval = '1 year'
+        elif periodo == 'week':
+            interval = '1 day'
+            limite = 7
+            trunc = 'day'
+            format_str = 'DD/MM'
+            comp_interval = '7 days'
+        elif periodo == 'day':
+            # Para día, comparamos con las horas de hoy vs ayer? 
+            # O mejor comparamos 7 días atrás para dar contexto?
+            # El usuario pidió "día, semana, mes". 
+            # Si es por día, quizás mostramos las últimas 24h?
+            interval = '1 hour'
+            limite = 24
+            trunc = 'hour'
+            format_str = 'HH'
+            comp_interval = '24 hours'
+        else: # month
+            interval = '1 day'
+            limite = 30
+            trunc = 'day'
+            format_str = 'DD'
+            comp_interval = '30 days'
+
+        query = f"""
+            WITH actual_periods AS (
+                SELECT generate_series(
+                    DATE_TRUNC('{trunc}', CURRENT_DATE) - (INTERVAL '{interval}' * %s),
+                    DATE_TRUNC('{trunc}', CURRENT_DATE), 
+                    '{interval}'::interval
+                ) as period
+            ),
+            data_actual AS (
+                SELECT DATE_TRUNC('{trunc}', fecha_emision) as p, SUM(total) as val
+                FROM sistema_facturacion.facturas
+                WHERE empresa_id = %s AND estado != 'ANULADA'
+                AND fecha_emision >= DATE_TRUNC('{trunc}', CURRENT_DATE) - (INTERVAL '{interval}' * %s)
+                GROUP BY 1
+            ),
+            data_prev AS (
+                SELECT DATE_TRUNC('{trunc}', fecha_emision + INTERVAL '{comp_interval}') as p, SUM(total) as val
+                FROM sistema_facturacion.facturas
+                WHERE empresa_id = %s AND estado != 'ANULADA'
+                AND fecha_emision >= DATE_TRUNC('{trunc}', CURRENT_DATE) - (INTERVAL '{interval}' * %s) - INTERVAL '{comp_interval}'
+                AND fecha_emision < DATE_TRUNC('{trunc}', CURRENT_DATE) - INTERVAL '{comp_interval}' + INTERVAL '{interval}'
+                GROUP BY 1
+            )
+            SELECT 
+                TO_CHAR(ap.period, '{format_str}') as label, 
+                COALESCE(da.val, 0) as value,
+                COALESCE(dp.val, 0) as value_prev
+            FROM actual_periods ap
+            LEFT JOIN data_actual da ON da.p = ap.period
+            LEFT JOIN data_prev dp ON dp.p = ap.period
+            ORDER BY ap.period ASC
+        """
+        with self.db.cursor() as cur:
+            cur.execute(query, (limite - 1, empresa_id, limite - 1, empresa_id, limite - 1))
+            return [
+                {
+                    "label": r['label'], 
+                    "value": float(r['value']),
+                    "value_prev": float(r['value_prev'])
+                } for r in cur.fetchall()
+            ]
+
     def obtener_ingresos_mensuales(self, limite: int = 6, vendedor_id=None, periodo: str = 'month') -> List[Dict[str, Any]]:
         # Ajustar intervalo según periodo para el gráfico
         if periodo == 'year':
@@ -517,6 +590,49 @@ class RepositorioDashboards:
                     "estado": r['estado'],
                     "fecha": r['fecha'].isoformat() if hasattr(r['fecha'], 'isoformat') else str(r['fecha'])
                 } for r in cur.fetchall()
+            ]
+
+    def obtener_distribucion_pagos(self, empresa_id: str, periodo: str = 'month') -> List[Dict[str, Any]]:
+        """Calcula la distribución de pagos mapeando nombres legibles."""
+        
+        if periodo == 'today':
+            date_filter = "f.fecha_emision::date = CURRENT_DATE"
+        elif periodo == 'week':
+            date_filter = "f.fecha_emision >= CURRENT_DATE - INTERVAL '7 days'"
+        else: # month
+            date_filter = "f.fecha_emision >= CURRENT_DATE - INTERVAL '30 days'"
+
+        query = f"""
+            SELECT p.forma_pago, SUM(p.valor) as total
+            FROM sistema_facturacion.facturas f
+            JOIN public.forma_pago p ON f.id = p.factura_id
+            WHERE f.empresa_id = %s AND f.estado != 'ANULADA'
+            AND {date_filter}
+            GROUP BY p.forma_pago
+            ORDER BY total DESC
+        """
+        
+        with self.db.cursor() as cur:
+            cur.execute(query, (empresa_id,))
+            resultados = cur.fetchall()
+            
+            if not resultados:
+                return []
+
+            # Mapeo de nombres internos a etiquetas bonitas
+            labels = {
+                'efectivo': 'Efectivo',
+                'tarjeta': 'Tarjetas',
+                'transferencia': 'Transferencias',
+                'credito': 'Crédito',
+                'otros': 'Otros'
+            }
+
+            return [
+                {
+                    "label": labels.get(str(r['forma_pago']).lower(), str(r['forma_pago']).capitalize()),
+                    "value": float(r['total'])
+                } for r in resultados
             ]
 
 

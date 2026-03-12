@@ -40,6 +40,8 @@ export interface DashboardOverview {
     top_productos?: any[];
     firma_info?: { fecha: string; dias_restantes: number };
     facturas_recientes?: any[];
+    ventas_tendencia?: ChartData[];
+    distribucion_pagos?: any[];
 }
 
 
@@ -48,13 +50,17 @@ export interface DashboardOverview {
 export interface ChartData {
     label: string;
     value: number;
+    value_prev?: number;
 }
+
 
 export interface DashboardGraficos {
     facturas_mes: ChartData[];
     ingresos_saas: ChartData[];
     empresas_by_plan: any[];
     sri_trend: number[];
+    ventas_tendencia?: ChartData[];
+    distribucion_pagos?: any[];
 }
 
 @Injectable({

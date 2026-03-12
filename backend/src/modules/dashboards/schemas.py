@@ -31,6 +31,11 @@ class DashboardAlertas(BaseModel):
     advertencias: List[DashboardAlerta]
     informativas: List[DashboardAlerta]
 
+class CharData(BaseModel):
+    label: str
+    value: float
+    value_prev: Optional[float] = None
+
 class DashboardOverview(BaseModel):
     kpis: DashboardKPIs
     alertas: DashboardAlertas
@@ -41,6 +46,8 @@ class DashboardOverview(BaseModel):
     top_productos: Optional[List[Dict[str, Any]]] = None
     firma_info: Optional[Dict[str, Any]] = None
     facturas_recientes: Optional[List[Dict[str, Any]]] = None
+    ventas_tendencia: Optional[List[CharData]] = None
+    distribucion_pagos: Optional[List[Dict[str, Any]]] = None
 
 
 
@@ -56,12 +63,10 @@ class ResumenDashboard(BaseModel):
     errores_sri_msg: str
     certificados_msg: str
 
-class CharData(BaseModel):
-    label: str
-    value: float
-
 class DashboardGraficos(BaseModel):
     facturas_mes: List[CharData]
     ingresos_saas: List[CharData]
     empresas_by_plan: List[Dict[str, Any]]
     sri_trend: List[int]
+    ventas_tendencia: Optional[List[CharData]] = None
+    distribucion_pagos: Optional[List[Dict[str, Any]]] = None

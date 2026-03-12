@@ -6,7 +6,7 @@ import { RoleGuard } from '../../core/guards/role.guard';
 import { UserRole } from '../../domain/enums/role.enum';
 
 // New Component Imports
-import { DashboardComponent } from './dashboard/dashboard.component';
+import { DashboardPage } from './dashboard/dashboard.page';
 import { ClientesPage } from './clientes/clientes.page';
 import { ProductosPage } from './productos/productos.page';
 import { FacturacionPage } from './facturacion/facturacion.page';
@@ -28,7 +28,7 @@ const routes: Routes = [
     },
     {
         path: 'dashboard',
-        component: DashboardComponent,
+        component: DashboardPage,
         canActivate: [RoleGuard],
         data: { title: 'Dashboard', roles: [UserRole.USUARIO] }
     },

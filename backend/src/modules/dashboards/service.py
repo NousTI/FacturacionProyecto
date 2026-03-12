@@ -58,7 +58,15 @@ class ServicioDashboards:
             ov.top_productos = self.repo.obtener_top_productos(e_id)
             ov.firma_info = self.repo.obtener_info_firma(e_id)
             ov.facturas_recientes = self.repo.obtener_facturas_recientes(e_id)
+            ov.ventas_tendencia = self.repo.obtener_ventas_tendencia(e_id, periodo)
             
+            dist_pagos = self.repo.obtener_distribucion_pagos(e_id, periodo)
+            total_pagos = sum(p['value'] for p in dist_pagos)
+            ov.distribucion_pagos = [
+                {**p, "percent": round((p['value'] / total_pagos * 100), 1) if total_pagos > 0 else 0}
+                for p in dist_pagos
+            ]
+           
         return ov
 
 
@@ -104,5 +112,14 @@ class ServicioDashboards:
                      "percent": round((item['count'] / total * 100), 1) if total > 0 else 0,
                      "color": colors[i % len(colors)]
                  })
+        
+        if e_id:
+            res["ventas_tendencia"] = self.repo.obtener_ventas_tendencia(e_id, periodo)
+            dist_pagos = self.repo.obtener_distribucion_pagos(e_id, periodo)
+            total_pagos = sum(p['value'] for p in dist_pagos)
+            res["distribucion_pagos"] = [
+                {**p, "percent": round((p['value'] / total_pagos * 100), 1) if total_pagos > 0 else 0}
+                for p in dist_pagos
+            ]
         
         return res
