@@ -21,9 +21,9 @@ import { InfoTooltipComponent } from '../../../../../shared/components/info-tool
           <div *ngIf="firmaInfo; else noFirma">
             <div class="small text-muted fw-bold" style="font-size: 0.65rem;">FIRMA ELECTRÓNICA</div>
             <div class="fw-bold" style="font-size: 0.9rem;">
-              {{ (firmaInfo?.dias_restantes || 0) > 0 ? 'Expira en ' + firmaInfo?.dias_restantes + ' días' : 'Firma Expirada' }}
+              {{ (firmaInfo.dias_restantes || 0) > 0 ? 'Expira en ' + firmaInfo.dias_restantes + ' días' : 'Firma Expirada' }}
             </div>
-            <div class="text-muted" style="font-size: 0.7rem;">Vencimiento: {{ firmaInfo?.fecha | date:'dd/MM/yyyy' }}</div>
+            <div class="text-muted" style="font-size: 0.7rem;">Vencimiento: {{ firmaInfo.fecha | date:'dd/MM/yyyy' }}</div>
           </div>
           <ng-template #noFirma>
             <div>
@@ -41,14 +41,14 @@ import { InfoTooltipComponent } from '../../../../../shared/components/info-tool
             CONSUMO DE PLAN
             <app-info-tooltip message="Porcentaje de documentos emitidos respecto al límite mensual de tu plan contratado."></app-info-tooltip>
           </span>
-          <span class="small fw-bold">{{ consumoPlan?.actual }} / {{ consumoPlan?.limite }}</span>
+          <span class="small fw-bold">{{ consumoPlan.actual }} / {{ consumoPlan.limite }}</span>
         </div>
         <div class="progress mb-1" style="height: 6px;">
           <div class="progress-bar bg-success" 
-               [style.width.%]="((consumoPlan?.actual || 0) / (consumoPlan?.limite || 1)) * 100"></div>
+               [style.width.%]="((consumoPlan.actual || 0) / (consumoPlan.limite || 1)) * 100"></div>
         </div>
         <div class="text-muted" style="font-size: 0.65rem;">
-          {{ (consumoPlan?.limite || 0) - (consumoPlan?.actual || 0) }} documentos restantes
+          {{ (consumoPlan.limite || 0) - (consumoPlan.actual || 0) }} documentos restantes
         </div>
       </div>
     </div>

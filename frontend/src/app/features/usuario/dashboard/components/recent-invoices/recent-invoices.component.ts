@@ -23,7 +23,7 @@ import { RouterModule } from '@angular/router';
             <th class="text-end">Fecha</th>
           </tr>
         </thead>
-        <tbody *ngIf="facturas?.length; else emptyFacturas">
+        <tbody *ngIf="facturas.length; else emptyFacturas">
           <tr *ngFor="let f of facturas">
             <td class="fw-bold small text-muted">{{ f.numero }}</td>
             <td class="small text-truncate" style="max-width: 150px;">{{ f.cliente }}</td>

@@ -18,7 +18,7 @@ import { InfoTooltipComponent } from '../../../../../shared/components/info-tool
             </span>
           </div>
           <div class="p-3">
-            <div class="row" *ngIf="topProductos?.length; else noProducts">
+            <div class="row" *ngIf="topProductos.length; else noProducts">
               <div *ngFor="let p of topProductos" class="col-md-4 mb-3 mb-md-0">
                 <div class="d-flex justify-content-between mb-1">
                   <span class="small fw-bold text-truncate" style="max-width: 150px;">{{ p.nombre }}</span>
@@ -26,7 +26,7 @@ import { InfoTooltipComponent } from '../../../../../shared/components/info-tool
                 </div>
                 <div class="progress" style="height: 4px;">
                   <div class="progress-bar bg-primary" 
-                       [style.width.%]="((p.total || 0) / (topProductos?.[0]?.total || 1)) * 100"></div>
+                       [style.width.%]="((p.total || 0) / (topProductos[0]?.total || 1)) * 100"></div>
                 </div>
                 <div class="text-muted mt-1" style="font-size: 0.65rem;">{{ p.cantidad }} unidades vendidas</div>
               </div>
