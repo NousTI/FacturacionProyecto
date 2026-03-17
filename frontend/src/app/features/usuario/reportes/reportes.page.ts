@@ -16,10 +16,6 @@ import { HasPermissionDirective } from '../../../shared/directives/has-permissio
   template: `
     <div class="reportes-container p-4">
       <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-          <h2 class="fw-bold text-corporate mb-1">Reportes y Exportaciones</h2>
-          <p class="text-muted small">Genera y descarga informes detallados de tu actividad comercial</p>
-        </div>
         <button 
           *appHasPermission="'REPORTES_EXPORTAR'"
           (click)="abrirModalGenerar()" 
