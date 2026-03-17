@@ -54,6 +54,7 @@ class RepositorioDashboards:
         
         # Mapeo de periodos a intervalos de PostgreSQL
         intervals = {
+            'day': "CURRENT_DATE",
             'today': "CURRENT_DATE",
             'week': "DATE_TRUNC('week', CURRENT_DATE)",
             'month': "DATE_TRUNC('month', CURRENT_DATE)",
@@ -66,7 +67,7 @@ class RepositorioDashboards:
         period_condition = intervals.get(periodo, intervals['month'])
         
         # Filtro de fecha base
-        if periodo == 'today':
+        if periodo in ['today', 'day']:
             date_filter = "fecha_emision::date = CURRENT_DATE"
             susc_filter = "fecha_pago::date = CURRENT_DATE"
             expired_filter = "s.fecha_fin < CURRENT_DATE"
@@ -91,16 +92,16 @@ class RepositorioDashboards:
                 """, (empresa_id,))
                 kpis['ventas_periodo'] = float(cur.fetchone()['total'])
 
-                cur.execute("""
-                    SELECT COALESCE(SUM(total), 0) as total 
+                cur.execute(f"""
+                    SELECT COUNT(*) as count 
                     FROM sistema_facturacion.facturas 
                     WHERE empresa_id = %s 
                     AND estado != 'ANULADA'
-                    AND fecha_emision::date = CURRENT_DATE
+                    AND {date_filter}
                 """, (empresa_id,))
-                kpis['ventas_hoy'] = float(cur.fetchone()['total'])
+                kpis['ventas_hoy'] = cur.fetchone()['count']
 
-                cur.execute("SELECT COALESCE(SUM(total), 0) as total FROM sistema_facturacion.facturas WHERE empresa_id = %s AND estado = 'AUTORIZADA' AND estado_pago != 'PAGADO'", (empresa_id,))
+                cur.execute(f"SELECT COALESCE(SUM(total), 0) as total FROM sistema_facturacion.facturas WHERE empresa_id = %s AND estado = 'AUTORIZADA' AND estado_pago != 'PAGADO' AND {date_filter}", (empresa_id,))
                 kpis['cuentas_cobrar'] = float(cur.fetchone()['total'])
                 
                 cur.execute("""
@@ -595,7 +596,7 @@ class RepositorioDashboards:
     def obtener_distribucion_pagos(self, empresa_id: str, periodo: str = 'month') -> List[Dict[str, Any]]:
         """Calcula la distribución de pagos mapeando nombres legibles."""
         
-        if periodo == 'today':
+        if periodo in ['today', 'day']:
             date_filter = "f.fecha_emision::date = CURRENT_DATE"
         elif periodo == 'week':
             date_filter = "f.fecha_emision >= CURRENT_DATE - INTERVAL '7 days'"

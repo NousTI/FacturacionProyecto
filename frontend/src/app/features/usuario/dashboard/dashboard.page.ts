@@ -53,7 +53,7 @@ import { DashboardOverview } from '../../../shared/services/dashboard.service';
 
       <ng-container *ngIf="overview$ | async as overview">
         <!-- ── FILA 1: KPIs ── -->
-        <app-dashboard-kpis [kpis]="overview.kpis"></app-dashboard-kpis>
+        <app-dashboard-kpis [kpis]="overview.kpis" [selectedPeriod]="selectedPeriod"></app-dashboard-kpis>
 
         <!-- ── FILA 2: GRÁFICOS ── -->
         <div class="row g-3 mb-4">

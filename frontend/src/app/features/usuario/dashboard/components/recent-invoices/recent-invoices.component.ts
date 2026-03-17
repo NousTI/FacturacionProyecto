@@ -54,7 +54,6 @@ import { RouterModule } from '@angular/router';
       background: white;
       border: 1px solid #f1f5f9;
       border-radius: 14px;
-      overflow: hidden;
       display: flex;
       flex-direction: column;
     }

@@ -13,7 +13,7 @@ import { DashboardKPIs } from '../../../../../shared/services/dashboard.service'
     <div class="row g-3 mb-4">
       <div class="col-6 col-lg-3">
         <app-stat-card
-          title="Monto Facturado"
+          [title]="getMontoTitle()"
           [value]="(kpis?.ventas_periodo | currency:'USD':'symbol':'1.2-2') || '$0.00'"
           icon="bi-receipt"
           iconBg="rgba(99,102,241,.1)"
@@ -23,22 +23,22 @@ import { DashboardKPIs } from '../../../../../shared/services/dashboard.service'
       </div>
       <div class="col-6 col-lg-3">
         <app-stat-card
-          title="Ventas de Hoy"
-          [value]="(kpis?.ventas_hoy | currency:'USD':'symbol':'1.2-2') || '$0.00'"
+          [title]="getVentasTitle()"
+          [value]="kpis?.ventas_hoy?.toString() || '0'"
           icon="bi-check-circle"
           iconBg="rgba(16,185,129,.1)"
           iconColor="#10b981">
-          <app-info-tooltip message="Monto total de las ventas realizadas durante el día actual."></app-info-tooltip>
+          <app-info-tooltip message="Cantidad de comprobantes emitidos durante el periodo seleccionado."></app-info-tooltip>
         </app-stat-card>
       </div>
       <div class="col-6 col-lg-3">
         <app-stat-card
-          title="Saldos Pendientes"
+          [title]="getSaldosTitle()"
           [value]="(kpis?.cuentas_cobrar | currency:'USD':'symbol':'1.2-2') || '$0.00'"
           icon="bi-hourglass-split"
           iconBg="rgba(245,158,11,.1)"
           iconColor="#f59e0b">
-          <app-info-tooltip message="Total de facturas autorizadas que aún no han sido cobradas."></app-info-tooltip>
+          <app-info-tooltip message="Total de facturas autorizadas que aún no han sido cobradas en este periodo."></app-info-tooltip>
         </app-stat-card>
       </div>
       <div class="col-6 col-lg-3">
@@ -56,4 +56,20 @@ import { DashboardKPIs } from '../../../../../shared/services/dashboard.service'
 })
 export class DashboardKpisComponent {
   @Input() kpis?: DashboardKPIs;
+  @Input() selectedPeriod: 'day' | 'week' | 'month' = 'month';
+
+  getMontoTitle(): string {
+    const map = { day: 'Monto de Hoy', week: 'Monto Semanal', month: 'Monto del Mes' };
+    return map[this.selectedPeriod];
+  }
+
+  getVentasTitle(): string {
+    const map = { day: 'Ventas de Hoy', week: 'Ventas Semanales', month: 'Ventas del Mes' };
+    return map[this.selectedPeriod];
+  }
+
+  getSaldosTitle(): string {
+    const map = { day: 'Saldos de Hoy', week: 'Saldos Semanales', month: 'Saldos del Mes' };
+    return map[this.selectedPeriod];
+  }
 }
