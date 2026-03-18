@@ -7,17 +7,20 @@ from ....constants.enums import AuthKeys
 from ....errors.app_error import AppError
 from ...usuarios.repositories import RepositorioUsuarios
 from .service_base import ValidacionesFactura
+from ...cuentas_cobrar.repository import RepositorioCuentasCobrar
 
 class ServicioAutorizacion:
     def __init__(
         self, 
         core: ServicioFacturaCore = Depends(),
         sri_facturacion: ServicioSRIFacturas = Depends(),
-        usuario_repo: RepositorioUsuarios = Depends()
+        usuario_repo: RepositorioUsuarios = Depends(),
+        cuentas_cobrar_repo: RepositorioCuentasCobrar = Depends()
     ):
         self.core = core
         self.sri_facturacion = sri_facturacion
         self.usuario_repo = usuario_repo
+        self.cuentas_cobrar_repo = cuentas_cobrar_repo
 
     def registrar_autorizacion_sri(self, datos: AutorizacionSRICreacion, usuario_actual: dict):
         ValidacionesFactura.obtener_y_validar_factura(self.core, datos.factura_id, usuario_actual)
@@ -102,6 +105,10 @@ class ServicioAutorizacion:
             update_data['snapshot_punto_emision'] = snapshot_pto
             
             self.core.actualizar_factura(id, update_data)
+            
+            # Sincronizar número oficial con Cuentas por Cobrar
+            self.cuentas_cobrar_repo.actualizar_por_factura(id, {"numero_documento": numero_factura})
+            
             print(f"Factura {id} ahora tiene el número {numero_factura}. Procediendo al SRI...")
         else:
             print(f"--- [SERVICE] Reutilizando número {factura.get('numero_factura')} para factura {id}. Procediendo al SRI... ---")

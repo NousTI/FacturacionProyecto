@@ -9,17 +9,20 @@ from ....errors.app_error import AppError
 from ...usuarios.repositories import RepositorioUsuarios
 from .service_base import ValidacionesFactura
 from ...formas_pago.repository import RepositorioFormasPago
+from ...cuentas_cobrar.repository import RepositorioCuentasCobrar
 
 class ServicioFactura:
     def __init__(
         self, 
         core: ServicioFacturaCore = Depends(),
         usuario_repo: RepositorioUsuarios = Depends(),
-        formas_pago_repo: RepositorioFormasPago = Depends()
+        formas_pago_repo: RepositorioFormasPago = Depends(),
+        cuentas_cobrar_repo: RepositorioCuentasCobrar = Depends()
     ):
         self.core = core
         self.usuario_repo = usuario_repo
         self.formas_pago_repo = formas_pago_repo
+        self.cuentas_cobrar_repo = cuentas_cobrar_repo
 
     def crear_factura(self, datos: FacturaCreacion, usuario_actual: dict):
         """Orquestador para creación de factura (Borrador)."""
@@ -63,6 +66,24 @@ class ServicioFactura:
             pago_data['factura_id'] = nueva['id']
             # Guardamos la forma de pago ligada a factura nueva 
             self.formas_pago_repo.crear_pago(pago_data)
+            
+        # 3. CREAR LA CUENTA POR COBRAR AUTOMÁTICAMENTE
+        fecha_emision = nueva.get('fecha_emision')
+        fecha_vencimiento = nueva.get('fecha_vencimiento') or fecha_emision
+        
+        cuenta_data = {
+            "empresa_id": nueva['empresa_id'],
+            "factura_id": nueva['id'],
+            "cliente_id": nueva['cliente_id'],
+            "numero_documento": nueva.get('numero_factura') or 'BORRADOR',
+            "fecha_emision": fecha_emision,
+            "fecha_vencimiento": fecha_vencimiento,
+            "monto_total": nueva['total'],
+            "monto_pagado": 0,
+            "saldo_pendiente": nueva['total'],
+            "estado": "pendiente"
+        }
+        self.cuentas_cobrar_repo.crear_cuenta(cuenta_data)
             
         return nueva
 
@@ -133,15 +154,46 @@ class ServicioFactura:
         if factura.get('estado') != 'AUTORIZADA':
             raise AppError("Solo facturas AUTORIZADAS pueden anularse", 400, "VAL_ERROR")
         
-        return self.core.actualizar_factura(id, {
+        res = self.core.actualizar_factura(id, {
             "estado": "ANULADA",
             "razon_anulacion": datos.razon_anulacion
         })
+        
+        # Sincronizar estado anulado y poner deuda en 0
+        self.cuentas_cobrar_repo.actualizar_por_factura(id, {
+            "monto_pagado": 0,
+            "saldo_pendiente": 0,
+            "estado": "anulado"
+        })
+        
+        return res
 
     def actualizar_estado_pago(self, id: UUID, estado_pago: str, usuario_actual: dict):
         """Actualiza el estado de pago de una factura."""
-        self.obtener_factura(id, usuario_actual) # Valida existencia y pertenencia
-        return self.core.actualizar_factura(id, {"estado_pago": estado_pago})
+        factura = self.obtener_factura(id, usuario_actual) # Valida existencia y pertenencia
+        res = self.core.actualizar_factura(id, {"estado_pago": estado_pago})
+        
+        # Sincronizar Cuentas por Cobrar
+        cw_repo = self.cuentas_cobrar_repo
+        monto_total = float(factura.get('total', 0))
+        if estado_pago == 'PAGADO':
+            cw_repo.actualizar_por_factura(id, {
+                "monto_pagado": monto_total,
+                "saldo_pendiente": 0,
+                "estado": "pagado"
+            })
+        elif estado_pago == 'PENDIENTE':
+            cw_repo.actualizar_por_factura(id, {
+                "monto_pagado": 0,
+                "saldo_pendiente": monto_total,
+                "estado": "pendiente"
+            })
+        elif estado_pago == 'VENCIDO':
+            cw_repo.actualizar_por_factura(id, {
+                "estado": "vencido"
+            })
+            
+        return res
 
     def obtener_detalle_completo(self, id: UUID, usuario_actual: dict):
         """Obtiene la factura y todos sus detalles (útil para RIDE/PDF)."""

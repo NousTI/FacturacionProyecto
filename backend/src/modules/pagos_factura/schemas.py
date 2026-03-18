@@ -6,11 +6,10 @@ from pydantic import BaseModel, Field
 
 class PagoFacturaBase(BaseModel):
     cuenta_cobrar_id: UUID
-    factura_id: UUID
     numero_recibo: str
     fecha_pago: date
     monto: Decimal = Field(..., gt=0)
-    metodo_pago: str # efectivo, depósito, transferencia, cheque
+    metodo_pago_sri: str = Field(..., pattern=r'^\d{2}$')
     numero_referencia: Optional[str] = None
     comprobante_url: Optional[str] = None
     observaciones: Optional[str] = None

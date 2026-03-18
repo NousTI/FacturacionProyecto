@@ -14,7 +14,7 @@ class RepositorioPagosFactura:
         placeholders = ["%s"] * len(fields)
         
         query = f"""
-            INSERT INTO pago_factura ({', '.join(fields)})
+            INSERT INTO sistema_facturacion.pagos_factura ({', '.join(fields)})
             VALUES ({', '.join(placeholders)})
             RETURNING *
         """
@@ -24,20 +24,20 @@ class RepositorioPagosFactura:
             return dict(row) if row else None
 
     def obtener_por_id(self, id: UUID) -> Optional[dict]:
-        query = "SELECT * FROM pago_factura WHERE id = %s"
+        query = "SELECT * FROM sistema_facturacion.pagos_factura WHERE id = %s"
         with self.db.cursor() as cur:
             cur.execute(query, (str(id),))
             row = cur.fetchone()
             return dict(row) if row else None
 
     def listar_por_cuenta(self, cuenta_cobrar_id: UUID, limit: int = 100, offset: int = 0) -> List[dict]:
-        query = "SELECT * FROM pago_factura WHERE cuenta_cobrar_id = %s ORDER BY created_at DESC LIMIT %s OFFSET %s"
+        query = "SELECT * FROM sistema_facturacion.pagos_factura WHERE cuenta_cobrar_id = %s ORDER BY created_at DESC LIMIT %s OFFSET %s"
         with self.db.cursor() as cur:
             cur.execute(query, (str(cuenta_cobrar_id), limit, offset))
             return [dict(row) for row in cur.fetchall()]
 
     def listar_todos(self, limit: int = 100, offset: int = 0) -> List[dict]:
-        query = "SELECT * FROM pago_factura ORDER BY created_at DESC LIMIT %s OFFSET %s"
+        query = "SELECT * FROM sistema_facturacion.pagos_factura ORDER BY created_at DESC LIMIT %s OFFSET %s"
         with self.db.cursor() as cur:
             cur.execute(query, (limit, offset))
             return [dict(row) for row in cur.fetchall()]
