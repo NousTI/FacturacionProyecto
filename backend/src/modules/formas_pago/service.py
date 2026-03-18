@@ -108,9 +108,11 @@ class ServicioFormasPago:
                 fecha_emision = factura['fecha_emision']
                 plazo_days = p['plazo']
                 
-                unidad = p.get('unidad_tiempo', 'dias').lower()
-                if 'mes' in unidad:
+                unidad = p.get('unidad_tiempo') or 'DIAS'
+                if 'MES' in unidad.upper():
                     plazo_days = plazo_days * 30 
+                elif 'ANIO' in unidad.upper() or 'AÑO' in unidad.upper():
+                    plazo_days = plazo_days * 365
                 
                 fecha_vencimiento = fecha_emision + timedelta(days=plazo_days)
                 
@@ -121,7 +123,7 @@ class ServicioFormasPago:
                     "fecha_emision": fecha_emision,
                     "fecha_vencimiento": fecha_vencimiento,
                     "monto_total": p['valor'],
-                    "observaciones": f"Generado automáticamente por Forma de Pago: {p['forma_pago']}"
+                    "observaciones": f"Generado automáticamente por Forma de Pago: {p.get('forma_pago_sri', '')}"
                 }
                 
                 cuenta_cobrar_service.create(cc_data, usuario_actual)

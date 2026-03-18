@@ -47,14 +47,9 @@ class FacturaBase(BaseModel):
     tipo_documento: str = Field(default='01', pattern=r'^\d{2}$', description="01=Factura, 04=NC, 05=ND")
     ambiente: int = Field(default=1, description="1=Prueba, 2=Produccion (FORZADO A 1 POR SEGURIDAD)")
     tipo_emision: int = Field(default=1, ge=1, le=2, description="1=Normal, 2=Contingencia")
-    forma_pago_sri: str = Field(default='01', pattern=r'^\d{2}$', description="Código SRI de forma de pago")
     
     fecha_emision: date
     fecha_vencimiento: Optional[date] = None
-    
-    # PLAZO Y TIEMPO (SRI)
-    plazo: Optional[int] = Field(default=0, ge=0)
-    unidad_tiempo: Optional[str] = Field(default='DIAS', pattern=r'^(DIAS|MESES|ANIOS)$')
     
     # MONTOS
     subtotal_sin_iva: Decimal = Field(default=Decimal('0.00'), ge=0)
@@ -81,13 +76,7 @@ class FacturaBase(BaseModel):
         return v
 
 
-    @model_validator(mode='after')
-    def validar_plazo_efectivo(self) -> 'FacturaBase':
-        """Si es efectivo (01), no se debe guardar plazo ni unidad de tiempo."""
-        if self.forma_pago_sri == '01':
-            self.plazo = None
-            self.unidad_tiempo = None
-        return self
+
 
 
 class FacturaCreacion(FacturaBase):
@@ -158,20 +147,11 @@ class FacturaActualizacion(BaseModel):
     retencion_iva: Optional[Decimal] = Field(None, ge=0)
     retencion_renta: Optional[Decimal] = Field(None, ge=0)
     total: Optional[Decimal] = Field(None, ge=0)
-    plazo: Optional[int] = Field(None, ge=0)
-    unidad_tiempo: Optional[str] = None
     origen: Optional[str] = None
     estado_pago: Optional[EstadoPago] = None
     observaciones: Optional[str] = None
     
-    @model_validator(mode='after')
-    def validar_plazo_efectivo(self) -> 'FacturaActualizacion':
-        """Si es efectivo (01), no se debe guardar plazo ni unidad de tiempo."""
-        if 'forma_pago_sri' in self.model_fields_set:
-            if self.forma_pago_sri == '01':
-                self.plazo = None
-                self.unidad_tiempo = None
-        return self
+
     
 
 # ===================================================================
@@ -241,9 +221,6 @@ class FacturaLectura(BaseModel):
     tipo_documento: str
     ambiente: int
     tipo_emision: int
-    forma_pago_sri: str
-    plazo: Optional[int] = 0
-    unidad_tiempo: Optional[str] = 'DIAS'
     
     # Estados
     estado: EstadoFactura

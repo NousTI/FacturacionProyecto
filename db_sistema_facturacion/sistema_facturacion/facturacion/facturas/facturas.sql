@@ -122,24 +122,6 @@ CREATE TABLE IF NOT EXISTS sistema_facturacion.facturas (
         CHECK (origen IN ('MANUAL', 'IMPORTADO', 'API', 'FACTURACION_PROGRAMADA'))
         COMMENT 'Cómo se creó: MANUAL, IMPORTADO, API, o FACTURACION_PROGRAMADA',
 
-    plazo INT 
- 		CHECK (plazo >= 0),
-
-	unidad_tiempo VARCHAR(20)
-	    CHECK (unidad_tiempo IN ('DIAS', 'MESES', 'ANIOS')),
-	
-    forma_pago_sri CHAR(2) NOT NULL DEFAULT '01'
-        CHECK (forma_pago_sri IN (
-            '01', -- SIN UTILIZACIÓN DEL SISTEMA FINANCIERO (EFECTIVO)
-            '15', -- COMPENSACIÓN DE DEUDAS
-            '16', -- TARJETA DE DÉBITO
-            '17', -- DINERO ELECTRONICO
-            '18', -- TARJETA PREPAGO
-            '19', -- TARJETA DE CRÉDITO
-            '20', -- OTROS CON UTILIZACIÓN DEL SISTEMA FINANCIERO
-            '21'  -- ENDOSO DE TÍTULOS
-        )),
-
     -- =============================================
     -- AUDITORÍA
     -- =============================================

@@ -14,7 +14,7 @@ class RepositorioFormasPago:
         placeholders = ["%s"] * len(fields)
         
         query = f"""
-            INSERT INTO forma_pago ({', '.join(fields)})
+            INSERT INTO sistema_facturacion.formas_pago ({', '.join(fields)})
             VALUES ({', '.join(placeholders)})
             RETURNING *
         """
@@ -24,14 +24,14 @@ class RepositorioFormasPago:
             return dict(row) if row else None
 
     def obtener_por_id(self, id: UUID) -> Optional[dict]:
-        query = "SELECT * FROM forma_pago WHERE id = %s"
+        query = "SELECT * FROM sistema_facturacion.formas_pago WHERE id = %s"
         with self.db.cursor() as cur:
             cur.execute(query, (str(id),))
             row = cur.fetchone()
             return dict(row) if row else None
 
     def listar_por_factura(self, factura_id: UUID) -> List[dict]:
-        query = "SELECT * FROM forma_pago WHERE factura_id = %s"
+        query = "SELECT * FROM sistema_facturacion.formas_pago WHERE factura_id = %s"
         with self.db.cursor() as cur:
             cur.execute(query, (str(factura_id),))
             return [dict(row) for row in cur.fetchall()]
@@ -43,7 +43,7 @@ class RepositorioFormasPago:
         clean_values = [str(v) if isinstance(v, UUID) else v for v in data.values()]
         clean_values.append(str(id))
 
-        query = f"UPDATE forma_pago SET {', '.join(set_clauses)}, updated_at = NOW() WHERE id = %s RETURNING *"
+        query = f"UPDATE sistema_facturacion.formas_pago SET {', '.join(set_clauses)} WHERE id = %s RETURNING *"
         
         with db_transaction(self.db) as cur:
             cur.execute(query, tuple(clean_values))
@@ -51,7 +51,7 @@ class RepositorioFormasPago:
             return dict(row) if row else None
 
     def eliminar_pago(self, id: UUID) -> bool:
-        query = "DELETE FROM forma_pago WHERE id = %s"
+        query = "DELETE FROM sistema_facturacion.formas_pago WHERE id = %s"
         with db_transaction(self.db) as cur:
             cur.execute(query, (str(id),))
             return cur.rowcount > 0
