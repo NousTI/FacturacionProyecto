@@ -34,17 +34,17 @@ CREATE TABLE IF NOT EXISTS public.proveedor (
 -- =========================================
 -- CUENTA COBRAR
 -- ==================================================================================
-CREATE TABLE IF NOT EXISTS public.cuenta_cobrar (
+CREATE TABLE IF NOT EXISTS sistema_facturacion.cuenta_cobrar (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
 
     empresa_id UUID NOT NULL
-        REFERENCES public.empresa(id) ON DELETE CASCADE,
+        REFERENCES sistema_facturacion.empresas(id) ON DELETE CASCADE,
 
     factura_id UUID NOT NULL
-        REFERENCES public.factura(id) ON DELETE CASCADE,
+        REFERENCES sistema_facturacion.facturas(id) ON DELETE CASCADE,
 
     cliente_id UUID NOT NULL
-        REFERENCES public.cliente(id) ON DELETE RESTRICT,
+        REFERENCES sistema_facturacion.clientes(id) ON DELETE RESTRICT,
 
     numero_documento TEXT NOT NULL,
 

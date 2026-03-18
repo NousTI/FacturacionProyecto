@@ -91,6 +91,7 @@ class RepositorioFacturas:
         """
         query = """
             SELECT f.*, 
+                   (SELECT fp.forma_pago_sri FROM sistema_facturacion.formas_pago fp WHERE fp.factura_id = f.id ORDER BY fp.created_at ASC LIMIT 1) as forma_pago_sri,
                    c.razon_social as cliente_nombre, 
                    c.identificacion as cliente_identificacion,
                    c.tipo_identificacion as cliente_tipo_identificacion,
@@ -163,6 +164,7 @@ class RepositorioFacturas:
         """
         query = """
             SELECT f.*, 
+                   (SELECT fp.forma_pago_sri FROM sistema_facturacion.formas_pago fp WHERE fp.factura_id = f.id ORDER BY fp.created_at ASC LIMIT 1) as forma_pago_sri,
                    c.razon_social as cliente_nombre, 
                    c.identificacion as cliente_identificacion,
                    c.tipo_identificacion as cliente_tipo_identificacion,

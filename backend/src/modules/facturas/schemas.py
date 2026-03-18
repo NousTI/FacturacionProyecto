@@ -92,6 +92,11 @@ class FacturaCreacion(FacturaBase):
     empresa_id: Optional[UUID] = Field(None, description="Se obtiene del token si no se proporciona")
     usuario_id: Optional[UUID] = Field(None, description="Se obtiene del token si no se proporciona")
 
+    # DATOS ASOCIADOS (Legacy mode interop para soportar tabla Formas de Pago sin cambiar Frontend)
+    forma_pago_sri: str = Field(default='01', pattern=r'^\d{2}$', description="Código SRI de forma de pago")
+    plazo: Optional[int] = Field(default=0, ge=0)
+    unidad_tiempo: Optional[str] = Field(default='DIAS', pattern=r'^(DIAS|MESES|ANIOS)$')
+
     @model_validator(mode='after')
     def validar_total(self) -> 'FacturaCreacion':
         """
@@ -150,6 +155,11 @@ class FacturaActualizacion(BaseModel):
     origen: Optional[str] = None
     estado_pago: Optional[EstadoPago] = None
     observaciones: Optional[str] = None
+    
+    # DATOS ASOCIADOS (Legacy)
+    forma_pago_sri: Optional[str] = Field(None, pattern=r'^\d{2}$')
+    plazo: Optional[int] = Field(None, ge=0)
+    unidad_tiempo: Optional[str] = None
     
 
     
@@ -221,6 +231,9 @@ class FacturaLectura(BaseModel):
     tipo_documento: str
     ambiente: int
     tipo_emision: int
+    
+    # Campo inyectado desde backend SQL para compatibilidad Frontend Tabla
+    forma_pago_sri: Optional[str] = Field("01", description="Código SRI Forma Pago")
     
     # Estados
     estado: EstadoFactura

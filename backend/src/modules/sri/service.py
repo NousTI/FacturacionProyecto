@@ -30,6 +30,7 @@ from ..facturas.repository import RepositorioFacturas
 from ..empresas.repositories import RepositorioEmpresas
 from ..clientes.repositories import RepositorioClientes
 from ..logs.repository import RepositorioLogs
+from ..formas_pago.repository import RepositorioFormasPago
 
 class ServicioSRI:
     def __init__(
@@ -39,6 +40,7 @@ class ServicioSRI:
         empresa_repo: RepositorioEmpresas = Depends(),
         cliente_repo: RepositorioClientes = Depends(),
         log_repo: RepositorioLogs = Depends(),
+        formas_pago_repo: RepositorioFormasPago = Depends(),
         client_sri: ClienteSRI = Depends(),
         xml_service: ServicioSRIXML = Depends(),
         logs_service: ServicioLogs = Depends()
@@ -48,6 +50,7 @@ class ServicioSRI:
         self.empresa_repo = empresa_repo
         self.cliente_repo = cliente_repo
         self.log_repo = log_repo
+        self.formas_pago_repo = formas_pago_repo
         self.client_sri = client_sri
         self.logs_service = logs_service
         self.xml_service = xml_service
@@ -146,6 +149,7 @@ class ServicioSRI:
         empresa = self.empresa_repo.obtener_por_id(factura['empresa_id'])
         cliente = self.cliente_repo.obtener_por_id(factura['cliente_id'])
         detalles = self.factura_repo.listar_detalles(factura_id)
+        formas_pago = self.formas_pago_repo.listar_por_factura(factura_id)
         config_sri = self.repo.obtener_config(factura['empresa_id'])
         
         if not config_sri: raise AppError("Configuración SRI no encontrada", 400, "SRI_CONFIG_MISSING")
@@ -171,7 +175,7 @@ class ServicioSRI:
             signer = self.obtener_signer(factura['empresa_id'])
             signer.verify_ruc(empresa['ruc'])
             
-            xml_str = self.xml_service.generar_xml_factura(factura, cliente, empresa, detalles, ambiente, tipo_emision)
+            xml_str = self.xml_service.generar_xml_factura(factura, cliente, empresa, detalles, formas_pago, ambiente, tipo_emision)
             
             # 2. EXTRAER CLAVE DE ACCESO
             clave_match = re.search(r'<claveAcceso>(.*?)</claveAcceso>', xml_str)

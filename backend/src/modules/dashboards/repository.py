@@ -604,12 +604,12 @@ class RepositorioDashboards:
             date_filter = "f.fecha_emision >= CURRENT_DATE - INTERVAL '30 days'"
 
         query = f"""
-            SELECT p.forma_pago, SUM(p.valor) as total
+            SELECT p.forma_pago_sri, SUM(p.valor) as total
             FROM sistema_facturacion.facturas f
-            JOIN public.forma_pago p ON f.id = p.factura_id
+            JOIN sistema_facturacion.formas_pago p ON f.id = p.factura_id
             WHERE f.empresa_id = %s AND f.estado != 'ANULADA'
             AND {date_filter}
-            GROUP BY p.forma_pago
+            GROUP BY p.forma_pago_sri
             ORDER BY total DESC
         """
         
@@ -620,18 +620,21 @@ class RepositorioDashboards:
             if not resultados:
                 return []
 
-            # Mapeo de nombres internos a etiquetas bonitas
+            # Mapeo SRI a etiquetas bonitas
             labels = {
-                'efectivo': 'Efectivo',
-                'tarjeta': 'Tarjetas',
-                'transferencia': 'Transferencias',
-                'credito': 'Crédito',
-                'otros': 'Otros'
+                '01': 'Efectivo',
+                '15': 'Compensador Deudas',
+                '16': 'Tarjeta Débito',
+                '17': 'Dinero Electrónico',
+                '18': 'Tarjeta Prepago',
+                '19': 'Tarjeta Crédito',
+                '20': 'Otros Sist. Financiero',
+                '21': 'Endoso Títulos'
             }
 
             return [
                 {
-                    "label": labels.get(str(r['forma_pago']).lower(), str(r['forma_pago']).capitalize()),
+                    "label": labels.get(str(r['forma_pago_sri']).strip().zfill(2), f"SRI {r['forma_pago_sri']}"),
                     "value": float(r['total'])
                 } for r in resultados
             ]

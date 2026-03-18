@@ -16,7 +16,7 @@ class ServicioSRIXML:
             value = Decimal(str(value))
         return value.quantize(Decimal(f"1.{'0'*places}"), rounding=ROUND_HALF_UP)
 
-    def generar_xml_factura(self, factura: dict, cliente: dict, empresa: dict, detalles: list, ambiente: str = SRIAmbiente.PRUEBAS, tipo_emision: str = SRITipoEmision.NORMAL) -> str:
+    def generar_xml_factura(self, factura: dict, cliente: dict, empresa: dict, detalles: list, formas_pago: list, ambiente: str = SRIAmbiente.PRUEBAS, tipo_emision: str = SRITipoEmision.NORMAL) -> str:
         root = ET.Element('factura', id="comprobante", version="1.1.0")
         
         # Info Tributaria
@@ -191,37 +191,39 @@ class ServicioSRIXML:
 
         # Pagos usando Strategy Pattern
         pagos_node = ET.SubElement(info_fac, 'pagos')
-        codigo_pago = str(factura.get('forma_pago_sri', '01')).strip().zfill(2)
         
-        # Obtener datos de plazo/unidad o calcular si solo hay vencimiento
-        p_val = factura.get('plazo')
-        u_val = factura.get('unidad_tiempo')
+        if not formas_pago:
+            formas_pago = [{'forma_pago_sri': '01', 'valor': importe_total}]
+            
+        for p in formas_pago:
+            codigo_pago = str(p.get('forma_pago_sri', '01')).strip().zfill(2)
+            valor_pago = Decimal(str(p.get('valor', importe_total)))
+            
+            p_val = p.get('plazo')
+            u_val = p.get('unidad_tiempo')
 
-        # SI ES EFECTIVO (01), NO SE DEBE ENVIAR PLAZO NI UNIDAD SEGÚN SRI
-        if codigo_pago == '01':
-            p_val = None
-            u_val = None
+            if codigo_pago == '01':
+                p_val = None
+                u_val = None
 
-        if (p_val is None or p_val == 0) and factura.get('fecha_vencimiento'):
-            f_venc = factura.get('fecha_vencimiento')
-            try:
-                if isinstance(f_venc, str): f_venc = datetime.fromisoformat(f_venc)
-                d_venc = f_venc.date() if hasattr(f_venc, 'date') else f_venc
-                d_emis = f_emision.date() if hasattr(f_emision, 'date') else f_emision
-                p_val = (d_venc - d_emis).days
-                if p_val < 0: p_val = 0
-                u_val = 'DIAS'
-            except:
-                p_val = 0
-                u_val = 'DIAS'
+            if (p_val is None or p_val == 0) and factura.get('fecha_vencimiento'):
+                f_venc = factura.get('fecha_vencimiento')
+                try:
+                    if isinstance(f_venc, str): f_venc = datetime.fromisoformat(f_venc)
+                    d_venc = f_venc.date() if hasattr(f_venc, 'date') else f_venc
+                    d_emis = f_emision.date() if hasattr(f_emision, 'date') else f_emision
+                    p_val = (d_venc - d_emis).days
+                    if p_val < 0: p_val = 0
+                    u_val = 'DIAS'
+                except:
+                    p_val = 0
+                    u_val = 'DIAS'
 
-        # Normalizar unidad a mayúsculas para DB (DIAS, MESES, ANIOS)
-        if u_val:
-            u_val = u_val.upper()
+            if u_val:
+                u_val = u_val.upper()
 
-        # Obtener estrategia y generar nodo
-        estrategia = FactoryPagosSRI.obtener_estrategia(codigo_pago)
-        estrategia.generar_nodo(pagos_node, importe_total, plazo=p_val, unidad_tiempo=u_val)
+            estrategia = FactoryPagosSRI.obtener_estrategia(codigo_pago)
+            estrategia.generar_nodo(pagos_node, valor_pago, plazo=p_val, unidad_tiempo=u_val)
 
         # Detalles
         detalles_node = ET.SubElement(root, 'detalles')

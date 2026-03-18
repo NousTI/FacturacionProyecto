@@ -39,6 +39,15 @@ class ServicioFacturaCore:
         """Lógica para crear la factura en base de datos con sus snapshots."""
         # Se asume que las validaciones de negocio ya se hicieron en el orquestador
         payload = datos.model_dump()
+        
+        # Extraer variables que no pertenecen a la tabla facturas
+        pago_data = {
+            "forma_pago_sri": payload.pop('forma_pago_sri', '01'),
+            "valor": payload.get('total', 0),
+            "plazo": payload.pop('plazo', 0),
+            "unidad_tiempo": payload.pop('unidad_tiempo', 'DIAS')
+        }
+        
         payload.update({
             "estado": 'BORRADOR',
             "estado_pago": datos.estado_pago or 'PENDIENTE',
@@ -48,6 +57,9 @@ class ServicioFacturaCore:
         nueva = self.repo.crear_factura(payload)
         if not nueva:
             raise AppError("Error al crear la factura", 500, "DB_ERROR")
+            
+        # Pasar esta data en memoria para que el orquestador final (ServiceFactura) la guarde
+        nueva['_pago_inicial'] = pago_data
         return nueva
 
     def obtener_factura(self, id: UUID) -> dict:

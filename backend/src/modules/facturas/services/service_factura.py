@@ -8,15 +8,18 @@ from ....constants.enums import AuthKeys
 from ....errors.app_error import AppError
 from ...usuarios.repositories import RepositorioUsuarios
 from .service_base import ValidacionesFactura
+from ...formas_pago.repository import RepositorioFormasPago
 
 class ServicioFactura:
     def __init__(
         self, 
         core: ServicioFacturaCore = Depends(),
-        usuario_repo: RepositorioUsuarios = Depends()
+        usuario_repo: RepositorioUsuarios = Depends(),
+        formas_pago_repo: RepositorioFormasPago = Depends()
     ):
         self.core = core
         self.usuario_repo = usuario_repo
+        self.formas_pago_repo = formas_pago_repo
 
     def crear_factura(self, datos: FacturaCreacion, usuario_actual: dict):
         """Orquestador para creación de factura (Borrador)."""
@@ -53,7 +56,15 @@ class ServicioFactura:
             "secuencial_punto_emision": None
         }
         
-        return self.core.crear_borrador(datos, usuario_actual, payload_extra)
+        nueva = self.core.crear_borrador(datos, usuario_actual, payload_extra)
+        
+        if '_pago_inicial' in nueva:
+            pago_data = nueva.pop('_pago_inicial')
+            pago_data['factura_id'] = nueva['id']
+            # Guardamos la forma de pago ligada a factura nueva 
+            self.formas_pago_repo.crear_pago(pago_data)
+            
+        return nueva
 
     def obtener_factura(self, id: UUID, usuario_actual: dict):
         if not usuario_actual.get(AuthKeys.IS_SUPERADMIN):
@@ -92,10 +103,25 @@ class ServicioFactura:
 
     def actualizar_factura(self, id: UUID, datos: FacturaActualizacion, usuario_actual: dict):
         print(f"--- [SERVICE] actualizar_factura ID: {id} ---")
-        print(f"Datos a actualizar: {datos.dict(exclude_unset=True)}")
         factura = self.obtener_factura(id, usuario_actual)
         ValidacionesFactura.validar_estado_borrador(factura)
-        return self.core.actualizar_factura(id, datos.model_dump(exclude_unset=True))
+        
+        payload = datos.model_dump(exclude_unset=True)
+        # Separar campos de pagos
+        pago_update = {}
+        for key in ['forma_pago_sri', 'plazo', 'unidad_tiempo']:
+            if key in payload:
+                pago_update[key] = payload.pop(key)
+                
+        # Solo ejecutar actualización de factura si sobraron campos
+        actualizada = self.core.actualizar_factura(id, payload) if payload else factura
+        
+        if pago_update:
+            pagos_existentes = self.formas_pago_repo.listar_por_factura(id)
+            if pagos_existentes:
+                self.formas_pago_repo.actualizar_pago(pagos_existentes[0]['id'], pago_update)
+            
+        return actualizada
 
     def eliminar_factura(self, id: UUID, usuario_actual: dict):
         factura = self.obtener_factura(id, usuario_actual)
