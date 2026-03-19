@@ -10,6 +10,7 @@ from ...usuarios.repositories import RepositorioUsuarios
 from .service_base import ValidacionesFactura
 from ...formas_pago.repository import RepositorioFormasPago
 from ...cuentas_cobrar.repository import RepositorioCuentasCobrar
+from ...pagos_factura.repository import RepositorioPagosFactura
 
 class ServicioFactura:
     def __init__(
@@ -17,12 +18,14 @@ class ServicioFactura:
         core: ServicioFacturaCore = Depends(),
         usuario_repo: RepositorioUsuarios = Depends(),
         formas_pago_repo: RepositorioFormasPago = Depends(),
-        cuentas_cobrar_repo: RepositorioCuentasCobrar = Depends()
+        cuentas_cobrar_repo: RepositorioCuentasCobrar = Depends(),
+        pagos_repo: RepositorioPagosFactura = Depends()
     ):
         self.core = core
         self.usuario_repo = usuario_repo
         self.formas_pago_repo = formas_pago_repo
         self.cuentas_cobrar_repo = cuentas_cobrar_repo
+        self.pagos_repo = pagos_repo
 
     def crear_factura(self, datos: FacturaCreacion, usuario_actual: dict):
         """Orquestador para creación de factura (Borrador)."""
@@ -170,18 +173,46 @@ class ServicioFactura:
 
     def actualizar_estado_pago(self, id: UUID, estado_pago: str, usuario_actual: dict):
         """Actualiza el estado de pago de una factura."""
+        import string
+        import random
+        from datetime import date
+        
         factura = self.obtener_factura(id, usuario_actual) # Valida existencia y pertenencia
+        
+        if factura.get('estado_pago') == 'PAGADO':
+            raise AppError("No se puede cambiar el estado de una factura que ya está PAGADA", 400, "VAL_ERROR")
+            
         res = self.core.actualizar_factura(id, {"estado_pago": estado_pago})
         
         # Sincronizar Cuentas por Cobrar
         cw_repo = self.cuentas_cobrar_repo
         monto_total = float(factura.get('total', 0))
         if estado_pago == 'PAGADO':
-            cw_repo.actualizar_por_factura(id, {
+            cuenta = cw_repo.actualizar_por_factura(id, {
                 "monto_pagado": monto_total,
                 "saldo_pendiente": 0,
                 "estado": "pagado"
             })
+            
+            # Generar comprobante automático en tabla pagos_factura
+            if cuenta:
+                pagos_base = self.formas_pago_repo.listar_por_factura(id)
+                codigo_sri = pagos_base[0]['forma_pago_sri'] if pagos_base else '01'
+                recibo = "RCB-" + ''.join(random.choices(string.ascii_uppercase + string.digits, k=6))
+                # Obtener ID interno del usuario
+                auth_user_id = usuario_actual.get("id")
+                usuario_facturacion = self.usuario_repo.obtener_por_user_id(auth_user_id)
+                sys_usuario_id = usuario_facturacion['id'] if usuario_facturacion else auth_user_id
+                
+                self.pagos_repo.crear_pago({
+                    "cuenta_cobrar_id": cuenta['id'],
+                    "usuario_id": sys_usuario_id,
+                    "numero_recibo": recibo,
+                    "fecha_pago": date.today(),
+                    "monto": monto_total,
+                    "metodo_pago_sri": codigo_sri,
+                    "observaciones": "Abono total automático (vía interfaz)"
+                })
         elif estado_pago == 'PENDIENTE':
             cw_repo.actualizar_por_factura(id, {
                 "monto_pagado": 0,

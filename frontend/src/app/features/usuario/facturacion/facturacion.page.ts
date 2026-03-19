@@ -11,6 +11,7 @@ import { ViewFacturaModalComponent } from './components/view-factura-modal/view-
 import { EmailFacturaModalComponent } from './components/email-factura-modal/email-factura-modal.component';
 import { ToastComponent } from '../../../shared/components/toast/toast.component';
 import { ConfirmModalComponent } from '../../../shared/components/confirm-modal/confirm-modal.component';
+import { PagosFacturaModalComponent } from './components/pagos-factura-modal/pagos-factura-modal.component';
 
 import { FacturasService } from './services/facturas.service';
 import { UiService } from '../../../shared/services/ui.service';
@@ -31,6 +32,7 @@ import { SriConfigService } from '../certificado-sri/services/sri-config.service
     CreateFacturaModalComponent,
     ViewFacturaModalComponent,
     EmailFacturaModalComponent,
+    PagosFacturaModalComponent,
     ToastComponent,
     ConfirmModalComponent
   ],
@@ -90,6 +92,12 @@ import { SriConfigService } from '../certificado-sri/services/sri-config.service
             [factura]="selectedFactura"
             (close)="closeEmailModal($event)"
          ></app-email-factura-modal>
+
+         <app-pagos-factura-modal
+            *ngIf="showPagosModal && selectedFactura"
+            [factura]="selectedFactura"
+            (close)="closePagosModal($event)"
+         ></app-pagos-factura-modal>
         
          <app-toast></app-toast>
       </div>
@@ -168,6 +176,7 @@ export class FacturacionPage implements OnInit {
   showCreateModal: boolean = false;
   showViewModal: boolean = false;
   showEmailModal: boolean = false;
+  showPagosModal: boolean = false;
 
   // SRI Status
   sriError: string | null = null;
@@ -309,6 +318,14 @@ export class FacturacionPage implements OnInit {
     this.selectedFactura = null;
   }
 
+  closePagosModal(hasChanges: boolean) {
+    this.showPagosModal = false;
+    this.selectedFactura = null;
+    if (hasChanges) {
+      this.loadData();
+    }
+  }
+
   handleAction(event: { type: string, factura: Factura }) {
     this.selectedFactura = event.factura;
 
@@ -369,6 +386,9 @@ export class FacturacionPage implements OnInit {
         break;
       case 'toggle-pago':
         this.toggleEstadoPago(event.factura);
+        break;
+      case 'abono':
+        this.showPagosModal = true;
         break;
     }
   }

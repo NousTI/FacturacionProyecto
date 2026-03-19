@@ -156,14 +156,27 @@ import { HasPermissionDirective } from '../../../../../shared/directives/has-per
                     </a>
                   </li>
 
-                  <li *appHasPermission="'FACTURAS_EDITAR'">
-                    <a class="dropdown-item py-2" href="javascript:void(0)" (click)="onAction.emit({type: 'toggle-pago', factura})">
-                      <div class="icon-item" [ngClass]="factura.estado_pago === 'PAGADO' ? 'bg-soft-warning' : 'bg-soft-success'">
-                         <i class="bi" [ngClass]="factura.estado_pago === 'PAGADO' ? 'bi-clock-history' : 'bi-cash-coin'"></i>
-                      </div>
-                      <span class="ms-2">{{ factura.estado_pago === 'PAGADO' ? 'Marcar como Pendiente' : 'Marcar como Pagada' }}</span>
-                    </a>
-                  </li>
+                  <ng-container *appHasPermission="'FACTURAS_EDITAR'">
+                    <li *ngIf="factura.estado !== 'BORRADOR'">
+                      <a class="dropdown-item py-2" href="javascript:void(0)" (click)="onAction.emit({type: 'abono', factura})">
+                        <div class="icon-item bg-soft-primary">
+                           <i class="bi bi-wallet2 text-primary"></i>
+                        </div>
+                        <span class="ms-2 fw-bold text-primary">Detalle de Pagos / Abonos</span>
+                      </a>
+                    </li>
+                  </ng-container>
+
+                  <ng-container *appHasPermission="'FACTURAS_EDITAR'">
+                    <li *ngIf="factura.estado === 'AUTORIZADA' && factura.estado_pago !== 'PAGADO'">
+                      <a class="dropdown-item py-2" href="javascript:void(0)" (click)="onAction.emit({type: 'toggle-pago', factura})">
+                        <div class="icon-item bg-soft-success">
+                           <i class="bi bi-cash-coin"></i>
+                        </div>
+                        <span class="ms-2">Marcar como Pagada</span>
+                      </a>
+                    </li>
+                  </ng-container>
 
                   <li *ngIf="factura.estado === 'BORRADOR'">
                     <a 

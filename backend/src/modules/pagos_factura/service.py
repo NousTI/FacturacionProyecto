@@ -19,6 +19,8 @@ class ServicioPagosFactura:
         self.cuenta_repo = cuenta_repo
 
     def crear_pago(self, datos: PagoFacturaCreacion, usuario_actual: dict):
+        from ...database.transaction import db_transaction
+
         cuenta = self.cuenta_repo.obtener_por_id(datos.cuenta_cobrar_id)
         if not cuenta:
              raise AppError("Cuenta por cobrar no encontrada", 404, "CUENTA_NOT_FOUND")
@@ -35,28 +37,29 @@ class ServicioPagosFactura:
         payload = datos.model_dump()
         payload['usuario_id'] = usuario_id or usuario_actual.get('id')
 
-        # Atomicity check (manual for now as per legacy)
-        nuevo_pago = self.repo.crear_pago(payload)
-        if not nuevo_pago:
-            raise AppError("Error al registrar el pago", 500, "DB_ERROR")
+        # Atomicity check - SINGLE TRANSACTION
+        with db_transaction(self.repo.db) as cur:
+            nuevo_pago = self.repo.crear_pago(payload, cur=cur)
+            if not nuevo_pago:
+                raise AppError("Error al registrar el pago", 500, "DB_ERROR")
 
-        # Update balance
-        current_paid = Decimal(str(cuenta['monto_pagado']))
-        payment_amount = datos.monto
-        new_paid = current_paid + payment_amount
-        total = Decimal(str(cuenta['monto_total']))
-        new_saldo = total - new_paid
-        
-        if new_saldo < 0:
-             raise AppError("El monto del pago excede el saldo pendiente", 400, "VAL_ERROR")
-             
-        new_status = 'pagada' if new_saldo == 0 else ('parcial' if new_saldo < total else 'pendiente')
-        
-        self.cuenta_repo.actualizar_cuenta(cuenta['id'], {
-            'monto_pagado': new_paid,
-            'saldo_pendiente': new_saldo,
-            'estado': new_status
-        })
+            # Update balance
+            current_paid = Decimal(str(cuenta['monto_pagado']))
+            payment_amount = datos.monto
+            new_paid = current_paid + payment_amount
+            total = Decimal(str(cuenta['monto_total']))
+            new_saldo = total - new_paid
+            
+            if new_saldo < 0:
+                 raise AppError("El monto del pago excede el saldo pendiente", 400, "VAL_ERROR")
+                 
+            new_status = 'pagado' if new_saldo == 0 else ('vencido' if cuenta.get('estado') == 'vencido' else 'pendiente')
+            
+            self.cuenta_repo.actualizar_cuenta(cuenta['id'], {
+                'monto_pagado': new_paid,
+                'saldo_pendiente': new_saldo,
+                'estado': new_status
+            }, cur=cur)
 
         return nuevo_pago
 

@@ -84,11 +84,9 @@ class ServicioCuentasCobrar:
             payload['saldo_pendiente'] = nuevo_saldo
             
             if nuevo_saldo <= 0:
-                payload['estado'] = 'pagada'
-            elif nuevo_saldo < monto_total:
-                payload['estado'] = 'parcial'
+                payload['estado'] = 'pagado'
             else:
-                payload['estado'] = 'pendiente'
+                payload['estado'] = 'vencido' if cuenta.get('estado') == 'vencido' else 'pendiente'
                 
         actualizado = self.repo.actualizar_cuenta(id, payload)
         if not actualizado:

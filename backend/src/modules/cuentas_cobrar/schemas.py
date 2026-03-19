@@ -14,7 +14,7 @@ class CuentaCobrarBase(BaseModel):
     monto_total: Decimal = Field(..., ge=0)
     monto_pagado: Decimal = Field(default=Decimal('0.00'), ge=0)
     saldo_pendiente: Decimal = Field(..., ge=0)
-    estado: str = 'pendiente' # pendiente | parcial | pagada
+    estado: str = 'pendiente' # pendiente | pagado | vencido | anulado
     dias_vencido: int = 0
     observaciones: Optional[str] = None
 

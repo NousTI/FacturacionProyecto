@@ -257,7 +257,7 @@ class RepositorioFacturas:
                     }
             return rows
 
-    def actualizar_factura(self, id: UUID, data: dict) -> Optional[dict]:
+    def actualizar_factura(self, id: UUID, data: dict, cur=None) -> Optional[dict]:
         """
         Actualiza una factura.
         
@@ -287,9 +287,14 @@ class RepositorioFacturas:
             RETURNING *
         """
         
-        with db_transaction(self.db) as cur:
+        if cur:
             cur.execute(query, tuple(values))
             row = cur.fetchone()
+            return dict(row) if row else None
+            
+        with db_transaction(self.db) as cur_new:
+            cur_new.execute(query, tuple(values))
+            row = cur_new.fetchone()
             return dict(row) if row else None
             
     def eliminar_factura(self, id: UUID) -> bool:

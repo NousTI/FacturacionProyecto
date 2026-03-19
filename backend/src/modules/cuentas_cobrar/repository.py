@@ -30,7 +30,7 @@ class RepositorioCuentasCobrar:
             row = cur.fetchone()
             return dict(row) if row else None
 
-    def listar_cuentas(self, empresa_id: Optional[UUID] = None, cliente_id: Optional[UUID] = None, limit: int = 100, offset: int = 0) -> List[dict]:
+    def listar_cuentas(self, empresa_id: Optional[UUID] = None, cliente_id: Optional[UUID] = None, factura_id: Optional[UUID] = None, limit: int = 100, offset: int = 0) -> List[dict]:
         query = "SELECT * FROM sistema_facturacion.cuentas_cobrar"
         params = []
         conditions = []
@@ -42,6 +42,10 @@ class RepositorioCuentasCobrar:
         if cliente_id:
             conditions.append("cliente_id = %s")
             params.append(str(cliente_id))
+
+        if factura_id:
+            conditions.append("factura_id = %s")
+            params.append(str(factura_id))
             
         if conditions:
             query += " WHERE " + " AND ".join(conditions)
@@ -53,7 +57,7 @@ class RepositorioCuentasCobrar:
             cur.execute(query, tuple(params))
             return [dict(row) for row in cur.fetchall()]
 
-    def actualizar_cuenta(self, id: UUID, data: dict) -> Optional[dict]:
+    def actualizar_cuenta(self, id: UUID, data: dict, cur=None) -> Optional[dict]:
         if not data: return None
         
         set_clauses = [f"{key} = %s" for key in data.keys()]
@@ -62,12 +66,17 @@ class RepositorioCuentasCobrar:
 
         query = f"UPDATE sistema_facturacion.cuentas_cobrar SET {', '.join(set_clauses)}, updated_at = NOW() WHERE id = %s RETURNING *"
         
-        with db_transaction(self.db) as cur:
+        if cur:
             cur.execute(query, tuple(clean_values))
             row = cur.fetchone()
             return dict(row) if row else None
+            
+        with db_transaction(self.db) as cur_new:
+            cur_new.execute(query, tuple(clean_values))
+            row = cur_new.fetchone()
+            return dict(row) if row else None
 
-    def actualizar_por_factura(self, factura_id: UUID, data: dict) -> Optional[dict]:
+    def actualizar_por_factura(self, factura_id: UUID, data: dict, cur=None) -> Optional[dict]:
         if not data: return None
         
         set_clauses = [f"{key} = %s" for key in data.keys()]
@@ -76,6 +85,11 @@ class RepositorioCuentasCobrar:
 
         query = f"UPDATE sistema_facturacion.cuentas_cobrar SET {', '.join(set_clauses)}, updated_at = NOW() WHERE factura_id = %s RETURNING *"
         
+        if cur:
+            cur.execute(query, tuple(clean_values))
+            row = cur.fetchone()
+            return dict(row) if row else None
+            
         with db_transaction(self.db) as cur:
             cur.execute(query, tuple(clean_values))
             row = cur.fetchone()

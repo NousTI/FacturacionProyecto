@@ -8,7 +8,7 @@ class RepositorioPagosFactura:
     def __init__(self, db=Depends(get_db)):
         self.db = db
 
-    def crear_pago(self, data: dict) -> Optional[dict]:
+    def crear_pago(self, data: dict, cur=None) -> Optional[dict]:
         fields = list(data.keys())
         values = [str(v) if isinstance(v, UUID) else v for v in data.values()]
         placeholders = ["%s"] * len(fields)
@@ -18,6 +18,11 @@ class RepositorioPagosFactura:
             VALUES ({', '.join(placeholders)})
             RETURNING *
         """
+        if cur:
+            cur.execute(query, tuple(values))
+            row = cur.fetchone()
+            return dict(row) if row else None
+            
         with db_transaction(self.db) as cur:
             cur.execute(query, tuple(values))
             row = cur.fetchone()

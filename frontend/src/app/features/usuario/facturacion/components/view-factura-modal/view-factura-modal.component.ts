@@ -109,33 +109,41 @@ import { Factura, FacturaDetalle } from '../../../../../domain/models/factura.mo
                   <div class="spinner-border spinner-border-sm text-secondary" role="status"></div>
                 </div>
 
-                <div *ngIf="!loadingDetalles" class="table-responsive">
-                  <table class="table table-sm border-bottom">
-                    <thead>
-                      <tr class="text-muted text-uppercase" style="font-size: 0.75rem;">
-                        <th class="border-top-0 border-bottom-1 fw-bold pb-2 w-25">Descripción</th>
-                        <th class="border-top-0 border-bottom-1 fw-bold pb-2">Código</th>
-                        <th class="border-top-0 border-bottom-1 fw-bold text-center pb-2">Cant.</th>
-                        <th class="border-top-0 border-bottom-1 fw-bold text-end pb-2">Precio</th>
-                        <th class="border-top-0 border-bottom-1 fw-bold text-end pb-2">Desc.</th>
-                        <th class="border-top-0 border-bottom-1 fw-bold text-end pb-2">Subtotal</th>
-                      </tr>
-                    </thead>
-                    <tbody style="border-top: 2px solid #000;">
-                      <tr *ngFor="let d of detalles" style="font-size: 0.95rem;">
-                        <td class="pt-3 pb-3 text-dark">{{ d.nombre }}</td>
-                        <td class="pt-3 pb-3 text-muted" style="font-size: 0.85rem;">{{ d.codigo_producto }}</td>
-                        <td class="text-center pt-3 pb-3">{{ d.cantidad }}</td>
-                        <td class="text-end pt-3 pb-3">{{ d.precio_unitario | currency:'USD' }}</td>
-                        <td class="text-end pt-3 pb-3 text-muted">{{ d.descuento > 0 ? (d.descuento | currency:'USD') : '-' }}</td>
-                        <td class="text-end pt-3 pb-3 text-dark fw-semibold">{{ d.subtotal | currency:'USD' }}</td>
-                      </tr>
-                    </tbody>
-                  </table>
+                <div *ngIf="!loadingDetalles" class="row g-3">
+                  <div class="col-12 col-md-6 col-lg-4" *ngFor="let d of detalles">
+                    <div class="card border border-light-subtle rounded-3 h-100 shadow-sm transition-hover">
+                      <div class="card-body p-3">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                          <h6 class="fw-bold text-dark mb-0 line-clamp-1" title="{{ d.nombre }}">{{ d.nombre }}</h6>
+                          <span class="badge bg-light text-muted border py-1 px-2" style="font-size: 0.7rem;">{{ d.codigo_producto }}</span>
+                        </div>
+                        
+                        <div class="row g-2 mt-2">
+                          <div class="col-6">
+                            <label class="text-muted d-block small" style="font-size: 0.7rem;">Cantidad</label>
+                            <span class="fw-semibold">{{ d.cantidad }}</span>
+                          </div>
+                          <div class="col-6 text-end">
+                            <label class="text-muted d-block small" style="font-size: 0.7rem;">Precio Unit.</label>
+                            <span>{{ d.precio_unitario | currency:'USD' }}</span>
+                          </div>
+                          <div class="col-6" *ngIf="d.descuento > 0">
+                            <label class="text-muted d-block small" style="font-size: 0.7rem;">Descuento</label>
+                            <span class="text-muted small">-{{ d.descuento | currency:'USD' }}</span>
+                          </div>
+                          <div class="col-6 ms-auto text-end">
+                            <label class="text-muted d-block small" style="font-size: 0.7rem;">Subtotal</label>
+                            <span class="fw-bold text-primary">{{ d.subtotal | currency:'USD' }}</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
                 
-                <div *ngIf="!loadingDetalles && detalles.length === 0" class="text-center py-4 text-muted">
-                    <p class="mb-0">No hay detalles registrados.</p>
+                <div *ngIf="!loadingDetalles && detalles.length === 0" class="text-center py-5 text-muted bg-light rounded-3">
+                    <i class="bi bi-cart-x fs-2 mb-2 d-block"></i>
+                    <p class="mb-0">No hay detalles registrados en esta factura.</p>
                 </div>
               </div>
 
@@ -193,6 +201,19 @@ import { Factura, FacturaDetalle } from '../../../../../domain/models/factura.mo
   `,
   styles: [`
     .font-monospace { font-family: 'Courier New', Courier, monospace; }
+    .line-clamp-1 {
+      display: -webkit-box;
+      -webkit-line-clamp: 1;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .transition-hover {
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .transition-hover:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08) !important;
+    }
   `]
 })
 export class ViewFacturaModalComponent implements OnInit {

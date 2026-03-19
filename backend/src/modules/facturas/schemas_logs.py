@@ -161,10 +161,11 @@ class LogPagoBase(BaseModel):
     
     monto: Decimal = Field(..., gt=0, description="Monto pagado (debe ser > 0)")
     fecha_pago: date = Field(default_factory=date.today, description="Fecha del pago")
-    metodo_pago: MetodoPago = Field(
-        ...,
-        description="EFECTIVO | TRANSFERENCIA | TARJETA | CHEQUE | DEPOSITO | OTRO"
+    metodo_pago_sri: str = Field(
+        default="01",
+        description="Código de metodo_pago_sri"
     )
+    numero_recibo: Optional[str] = Field(None, description="Recibo opcional desde front")
     numero_referencia: Optional[str] = Field(
         None,
         max_length=100,
@@ -185,9 +186,9 @@ class LogPagoLectura(LogPagoBase):
     """Schema de lectura para log de pago."""
     
     id: UUID
-    factura_id: UUID
+    cuenta_cobrar_id: UUID
     usuario_id: UUID
-    timestamp: datetime
+    created_at: datetime
     
     # Campos computados/relacionados
     usuario_nombre: Optional[str] = Field(None, description="Nombre completo del usuario")
@@ -204,7 +205,7 @@ class ResumenPagos(BaseModel):
     """Resumen de pagos de una factura."""
     
     total_factura: Decimal = Field(..., description="Total de la factura")
-    total_pagado: Decimal = Field(default=Decimal('0.00'), description="Suma de todos los pagos")
+    monto_pagado: Decimal = Field(default=Decimal('0.00'), description="Suma de todos los pagos")
     saldo_pendiente: Decimal = Field(..., description="Lo que falta por pagar")
     cantidad_pagos: int = Field(default=0, ge=0, description="Número de pagos realizados")
     ultimo_pago: Optional[datetime] = Field(None, description="Fecha del último pago")

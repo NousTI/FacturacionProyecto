@@ -11,53 +11,124 @@ from uuid import UUID
 from typing import List, Optional
 from fastapi import Depends
 from ..repository import RepositorioFacturas
+from ...cuentas_cobrar.repository import RepositorioCuentasCobrar
+from ...pagos_factura.repository import RepositorioPagosFactura
 from ..schemas_logs import LogPagoCreacion, ResumenPagos
 from src.errors.app_error import AppError
+import string
+import random
+from datetime import date
+from decimal import Decimal
 
 class ServicioPagosFactura:
-    def __init__(self, repo: RepositorioFacturas = Depends()):
+    def __init__(
+        self, 
+        repo: RepositorioFacturas = Depends(),
+        cw_repo: RepositorioCuentasCobrar = Depends(),
+        pagos_repo: RepositorioPagosFactura = Depends()
+    ):
         self.repo = repo
+        self.cw_repo = cw_repo
+        self.pagos_repo = pagos_repo
 
     def registrar_pago(self, datos: LogPagoCreacion, usuario_id: UUID) -> dict:
-        """
-        Registra un pago y actualiza el estado de la factura.
-        """
-        # 1. Registrar el log de pago
-        payload = datos.model_dump()
-        payload['usuario_id'] = usuario_id
-        
-        pago = self.repo.crear_pago(payload)
-        if not pago:
-            raise AppError("No se pudo registrar el pago", 500, "DB_ERROR")
+        """Registra un pago y actualiza la cuenta y factura de forma completamente atómica."""
+        from src.database.transaction import db_transaction
 
-        # 2. Calcular nuevo resumen para decidir estado_pago
-        resumen = self.repo.obtener_resumen_pagos(datos.factura_id)
+        factura_id = datos.factura_id
         
-        saldo = resumen.get('saldo_pendiente', 0)
-        total_factura = resumen.get('total_factura', 0)
-        
-        nuevo_estado_pago = 'PENDIENTE'
-        if saldo <= 0:
-            nuevo_estado_pago = 'PAGADO'
-        elif saldo < total_factura:
-            nuevo_estado_pago = 'PARCIAL'
+        # 1. Obtener la cuenta por cobrar atada a la factura
+        cuentas = self.cw_repo.listar_cuentas(factura_id=factura_id)
+        cuenta = cuentas[0] if cuentas else None
             
-        # 3. Actualizar la factura principal
-        self.repo.actualizar_factura(datos.factura_id, {"estado_pago": nuevo_estado_pago})
+        if not cuenta:
+            raise AppError("No existe una cuenta por cobrar para esta factura", 404)
+
+        # 2. Cálculos de balances y estados
+        current_paid = Decimal(str(cuenta['monto_pagado']))
+        payment_amount = Decimal(str(datos.monto))
+        new_paid = current_paid + payment_amount
+        total = Decimal(str(cuenta['monto_total']))
+        new_saldo = total - new_paid
         
+        if new_saldo < 0:
+             raise AppError("El monto del pago excede el saldo pendiente", 400, "VAL_ERROR")
+             
+        new_status = 'pagado' if new_saldo == 0 else ('vencido' if cuenta.get('estado') == 'vencido' else 'pendiente')
+        nuevo_estado_pago = 'PAGADO' if new_saldo == 0 else ('PARCIAL' if new_saldo < total else 'PENDIENTE')
+
+        recibo = "RCB-" + ''.join(random.choices(string.ascii_uppercase + string.digits, k=6))
+        
+        factura = self.repo.obtener_por_id(factura_id)
+        if not factura:
+            raise AppError("Factura no encontrada", 404)
+        
+        id_usuario_valido = factura.get('usuario_id')
+        
+        payload = {
+            "cuenta_cobrar_id": str(cuenta['id']),
+            "usuario_id": str(id_usuario_valido),
+            "numero_recibo": datos.numero_recibo or recibo,
+            "fecha_pago": str(datos.fecha_pago or date.today()),
+            "monto": float(datos.monto),
+            "metodo_pago_sri": datos.metodo_pago_sri or '01',
+            "observaciones": datos.observaciones
+        }
+        
+        # TRANSACCIÓN ATÓMICA
+        with db_transaction(self.repo.db) as cur:
+            # 1. Registrar pago
+            pago = self.pagos_repo.crear_pago(payload, cur=cur)
+            
+            # 2. Actualizar cuenta_cobrar
+            self.cw_repo.actualizar_por_factura(factura_id, {
+                'monto_pagado': float(new_paid),
+                'saldo_pendiente': float(new_saldo),
+                'estado': new_status
+            }, cur=cur)
+            
+            # 3. Actualizar factura principal
+            self.repo.actualizar_factura(factura_id, {"estado_pago": nuevo_estado_pago}, cur=cur)
+            
         return {
             "pago": pago,
-            "resumen": resumen,
+            "resumen": {"total_factura": float(total), "saldo_pendiente": float(new_saldo), "monto_pagado": float(new_paid)},
             "nuevo_estado_pago": nuevo_estado_pago
         }
 
     def obtener_resumen(self, factura_id: UUID) -> ResumenPagos:
         """Obtiene el resumen financiero de pagos de una factura."""
-        res = self.repo.obtener_resumen_pagos(factura_id)
-        if not res:
-            raise AppError("No se encontró información de pagos para esta factura", 404)
-        return ResumenPagos(**res)
+        query = "SELECT id, monto_total, monto_pagado, saldo_pendiente FROM sistema_facturacion.cuentas_cobrar WHERE factura_id = %s"
+        with self.cw_repo.db.cursor() as cur:
+            cur.execute(query, (str(factura_id),))
+            row = cur.fetchone()
+            if not row:
+                raise AppError("No se encontró información de pagos", 404)
+            
+            # Convertir a dict si es necesario para asegurar acceso por nombre
+            cuenta = dict(row)
+            
+            # Count payments
+            cur.execute("SELECT COUNT(*) as total FROM sistema_facturacion.pagos_factura WHERE cuenta_cobrar_id = %s", (str(cuenta['id']),))
+            res_count = cur.fetchone()
+            count = res_count['total'] if res_count else 0
+            
+            return ResumenPagos(
+                total_factura=float(cuenta['monto_total']),
+                monto_pagado=float(cuenta['monto_pagado']),
+                saldo_pendiente=float(cuenta['saldo_pendiente']),
+                cantidad_pagos=count
+            )
 
     def listar_pagos(self, factura_id: UUID) -> List[dict]:
         """Retorna el historial de abonos realizados."""
-        return self.repo.listar_pagos(factura_id)
+        query = "SELECT id FROM sistema_facturacion.cuentas_cobrar WHERE factura_id = %s"
+        with self.cw_repo.db.cursor() as cur:
+            cur.execute(query, (str(factura_id),))
+            row = cur.fetchone()
+            if not row: return []
+            
+            # Asegurar acceso por nombre dictando la fila
+            cuenta = dict(row)
+            
+        return self.pagos_repo.listar_por_cuenta(cuenta['id'])
