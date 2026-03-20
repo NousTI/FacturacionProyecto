@@ -72,8 +72,9 @@ import { HasPermissionDirective } from '../../../../../shared/directives/has-per
             <!-- Estado Emisión -->
             <td>
               <div class="badge-status-lux mb-1" [ngClass]="getStatusClass(factura.estado)">
-                <div class="dot"></div>
-                {{ factura.estado }}
+                <div class="dot" *ngIf="factura.id !== consultingId"></div>
+                <div class="spinner-border spinner-border-sm me-2" role="status" *ngIf="factura.id === consultingId" style="width: 10px; height: 10px; border-width: 2px;"></div>
+                {{ factura.id === consultingId ? (processingAction === 'emitir' ? 'ENVIANDO...' : 'CONSULTANDO...') : factura.estado }}
               </div>
               <div class="badge-status-lux w-100" [ngClass]="getPaymentStatusClass(factura.estado_pago)">
                 <i class="bi bi-cash-stack me-1" style="font-size: 0.8rem;"></i>
@@ -157,7 +158,7 @@ import { HasPermissionDirective } from '../../../../../shared/directives/has-per
                   </li>
 
                   <ng-container *appHasPermission="'FACTURAS_EDITAR'">
-                    <li *ngIf="factura.estado !== 'BORRADOR'">
+                    <li *ngIf="factura.estado === 'AUTORIZADA'">
                       <a class="dropdown-item py-2" href="javascript:void(0)" (click)="onAction.emit({type: 'abono', factura})">
                         <div class="icon-item bg-soft-primary">
                            <i class="bi bi-wallet2 text-primary"></i>
@@ -167,16 +168,7 @@ import { HasPermissionDirective } from '../../../../../shared/directives/has-per
                     </li>
                   </ng-container>
 
-                  <ng-container *appHasPermission="'FACTURAS_EDITAR'">
-                    <li *ngIf="factura.estado === 'AUTORIZADA' && factura.estado_pago !== 'PAGADO'">
-                      <a class="dropdown-item py-2" href="javascript:void(0)" (click)="onAction.emit({type: 'toggle-pago', factura})">
-                        <div class="icon-item bg-soft-success">
-                           <i class="bi bi-cash-coin"></i>
-                        </div>
-                        <span class="ms-2">Marcar como Pagada</span>
-                      </a>
-                    </li>
-                  </ng-container>
+
 
                   <li *ngIf="factura.estado === 'BORRADOR'">
                     <a 
@@ -393,6 +385,8 @@ import { HasPermissionDirective } from '../../../../../shared/directives/has-per
 })
 export class FacturaTableComponent {
   @Input() facturas: Factura[] = [];
+  @Input() consultingId: string | null = null;
+  @Input() processingAction: 'consultar' | 'emitir' | null = null;
   @Output() onAction = new EventEmitter<{ type: string, factura: Factura }>();
 
   getInitials(name: string): string {

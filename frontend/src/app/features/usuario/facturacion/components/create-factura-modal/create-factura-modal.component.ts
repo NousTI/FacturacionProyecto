@@ -136,16 +136,6 @@ import { forkJoin, switchMap, tap, catchError, of, filter, take, map, Observable
                     </div>
                   </div>
 
-                  <div class="col-md-12 col-lg-2">
-                    <label class="form-label-lux">Estado Pago</label>
-                    <div class="select-lux-wrapper">
-                      <select class="select-lux input-sm" formControlName="estado_pago">
-                        <option value="PENDIENTE">PENDIENTE</option>
-                        <option value="PAGADO">PAGADO</option>
-                      </select>
-                    </div>
-                  </div>
-
                 </div>
               </div>
 

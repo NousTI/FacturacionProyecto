@@ -96,7 +96,7 @@ import { finalize } from 'rxjs';
             <!-- Historial de Pagos -->
             <h6 class="fw-bold mb-3 text-dark">
               <i class="bi bi-clock-history me-2 text-muted"></i>
-              Historial de Recibos ({{ pagos?.length || 0 }})
+              Historial de Recibos ({{ pagos.length || 0 }})
             </h6>
 
             <div class="row g-3">

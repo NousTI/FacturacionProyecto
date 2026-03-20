@@ -63,6 +63,9 @@ class ServicioPagosFactura:
         if not factura:
             raise AppError("Factura no encontrada", 404)
         
+        if factura.get('estado') != 'AUTORIZADA':
+            raise AppError("No se pueden registrar pagos en facturas que no han sido autorizadas por el SRI.", 400, "VAL_ERROR")
+            
         id_usuario_valido = factura.get('usuario_id')
         
         payload = {

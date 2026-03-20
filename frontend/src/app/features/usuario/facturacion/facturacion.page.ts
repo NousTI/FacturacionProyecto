@@ -59,6 +59,8 @@ import { SriConfigService } from '../certificado-sri/services/sri-config.service
         <!-- TABLE -->
         <app-factura-table
           [facturas]="filteredFacturas"
+          [consultingId]="consultingId"
+          [processingAction]="processingAction"
           (onAction)="handleAction($event)"
         ></app-factura-table>
 
@@ -160,7 +162,9 @@ export class FacturacionPage implements OnInit {
 
   selectedFactura: Factura | null = null;
   isLoading: boolean = false;
-  isProcessing: boolean = false; // Used for spinners
+  isProcessing: boolean = false; // Para modales de confirmación
+  consultingId: string | null = null; // Para seguimiento de fila individual
+  processingAction: 'consultar' | 'emitir' | null = null; // Tipo de acción activa
 
   // MOdal Config
   showConfirmModal: boolean = false;
@@ -384,9 +388,6 @@ export class FacturacionPage implements OnInit {
         this.selectedFactura = event.factura;
         this.consultarSri();
         break;
-      case 'toggle-pago':
-        this.toggleEstadoPago(event.factura);
-        break;
       case 'abono':
         this.showPagosModal = true;
         break;
@@ -422,12 +423,18 @@ export class FacturacionPage implements OnInit {
 
   enviarSri() {
     if (!this.selectedFactura || this.isProcessing) return; // Double protection
-    this.isProcessing = true;
+    
+    const id = this.selectedFactura.id;
+    this.consultingId = id;
+    this.processingAction = 'emitir';
+    this.showConfirmModal = false; // Cerramos el modal inmediatamente
+    this.isProcessing = true; // Evitar disparos dobles internos
 
-    this.facturasService.enviarSri(this.selectedFactura.id)
+    this.facturasService.enviarSri(id)
       .pipe(finalize(() => {
         this.isProcessing = false;
-        this.showConfirmModal = false;
+        this.consultingId = null;
+        this.processingAction = null;
       }))
       .subscribe({
         next: (res: any) => {
@@ -496,9 +503,13 @@ export class FacturacionPage implements OnInit {
     const id = facturaId || this.selectedFactura?.id;
     if (!id || this.isProcessing) return;
 
-    this.isProcessing = true;
+    this.consultingId = id;
+    this.processingAction = 'consultar';
     this.facturasService.consultarEstadoSri(id)
-      .pipe(finalize(() => this.isProcessing = false))
+      .pipe(finalize(() => {
+        this.consultingId = null;
+        this.processingAction = null;
+      }))
       .subscribe({
         next: (res: any) => {
           // Re-mapear estado similar a enviarSri
@@ -538,24 +549,5 @@ export class FacturacionPage implements OnInit {
     });
   }
 
-  toggleEstadoPago(factura: Factura) {
-    const nuevoEstado = factura.estado_pago === 'PAGADO' ? 'PENDIENTE' : 'PAGADO';
-    this.isLoading = true;
-    
-    this.facturasService.actualizarEstadoPago(factura.id, nuevoEstado)
-      .pipe(finalize(() => this.isLoading = false))
-      .subscribe({
-        next: (facturaActualizada) => {
-          this.uiService.showToast(`Estado cambiado a ${nuevoEstado}`, 'success');
-          // Actualizar localmente
-          const index = this.facturas.findIndex(f => f.id === factura.id);
-          if (index !== -1) {
-            this.facturas[index].estado_pago = facturaActualizada.estado_pago;
-            this.calculateStats();
-            this.applyFilters();
-          }
-        },
-        error: (err) => this.uiService.showError(err, 'No se pudo cambiar el estado de pago')
-      });
-  }
+
 }
