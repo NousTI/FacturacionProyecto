@@ -452,17 +452,17 @@ export class FacturacionPage implements OnInit {
           }
 
           let msgType: 'success' | 'warning' | 'error' = 'success';
-          let msgText = 'Factura autorizada correctamente';
+          let msgText = 'La factura ha sido autorizada correctamente por el SRI.';
 
           if (estado === 'DEVUELTA') {
             msgType = 'warning';
-            msgText = 'Factura devuelta por el SRI (Error en Recepción)';
+            msgText = 'Documento devuelto: El SRI encontró errores de validación. Revise los detalles por favor.';
           } else if (estado === 'NO_AUTORIZADA') {
             msgType = 'error';
-            msgText = 'Factura no autorizada legalmente';
+            msgText = 'El SRI ha rechazado la autorización (No Autorizada). Revise el motivo legal.';
           } else if (estado === 'EN_PROCESO') {
             msgType = 'warning';
-            msgText = 'Factura todavía en procesamiento por el SRI';
+            msgText = 'El SRI recibió el documento pero aún está procesando la autorización. Vuelva a consultar en un momento.';
           }
 
           this.uiService.showToast(msgText, msgType as any);
@@ -512,12 +512,26 @@ export class FacturacionPage implements OnInit {
       }))
       .subscribe({
         next: (res: any) => {
-          // Re-mapear estado similar a enviarSri
+          // Mapeo detallado de estados SRI a mensajes amigables
+          const sriMessages: Record<string, string> = {
+            'AUTORIZADO': '¡Excelente! El documento ya está autorizado.',
+            'AUTORIZADA': '¡Excelente! El documento ya está autorizado.',
+            'EN PROCESO': 'El SRI aún está procesando la autorización. Por favor, espere.',
+            'EN_PROCESO': 'El SRI aún está procesando la autorización. Por favor, espere.',
+            'NO_ENCONTRADO': 'El SRI aún no refleja el comprobante en su portal (esto es normal, la indexación tarda unos minutos). Reintente en un momento.',
+            'DEVUELTA': 'El documento fue devuelto con errores de validación.',
+            'DEVUELTO': 'El documento fue devuelto con errores de validación.',
+            'NO AUTORIZADO': 'El SRI ha negado la autorización del documento.',
+            'ERROR_TIMEOUT': 'El SRI tardó demasiado en responder. Intente consultar nuevamente.',
+            'ERROR_CONEXION': 'No hay conexión estable con el SRI en este momento.'
+          };
+
           let estado: any = (res.estado === 'AUTORIZADO' || res.estado === 'AUTORIZADA') ? 'AUTORIZADA' :
             (res.estado === 'DEVUELTA' || res.estado === 'DEVUELTO') ? 'DEVUELTA' :
               (res.estado === 'NO AUTORIZADO' || res.estado === 'NO_AUTORIZADO') ? 'NO_AUTORIZADA' : 'EN_PROCESO';
 
-          this.uiService.showToast(`Estado SRI: ${res.estado}`, estado === 'AUTORIZADA' ? 'success' : 'warning');
+          const msg = sriMessages[res.estado] || `Estado SRI: ${res.estado}`;
+          this.uiService.showToast(msg, estado === 'AUTORIZADA' ? 'success' : 'warning');
           this.loadData(); // Recargar para ver cambios
         },
         error: (err) => this.uiService.showError(err, 'Error al consultar SRI')

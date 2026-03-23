@@ -71,13 +71,17 @@ class RepositorioDashboards:
             date_filter = "fecha_emision::date = CURRENT_DATE"
             susc_filter = "fecha_pago::date = CURRENT_DATE"
             expired_filter = "s.fecha_fin < CURRENT_DATE"
+        elif periodo == 'week':
+            date_filter = "fecha_emision >= CURRENT_DATE - INTERVAL '6 days'"
+            susc_filter = "fecha_pago >= CURRENT_DATE - INTERVAL '6 days'"
+            expired_filter = "s.fecha_fin < CURRENT_DATE"
         elif periodo == 'all':
             date_filter = "1=1"
             susc_filter = "1=1"
             expired_filter = "s.fecha_fin < CURRENT_DATE"
         else:
-            date_filter = f"DATE_TRUNC('{periodo if periodo in ['week', 'month', 'year'] else 'month'}', fecha_emision) = {period_condition}"
-            susc_filter = f"DATE_TRUNC('{periodo if periodo in ['week', 'month', 'year'] else 'month'}', fecha_pago) = {period_condition}"
+            date_filter = f"DATE_TRUNC('{periodo if periodo in ['month', 'year'] else 'month'}', fecha_emision) = {period_condition}"
+            susc_filter = f"DATE_TRUNC('{periodo if periodo in ['month', 'year'] else 'month'}', fecha_pago) = {period_condition}"
             expired_filter = f"s.fecha_fin < CURRENT_DATE"
 
         with self.db.cursor() as cur:
