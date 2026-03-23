@@ -45,4 +45,43 @@ export interface CuentasCobrarFiltros {
     fecha_corte?: string;
     estado?: string;
     cliente_id?: string;
+    fecha_inicio?: string;
+    fecha_fin?: string;
+    dias_mora?: number;
+}
+
+export interface AntiguedadCliente {
+    cliente: string;
+    vigente: number;
+    vencido_1_30: number;
+    vencido_31_60: number;
+    vencido_mas_60: number;
+    total: number;
+}
+
+export interface ClienteMoroso {
+    cliente: string;
+    total_facturas_vencidas: number;
+    monto_total_adeudado: number;
+    mayor_antiguedad_dias: number;
+    ultima_fecha_pago?: string;
+    telefono?: string;
+    email?: string;
+}
+
+export interface HistorialPago {
+    fecha_pago: string;
+    cliente: string;
+    numero_factura: string;
+    numero_recibo?: string;
+    monto_pagado: number;
+    metodo_pago?: string;
+    usuario_registro?: string;
+    observaciones?: string;
+}
+
+export interface ProyeccionCobro {
+    mes: string;
+    facturas_vencen: number;
+    monto_total: number;
 }

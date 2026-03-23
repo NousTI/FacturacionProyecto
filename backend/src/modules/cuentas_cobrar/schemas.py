@@ -82,3 +82,39 @@ class CuentasCobrarOverview(BaseModel):
     listado: List[CuentaCobrarDetallado]
     graficos: CuentasCobrarGraficos
     fecha_corte: date
+
+# R-009 Antigüedad por Cliente
+class AntiguedadCliente(BaseModel):
+    cliente: str
+    vigente: Decimal
+    vencido_1_30: Decimal
+    vencido_31_60: Decimal
+    vencido_mas_60: Decimal
+    total: Decimal
+
+# R-010 Clientes Morosos
+class ClienteMoroso(BaseModel):
+    cliente: str
+    total_facturas_vencidas: int
+    monto_total_adeudado: Decimal
+    mayor_antiguedad_dias: int
+    ultima_fecha_pago: Optional[date] = None
+    telefono: Optional[str] = None
+    email: Optional[str] = None
+
+# R-011 Historial de Pagos
+class HistorialPago(BaseModel):
+    fecha_pago: date
+    cliente: str
+    numero_factura: str
+    numero_recibo: Optional[str] = None
+    monto_pagado: Decimal
+    metodo_pago: Optional[str] = None
+    usuario_registro: Optional[str] = None
+    observaciones: Optional[str] = None
+
+# R-012 Proyección de Cobros
+class ProyeccionCobro(BaseModel):
+    mes: str
+    facturas_vencen: int
+    monto_total: Decimal

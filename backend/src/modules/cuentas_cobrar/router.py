@@ -4,7 +4,8 @@ from uuid import UUID
 
 from .schemas import (
     CuentaCobrarCreacion, CuentaCobrarLectura,
-    CuentaCobrarActualizacion, CuentasCobrarOverview
+    CuentaCobrarActualizacion, CuentasCobrarOverview,
+    AntiguedadCliente, ClienteMoroso, HistorialPago, ProyeccionCobro
 )
 from .service import ServicioCuentasCobrar
 from ..autenticacion.routes import get_current_user
@@ -48,6 +49,43 @@ def obtener_resumen_cuentas_cobrar(
 ):
     """Obtiene el reporte consolidado de Cuentas por Cobrar (Aging Report)."""
     return servicio.obtener_overview(usuario, fecha_corte, estado, cliente_id)
+
+@router.get("/antiguedad-clientes", response_model=List[AntiguedadCliente])
+def obtener_antiguedad_clientes(
+    fecha_corte: Optional[date] = Query(None),
+    usuario: dict = Depends(requerir_admin_empresa),
+    servicio: ServicioCuentasCobrar = Depends()
+):
+    """R-009: Análisis de antigüedad detallado por cliente."""
+    return servicio.obtener_antiguedad_por_cliente(usuario, fecha_corte)
+
+@router.get("/morosos", response_model=List[ClienteMoroso])
+def obtener_clientes_morosos(
+    dias_mora: int = Query(1, ge=1),
+    usuario: dict = Depends(requerir_admin_empresa),
+    servicio: ServicioCuentasCobrar = Depends()
+):
+    """R-010: Listado de clientes con facturas vencidas y datos de contacto."""
+    return servicio.obtener_clientes_morosos(usuario, dias_mora)
+
+@router.get("/pagos", response_model=List[HistorialPago])
+def obtener_historial_pagos(
+    inicio: Optional[date] = Query(None),
+    fin: Optional[date] = Query(None),
+    cliente_id: Optional[UUID] = Query(None),
+    usuario: dict = Depends(requerir_admin_empresa),
+    servicio: ServicioCuentasCobrar = Depends()
+):
+    """R-011: Historial detallado de pagos recibidos."""
+    return servicio.obtener_historial_pagos(usuario, inicio, fin, cliente_id)
+
+@router.get("/proyeccion", response_model=List[ProyeccionCobro])
+def obtener_proyeccion_cobros(
+    usuario: dict = Depends(requerir_admin_empresa),
+    servicio: ServicioCuentasCobrar = Depends()
+):
+    """R-012: Proyección de cobros futuros por mes de vencimiento."""
+    return servicio.obtener_proyeccion(usuario)
 
 @router.post("/", response_model=CuentaCobrarLectura, status_code=status.HTTP_201_CREATED)
 def crear_cuenta_cobrar(

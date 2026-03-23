@@ -118,3 +118,24 @@ class ServicioCuentasCobrar:
             estado_filtro=estado,
             cliente_id_filtro=cliente_id
         )
+
+    def obtener_antiguedad_por_cliente(self, usuario_actual: dict, fecha_corte: Optional[date] = None):
+        """R-009 Antigüedad por Cliente"""
+        empresa_id = usuario_actual.get('empresa_id')
+        corte = fecha_corte or date.today()
+        return self.repo.obtener_antiguedad_por_cliente(empresa_id, corte)
+
+    def obtener_clientes_morosos(self, usuario_actual: dict, dias_mora: int = 1):
+        """R-010 Clientes Morosos"""
+        empresa_id = usuario_actual.get('empresa_id')
+        return self.repo.obtener_clientes_morosos(empresa_id, dias_mora)
+
+    def obtener_historial_pagos(self, usuario_actual: dict, inicio: Optional[date] = None, fin: Optional[date] = None, cliente_id: Optional[UUID] = None):
+        """R-011 Historial de Pagos"""
+        empresa_id = usuario_actual.get('empresa_id')
+        return self.repo.obtener_historial_pagos(empresa_id, inicio, fin, cliente_id)
+
+    def obtener_proyeccion(self, usuario_actual: dict):
+        """R-012 Proyección de Cobros"""
+        empresa_id = usuario_actual.get('empresa_id')
+        return self.repo.obtener_proyeccion_cobros(empresa_id)
