@@ -253,6 +253,7 @@ class FacturaLectura(BaseModel):
     retencion_iva: Decimal
     retencion_renta: Decimal
     total: Decimal
+    saldo_pendiente: Optional[Decimal] = None
     
     # Otros
     origen: Optional[str] = None

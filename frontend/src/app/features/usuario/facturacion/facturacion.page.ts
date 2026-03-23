@@ -247,7 +247,7 @@ export class FacturacionPage implements OnInit {
     this.isLoading = true;
     this.facturasService.listarFacturas(params).subscribe({
       next: (data) => {
-        // Correct status mapping in case data logic differs
+        console.log('DEBUG [Facturas]:', data);
         this.facturas = data;
         this.calculateStats();
         this.applyFilters();
@@ -267,9 +267,12 @@ export class FacturacionPage implements OnInit {
       .filter(f => f.estado === 'AUTORIZADA')
       .reduce((acc, curr) => acc + (parseFloat(curr.total as any) || 0), 0);
 
+    // Sumamos el saldo_pendiente real del backend para el KPI de Pendientes
     this.stats.pendingAmount = this.facturas
       .filter(f => f.estado === 'AUTORIZADA' && f.estado_pago !== 'PAGADO')
-      .reduce((acc, curr) => acc + (parseFloat(curr.total as any) || 0), 0);
+      .reduce((acc, curr) => acc + (parseFloat(curr.saldo_pendiente as any) || 0), 0);
+    
+    console.log('STATS [Calculated]:', this.stats);
   }
 
   applyFilters() {
@@ -452,17 +455,17 @@ export class FacturacionPage implements OnInit {
           }
 
           let msgType: 'success' | 'warning' | 'error' = 'success';
-          let msgText = 'La factura ha sido autorizada correctamente por el SRI.';
+          let msgText = 'Factura autorizada correctamente';
 
           if (estado === 'DEVUELTA') {
             msgType = 'warning';
-            msgText = 'Documento devuelto: El SRI encontró errores de validación. Revise los detalles por favor.';
+            msgText = 'Factura devuelta por el SRI (Error en Recepción)';
           } else if (estado === 'NO_AUTORIZADA') {
             msgType = 'error';
-            msgText = 'El SRI ha rechazado la autorización (No Autorizada). Revise el motivo legal.';
+            msgText = 'Factura no autorizada legalmente';
           } else if (estado === 'EN_PROCESO') {
             msgType = 'warning';
-            msgText = 'El SRI recibió el documento pero aún está procesando la autorización. Vuelva a consultar en un momento.';
+            msgText = 'Factura todavía en procesamiento por el SRI';
           }
 
           this.uiService.showToast(msgText, msgType as any);
@@ -512,26 +515,12 @@ export class FacturacionPage implements OnInit {
       }))
       .subscribe({
         next: (res: any) => {
-          // Mapeo detallado de estados SRI a mensajes amigables
-          const sriMessages: Record<string, string> = {
-            'AUTORIZADO': '¡Excelente! El documento ya está autorizado.',
-            'AUTORIZADA': '¡Excelente! El documento ya está autorizado.',
-            'EN PROCESO': 'El SRI aún está procesando la autorización. Por favor, espere.',
-            'EN_PROCESO': 'El SRI aún está procesando la autorización. Por favor, espere.',
-            'NO_ENCONTRADO': 'El SRI aún no refleja el comprobante en su portal (esto es normal, la indexación tarda unos minutos). Reintente en un momento.',
-            'DEVUELTA': 'El documento fue devuelto con errores de validación.',
-            'DEVUELTO': 'El documento fue devuelto con errores de validación.',
-            'NO AUTORIZADO': 'El SRI ha negado la autorización del documento.',
-            'ERROR_TIMEOUT': 'El SRI tardó demasiado en responder. Intente consultar nuevamente.',
-            'ERROR_CONEXION': 'No hay conexión estable con el SRI en este momento.'
-          };
-
+          // Re-mapear estado similar a enviarSri
           let estado: any = (res.estado === 'AUTORIZADO' || res.estado === 'AUTORIZADA') ? 'AUTORIZADA' :
             (res.estado === 'DEVUELTA' || res.estado === 'DEVUELTO') ? 'DEVUELTA' :
               (res.estado === 'NO AUTORIZADO' || res.estado === 'NO_AUTORIZADO') ? 'NO_AUTORIZADA' : 'EN_PROCESO';
 
-          const msg = sriMessages[res.estado] || `Estado SRI: ${res.estado}`;
-          this.uiService.showToast(msg, estado === 'AUTORIZADA' ? 'success' : 'warning');
+          this.uiService.showToast(`Estado SRI: ${res.estado}`, estado === 'AUTORIZADA' ? 'success' : 'warning');
           this.loadData(); // Recargar para ver cambios
         },
         error: (err) => this.uiService.showError(err, 'Error al consultar SRI')

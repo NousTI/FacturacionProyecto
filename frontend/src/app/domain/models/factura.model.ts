@@ -78,6 +78,7 @@ export interface Factura {
     retencion_iva: number;
     retencion_renta: number;
     total: number;
+    saldo_pendiente?: number;
 
     origen?: string;
     observaciones?: string;

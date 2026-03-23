@@ -92,6 +92,7 @@ class RepositorioFacturas:
         query = """
             SELECT f.*, 
                    (SELECT fp.forma_pago_sri FROM sistema_facturacion.formas_pago fp WHERE fp.factura_id = f.id ORDER BY fp.created_at ASC LIMIT 1) as forma_pago_sri,
+                   COALESCE(cc.saldo_pendiente, f.total) as saldo_pendiente,
                    c.razon_social as cliente_nombre, 
                    c.identificacion as cliente_identificacion,
                    c.tipo_identificacion as cliente_tipo_identificacion,
@@ -108,6 +109,7 @@ class RepositorioFacturas:
             FROM sistema_facturacion.facturas f
             LEFT JOIN sistema_facturacion.clientes c ON f.cliente_id = c.id
             LEFT JOIN sistema_facturacion.empresas e ON f.empresa_id = e.id
+            LEFT JOIN sistema_facturacion.cuentas_cobrar cc ON f.id = cc.factura_id
             WHERE f.id = %s
         """
         with self.db.cursor() as cur:
@@ -165,6 +167,7 @@ class RepositorioFacturas:
         query = """
             SELECT f.*, 
                    (SELECT fp.forma_pago_sri FROM sistema_facturacion.formas_pago fp WHERE fp.factura_id = f.id ORDER BY fp.created_at ASC LIMIT 1) as forma_pago_sri,
+                   COALESCE(cc.saldo_pendiente, f.total) as saldo_pendiente,
                    c.razon_social as cliente_nombre, 
                    c.identificacion as cliente_identificacion,
                    c.tipo_identificacion as cliente_tipo_identificacion,
@@ -181,6 +184,7 @@ class RepositorioFacturas:
             FROM sistema_facturacion.facturas f
             LEFT JOIN sistema_facturacion.clientes c ON f.cliente_id = c.id
             LEFT JOIN sistema_facturacion.empresas e ON f.empresa_id = e.id
+            LEFT JOIN sistema_facturacion.cuentas_cobrar cc ON f.id = cc.factura_id
             WHERE 1=1
         """
         params = []

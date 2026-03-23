@@ -105,8 +105,21 @@ class RepositorioDashboards:
                 """, (empresa_id,))
                 kpis['ventas_hoy'] = cur.fetchone()['count']
 
-                cur.execute(f"SELECT COALESCE(SUM(total), 0) as total FROM sistema_facturacion.facturas WHERE empresa_id = %s AND estado = 'AUTORIZADA' AND estado_pago != 'PAGADO' AND {date_filter}", (empresa_id,))
-                kpis['cuentas_cobrar'] = float(cur.fetchone()['total'])
+                # Cuentas por cobrar - Real (Total - Pagos en tabla pagos_factura)
+                # NOTA: Se quita date_filter para que el KPI de saldos sea el real histórico, no solo del mes
+                cur.execute(f"""
+                    SELECT COALESCE(SUM(f.total - COALESCE((
+                        SELECT SUM(p.monto) 
+                        FROM sistema_facturacion.pagos_factura p 
+                        JOIN sistema_facturacion.cuentas_cobrar c ON p.cuenta_cobrar_id = c.id 
+                        WHERE c.factura_id = f.id
+                    ), 0)), 0) as saldo
+                    FROM sistema_facturacion.facturas f 
+                    WHERE f.empresa_id = %s 
+                    AND f.estado = 'AUTORIZADA' 
+                    AND f.estado_pago != 'PAGADO'
+                """, (empresa_id,))
+                kpis['cuentas_cobrar'] = float(cur.fetchone()['saldo'])
                 
                 cur.execute("""
                     SELECT COUNT(*) as count 
