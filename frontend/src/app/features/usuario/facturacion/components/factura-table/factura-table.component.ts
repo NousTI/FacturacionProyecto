@@ -76,7 +76,7 @@ import { HasPermissionDirective } from '../../../../../shared/directives/has-per
                 <div class="spinner-border spinner-border-sm me-2" role="status" *ngIf="factura.id === consultingId" style="width: 10px; height: 10px; border-width: 2px;"></div>
                 {{ factura.id === consultingId ? (processingAction === 'emitir' ? 'ENVIANDO...' : 'CONSULTANDO...') : factura.estado }}
               </div>
-              <div class="badge-status-lux w-100" [ngClass]="getPaymentStatusClass(factura.estado_pago)">
+              <div *ngIf="factura.estado === 'AUTORIZADA' || factura.estado === 'ANULADA'" class="badge-status-lux w-100" [ngClass]="getPaymentStatusClass(factura.estado_pago)">
                 <i class="bi bi-cash-stack me-1" style="font-size: 0.8rem;"></i>
                 {{ factura.estado_pago }}
               </div>
