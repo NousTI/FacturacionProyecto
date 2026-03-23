@@ -65,7 +65,7 @@ import { CuentasCobrarProyeccionComponent } from './components/cuentas-cobrar-pr
       </div>
 
       <!-- TABS NAVIGATION -->
-      <div class="tabs-slider d-flex gap-3 mb-4 overflow-auto pb-2 border-bottom">
+      <div *ngIf="tabs.length > 1" class="tabs-slider d-flex gap-3 mb-4 overflow-auto pb-2 border-bottom">
         <button *ngFor="let tab of tabs" 
                 (click)="activeTab = tab.id"
                 class="tab-btn btn border-0 rounded-pill px-4 py-2 fw-medium text-nowrap"
@@ -168,10 +168,10 @@ export class CuentasCobrarPage implements OnInit {
 
   tabs = [
     { id: 'resumen', label: 'Consolidado', icon: 'bi bi-pie-chart-fill' },
-    { id: 'antiguedad', label: 'Antigüedad', icon: 'bi bi-reception-3' },
-    { id: 'morosos', label: 'Morosos', icon: 'bi bi-person-x-fill' },
-    { id: 'pagos', label: 'Historial', icon: 'bi bi-receipt-cutoff' },
-    { id: 'proyeccion', label: 'Proyección', icon: 'bi bi-graph-up-arrow' }
+    // { id: 'antiguedad', label: 'Antigüedad', icon: 'bi bi-reception-3' },
+    // { id: 'morosos', label: 'Morosos', icon: 'bi bi-person-x-fill' },
+    // { id: 'pagos', label: 'Historial', icon: 'bi bi-receipt-cutoff' },
+    // { id: 'proyeccion', label: 'Proyección', icon: 'bi bi-graph-up-arrow' }
   ];
 
   constructor(
