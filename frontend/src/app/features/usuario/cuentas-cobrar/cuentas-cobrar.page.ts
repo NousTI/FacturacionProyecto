@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Observable, forkJoin, BehaviorSubject } from 'rxjs';
@@ -176,7 +176,8 @@ export class CuentasCobrarPage implements OnInit {
 
   constructor(
     private service: CuentasCobrarService,
-    private uiService: UiService
+    private uiService: UiService,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit() {
@@ -187,30 +188,37 @@ export class CuentasCobrarPage implements OnInit {
   cargarDatos() {
     this.loading = true;
     this.error = null;
+    this.cdr.detectChanges();
 
-    // Load all data in parallel
-    const requests = {
-      overview: this.service.getResumen(this.filtros),
-      antiguedad: this.service.getAntiguedadClientes(this.filtros.fecha_corte),
-      morosos: this.service.getClientesMorosos(this.filtros.dias_mora || 1),
-      pagos: this.service.getHistorialPagos({}),
-      proyeccion: this.service.getProyeccionCobros()
-    };
-
-    forkJoin(requests).pipe(
-      finalize(() => this.loading = false)
+    // Solo cargamos lo que realmente necesitamos según las pestañas habilitadas
+    // Para simplificar y arreglar el problema del forkJoin, cargaremos el resumen siempre
+    // y los demás solo si la pestaña está activa o si se desea mantener caché.
+    
+    // Por ahora, carguemos todo individualmente o verifiquemos el resumen primero.
+    this.service.getResumen(this.filtros).pipe(
+      finalize(() => {
+        this.loading = false;
+        this.cdr.detectChanges();
+      })
     ).subscribe({
       next: (res) => {
-        this.overviewData = res.overview;
-        this.antiguedadData = res.antiguedad;
-        this.morososData = res.morosos;
-        this.pagosData = res.pagos;
-        this.proyeccionData = res.proyeccion;
+        this.overviewData = res;
+        
+        // Cargar los demás en segundo plano solo si no obstruyen la UI principal
+        this.cargarDatosSecundarios();
       },
       error: (err) => {
-        console.error('Error loading accounts receivable data:', err);
+        console.error('Error loading accounts receivable overview:', err);
         this.error = err.error?.message || 'Error de conexión con el servidor';
       }
     });
+  }
+
+  private cargarDatosSecundarios() {
+    // Estas peticiones no bloquean el loading principal
+    this.service.getAntiguedadClientes(this.filtros.fecha_corte).subscribe(data => this.antiguedadData = data);
+    this.service.getClientesMorosos(this.filtros.dias_mora || 1).subscribe(data => this.morososData = data);
+    this.service.getHistorialPagos({}).subscribe(data => this.pagosData = data);
+    this.service.getProyeccionCobros().subscribe(data => this.proyeccionData = data);
   }
 }
