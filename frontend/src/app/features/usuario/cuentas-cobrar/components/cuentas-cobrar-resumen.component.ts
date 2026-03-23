@@ -51,9 +51,10 @@ import { ChartCardComponent } from '../../../../shared/components/chart-card/cha
         </div>
         <div class="col-lg-7">
           <app-chart-card 
-            title="Top 10 Clientes Morosos" 
+            title="TOP 10 CLIENTES CON MAYOR DEUDA" 
             [data]="barData"
-            barColor="#6366f1">
+            barColor="#6366f1"
+            orientation="horizontal">
           </app-chart-card>
         </div>
       </div>
@@ -135,11 +136,22 @@ export class CuentasCobrarResumenComponent {
 
   get pieData(): PieChartData[] {
     if (!this.overview) return [];
-    return this.overview.graficos.distribucion_antiguedad.map(d => ({
-      label: d.label,
-      value: d.value,
-      percent: d.value // In this backend it seems value IS the percent based on schemas or I should calculate it
-    }));
+    
+    const resumen = this.overview.resumen;
+    const colorMap: { [key: string]: string } = {
+      'Vigente': '#10b981',
+      'Vencido 1-30': '#f59e0b',
+      'Vencido 31-60': '#f97316',
+      'Vencido > 60': '#ef4444'
+    };
+
+    // Construimos los datos del pie chart usando los porcentajes ya calculados por el backend
+    return [
+      { label: 'Vigente', value: Number(resumen.vigente.monto), percent: resumen.vigente.porcentaje, color: colorMap['Vigente'] },
+      { label: 'Vencido 1-30', value: Number(resumen.vencido_1_30.monto), percent: resumen.vencido_1_30.porcentaje, color: colorMap['Vencido 1-30'] },
+      { label: 'Vencido 31-60', value: Number(resumen.vencido_31_60.monto), percent: resumen.vencido_31_60.porcentaje, color: colorMap['Vencido 31-60'] },
+      { label: 'Vencido > 60', value: Number(resumen.vencido_60_mas.monto), percent: resumen.vencido_60_mas.porcentaje, color: colorMap['Vencido > 60'] }
+    ];
   }
 
   get barData() {
