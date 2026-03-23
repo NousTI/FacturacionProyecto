@@ -35,35 +35,33 @@ import { CuentasCobrarProyeccionComponent } from './components/cuentas-cobrar-pr
     CuentasCobrarProyeccionComponent
   ],
   template: `
-    <div class="page-container p-4">
-      <!-- HEADER & FILTROS -->
-      <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
-        <div>
-          <h4 class="fw-bold mb-0 text-dark">Módulo de Cuentas por Cobrar</h4>
-          <p class="text-muted small mb-0">Gestión de cartera, antigüedad de saldos y proyecciones</p>
-        </div>
-
-        <div class="d-flex flex-wrap gap-2 align-items-center">
-          <!-- Filtro Estado -->
-          <select class="form-select form-select-sm border-0 bg-white shadow-none" 
-                  [(ngModel)]="filtros.estado" (change)="cargarDatos()" style="max-width: 150px;">
+    <div class="page-container p-3">
+      <!-- FILTROS OPTIMIZADOS -->
+      <div class="d-flex flex-wrap justify-content-end align-items-center gap-2 mb-3 bg-light p-2 rounded-3 shadow-sm border border-white">
+        <!-- Filtro Estado -->
+        <div class="d-flex align-items-center bg-white px-2 rounded-2 border">
+          <i class="bi bi-funnel text-muted small me-1"></i>
+          <select class="form-select form-select-sm border-0 shadow-none ps-1" 
+                  [(ngModel)]="filtros.estado" (change)="cargarDatos()" style="max-width: 140px; font-size: 0.8rem;">
             <option [value]="undefined">Todos los Estados</option>
             <option value="pendiente">Pendiente</option>
             <option value="vencido">Vencido</option>
             <option value="parcial">Parcial</option>
           </select>
-
-          <!-- Filtro Fecha Corte -->
-          <div class="input-group input-group-sm" style="max-width: 200px;">
-            <span class="input-group-text border-0 bg-white small">Corte:</span>
-            <input type="date" class="form-control border-0 bg-white shadow-none" 
-                   [(ngModel)]="filtros.fecha_corte" (change)="cargarDatos()">
-          </div>
-          
-          <button class="btn btn-primary btn-sm rounded-pill px-4 shadow-sm" (click)="cargarDatos()" [disabled]="loading">
-            <i class="bi bi-arrow-clockwise me-1" [class.spin]="loading"></i> Refrescar
-          </button>
         </div>
+
+        <!-- Filtro Fecha Corte -->
+        <div class="d-flex align-items-center bg-white px-2 rounded-2 border">
+          <i class="bi bi-calendar3 text-muted small me-1"></i>
+          <input type="date" class="form-control form-control-sm border-0 shadow-none ps-1" 
+                 [(ngModel)]="filtros.fecha_corte" (change)="cargarDatos()" 
+                 style="font-size: 0.8rem; height: 31px;">
+        </div>
+        
+        <button class="btn btn-primary btn-sm rounded-2 px-3 shadow-none border-0" 
+                (click)="cargarDatos()" [disabled]="loading" style="height: 31px;">
+          <i class="bi bi-arrow-clockwise" [class.spin]="loading"></i>
+        </button>
       </div>
 
       <!-- TABS NAVIGATION -->

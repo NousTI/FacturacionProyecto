@@ -9,17 +9,10 @@ import { ClienteMoroso } from '../../../../domain/models/cuentas-cobrar.model';
   template: `
     <div class="morosos-container">
       <div class="soft-card p-4 rounded-4 shadow-sm border-0 bg-white">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-          <div class="d-flex flex-column">
-             <h5 class="fw-bold mb-1">Clientes Morosos</h5>
-             <small class="text-muted">Lista priorizada de clientes con mayores saldos vencidos</small>
-          </div>
-          <span class="badge bg-danger-subtle text-danger rounded-pill px-3 py-2 fw-medium">
-             {{ data.length }} Clientes Identificados
-          </span>
-        </div>
-        
         <div class="table-responsive">
+          <span class="badge bg-danger-subtle text-danger rounded-pill border border-danger-subtle mb-2 small fw-normal">
+             {{ data.length }} CLIENTES MOROSOS IDENTIFICADOS
+          </span>
           <table class="table table-hover align-middle custom-table">
             <thead>
               <tr>

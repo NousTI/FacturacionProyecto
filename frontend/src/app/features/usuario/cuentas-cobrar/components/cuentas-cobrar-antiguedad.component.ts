@@ -9,12 +9,8 @@ import { AntiguedadCliente } from '../../../../domain/models/cuentas-cobrar.mode
   template: `
     <div class="antiguedad-container">
       <div class="soft-card p-4 rounded-4 shadow-sm border-0 bg-white">
-        <div class="d-flex flex-column mb-4">
-          <h5 class="fw-bold mb-1">Antigüedad de Saldos</h5>
-          <small class="text-muted">Análisis detallado de cartera por cliente y rangos de morosidad</small>
-        </div>
-        
         <div class="table-responsive">
+          <span class="badge bg-light text-dark rounded-pill border mb-2 small fw-normal">REPORTE DE ANTIGÜEDAD</span>
           <table class="table table-hover align-middle custom-table">
             <thead>
               <tr>

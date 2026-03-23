@@ -60,13 +60,15 @@ import { ChartCardComponent } from '../../../../shared/components/chart-card/cha
 
       <!-- Detail Table -->
       <div class="soft-card p-4 rounded-4 shadow-sm border-0 bg-white">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-          <h5 class="fw-bold mb-0">Listado Detallado</h5>
-          <span class="badge bg-light text-dark rounded-pill">{{ overview.listado.length }} facturas</span>
-        </div>
         <div class="table-responsive">
           <table class="table table-hover align-middle custom-table">
             <thead>
+              <tr class="table-light">
+                <th colspan="9" class="py-2 border-0 bg-light">
+                   <span class="badge bg-light text-dark rounded-pill border">{{ overview.listado.length }} facturas</span> 
+                   <span class="ms-2 text-muted fw-normal" style="font-size: 0.7rem;">LISTADO DETALLADO</span>
+                </th>
+              </tr>
               <tr>
                 <th>Cliente</th>
                 <th>N° Factura</th>

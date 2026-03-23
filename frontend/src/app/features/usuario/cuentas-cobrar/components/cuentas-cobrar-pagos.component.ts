@@ -9,12 +9,8 @@ import { HistorialPago } from '../../../../domain/models/cuentas-cobrar.model';
   template: `
     <div class="pagos-container">
       <div class="soft-card p-4 rounded-4 shadow-sm border-0 bg-white">
-        <div class="d-flex flex-column mb-4">
-          <h5 class="fw-bold mb-1">Historial de Pagos Recibidos</h5>
-          <small class="text-muted">Desglose de actividad económica reciente por facturas</small>
-        </div>
-
         <div class="table-responsive">
+          <span class="badge bg-light text-dark rounded-pill border mb-2 small fw-normal">RECIBOS DE PAGO</span>
           <table class="table table-hover align-middle custom-table">
             <thead>
               <tr>

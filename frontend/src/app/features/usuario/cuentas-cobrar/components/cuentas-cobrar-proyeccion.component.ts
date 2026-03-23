@@ -12,12 +12,8 @@ import { ChartCardComponent } from '../../../../shared/components/chart-card/cha
       <div class="row g-3 mb-4">
         <div class="col-lg-8">
           <div class="soft-card p-4 rounded-4 shadow-sm border-0 bg-white">
-            <div class="d-flex flex-column mb-4">
-              <h5 class="fw-bold mb-1">Proyección Mensual de Cobros</h5>
-              <small class="text-muted">Análisis basado en fechas de vencimiento de facturas actuales</small>
-            </div>
-            
             <div class="table-responsive">
+              <span class="badge bg-primary-subtle text-primary rounded-pill border border-primary-subtle mb-2 small fw-normal">PROYECCIÓN ESTIMADA</span>
               <table class="table table-hover align-middle custom-table">
                 <thead>
                   <tr>
