@@ -18,44 +18,57 @@ Chart.register(...registerables);
   imports: [CommonModule, FormsModule],
   template: `
     <div class="cc-page-container">
-      <div class="container-fluid py-4">
+      <div class="container-fluid py-3">
         
-        <!-- HEADER -->
-        <div class="row mb-4 align-items-center">
-          <div class="col-md-6">
-            <h1 class="page-title">Cuentas por Cobrar</h1>
-            <p class="page-subtitle">Reporte R-008: Resumen y Antigüedad de Cartera</p>
+        <!-- COMPACT HEADER & FILTERS -->
+        <div class="row g-3 mb-4 align-items-center">
+          <div class="col-lg-4">
+             <div class="card stat-card total-card h-100">
+                <div class="card-body py-3">
+                  <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                      <span class="stat-label mb-1">Total por Cobrar</span>
+                      <h2 class="stat-value text-indigo mb-0">{{ data?.resumen?.total_por_cobrar | currency:'USD':'symbol':'1.2-2' }}</h2>
+                    </div>
+                    <div class="icon-circle bg-indigo-soft">
+                      <i class="bi bi-wallet2"></i>
+                    </div>
+                  </div>
+                </div>
+              </div>
           </div>
-          <div class="col-md-6">
-             <div class="d-flex justify-content-end gap-2 align-items-center flex-wrap">
-                
-                <div class="filter-group">
-                   <label class="filter-label">Fecha de Corte</label>
-                   <input type="date" class="form-control form-control-sm" [(ngModel)]="filtros.fecha_corte" (change)="loadData()">
-                </div>
+          <div class="col-lg-8">
+             <div class="card filter-card border-0 shadow-sm h-100">
+                <div class="card-body py-3">
+                   <div class="d-flex flex-wrap gap-3 align-items-end justify-content-between">
+                      <div class="filter-group flex-grow-1">
+                         <label class="filter-label">Fecha de Corte</label>
+                         <input type="date" class="form-control form-control-sm" [(ngModel)]="filtros.fecha_corte" (change)="loadData()">
+                      </div>
 
-                <div class="filter-group">
-                   <label class="filter-label">Estado</label>
-                   <select class="form-select form-select-sm" [(ngModel)]="filtros.estado" (change)="loadData()">
-                      <option value="">Todos</option>
-                      <option value="pendiente">Pendiente</option>
-                      <option value="vencido">Vencido</option>
-                      <option value="parcial">Parcial</option>
-                   </select>
-                </div>
+                      <div class="filter-group flex-grow-1">
+                         <label class="filter-label">Estado</label>
+                         <select class="form-select form-select-sm" [(ngModel)]="filtros.estado" (change)="loadData()">
+                            <option value="">Todos</option>
+                            <option value="pendiente">Pendiente</option>
+                            <option value="vencido">Vencido</option>
+                            <option value="parcial">Parcial</option>
+                         </select>
+                      </div>
 
-                <div class="filter-group">
-                   <label class="filter-label">Cliente</label>
-                   <select class="form-select form-select-sm min-w-150" [(ngModel)]="filtros.cliente_id" (change)="loadData()">
-                      <option value="">Todos los Clientes</option>
-                      <option *ngFor="let c of clientes" [value]="c.id">{{ c.razon_social }}</option>
-                   </select>
-                </div>
+                      <div class="filter-group flex-grow-2">
+                         <label class="filter-label">Cliente</label>
+                         <select class="form-select form-select-sm" [(ngModel)]="filtros.cliente_id" (change)="loadData()">
+                            <option value="">Todos los Clientes</option>
+                            <option *ngFor="let c of clientes" [value]="c.id">{{ c.razon_social }}</option>
+                         </select>
+                      </div>
 
-                <button class="btn btn-primary-premium btn-sm mt-3" (click)="loadData()" [disabled]="isLoading">
-                  <i class="bi bi-arrow-clockwise me-1" [class.spinning]="isLoading"></i>
-                  Refrescar
-                </button>
+                      <button class="btn btn-indigo-premium btn-sm" (click)="loadData()" [disabled]="isLoading">
+                        <i class="bi bi-arrow-clockwise" [class.spinning]="isLoading"></i>
+                      </button>
+                   </div>
+                </div>
              </div>
           </div>
         </div>
@@ -65,25 +78,6 @@ Chart.register(...registerables);
         </div>
 
         <div *ngIf="data">
-          <!-- TOP STATS -->
-          <div class="row g-3 mb-4">
-            <div class="col-md-12">
-              <div class="card stat-card total-card">
-                <div class="card-body py-4">
-                  <div class="d-flex justify-content-between align-items-center">
-                    <div>
-                      <span class="stat-label">Total por Cobrar</span>
-                      <h2 class="stat-value text-indigo mb-0">{{ data.resumen.total_por_cobrar | currency:'USD':'symbol':'1.2-2' }}</h2>
-                    </div>
-                    <div class="icon-circle bg-indigo-soft">
-                      <i class="bi bi-wallet2"></i>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
           <!-- BUCKETS -->
           <div class="row g-3 mb-4">
             <div class="col-md-3">
@@ -227,8 +221,8 @@ Chart.register(...registerables);
       color: #64748b;
       font-size: 0.9rem;
     }
-    .btn-primary-premium {
-      background: #4f46e5;
+    .btn-indigo-premium {
+      background: #4338ca;
       color: white;
       border: none;
       border-radius: 8px;
@@ -236,9 +230,9 @@ Chart.register(...registerables);
       font-weight: 600;
       transition: all 0.2s;
     }
-    .btn-primary-premium:hover {
-      background: #4338ca;
-      box-shadow: 0 4px 12px rgba(79, 70, 229, 0.2);
+    .btn-indigo-premium:hover {
+      background: #3730a3;
+      box-shadow: 0 4px 12px rgba(67, 56, 202, 0.2);
     }
     .filter-group {
        display: flex;
