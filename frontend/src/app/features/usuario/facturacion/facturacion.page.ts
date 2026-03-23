@@ -516,11 +516,20 @@ export class FacturacionPage implements OnInit {
       .subscribe({
         next: (res: any) => {
           // Re-mapear estado similar a enviarSri
-          let estado: any = (res.estado === 'AUTORIZADO' || res.estado === 'AUTORIZADA') ? 'AUTORIZADA' :
+          let estadoMapping: any = (res.estado === 'AUTORIZADO' || res.estado === 'AUTORIZADA') ? 'AUTORIZADA' :
             (res.estado === 'DEVUELTA' || res.estado === 'DEVUELTO') ? 'DEVUELTA' :
               (res.estado === 'NO AUTORIZADO' || res.estado === 'NO_AUTORIZADO') ? 'NO_AUTORIZADA' : 'EN_PROCESO';
 
-          this.uiService.showToast(`Estado SRI: ${res.estado}`, estado === 'AUTORIZADA' ? 'success' : 'warning');
+          let msgText = 'Estamos consultando el estado con el SRI...';
+          if (res.estado === 'NO_ENCONTRADO' || res.estado === 'EN PROCESO') {
+             msgText = 'Tu factura todavía se está procesando en el SRI. Por favor, espera un par de minutos antes de volver a consultar.';
+          } else if (res.estado === 'AUTORIZADO' || res.estado === 'AUTORIZADA') {
+             msgText = '¡Excelente! Tu factura ya ha sido autorizada correctamente.';
+          } else if (res.estado === 'DEVUELTA' || res.estado === 'DEVUELTO') {
+             msgText = 'La factura ha sido devuelta con observaciones. Por favor, revisa los detalles.';
+          }
+
+          this.uiService.showToast(msgText, estadoMapping === 'AUTORIZADA' ? 'success' : 'warning');
           this.loadData(); // Recargar para ver cambios
         },
         error: (err) => this.uiService.showError(err, 'Error al consultar SRI')

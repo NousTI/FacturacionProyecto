@@ -14,6 +14,7 @@ import { FacturacionRecurrentePage } from './facturacion-recurrente/facturacion-
 import { ReportesPage } from './reportes/reportes.page';
 import { EstablecimientosPage } from './establecimientos/establecimientos.page';
 import { PuntosEmisionPage } from './puntos-emision/puntos-emision.page';
+import { CuentasCobrarPage } from './cuentas-cobrar/cuentas-cobrar.page';
 
 import { UsuariosPage } from './usuarios/usuarios.page';
 import { CertificadoSriPage } from './certificado-sri/certificado-sri.page';
@@ -67,6 +68,12 @@ const routes: Routes = [
         component: FacturacionPage,
         canActivate: [RoleGuard],
         data: { title: 'Facturación', roles: [UserRole.USUARIO], permission: ['FACTURAS_VER_TODAS', 'FACTURAS_VER_PROPIAS', 'FACTURAS_CREAR'] }
+    },
+    {
+        path: 'cuentas-cobrar',
+        component: CuentasCobrarPage,
+        canActivate: [RoleGuard],
+        data: { title: 'Cuentas por Cobrar', roles: [UserRole.USUARIO], permission: 'CUENTA_COBRAR_VER' }
     },
     {
         path: 'facturacion-recurrente',

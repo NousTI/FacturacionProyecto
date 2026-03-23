@@ -1,4 +1,5 @@
 from fastapi import Depends
+from datetime import date
 from typing import List, Optional
 from uuid import UUID
 from ...database.session import get_db
@@ -100,3 +101,108 @@ class RepositorioCuentasCobrar:
         with db_transaction(self.db) as cur:
             cur.execute(query, (str(id),))
             return cur.rowcount > 0
+
+    def obtener_resumen_cobros(self, empresa_id: UUID, fecha_corte: date, estado_filtro: Optional[str] = None, cliente_id_filtro: Optional[UUID] = None) -> dict:
+        """
+        Calcula el resumen de cuentas por cobrar segmentado por antigüedad.
+        Calculado a partir de la fecha de corte proporcionada.
+        """
+        params = [str(empresa_id), fecha_corte]
+        condiciones = ["cc.empresa_id = %s", "cc.fecha_emision <= %s"]
+        
+        if estado_filtro:
+            condiciones.append("cc.estado = %s")
+            params.append(estado_filtro)
+            
+        if cliente_id_filtro:
+            condiciones.append("cc.cliente_id = %s")
+            params.append(str(cliente_id_filtro))
+            
+        where_clause = " WHERE " + " AND ".join(condiciones)
+
+        # 1. LISTADO DETALLADO
+        query_listado = f"""
+            SELECT 
+                cc.id,
+                c.razon_social as cliente_nombre,
+                cc.numero_documento,
+                cc.fecha_emision,
+                cc.fecha_vencimiento,
+                cc.monto_total,
+                cc.monto_pagado,
+                cc.saldo_pendiente,
+                cc.estado,
+                CASE 
+                    WHEN cc.fecha_vencimiento >= %s THEN 0
+                    ELSE (%s - cc.fecha_vencimiento)
+                END as dias_vencido
+            FROM sistema_facturacion.cuentas_cobrar cc
+            JOIN sistema_facturacion.clientes c ON cc.cliente_id = c.id
+            {where_clause}
+            AND cc.saldo_pendiente > 0
+            ORDER BY cc.fecha_vencimiento ASC
+        """
+        # Note: we reuse some params but need to prepend the fecha_corte twice for the CASE
+        listado_params = [fecha_corte, fecha_corte] + params
+        
+        with self.db.cursor() as cur:
+            cur.execute(query_listado, tuple(listado_params))
+            listado = [dict(row) for row in cur.fetchall()]
+            
+            # 2. AGREGACIONES PARA EL RESUMEN
+            total_por_cobrar = sum(item['saldo_pendiente'] for item in listado)
+            
+            resumen = {
+                "total_por_cobrar": total_por_cobrar,
+                "vigente": {"monto": 0, "porcentaje": 0},
+                "vencido_1_30": {"monto": 0, "porcentaje": 0},
+                "vencido_31_60": {"monto": 0, "porcentaje": 0},
+                "vencido_60_mas": {"monto": 0, "porcentaje": 0}
+            }
+            
+            if total_por_cobrar > 0:
+                for item in listado:
+                    dv = item['dias_vencido']
+                    monto = item['saldo_pendiente']
+                    
+                    if dv <= 0: bucket = "vigente"
+                    elif dv <= 30: bucket = "vencido_1_30"
+                    elif dv <= 60: bucket = "vencido_31_60"
+                    else: bucket = "vencido_60_mas"
+                    
+                    resumen[bucket]["monto"] += monto
+                
+                # Calcular porcentajes
+                for k in ["vigente", "vencido_1_30", "vencido_31_60", "vencido_60_mas"]:
+                    resumen[k]["porcentaje"] = round(float(resumen[k]["monto"] / total_por_cobrar) * 100, 2)
+
+            # 3. GRÁFICOS (Top 10 Morosos)
+            query_morosos = f"""
+                SELECT 
+                    c.razon_social as label,
+                    SUM(cc.saldo_pendiente) as value
+                FROM sistema_facturacion.cuentas_cobrar cc
+                JOIN sistema_facturacion.clientes c ON cc.cliente_id = c.id
+                {where_clause}
+                AND cc.saldo_pendiente > 0
+                GROUP BY c.razon_social
+                ORDER BY value DESC
+                LIMIT 10
+            """
+            cur.execute(query_morosos, tuple(params))
+            top_morosos = [dict(row) for row in cur.fetchall()]
+            
+            return {
+                "resumen": resumen,
+                "listado": listado,
+                "graficos": {
+                    "distribucion_antiguedad": [
+                        {"label": "Vigente", "value": float(resumen["vigente"]["monto"])},
+                        {"label": "Vencido 1-30", "value": float(resumen["vencido_1_30"]["monto"])},
+                        {"label": "Vencido 31-60", "value": float(resumen["vencido_31_60"]["monto"])},
+                        {"label": "Vencido > 60", "value": float(resumen["vencido_60_mas"]["monto"])}
+                    ],
+                    "top_clientes_morosos": top_morosos
+                },
+                "fecha_corte": fecha_corte
+            }

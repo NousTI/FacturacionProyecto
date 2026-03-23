@@ -1,4 +1,5 @@
 from fastapi import Depends
+from datetime import date
 from uuid import UUID
 from typing import List, Optional
 from decimal import Decimal
@@ -98,3 +99,22 @@ class ServicioCuentasCobrar:
         if not self.repo.eliminar_cuenta(id):
             raise AppError("Error al eliminar la cuenta por cobrar", 500, "DB_ERROR")
         return True
+
+    def obtener_overview(self, usuario_actual: dict, fecha_corte: Optional[date] = None, estado: Optional[str] = None, cliente_id: Optional[UUID] = None):
+        """
+        Orquesta la obtención del reporte completo de Cuentas por Cobrar.
+        """
+        is_superadmin = usuario_actual.get(AuthKeys.IS_SUPERADMIN, False)
+        empresa_id = usuario_actual.get('empresa_id')
+        
+        if not empresa_id and not is_superadmin:
+            raise AppError("No autorizado para ver reportes de esta empresa", 403, "AUTH_FORBIDDEN")
+            
+        corte = fecha_corte or date.today()
+        
+        return self.repo.obtener_resumen_cobros(
+            empresa_id=empresa_id,
+            fecha_corte=corte,
+            estado_filtro=estado,
+            cliente_id_filtro=cliente_id
+        )

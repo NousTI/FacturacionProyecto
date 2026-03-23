@@ -1,7 +1,7 @@
 from uuid import UUID
 from datetime import date, datetime
 from decimal import Decimal
-from typing import Optional
+from typing import Optional, List
 from pydantic import BaseModel, Field
 
 class CuentaCobrarBase(BaseModel):
@@ -43,3 +43,42 @@ class CuentaCobrarLectura(CuentaCobrarBase):
 
     class Config:
         from_attributes = True
+
+# --- NUEVOS MODELOS PARA REPORTES ---
+
+class AgingBucket(BaseModel):
+    monto: Decimal = Field(default=Decimal('0.00'))
+    porcentaje: float = 0.0
+
+class CuentasCobrarResumen(BaseModel):
+    total_por_cobrar: Decimal
+    vigente: AgingBucket
+    vencido_1_30: AgingBucket
+    vencido_31_60: AgingBucket
+    vencido_60_mas: AgingBucket
+
+class CuentaCobrarDetallado(BaseModel):
+    id: UUID
+    cliente_nombre: str
+    numero_documento: str
+    fecha_emision: date
+    fecha_vencimiento: date
+    monto_total: Decimal
+    monto_pagado: Decimal
+    saldo_pendiente: Decimal
+    dias_vencido: int
+    estado: str
+
+class ChartDataPoint(BaseModel):
+    label: str
+    value: float
+
+class CuentasCobrarGraficos(BaseModel):
+    distribucion_antiguedad: List[ChartDataPoint]
+    top_clientes_morosos: List[ChartDataPoint]
+
+class CuentasCobrarOverview(BaseModel):
+    resumen: CuentasCobrarResumen
+    listado: List[CuentaCobrarDetallado]
+    graficos: CuentasCobrarGraficos
+    fecha_corte: date

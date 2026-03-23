@@ -22,6 +22,12 @@ export class PermissionsService {
             return true;
         }
 
+        // 2. Company Admin bypass (rol_codigo: ADMIN, ADMIN_TOTAL, etc)
+        const rolCodigo = (user.rol_codigo || '').toUpperCase();
+        if (rolCodigo === 'ADMIN' || rolCodigo.startsWith('ADMIN_')) {
+            return true;
+        }
+
         const permissionsToCheck = Array.isArray(permission) ? permission : [permission];
 
         return permissionsToCheck.some(p => {
