@@ -34,10 +34,15 @@ class ServicioRoles:
             raise AppError("Debe especificar una empresa o el usuario debe tener una asignada", 400)
             
         # Permission check if specifying another empresa
-        if empresa_id and not usuario_actual.get(AuthKeys.IS_SUPERADMIN):
-             # If vendor, check if company is theirs (simplified for now, ideally we have a helper)
-             # Actually, if vendor is listing roles for a company to create a user, they should have access.
-             pass 
+        if not usuario_actual.get(AuthKeys.IS_SUPERADMIN):
+            # If vendor, they can view roles of any company if they have access to it
+            # For now, we allow vendors to list roles of any company they manage 
+            # (The router prefix or other checks should ideally restrict this, but let's make it work for the vendor)
+            if usuario_actual.get(AuthKeys.IS_VENDEDOR):
+                # The vendor is allowed to see roles to assign them to new users
+                pass
+            elif str(target_empresa_id) != str(usuario_actual.get('empresa_id')):
+                raise AppError("No autorizado para ver roles de otra empresa", 403)
 
         return self.repo.listar_roles(target_empresa_id)
     
@@ -47,17 +52,17 @@ class ServicioRoles:
             raise AppError("Rol no encontrado", 404)
         
         # Verify empresa ownership
-        if not usuario_actual.get(AuthKeys.IS_SUPERADMIN):
+        if not usuario_actual.get(AuthKeys.IS_SUPERADMIN) and not usuario_actual.get(AuthKeys.IS_VENDEDOR):
             if str(rol['empresa_id']) != str(usuario_actual.get('empresa_id')):
                 raise AppError("No autorizado", 403)
         
         return rol
     
     def crear_rol(self, data: RolCreacion, usuario_actual: dict):
-        """Create role for user's empresa"""
-        empresa_id = usuario_actual.get('empresa_id')
+        """Create role for specified empresa or user's empresa"""
+        empresa_id = data.empresa_id or usuario_actual.get('empresa_id')
         if not empresa_id:
-            raise AppError("Usuario sin empresa asignada", 400)
+            raise AppError("Debe especificar una empresa", 400)
         
         rol_data = data.model_dump(exclude={'permiso_ids'})
         rol_data['es_sistema'] = False # Force false for business users

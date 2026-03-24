@@ -65,9 +65,17 @@ class ServicioSuscripciones:
         return self.repo.listar_empresas_por_plan(plan_id, vendedor_id)
 
     def obtener_stats_dashboard(self, usuario_actual: dict):
-        if not usuario_actual.get(AuthKeys.IS_SUPERADMIN):
+        is_superadmin = usuario_actual.get(AuthKeys.IS_SUPERADMIN)
+        is_vendedor = usuario_actual.get(AuthKeys.IS_VENDEDOR)
+        
+        if not is_superadmin and not is_vendedor:
             raise AppError("No autorizado", 403)
-        return self.repo.obtener_stats_dashboard()
+            
+        vendedor_id = None
+        if is_vendedor:
+            vendedor_id = self._obtener_vendedor_id_actual(usuario_actual)
+            
+        return self.repo.obtener_stats_dashboard(vendedor_id)
 
     def registrar_pago_rapido(self, data: PagoSuscripcionQuick, usuario_actual: dict):
         is_superadmin = usuario_actual.get(AuthKeys.IS_SUPERADMIN)
@@ -186,8 +194,16 @@ class ServicioSuscripciones:
             return row['id']
 
     def obtener_historial_suscripcion(self, empresa_id: UUID, usuario_actual: dict):
-        if not usuario_actual.get(AuthKeys.IS_SUPERADMIN):
-            if str(empresa_id) != str(usuario_actual.get('empresa_id')):
+        is_superadmin = usuario_actual.get(AuthKeys.IS_SUPERADMIN)
+        is_vendedor = usuario_actual.get(AuthKeys.IS_VENDEDOR)
+        
+        if not is_superadmin:
+            if is_vendedor:
+                vendedor_id_actual = self._obtener_vendedor_id_actual(usuario_actual)
+                empresa = self.empresa_repo.obtener_por_id(empresa_id)
+                if not empresa or str(empresa.get('vendedor_id')) != str(vendedor_id_actual):
+                    raise AppError('No autorizado: Esta empresa no está bajo tu gestión', 403)
+            elif str(empresa_id) != str(usuario_actual.get('empresa_id')):
                 raise AppError('No autorizado', 403)
         suscripcion = self.repo.obtener_suscripcion_por_empresa(empresa_id)
         if not suscripcion:

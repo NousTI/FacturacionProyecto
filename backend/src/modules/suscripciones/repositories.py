@@ -236,29 +236,60 @@ class RepositorioSuscripciones:
             row = cur.fetchone()
             return dict(row) if row else None
 
-    def obtener_stats_dashboard(self) -> dict:
+    def obtener_stats_dashboard(self, vendedor_id: Optional[UUID] = None) -> dict:
         with self.db.cursor() as cur:
+            vendedor_str = str(vendedor_id) if vendedor_id else None
+            
             # 1. MRR (Total pagado en el último mes)
-            cur.execute("""
-                SELECT COALESCE(SUM(monto), 0) as total_mrr 
-                FROM sistema_facturacion.pagos_suscripciones 
-                WHERE fecha_pago >= NOW() - INTERVAL '30 days'
-            """)
+            query_mrr = """
+                SELECT COALESCE(SUM(p.monto), 0) as total_mrr 
+                FROM sistema_facturacion.pagos_suscripciones p
+                JOIN sistema_facturacion.empresas e ON p.empresa_id = e.id
+                WHERE p.fecha_pago >= NOW() - INTERVAL '30 days'
+            """
+            params_mrr = []
+            if vendedor_id:
+                query_mrr += " AND e.vendedor_id = %s"
+                params_mrr.append(vendedor_str)
+            
+            cur.execute(query_mrr, tuple(params_mrr))
             total_mrr = cur.fetchone()['total_mrr']
 
             # 2. Suscripciones Activas
-            cur.execute("SELECT COUNT(*) as activas FROM sistema_facturacion.suscripciones WHERE estado = 'ACTIVA' AND fecha_fin >= CURRENT_DATE")
+            query_activas = """
+                SELECT COUNT(*) as activas 
+                FROM sistema_facturacion.suscripciones s
+                JOIN sistema_facturacion.empresas e ON s.empresa_id = e.id
+                WHERE s.estado = 'ACTIVA' AND s.fecha_fin >= CURRENT_DATE
+            """
+            params_activas = []
+            if vendedor_id:
+                query_activas += " AND e.vendedor_id = %s"
+                params_activas.append(vendedor_str)
+                
+            cur.execute(query_activas, tuple(params_activas))
             activas = cur.fetchone()['activas']
 
             # 3. Plan más rentable
-            cur.execute("""
+            query_rentable = """
                 SELECT pl.nombre 
                 FROM sistema_facturacion.planes pl
                 JOIN sistema_facturacion.pagos_suscripciones p ON pl.id = p.plan_id
+                JOIN sistema_facturacion.empresas e ON p.empresa_id = e.id
+                WHERE 1=1
+            """
+            params_rentable = []
+            if vendedor_id:
+                query_rentable += " AND e.vendedor_id = %s"
+                params_rentable.append(vendedor_str)
+                
+            query_rentable += """
                 GROUP BY pl.id, pl.nombre
                 ORDER BY SUM(p.monto) DESC
                 LIMIT 1
-            """)
+            """
+            
+            cur.execute(query_rentable, tuple(params_rentable))
             row_plan = cur.fetchone()
             plan_rentable = row_plan['nombre'] if row_plan else "N/A"
 

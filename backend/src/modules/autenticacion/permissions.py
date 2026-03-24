@@ -54,9 +54,9 @@ requerir_permiso = PermissionChecker
 def requerir_gestion_roles(usuario: dict = Depends(get_current_user)):
     """
     Requirement: Only an empresa admin OR a user with CONFIG_ROLES permission can manage roles.
-    Superadmins always have access.
+    Superadmins and Vendedores always have access (to list/manage for their scope).
     """
-    if usuario.get(AuthKeys.IS_SUPERADMIN):
+    if usuario.get(AuthKeys.IS_SUPERADMIN) or usuario.get(AuthKeys.IS_VENDEDOR):
         return usuario
     
     # 1. Check granular permission

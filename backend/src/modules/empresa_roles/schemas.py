@@ -31,6 +31,7 @@ class RolBase(BaseModel):
     activo: bool = True
 
 class RolCreacion(BaseModel):
+    empresa_id: Optional[UUID] = None
     codigo: Optional[str] = None
     nombre: str
     descripcion: Optional[str] = None
