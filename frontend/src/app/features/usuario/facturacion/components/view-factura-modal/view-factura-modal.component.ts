@@ -79,7 +79,7 @@ import { Factura, FacturaDetalle } from '../../../../../domain/models/factura.mo
                 <div class="col-md-5 offset-md-1">
                   <h6 class="text-uppercase text-muted fw-bold mb-3" style="font-size: 0.75rem; letter-spacing: 1px;">Cobrar a</h6>
                   <p class="mb-1 text-dark fw-bold">{{ factura.snapshot_cliente?.razon_social || (factura.snapshot_cliente?.nombres + ' ' + factura.snapshot_cliente?.apellidos) }}</p>
-                  <p class="mb-1 text-secondary" style="font-size: 0.9rem;">{{ factura.snapshot_cliente?.tipo_identificacion }}: {{ factura.snapshot_cliente?.numero_identificacion }}</p>
+                  <p class="mb-1 text-secondary" style="font-size: 0.9rem;">{{ factura.snapshot_cliente?.tipo_identificacion }}: {{ factura.snapshot_cliente?.identificacion }}</p>
                   <p class="mb-1 text-secondary" style="font-size: 0.9rem;">{{ factura.snapshot_cliente?.direccion || 'Sin dirección' }}</p>
                   <p class="mb-0 text-secondary" style="font-size: 0.9rem;">{{ factura.snapshot_cliente?.email }}</p>
                 </div>
