@@ -81,44 +81,46 @@ import { Observable, map } from 'rxjs';
                  <i class="bi bi-building me-3"></i> Empresa
               </a>
               
-              <ng-container *ngIf="isSuscripcionActiva$ | async">
-                <a routerLink="/usuario/dashboard" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" class="menu-item px-3 mb-1">
-                  <i class="bi bi-grid-fill me-3"></i> Dashboard
-                </a>
-                <a *appHasPermission="'CONFIG_USUARIOS'" routerLink="/usuario/usuarios" routerLinkActive="active" class="menu-item px-3 mb-1">
-                  <i class="bi bi-person me-3"></i> Usuarios
-                </a>
-                <a *appHasPermission="'CONFIG_ROLES'" routerLink="/usuario/roles" routerLinkActive="active" class="menu-item px-3 mb-1">
-                  <i class="bi bi-shield-check me-3"></i> Roles y Permisos
-                </a>
-                <a *appHasPermission="'CLIENTES_VER'" routerLink="/usuario/clientes" routerLinkActive="active" class="menu-item px-3 mb-1">
-                  <i class="bi bi-people me-3"></i> Clientes
-                </a>
-                <a *appHasPermission="'PRODUCTOS_VER'" routerLink="/usuario/productos" routerLinkActive="active" class="menu-item px-3 mb-1">
-                  <i class="bi bi-box-seam me-3"></i> Productos
-                </a>
-                <a *appHasPermission="['FACTURAS_VER_TODAS', 'FACTURAS_VER_PROPIAS', 'FACTURAS_CREAR']" routerLink="/usuario/facturacion" routerLinkActive="active" class="menu-item px-3 mb-1">
-                  <i class="bi bi-receipt me-3"></i> Facturación
-                </a>
-                <a *appHasPermission="'CUENTA_COBRAR_VER'" routerLink="/usuario/cuentas-cobrar" routerLinkActive="active" class="menu-item px-3 mb-1">
-                  <i class="bi bi-wallet2 me-3"></i> Cuentas por Cobrar
-                </a>
-                <a *appHasPermission="'FACTURA_PROGRAMADA_VER'" routerLink="/usuario/facturacion-recurrente" routerLinkActive="active" class="menu-item px-3 mb-1">
-                  <i class="bi bi-arrow-repeat me-3"></i> Fac. Recurrente
-                </a>
-                <a *appHasPermission="['REPORTES_VER', 'REPORTES_EXPORTAR']" routerLink="/usuario/reportes" routerLinkActive="active" class="menu-item px-3 mb-1">
-                  <i class="bi bi-bar-chart me-3"></i> Reportes
-                </a>
-                <a *appHasPermission="'CONFIG_ESTABLECIMIENTOS'" routerLink="/usuario/establecimientos" routerLinkActive="active" class="menu-item px-3 mb-1">
-                  <i class="bi bi-shop me-3"></i> Establecimientos
-                </a>
-                <a *appHasPermission="'CONFIG_ESTABLECIMIENTOS'" routerLink="/usuario/puntos-emision" routerLinkActive="active" class="menu-item px-3 mb-1">
-                  <i class="bi bi-printer me-3"></i> Puntos Emisión
-                </a>
+              <ng-container *ngIf="isEmpresaActiva$ | async">
+                <ng-container *ngIf="isSuscripcionActiva$ | async">
+                  <a routerLink="/usuario/dashboard" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" class="menu-item px-3 mb-1">
+                    <i class="bi bi-grid-fill me-3"></i> Dashboard
+                  </a>
+                  <a *appHasPermission="'CONFIG_USUARIOS'" routerLink="/usuario/usuarios" routerLinkActive="active" class="menu-item px-3 mb-1">
+                    <i class="bi bi-person me-3"></i> Usuarios
+                  </a>
+                  <a *appHasPermission="'CONFIG_ROLES'" routerLink="/usuario/roles" routerLinkActive="active" class="menu-item px-3 mb-1">
+                    <i class="bi bi-shield-check me-3"></i> Roles y Permisos
+                  </a>
+                  <a *appHasPermission="'CLIENTES_VER'" routerLink="/usuario/clientes" routerLinkActive="active" class="menu-item px-3 mb-1">
+                    <i class="bi bi-people me-3"></i> Clientes
+                  </a>
+                  <a *appHasPermission="'PRODUCTOS_VER'" routerLink="/usuario/productos" routerLinkActive="active" class="menu-item px-3 mb-1">
+                    <i class="bi bi-box-seam me-3"></i> Productos
+                  </a>
+                  <a *appHasPermission="['FACTURAS_VER_TODAS', 'FACTURAS_VER_PROPIAS', 'FACTURAS_CREAR']" routerLink="/usuario/facturacion" routerLinkActive="active" class="menu-item px-3 mb-1">
+                    <i class="bi bi-receipt me-3"></i> Facturación
+                  </a>
+                  <a *appHasPermission="'CUENTA_COBRAR_VER'" routerLink="/usuario/cuentas-cobrar" routerLinkActive="active" class="menu-item px-3 mb-1">
+                    <i class="bi bi-wallet2 me-3"></i> Cuentas por Cobrar
+                  </a>
+                  <a *appHasPermission="'FACTURA_PROGRAMADA_VER'" routerLink="/usuario/facturacion-recurrente" routerLinkActive="active" class="menu-item px-3 mb-1">
+                    <i class="bi bi-arrow-repeat me-3"></i> Fac. Recurrente
+                  </a>
+                  <a *appHasPermission="['REPORTES_VER', 'REPORTES_EXPORTAR']" routerLink="/usuario/reportes" routerLinkActive="active" class="menu-item px-3 mb-1">
+                    <i class="bi bi-bar-chart me-3"></i> Reportes
+                  </a>
+                  <a *appHasPermission="'CONFIG_ESTABLECIMIENTOS'" routerLink="/usuario/establecimientos" routerLinkActive="active" class="menu-item px-3 mb-1">
+                    <i class="bi bi-shop me-3"></i> Establecimientos
+                  </a>
+                  <a *appHasPermission="'CONFIG_ESTABLECIMIENTOS'" routerLink="/usuario/puntos-emision" routerLinkActive="active" class="menu-item px-3 mb-1">
+                    <i class="bi bi-printer me-3"></i> Puntos Emisión
+                  </a>
 
-                <a *appHasPermission="'CONFIG_SRI'" routerLink="/usuario/certificado-sri" routerLinkActive="active" class="menu-item px-3 mb-1">
-                  <i class="bi bi-shield-lock me-3"></i> Certificado SRI
-                </a>
+                  <a *appHasPermission="'CONFIG_SRI'" routerLink="/usuario/certificado-sri" routerLinkActive="active" class="menu-item px-3 mb-1">
+                    <i class="bi bi-shield-lock me-3"></i> Certificado SRI
+                  </a>
+                </ng-container>
               </ng-container>
 
               <a routerLink="/usuario/perfil" routerLinkActive="active" class="menu-item px-3 mb-1">
@@ -214,6 +216,7 @@ export class SidebarComponent {
   isVendedor$: Observable<boolean>;
   isUsuario$: Observable<boolean>;
   isSuscripcionActiva$: Observable<boolean>;
+  isEmpresaActiva$: Observable<boolean>;
   homeLink$: Observable<string>;
 
   constructor(private authFacade: AuthFacade) {
@@ -238,6 +241,15 @@ export class SidebarComponent {
 
     this.isSuscripcionActiva$ = this.authFacade.user$.pipe(
       map(user => user?.empresa_suscripcion_estado === 'ACTIVA' || user?.empresa_suscripcion_estado === 'PRUEBA')
+    );
+
+    this.isEmpresaActiva$ = this.authFacade.user$.pipe(
+      map(user => {
+        if (!user) return true;
+        if (user.role === UserRole.SUPERADMIN || user.role === UserRole.VENDEDOR) return true;
+        // Si es usuario, debe tener empresa y estar activa
+        return user.empresa_activa !== false;
+      })
     );
   }
 }

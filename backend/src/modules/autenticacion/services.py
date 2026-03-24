@@ -111,6 +111,7 @@ class AuthServices:
             "estado": user["estado"],
             "empresa_id": str(user.get("empresa_id")) if user.get("empresa_id") else None,
             "empresa_suscripcion_estado": user.get("empresa_suscripcion_estado"),
+            "empresa_activa": user.get("empresa_activa", True),
             "role": primary_role,
             "is_superadmin": is_superadmin,
             "permisos": []
@@ -212,6 +213,7 @@ class AuthServices:
         user[AuthKeys.IS_VENDEDOR] = (role_upper == RolCodigo.VENDEDOR.value)
         user[AuthKeys.IS_USUARIO] = (role_upper == RolCodigo.USUARIO.value)
         user["role"] = role
+        user["empresa_activa"] = user.get("empresa_activa", True)
 
         # Ensure rol_codigo is available for permission checks (from roles service or repositories)
         if not user.get("rol_codigo") and user.get("usuario_id"):

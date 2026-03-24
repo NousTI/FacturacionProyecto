@@ -33,7 +33,18 @@ import { Empresa } from '../../../domain/models/empresa.model';
         </div>
 
         <!-- Content -->
-        <div *ngIf="empresa" class="row g-4">
+        <div *ngIf="empresa">
+          
+          <!-- Banner de Inactividad -->
+          <div *ngIf="!empresa.activo" class="alert alert-danger shadow-sm rounded-4 mb-4 p-4 d-flex align-items-center gap-3 animate__animated animate__fadeIn">
+            <i class="bi bi-exclamation-octagon-fill fs-1"></i>
+            <div>
+              <h4 class="alert-heading fw-bold mb-1">Empresa Inhabilitada</h4>
+              <p class="mb-0 fw-medium">Esta empresa ha sido desactivada por el administrador del sistema. El acceso a los módulos operativos está restringido temporalmente. Por favor, contacte a soporte para más información.</p>
+            </div>
+          </div>
+
+          <div class="row g-4">
           <div class="col-12 col-xl-8">
             <app-empresa-info-card 
               [empresa]="empresa"

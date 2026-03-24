@@ -40,13 +40,15 @@ class RepositorioUsuarios:
                    er.nombre as rol_nombre,
                    er.codigo as rol_codigo,
                    v.id as internal_vendedor_id,
-                   sub.estado as empresa_suscripcion_estado
+                   sub.estado as empresa_suscripcion_estado,
+                   e.activo as empresa_activa
             FROM sistema_facturacion.users us
             LEFT JOIN sistema_facturacion.usuarios u ON us.id = u.user_id
             LEFT JOIN sistema_facturacion.superadmin s ON us.id = s.user_id
             LEFT JOIN sistema_facturacion.vendedores v ON us.id = v.user_id
             LEFT JOIN sistema_facturacion.empresa_roles er ON u.empresa_rol_id = er.id
             LEFT JOIN sistema_facturacion.suscripciones sub ON u.empresa_id = sub.empresa_id
+            LEFT JOIN sistema_facturacion.empresas e ON u.empresa_id = e.id
             WHERE us.email = %s
         """
         with self.db.cursor() as cur:
@@ -67,13 +69,15 @@ class RepositorioUsuarios:
                    er.nombre as rol_nombre,
                    er.codigo as rol_codigo,
                    v.id as internal_vendedor_id,
-                   sub.estado as empresa_suscripcion_estado
+                   sub.estado as empresa_suscripcion_estado,
+                   e.activo as empresa_activa
             FROM sistema_facturacion.users us
             LEFT JOIN sistema_facturacion.usuarios u ON us.id = u.user_id
             LEFT JOIN sistema_facturacion.superadmin s ON us.id = s.user_id
             LEFT JOIN sistema_facturacion.vendedores v ON us.id = v.user_id
             LEFT JOIN sistema_facturacion.empresa_roles er ON u.empresa_rol_id = er.id
             LEFT JOIN sistema_facturacion.suscripciones sub ON u.empresa_id = sub.empresa_id
+            LEFT JOIN sistema_facturacion.empresas e ON u.empresa_id = e.id
             WHERE us.id = %s
         """
         with self.db.cursor() as cur:

@@ -36,4 +36,5 @@ export interface User {
 
     activo?: boolean;
     empresa?: Empresa;
+    empresa_activa?: boolean;
 }
