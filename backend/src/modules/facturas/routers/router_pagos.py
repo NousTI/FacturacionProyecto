@@ -30,7 +30,7 @@ def registrar_pago(
 @router.get("/{id}/pagos/resumen", response_model=ResumenPagos)
 def obtener_resumen_pagos(
     id: UUID,
-    usuario: dict = Depends(requerir_permiso(PermissionCodes.FACTURAS_VER_TODAS)),
+    usuario: dict = Depends(requerir_permiso([PermissionCodes.FACTURAS_VER_TODAS, PermissionCodes.FACTURAS_VER_PROPIAS])),
     servicio: ServicioPagos = Depends()
 ):
     """Obtiene el resumen financiero de pagos (total, pagado, saldo)."""
@@ -39,7 +39,7 @@ def obtener_resumen_pagos(
 @router.get("/{id}/pagos", response_model=List[LogPagoLectura])
 def listar_pagos(
     id: UUID,
-    usuario: dict = Depends(requerir_permiso(PermissionCodes.FACTURAS_VER_TODAS)),
+    usuario: dict = Depends(requerir_permiso([PermissionCodes.FACTURAS_VER_TODAS, PermissionCodes.FACTURAS_VER_PROPIAS])),
     servicio: ServicioPagos = Depends()
 ):
     """Lista el historial de todos los abonos realizados a la factura."""

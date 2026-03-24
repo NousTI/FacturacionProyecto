@@ -22,7 +22,16 @@ class ServicioAutorizacion:
         self.usuario_repo = usuario_repo
         self.cuentas_cobrar_repo = cuentas_cobrar_repo
 
+    def _preparar_usuario(self, usuario_actual: dict):
+        """Asegura que el usuario tenga el usuario_facturacion_id para las validaciones."""
+        if not usuario_actual.get(AuthKeys.IS_SUPERADMIN):
+            u_fact = self.usuario_repo.obtener_por_user_id(usuario_actual['id'])
+            if u_fact:
+                usuario_actual['usuario_facturacion_id'] = u_fact['id']
+        return usuario_actual
+
     def registrar_autorizacion_sri(self, datos: AutorizacionSRICreacion, usuario_actual: dict):
+        usuario_actual = self._preparar_usuario(usuario_actual)
         ValidacionesFactura.obtener_y_validar_factura(self.core, datos.factura_id, usuario_actual)
         res = self.sri_facturacion.registrar_autorizacion_final(datos)
         
@@ -36,18 +45,18 @@ class ServicioAutorizacion:
         return res
 
     def registrar_intento_emision(self, datos: LogEmisionCreacion, usuario_actual: dict):
+        usuario_actual = self._preparar_usuario(usuario_actual)
         ValidacionesFactura.obtener_y_validar_factura(self.core, datos.factura_id, usuario_actual)
         return self.sri_facturacion.registrar_intento_emision(datos)
 
     def emitir_sri(self, id: UUID, usuario_actual: dict):
+        usuario_actual = self._preparar_usuario(usuario_actual)
         usuario_contexto = usuario_actual.copy()
         
         if not usuario_actual.get(AuthKeys.IS_SUPERADMIN):
-            auth_user_id = usuario_actual.get("id")
-            usuario_facturacion = self.usuario_repo.obtener_por_user_id(auth_user_id)
-            if not usuario_facturacion:
+            if 'usuario_facturacion_id' not in usuario_actual:
                 raise AppError("Usuario no encontrado en sistema de facturación", 404, "USUARIO_NOT_FOUND")
-            usuario_contexto["id"] = usuario_facturacion['id']
+            usuario_contexto["id"] = usuario_actual['usuario_facturacion_id']
             
         factura = ValidacionesFactura.obtener_y_validar_factura(self.core, id, usuario_actual)
         
@@ -116,17 +125,17 @@ class ServicioAutorizacion:
         return self.sri_facturacion.emitir_factura(id, usuario_contexto)
 
     def consultar_sri(self, id: UUID, usuario_actual: dict):
+        usuario_actual = self._preparar_usuario(usuario_actual)
         factura = ValidacionesFactura.obtener_y_validar_factura(self.core, id, usuario_actual)
         
         usuario_contexto = usuario_actual.copy()
-        if not usuario_actual.get('is_superadmin'):
-            auth_user_id = usuario_actual.get("id")
-            usuario_facturacion = self.usuario_repo.obtener_por_user_id(auth_user_id)
-            if usuario_facturacion:
-                usuario_contexto['id'] = usuario_facturacion['id']
+        if not usuario_actual.get(AuthKeys.IS_SUPERADMIN):
+            if 'usuario_facturacion_id' in usuario_actual:
+                usuario_contexto['id'] = usuario_actual['usuario_facturacion_id']
         
         return self.sri_facturacion.consultar_estado(id, usuario_contexto)
 
     def obtener_historial_emision(self, factura_id: UUID, usuario_actual: dict):
+        usuario_actual = self._preparar_usuario(usuario_actual)
         ValidacionesFactura.obtener_y_validar_factura(self.core, factura_id, usuario_actual)
         return self.sri_facturacion.obtener_historial_emision(factura_id)
