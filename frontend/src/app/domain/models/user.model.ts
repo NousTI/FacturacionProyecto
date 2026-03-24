@@ -16,6 +16,7 @@ export interface User {
 
     telefono?: string;
     empresa_id?: string;
+    empresa_suscripcion_estado?: string;
     empresa_rol_id?: string;
     rol_nombre?: string;
     rol_codigo?: string;

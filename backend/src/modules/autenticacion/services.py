@@ -110,6 +110,7 @@ class AuthServices:
             "avatar_url": user.get("avatar_url"),
             "estado": user["estado"],
             "empresa_id": str(user.get("empresa_id")) if user.get("empresa_id") else None,
+            "empresa_suscripcion_estado": user.get("empresa_suscripcion_estado"),
             "role": primary_role,
             "is_superadmin": is_superadmin,
             "permisos": []

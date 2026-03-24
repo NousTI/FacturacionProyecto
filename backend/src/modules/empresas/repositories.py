@@ -91,6 +91,10 @@ class RepositorioEmpresas:
                    p.max_establecimientos,
                    p.max_programaciones,
                    p.precio_mensual,
+                   csri.ambiente as sri_ambiente,
+                   csri.estado as sri_estado,
+                   csri.fecha_expiracion_cert as firma_expiracion,
+                   csri.cert_emisor as firma_emisor,
                    (SELECT COUNT(*) FROM sistema_facturacion.usuarios WHERE empresa_id = e.id) as usuarios_count,
                    (SELECT COUNT(*) FROM sistema_facturacion.establecimientos WHERE empresa_id = e.id) as establecimientos_count,
                    (SELECT COUNT(*) FROM sistema_facturacion.facturas WHERE empresa_id = e.id AND date_trunc('month', created_at) = date_trunc('month', CURRENT_DATE)) as facturas_mes_count,
@@ -101,6 +105,7 @@ class RepositorioEmpresas:
             LEFT JOIN sistema_facturacion.vendedores v ON e.vendedor_id = v.id
             LEFT JOIN sistema_facturacion.suscripciones s ON e.id = s.empresa_id
             LEFT JOIN sistema_facturacion.planes p ON s.plan_id = p.id
+            LEFT JOIN sistema_facturacion.configuraciones_sri csri ON e.id = csri.empresa_id
         """
         params = []
         conditions = []

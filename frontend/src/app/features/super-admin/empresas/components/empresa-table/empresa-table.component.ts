@@ -39,7 +39,10 @@ import { CommonModule } from '@angular/common';
                 </td>
                 <td>
                   <div class="d-flex flex-column">
-                    <span class="text-corporate fw-800" style="font-size: 0.85rem;">{{ empresa.plan || 'Sin Plan' }}</span>
+                    <span class="text-corporate fw-800" style="font-size: 0.85rem;" *ngIf="empresa.suscripcion_estado === 'ACTIVA' || empresa.suscripcion_estado === 'PRUEBA'">{{ empresa.plan || 'Sin Plan' }}</span>
+                    <span class="text-danger fw-800" style="font-size: 0.85rem;" *ngIf="empresa.suscripcion_estado && empresa.suscripcion_estado !== 'ACTIVA' && empresa.suscripcion_estado !== 'PRUEBA'">{{ empresa.suscripcion_estado }}</span>
+                    <span class="text-muted fw-800" style="font-size: 0.85rem;" *ngIf="!empresa.suscripcion_estado">Sin Suscripción</span>
+                    
                     <small class="text-muted" style="font-size: 0.7rem;">{{ empresa.tipo_contribuyente }}</small>
                   </div>
                 </td>

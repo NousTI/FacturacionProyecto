@@ -80,14 +80,19 @@ import { CommonModule } from '@angular/common';
                    <div class="card border-0 bg-light p-4 rounded-4">
                       <h4 class="section-title-mini">Estado del Plan</h4>
                       <div class="d-flex justify-content-between align-items-center mb-3">
-                         <span class="text-muted">Plan Actual</span>
-                         <span class="fw-800 text-corporate">{{ empresa?.plan || 'N/A' }}</span>
+                         <span class="text-muted">Estado Actual</span>
+                         <span class="fw-800" [ngClass]="{'text-success': empresa?.suscripcion_estado === 'ACTIVA', 'text-warning': empresa?.suscripcion_estado === 'PRUEBA', 'text-danger': empresa?.suscripcion_estado === 'CANCELADA' || empresa?.suscripcion_estado === 'VENCIDA', 'text-muted': !empresa?.suscripcion_estado}">{{ empresa?.suscripcion_estado || 'SIN ESTADO' }}</span>
+                      </div>
+                      <div class="d-flex justify-content-between align-items-center mb-3">
+                         <span class="text-muted">Plan Base</span>
+                         <span class="fw-800 text-corporate">{{ empresa?.plan || 'INDEFINIDO' }}</span>
                       </div>
                       <div class="d-flex justify-content-between align-items-center mb-3">
                          <span class="text-muted">Vencimiento</span>
-                         <span class="fw-800" [class.text-danger]="isExpired(empresa?.fechaVencimiento)">
+                         <span class="fw-800" [class.text-danger]="isExpired(empresa?.fechaVencimiento)" *ngIf="empresa?.fechaVencimiento">
                             {{ empresa?.fechaVencimiento | date:'dd/MM/yyyy' }}
                          </span>
+                         <span class="fw-800 text-muted" *ngIf="!empresa?.fechaVencimiento">S/D</span>
                       </div>
                       <div class="d-flex justify-content-between align-items-center">
                          <span class="text-muted">Último Pago</span>
@@ -100,6 +105,7 @@ import { CommonModule } from '@angular/common';
                       </div>
                    </div>
                 </div>
+                <!-- ... usage progress bars ... -->
                 <div class="col-md-6">
                    <div class="card border-0 bg-light p-4 rounded-4">
                       <h4 class="section-title-mini">Uso Actual</h4>
@@ -153,22 +159,23 @@ import { CommonModule } from '@angular/common';
                       <div class="info-pill">
                          <label>Estado del Certificado</label>
                          <div class="d-flex align-items-center gap-2">
-                            <div class="status-indicator" [class.success]="empresa?.sri?.certificado_valido"></div>
-                            <span class="fw-bold">{{ empresa?.sri?.certificado_valido ? 'Válido' : 'Expirado' }}</span>
+                            <div class="status-indicator" [class.success]="!isExpired(empresa?.sri_expiracion) && empresa?.sri_expiracion"></div>
+                            <span class="fw-bold" *ngIf="empresa?.sri_expiracion">{{ !isExpired(empresa?.sri_expiracion) ? 'Válido' : 'Expirado' }}</span>
+                            <span class="fw-bold text-muted" *ngIf="!empresa?.sri_expiracion">Sin Configurar</span>
                          </div>
                       </div>
                    </div>
                    <div class="col-md-6">
                       <div class="info-pill">
                          <label>Expira el</label>
-                         <div class="fw-bold text-dark">{{ (empresa?.sri?.fecha_expiracion | date:'dd MMM, yyyy') || 'Desconocido' }}</div>
+                         <div class="fw-bold text-dark">{{ (empresa?.sri_expiracion | date:'dd MMM, yyyy') || 'Desconocido' }}</div>
                       </div>
                    </div>
                    <div class="col-md-6">
                       <div class="info-pill">
                          <label>Ambiente SRI</label>
-                         <div class="badge-ambient" [class.prod]="empresa?.sri?.ambiente === 'PRODUCCION'">
-                            {{ empresa?.sri?.ambiente || 'PRUEBAS' }}
+                         <div class="badge-ambient" [class.prod]="empresa?.sri_ambiente === 'PRODUCCION'">
+                            {{ empresa?.sri_ambiente || 'PRUEBAS' }}
                          </div>
                       </div>
                    </div>

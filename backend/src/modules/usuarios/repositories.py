@@ -39,12 +39,14 @@ class RepositorioUsuarios:
                    COALESCE(u.telefono, v.telefono) as telefono,
                    er.nombre as rol_nombre,
                    er.codigo as rol_codigo,
-                   v.id as internal_vendedor_id
+                   v.id as internal_vendedor_id,
+                   sub.estado as empresa_suscripcion_estado
             FROM sistema_facturacion.users us
             LEFT JOIN sistema_facturacion.usuarios u ON us.id = u.user_id
             LEFT JOIN sistema_facturacion.superadmin s ON us.id = s.user_id
             LEFT JOIN sistema_facturacion.vendedores v ON us.id = v.user_id
             LEFT JOIN sistema_facturacion.empresa_roles er ON u.empresa_rol_id = er.id
+            LEFT JOIN sistema_facturacion.suscripciones sub ON u.empresa_id = sub.empresa_id
             WHERE us.email = %s
         """
         with self.db.cursor() as cur:
@@ -64,12 +66,14 @@ class RepositorioUsuarios:
                    COALESCE(u.telefono, v.telefono) as telefono,
                    er.nombre as rol_nombre,
                    er.codigo as rol_codigo,
-                   v.id as internal_vendedor_id
+                   v.id as internal_vendedor_id,
+                   sub.estado as empresa_suscripcion_estado
             FROM sistema_facturacion.users us
             LEFT JOIN sistema_facturacion.usuarios u ON us.id = u.user_id
             LEFT JOIN sistema_facturacion.superadmin s ON us.id = s.user_id
             LEFT JOIN sistema_facturacion.vendedores v ON us.id = v.user_id
             LEFT JOIN sistema_facturacion.empresa_roles er ON u.empresa_rol_id = er.id
+            LEFT JOIN sistema_facturacion.suscripciones sub ON u.empresa_id = sub.empresa_id
             WHERE us.id = %s
         """
         with self.db.cursor() as cur:
