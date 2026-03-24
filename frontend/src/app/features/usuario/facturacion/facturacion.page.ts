@@ -200,6 +200,11 @@ export class FacturacionPage implements OnInit {
   }
 
   checkSriStatus() {
+    if (!this.permissionsService.hasPermission('CONFIG_SRI')) {
+        this.sriError = null;
+        return;
+    }
+
     this.sriConfigService.obtenerConfiguracion().subscribe({
       next: (config) => {
         if (!config) {

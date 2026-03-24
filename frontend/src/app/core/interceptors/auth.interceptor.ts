@@ -45,9 +45,32 @@ export class AuthInterceptor implements HttpInterceptor {
                     if (!this.router.url.includes('/usuario/empresa')) {
                         this.router.navigate(['/usuario/empresa']);
                     }
+                } else if (error.status === 403) {
+                    // Acceso Denegado (No tiene permisos)
+                    let recurso = 'este módulo';
+                    if (request.url) {
+                        if (request.url.includes('/sri/')) recurso = 'Configuración SRI';
+                        else if (request.url.includes('/puntos-emision')) recurso = 'Puntos de Emisión';
+                        else if (request.url.includes('/establecimientos')) recurso = 'Establecimientos';
+                        else if (request.url.includes('/usuarios')) recurso = 'Gestión de Usuarios';
+                        else if (request.url.includes('/facturas')) recurso = 'Facturación';
+                        else if (request.url.includes('/empresas')) recurso = 'Empresas';
+                        else if (request.url.includes('/productos')) recurso = 'Productos';
+                        else if (request.url.includes('/clientes')) recurso = 'Clientes';
+                    }
+                    
+                    const serverMsg = error.error?.descripcion || error.error?.mensaje || error.error?.detail || 'Operación restringida por permisos.';
+                    
+                    this.uiService.showToast(
+                        'Acceso Denegado', 
+                        'danger', 
+                        `${serverMsg} (Recurso: ${recurso})`,
+                        6000
+                    );
                 }
                 return throwError(() => error);
             })
         );
     }
 }
+

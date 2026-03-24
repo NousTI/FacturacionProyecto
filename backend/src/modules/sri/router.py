@@ -91,7 +91,7 @@ def consultar_factura(
 
 @router.get("/configuracion", response_model=RespuestaBase[Optional[ConfigSRILectura]])
 def obtener_config_actual(
-    usuario: dict = Depends(requerir_permiso(PermissionCodes.CONFIG_SRI)),
+    usuario: dict = Depends(requerir_permiso([PermissionCodes.CONFIG_SRI, PermissionCodes.FACTURAS_VER_TODAS, PermissionCodes.FACTURAS_VER_PROPIAS, PermissionCodes.FACTURAS_ENVIAR_SRI, PermissionCodes.FACTURA_ENVIAR_SRI])),
     servicio: ServicioSRI = Depends()
 ):
     empresa_id = usuario.get('empresa_id')
