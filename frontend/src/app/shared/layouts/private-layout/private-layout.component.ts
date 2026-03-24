@@ -17,7 +17,6 @@ import { UserRole } from '../../../domain/enums/role.enum';
                 <strong>Suscripción Inactiva:</strong> 
                 Su cuenta se encuentra restringida por falta de pago o cancelación.
             </div>
-            <button class="action-btn" (click)="goToSubscription()">Actualizar Plan</button>
         </div>
 
         <div class="content-body">

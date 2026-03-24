@@ -77,7 +77,7 @@ import { Subject, takeUntil, finalize } from 'rxjs';
       <app-change-plan-modal
         *ngIf="showPlanModal"
         [empresaName]="selectedEmpresa?.razonSocial || ''"
-        [selectedPlanId]="selectedEmpresa?.currentPlanId || null"
+        [selectedPlanId]="(selectedEmpresa?.suscripcion_estado === 'ACTIVA' || selectedEmpresa?.suscripcion_estado === 'PRUEBA') ? selectedEmpresa?.currentPlanId : null"
         (onSave)="updatePlan($event)"
         (onClose)="showPlanModal = false"
       ></app-change-plan-modal>
