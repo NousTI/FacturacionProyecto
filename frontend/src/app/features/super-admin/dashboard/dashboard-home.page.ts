@@ -23,34 +23,6 @@ import { FormsModule } from '@angular/forms';
   ],
   template: `
     <div class="dash-wrap">
-      <!-- Barra de Acciones (Filtros y Refresco) -->
-      <div class="d-flex justify-content-end align-items-center mb-4 gap-2 pt-2 pe-2">
-        
-        <!-- Botón Refrescar -->
-        <button class="btn btn-white btn-sm px-3 rounded-pill shadow-sm d-flex align-items-center gap-2" 
-                (click)="loadData()" 
-                [disabled]="loading">
-          <i class="bi bi-arrow-clockwise" [class.spin]="loading"></i>
-          <span class="small fw-bold">Actualizar</span>
-        </button>
-
-        <!-- Selector de Periodo Estilizado -->
-        <div class="d-flex align-items-center bg-white rounded-pill shadow-sm px-2 border border-light">
-          <i class="bi bi-calendar3 ms-2 text-muted small"></i>
-          <select class="form-select form-select-sm border-0 bg-transparent py-2" 
-                  style="width: auto; min-width: 140px; cursor: pointer; font-weight: 600;"
-                  [(ngModel)]="selectedPeriod" 
-                  (change)="loadData()">
-            <option value="today">Hoy</option>
-            <option value="week">Esta semana</option>
-            <option value="month">Este mes</option>
-            <option value="last_month">Mes pasado</option>
-            <option value="year">Este año</option>
-            <option value="all">Todo el tiempo</option>
-          </select>
-        </div>
-      </div>
-      
       <!-- KPIs principales (Fila de 4) -->
       <app-super-admin-stats [kpis]="overview?.kpis"></app-super-admin-stats>
 

@@ -7,11 +7,11 @@ from ...utils.validators import validar_ruc
 
 class EmpresaBase(BaseModel):
     ruc: str = Field(..., min_length=13, max_length=13, pattern=r"^[0-9]{13}$")
-    razon_social: str = Field(..., min_length=3)
+    razon_social: str = Field(..., min_length=1)
     nombre_comercial: Optional[str] = None
     email: EmailStr
     telefono: Optional[str] = Field(None, pattern=r"^([0-9]{10})?$")
-    direccion: str = Field(..., min_length=5)
+    direccion: str = Field(..., min_length=1)
     logo_url: Optional[str] = None
     activo: bool = True
     tipo_contribuyente: str
