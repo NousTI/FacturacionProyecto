@@ -170,3 +170,167 @@ class ServicioSuscripciones:
         if not suscripcion:
             raise AppError('Suscripcion no encontrada', 404)
         return self.repo.obtener_historial_suscripcion(suscripcion['id'])
+
+    def activar_suscripcion(self, empresa_id: UUID, plan_id: UUID, fecha_inicio: datetime, fecha_fin: datetime, usuario_actual: dict):
+        if not usuario_actual.get(AuthKeys.IS_SUPERADMIN):
+            raise AppError("No autorizado", 403)
+            
+        current = self.repo.obtener_suscripcion_por_empresa(empresa_id)
+        
+        data = {
+            "empresa_id": str(empresa_id),
+            "plan_id": str(plan_id),
+            "fecha_inicio": fecha_inicio,
+            "fecha_fin": fecha_fin,
+            "estado": "ACTIVA",
+            "actualizado_por": str(usuario_actual['id'])
+        }
+        
+        updated = self.repo.crear_suscripcion(data)
+        
+        # Log entry
+        log_data = {
+            "suscripcion_id": str(updated['id']),
+            "estado_anterior": current['estado'] if current else None,
+            "estado_nuevo": "ACTIVA",
+            "plan_anterior": str(current['plan_id']) if current else None,
+            "plan_nuevo": str(plan_id),
+            "fecha_inicio_anterior": current['fecha_inicio'] if current else None,
+            "fecha_fin_anterior": current['fecha_fin'] if current else None,
+            "fecha_inicio_nuevo": fecha_inicio,
+            "fecha_fin_nuevo": fecha_fin,
+            "cambiado_por": str(usuario_actual['id']),
+            "origen": "ADMIN",
+            "motivo": "Activación manual por administrador"
+        }
+        self.repo.registrar_log_suscripcion(log_data)
+        
+        # Sincronizar módulos
+        self.modulo_service.sincronizar(empresa_id, plan_id, fecha_fin)
+        
+        return updated
+
+    def cancelar_suscripcion(self, empresa_id: UUID, observaciones: str, usuario_actual: dict):
+        if not usuario_actual.get(AuthKeys.IS_SUPERADMIN):
+            raise AppError("No autorizado", 403)
+            
+        current = self.repo.obtener_suscripcion_por_empresa(empresa_id)
+        if not current:
+            raise AppError("Suscripción no encontrada", 404)
+            
+        data = {
+            "empresa_id": str(empresa_id),
+            "plan_id": str(current['plan_id']),
+            "fecha_inicio": current['fecha_inicio'],
+            "fecha_fin": current['fecha_fin'],
+            "estado": "CANCELADA",
+            "actualizado_por": str(usuario_actual['id']),
+            "observaciones": observaciones
+        }
+        
+        updated = self.repo.crear_suscripcion(data)
+        
+        log_data = {
+            "suscripcion_id": str(updated['id']),
+            "estado_anterior": current['estado'],
+            "estado_nuevo": "CANCELADA",
+            "plan_anterior": str(current['plan_id']),
+            "plan_nuevo": str(current['plan_id']),
+            "fecha_inicio_anterior": current['fecha_inicio'],
+            "fecha_fin_anterior": current['fecha_fin'],
+            "fecha_inicio_nuevo": current['fecha_inicio'],
+            "fecha_fin_nuevo": current['fecha_fin'],
+            "cambiado_por": str(usuario_actual['id']),
+            "origen": "ADMIN",
+            "motivo": observaciones
+        }
+        self.repo.registrar_log_suscripcion(log_data)
+        
+        return updated
+
+    def suspender_suscripcion(self, empresa_id: UUID, observaciones: str, usuario_actual: dict):
+        if not usuario_actual.get(AuthKeys.IS_SUPERADMIN):
+            raise AppError("No autorizado", 403)
+            
+        current = self.repo.obtener_suscripcion_por_empresa(empresa_id)
+        if not current:
+            raise AppError("Suscripción no encontrada", 404)
+            
+        data = {
+            "empresa_id": str(empresa_id),
+            "plan_id": str(current['plan_id']),
+            "fecha_inicio": current['fecha_inicio'],
+            "fecha_fin": current['fecha_fin'],
+            "estado": "SUSPENDIDA",
+            "actualizado_por": str(usuario_actual['id']),
+            "observaciones": observaciones
+        }
+        
+        updated = self.repo.crear_suscripcion(data)
+        
+        log_data = {
+            "suscripcion_id": str(updated['id']),
+            "estado_anterior": current['estado'],
+            "estado_nuevo": "SUSPENDIDA",
+            "plan_anterior": str(current['plan_id']),
+            "plan_nuevo": str(current['plan_id']),
+            "fecha_inicio_anterior": current['fecha_inicio'],
+            "fecha_fin_anterior": current['fecha_fin'],
+            "fecha_inicio_nuevo": current['fecha_inicio'],
+            "fecha_fin_nuevo": current['fecha_fin'],
+            "cambiado_por": str(usuario_actual['id']),
+            "origen": "ADMIN",
+            "motivo": observaciones
+        }
+        self.repo.registrar_log_suscripcion(log_data)
+        
+        return updated
+
+    def verificar_vencimientos(self, usuario_actual: dict):
+        if not usuario_actual.get(AuthKeys.IS_SUPERADMIN):
+            raise AppError("No autorizado", 403)
+            
+        # Lógica para marcar como vencidas las suscripciones que pasaron su fecha fin
+        # Esto usualmente se haría en un cron job, pero aquí se expone vía API
+        query = """
+            SELECT s.* 
+            FROM sistema_facturacion.suscripciones s
+            WHERE s.estado = 'ACTIVA' AND s.fecha_fin < NOW()
+        """
+        vencidas = []
+        with self.repo.db.cursor() as cur:
+            cur.execute(query)
+            rows = cur.fetchall()
+            for row in rows:
+                vencidas.append(dict(row))
+        
+        count = 0
+        for s in vencidas:
+            data = {
+                "empresa_id": str(s['empresa_id']),
+                "plan_id": str(s['plan_id']),
+                "fecha_inicio": s['fecha_inicio'],
+                "fecha_fin": s['fecha_fin'],
+                "estado": "VENCIDA",
+                "actualizado_por": str(usuario_actual['id'])
+            }
+            self.repo.crear_suscripcion(data)
+            
+            log_data = {
+                "suscripcion_id": str(s['id']),
+                "estado_anterior": s['estado'],
+                "estado_nuevo": "VENCIDA",
+                "plan_anterior": str(s['plan_id']),
+                "plan_nuevo": str(s['plan_id']),
+                "fecha_inicio_anterior": s['fecha_inicio'],
+                "fecha_fin_anterior": s['fecha_fin'],
+                "fecha_inicio_nuevo": s['fecha_inicio'],
+                "fecha_fin_nuevo": s['fecha_fin'],
+                "cambiado_por": str(usuario_actual['id']),
+                "origen": "SISTEMA",
+                "motivo": "Vencimiento automático de periodo"
+            }
+            self.repo.registrar_log_suscripcion(log_data)
+            count += 1
+            
+        return {"procesados": count, "mensaje": f"Se marcaron {count} suscripciones como vencidas"}
