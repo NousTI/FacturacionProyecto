@@ -109,36 +109,34 @@ import { Factura, FacturaDetalle } from '../../../../../domain/models/factura.mo
                   <div class="spinner-border spinner-border-sm text-secondary" role="status"></div>
                 </div>
 
-                <div *ngIf="!loadingDetalles" class="row g-3">
-                  <div class="col-12 col-md-6 col-lg-4" *ngFor="let d of detalles">
-                    <div class="card border border-light-subtle rounded-3 h-100 shadow-sm transition-hover">
-                      <div class="card-body p-3">
-                        <div class="d-flex justify-content-between align-items-start mb-2">
-                          <h6 class="fw-bold text-dark mb-0 line-clamp-1" title="{{ d.nombre }}">{{ d.nombre }}</h6>
-                          <span class="badge bg-light text-muted border py-1 px-2" style="font-size: 0.7rem;">{{ d.codigo_producto }}</span>
-                        </div>
-                        
-                        <div class="row g-2 mt-2">
-                          <div class="col-6">
-                            <label class="text-muted d-block small" style="font-size: 0.7rem;">Cantidad</label>
-                            <span class="fw-semibold">{{ d.cantidad }}</span>
-                          </div>
-                          <div class="col-6 text-end">
-                            <label class="text-muted d-block small" style="font-size: 0.7rem;">Precio Unit.</label>
-                            <span>{{ d.precio_unitario | currency:'USD' }}</span>
-                          </div>
-                          <div class="col-6" *ngIf="d.descuento > 0">
-                            <label class="text-muted d-block small" style="font-size: 0.7rem;">Descuento</label>
-                            <span class="text-muted small">-{{ d.descuento | currency:'USD' }}</span>
-                          </div>
-                          <div class="col-6 ms-auto text-end">
-                            <label class="text-muted d-block small" style="font-size: 0.7rem;">Subtotal</label>
-                            <span class="fw-bold text-primary">{{ d.subtotal | currency:'USD' }}</span>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
+                <div *ngIf="!loadingDetalles && detalles.length > 0" class="table-responsive bg-white rounded-3 shadow-sm border border-light-subtle">
+                  <table class="table table-hover table-borderless mb-0 align-middle">
+                    <thead class="bg-light text-muted" style="font-size: 0.8rem; letter-spacing: 0.5px; border-bottom: 2px solid #dee2e6;">
+                      <tr>
+                        <th class="py-3 px-4 fw-semibold border-0 text-uppercase">CÓDIGO</th>
+                        <th class="py-3 px-4 fw-semibold border-0 text-uppercase">PRODUCTO</th>
+                        <th class="py-3 px-4 fw-semibold border-0 text-uppercase text-center">CANTIDAD</th>
+                        <th class="py-3 px-4 fw-semibold border-0 text-uppercase text-end">PRECIO UNIT.</th>
+                        <th class="py-3 px-4 fw-semibold border-0 text-uppercase text-end">DESC.</th>
+                        <th class="py-3 px-4 fw-semibold border-0 text-uppercase text-end">SUBTOTAL</th>
+                      </tr>
+                    </thead>
+                    <tbody style="font-size: 0.9rem;">
+                      <tr *ngFor="let d of detalles" class="border-bottom border-light-subtle transition-hover">
+                        <td class="py-3 px-4">
+                          <span class="badge bg-light text-muted border py-1 px-2 font-monospace">{{ d.codigo_producto }}</span>
+                        </td>
+                        <td class="py-3 px-4 fw-bold text-dark">{{ d.nombre }}</td>
+                        <td class="py-3 px-4 text-center fw-semibold">{{ d.cantidad }}</td>
+                        <td class="py-3 px-4 text-end text-secondary">{{ d.precio_unitario | currency:'USD' }}</td>
+                        <td class="py-3 px-4 text-end text-secondary">
+                          <span *ngIf="d.descuento > 0" class="text-danger small">-{{ d.descuento | currency:'USD' }}</span>
+                          <span *ngIf="!d.descuento || d.descuento === 0" class="opacity-50">-</span>
+                        </td>
+                        <td class="py-3 px-4 text-end fw-bold text-primary">{{ d.subtotal | currency:'USD' }}</td>
+                      </tr>
+                    </tbody>
+                  </table>
                 </div>
                 
                 <div *ngIf="!loadingDetalles && detalles.length === 0" class="text-center py-5 text-muted bg-light rounded-3">
