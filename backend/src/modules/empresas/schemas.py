@@ -50,6 +50,21 @@ class EmpresaActualizacion(BaseModel):
             raise ValueError("El RUC ingresado no es válido según los algoritmos del SRI.")
         return v
 
+class HistoricoSuscripcion(BaseModel):
+    id: UUID
+    empresa_id: UUID
+    razon_social: str
+    plan_nombre: str
+    monto: Decimal
+    fecha_pago: datetime
+    numero_comprobante: Optional[str]
+    metodo_pago: str
+    estado: Optional[str] = None
+    current_plan_id: Optional[UUID] = None
+    fecha_inicio: Optional[datetime] = None
+    fecha_fin: Optional[datetime] = None
+    suscripcion_estado: Optional[str] = None
+    
 class EmpresaLectura(EmpresaBase):
     id: UUID
     vendedor_id: Optional[UUID] = None
@@ -83,6 +98,7 @@ class EmpresaLectura(EmpresaBase):
     # Pagos
     ultimo_pago_fecha: Optional[datetime] = None
     ultimo_pago_monto: Optional[Decimal] = None
+    ultimo_pago_estado: Optional[str] = None
     
     created_at: datetime
     updated_at: datetime

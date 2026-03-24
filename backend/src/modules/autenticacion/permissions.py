@@ -22,6 +22,11 @@ class PermissionChecker:
         if usuario.get(AuthKeys.IS_SUPERADMIN):
             return usuario
             
+        # 2. Company Admin bypass (rol_codigo: ADMIN, ADMIN_TOTAL, etc)
+        rol_codigo = (usuario.get("rol_codigo") or "").upper()
+        if rol_codigo == "ADMIN" or rol_codigo.startswith("ADMIN_"):
+            return usuario
+
         # Get permission string values
         req_perm_values = [p.value if hasattr(p, 'value') else p for p in self.required_permissions]
 

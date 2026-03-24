@@ -60,14 +60,7 @@ class ServicioSuscripciones:
             
         vendedor_id = None
         if is_vendedor:
-            # Reutilizar lógica para buscar vendedor_id
-            query = "SELECT id FROM sistema_facturacion.vendedores WHERE user_id = %s"
-            with self.repo.db.cursor() as cur:
-                cur.execute(query, (str(usuario_actual['id']),))
-                row = cur.fetchone()
-                if not row:
-                    raise AppError("Perfil de vendedor no encontrado", 403)
-                vendedor_id = row['id']
+            vendedor_id = self._obtener_vendedor_id_actual(usuario_actual)
                 
         return self.repo.listar_empresas_por_plan(plan_id, vendedor_id)
 
@@ -99,12 +92,10 @@ class ServicioSuscripciones:
             # but here we might need to fetch it.
             # Assuming we can trust the 'vendedor_id' in the company matches the logged in vendor.
             # Let's verify via the user's id.
-            query = "SELECT id FROM sistema_facturacion.vendedores WHERE user_id = %s"
-            with self.repo.db.cursor() as cur:
-                cur.execute(query, (str(usuario_actual['id']),))
-                row = cur.fetchone()
-                if not row or str(row['id']) != str(vendedor_id):
-                    raise AppError("No autorizado: Esta empresa no está bajo tu gestión", 403, "AUTH_FORBIDDEN")
+            # Get the user's vendor profile id
+            vendedor_id_actual = self._obtener_vendedor_id_actual(usuario_actual)
+            if str(vendedor_id_actual) != str(vendedor_id):
+                raise AppError("No autorizado: Esta empresa no está bajo tu gestión", 403, "AUTH_FORBIDDEN")
 
         plan = self.repo.obtener_plan_por_id(data.plan_id)
         if not plan: raise AppError("Plan no encontrado", 404)
@@ -153,14 +144,46 @@ class ServicioSuscripciones:
         return {"id": pago_id, "mensaje": "Pago registrado y suscripción activada"}
 
     def listar_pagos(self, usuario_actual: dict, empresa_id_filtro: Optional[UUID] = None):
-        # Si es superadmin, puede ver todo o filtrar por empresa
-        if usuario_actual.get(AuthKeys.IS_SUPERADMIN):
-            empresa_id = empresa_id_filtro
-        else:
-            # Si no es superadmin, solo ve su propia empresa
-            empresa_id = usuario_actual.get('empresa_id')
+        is_superadmin = usuario_actual.get(AuthKeys.IS_SUPERADMIN)
+        is_vendedor = usuario_actual.get(AuthKeys.IS_VENDEDOR)
+        
+        # 1. Superadmin: Puede ver todo o filtrar por empresa
+        if is_superadmin:
+            return self.repo.listar_pagos(empresa_id_filtro)
+            
+        # 2. Vendedor: Solo ve empresas asignadas
+        if is_vendedor:
+            vendedor_id = self._obtener_vendedor_id_actual(usuario_actual)
+            
+            if empresa_id_filtro:
+                # Validar que la empresa filtrada pertenezca al vendedor
+                empresa = self.empresa_repo.obtener_por_id(empresa_id_filtro)
+                if not empresa:
+                    raise AppError("Empresa no encontrada", 404)
+                
+                if str(empresa.get('vendedor_id')) != str(vendedor_id):
+                    raise AppError("No autorizado para ver el historial de esta empresa", 403)
+                
+                return self.repo.listar_pagos(empresa_id=empresa_id_filtro)
+            else:
+                # Ver todos los pagos de todas sus empresas
+                return self.repo.listar_pagos(vendedor_id=vendedor_id)
+
+        # 3. Usuario Regular: Solo ve su propia empresa
+        empresa_id = usuario_actual.get('empresa_id')
+        if not empresa_id:
+            return []
             
         return self.repo.listar_pagos(empresa_id)
+
+    def _obtener_vendedor_id_actual(self, usuario_actual: dict) -> UUID:
+        query = "SELECT id FROM sistema_facturacion.vendedores WHERE user_id = %s"
+        with self.repo.db.cursor() as cur:
+            cur.execute(query, (str(usuario_actual['id']),))
+            row = cur.fetchone()
+            if not row:
+                raise AppError("Perfil de vendedor no encontrado", 403)
+            return row['id']
 
     def obtener_historial_suscripcion(self, empresa_id: UUID, usuario_actual: dict):
         if not usuario_actual.get(AuthKeys.IS_SUPERADMIN):

@@ -208,13 +208,23 @@ class RepositorioSuscripciones:
             
             return pago_id
 
-    def listar_pagos(self, empresa_id: Optional[UUID] = None) -> List[dict]:
+    def listar_pagos(self, empresa_id: Optional[UUID] = None, vendedor_id: Optional[UUID] = None) -> List[dict]:
         query = "SELECT p.*, e.razon_social as razon_social, pl.nombre as plan_nombre FROM sistema_facturacion.pagos_suscripciones p " \
                 "JOIN sistema_facturacion.empresas e ON p.empresa_id = e.id JOIN sistema_facturacion.planes pl ON p.plan_id = pl.id"
         params = []
+        where_clauses = []
+        
         if empresa_id:
-            query += " WHERE p.empresa_id = %s"
+            where_clauses.append("p.empresa_id = %s")
             params.append(str(empresa_id))
+            
+        if vendedor_id:
+            where_clauses.append("e.vendedor_id = %s")
+            params.append(str(vendedor_id))
+            
+        if where_clauses:
+            query += " WHERE " + " AND ".join(where_clauses)
+            
         query += " ORDER BY p.fecha_pago DESC"
         with self.db.cursor() as cur:
             cur.execute(query, tuple(params) if params else None)
