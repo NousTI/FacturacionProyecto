@@ -241,12 +241,15 @@ class ServicioEmpresas:
 
         self.repo.actualizar_empresa(empresa_id, payload)
         
-        self.logs_service.registrar_evento(
-            user_id=usuario_actual.get('id'),
-            evento='EMPRESA_ACTUALIZADA',
-            detail=f"Se actualizaron los datos fiscales/comerciales de {current.get('razon_social')}",
-            origen='SUPERADMIN'
-        )
+        try:
+            self.logs_service.registrar_evento(
+                user_id=usuario_actual.get('id'),
+                evento='EMPRESA_ACTUALIZADA',
+                detail=f"Se actualizaron los datos fiscales/comerciales de {current.get('razon_social')}",
+                origen='SUPERADMIN'
+            )
+        except Exception as e:
+            logger.error(f"[LOG_ERROR] Falló el registro de evento EMPRESA_ACTUALIZADA: {str(e)}")
 
         logger.info(f"[ÉXITO] Empresa actualizada - ID: {empresa_id}")
         return self.obtener_empresa(empresa_id, usuario_actual)
@@ -298,12 +301,15 @@ class ServicioEmpresas:
         new_status = not empresa.get("activo", True)
         self.repo.actualizar_empresa(empresa_id, {"activo": new_status})
         
-        self.logs_service.registrar_evento(
-            user_id=usuario_actual.get('id'),
-            evento='EMPRESA_ESTADO_CAMBIADO',
-            detail=f"Empresa {empresa.get('razon_social')} cambiada a {'ACTIVA' if new_status else 'INACTIVA'}",
-            origen='SUPERADMIN'
-        )
+        try:
+            self.logs_service.registrar_evento(
+                user_id=usuario_actual.get('id'),
+                evento='EMPRESA_ESTADO_CAMBIADO',
+                detail=f"Empresa {empresa.get('razon_social')} cambiada a {'ACTIVA' if new_status else 'INACTIVA'}",
+                origen='SUPERADMIN'
+            )
+        except Exception as e:
+            logger.error(f"[LOG_ERROR] Falló el registro de evento EMPRESA_ESTADO_CAMBIADO: {str(e)}")
 
         logger.info(f"[ÉXITO] Estado activo cambiado a {new_status} - ID: {empresa_id}")
         return self.obtener_empresa(empresa_id, usuario_actual)
@@ -338,12 +344,15 @@ class ServicioEmpresas:
                  v = self.vendedor_repo.obtener_por_id(vendedor_id)
                  if v: vendedor_nombre = f"{v['nombres']} {v['apellidos']}"
 
-             self.logs_service.registrar_evento(
-                 user_id=usuario_actual.get('id'),
-                 evento='EMPRESA_VENDEDOR_ASIGNADO',
-                 detail=f"Empresa {current.get('razon_social')} asignada a {vendedor_nombre}",
-                 origen='SUPERADMIN'
-             )
+             try:
+                 self.logs_service.registrar_evento(
+                     user_id=usuario_actual.get('id'),
+                     evento='EMPRESA_VENDEDOR_ASIGNADO',
+                     detail=f"Empresa {current.get('razon_social')} asignada a {vendedor_nombre}",
+                     origen='SUPERADMIN'
+                 )
+             except Exception as e:
+                 logger.error(f"[LOG_ERROR] Falló el registro de evento EMPRESA_VENDEDOR_ASIGNADO: {str(e)}")
 
              logger.info(f"[ÉXITO] Vendedor asignado a empresa - empresa ID: {empresa_id}, vendedor ID: {vendedor_id}")
              return self.obtener_empresa(empresa_id, usuario_actual)
