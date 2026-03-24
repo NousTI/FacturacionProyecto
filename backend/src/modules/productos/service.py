@@ -15,17 +15,20 @@ class ServicioProductos:
     def __init__(self, repo: RepositorioProductos = Depends()):
         self.repo = repo
 
-    def listar_productos(self, usuario_actual: dict, nombre: str = None, codigo: str = None):
+    def listar_productos(self, usuario_actual: dict, nombre: str = None, codigo: str = None, empresa_id: Optional[UUID] = None):
         is_superadmin = usuario_actual.get(AuthKeys.IS_SUPERADMIN, False)
-        empresa_id = usuario_actual.get("empresa_id")
+        
+        # Determine effective empresa_id
+        # 1. Regular users must always filter by their own company
+        if not is_superadmin:
+            target_empresa_id = usuario_actual.get("empresa_id")
+            if not target_empresa_id:
+                raise AppError("Usuario no asociado a una empresa", 400, "VAL_ERROR")
+        else:
+            # 2. Superadmins can filter by the provided empresa_id or see all if none provided
+            target_empresa_id = empresa_id
 
-        if is_superadmin and not empresa_id:
-             return self.repo.listar_productos(None, nombre, codigo)
-
-        if not empresa_id:
-             raise AppError("Usuario no asociado a una empresa", 400, "VAL_ERROR")
-
-        productos = self.repo.listar_productos(empresa_id, nombre, codigo)
+        productos = self.repo.listar_productos(target_empresa_id, nombre, codigo)
         return [self._filtrar_costos(p, usuario_actual) for p in productos]
 
     def obtener_producto(self, producto_id: UUID, usuario_actual: dict):

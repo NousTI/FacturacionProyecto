@@ -1,0 +1,14 @@
+Checking columns for sistema_facturacion.empresa_roles:
+- id (uuid), nullable: NO, default: gen_random_uuid()
+- empresa_id (uuid), nullable: NO, default: None
+- codigo (text), nullable: NO, default: None
+- nombre (text), nullable: NO, default: None
+- descripcion (text), nullable: YES, default: None
+- es_sistema (boolean), nullable: NO, default: false
+- activo (boolean), nullable: NO, default: true
+- created_at (timestamp with time zone), nullable: NO, default: now()
+- updated_at (timestamp with time zone), nullable: NO, default: now()
+
+Checking latest created roles:
+- ROL: Cajero | E_ID: 1ac954c9-2506-413f-bcee-674fafeef2a0 | COD: ROL_CAJERO_2693 | ES_SIST: False | AT: 2026-03-06 10:58:13.385794-05:00
+- ROL: Administrador de Empresa | E_ID: 1ac954c9-2506-413f-bcee-674fafeef2a0 | COD: ADMIN_1ac954c9 | ES_SIST: True | AT: 2026-02-02 10:58:25.282906-05:00

@@ -1,0 +1,3 @@
+Checking check constraints for sistema_facturacion.users_logs:
+- users_logs_evento_check: CHECK ((evento = ANY (ARRAY['LOGIN_OK'::text, 'LOGIN_FALLIDO'::text, 'LOGOUT'::text, 'PASSWORD_CAMBIADA'::text, 'CUENTA_BLOQUEADA'::text, 'CUENTA_DESBLOQUEADA'::text, 'CUENTA_DESHABILITADA'::text])))
+- users_logs_origen_check: CHECK ((origen = ANY (ARRAY['SISTEMA'::text, 'SUPERADMIN'::text, 'USUARIO'::text])))

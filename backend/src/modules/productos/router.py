@@ -15,10 +15,11 @@ router = APIRouter()
 def listar_productos(
     nombre: Optional[str] = None, 
     codigo: Optional[str] = None, 
+    empresa_id: Optional[UUID] = None,
     usuario: dict = Depends(requerir_permiso(PermissionCodes.PRODUCTOS_VER)),
     servicio: ServicioProductos = Depends()
 ):
-    productos = servicio.listar_productos(usuario, nombre, codigo)
+    productos = servicio.listar_productos(usuario, nombre, codigo, empresa_id)
     return success_response(productos, "Productos listados correctamente")
 
 @router.get("/{producto_id}", response_model=RespuestaBase[ProductoLectura])

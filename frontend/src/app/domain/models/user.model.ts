@@ -1,5 +1,6 @@
 import { UserRole } from "../enums/role.enum";
 import { Permiso } from "./perfil.model";
+import { Empresa } from "./empresa.model";
 
 export interface User {
     id: string;
@@ -34,4 +35,5 @@ export interface User {
     permisos?: string[] | Permiso[];
 
     activo?: boolean;
+    empresa?: Empresa;
 }
