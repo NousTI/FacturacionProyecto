@@ -36,7 +36,14 @@ export interface DashboardAlertas {
 export interface DashboardOverview {
     kpis: DashboardKPIs;
     alertas: DashboardAlertas;
-    consumo_plan?: { actual: number; limite: number };
+    consumo_plan?: { 
+        actual: number; 
+        limite: number;
+        nombre_plan?: string;
+        fecha_inicio?: string;
+        fecha_vencimiento?: string;
+        estado?: string;
+    };
     top_productos?: any[];
     firma_info?: { fecha: string; dias_restantes: number };
     facturas_recientes?: any[];

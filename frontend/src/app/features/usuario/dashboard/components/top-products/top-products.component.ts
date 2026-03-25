@@ -19,7 +19,7 @@ import { InfoTooltipComponent } from '../../../../../shared/components/info-tool
           </div>
           <div class="p-3">
             <div class="row" *ngIf="topProductos.length; else noProducts">
-              <div *ngFor="let p of topProductos" class="col-md-4 mb-3 mb-md-0">
+              <div *ngFor="let p of topProductos" class="col-12 mb-3">
                 <div class="d-flex justify-content-between mb-1">
                   <span class="small fw-bold text-truncate" style="max-width: 150px;">{{ p.nombre }}</span>
                   <span class="small fw-bold text-dark">{{ p.total | currency:'USD':'symbol':'1.2-2' }}</span>

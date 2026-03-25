@@ -34,16 +34,8 @@ import { DashboardOverview } from '../../../shared/services/dashboard.service';
     TopProductsComponent
   ],
   template: `
-    <div class="dash-wrap p-4">
+    <div class="dash-wrap p-0">
       
-      <!-- Filtro de Periodo -->
-      <div class="d-flex justify-content-between align-items-center mb-4">
-        <app-period-selector 
-          [selectedPeriod]="selectedPeriod" 
-          (onPeriodChange)="changePeriod($event)">
-        </app-period-selector>
-      </div>
-
       <!-- Estado de Carga -->
       <div *ngIf="loading$ | async" class="d-flex justify-content-center align-items-center" style="height: 400px;">
         <div class="spinner-border text-primary" role="status">
@@ -52,39 +44,53 @@ import { DashboardOverview } from '../../../shared/services/dashboard.service';
       </div>
 
       <ng-container *ngIf="overview$ | async as overview">
-        <!-- ── FILA 1: KPIs ── -->
-        <app-dashboard-kpis [kpis]="overview.kpis" [selectedPeriod]="selectedPeriod"></app-dashboard-kpis>
-
-        <!-- ── FILA 2: GRÁFICOS ── -->
-        <div class="row g-3 mb-4">
-          <div class="col-12">
-            <app-chart-card 
-              [title]="'Tendencia de Ventas (vs Anterior)'"
-              [data]="overview.ventas_tendencia || []"
-              barColor="linear-gradient(135deg, #6366f1 0%, #a855f7 100%)">
-            </app-chart-card>
-          </div>
-        </div>
-
-        <!-- ── FILA 3: Últimas facturas + Accesos rápidos ── -->
-        <div class="row g-3 mb-4">
+        <div class="row g-3 mx-0">
+          
+          <!-- ── COLUMNA IZQUIERDA: MÉTRICAS Y ACTIVIDAD (8/12) ── -->
           <div class="col-lg-8">
-            <app-recent-invoices [facturas]="overview.facturas_recientes || []"></app-recent-invoices>
+            <div class="d-flex flex-column gap-3">
+              <!-- KPIs -->
+              <app-dashboard-kpis [kpis]="overview.kpis" [selectedPeriod]="selectedPeriod" class="mt-2"></app-dashboard-kpis>
+
+              <!-- Análisis de Tendencias (Bajo KPIs como se solicitó) -->
+              <app-chart-card 
+                [title]="'Tendencia de Ventas (vs Anterior)'"
+                [data]="overview.ventas_tendencia || []"
+                barColor="linear-gradient(135deg, #6366f1 0%, #a855f7 100%)">
+              </app-chart-card>
+
+              <!-- Actividad Reciente -->
+              <app-recent-invoices [facturas]="overview.facturas_recientes || []" class="mb-3"></app-recent-invoices>
+            </div>
           </div>
 
+          <!-- ── COLUMNA DERECHA: ESTADO Y HERRAMIENTAS (4/12) ── -->
           <div class="col-lg-4">
-            <div class="d-flex flex-column gap-3">
+            <div class="d-flex flex-column gap-3 mt-2 pe-2">
+              
+              <!-- Filtro de Periodo (Optimización de espacio: se mueve al sidebar superior) -->
+              <div class="d-flex justify-content-end mb-1">
+                <app-period-selector 
+                  [selectedPeriod]="selectedPeriod" 
+                  (onPeriodChange)="changePeriod($event)">
+                </app-period-selector>
+              </div>
+
+              <!-- Estado Critical (Suscripción y Firma) -->
               <app-status-cards 
                 [firmaInfo]="overview.firma_info" 
                 [consumoPlan]="overview.consumo_plan">
               </app-status-cards>
+
+              <!-- Accesos Rápidos -->
               <app-quick-actions></app-quick-actions>
+
+              <!-- Desempeño de Productos (Ahora más compacto al lateral) -->
+              <app-top-products [topProductos]="overview.top_productos || []"></app-top-products>
             </div>
           </div>
-        </div>
 
-        <!-- ── FILA 3: Top Ventas ── -->
-        <app-top-products [topProductos]="overview.top_productos || []"></app-top-products>
+        </div>
       </ng-container>
 
     </div>
