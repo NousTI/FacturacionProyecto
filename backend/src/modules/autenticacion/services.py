@@ -104,8 +104,9 @@ class AuthServices:
         is_superadmin = (primary_role == RolCodigo.SUPERADMIN.value)
         empresa_id = user.get("empresa_id")
         
-        # Identificar Bloqueo Proactivo
+        # Identificar Bloqueo Proactivo y Aviso
         empresa_lock = None
+        aviso_renovacion = None
         if not is_superadmin and primary_role == RolCodigo.USUARIO.value and empresa_id:
             with self.user_repo.db.cursor() as cur:
                 cur.execute("""
@@ -282,8 +283,9 @@ class AuthServices:
         user["is_usuario"] = (role_upper == "USUARIO")
         user["empresa_activa"] = user.get("empresa_activa", True)
 
-        # 6. Bloqueo Proactivo (Lógica dinámica para teléfono superadmin)
+        # 6. Bloqueo Proactivo y Aviso (Lógica dinámica)
         empresa_lock = None
+        aviso_renovacion = None
         empresa_id = user.get("empresa_id")
         if not user["is_superadmin"] and user["is_usuario"] and empresa_id:
             with self.user_repo.db.cursor() as cur:

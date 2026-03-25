@@ -45,6 +45,25 @@ import { DashboardOverview } from '../../../shared/services/dashboard.service';
       </div>
 
       <ng-container *ngIf="overview$ | async as overview">
+        
+        <!-- Banner de Aviso de Renovación (7 días antes) -->
+        <div *ngIf="renewalNotice" class="alert-renewal-glass mx-3 mb-4 animate__animated animate__fadeInDown">
+          <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
+            <div class="d-flex align-items-center gap-3">
+              <div class="icon-pulse">
+                <i class="bi bi-calendar-event-fill fs-4 text-warning"></i>
+              </div>
+              <div>
+                <h5 class="m-0 fw-800 text-dark">Tu suscripción vence en {{ renewalNotice.dias }} días</h5>
+                <p class="m-0 text-muted fw-500" style="font-size: 0.85rem;">Renueva tu plan ahora para evitar interrupciones en el servicio.</p>
+              </div>
+            </div>
+            <a [href]="renewalWhatsappUrl" target="_blank" class="btn btn-warning fw-800 rounded-pill px-4 shadow-sm py-2">
+              <i class="bi bi-whatsapp me-2"></i>Renovar Plan con mi Asesor
+            </a>
+          </div>
+        </div>
+
         <div class="row g-3 mx-0">
           
           <!-- ── COLUMNA IZQUIERDA: MÉTRICAS Y ACTIVIDAD (8/12) ── -->
@@ -98,6 +117,37 @@ import { DashboardOverview } from '../../../shared/services/dashboard.service';
   `,
   styles: [`
     .dash-wrap { min-height: 100vh; padding-bottom: 2rem; }
+    
+    .alert-renewal-glass {
+      background: rgba(255, 255, 255, 0.7);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(245, 158, 11, 0.2);
+      border-left: 5px solid #f59e0b;
+      border-radius: 20px;
+      padding: 1.25rem 2rem;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.05);
+    }
+
+    .icon-pulse {
+      width: 50px;
+      height: 50px;
+      background: rgba(245, 158, 11, 0.1);
+      border-radius: 15px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      animation: soft-pulse 2s infinite;
+    }
+
+    @keyframes soft-pulse {
+      0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.2); }
+      70% { transform: scale(1.05); box-shadow: 0 0 0 10px rgba(245, 158, 11, 0); }
+      100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(245, 158, 11, 0); }
+    }
+
+    .fw-800 { font-weight: 800; }
+    .fw-500 { font-weight: 500; }
   `]
 })
 export class DashboardPage implements OnInit {
@@ -113,6 +163,16 @@ export class DashboardPage implements OnInit {
   ) {
     this.overview$ = this.dashboardFeatureService.overview$;
     this.loading$ = this.dashboardFeatureService.loading$;
+  }
+
+  get renewalNotice() {
+    return (this.authFacade.getUser() as any)?.aviso_renovacion;
+  }
+
+  get renewalWhatsappUrl() {
+    const notice = this.renewalNotice;
+    if (!notice) return '';
+    return `https://wa.me/${notice.phone}?text=${encodeURIComponent(notice.message)}`;
   }
 
   ngOnInit() {
