@@ -16,6 +16,7 @@ import { CommonModule } from '@angular/common';
                 <th style="width: 130px">Estado</th>
                 <th style="width: 180px">Plan Actual</th>
                 <th style="width: 160px">Uso de Recursos</th>
+                <th style="width: 140px">Inicio</th>
                 <th style="width: 140px">Vencimiento</th>
                 <th class="text-end" style="width: 80px">Acciones</th>
               </tr>
@@ -55,11 +56,18 @@ import { CommonModule } from '@angular/common';
                    </div>
                 </td>
                 <td>
+                   <div class="d-flex flex-column">
+                    <span class="text-muted fw-bold" style="font-size: 0.85rem;">
+                      {{ empresa.fechaInicio ? (empresa.fechaInicio | date:'dd/MM/yyyy') : '-' }}
+                    </span>
+                  </div>
+                </td>
+                <td>
                   <div class="d-flex flex-column">
                     <span class="fw-bold" [class.text-danger]="isExpired(empresa.fechaVencimiento)" style="font-size: 0.85rem;">
-                      {{ empresa.fechaVencimiento | date:'dd/MM/yyyy' }}
+                      {{ empresa.fechaVencimiento ? (empresa.fechaVencimiento | date:'dd/MM/yyyy') : '-' }}
                     </span>
-                    <small class="text-muted" style="font-size: 0.7rem;" *ngIf="!isExpired(empresa.fechaVencimiento)">
+                    <small class="text-muted" style="font-size: 0.7rem;" *ngIf="empresa.fechaVencimiento && !isExpired(empresa.fechaVencimiento)">
                        En {{ getDaysRemaining(empresa.fechaVencimiento) }} días
                     </small>
                   </div>

@@ -14,7 +14,8 @@ import { Suscripcion } from '../../services/suscripcion.service';
               <tr>
                 <th>Empresa</th>
                 <th>Plan</th>
-                <th style="width: 140px">Vencimiento</th>
+                <th style="width: 130px">Inicio</th>
+                <th style="width: 130px">Vencimiento</th>
                 <th style="width: 120px">Pago</th>
                 <th style="width: 120px">Estado</th>
                 <th class="text-end" style="width: 100px">Acciones</th>
@@ -43,8 +44,13 @@ import { Suscripcion } from '../../services/suscripcion.service';
                 </td>
                 <td>
                   <div class="d-flex flex-column">
-                    <span class="fw-800 text-dark">{{ sub.fecha_fin | date:'dd MMM yyyy' }}</span>
-                    <small class="text-muted" *ngIf="isOverdue(sub.fecha_fin)">
+                    <span class="fw-800 text-muted" style="font-size: 0.85rem;">{{ sub.fecha_inicio ? (sub.fecha_inicio | date:'dd MMM yyyy') : '-' }}</span>
+                  </div>
+                </td>
+                <td>
+                  <div class="d-flex flex-column">
+                    <span class="fw-800 text-dark">{{ sub.fecha_fin ? (sub.fecha_fin | date:'dd MMM yyyy') : '-' }}</span>
+                    <small class="text-muted" *ngIf="sub.fecha_fin && isOverdue(sub.fecha_fin)">
                       <i class="bi bi-exclamation-triangle-fill text-danger me-1"></i> <span class="text-danger">Vencido</span>
                     </small>
                   </div>

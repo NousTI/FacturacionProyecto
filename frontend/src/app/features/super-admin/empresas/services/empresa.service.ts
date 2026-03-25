@@ -54,6 +54,7 @@ export class EmpresaService {
             plan: e.plan_nombre || 'SIN PLAN',
             currentPlanId: e.current_plan_id,
             suscripcion_estado: e.suscripcion_estado,
+            fechaInicio: e.fecha_inicio ? new Date(e.fecha_inicio) : null,
             fechaVencimiento: e.fecha_fin ? new Date(e.fecha_fin) : null,
             ultimoPagoFecha: e.ultimo_pago_fecha ? new Date(e.ultimo_pago_fecha) : null,
             ultimoPagoMonto: e.ultimo_pago_monto || 0,

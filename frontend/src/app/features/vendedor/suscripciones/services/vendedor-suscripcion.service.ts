@@ -63,7 +63,7 @@ export class VendedorSuscripcionService {
             plan_id: e.planId,
             plan_nombre: e.plan,
             precio_plan: e.precioPlan,
-            fecha_inicio: e.created_at, // Approximate
+            fecha_inicio: e.fechaInicio,
             fecha_fin: e.fechaVencimiento,
             estado: status,
             created_at: e.created_at,

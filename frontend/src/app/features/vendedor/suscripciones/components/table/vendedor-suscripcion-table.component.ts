@@ -14,7 +14,8 @@ import { Suscripcion } from '../../services/vendedor-suscripcion.service';
               <tr>
                 <th>Empresa</th>
                 <th>Plan</th>
-                <th style="width: 140px">Vencimiento</th>
+                <th style="width: 130px">Inicio</th>
+                <th style="width: 130px">Vencimiento</th>
                 <th style="width: 140px">Estado Pagos</th>
                 <th style="width: 120px">Estado</th>
                 <th class="text-end" style="width: 100px">Acciones</th>
@@ -47,12 +48,19 @@ import { Suscripcion } from '../../services/vendedor-suscripcion.service';
                   </div>
                 </td>
 
+                <!-- INICIO -->
+                <td>
+                  <div class="d-flex flex-column">
+                    <span class="fw-800 text-muted" style="font-size: 0.85rem;">{{ sub.fecha_inicio ? (sub.fecha_inicio | date:'dd MMM yyyy') : '-' }}</span>
+                  </div>
+                </td>
+
                 <!-- VENCIMIENTO -->
                 <td>
                   <div class="d-flex flex-column">
-                    <span class="fw-800 text-dark">{{ sub.fecha_fin | date:'dd MMM yyyy' }}</span>
+                    <span class="fw-800 text-dark">{{ sub.fecha_fin ? (sub.fecha_fin | date:'dd MMM yyyy') : '-' }}</span>
                     
-                    <small *ngIf="isOverdue(sub) && sub.days_overdue" class="text-danger fw-bold mt-1" style="font-size: 0.7rem;">
+                    <small *ngIf="sub.fecha_fin && isOverdue(sub) && sub.days_overdue" class="text-danger fw-bold mt-1" style="font-size: 0.7rem;">
                       <i class="bi bi-exclamation-circle me-1"></i>Vencido hace {{ sub.days_overdue }} días
                     </small>
                   </div>
