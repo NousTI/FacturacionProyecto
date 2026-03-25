@@ -32,11 +32,13 @@ export class CompanyActiveGuard implements CanActivate {
                     return true;
                 }
 
-                // 3. Si la empresa está inactiva, redirigir a la página de empresa
-                const isEmpresaActiva = !!user?.empresa?.activo;
+                // 3. Verificación de Empresa y Suscripción
+                const isEmpresaInactiva = user?.empresa_activa === false;
+                const isSuscripcionInactiva = user?.empresa_suscripcion_estado && user.empresa_suscripcion_estado !== 'ACTIVA';
                 
-                if (!isEmpresaActiva && user?.role === UserRole.USUARIO) {
-                    // Redirigir a la página de empresa donde está el banner de inactividad
+                if ((isEmpresaInactiva || isSuscripcionInactiva) && user?.role === UserRole.USUARIO) {
+                    console.warn('[CompanyActiveGuard] Acceso restringido por estado de cuenta/suscripción');
+                    // Redirigir a la única página permitida para usuarios bloqueados
                     return this.router.createUrlTree(['/usuario/empresa']);
                 }
 

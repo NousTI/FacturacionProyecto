@@ -37,15 +37,13 @@ export class AuthInterceptor implements HttpInterceptor {
                 if (error.status === 401) {
                     this.authService.logout();
                     this.router.navigate(['/auth/login']);
-                } else if (error.status === 402) {
-                    // Suscripción Requerida - Mostramos error visual y redirigimos
-                    this.uiService.showError(error, 'Suscripción Inactiva');
-                    
-                    // Solo redirigir si no estamos ya en el módulo de empresa
-                    if (!this.router.url.includes('/usuario/empresa')) {
-                        this.router.navigate(['/usuario/empresa']);
-                    }
                 } else if (error.status === 403) {
+                    // Solo manejamos 403 genéricos. Si es un bloqueo de empresa, el LockInterceptor se encarga.
+                    const detail = error.error?.detail || '';
+                    if (detail.includes('COMPANY_DISABLED')) {
+                        return throwError(() => error);
+                    }
+
                     // Acceso Denegado (No tiene permisos)
                     let recurso = 'este módulo';
                     if (request.url) {

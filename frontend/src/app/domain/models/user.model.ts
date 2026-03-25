@@ -37,4 +37,9 @@ export interface User {
     activo?: boolean;
     empresa?: Empresa;
     empresa_activa?: boolean;
+    empresa_lock?: {
+        type: string;
+        phone: string;
+        message: string;
+    };
 }

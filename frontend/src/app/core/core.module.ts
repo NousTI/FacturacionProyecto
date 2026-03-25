@@ -1,6 +1,7 @@
 import { NgModule, Optional, SkipSelf } from '@angular/core';
 import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http';
 import { AuthInterceptor } from './interceptors/auth.interceptor';
+import { LockInterceptor } from './interceptors/lock.interceptor';
 
 @NgModule({
     imports: [
@@ -10,6 +11,11 @@ import { AuthInterceptor } from './interceptors/auth.interceptor';
         {
             provide: HTTP_INTERCEPTORS,
             useClass: AuthInterceptor,
+            multi: true
+        },
+        {
+            provide: HTTP_INTERCEPTORS,
+            useClass: LockInterceptor,
             multi: true
         }
     ]

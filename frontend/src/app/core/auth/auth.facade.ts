@@ -5,6 +5,7 @@ import { User } from '../../domain/models/user.model';
 import { UserRole } from '../../domain/enums/role.enum';
 import { Router } from '@angular/router';
 import { UiService } from '../../shared/services/ui.service';
+import { LockStatusService } from '../services/lock-status.service';
 
 import { ROLES } from '../../../shared/constantes/app.constants';
 
@@ -21,7 +22,8 @@ export class AuthFacade {
     constructor(
         private authService: AuthService,
         private router: Router,
-        private uiService: UiService
+        private uiService: UiService,
+        private lockService: LockStatusService
     ) {
         this.userSubject = new BehaviorSubject<User | null>(this.authService.getUser());
         this.user$ = this.userSubject.asObservable();
@@ -36,19 +38,26 @@ export class AuthFacade {
         if (this.authService.isAuthenticated()) {
             this.authService.getPerfil().subscribe({
                 next: (userData) => {
-                    // Refresh user data with fresh info from server
                     const role = this.authService.getRole();
                     const updatedUser = { ...userData, role: role || null };
 
-                    // Update Facade state
                     this.userSubject.next(updatedUser);
-
-                    // Update AuthService/localStorage cache
                     this.authService.updateUser(updatedUser);
+
+                    // Bloqueo Proactivo si el perfil indica que la empresa está inactiva/vencida
+                    if (updatedUser.empresa_lock) {
+                        this.lockService.setLock(updatedUser.empresa_lock.type as any, {
+                            phone: updatedUser.empresa_lock.phone,
+                            message: updatedUser.empresa_lock.message
+                        });
+                    }
                 },
-                error: () => {
-                    // Si falla (ej. 401 por sesión invalida en DB), forzar logout
-                    this.logout();
+                error: (err) => {
+                    // Solo si es 401 (Token invalido) o 404 (No existe usuario)
+                    // No cerramos sesión en 402 o 403 para que el modal de bloqueo persista
+                    if (err.status === 401 || err.status === 404) {
+                        this.logout();
+                    }
                 }
             });
         }
@@ -60,12 +69,18 @@ export class AuthFacade {
                 next: (response) => {
                     this.isAuthenticatedSubject.next(true);
 
-                    // En el nuevo backend, el rol viene dentro del objeto usuario como 'role'
                     const userWithRole = response.usuario;
                     const role = (userWithRole.role || this.authService.getRole()) as UserRole;
 
-                    // Asegurar que el objeto en el subject tenga el rol detectado
                     this.userSubject.next({ ...userWithRole, role });
+
+                    // Bloqueo Proactivo al iniciar sesión
+                    if (userWithRole.empresa_lock) {
+                        this.lockService.setLock(userWithRole.empresa_lock.type as any, {
+                            phone: userWithRole.empresa_lock.phone,
+                            message: userWithRole.empresa_lock.message
+                        });
+                    }
 
                     observer.next(response);
                     observer.complete();

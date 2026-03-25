@@ -21,6 +21,8 @@ import { CertificadoSriPage } from './certificado-sri/certificado-sri.page';
 import { EmpresaPage } from './empresa/empresa.page';
 import { RolesPermisosPage } from './roles/roles.page';
 
+import { CompanyActiveGuard } from '../../core/guards/company-active.guard';
+
 const routes: Routes = [
     {
         path: '',
@@ -30,86 +32,85 @@ const routes: Routes = [
     {
         path: 'dashboard',
         component: DashboardPage,
-        canActivate: [RoleGuard],
+        canActivate: [RoleGuard, CompanyActiveGuard],
         data: { title: 'Dashboard', roles: [UserRole.USUARIO] }
     },
     {
         path: 'roles',
         component: RolesPermisosPage,
-        canActivate: [RoleGuard],
+        canActivate: [RoleGuard, CompanyActiveGuard],
         data: { title: 'Roles y Permisos', roles: [UserRole.USUARIO], permission: 'CONFIG_ROLES' }
     },
     {
         path: 'empresa',
         component: EmpresaPage,
-        canActivate: [RoleGuard],
+        canActivate: [RoleGuard], // Not blocked
         data: { title: 'Empresa', roles: [UserRole.USUARIO], permission: 'CONFIG_EMPRESA' }
     },
     {
         path: 'usuarios',
         component: UsuariosPage,
-        canActivate: [RoleGuard],
+        canActivate: [RoleGuard, CompanyActiveGuard],
         data: { title: 'Usuarios', roles: [UserRole.USUARIO], permission: 'CONFIG_USUARIOS' }
     },
     {
         path: 'clientes',
         component: ClientesPage,
-        canActivate: [RoleGuard],
+        canActivate: [RoleGuard, CompanyActiveGuard],
         data: { title: 'Clientes', roles: [UserRole.USUARIO, UserRole.VENDEDOR], permission: 'CLIENTES_VER' }
     },
     {
         path: 'productos',
         component: ProductosPage,
-        canActivate: [RoleGuard],
+        canActivate: [RoleGuard, CompanyActiveGuard],
         data: { title: 'Productos', roles: [UserRole.USUARIO], permission: 'PRODUCTOS_VER' }
     },
     {
         path: 'facturacion',
         component: FacturacionPage,
-        canActivate: [RoleGuard],
+        canActivate: [RoleGuard, CompanyActiveGuard],
         data: { title: 'Facturación', roles: [UserRole.USUARIO], permission: ['FACTURAS_VER_TODAS', 'FACTURAS_VER_PROPIAS', 'FACTURAS_CREAR'] }
     },
     {
         path: 'cuentas-cobrar',
         component: CuentasCobrarPage,
-        canActivate: [RoleGuard],
+        canActivate: [RoleGuard, CompanyActiveGuard],
         data: { title: 'Cuentas por Cobrar', roles: [UserRole.USUARIO], permission: 'CUENTA_COBRAR_VER' }
     },
     {
         path: 'facturacion-recurrente',
         component: FacturacionRecurrentePage,
-        canActivate: [RoleGuard],
+        canActivate: [RoleGuard, CompanyActiveGuard],
         data: { title: 'Facturación Recurrente', roles: [UserRole.USUARIO], permission: 'FACTURA_PROGRAMADA_VER' }
     },
     {
         path: 'reportes',
         component: ReportesPage,
-        canActivate: [RoleGuard],
+        canActivate: [RoleGuard, CompanyActiveGuard],
         data: { title: 'Reportes', roles: [UserRole.USUARIO], permission: ['REPORTES_VER', 'REPORTES_EXPORTAR'] }
     },
     {
         path: 'establecimientos',
         component: EstablecimientosPage,
-        canActivate: [RoleGuard],
+        canActivate: [RoleGuard, CompanyActiveGuard],
         data: { title: 'Establecimientos', roles: [UserRole.USUARIO], permission: 'CONFIG_ESTABLECIMIENTOS' }
     },
     {
         path: 'puntos-emision',
         component: PuntosEmisionPage,
-        canActivate: [RoleGuard],
+        canActivate: [RoleGuard, CompanyActiveGuard],
         data: { title: 'Puntos de Emisión', roles: [UserRole.USUARIO], permission: 'CONFIG_ESTABLECIMIENTOS' }
     },
-
     {
         path: 'perfil',
         component: ProfilePage,
-        canActivate: [RoleGuard],
+        canActivate: [RoleGuard], // Not blocked
         data: { title: 'Perfil', roles: [UserRole.USUARIO] }
     },
     {
         path: 'certificado-sri',
         component: CertificadoSriPage,
-        canActivate: [RoleGuard],
+        canActivate: [RoleGuard, CompanyActiveGuard],
         data: { title: 'Certificado SRI', roles: [UserRole.USUARIO], permission: 'CONFIG_SRI' }
     }
 ];

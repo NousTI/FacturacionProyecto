@@ -405,7 +405,10 @@ export class EmpresaPage implements OnInit {
   ) { }
 
   ngOnInit(): void {
-    this.uiService.setPageHeader('Configuración de Empresa', 'Gestiona la información legal y operativa de tu negocio');
+    // Timeout para evitar NG0100: ExpressionChangedAfterItHasBeenCheckedError
+    setTimeout(() => {
+      this.uiService.setPageHeader('Configuración de Empresa', 'Gestiona la información legal y operativa de tu negocio');
+    });
     this.loadEmpresa();
   }
 
@@ -442,7 +445,10 @@ export class EmpresaPage implements OnInit {
       },
       error: (err: any) => {
         console.error('[EmpresaPage] Error al obtener datos:', err);
-        this.uiService.showError(err, 'Error al cargar información de la empresa');
+        // Si el error es 402 o 403, no mostramos el showError porque el modal global se encargará
+        if (err.status !== 402 && err.status !== 403) {
+          this.uiService.showError(err, 'Error al cargar información de la empresa');
+        }
       }
     });
   }

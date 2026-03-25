@@ -17,6 +17,7 @@ import { TopProductsComponent } from './components/top-products/top-products.com
 // Services
 import { DashboardFeatureService } from './services/dashboard.service';
 import { UiService } from '../../../shared/services/ui.service';
+import { AuthFacade } from '../../../core/auth/auth.facade';
 import { DashboardOverview } from '../../../shared/services/dashboard.service';
 
 @Component({
@@ -107,6 +108,7 @@ export class DashboardPage implements OnInit {
   constructor(
     private uiService: UiService,
     private dashboardFeatureService: DashboardFeatureService,
+    private authFacade: AuthFacade,
     private cdr: ChangeDetectorRef
   ) {
     this.overview$ = this.dashboardFeatureService.overview$;
@@ -114,7 +116,10 @@ export class DashboardPage implements OnInit {
   }
 
   ngOnInit() {
-    this.uiService.setPageHeader('Dashboard', 'Resumen general de tu actividad');
+    // Timeout para evitar NG0100: ExpressionChangedAfterItHasBeenCheckedError
+    setTimeout(() => {
+      this.uiService.setPageHeader('Dashboard', 'Resumen general de tu actividad');
+    });
     this.cargarDatos();
   }
 
@@ -124,6 +129,20 @@ export class DashboardPage implements OnInit {
   }
 
   cargarDatos() {
-    this.dashboardFeatureService.loadOverview(this.selectedPeriod).subscribe();
+    const user = this.authFacade.getUser() as any;
+    
+    // 1. Evitar llamadas si ya sabemos localmente que el usuario está bloqueado
+    const isEmpresaBloqueada = user?.empresa_activa === false;
+    const isSuscripcionBloqueada = user?.empresa_suscripcion_estado && user.empresa_suscripcion_estado !== 'ACTIVA';
+
+    if ((isEmpresaBloqueada || isSuscripcionBloqueada) && !user?.is_superadmin && !user?.is_vendedor) {
+      console.log('[DashboardPage] Peticiones omitidas por bloqueo de cuenta/suscripción');
+      return;
+    }
+
+    // 2. Si no, consultamos (el interceptor manejará si el estado cambió en el servidor)
+    this.dashboardFeatureService.loadOverview(this.selectedPeriod).subscribe({
+      error: () => {} 
+    });
   }
 }

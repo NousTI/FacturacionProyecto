@@ -102,6 +102,61 @@ class AuthServices:
 
         # Sanitize and prepare base data
         is_superadmin = (primary_role == RolCodigo.SUPERADMIN.value)
+        empresa_id = user.get("empresa_id")
+        
+        # Identificar Bloqueo Proactivo
+        empresa_lock = None
+        if not is_superadmin and primary_role == RolCodigo.USUARIO.value and empresa_id:
+            with self.user_repo.db.cursor() as cur:
+                cur.execute("""
+                    SELECT e.ruc, e.razon_social, v.telefono as vendedor_telefono, e.activo,
+                           s.estado as suscripcion_estado, s.fecha_fin,
+                           (SELECT u.telefono FROM sistema_facturacion.usuarios u 
+                            JOIN sistema_facturacion.users us ON u.user_id = us.id 
+                            WHERE us.role = 'SUPERADMIN' AND u.telefono IS NOT NULL LIMIT 1) as admin_telefono
+                    FROM sistema_facturacion.empresas e
+                    LEFT JOIN sistema_facturacion.vendedores v ON e.vendedor_id = v.id
+                    LEFT JOIN sistema_facturacion.suscripciones s ON s.empresa_id = e.id
+                    WHERE e.id = %s
+                """, (str(empresa_id),))
+                e_data = cur.fetchone()
+            
+            if e_data:
+                import os
+                from datetime import date
+                # Fallback interno si no hay superadmin con teléfono en DB
+                superadmin_phone = e_data['admin_telefono'] or "593900000000"
+                
+                if not e_data['activo']:
+                    empresa_lock = {
+                        "type": "COMPANY_DISABLED",
+                        "phone": superadmin_phone,
+                        "message": f"Hola, soy {e_data['razon_social']} (RUC: {e_data['ruc']}). Mi cuenta de empresa aparece inhabilitada. Por favor, desearía saber el motivo y los pasos para reactivarla."
+                    }
+                else:
+                    estado_s = e_data['suscripcion_estado'] or 'INEXISTENTE'
+                    fecha_f = e_data['fecha_fin']
+                    
+                    # Normalizar a date si es datetime (Postgres TIMESTAMPTZ)
+                    if hasattr(fecha_f, 'date'):
+                        fecha_f = fecha_f.date()
+                        
+                    vencida = (fecha_f < date.today()) if fecha_f else True
+                    
+                    if estado_s != 'ACTIVA' or vencida:
+                        target_p = e_data['vendedor_telefono'] or superadmin_phone
+                        
+                        # days_diff logic con fecha_f normalizada
+                        if fecha_f:
+                            days_diff = (date.today() - fecha_f).days
+                            if days_diff > 5: target_p = superadmin_phone
+                        
+                        empresa_lock = {
+                            "type": f"SUBSCRIPTION_{estado_s}",
+                            "phone": target_p,
+                            "message": f"Hola, mi nombre es {e_data['razon_social']} (RUC: {e_data['ruc']}). Mi suscripción venció el {fecha_f or 'N/A'} y deseo renovar mi plan. Por favor, ayúdeme con la información para el pago."
+                        }
+
         user_safe = {
             "id": str(user["id"]),
             "email": user["email"],
@@ -109,9 +164,10 @@ class AuthServices:
             "apellidos": user.get("apellidos"),
             "avatar_url": user.get("avatar_url"),
             "estado": user["estado"],
-            "empresa_id": str(user.get("empresa_id")) if user.get("empresa_id") else None,
+            "empresa_id": str(empresa_id) if empresa_id else None,
             "empresa_suscripcion_estado": user.get("empresa_suscripcion_estado"),
             "empresa_activa": user.get("empresa_activa", True),
+            "empresa_lock": empresa_lock,
             "role": primary_role,
             "is_superadmin": is_superadmin,
             "permisos": []
@@ -207,35 +263,69 @@ class AuthServices:
         
         logger.info(f"[ÉXITO] Token y usuario validados - usuario ID: {user_id}")
 
-        # Inyectar flags de rol para compatibilidad
+        # 5. Inyectar flags de rol para compatibilidad
         role_upper = str(role).strip().upper()
-        user[AuthKeys.IS_SUPERADMIN] = (role_upper == RolCodigo.SUPERADMIN.value)
-        user[AuthKeys.IS_VENDEDOR] = (role_upper == RolCodigo.VENDEDOR.value)
-        user[AuthKeys.IS_USUARIO] = (role_upper == RolCodigo.USUARIO.value)
         user["role"] = role
+        user["is_superadmin"] = (role_upper == "SUPERADMIN")
+        user["is_vendedor"] = (role_upper == "VENDEDOR")
+        user["is_usuario"] = (role_upper == "USUARIO")
         user["empresa_activa"] = user.get("empresa_activa", True)
 
-        # Ensure rol_codigo is available for permission checks (from roles service or repositories)
-        if not user.get("rol_codigo") and user.get("usuario_id"):
-             # If it was missing in the baseline dict (rare but possible during transition)
-             pass 
+        # 6. Bloqueo Proactivo (Lógica dinámica para teléfono superadmin)
+        empresa_lock = None
+        empresa_id = user.get("empresa_id")
+        if not user["is_superadmin"] and user["is_usuario"] and empresa_id:
+            with self.user_repo.db.cursor() as cur:
+                cur.execute("""
+                    SELECT e.ruc, e.razon_social, v.telefono as vendedor_telefono, e.activo,
+                           s.estado as suscripcion_estado, s.fecha_fin,
+                           (SELECT u.telefono FROM sistema_facturacion.usuarios u 
+                            JOIN sistema_facturacion.users us ON u.user_id = us.id 
+                            WHERE us.role = 'SUPERADMIN' AND u.telefono IS NOT NULL LIMIT 1) as admin_telefono
+                    FROM sistema_facturacion.empresas e
+                    LEFT JOIN sistema_facturacion.vendedores v ON e.vendedor_id = v.id
+                    LEFT JOIN sistema_facturacion.suscripciones s ON s.empresa_id = e.id
+                    WHERE e.id = %s
+                """, (str(empresa_id),))
+                e_data = cur.fetchone()
+            
+            if e_data:
+                import os
+                from datetime import date
+                superadmin_phone = e_data['admin_telefono'] or "593900000000"
+                if not e_data['activo']:
+                    empresa_lock = {
+                        "type": "COMPANY_DISABLED", "phone": superadmin_phone,
+                        "message": f"Hola, soy {e_data['razon_social']} (RUC: {e_data['ruc']}). Mi cuenta de empresa aparece inhabilitada. Por favor, desearía saber el motivo y los pasos para reactivarla."
+                    }
+                else:
+                    estado_s = e_data['suscripcion_estado'] or 'INEXISTENTE'
+                    fecha_f = e_data['fecha_fin']
+                    
+                    if hasattr(fecha_f, 'date'):
+                        fecha_f = fecha_f.date()
+                        
+                    vencida = (fecha_f < date.today()) if fecha_f else True
+                    if estado_s != 'ACTIVA' or vencida:
+                        target_p = e_data['vendedor_telefono'] or superadmin_phone
+                        if fecha_f:
+                            days_diff = (date.today() - fecha_f).days
+                            if days_diff > 5: target_p = superadmin_phone
+                        empresa_lock = {
+                            "type": f"SUBSCRIPTION_{estado_s}", "phone": target_p,
+                            "message": f"Hola, mi nombre es {e_data['razon_social']} (RUC: {e_data['ruc']}). Mi suscripción venció el {fecha_f or 'N/A'} y deseo renovar mi plan. Por favor, ayúdeme con la información para el pago."
+                        }
 
-        # Si es VENDEDOR, inyectar permisos tambien aqui
-        if role_upper == RolCodigo.VENDEDOR.value:
+        user["empresa_lock"] = empresa_lock
+
+        # Si es VENDEDOR/USUARIO, inyectar permisos
+        if user["is_vendedor"]:
             vendedor_profile = self.vendedor_repo.obtener_por_user_id(user_id)
             if vendedor_profile:
-                permisos = [
-                    "puede_crear_empresas",
-                    "puede_gestionar_planes",
-                    "puede_acceder_empresas",
-                    "puede_ver_reportes"
-                ]
-                for p in permisos:
-                    if p in vendedor_profile:
-                        user[p] = vendedor_profile[p]
+                for p in ["puede_crear_empresas", "puede_gestionar_planes", "puede_acceder_empresas", "puede_ver_reportes"]:
+                    if p in vendedor_profile: user[p] = vendedor_profile[p]
         
-        # Si es USUARIO, inyectar permisos granulares
-        if role_upper == RolCodigo.USUARIO.value:
+        if user["is_usuario"]:
             user["permisos"] = self.user_repo.obtener_permisos_por_user_id(user_id)
 
         user.pop("password_hash", None)
