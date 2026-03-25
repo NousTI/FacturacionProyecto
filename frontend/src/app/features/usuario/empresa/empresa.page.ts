@@ -36,12 +36,17 @@ import { Empresa } from '../../../domain/models/empresa.model';
         <div *ngIf="empresa">
           
           <!-- Banner de Inactividad -->
-          <div *ngIf="!empresa.activo" class="alert alert-danger shadow-sm rounded-4 mb-4 p-4 d-flex align-items-center gap-3 animate__animated animate__fadeIn">
-            <i class="bi bi-exclamation-octagon-fill fs-1"></i>
-            <div>
-              <h4 class="alert-heading fw-bold mb-1">Empresa Inhabilitada</h4>
-              <p class="mb-0 fw-medium">Esta empresa ha sido desactivada por el administrador del sistema. El acceso a los módulos operativos está restringido temporalmente. Por favor, contacte a soporte para más información.</p>
+          <div *ngIf="!empresa.activo" class="alert alert-danger shadow-sm rounded-4 mb-4 p-4 d-flex align-items-center justify-content-between animate__animated animate__fadeIn">
+            <div class="d-flex align-items-center gap-3">
+              <i class="bi bi-exclamation-octagon-fill fs-1"></i>
+              <div>
+                <h4 class="alert-heading fw-bold mb-1">Empresa Inhabilitada</h4>
+                <p class="mb-0 fw-medium">Esta empresa ha sido desactivada por el administrador del sistema. El acceso a los módulos operativos está restringido temporalmente.</p>
+              </div>
             </div>
+            <a *ngIf="whatsappUrl" [href]="whatsappUrl" target="_blank" class="btn btn-danger fw-bold rounded-pill px-4 shadow-sm">
+              <i class="bi bi-whatsapp me-2"></i>Contactar Soporte
+            </a>
           </div>
 
           <div class="row g-4">
@@ -150,6 +155,13 @@ import { Empresa } from '../../../domain/models/empresa.model';
                       <i *ngIf="isOverdue(empresa.fecha_fin)" class="bi bi-exclamation-triangle-fill ms-1"></i>
                     </span>
                   </div>
+                </div>
+
+                <!-- Botón de Acción para Suscripción -->
+                <div *ngIf="isSubscriptionLocked" class="mt-3">
+                  <a *ngIf="whatsappUrl" [href]="whatsappUrl" target="_blank" class="btn btn-primary w-100 fw-bold rounded-pill shadow-sm py-2">
+                    <i class="bi bi-whatsapp me-2"></i>Renovar Plan
+                  </a>
                 </div>
               </div>
 
@@ -396,6 +408,21 @@ export class EmpresaPage implements OnInit {
   loading = true;
   isSaving = false;
   showEditModal = false;
+
+  get whatsappUrl(): string | null {
+    const user = this.authFacade.getUser() as any;
+    if (user?.empresa_lock) {
+      const lock = user .empresa_lock;
+      return `https://wa.me/${lock.phone}?text=${encodeURIComponent(lock.message)}`;
+    }
+    return null;
+  }
+
+  get isSubscriptionLocked(): boolean {
+    if (!this.empresa) return false;
+    const estado = (this.empresa.suscripcion_estado || '').toUpperCase();
+    return estado !== 'ACTIVA' && estado !== 'ACTIVE' && estado !== '';
+  }
 
   constructor(
     private empresaService: EmpresaService,

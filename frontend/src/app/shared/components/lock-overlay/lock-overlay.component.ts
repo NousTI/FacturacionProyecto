@@ -28,8 +28,13 @@ import { Router } from '@angular/router';
             <i class="bi bi-whatsapp me-2"></i>Renovar Plan ahora
           </button>
           
+          <button class="btn btn-outline-secondary fw-bold py-2 border-0 bg-light-subtle"
+                  (click)="close()">
+            <i class="bi bi-x-lg me-2"></i>Cerrar y ver mi cuenta
+          </button>
+          
           <button *ngIf="lock.showSupport" 
-                  class="btn btn-outline-secondary fw-bold py-2 border-0 bg-light-subtle"
+                  class="btn btn-link text-muted fw-bold py-2 text-decoration-none"
                   (click)="goToSupport()">
             <i class="bi bi-chat-left-dots me-2"></i>Contactar Soporte
           </button>
@@ -112,6 +117,10 @@ export class LockOverlayComponent {
         window.open('mailto:soporte@tuempresa.com', '_blank');
       }
     });
+  }
+
+  close() {
+    this.lockService.clearLock();
   }
 
   logout() {
