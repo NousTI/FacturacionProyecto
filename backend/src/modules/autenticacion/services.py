@@ -146,16 +146,26 @@ class AuthServices:
                     if estado_s != 'ACTIVA' or vencida:
                         target_p = e_data['vendedor_telefono'] or superadmin_phone
                         
-                        # days_diff logic con fecha_f normalizada
+                        # Al día siguiente del vencimiento (days_diff >= 1) -> SuperAdmin
                         if fecha_f:
                             days_diff = (date.today() - fecha_f).days
-                            if days_diff > 5: target_p = superadmin_phone
+                            if days_diff >= 1: target_p = superadmin_phone
                         
                         empresa_lock = {
                             "type": f"SUBSCRIPTION_{estado_s}",
                             "phone": target_p,
                             "message": f"Hola, mi nombre es {e_data['razon_social']} (RUC: {e_data['ruc']}). Mi suscripción venció el {fecha_f or 'N/A'} y deseo renovar mi plan. Por favor, ayúdeme con la información para el pago."
                         }
+                    
+                    # 7. AVISO DE RENOVACIÓN (Si no hay bloqueo duro, pero faltan <= 7 días)
+                    elif fecha_f:
+                        days_left = (fecha_f - date.today()).days
+                        if 0 <= days_left <= 7:
+                            aviso_renovacion = {
+                                "dias": days_left,
+                                "phone": e_data['vendedor_telefono'] or superadmin_phone,
+                                "message": f"Hola, mi nombre es {e_data['razon_social']} (RUC: {e_data['ruc']}). Mi suscripción vence el {fecha_f} (en {days_left} días) y deseo renovar mi plan. Por favor, ayúdeme con la información."
+                            }
 
         user_safe = {
             "id": str(user["id"]),
@@ -168,6 +178,7 @@ class AuthServices:
             "empresa_suscripcion_estado": user.get("empresa_suscripcion_estado"),
             "empresa_activa": user.get("empresa_activa", True),
             "empresa_lock": empresa_lock,
+            "aviso_renovacion": aviso_renovacion,
             "role": primary_role,
             "is_superadmin": is_superadmin,
             "permisos": []
@@ -310,13 +321,24 @@ class AuthServices:
                         target_p = e_data['vendedor_telefono'] or superadmin_phone
                         if fecha_f:
                             days_diff = (date.today() - fecha_f).days
-                            if days_diff > 5: target_p = superadmin_phone
+                            if days_diff >= 1: target_p = superadmin_phone
                         empresa_lock = {
                             "type": f"SUBSCRIPTION_{estado_s}", "phone": target_p,
                             "message": f"Hola, mi nombre es {e_data['razon_social']} (RUC: {e_data['ruc']}). Mi suscripción venció el {fecha_f or 'N/A'} y deseo renovar mi plan. Por favor, ayúdeme con la información para el pago."
                         }
+                    
+                    # 7. AVISO DE RENOVACIÓN (Si no hay bloqueo duro, pero faltan <= 7 días)
+                    elif fecha_f:
+                        days_left = (fecha_f - date.today()).days
+                        if 0 <= days_left <= 7:
+                            aviso_renovacion = {
+                                "dias": days_left,
+                                "phone": e_data['vendedor_telefono'] or superadmin_phone,
+                                "message": f"Hola, mi nombre es {e_data['razon_social']} (RUC: {e_data['ruc']}). Mi suscripción vence el {fecha_f} (en {days_left} días) y deseo renovar mi plan. Por favor, ayúdeme con la información."
+                            }
 
         user["empresa_lock"] = empresa_lock
+        user["aviso_renovacion"] = aviso_renovacion
 
         # Si es VENDEDOR/USUARIO, inyectar permisos
         if user["is_vendedor"]:

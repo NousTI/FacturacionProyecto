@@ -42,4 +42,9 @@ export interface User {
         phone: string;
         message: string;
     };
+    aviso_renovacion?: {
+        dias: number;
+        phone: string;
+        message: string;
+    };
 }
