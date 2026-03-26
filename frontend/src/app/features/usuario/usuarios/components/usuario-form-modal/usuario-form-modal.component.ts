@@ -68,7 +68,18 @@ import { AuthService } from '../../../../../core/auth/auth.service';
                 </div>
                 <div class="col-md-6">
                   <label class="label-final">Teléfono</label>
-                  <input type="text" formControlName="telefono" class="input-final" placeholder="0999999999">
+                  <input 
+                    type="text" 
+                    formControlName="telefono" 
+                    class="input-final" 
+                    placeholder="0999999999"
+                    (keypress)="validateNumbers($event)"
+                    maxlength="10"
+                    [class.is-invalid]="userForm.get('telefono')?.invalid && userForm.get('telefono')?.touched"
+                  >
+                  <div class="error-feedback" *ngIf="userForm.get('telefono')?.invalid && userForm.get('telefono')?.touched">
+                    <span *ngIf="userForm.get('telefono')?.errors?.['pattern']">Debe tener exactamente 10 números</span>
+                  </div>
                 </div>
                 <!-- Info: sin campo de contraseña -->
                 <div class="col-md-12" *ngIf="!usuario">
@@ -83,8 +94,8 @@ import { AuthService } from '../../../../../core/auth/auth.service';
               </div>
             </div>
 
-            <!-- ROL Y ESTADO -->
-            <div class="form-section-final border-0 mb-0" *ngIf="!isSelf()">
+            <!-- ROL Y ESTADO (EDICION OTROS) -->
+            <div class="form-section-final border-0 mb-0" *ngIf="usuario && !isSelf()">
               <h3 class="section-header-final">Configuración de Cuenta</h3>
               <div class="row g-3 align-items-center">
                 <div class="col-md-6">
@@ -105,6 +116,47 @@ import { AuthService } from '../../../../../core/auth/auth.service';
                   </div>
                 </div>
               </div>
+            </div>
+
+            <!-- ROL Y ESTADO (LECTURA PARA MI MISMO) -->
+            <div class="form-section-final border-0 mb-0" *ngIf="usuario && isSelf()">
+              <div class="info-alert-lux mb-0">
+                <i class="bi bi-info-circle-fill"></i>
+                <div>
+                  <strong>Tu Perfil</strong>
+                  <p>No puedes modificar tu propio rol o estado por seguridad administrativa.</p>
+                </div>
+              </div>
+              <div class="row g-3 align-items-center mt-3">
+                <div class="col-md-6">
+                  <label class="label-final opacity-75 text-uppercase">Tu Rol Actual</label>
+                  <div class="input-final-readonly bg-light p-2 px-3 rounded-3 fw-bold text-dark border">
+                    <i class="bi bi-shield-check text-primary me-2"></i>
+                    {{ usuario.rol_nombre || 'Rol Asignado' }}
+                  </div>
+                </div>
+                <div class="col-md-6 text-end">
+                  <div class="badge-status-self">
+                    <span class="dot"></span> CUENTA ACTIVA
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- ROL PARA CREACION (NUEVO) -->
+            <div class="form-section-final border-0 mb-0" *ngIf="!usuario">
+               <h3 class="section-header-final">Asignación Inicial</h3>
+               <div class="row">
+                 <div class="col-md-12">
+                   <label class="label-final">Rol para el nuevo usuario *</label>
+                   <select formControlName="empresa_rol_id" class="select-final">
+                      <option value="" disabled>Seleccione un rol...</option>
+                      <option *ngFor="let rol of availableRoles" [value]="rol.id">
+                        {{ rol.nombre }}
+                      </option>
+                    </select>
+                 </div>
+               </div>
             </div>
 
           </form>
@@ -177,6 +229,25 @@ import { AuthService } from '../../../../../core/auth/auth.service';
     .info-password-notice strong { display: block; font-size: 0.8rem; font-weight: 800; color: #1e3a8a; }
     .info-password-notice p { font-size: 0.78rem; color: #1d4ed8; margin: 4px 0 0; }
     .info-password-notice code { background: #dbeafe; padding: 1px 6px; border-radius: 4px; font-weight: 700; }
+    
+    .info-alert-lux {
+      display: flex; align-items: start; gap: 1rem;
+      background: #f8fafc; border: 1px solid #e2e8f0;
+      padding: 1rem; border-radius: 16px; margin-bottom: 0;
+    }
+    .info-alert-lux i { color: #64748b; font-size: 1.2rem; }
+    .info-alert-lux strong { display: block; font-size: 0.8rem; color: #1e293b; font-weight: 800; }
+    .info-alert-lux p { font-size: 0.75rem; color: #64748b; margin: 0; }
+
+    .badge-status-self {
+       display: inline-flex; align-items: center; gap: 0.5rem;
+       padding: 0.5rem 1rem; background: #ecfdf5; color: #065f46;
+       border-radius: 100px; font-size: 0.75rem; font-weight: 800;
+    }
+    .badge-status-self .dot { width: 8px; height: 8px; border-radius: 50%; background: #10b981; }
+
+    .input-final-readonly { border: 1.5px solid #f1f5f9; font-size: 0.9rem; }
+
     .modal-footer-final {
       padding: 1.25rem 2.5rem; background: #ffffff; display: flex; justify-content: flex-end; gap: 1rem;
       border-top: 1px solid #f1f5f9;
@@ -199,6 +270,11 @@ import { AuthService } from '../../../../../core/auth/auth.service';
     .scroll-custom::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
     .switch-final .form-check-input:checked { background-color: #161d35; border-color: #161d35; }
     .is-invalid { border-color: #ef4444 !important; }
+
+    .error-feedback {
+      font-size: 0.7rem; color: #ef4444; font-weight: 700;
+      margin-top: 4px; text-transform: uppercase;
+    }
   `]
 })
 export class UsuarioFormModalComponent implements OnInit, OnDestroy {
@@ -220,7 +296,7 @@ export class UsuarioFormModalComponent implements OnInit, OnDestroy {
       nombre: ['', [Validators.required]],
       apellido: ['', [Validators.required]],
       correo: [''],
-      telefono: [''],
+      telefono: ['', [Validators.pattern(/^\d{10}$/)]],
       empresa_rol_id: ['', [Validators.required]],
       activo: [true]
     });
@@ -239,6 +315,12 @@ export class UsuarioFormModalComponent implements OnInit, OnDestroy {
         empresa_rol_id: this.usuario.empresa_rol_id,
         activo: this.usuario.activo !== false
       });
+
+      // Si es "self", deshabilitar campos de control
+      if (this.isSelf()) {
+        this.userForm.get('empresa_rol_id')?.disable();
+        this.userForm.get('activo')?.disable();
+      }
     } else {
       // For new users, empresa_rol_id is required
       this.userForm.get('empresa_rol_id')?.setValidators([Validators.required]);
@@ -273,7 +355,7 @@ export class UsuarioFormModalComponent implements OnInit, OnDestroy {
 
   submit() {
     if (this.userForm.valid) {
-      const raw = this.userForm.value;
+      const raw = this.userForm.getRawValue(); // Usa getRawValue para incluir campos disabled
       const formValue: any = {
         nombres: raw.nombre,
         apellidos: raw.apellido,
@@ -286,17 +368,25 @@ export class UsuarioFormModalComponent implements OnInit, OnDestroy {
       } else {
         formValue.email = raw.correo;
       }
+      
       if (this.usuario) {
-        // Editing: include rol and activo only if visible (non-self)
+        // Solo enviamos rol y activo si NO es uno mismo
         if (!this.isSelf()) {
           formValue.empresa_rol_id = raw.empresa_rol_id;
           formValue.activo = raw.activo;
         }
       } else {
-        // Creating: always include rol
+        // Creación siempre envía rol
         formValue.empresa_rol_id = raw.empresa_rol_id;
       }
       this.onSave.emit(formValue);
+    }
+  }
+
+  validateNumbers(event: KeyboardEvent) {
+    const charCode = event.which ? event.which : event.keyCode;
+    if (charCode > 31 && (charCode < 48 || charCode > 57)) {
+      event.preventDefault();
     }
   }
 
@@ -311,7 +401,11 @@ export class UsuarioFormModalComponent implements OnInit, OnDestroy {
     const currentUser = this.authService.getUser();
     if (!currentUser) return false;
     
-    const currentUserId = currentUser.id || (currentUser as any).usuario_id;
-    return this.usuario.id === currentUserId;
+    // Comparación robusta entre ID de Perfil y ID de Autenticación
+    const currentUserId = String(currentUser.id || (currentUser as any).usuario_id || (currentUser as any).id_usuario || '');
+    const targetProfileId = String(this.usuario.id || '');
+    const targetAuthId = String(this.usuario.user_id || (this.usuario as any).usuario_id || (this.usuario as any).id_usuario || '');
+    
+    return currentUserId === targetProfileId || currentUserId === targetAuthId;
   }
 }

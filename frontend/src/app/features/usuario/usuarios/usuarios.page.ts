@@ -194,8 +194,13 @@ export class UsuariosPage implements OnInit, OnDestroy {
 
   handleAction(event: { type: string, usuario: User }) {
     const currentUser = this.authService.getUser();
-    const currentUserId = currentUser?.id || (currentUser as any)?.usuario_id;
-    const isSelf = event.usuario.id === currentUserId;
+    const currentUserId = String(currentUser?.id || (currentUser as any)?.usuario_id || (currentUser as any)?.id_usuario || '');
+    
+    // El usuario objetivo puede tener su ID en .id o .user_id
+    const targetProfileId = String(event.usuario.id || '');
+    const targetAuthId = String(event.usuario.user_id || (event.usuario as any)?.usuario_id || '');
+    
+    const isSelf = currentUserId === targetProfileId || currentUserId === targetAuthId;
 
     if (event.type === 'edit') {
       this.selectedUsuario = event.usuario;

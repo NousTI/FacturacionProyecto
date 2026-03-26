@@ -4,6 +4,7 @@ import { Empresa } from "./empresa.model";
 
 export interface User {
     id: string;
+    user_id?: string;
     nombre?: string;
     apellido?: string;
     correo?: string;
