@@ -4,7 +4,7 @@ Maneja el CRUD básico y la integridad de los snapshots.
 """
 
 from uuid import UUID
-from datetime import datetime
+from datetime import datetime, date
 from typing import Optional, List
 from fastapi import Depends
 
@@ -52,11 +52,14 @@ class ServicioFacturaCore:
         fecha_emision = payload.get('fecha_emision')
         ahora = datetime.now()
         
-        # Si es un objeto datetime y su hora es exacta a medianoche, asumimos que viene solo fecha
-        # y le ponemos la hora actual para el timestamp real.
+        # BLINDAJE: Si es date (pero no datetime) o es datetime con hora exacto 00:00:00
+        # forzamos la hora actual para el guardado en TIMESTAMPTZ
         if isinstance(fecha_emision, datetime):
             if fecha_emision.hour == 0 and fecha_emision.minute == 0 and fecha_emision.second == 0:
                 payload['fecha_emision'] = ahora
+        elif isinstance(fecha_emision, date):
+            # Es un objeto date (sin hora), combinamos con la hora actual
+            payload['fecha_emision'] = datetime.combine(fecha_emision, ahora.time())
         elif not fecha_emision:
             payload['fecha_emision'] = ahora
 
