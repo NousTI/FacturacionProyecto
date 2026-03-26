@@ -37,4 +37,10 @@ export class PerfilService {
             })
         );
     }
+
+    updatePassword(nueva_password: string): Observable<any> {
+        // Usamos el endpoint común para actualización de password
+        const url = `${environment.apiUrl}/usuarios/perfil/password`;
+        return this.http.patch<any>(url, { nueva_password });
+    }
 }

@@ -5,7 +5,7 @@ import logging
 
 from .repositories import RepositorioUsuarios
 from ..empresa_roles.repositories import RepositorioRoles
-from .schemas import UsuarioCreacion, UsuarioActualizacion
+from .schemas import UsuarioCreacion, UsuarioActualizacion, CambioPassword
 from ...constants.enums import AuthKeys
 from ...errors.app_error import AppError
 from ..logs.service import ServicioLogs
@@ -205,6 +205,30 @@ class ServicioUsuarios:
             raise AppError("No se encontró el perfil del usuario", 404)
         
         return perfil
+
+    def cambiar_password(self, data: CambioPassword, usuario_actual: dict):
+        """Update current user's password"""
+        user_id = usuario_actual.get('id')
+        if not user_id:
+             raise AppError("No se pudo identificar al usuario", 401)
+        
+        user = self.repo.obtener_por_id(user_id)
+        if not user:
+            raise AppError("Usuario no encontrado", 404)
+
+        # Hashing and Updating
+        hashed_password = get_password_hash(data.nueva_password)
+        if not self.repo.actualizar_password(user_id, hashed_password):
+            raise AppError("No se pudo actualizar la contraseña", 500)
+        
+        self.logs_service.registrar_evento(
+            user_id=user_id,
+            evento='PASSWORD_CAMBIADA',
+            detail=f"Usuario {user.get('email')} cambió su contraseña",
+            origen='USUARIO'
+        )
+        
+        return {"mensaje": "Contraseña actualizada correctamente"}
 
     def listar_usuarios_admin(self, usuario_actual: dict, vendedor_id: Optional[UUID] = None):
         """List all users for Superadmin or filtered by Vendedor"""

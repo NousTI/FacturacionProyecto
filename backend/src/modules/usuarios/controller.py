@@ -1,7 +1,7 @@
 from fastapi import Depends, Request
 from uuid import UUID
 from .services import ServicioUsuarios
-from .schemas import UsuarioCreacion, UsuarioActualizacion
+from .schemas import UsuarioCreacion, UsuarioActualizacion, CambioPassword
 from ...utils.response import success_response
 
 class UsuarioController:
@@ -31,6 +31,10 @@ class UsuarioController:
     def obtener_perfil(self, usuario_actual: dict):
         perfil = self.service.obtener_perfil(usuario_actual)
         return success_response(perfil)
+
+    def cambiar_password(self, body: CambioPassword, usuario_actual: dict):
+        resultado = self.service.cambiar_password(body, usuario_actual)
+        return success_response(None, "Contraseña actualizada correctamente")
 
     def listar_usuarios_admin(self, usuario_actual: dict, vendedor_id: UUID = None):
         usuarios = self.service.listar_usuarios_admin(usuario_actual, vendedor_id)

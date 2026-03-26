@@ -31,8 +31,19 @@ import { UiService } from '../../../shared/services/ui.service';
 
       <!-- Content -->
       <div *ngIf="perfil && !loading">
-        <h2 class="fw-bold mb-4 text-dark px-2">Mi Perfil</h2>
-        
+        <!-- ALERT: CHANGE PASSWORD REQUIRED -->
+        <div *ngIf="perfil?.requiere_cambio_password" class="alert-cambio-password mb-4 animate-fade-in shadow-sm">
+          <div class="d-flex align-items-center gap-3">
+            <div class="alert-icon">
+              <i class="bi bi-shield-lock-fill"></i>
+            </div>
+            <div class="flex-grow-1">
+              <h6 class="mb-1 fw-bold text-dark">Cambio de contraseña requerido</h6>
+              <p class="mb-0 text-muted small">Por motivos de seguridad, se requiere que actualices tu contraseña de acceso.</p>
+            </div>
+          </div>
+        </div>
+
         <div class="row g-4">
           <!-- Profile Info Card -->
           <div class="col-lg-5 col-xl-4">
@@ -49,6 +60,7 @@ import { UiService } from '../../../shared/services/ui.service';
               [ingresos_generados]="perfil.ingresos_generados"
               [isSaving]="isSaving"
               (onUpdate)="guardarPerfil($event)"
+              (onChangePassword)="cambiarPassword($event)"
             ></app-profile-card>
           </div>
 
@@ -72,6 +84,28 @@ import { UiService } from '../../../shared/services/ui.service';
   `,
   styles: [`
     .vh-50 { height: 50vh; }
+
+    .alert-cambio-password {
+      background: #fff9db;
+      border-left: 6px solid #fab005;
+      padding: 1.25rem;
+      border-radius: 18px;
+    }
+    
+    .alert-icon {
+      width: 44px; height: 44px;
+      display: flex; align-items: center; justify-content: center;
+      background: #fab005; color: #fff;
+      border-radius: 12px; font-size: 1.1rem;
+    }
+
+    .animate-fade-in {
+      animation: fadeIn 0.3s ease;
+    }
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
   `]
 })
 export class VendedorPerfilPage implements OnInit {
@@ -118,21 +152,30 @@ export class VendedorPerfilPage implements OnInit {
       telefono: datos.telefono
     }).subscribe({
       next: (perfilActualizado) => {
-        // Actualizamos nuestro estado local
         this.perfil = { ...this.perfil, ...perfilActualizado } as VendedorPerfil;
         this.isSaving = false;
-        
-        // El ProfileCardComponent maneja su propio estado isEditing a public, pero lo resetearemos recargando o usando su local
-        // Es más fácil que el view vuelva a solo lectura actualizando o forzando si usáramos la referencia, 
-        // pero podemos recargar el perfil o simplemente dejar que el componente resetee isEditing. 
-        // Como no pasamos isEditing por @Input (lo maneja interno el card), tenemos que 
-        // decirle al child que se apagó. Pero para no complicarnos, podemos hacer un `cargarPerfil` de nuevo.
         this.uiService.showToast('Perfil actualizado correctamente', 'success');
-        this.cargarPerfil(); // recargar para asegurar sincronización y resetear el componente de vista
+        this.cargarPerfil();
       },
       error: (err) => {
         this.isSaving = false;
         this.uiService.showError(err, 'Error al actualizar perfil');
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  cambiarPassword(nueva_password: string) {
+    this.isSaving = true;
+    this.perfilService.updatePassword(nueva_password).subscribe({
+      next: () => {
+        this.isSaving = false;
+        this.uiService.showToast('Contraseña actualizada correctamente', 'success');
+        this.cargarPerfil(); // Recargar para limpiar el flag
+      },
+      error: (err) => {
+        this.isSaving = false;
+        this.uiService.showError(err, 'Error al actualizar contraseña');
         this.cdr.detectChanges();
       }
     });

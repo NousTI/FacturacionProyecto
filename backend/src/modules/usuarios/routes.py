@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, Query, Request
 from typing import List, Optional
 from uuid import UUID
-from .schemas import UsuarioCreacion, UsuarioActualizacion, UsuarioLectura, PerfilUsuarioLectura, UsuarioAdminLectura
+from .schemas import UsuarioCreacion, UsuarioActualizacion, UsuarioLectura, PerfilUsuarioLectura, UsuarioAdminLectura, CambioPassword
 from .controller import UsuarioController
 from ..autenticacion.permissions import requerir_permiso
 from ..autenticacion.routes import obtener_usuario_actual
@@ -55,6 +55,15 @@ def obtener_perfil(
 ):
     """Obtener el perfil completo del usuario autenticado"""
     return controller.obtener_perfil(usuario)
+
+@router.patch("/perfil/password", response_model=RespuestaBase)
+def cambiar_password(
+    datos: CambioPassword,
+    usuario: dict = Depends(obtener_usuario_actual),
+    controller: UsuarioController = Depends()
+):
+    """Cambiar la contraseña del usuario autenticado"""
+    return controller.cambiar_password(datos, usuario)
 
 @router.get("/", response_model=RespuestaBase[List[UsuarioLectura]])
 def listar_usuarios(

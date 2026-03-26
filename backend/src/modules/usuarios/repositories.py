@@ -216,6 +216,17 @@ class RepositorioUsuarios:
             row = cur.fetchone()
             return dict(row) if row else None
     
+    def actualizar_password(self, user_id: UUID, hashed_password: str) -> bool:
+        """Update password hash and reset required change flag"""
+        query = """
+            UPDATE sistema_facturacion.users
+            SET password_hash = %s, requiere_cambio_password = FALSE, updated_at = NOW()
+            WHERE id = %s
+        """
+        with db_transaction(self.db) as cur:
+            cur.execute(query, (hashed_password, str(user_id)))
+            return cur.rowcount > 0
+
     def eliminar_usuario(self, id: UUID) -> bool:
         """Delete usuario (CASCADE will delete from users table)"""
         query = "DELETE FROM sistema_facturacion.usuarios WHERE id = %s"
@@ -229,7 +240,7 @@ class RepositorioUsuarios:
         query_user = """
             SELECT 
                 us.id as user_id, us.email, us.role as system_role, us.estado as system_estado, 
-                us.ultimo_acceso, us.created_at, us.updated_at,
+                us.ultimo_acceso, us.created_at, us.updated_at, us.requiere_cambio_password,
                 u.id as usuario_id,
                 COALESCE(u.nombres, s.nombres, v.nombres) as nombres,
                 COALESCE(u.apellidos, s.apellidos, v.apellidos) as apellidos,
@@ -299,7 +310,8 @@ class RepositorioUsuarios:
                 } if user_data["empresa_id"] else None,
                 "rol_nombre": user_data["rol_nombre"] or (user_data["system_role"] if is_superadmin else RolCodigo.USUARIO.value),
                 "rol_codigo": user_data["rol_codigo"],
-                "permisos": permisos
+                "permisos": permisos,
+                "requiere_cambio_password": user_data.get("requiere_cambio_password", False)
             }
             return result
 

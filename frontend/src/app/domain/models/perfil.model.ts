@@ -43,4 +43,5 @@ export interface PerfilUsuario {
     rol_nombre: string;
     rol_codigo: string;
     permisos: Permiso[];
+    requiere_cambio_password?: boolean;
 }

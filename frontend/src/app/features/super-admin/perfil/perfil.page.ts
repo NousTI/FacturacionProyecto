@@ -11,6 +11,19 @@ import { UiService } from '../../../shared/services/ui.service';
   imports: [CommonModule, FormsModule],
   template: `
     <div class="perfil-container animate__animated animate__fadeIn">
+      
+      <!-- ALERT: CHANGE PASSWORD REQUIRED -->
+      <div *ngIf="(perfil$ | async)?.requiere_cambio_password" class="alert-cambio-password mb-4 shadow-sm animate-fade-in">
+        <div class="d-flex align-items-center gap-3">
+          <div class="alert-icon">
+            <i class="bi bi-shield-lock-fill"></i>
+          </div>
+          <div class="flex-grow-1">
+            <h6 class="mb-1 fw-bold text-dark">Cambio de contraseña requerido</h6>
+            <p class="mb-0 text-muted small">Por motivos de seguridad, el administrador ha solicitado que actualices tu contraseña de acceso.</p>
+          </div>
+        </div>
+      </div>
       <div class="row g-5">
         <!-- Columna Izquierda: Identidad y Estado -->
         <div class="col-lg-4">
@@ -128,6 +141,45 @@ import { UiService } from '../../../shared/services/ui.service';
               </ng-container>
             </div>
           </div>
+
+          <!-- Seguridad / Password Section -->
+          <div class="minimal-card mt-4">
+            <div class="card-header-minimal px-4 d-flex justify-content-between align-items-center">
+               <div><i class="bi bi-shield-lock me-2"></i> Seguridad de la Cuenta</div>
+               <button *ngIf="!isChangingPassword" class="btn btn-sm btn-link text-primary fw-bold text-decoration-none" (click)="startChangePassword()">
+                  Cambiar Contraseña
+               </button>
+            </div>
+            <div class="card-body-minimal p-4">
+                <div *ngIf="!isChangingPassword" class="text-muted small">
+                    Tu contraseña protege tu cuenta. Recomendamos cambiarla periódicamente.
+                </div>
+
+                <div *ngIf="isChangingPassword">
+                    <div class="info-row mb-3">
+                        <label>Ingresa tu nueva contraseña</label>
+                        <div class="input-group">
+                            <input [type]="showPassword ? 'text' : 'password'" 
+                                   class="form-control-minimal" 
+                                   [(ngModel)]="nuevaPassword" 
+                                   placeholder="Mínimo 6 caracteres"
+                                   style="border-top-right-radius: 0; border-bottom-right-radius: 0; flex: 1;">
+                            <button class="btn btn-outline-secondary" type="button" 
+                                    (click)="showPassword = !showPassword"
+                                    style="border: 1px solid #f1f5f9; border-left: 0; border-radius: 0 12px 12px 0; background: #f8fafc;">
+                                <i class="bi" [class.bi-eye]="!showPassword" [class.bi-eye-slash]="showPassword"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-primary rounded-3 btn-sm px-3" 
+                                [disabled]="nuevaPassword.length < 6 || isSaving"
+                                (click)="savePassword()">Confirmar</button>
+                        <button class="btn btn-light rounded-3 btn-sm px-3" (click)="cancelChangePassword()">Cancelar</button>
+                    </div>
+                </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -232,6 +284,28 @@ import { UiService } from '../../../shared/services/ui.service';
     .btn-minimal-action:hover {
       background: #0f172a;
     }
+
+    .alert-cambio-password {
+      background: #fff9db;
+      border-left: 6px solid #fab005;
+      padding: 1.25rem;
+      border-radius: 18px;
+    }
+    
+    .alert-icon {
+      width: 44px; height: 44px;
+      display: flex; align-items: center; justify-content: center;
+      background: #fab005; color: #fff;
+      border-radius: 12px; font-size: 1.1rem;
+    }
+
+    .animate-fade-in {
+      animation: fadeIn 0.3s ease;
+    }
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
   `]
 })
 export class PerfilPage implements OnInit {
@@ -239,6 +313,9 @@ export class PerfilPage implements OnInit {
   
   isEditing = false;
   isSaving = false;
+  isChangingPassword = false;
+  showPassword = false;
+  nuevaPassword = '';
   
   editData = {
     nombres: '',
@@ -284,6 +361,35 @@ export class PerfilPage implements OnInit {
       error: (err) => {
         this.isSaving = false;
         this.uiService.showError(err, 'Error al actualizar perfil');
+      }
+    });
+  }
+
+  startChangePassword() {
+    this.isChangingPassword = true;
+    this.showPassword = false;
+    this.nuevaPassword = '';
+  }
+
+  cancelChangePassword() {
+    this.isChangingPassword = false;
+    this.nuevaPassword = '';
+  }
+
+  savePassword() {
+    if (this.nuevaPassword.length < 6) return;
+    
+    this.isSaving = true;
+    this.perfilService.updatePassword(this.nuevaPassword).subscribe({
+      next: () => {
+        this.isSaving = false;
+        this.isChangingPassword = false;
+        this.uiService.showToast('Contraseña actualizada con éxito', 'success');
+        this.perfilService.loadPerfil(); // Recargar para limpiar el flag de requiere_cambio
+      },
+      error: (err) => {
+        this.isSaving = false;
+        this.uiService.showError(err, 'Error al cambiar contraseña');
       }
     });
   }

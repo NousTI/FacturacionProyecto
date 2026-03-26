@@ -38,6 +38,43 @@ import { PerfilUsuario } from '../../../../domain/models/perfil.model';
                     <span class="email-text" title="Correo de acceso"><i class="bi bi-envelope me-1"></i> {{ perfil.email }}</span>
                     <span class="email-text" title="Teléfono"><i class="bi bi-telephone ms-2 me-1"></i> {{ perfil.telefono || 'Sin registrar' }}</span>
                 </div>
+                <!-- CAMBIO PASSWORD BUTTON -->
+                <button class="btn btn-sm btn-link text-primary fw-bold p-0 mt-2" style="font-size: 0.75rem; text-decoration: none;" (click)="startChangePassword()">
+                   <i class="bi bi-key-fill me-1"></i> Cambiar Contraseña
+                </button>
+            </div>
+
+            <div *ngIf="isChangingPassword" class="w-100 me-3" style="max-width: 400px;">
+                <h4 class="fw-bold mb-3 header-font" style="color: #161d35;">Actualizar Contraseña</h4>
+                <div class="alert alert-info py-2 px-3 mb-3 border-0" shadow-sm style="border-radius: 12px; font-size: 0.75rem; background: #eef2ff; color: #3b82f6;">
+                   Ingresa tu nueva contraseña para acceder al sistema.
+                </div>
+                <div class="mb-3">
+                    <label class="form-label mb-1 fw-bold" style="font-size: 0.75rem;">Nueva Contraseña</label>
+                    <div class="input-group">
+                        <input [type]="showPassword ? 'text' : 'password'" 
+                               class="form-control" 
+                               [(ngModel)]="nuevaPassword" 
+                               placeholder="Al menos 6 caracteres" 
+                               minlength="6"
+                               style="border-radius: 12px 0 0 12px;">
+                        <button class="btn btn-outline-secondary" 
+                                type="button" 
+                                (click)="showPassword = !showPassword"
+                                style="border-radius: 0 12px 12px 0; border-color: #dee2e6;">
+                            <i class="bi" [class.bi-eye]="!showPassword" [class.bi-eye-slash]="showPassword"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="d-flex gap-2">
+                    <button class="btn btn-primary px-4 py-2" [disabled]="nuevaPassword.length < 6 || isSaving" (click)="savePassword()" style="border-radius: 12px; font-weight: 700; font-size: 0.85rem;">
+                       <span *ngIf="isSaving" class="spinner-border spinner-border-sm me-2"></span>
+                       Confirmar
+                    </button>
+                    <button class="btn btn-light px-4 py-2" (click)="cancelChangePassword()" [disabled]="isSaving" style="border-radius: 12px; font-weight: 700; font-size: 0.85rem;">
+                       Cancelar
+                    </button>
+                </div>
             </div>
 
             <div *ngIf="isEditing" class="w-100 me-3" style="max-width: 500px;">
@@ -133,10 +170,15 @@ export class ProfileHeaderComponent implements OnChanges {
     @Output() onRefresh = new EventEmitter<void>();
     @Output() onLogout = new EventEmitter<void>();
     @Output() onUpdate = new EventEmitter<{nombres: string, apellidos: string, telefono: string}>();
+    @Output() onChangePassword = new EventEmitter<string>();
 
     @Input() isSaving: boolean = false;
     
     isEditing: boolean = false;
+    isChangingPassword: boolean = false;
+    showPassword: boolean = false;
+    nuevaPassword: string = '';
+    
     editData = {
         nombres: '',
         apellidos: '',
@@ -145,9 +187,12 @@ export class ProfileHeaderComponent implements OnChanges {
 
     ngOnChanges(changes: SimpleChanges) {
         if (changes['isSaving']) {
-            // Si pasamos de estar guardando (true) a no guardando (false), cerramos el editor
+            // Si pasamos de estar guardando (true) a no guardando (false), cerramos los editores
             if (changes['isSaving'].previousValue === true && changes['isSaving'].currentValue === false) {
                 this.isEditing = false;
+                this.isChangingPassword = false;
+                this.showPassword = false;
+                this.nuevaPassword = '';
             }
         }
     }
@@ -171,5 +216,24 @@ export class ProfileHeaderComponent implements OnChanges {
 
     saveEdit() {
         this.onUpdate.emit(this.editData);
+    }
+
+    startChangePassword() {
+        this.isChangingPassword = true;
+        this.isEditing = false;
+        this.showPassword = false;
+        this.nuevaPassword = '';
+    }
+
+    cancelChangePassword() {
+        this.isChangingPassword = false;
+        this.showPassword = false;
+        this.nuevaPassword = '';
+    }
+
+    savePassword() {
+        if (this.nuevaPassword.length >= 6) {
+            this.onChangePassword.emit(this.nuevaPassword);
+        }
     }
 }

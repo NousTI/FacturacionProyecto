@@ -37,8 +37,22 @@ import { ProfileAuditComponent } from './components/profile-audit.component';
               [isSaving]="isSaving"
               (onRefresh)="refreshProfile()"
               (onLogout)="logout()"
-              (onUpdate)="updateProfile($event)">
+              (onUpdate)="updateProfile($event)"
+              (onChangePassword)="changePassword($event)">
           </app-profile-header>
+
+          <!-- ALERT: CHANGE PASSWORD REQUIRED -->
+          <div *ngIf="perfil.requiere_cambio_password" class="alert-cambio-password mb-4 animate-fade-in shadow-sm">
+            <div class="d-flex align-items-center gap-3">
+              <div class="alert-icon">
+                <i class="bi bi-shield-lock-fill"></i>
+              </div>
+              <div class="flex-grow-1">
+                <h6 class="mb-1 fw-bold text-dark">Cambio de contraseña requerido</h6>
+                <p class="mb-0 text-muted small">Por motivos de seguridad, el administrador ha solicitado que actualices tu contraseña.</p>
+              </div>
+            </div>
+          </div>
 
           <div class="row g-4">
             <!-- LEFT: Info Summary -->
@@ -98,6 +112,20 @@ import { ProfileAuditComponent } from './components/profile-audit.component';
     @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
     .animate-fade-in { animation: fadeIn 0.5s ease; }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+    .alert-cambio-password {
+      background: #fff9db;
+      border-left: 6px solid #fab005;
+      padding: 1.25rem;
+      border-radius: 18px;
+    }
+    
+    .alert-icon {
+      width: 48px; height: 48px;
+      display: flex; align-items: center; justify-content: center;
+      background: #fab005; color: #fff;
+      border-radius: 14px; font-size: 1.25rem;
+    }
   `]
 })
 export class ProfilePage implements OnInit, OnDestroy {
@@ -143,6 +171,20 @@ export class ProfilePage implements OnInit, OnDestroy {
       error: (err) => {
         this.isSaving = false;
         this.uiService.showError(err, 'Error al actualizar perfil');
+      }
+    });
+  }
+
+  changePassword(nueva_password: string) {
+    this.isSaving = true;
+    this.profileService.updatePassword(nueva_password).subscribe({
+      next: () => {
+        this.uiService.showToast('Contraseña actualizada correctamente', 'success');
+        this.isSaving = false;
+      },
+      error: (err) => {
+        this.isSaving = false;
+        this.uiService.showError(err, 'Error al cambiar contraseña');
       }
     });
   }

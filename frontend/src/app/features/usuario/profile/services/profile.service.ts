@@ -80,4 +80,13 @@ export class ProfileService extends BaseApiService {
             tap(() => this.refresh())
         );
     }
+
+    /**
+     * Updates user's password
+     */
+    updatePassword(nueva_password: string): Observable<any> {
+        return this.patch<any>(`usuarios/perfil/password`, { nueva_password }).pipe(
+            tap(() => this.refresh())
+        );
+    }
 }

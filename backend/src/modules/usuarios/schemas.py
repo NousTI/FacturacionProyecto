@@ -94,8 +94,15 @@ class PerfilUsuarioLectura(BaseModel):
     rol_codigo: Optional[str] = None
     permisos: list[PermisoSchema]
     
+    # Campo para forzar cambio de password
+    requiere_cambio_password: bool = False
+    
     class Config:
         from_attributes = True
+
+class CambioPassword(BaseModel):
+    password_actual: Optional[str] = None
+    nueva_password: str = Field(..., min_length=6)
 
 class UsuarioAdminLectura(BaseModel):
     id: UUID

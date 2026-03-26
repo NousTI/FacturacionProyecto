@@ -31,7 +31,43 @@ import { FormsModule } from '@angular/forms';
 
           <hr class="border-light opacity-50 my-4">
 
-          <div class="row g-3">
+          <!-- CAMBIO PASSWORD BUTTON -->
+          <div class="mb-4" *ngIf="!isChangingPassword">
+             <button class="btn btn-sm btn-link text-primary fw-bold p-0 text-decoration-none" (click)="startChangePassword()">
+                <i class="bi bi-key-fill me-1"></i> Cambiar Contraseña
+             </button>
+          </div>
+
+          <!-- PASSWORD CHANGE FORM -->
+          <div *ngIf="isChangingPassword" class="mb-4 animate-fade-in shadow-sm p-3 border rounded-4 bg-light">
+              <h5 class="fw-bold header-font mb-3" style="font-size: 1rem;">Actualizar Contraseña</h5>
+              <div class="mb-3">
+                  <label class="form-label info-label">Nueva Contraseña</label>
+                  <div class="input-group">
+                      <input [type]="showPassword ? 'text' : 'password'" 
+                             class="form-control" 
+                             [(ngModel)]="nuevaPassword" 
+                             placeholder="Mín. 6 caracteres"
+                             style="border-radius: 12px 0 0 12px;">
+                      <button class="btn btn-outline-secondary" type="button" 
+                              (click)="showPassword = !showPassword"
+                              style="border-color: #dee2e6; border-radius: 0 12px 12px 0; background: white;">
+                          <i class="bi" [class.bi-eye]="!showPassword" [class.bi-eye-slash]="showPassword"></i>
+                      </button>
+                  </div>
+              </div>
+              <div class="d-flex gap-2">
+                  <button class="btn btn-primary btn-sm px-3" [disabled]="nuevaPassword.length < 6 || isSaving" (click)="savePassword()" style="border-radius: 10px;">
+                      <span *ngIf="isSaving" class="spinner-border spinner-border-sm me-1"></span>
+                      Confirmar
+                  </button>
+                  <button class="btn btn-light btn-sm px-3" (click)="cancelChangePassword()" [disabled]="isSaving" style="border-radius: 10px;">
+                      Cancelar
+                  </button>
+              </div>
+          </div>
+
+          <div class="row g-3" *ngIf="!isChangingPassword">
             <div class="col-6">
               <div class="profile-info-item">
                 <label class="info-label">Documento</label>
@@ -100,7 +136,7 @@ import { FormsModule } from '@angular/forms';
           </div>
         </ng-container>
 
-        <ng-container *ngIf="!isEditing">
+        <ng-container *ngIf="!isEditing && !isChangingPassword">
           <div class="mt-4 p-3 rounded-3 bg-light-subtle row g-2">
               <div class="col-6 text-center border-end">
                   <small class="d-block text-muted fw-semibold">Empresas</small>
@@ -165,6 +201,13 @@ import { FormsModule } from '@angular/forms';
         border-radius: 50px;
         font-weight: 600;
     }
+    .animate-fade-in {
+        animation: fadeIn 0.3s ease;
+    }
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
   `]
 })
 export class ProfileCardComponent implements OnChanges {
@@ -181,8 +224,13 @@ export class ProfileCardComponent implements OnChanges {
   @Input() isSaving: boolean = false;
 
   @Output() onUpdate = new EventEmitter<{nombres: string, apellidos: string, telefono: string}>();
+  @Output() onChangePassword = new EventEmitter<string>();
 
   isEditing: boolean = false;
+  isChangingPassword: boolean = false;
+  showPassword: boolean = false;
+  nuevaPassword: string = '';
+
   editData = {
     nombres: '',
     apellidos: '',
@@ -193,6 +241,9 @@ export class ProfileCardComponent implements OnChanges {
       if (changes['isSaving']) {
           if (changes['isSaving'].previousValue === true && changes['isSaving'].currentValue === false) {
               this.isEditing = false;
+              this.isChangingPassword = false;
+              this.showPassword = false;
+              this.nuevaPassword = '';
           }
       }
   }
@@ -211,6 +262,7 @@ export class ProfileCardComponent implements OnChanges {
       telefono: this.telefono
     };
     this.isEditing = true;
+    this.isChangingPassword = false;
   }
 
   cancelEdit() {
@@ -219,5 +271,24 @@ export class ProfileCardComponent implements OnChanges {
 
   saveEdit() {
     this.onUpdate.emit(this.editData);
+  }
+
+  startChangePassword() {
+    this.isChangingPassword = true;
+    this.isEditing = false;
+    this.showPassword = false;
+    this.nuevaPassword = '';
+  }
+
+  cancelChangePassword() {
+    this.isChangingPassword = false;
+    this.showPassword = false;
+    this.nuevaPassword = '';
+  }
+
+  savePassword() {
+    if (this.nuevaPassword.length >= 6) {
+        this.onChangePassword.emit(this.nuevaPassword);
+    }
   }
 }

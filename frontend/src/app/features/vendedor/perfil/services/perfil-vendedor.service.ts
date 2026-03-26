@@ -24,6 +24,7 @@ export interface VendedorPerfil {
     fecha_registro: string;
     empresas_asignadas: number;
     ingresos_generados: number;
+    requiere_cambio_password?: boolean;
 }
 
 @Injectable({
@@ -56,5 +57,11 @@ export class VendedorPerfilService {
                 return response.detalles;
             })
         );
+    }
+
+    updatePassword(nueva_password: string): Observable<any> {
+        // Usamos el endpoint común para actualización de password
+        const url = `${environment.apiUrl}/usuarios/perfil/password`;
+        return this.http.patch<any>(url, { nueva_password });
     }
 }

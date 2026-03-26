@@ -22,7 +22,7 @@ class RepositorioVendedores:
 
     def obtener_por_id(self, id: UUID) -> Optional[dict]:
         query = """
-            SELECT v.*, u.email, u.ultimo_acceso,
+            SELECT v.*, u.email, u.ultimo_acceso, u.requiere_cambio_password,
                    COUNT(DISTINCT e.id) as empresas_asignadas,
                    COUNT(DISTINCT e.id) FILTER (WHERE e.activo = true) as empresas_activas,
                    COALESCE(SUM(p.monto), 0) as ingresos_generados
@@ -32,7 +32,7 @@ class RepositorioVendedores:
             LEFT JOIN sistema_facturacion.comisiones c ON c.vendedor_id = v.id
             LEFT JOIN sistema_facturacion.pagos_suscripciones p ON p.id = c.pago_suscripcion_id AND p.estado = 'PAGADO'
             WHERE v.id = %s
-            GROUP BY v.id, u.email, u.ultimo_acceso
+            GROUP BY v.id, u.email, u.ultimo_acceso, u.requiere_cambio_password
         """
         with self.db.cursor() as cur:
             cur.execute(query, (str(id),))
@@ -40,8 +40,14 @@ class RepositorioVendedores:
             return dict(row) if row else None
 
     def obtener_por_user_id(self, user_id: UUID) -> Optional[dict]:
+        query = """
+            SELECT v.*, u.email, u.ultimo_acceso, u.requiere_cambio_password
+            FROM sistema_facturacion.vendedores v
+            JOIN sistema_facturacion.users u ON u.id = v.user_id
+            WHERE v.user_id = %s
+        """
         with self.db.cursor() as cur:
-            cur.execute("SELECT * FROM sistema_facturacion.vendedores WHERE user_id = %s", (str(user_id),))
+            cur.execute(query, (str(user_id),))
             row = cur.fetchone()
             return dict(row) if row else None
 

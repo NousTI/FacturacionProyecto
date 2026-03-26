@@ -62,6 +62,7 @@ class VendedorLectura(VendedorBase):
     empresas_asignadas: int = 0
     empresas_activas: int = 0
     ingresos_generados: float = 0.0
+    requiere_cambio_password: bool = False
 
 class VendedorStats(BaseModel):
     total: int
