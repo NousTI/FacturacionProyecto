@@ -39,8 +39,14 @@ interface Rol {
                   [(ngModel)]="formData.nombres" 
                   name="nombres" 
                   required
+                  minlength="3"
+                  #nom="ngModel"
+                  [class.is-invalid]="nom.invalid && nom.touched"
                   placeholder="Ingrese nombres"
                 >
+                <div class="invalid-feedback" *ngIf="nom.invalid && nom.touched">
+                  Mínimo 3 caracteres
+                </div>
               </div>
               
               <!-- Apellidos -->
@@ -52,8 +58,14 @@ interface Rol {
                   [(ngModel)]="formData.apellidos" 
                   name="apellidos" 
                   required
+                  minlength="3"
+                  #ape="ngModel"
+                  [class.is-invalid]="ape.invalid && ape.touched"
                   placeholder="Ingrese apellidos"
                 >
+                <div class="invalid-feedback" *ngIf="ape.invalid && ape.touched">
+                  Mínimo 3 caracteres
+                </div>
               </div>
               
               <!-- Email -->
@@ -72,14 +84,23 @@ interface Rol {
               
               <!-- Teléfono -->
               <div class="col-md-6">
-                <label class="form-label">Teléfono</label>
+                <label class="form-label">Teléfono *</label>
                 <input 
                   type="text"
                   class="form-control-premium"
                   [(ngModel)]="formData.telefono" 
                   name="telefono"
                   placeholder="0999999999"
+                  required
+                  pattern="[0-9]{10}"
+                  maxlength="10"
+                  (keypress)="onlyNumbers($event)"
+                  #tel="ngModel"
+                  [class.is-invalid]="tel.invalid && tel.touched"
                 >
+                <div class="invalid-feedback" *ngIf="tel.invalid && tel.touched">
+                  Teléfono debe tener 10 dígitos
+                </div>
               </div>
               
               <!-- Rol -->
@@ -283,6 +304,14 @@ export class ClienteEditModalComponent implements OnInit {
             telefono: this.cliente.telefono,
             empresa_rol_id: this.cliente.empresa_rol_id
         };
+    }
+
+    onlyNumbers(event: any) {
+        const pattern = /[0-9]/;
+        const inputChar = String.fromCharCode(event.charCode);
+        if (!pattern.test(inputChar)) {
+            event.preventDefault();
+        }
     }
 
     save() {

@@ -27,7 +27,12 @@ import { SriValidators } from '../../../../../shared/utils/sri-validators';
               <div class="row g-3">
                 <div class="col-12">
                   <label class="label-final">Razón Social *</label>
-                  <input type="text" formControlName="razon_social" class="input-final" placeholder="Ej: EMPRESA XYZ S.A.">
+                  <input type="text" formControlName="razon_social" class="input-final" 
+                    [class.is-invalid]="empresaForm.get('razon_social')?.invalid && empresaForm.get('razon_social')?.touched"
+                    placeholder="Ej: EMPRESA XYZ S.A.">
+                  <div class="error-feedback" *ngIf="empresaForm.get('razon_social')?.invalid && empresaForm.get('razon_social')?.touched">
+                    La razón social es obligatoria
+                  </div>
                 </div>
                 <div class="col-md-6">
                   <label class="label-final">Nombre Comercial</label>
@@ -35,20 +40,23 @@ import { SriValidators } from '../../../../../shared/utils/sri-validators';
                   <span class="hint-final">Opcional</span>
                 </div>
                 <div class="col-md-6">
-                  <label class="label-final">RUC *</label>
+                  <label class="label-final">RUC * {{ empresa ? '(No editable)' : '' }}</label>
                   <input 
                     type="text" 
                     formControlName="ruc" 
                     class="input-final" 
                     [class.is-invalid]="empresaForm.get('ruc')?.invalid && empresaForm.get('ruc')?.touched && empresaForm.get('ruc')?.value"
+                    [class.opacity-50]="empresa"
                     placeholder="1234567890001"
                     maxlength="13"
                     (keypress)="onlyNumbers($event)"
+                    [readonly]="empresa"
+                    [title]="empresa ? 'El RUC no puede ser modificado después de la creación' : ''"
                   >
                   <div class="error-feedback" *ngIf="empresaForm.get('ruc')?.invalid && empresaForm.get('ruc')?.touched && empresaForm.get('ruc')?.value">
-                    {{ empresaForm.get('ruc')?.errors?.['message'] || 'RUC inválido' }}
+                    {{ empresaForm.get('ruc')?.hasError('rucDuplicated') ? 'Este RUC ya se encuentra registrado' : (empresaForm.get('ruc')?.errors?.['message'] || 'RUC inválido') }}
                   </div>
-                  <span class="hint-final" *ngIf="!empresaForm.get('ruc')?.touched">13 dígitos</span>
+                  <span class="hint-final" *ngIf="!empresaForm.get('ruc')?.touched && !empresa">13 dígitos</span>
                 </div>
                 <div class="col-md-12">
                   <label class="label-final">Tipo de Contribuyente *</label>
@@ -107,7 +115,7 @@ import { SriValidators } from '../../../../../shared/utils/sri-validators';
                   <label class="label-final">Vendedor Asignado</label>
                   <select formControlName="vendedor_id" class="select-final">
                     <option [ngValue]="null">Gestión Directa</option>
-                    <option *ngFor="let vendedor of vendedores" [value]="vendedor.id">
+                    <option *ngFor="let vendedor of vendedores" [ngValue]="vendedor.id">
                       {{ vendedor.nombres }} {{ vendedor.apellidos }}
                     </option>
                   </select>
@@ -132,8 +140,8 @@ import { SriValidators } from '../../../../../shared/utils/sri-validators';
                 <div class="col-md-6">
                   <label class="label-final">Plan de Suscripción *</label>
                   <select formControlName="plan_id" class="select-final" (change)="onPlanChange()">
-                    <option value="">Seleccionar plan...</option>
-                    <option *ngFor="let plan of planes" [value]="plan.id">
+                    <option [ngValue]="''">Seleccionar plan...</option>
+                    <option *ngFor="let plan of planes" [ngValue]="plan.id">
                       {{ plan.nombre }} - {{ plan.precio_mensual | currency }}
                     </option>
                   </select>
@@ -337,7 +345,7 @@ export class CreateEmpresaModalComponent implements OnInit, OnDestroy {
     private empresaService: EmpresaService
   ) {
     this.empresaForm = this.fb.group({
-      ruc: ['', [Validators.required, SriValidators.rucEcuador()]],
+      ruc: ['', [Validators.required, SriValidators.rucEcuador(), this.rucDuplicateValidator()]],
       razon_social: ['', [Validators.required, Validators.minLength(3)]],
       nombre_comercial: [''],
       email: ['', [Validators.required, Validators.email]],
@@ -354,6 +362,14 @@ export class CreateEmpresaModalComponent implements OnInit, OnDestroy {
     });
   }
 
+  private rucDuplicateValidator() {
+    return (control: any) => {
+      if (!control.value) return null;
+      const exists = this.empresaService.checkRucExists(control.value, this.empresa?.id);
+      return exists ? { rucDuplicated: true } : null;
+    };
+  }
+
   ngOnInit() {
     document.body.style.overflow = 'hidden';
     this.loadCatalogs();
@@ -364,15 +380,31 @@ export class CreateEmpresaModalComponent implements OnInit, OnDestroy {
         razon_social: this.empresa.razon_social || this.empresa.razonSocial,
         vendedor_id: this.empresa.vendedor_id || this.empresa.vendedorId
       });
-      // Deactivate plan fields on edit
+      
+      // Prevent RUC and Plan modification on edit
+      this.empresaForm.get('ruc')?.disable();
+
       this.empresaForm.get('plan_id')?.clearValidators();
       this.empresaForm.get('plan_id')?.updateValueAndValidity();
     }
   }
 
   loadCatalogs() {
-    this.empresaService.getVendedores().subscribe(data => this.vendedores = data);
-    this.empresaService.getPlanes().subscribe(data => this.planes = data);
+    this.empresaService.getVendedores().subscribe(data => {
+      this.vendedores = data;
+      if (this.empresa) {
+        const vid = this.empresa.vendedor_id || this.empresa.vendedorId;
+        this.empresaForm.get('vendedor_id')?.setValue(vid);
+      }
+    });
+    
+    this.empresaService.getPlanes().subscribe(data => {
+      this.planes = data;
+      if (this.empresa) {
+        const pid = this.empresa.plan_id || this.empresa.planId || this.empresa.currentPlanId;
+        this.empresaForm.get('plan_id')?.setValue(pid);
+      }
+    });
   }
 
   ngOnDestroy() {

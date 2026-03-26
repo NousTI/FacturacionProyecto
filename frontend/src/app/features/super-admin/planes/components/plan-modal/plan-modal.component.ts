@@ -26,7 +26,12 @@ import { Plan, PlanCharacteristics } from '../../services/plan.service';
               <div class="row g-3">
                 <div class="col-md-12">
                   <label class="label-final">Nombre del Plan *</label>
-                  <input type="text" formControlName="name" class="input-final" placeholder="Ej: Profesional, Enterprise...">
+                  <input type="text" formControlName="name" class="input-final" 
+                    [class.is-invalid]="planForm.get('name')?.invalid && planForm.get('name')?.touched"
+                    placeholder="Ej: Profesional, Enterprise...">
+                    <div class="error-feedback" *ngIf="planForm.get('name')?.invalid && planForm.get('name')?.touched">
+                        El nombre es obligatorio
+                    </div>
                 </div>
                 <div class="col-12">
                   <label class="label-final">Descripción</label>
@@ -34,7 +39,12 @@ import { Plan, PlanCharacteristics } from '../../services/plan.service';
                 </div>
                 <div class="col-12">
                   <label class="label-final">Precio ($) *</label>
-                  <input type="number" formControlName="price" class="input-final" placeholder="0.00" (keydown)="preventNegative($event)">
+                  <input type="number" formControlName="price" class="input-final" 
+                    [class.is-invalid]="planForm.get('price')?.invalid && planForm.get('price')?.touched"
+                    placeholder="0.00" (keydown)="preventNegative($event)">
+                    <div class="error-feedback" *ngIf="planForm.get('price')?.invalid && planForm.get('price')?.touched">
+                        El precio es obligatorio
+                    </div>
                 </div>
 
               </div>

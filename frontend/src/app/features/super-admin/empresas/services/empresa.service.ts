@@ -180,4 +180,12 @@ export class EmpresaService {
             error: (err) => console.error('Error loading stats:', err)
         });
     }
+
+    checkRucExists(ruc: string, excludeId?: string): boolean {
+        const empresas = this._empresas$.value;
+        return empresas.some(e => 
+            e.ruc === ruc && 
+            (!excludeId || e.id.toString() !== excludeId.toString())
+        );
+    }
 }

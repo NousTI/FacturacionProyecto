@@ -207,16 +207,19 @@ class ServicioEmpresas:
         
         payload = datos.model_dump(exclude_unset=True)
         
-        if 'ruc' in payload and payload['ruc'] != current['ruc']:
-             if self.repo.obtener_por_ruc(payload['ruc']):
-                 logger.warning(f"[VALIDACIÓN] RUC duplicado en actualización: {payload['ruc']}")
-                 raise AppError(
-                     message="RUC Duplicado", 
-                     status_code=400, 
-                     code=ErrorCodes.DB_CONSTRAINT_VIOLATION,
-                     description="No se puede actualizar el RUC porque ya pertenece a otra empresa.",
-                     level="WARNING"
-                 )
+        # El RUC es inmutable una vez creada la empresa
+        if 'ruc' in payload:
+            if payload['ruc'] != current['ruc']:
+                logger.warning(f"[VALIDACIÓN] Intento de modificar RUC de {current['ruc']} a {payload['ruc']}")
+                raise AppError(
+                    message="RUC No Modificable", 
+                    status_code=400, 
+                    code=ErrorCodes.VAL_INVALID_INPUT,
+                    description="El RUC de la empresa no puede ser modificado después de su creación.",
+                    level="WARNING"
+                )
+            # Si coinciden, lo removemos para no enviar un campo innecesario al repo
+            payload.pop('ruc')
                  
         if not ctx["is_superadmin"]:
             # Si es vendedor, NO tiene permiso de editar datos generales de la empresa

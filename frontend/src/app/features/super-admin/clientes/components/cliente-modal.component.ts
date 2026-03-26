@@ -32,9 +32,10 @@ import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } 
                   class="form-control-premium"
                   formControlName="nombres" 
                   placeholder="Ingrese nombres"
+                  [class.is-invalid]="clienteForm.get('nombres')?.invalid && clienteForm.get('nombres')?.touched"
                 >
                 <div class="invalid-feedback" *ngIf="clienteForm.get('nombres')?.invalid && clienteForm.get('nombres')?.touched">
-                  Campo requerido
+                  Nombre requerido (mín. 3)
                 </div>
               </div>
               
@@ -46,7 +47,11 @@ import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } 
                   class="form-control-premium"
                   formControlName="apellidos" 
                   placeholder="Ingrese apellidos"
+                  [class.is-invalid]="clienteForm.get('apellidos')?.invalid && clienteForm.get('apellidos')?.touched"
                 >
+                <div class="invalid-feedback" *ngIf="clienteForm.get('apellidos')?.invalid && clienteForm.get('apellidos')?.touched">
+                  Apellido requerido (mín. 3)
+                </div>
               </div>
               
 
@@ -59,7 +64,13 @@ import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } 
                   class="form-control-premium"
                   formControlName="telefono"
                   placeholder="0999999999"
+                  maxlength="10"
+                  (keypress)="onlyNumbers($event)"
+                  [class.is-invalid]="clienteForm.get('telefono')?.invalid && clienteForm.get('telefono')?.touched"
                 >
+                <div class="invalid-feedback" *ngIf="clienteForm.get('telefono')?.invalid && clienteForm.get('telefono')?.touched">
+                  El teléfono debe tener exactamente 10 dígitos
+                </div>
               </div>
               
               <!-- Empresa -->
@@ -344,10 +355,9 @@ export class ClienteModalComponent implements OnInit {
 
   constructor(private fb: FormBuilder) {
     this.clienteForm = this.fb.group({
-      nombres: ['', Validators.required],
-      apellidos: ['', Validators.required],
-
-      telefono: ['', Validators.required],
+      nombres: ['', [Validators.required, Validators.minLength(3)]],
+      apellidos: ['', [Validators.required, Validators.minLength(3)]],
+      telefono: ['', [Validators.required, Validators.pattern(/^[0-9]{10}$/)]],
       empresa_id: [null, Validators.required],
       avatar_url: [null],
       activo: [true]
@@ -355,6 +365,14 @@ export class ClienteModalComponent implements OnInit {
   }
 
   ngOnInit() {
+  }
+
+  onlyNumbers(event: any) {
+    const pattern = /[0-9]/;
+    const inputChar = String.fromCharCode(event.charCode);
+    if (!pattern.test(inputChar)) {
+      event.preventDefault();
+    }
   }
 
   onSubmit() {

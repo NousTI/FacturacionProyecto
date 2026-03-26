@@ -1,7 +1,7 @@
 from datetime import datetime
 from uuid import UUID
 from typing import Optional
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, Field
 
 class UsuarioBase(BaseModel):
     empresa_id: UUID
@@ -17,16 +17,16 @@ class UsuarioCreacion(BaseModel):
     password: str = "password"
     empresa_id: Optional[UUID] = None   # Se inyecta automáticamente desde el usuario actual si no se provee
     empresa_rol_id: Optional[UUID] = None
-    nombres: str
-    apellidos: str
-    telefono: Optional[str] = None
+    nombres: str = Field(..., min_length=3)
+    apellidos: str = Field(..., min_length=3)
+    telefono: Optional[str] = Field(None, pattern=r"^([0-9]{10})?$")
     avatar_url: Optional[str] = None
 
 class UsuarioActualizacion(BaseModel):
     empresa_rol_id: Optional[UUID] = None
-    nombres: Optional[str] = None
-    apellidos: Optional[str] = None
-    telefono: Optional[str] = None
+    nombres: Optional[str] = Field(None, min_length=3)
+    apellidos: Optional[str] = Field(None, min_length=3)
+    telefono: Optional[str] = Field(None, pattern=r"^([0-9]{10})?$")
     avatar_url: Optional[str] = None
     activo: Optional[bool] = None
 
