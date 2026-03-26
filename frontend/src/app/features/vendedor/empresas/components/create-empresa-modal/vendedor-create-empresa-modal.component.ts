@@ -31,8 +31,12 @@ import { SriValidators } from '../../../../../shared/utils/sri-validators';
                 </div>
                 <div class="col-md-6">
                   <label class="label-final">Nombre Comercial</label>
-                  <input type="text" formControlName="nombre_comercial" class="input-final" placeholder="Ej: XYZ Store">
-                  <span class="hint-final">Opcional</span>
+                  <input type="text" formControlName="nombre_comercial" class="input-final" 
+                    [class.is-invalid]="empresaForm.get('nombre_comercial')?.invalid && empresaForm.get('nombre_comercial')?.touched"
+                    placeholder="Ej: XYZ Store">
+                  <div class="error-feedback" *ngIf="empresaForm.get('nombre_comercial')?.invalid && empresaForm.get('nombre_comercial')?.touched">
+                    Nombre comercial requerido (mín. 3)
+                  </div>
                 </div>
                 <div class="col-md-6">
                   <label class="label-final">RUC *</label>
@@ -127,7 +131,12 @@ import { SriValidators } from '../../../../../shared/utils/sri-validators';
                 </div>
                  <div class="col-md-6">
                   <label class="label-final">Monto Pago Inicial</label>
-                  <input type="number" formControlName="monto_pago" class="input-final" placeholder="0.00">
+                  <input type="number" formControlName="monto_pago" class="input-final" 
+                    [class.is-invalid]="empresaForm.get('monto_pago')?.invalid && empresaForm.get('monto_pago')?.touched"
+                    placeholder="0.00">
+                  <div class="error-feedback" *ngIf="empresaForm.get('monto_pago')?.invalid && empresaForm.get('monto_pago')?.touched">
+                    Monto inválido (mín. 0)
+                  </div>
                 </div>
                  <div class="col-12">
                   <label class="label-final">Observación del Pago</label>
@@ -325,7 +334,7 @@ export class VendedorCreateEmpresaModalComponent implements OnInit, OnDestroy {
         this.empresaForm = this.fb.group({
             ruc: ['', [Validators.required, SriValidators.rucEcuador()]],
             razon_social: ['', [Validators.required, Validators.minLength(3)]],
-            nombre_comercial: [''],
+            nombre_comercial: ['', [Validators.required, Validators.minLength(3)]],
             email: ['', [Validators.required, Validators.email]],
             telefono: ['', [Validators.required, Validators.pattern(/^[0-9]{10}$/)]],
             direccion: ['', [Validators.required, Validators.minLength(5)]],
@@ -333,8 +342,8 @@ export class VendedorCreateEmpresaModalComponent implements OnInit, OnDestroy {
             obligado_contabilidad: [false],
             plan_id: ['', Validators.required],
             activo: [true],
-            monto_pago: [0],
-            observacion_pago: ['']
+            monto_pago: [0, [Validators.required, Validators.min(0)]],
+            observacion_pago: ['', [Validators.maxLength(250)]]
         });
     }
 

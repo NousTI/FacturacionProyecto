@@ -68,16 +68,24 @@ import { FormsModule } from '@angular/forms';
               <div class="row g-3">
                 <div class="col-sm-6">
                   <label class="form-label info-label">Nombres</label>
-                  <input type="text" class="form-control" [(ngModel)]="editData.nombres" name="nombres" required>
+                  <input type="text" class="form-control" [(ngModel)]="editData.nombres" name="nombres" #nombresInput="ngModel" required minlength="3">
+                  <div class="invalid-feedback d-block" *ngIf="nombresInput.invalid && nombresInput.touched">
+                    Nombre requerido (mín. 3)
+                  </div>
                 </div>
                 <div class="col-sm-6">
                   <label class="form-label info-label">Apellidos</label>
-                  <input type="text" class="form-control" [(ngModel)]="editData.apellidos" name="apellidos" required>
+                  <input type="text" class="form-control" [(ngModel)]="editData.apellidos" name="apellidos" #apellidosInput="ngModel" required minlength="3">
+                  <div class="invalid-feedback d-block" *ngIf="apellidosInput.invalid && apellidosInput.touched">
+                    Apellido requerido (mín. 3)
+                  </div>
                 </div>
                 <div class="col-12">
                   <label class="form-label info-label">Teléfono</label>
-                  <input type="text" class="form-control" [(ngModel)]="editData.telefono" name="telefono" pattern="^([0-9]{10})?$">
-                  <div class="form-text mt-1" style="font-size: 0.8rem;">Ej: 0991234567</div>
+                  <input type="text" class="form-control" [(ngModel)]="editData.telefono" name="telefono" #telefonoInput="ngModel" required pattern="^[0-9]{10}$" maxlength="10">
+                  <div class="invalid-feedback d-block" *ngIf="telefonoInput.invalid && (telefonoInput.touched || editForm.submitted)">
+                    Teléfono requerido (10 dígitos numéricos)
+                  </div>
                 </div>
               </div>
 

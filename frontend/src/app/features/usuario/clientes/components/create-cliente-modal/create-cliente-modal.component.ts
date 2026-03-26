@@ -45,7 +45,12 @@ import { Cliente } from '../../../../../domain/models/cliente.model';
                     class="lux-input" 
                     [class.is-invalid]="clienteForm.get('identificacion')?.invalid && clienteForm.get('identificacion')?.touched"
                     placeholder="Ej: 1712345678001"
+                    (keypress)="validateNumbers($event)"
                   >
+                  <div class="error-feedback" *ngIf="clienteForm.get('identificacion')?.invalid && clienteForm.get('identificacion')?.touched">
+                    <span *ngIf="clienteForm.get('identificacion')?.errors?.['required']">La identificación es obligatoria</span>
+                    <span *ngIf="clienteForm.get('identificacion')?.errors?.['pattern']">Longitud inválida para este tipo de documento</span>
+                  </div>
                 </div>
               </div>
             </div>
@@ -75,7 +80,18 @@ import { Cliente } from '../../../../../domain/models/cliente.model';
                 </div>
                 <div class="col-md-5">
                   <label class="lux-label">Teléfono</label>
-                  <input type="text" formControlName="telefono" class="lux-input" placeholder="Ej: 0987654321">
+                  <input 
+                    type="text" 
+                    formControlName="telefono" 
+                    class="lux-input" 
+                    [class.is-invalid]="clienteForm.get('telefono')?.invalid && clienteForm.get('telefono')?.touched"
+                    placeholder="Ej: 0987654321"
+                    (keypress)="validateNumbers($event)"
+                    maxlength="10"
+                  >
+                  <div class="error-feedback" *ngIf="clienteForm.get('telefono')?.invalid && clienteForm.get('telefono')?.touched">
+                    <span *ngIf="clienteForm.get('telefono')?.errors?.['pattern']">Debe tener exactamente 10 números</span>
+                  </div>
                 </div>
                 <div class="col-12">
                   <label class="lux-label">Dirección Fiscal / Residencia</label>
@@ -317,6 +333,20 @@ import { Cliente } from '../../../../../domain/models/cliente.model';
       line-height: 1.6rem;
     }
 
+    .lux-input.is-invalid {
+      border-color: #ef4444 !important;
+      background: #fef2f2;
+    }
+
+    .error-feedback {
+      font-size: 0.75rem;
+      color: #ef4444;
+      font-weight: 700;
+      margin-top: 0.4rem;
+      display: block;
+      text-transform: uppercase;
+    }
+
     .scroll-custom::-webkit-scrollbar { width: 6px; }
     .scroll-custom::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
   `]
@@ -331,18 +361,31 @@ export class CreateClienteModalComponent implements OnInit, OnDestroy {
 
     constructor(private fb: FormBuilder) {
         this.clienteForm = this.fb.group({
-            identificacion: ['', [Validators.required]],
+            identificacion: ['', [Validators.required, Validators.pattern(/^\d{10,13}$/)]],
             tipo_identificacion: ['CEDULA', [Validators.required]],
             razon_social: ['', [Validators.required, Validators.minLength(3)]],
             nombre_comercial: [''],
             email: ['', [Validators.required, Validators.email]],
-            telefono: [''],
+            telefono: ['', [Validators.pattern(/^\d{10}$/)]],
             direccion: [''],
             ciudad: [''],
             provincia: [''],
             dias_credito: [0, [Validators.min(0)]],
             limite_credito: [0.0, [Validators.min(0)]],
             activo: [true]
+        });
+
+        // Dynamic validation based on type
+        this.clienteForm.get('tipo_identificacion')?.valueChanges.subscribe(val => {
+            const idCont = this.clienteForm.get('identificacion');
+            if (val === 'RUC') {
+                idCont?.setValidators([Validators.required, Validators.pattern(/^\d{13}$/)]);
+            } else if (val === 'CEDULA') {
+                idCont?.setValidators([Validators.required, Validators.pattern(/^\d{10}$/)]);
+            } else {
+                idCont?.setValidators([Validators.required]);
+            }
+            idCont?.updateValueAndValidity();
         });
     }
 
@@ -361,6 +404,13 @@ export class CreateClienteModalComponent implements OnInit, OnDestroy {
         if (this.clienteForm.valid) {
             const { pais, ...data } = this.clienteForm.value;
             this.onSave.emit(data);
+        }
+    }
+
+    validateNumbers(event: KeyboardEvent) {
+        const charCode = event.which ? event.which : event.keyCode;
+        if (charCode > 31 && (charCode < 48 || charCode > 57)) {
+            event.preventDefault();
         }
     }
 

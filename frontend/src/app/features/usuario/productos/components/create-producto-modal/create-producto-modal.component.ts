@@ -31,8 +31,12 @@ import { PermissionsService } from '../../../../../core/auth/permissions.service
               <span class="section-tag">Identificación General</span>
               <div class="row g-3">
                 <div class="col-md-4">
-                  <label class="dashboard-label">Código / Referencia</label>
-                  <input type="text" [(ngModel)]="formData.codigo" name="codigo" class="dashboard-input" required placeholder="Ej: SKU-100">
+                  <label class="dashboard-label">Código / Referencia *</label>
+                  <input type="text" [(ngModel)]="formData.codigo" name="codigo" #codigo="ngModel" class="dashboard-input" required minlength="3" placeholder="Ej: SKU-100" [class.is-invalid-prod]="codigo.invalid && codigo.touched">
+                  <div *ngIf="codigo.invalid && codigo.touched" class="error-msg-prod">
+                    <span *ngIf="codigo.errors?.['required']">El código es requerido</span>
+                    <span *ngIf="codigo.errors?.['minlength']">Mínimo 3 caracteres</span>
+                  </div>
                 </div>
                 <div class="col-md-8">
                   <label class="dashboard-label">Nombre Comercial</label>
@@ -66,7 +70,11 @@ import { PermissionsService } from '../../../../../core/auth/permissions.service
                   <label class="dashboard-label">Precio Publicado (USD) *</label>
                   <div class="input-currency-wrapper">
                     <i class="bi bi-currency-dollar"></i>
-                    <input type="number" [(ngModel)]="formData.precio" name="precio" class="dashboard-input ps-4" required min="0" step="0.01">
+                    <input type="number" [(ngModel)]="formData.precio" name="precio" #precio="ngModel" class="dashboard-input ps-4" required min="0.01" step="0.01" [class.is-invalid-prod]="precio.invalid && precio.touched">
+                  </div>
+                  <div *ngIf="precio.invalid && precio.touched" class="error-msg-prod">
+                    <span *ngIf="precio.errors?.['required']">El precio es requerido</span>
+                    <span *ngIf="precio.errors?.['min']">Debe ser mayor a 0</span>
                   </div>
                 </div>
                 <div class="col-md-6" *ngIf="canViewCosts">
@@ -339,6 +347,19 @@ import { PermissionsService } from '../../../../../core/auth/permissions.service
     .scroll-custom::-webkit-scrollbar { width: 5px; }
     .scroll-custom::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
 
+    .is-invalid-prod {
+      border-color: #ef4444 !important;
+      background: #fef2f2;
+    }
+
+    .error-msg-prod {
+      font-size: 0.75rem;
+      color: #ef4444;
+      font-weight: 700;
+      margin-top: 4px;
+      text-transform: uppercase;
+    }
+
     @media (max-width: 600px) {
       .dashboard-modal-container { width: 100%; border-radius: 0; max-height: 100vh; }
     }
@@ -379,6 +400,14 @@ export class CreateProductoModalComponent implements OnInit, OnDestroy {
     if (this.producto) {
       // Al editar, clonamos y nos aseguramos de que los valores sensibles se manejen
       this.formData = { ...this.producto };
+    }
+  }
+
+  validateNumbers(event: KeyboardEvent) {
+    const charCode = event.which ? event.which : event.keyCode;
+    // Permitir números y punto decimal
+    if (charCode > 31 && (charCode < 48 || charCode > 57) && charCode !== 46) {
+      event.preventDefault();
     }
   }
 

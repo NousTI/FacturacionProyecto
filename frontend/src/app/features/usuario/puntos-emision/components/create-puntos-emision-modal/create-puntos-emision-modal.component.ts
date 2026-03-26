@@ -40,6 +40,7 @@ import { Observable } from 'rxjs';
                     class="input-final"
                     placeholder="Ej: 001"
                     maxlength="3"
+                    (keypress)="validateNumbers($event)"
                     [class.is-invalid]="isInvalidField('codigo')"
                   >
                   <div class="error-feedback" *ngIf="isInvalidField('codigo')">
@@ -466,6 +467,13 @@ export class CreatePuntosEmisionModalComponent implements OnInit {
   submit() {
     if (this.form.valid) {
       this.onSave.emit(this.form.value);
+    }
+  }
+
+  validateNumbers(event: KeyboardEvent) {
+    const charCode = event.which ? event.which : event.keyCode;
+    if (charCode > 31 && (charCode < 48 || charCode > 57)) {
+      event.preventDefault();
     }
   }
 

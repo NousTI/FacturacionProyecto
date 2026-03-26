@@ -69,7 +69,7 @@ import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } 
                   [class.is-invalid]="clienteForm.get('telefono')?.invalid && clienteForm.get('telefono')?.touched"
                 >
                 <div class="invalid-feedback" *ngIf="clienteForm.get('telefono')?.invalid && clienteForm.get('telefono')?.touched">
-                  El teléfono debe tener exactamente 10 dígitos
+                  El teléfono debe tener exactamente 10 dígitos numéricos
                 </div>
               </div>
               

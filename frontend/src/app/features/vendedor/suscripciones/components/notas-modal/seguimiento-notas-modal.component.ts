@@ -50,7 +50,7 @@ import { FormsModule } from '@angular/forms';
 
         <div class="modal-footer-note">
           <button (click)="onClose.emit()" class="btn-secondary-note">Cerrar</button>
-          <button (click)="saveNote()" [disabled]="!newNote.trim()" class="btn-primary-note">
+          <button (click)="saveNote()" [disabled]="!newNote.trim() || newNote.length < 10" class="btn-primary-note">
             Guardar Nota
           </button>
         </div>
