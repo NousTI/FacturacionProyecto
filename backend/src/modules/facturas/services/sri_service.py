@@ -43,8 +43,16 @@ class ServicioSRIFacturas:
         if not autorizacion:
             raise AppError("Error al registrar autorización del SRI", 500, "DB_ERROR")
         
-        # Al registrar autorizacion, debemos actualizar la factura principal
-        # Esto usualmente se orquestará desde el servicio principal o aquí
+        # Al registrar autorizacion, sincronizamos la factura principal
+        # Se iguala la fecha de emisión a la de autorización según requerimiento
+        update_data = {
+            "estado": "AUTORIZADA",
+            "numero_autorizacion": datos.numero_autorizacion,
+            "fecha_autorizacion": datos.fecha_autorizacion,
+            "fecha_emision": datos.fecha_autorizacion 
+        }
+        self.repo.actualizar_factura(datos.factura_id, update_data)
+        
         return autorizacion
 
     def obtener_historial_emision(self, factura_id: UUID) -> List[dict]:

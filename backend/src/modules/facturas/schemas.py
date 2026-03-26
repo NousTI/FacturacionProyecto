@@ -48,7 +48,7 @@ class FacturaBase(BaseModel):
     ambiente: int = Field(default=1, description="1=Prueba, 2=Produccion (FORZADO A 1 POR SEGURIDAD)")
     tipo_emision: int = Field(default=1, ge=1, le=2, description="1=Normal, 2=Contingencia")
     
-    fecha_emision: date
+    fecha_emision: datetime
     fecha_vencimiento: Optional[date] = None
     
     # MONTOS
@@ -71,7 +71,9 @@ class FacturaBase(BaseModel):
         """Fecha de vencimiento debe ser >= fecha de emisión."""
         if v is not None and 'fecha_emision' in info.data:
             fecha_emision = info.data['fecha_emision']
-            if v < fecha_emision:
+            # Comparar solo la fecha si fecha_emision es datetime
+            fecha_emision_date = fecha_emision.date() if hasattr(fecha_emision, 'date') else fecha_emision
+            if v < fecha_emision_date:
                 raise ValueError('Fecha de vencimiento no puede ser anterior a fecha de emisión')
         return v
 
@@ -142,7 +144,7 @@ class FacturaActualizacion(BaseModel):
     
     # Solo campos permitidos en BORRADOR
     cliente_id: Optional[UUID] = None
-    fecha_emision: Optional[date] = None
+    fecha_emision: Optional[datetime] = None
     fecha_vencimiento: Optional[date] = None
     subtotal_sin_iva: Optional[Decimal] = Field(None, ge=0)
     subtotal_con_iva: Optional[Decimal] = Field(None, ge=0)
@@ -241,7 +243,7 @@ class FacturaLectura(BaseModel):
     razon_anulacion: Optional[str] = None
     
     # Montos
-    fecha_emision: date
+    fecha_emision: datetime
     fecha_vencimiento: Optional[date] = None
     fecha_autorizacion: Optional[datetime] = None
     
@@ -326,7 +328,7 @@ class FacturaResumen(BaseModel):
     id: UUID
     numero_factura: Optional[str] = None
     cliente_razon_social: str
-    fecha_emision: date
+    fecha_emision: datetime
     total: Decimal
     estado: str
     estado_pago: str

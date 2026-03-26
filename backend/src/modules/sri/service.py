@@ -332,10 +332,18 @@ class ServicioSRI:
             update_fields = {"clave_acceso": clave}
             
             if estado_aut == SRIEstadoRespuesta.AUTORIZADO:
+                fecha_aut_obj = None
+                if res_aut.get('fechaAutorizacion'):
+                    try:
+                        fecha_aut_obj = datetime.fromisoformat(res_aut['fechaAutorizacion'].replace('Z', '+00:00'))
+                    except:
+                        fecha_aut_obj = res_aut.get('fechaAutorizacion')
+
                 update_fields.update({
                     "estado": FacturaEstado.AUTORIZADA,
                     "numero_autorizacion": res_aut.get('numeroAutorizacion'),
-                    "fecha_autorizacion": res_aut.get('fechaAutorizacion')
+                    "fecha_autorizacion": fecha_aut_obj,
+                    "fecha_emision": fecha_aut_obj  # Sincronización solicitada
                 })
             elif estado_aut in [SRIEstadoRespuesta.DEVUELTA, SRIEstadoRespuesta.DEVUELTO]:
                 update_fields["estado"] = FacturaEstado.DEVUELTA
@@ -450,10 +458,18 @@ class ServicioSRI:
 
             # ACTUALIZAR ESTADO DE LA FACTURA
             if estado_aut == SRIEstadoRespuesta.AUTORIZADO:
+                fecha_aut_obj = None
+                if res_aut.get('fechaAutorizacion'):
+                    try:
+                        fecha_aut_obj = datetime.fromisoformat(res_aut['fechaAutorizacion'].replace('Z', '+00:00'))
+                    except:
+                        fecha_aut_obj = res_aut.get('fechaAutorizacion')
+
                 self.factura_repo.actualizar_factura(factura_id, {
                     "estado": FacturaEstado.AUTORIZADA, 
                     "numero_autorizacion": res_aut.get('numeroAutorizacion'),
-                    "fecha_autorizacion": res_aut.get('fechaAutorizacion')
+                    "fecha_autorizacion": fecha_aut_obj,
+                    "fecha_emision": fecha_aut_obj # Sincronización solicitada
                 })
             elif estado_aut in [SRIEstadoRespuesta.DEVUELTA, SRIEstadoRespuesta.DEVUELTO]:
                 self.factura_repo.actualizar_factura(factura_id, {"estado": FacturaEstado.DEVUELTA})

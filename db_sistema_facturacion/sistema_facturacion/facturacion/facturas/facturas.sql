@@ -60,7 +60,7 @@ CREATE TABLE IF NOT EXISTS sistema_facturacion.facturas (
     -- =============================================
     -- FECHAS
     -- =============================================
-    fecha_emision DATE NOT NULL
+    fecha_emision TIMESTAMPTZ NOT NULL
         COMMENT 'Fecha en que se crea/emite la factura',
     
     fecha_vencimiento DATE
@@ -101,7 +101,7 @@ CREATE TABLE IF NOT EXISTS sistema_facturacion.facturas (
         COMMENT 'Retención de Renta',
     
     total NUMERIC(12,2) NOT NULL 
-        CHECK (total = ROUND(subtotal_sin_iva + subtotal_con_iva + propina - descuento - retencion_iva - retencion_renta, 2))
+        CHECK (total = ROUND(subtotal_sin_iva + subtotal_con_iva + iva + propina - descuento - retencion_iva - retencion_renta, 2))
 
         COMMENT 'Total = subtotal + propina - descuento - retenciones',
 

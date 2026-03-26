@@ -39,7 +39,8 @@ class ServicioAutorizacion:
             "estado": "AUTORIZADA",
             "clave_acceso": datos.numero_autorizacion,
             "numero_autorizacion": datos.numero_autorizacion,
-            "fecha_autorizacion": datos.fecha_autorizacion
+            "fecha_autorizacion": datos.fecha_autorizacion,
+            "fecha_emision": datos.fecha_autorizacion # Sincronización solicitada
         }
         self.core.actualizar_factura(datos.factura_id, update_data)
         return res

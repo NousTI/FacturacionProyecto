@@ -11,7 +11,7 @@ import json
 from fastapi import Depends
 from typing import List, Optional, Any
 from uuid import UUID
-from datetime import date
+from datetime import date, datetime
 from psycopg2.extras import Json
 
 from ...database.session import get_db

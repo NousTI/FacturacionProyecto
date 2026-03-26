@@ -9,7 +9,7 @@ class CuentaCobrarBase(BaseModel):
     factura_id: UUID
     cliente_id: UUID
     numero_documento: str
-    fecha_emision: date
+    fecha_emision: datetime
     fecha_vencimiento: date
     monto_total: Decimal = Field(..., ge=0)
     monto_pagado: Decimal = Field(default=Decimal('0.00'), ge=0)
@@ -22,7 +22,7 @@ class CuentaCobrarCreacion(BaseModel):
     factura_id: UUID
     cliente_id: UUID
     numero_documento: str
-    fecha_emision: date
+    fecha_emision: datetime
     fecha_vencimiento: date
     monto_total: Optional[Decimal] = Field(None, ge=0)
     observaciones: Optional[str] = None
@@ -61,7 +61,7 @@ class CuentaCobrarDetallado(BaseModel):
     id: UUID
     cliente_nombre: str
     numero_documento: str
-    fecha_emision: date
+    fecha_emision: datetime
     fecha_vencimiento: date
     monto_total: Decimal
     monto_pagado: Decimal

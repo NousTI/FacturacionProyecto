@@ -48,6 +48,18 @@ class ServicioFacturaCore:
             "unidad_tiempo": payload.pop('unidad_tiempo', 'DIAS')
         }
         
+        # Inyectar la hora actual si no se proporciona una o si llega a las 00:00:00
+        fecha_emision = payload.get('fecha_emision')
+        ahora = datetime.now()
+        
+        # Si es un objeto datetime y su hora es exacta a medianoche, asumimos que viene solo fecha
+        # y le ponemos la hora actual para el timestamp real.
+        if isinstance(fecha_emision, datetime):
+            if fecha_emision.hour == 0 and fecha_emision.minute == 0 and fecha_emision.second == 0:
+                payload['fecha_emision'] = ahora
+        elif not fecha_emision:
+            payload['fecha_emision'] = ahora
+
         payload.update({
             "estado": 'BORRADOR',
             "estado_pago": datos.estado_pago or 'PENDIENTE',
