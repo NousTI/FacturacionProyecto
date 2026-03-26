@@ -67,7 +67,7 @@ import { InfoTooltipComponent } from '../../../../../shared/components/info-tool
           </div>
           <div class="d-flex justify-content-between">
             <div class="text-muted" style="font-size: 0.65rem;">
-              {{ (consumoPlan.limite || 0) - (consumoPlan.actual || 0) }} restantes este mes
+              {{ (consumoPlan.limite || 0) - (consumoPlan.actual || 0) }} restantes de tu plan contratado
             </div>
           </div>
         </div>
