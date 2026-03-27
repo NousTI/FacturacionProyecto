@@ -12,4 +12,5 @@ jinja2
 PyJWT
 email-validator
 python-multipart
-xhtml2pdf
+playwright
+python-barcode
