@@ -68,7 +68,7 @@ def render_to_pdf(template_src: str, context_dict: dict):
             pdf_bytes = page.pdf(
                 format="A4",
                 print_background=True,
-                margin={"top": "1cm", "bottom": "1cm", "left": "1cm", "right": "1cm"}
+                margin={"top": "1cm", "bottom": "1.5cm", "left": "1cm", "right": "1cm"}
             )
             browser.close()
             
@@ -77,6 +77,17 @@ def render_to_pdf(template_src: str, context_dict: dict):
     except Exception as e:
         print(f"Excepción al generar PDF con Playwright: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Error interno al generar PDF: {str(e)}")
+
+def get_image_b64(filepath: str) -> str:
+    try:
+        with open(filepath, "rb") as image_file:
+            encoded_string = base64.b64encode(image_file.read()).decode('utf-8')
+            ext = os.path.splitext(filepath)[1].lower()
+            mime_type = "image/png" if ext == ".png" else "image/jpeg"
+            return f"data:{mime_type};base64,{encoded_string}"
+    except Exception as e:
+        print(f"Error loading image {filepath}: {e}")
+        return ""
 
 def crear_ride_factura(factura_data: dict):
     """
@@ -103,7 +114,12 @@ def crear_ride_factura(factura_data: dict):
     
     factura_data["leyendas_regimen"] = leyendas
 
-    # Generar el código de barras SVG en B64 para que Playwright lo incruste perfectamente
+    # Logos e imágenes base64 para Playwright
     factura_data["barcode_svg_b64"] = get_barcode_b64(factura_data.get("clave_acceso", ""))
+    
+    logo_path = os.path.join(TEMPLATES_DIR, "invoices", "logo.png")
+    footer_path = os.path.join(TEMPLATES_DIR, "invoices", "footer.png")
+    factura_data["logo_b64"] = get_image_b64(logo_path)
+    factura_data["footer_b64"] = get_image_b64(footer_path)
     
     return render_to_pdf("invoices/ride_classic.html", {"factura": factura_data})

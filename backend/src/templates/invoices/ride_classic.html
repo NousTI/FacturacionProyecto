@@ -5,6 +5,16 @@
     <title>Factura NOUS</title>
     <style>
         /* CSS moderno que Playwright renderiza a la perfección */
+        #footer {
+            position: fixed;
+            bottom: 0px;
+            left: 0;
+            width: 100%;
+            text-align: center;
+            font-size: 10px;
+            color: #6b7280;
+        }
+
         body {
             font-family: Arial, sans-serif;
             font-size: 11px;
@@ -112,8 +122,13 @@
         
         <!-- Emisor -->
         <div class="w-1_2">
-            <div class="mb-4" style="height: 80px; display: flex; align-items: center;">
-                <img src="https://via.placeholder.com/200x80.png?text=LOGO+EMPRESA" style="max-height: 100%; max-width: 100%; object-fit: contain;" alt="Logo placeholder"/>
+            <!-- Aumenta la disponibilidad de altura en un 25% (de 80px a 100px) -->
+            <div class="mb-4" style="height: 100px; display: flex; align-items: center;">
+                {% if factura.logo_b64 %}
+                <img src="{{ factura.logo_b64 }}" style="max-height: 100%; max-width: 100%; object-fit: contain;" alt="Logo"/>
+                {% else %}
+                <div style="font-weight: bold; font-size: 16px;">{{ factura.snapshot_empresa.razon_social }}</div>
+                {% endif %}
             </div>
             
             <table class="w-full">
@@ -277,10 +292,14 @@
         
     </div>
 
-    <!-- Pie de página estático -->
-    <div class="mt-4 text-center text-xs" style="color: #6b7280; margin-top: 40px;">
+    <!-- Pie de página estático y siempre al pie de la página -->
+    <div id="footer">
         Generado por 
-        <img src="https://via.placeholder.com/60x20.png?text=NOUS+LOGO" style="vertical-align: middle; height: 16px; margin: 0 4px;" alt="NOUS"> 
+        {% if factura.footer_b64 %}
+        <img src="{{ factura.footer_b64 }}" style="vertical-align: middle; height: 16px; margin: 0 4px;" alt="NOUS"> 
+        {% else %}
+        NOUS
+        {% endif %}
         www.nous.ec
     </div>
 

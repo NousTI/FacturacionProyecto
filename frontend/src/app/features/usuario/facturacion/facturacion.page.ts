@@ -543,12 +543,18 @@ export class FacturacionPage implements OnInit {
 
 
   descargarPdf(id: string) {
-    this.facturasService.descargarPdf(id).subscribe((blob: Blob) => {
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `factura-${this.selectedFactura?.numero_factura || 'doc'}.pdf`;
-      a.click();
+    this.uiService.showToast('Preparando documento PDF, por favor espere...', 'info', 'Esto puede tomar unos segundos.', 4000);
+    this.facturasService.descargarPdf(id).subscribe({
+      next: (blob: Blob) => {
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `factura-${this.selectedFactura?.numero_factura || 'doc'}.pdf`;
+        a.click();
+      },
+      error: (err) => {
+        this.uiService.showError(err, 'Error al generar o descargar el PDF');
+      }
     });
   }
 
