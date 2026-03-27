@@ -110,8 +110,10 @@ class RepositorioFacturas:
                    e.obligado_contabilidad as emisor_obligado,
                    e.logo_url as emisor_logo,
                    es.codigo as establecimiento_codigo,
+                   es.nombre as establecimiento_nombre,
                    es.direccion as establecimiento_direccion,
-                   pe.codigo as punto_emision_codigo
+                   pe.codigo as punto_emision_codigo,
+                   pe.nombre as punto_emision_nombre
             FROM sistema_facturacion.facturas f
             LEFT JOIN sistema_facturacion.clientes c ON f.cliente_id = c.id
             LEFT JOIN sistema_facturacion.empresas e ON f.empresa_id = e.id
@@ -154,12 +156,14 @@ class RepositorioFacturas:
             if not data.get('snapshot_establecimiento'):
                 data['snapshot_establecimiento'] = {
                     'codigo': data.get('establecimiento_codigo') or '001',
+                    'nombre': data.get('establecimiento_nombre') or 'Establecimiento Principal',
                     'direccion': data.get('establecimiento_direccion') or data.get('emisor_direccion', '')
                 }
 
             if not data.get('snapshot_punto_emision'):
                 data['snapshot_punto_emision'] = {
-                    'codigo': data.get('punto_emision_codigo') or '001'
+                    'codigo': data.get('punto_emision_codigo') or '001',
+                    'nombre': data.get('punto_emision_nombre') or 'Caja Principal'
                 }
 
             return data
@@ -206,8 +210,10 @@ class RepositorioFacturas:
                    e.obligado_contabilidad as emisor_obligado,
                    e.logo_url as emisor_logo,
                    es.codigo as establecimiento_codigo,
+                   es.nombre as establecimiento_nombre,
                    es.direccion as establecimiento_direccion,
-                   pe.codigo as punto_emision_codigo
+                   pe.codigo as punto_emision_codigo,
+                   pe.nombre as punto_emision_nombre
             FROM sistema_facturacion.facturas f
             LEFT JOIN sistema_facturacion.clientes c ON f.cliente_id = c.id
             LEFT JOIN sistema_facturacion.empresas e ON f.empresa_id = e.id
@@ -293,12 +299,14 @@ class RepositorioFacturas:
                 if not r.get('snapshot_establecimiento'):
                     r['snapshot_establecimiento'] = {
                         'codigo': r.get('establecimiento_codigo') or '001',
+                        'nombre': r.get('establecimiento_nombre') or 'Establecimiento Principal',
                         'direccion': r.get('establecimiento_direccion') or r.get('emisor_direccion', '')
                     }
 
                 if not r.get('snapshot_punto_emision'):
                     r['snapshot_punto_emision'] = {
-                        'codigo': r.get('punto_emision_codigo') or '001'
+                        'codigo': r.get('punto_emision_codigo') or '001',
+                        'nombre': r.get('punto_emision_nombre') or 'Caja Principal'
                     }
             return rows
 
