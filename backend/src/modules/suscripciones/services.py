@@ -118,7 +118,7 @@ class ServicioSuscripciones:
                 description=f"La empresa ya cuenta con el plan '{plan['nombre']}' activo."
             )
         
-        monto = data.monto or plan['precio_mensual']
+        monto = data.monto or plan['precio_anual']
         fecha_inicio = data.fecha_inicio_periodo or datetime.now()
         fecha_fin = data.fecha_fin_periodo or (fecha_inicio + timedelta(days=30))
         

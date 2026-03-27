@@ -10,7 +10,7 @@ CREATE TABLE IF NOT EXISTS sistema_facturacion.planes (
     nombre TEXT NOT NULL,
     descripcion TEXT NOT NULL,
 
-    precio_mensual NUMERIC(10,2) NOT NULL DEFAULT 0.00,
+    precio_anual NUMERIC(10,2) NOT NULL DEFAULT 0.00,
 
     max_usuarios INT NOT NULL,
     max_facturas_mes INT NOT NULL,

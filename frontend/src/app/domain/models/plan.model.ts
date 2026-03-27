@@ -15,7 +15,7 @@ export interface Plan {
     codigo: string;
     nombre: string;
     descripcion?: string;
-    precio_mensual: number;
+    precio_anual: number;
     max_usuarios: number;
     max_facturas_mes: number;
     max_establecimientos: number;
@@ -33,7 +33,7 @@ export interface PlanCreate {
     codigo: string;
     nombre: string;
     descripcion?: string;
-    precio_mensual: number;
+    precio_anual: number;
     max_usuarios: number;
     max_facturas_mes: number;
     max_establecimientos: number;

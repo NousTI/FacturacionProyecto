@@ -235,7 +235,7 @@ export class SuscripcionesPage implements OnInit {
                             ...c,
                             plan_nombre: plan.nombre || plan.name, // Handle backend naming inconsistency if any 
                             plan_id: plan.id,
-                            precio_plan: plan.precio_mensual || plan.price
+                            precio_plan: plan.precio_anual || plan.price
                         })))
                     )
                 );

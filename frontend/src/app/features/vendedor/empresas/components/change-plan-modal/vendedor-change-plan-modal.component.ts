@@ -35,7 +35,7 @@ import { VendedorEmpresaService } from '../../services/vendedor-empresa.service'
                   <span *ngIf="isCurrentPlan(plan)" class="badge-current">PLAN ACTUAL</span>
                 </div>
                 <span class="plan-desc text-muted small" *ngIf="plan.descripcion">{{ plan.descripcion }}</span>
-                <span class="plan-price fw-bold text-primary mt-1">{{ plan.precio_mensual | currency }} / mes</span>
+                <span class="plan-price fw-bold text-primary mt-1">{{ plan.precio_anual | currency }} / año</span>
               </div>
               <div class="plan-check">
                 <i class="bi" [ngClass]="selectedNewPlanId === plan.id ? 'bi-check-circle-fill' : (isCurrentPlan(plan) ? 'bi-slash-circle' : 'bi-circle')"></i>
@@ -257,7 +257,7 @@ export class VendedorChangePlanModalComponent implements OnInit {
     if (this.isCurrentPlan(plan)) return;
 
     this.selectedNewPlanId = plan.id;
-    this.monto = plan.precio_mensual || 0;
+    this.monto = plan.precio_anual || 0;
     this.observaciones = `Cambio de plan a ${plan.nombre}`;
   }
 

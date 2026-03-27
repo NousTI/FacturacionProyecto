@@ -142,7 +142,7 @@ import { SriValidators } from '../../../../../shared/utils/sri-validators';
                   <select formControlName="plan_id" class="select-final" (change)="onPlanChange()">
                     <option [ngValue]="''">Seleccionar plan...</option>
                     <option *ngFor="let plan of planes" [ngValue]="plan.id">
-                      {{ plan.nombre }} - {{ plan.precio_mensual | currency }}
+                      {{ plan.nombre }} - {{ plan.precio_anual | currency }} / año
                     </option>
                   </select>
                 </div>
@@ -425,7 +425,7 @@ export class CreateEmpresaModalComponent implements OnInit, OnDestroy {
     const selectedPlan = this.planes.find(p => p.id == planId);
     if (selectedPlan) {
       this.empresaForm.patchValue({
-        monto_pago: selectedPlan.precio_mensual || 0,
+        monto_pago: selectedPlan.precio_anual || 0,
         observacion_pago: `Suscripción inicial al plan ${selectedPlan.nombre}`
       });
     }

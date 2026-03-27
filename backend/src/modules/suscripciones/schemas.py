@@ -19,7 +19,7 @@ class PlanBase(BaseModel):
     codigo: str
     nombre: str
     descripcion: Optional[str] = ""
-    precio_mensual: float
+    precio_anual: float
     max_usuarios: int
     max_facturas_mes: int
     max_establecimientos: int
@@ -35,7 +35,7 @@ class PlanCreacion(PlanBase):
 class PlanUpdate(BaseModel):
     nombre: Optional[str] = None
     descripcion: Optional[str] = None
-    precio_mensual: Optional[float] = None
+    precio_anual: Optional[float] = None
     max_usuarios: Optional[int] = None
     max_facturas_mes: Optional[int] = None
     max_establecimientos: Optional[int] = None

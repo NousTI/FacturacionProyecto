@@ -23,7 +23,7 @@ class RepositorioSuscripciones:
                     AND s.fecha_fin >= CURRENT_DATE
                 ) as active_companies
                 FROM sistema_facturacion.planes p
-                ORDER BY p.precio_mensual ASC
+                ORDER BY p.precio_anual ASC
             """
             cur.execute(query)
             return [dict(row) for row in cur.fetchall()]

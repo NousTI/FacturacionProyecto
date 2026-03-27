@@ -90,7 +90,7 @@ class RepositorioEmpresas:
                    p.max_facturas_mes,
                    p.max_establecimientos,
                    p.max_programaciones,
-                   p.precio_mensual,
+                   p.precio_anual,
                    csri.ambiente as sri_ambiente,
                    csri.estado as sri_estado,
                    csri.fecha_expiracion_cert as firma_expiracion,

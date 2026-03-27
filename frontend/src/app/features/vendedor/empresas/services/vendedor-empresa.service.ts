@@ -99,7 +99,7 @@ export class VendedorEmpresaService {
             vendedorId: e.vendedor_id,
             plan: e.plan_nombre || 'SIN PLAN',
             planId: e.current_plan_id,
-            precioPlan: e.precio_mensual || 0,
+            precioPlan: e.precio_anual || 0,
             fechaInicio: e.fecha_inicio ? new Date(e.fecha_inicio) : null,
             fechaVencimiento: e.fecha_fin ? new Date(e.fecha_fin) : null,
             ultimoPagoFecha: e.ultimo_pago_fecha ? new Date(e.ultimo_pago_fecha) : null,
