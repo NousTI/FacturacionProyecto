@@ -135,13 +135,7 @@
                 <tr><td class="font-bold w-1_3">Razón Social:</td><td>{{ factura.snapshot_empresa.razon_social }}</td></tr>
                 <tr><td class="font-bold">Dir. Matriz:</td><td>{{ factura.snapshot_empresa.direccion }}</td></tr>
                 <tr><td class="font-bold">Dir. Sucursal:</td>
-                    <td>
-                        {% if factura.snapshot_establecimiento and factura.snapshot_establecimiento.direccion %}
-                            {{ factura.snapshot_establecimiento.direccion }}
-                        {% else %}
-                            --
-                        {% endif %}
-                    </td>
+                    <td>xx</td>
                 </tr>
                 <tr><td class="font-bold">Obligado A Llevar Contabilidad:</td><td>{{ 'SI' if factura.snapshot_empresa.obligado_contabilidad else 'NO' }}</td></tr>
                 <tr><td class="font-bold">Contribuyente Régimen:</td>
@@ -178,9 +172,9 @@
                     </tr>
                     <tr>
                         <td class="font-bold">ESTABLECIMIENTO:</td>
-                        <td>--</td>
+                        <td>{{ factura.snapshot_establecimiento.codigo or '--' }}</td>
                         <td class="font-bold">PTO. EMISIÓN:</td>
-                        <td>--</td>
+                        <td>{{ factura.snapshot_punto_emision.codigo or '--' }}</td>
                     </tr>
                 </table>
 
@@ -211,13 +205,13 @@
                 <td class="font-bold pb-1">Dirección:</td>
                 <td class="pb-1" colspan="2">{{ factura.snapshot_cliente.direccion }}</td>
                 <td class="font-bold pb-1 text-right">Guía de Remisión:</td>
-                <td class="pb-1 pl-2">{{ factura.guia_remision or '--' }}</td>
+                <td class="pb-1 pl-2">xx</td>
             </tr>
             <tr>
                 <td class="font-bold">Correo:</td>
                 <td colspan="2">{{ factura.snapshot_cliente.email }}</td>
                 <td class="font-bold text-right">Teléfono:</td>
-                <td class="pl-2">--</td>
+                <td class="pl-2">{{ factura.snapshot_cliente.telefono or '--' }}</td>
             </tr>
         </table>
     </div>
@@ -276,13 +270,13 @@
         <!-- Totales -->
         <div style="width: 40%;">
             <table class="totals-table w-full">
-                <tr><td class="totals-label w-1_2">SUBTOTAL 15%</td><td class="text-right">--</td></tr>
-                <tr><td class="totals-label">SUBTOTAL 0%</td><td class="text-right">--</td></tr>
-                <tr><td class="totals-label">SUBTOTAL NO OBJETO DE IVA</td><td class="text-right">--</td></tr>
-                <tr><td class="totals-label">SUBTOTAL EXENTO DE IVA</td><td class="text-right">--</td></tr>
+                <tr><td class="totals-label w-1_2">SUBTOTAL 15%</td><td class="text-right">${{ "%.2f"|format(factura.subtotal_con_iva or 0.0) }}</td></tr>
+                <tr><td class="totals-label">SUBTOTAL 0%</td><td class="text-right">${{ "%.2f"|format(factura.subtotal_sin_iva or 0.0) }}</td></tr>
+                <tr><td class="totals-label">SUBTOTAL NO OBJETO DE IVA</td><td class="text-right">xx</td></tr>
+                <tr><td class="totals-label">SUBTOTAL EXENTO DE IVA</td><td class="text-right">xx</td></tr>
                 <tr><td class="totals-label">SUBTOTAL SIN IMPUESTOS</td><td class="text-right">${{ "%.2f"|format((factura.subtotal_sin_iva or 0) + (factura.subtotal_con_iva or 0)) }}</td></tr>
-                <tr><td class="totals-label">DESCUENTO</td><td class="text-right">${{ "%.2f"|format(factura.descuento or 0) }}</td></tr>
-                <tr><td class="totals-label">ICE</td><td class="text-right">--</td></tr>
+                <tr><td class="totals-label">DESCUENTO</td><td class="text-right">${{ "%.2f"|format(factura.descuento or 0) if factura.descuento is not none else '--' }}</td></tr>
+                <tr><td class="totals-label">ICE</td><td class="text-right">xx</td></tr>
                 <tr><td class="totals-label">IVA 15%</td><td class="text-right">${{ "%.2f"|format(factura.iva or 0) }}</td></tr>
                 <tr><td class="totals-label">PROPINA</td><td class="text-right">${{ "%.2f"|format(factura.propina or 0) }}</td></tr>
                 <tr class="totals-final"><td class="totals-label totals-final">VALOR TOTAL</td><td class="text-right font-bold">${{ "%.2f"|format(factura.total or 0) }}</td></tr>

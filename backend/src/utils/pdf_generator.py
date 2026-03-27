@@ -104,6 +104,29 @@ def crear_ride_factura(factura_data: dict):
         if not factura_data.get(field):
             factura_data[field] = "-"
     
+    # Calcular subtotales desde los detalles
+    subtotal_15 = 0.0
+    subtotal_0 = 0.0
+    subtotal_no_objeto = 0.0
+    subtotal_exento = 0.0
+    
+    for detalle in factura_data.get("detalles", []):
+        subt = float(detalle.get("subtotal", 0.0))
+        tipo_iva = str(detalle.get("tipo_iva", "")).upper()
+        if tipo_iva == "15" or tipo_iva == "12":
+            subtotal_15 += subt
+        elif tipo_iva == "0":
+            subtotal_0 += subt
+        elif tipo_iva == "NO_OBJETO":
+            subtotal_no_objeto += subt
+        elif tipo_iva == "EXENTO":
+            subtotal_exento += subt
+            
+    factura_data["subtotal_15"] = subtotal_15
+    factura_data["subtotal_0"] = subtotal_0
+    factura_data["subtotal_no_objeto"] = subtotal_no_objeto
+    factura_data["subtotal_exento"] = subtotal_exento
+    
     empresa = factura_data.get("snapshot_empresa", {})
     tipo = empresa.get("tipo_contribuyente", "").upper()
     leyendas = []
@@ -111,6 +134,8 @@ def crear_ride_factura(factura_data: dict):
         leyendas.append("CONTRIBUYENTE RÉGIMEN RIMPE")
         if "NEGOCIO POPULAR" in tipo:
             leyendas.append("CONTRIBUYENTE NEGOCIO POPULAR - RÉGIMEN RIMPE")
+    else:
+        leyendas.append(tipo)
     
     factura_data["leyendas_regimen"] = leyendas
 

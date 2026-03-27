@@ -92,12 +92,15 @@ class RepositorioFacturas:
         query = """
             SELECT f.*, 
                    (SELECT fp.forma_pago_sri FROM sistema_facturacion.formas_pago fp WHERE fp.factura_id = f.id ORDER BY fp.created_at ASC LIMIT 1) as forma_pago_sri,
+                   (SELECT fp.plazo FROM sistema_facturacion.formas_pago fp WHERE fp.factura_id = f.id ORDER BY fp.created_at ASC LIMIT 1) as plazo,
+                   (SELECT fp.unidad_tiempo FROM sistema_facturacion.formas_pago fp WHERE fp.factura_id = f.id ORDER BY fp.created_at ASC LIMIT 1) as unidad_tiempo,
                    COALESCE(cc.saldo_pendiente, f.total) as saldo_pendiente,
                    c.razon_social as cliente_nombre, 
                    c.identificacion as cliente_identificacion,
                    c.tipo_identificacion as cliente_tipo_identificacion,
                    c.email as cliente_email,
                    c.direccion as cliente_direccion,
+                   c.telefono as cliente_telefono,
                    e.razon_social as emisor_nombre,
                    e.nombre_comercial as emisor_nombre_comercial,
                    e.ruc as emisor_ruc,
@@ -105,11 +108,16 @@ class RepositorioFacturas:
                    e.email as emisor_email,
                    e.tipo_contribuyente as emisor_tipo,
                    e.obligado_contabilidad as emisor_obligado,
-                   e.logo_url as emisor_logo
+                   e.logo_url as emisor_logo,
+                   es.codigo as establecimiento_codigo,
+                   es.direccion as establecimiento_direccion,
+                   pe.codigo as punto_emision_codigo
             FROM sistema_facturacion.facturas f
             LEFT JOIN sistema_facturacion.clientes c ON f.cliente_id = c.id
             LEFT JOIN sistema_facturacion.empresas e ON f.empresa_id = e.id
             LEFT JOIN sistema_facturacion.cuentas_cobrar cc ON f.id = cc.factura_id
+            LEFT JOIN sistema_facturacion.establecimientos es ON f.establecimiento_id = es.id
+            LEFT JOIN sistema_facturacion.puntos_emision pe ON f.punto_emision_id = pe.id
             WHERE f.id = %s
         """
         with self.db.cursor() as cur:
@@ -127,7 +135,8 @@ class RepositorioFacturas:
                     'numero_identificacion': data.get('cliente_identificacion'), # Alias para frontend
                     'tipo_identificacion': data.get('cliente_tipo_identificacion') or 'CEDULA', # Fallback seguro
                     'email': data.get('cliente_email'),
-                    'direccion': data.get('cliente_direccion')
+                    'direccion': data.get('cliente_direccion'),
+                    'telefono': data.get('cliente_telefono') or ''
                 }
             
             if not data.get('snapshot_empresa'):
@@ -141,6 +150,18 @@ class RepositorioFacturas:
                     'obligado_contabilidad': data.get('emisor_obligado') or False,
                     'logo_url': data.get('emisor_logo')
                 }
+
+            if not data.get('snapshot_establecimiento'):
+                data['snapshot_establecimiento'] = {
+                    'codigo': data.get('establecimiento_codigo') or '001',
+                    'direccion': data.get('establecimiento_direccion') or data.get('emisor_direccion', '')
+                }
+
+            if not data.get('snapshot_punto_emision'):
+                data['snapshot_punto_emision'] = {
+                    'codigo': data.get('punto_emision_codigo') or '001'
+                }
+
             return data
 
     def listar_facturas(
@@ -167,12 +188,15 @@ class RepositorioFacturas:
         query = """
             SELECT f.*, 
                    (SELECT fp.forma_pago_sri FROM sistema_facturacion.formas_pago fp WHERE fp.factura_id = f.id ORDER BY fp.created_at ASC LIMIT 1) as forma_pago_sri,
+                   (SELECT fp.plazo FROM sistema_facturacion.formas_pago fp WHERE fp.factura_id = f.id ORDER BY fp.created_at ASC LIMIT 1) as plazo,
+                   (SELECT fp.unidad_tiempo FROM sistema_facturacion.formas_pago fp WHERE fp.factura_id = f.id ORDER BY fp.created_at ASC LIMIT 1) as unidad_tiempo,
                    COALESCE(cc.saldo_pendiente, f.total) as saldo_pendiente,
                    c.razon_social as cliente_nombre, 
                    c.identificacion as cliente_identificacion,
                    c.tipo_identificacion as cliente_tipo_identificacion,
                    c.email as cliente_email,
                    c.direccion as cliente_direccion,
+                   c.telefono as cliente_telefono,
                    e.razon_social as emisor_nombre,
                    e.nombre_comercial as emisor_nombre_comercial,
                    e.ruc as emisor_ruc,
@@ -180,11 +204,16 @@ class RepositorioFacturas:
                    e.email as emisor_email,
                    e.tipo_contribuyente as emisor_tipo,
                    e.obligado_contabilidad as emisor_obligado,
-                   e.logo_url as emisor_logo
+                   e.logo_url as emisor_logo,
+                   es.codigo as establecimiento_codigo,
+                   es.direccion as establecimiento_direccion,
+                   pe.codigo as punto_emision_codigo
             FROM sistema_facturacion.facturas f
             LEFT JOIN sistema_facturacion.clientes c ON f.cliente_id = c.id
             LEFT JOIN sistema_facturacion.empresas e ON f.empresa_id = e.id
             LEFT JOIN sistema_facturacion.cuentas_cobrar cc ON f.id = cc.factura_id
+            LEFT JOIN sistema_facturacion.establecimientos es ON f.establecimiento_id = es.id
+            LEFT JOIN sistema_facturacion.puntos_emision pe ON f.punto_emision_id = pe.id
             WHERE 1=1
         """
         params = []
@@ -245,7 +274,8 @@ class RepositorioFacturas:
                         'numero_identificacion': r.get('cliente_identificacion'), # Alias para frontend
                         'tipo_identificacion': r.get('cliente_tipo_identificacion') or 'CEDULA',
                         'email': r.get('cliente_email'),
-                        'direccion': r.get('cliente_direccion')
+                        'direccion': r.get('cliente_direccion'),
+                        'telefono': r.get('cliente_telefono') or ''
                     }
                 
                 if not r.get('snapshot_empresa'):
@@ -258,6 +288,17 @@ class RepositorioFacturas:
                         'tipo_contribuyente': r.get('emisor_tipo') or 'NATURAL',
                         'obligado_contabilidad': r.get('emisor_obligado') or False,
                         'logo_url': r.get('emisor_logo')
+                    }
+                    
+                if not r.get('snapshot_establecimiento'):
+                    r['snapshot_establecimiento'] = {
+                        'codigo': r.get('establecimiento_codigo') or '001',
+                        'direccion': r.get('establecimiento_direccion') or r.get('emisor_direccion', '')
+                    }
+
+                if not r.get('snapshot_punto_emision'):
+                    r['snapshot_punto_emision'] = {
+                        'codigo': r.get('punto_emision_codigo') or '001'
                     }
             return rows
 
