@@ -137,3 +137,4 @@ CREATE TABLE IF NOT EXISTS sistema_facturacion.facturas (
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
         COMMENT 'Timestamp de última modificación'
 );
+a
