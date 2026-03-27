@@ -120,7 +120,16 @@ class ServicioSuscripciones:
         
         monto = data.monto or plan['precio_anual']
         fecha_inicio = data.fecha_inicio_periodo or datetime.now()
-        fecha_fin = data.fecha_fin_periodo or (fecha_inicio + timedelta(days=30))
+        
+        if data.fecha_fin_periodo:
+            fecha_fin = data.fecha_fin_periodo
+        else:
+            try:
+                # 24 Mar 2026 -> 24 Mar 2027 -> 23 Mar 2027
+                fecha_fin = fecha_inicio.replace(year=fecha_inicio.year + 1) - timedelta(days=1)
+            except ValueError:
+                # 29 feb -> 28 feb del prox año
+                fecha_fin = (fecha_inicio + timedelta(days=1)).replace(year=fecha_inicio.year + 1) - timedelta(days=2)
         
         pago_dict = {
             "empresa_id": data.empresa_id,

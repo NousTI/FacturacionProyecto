@@ -75,7 +75,7 @@ class RepositorioSuscripciones:
     def listar_empresas_por_plan(self, plan_id: UUID, vendedor_id: Optional[UUID] = None) -> List[dict]:
         query = """
             SELECT e.id, e.razon_social, e.nombre_comercial, e.ruc, e.email, e.telefono, 
-                   s.fecha_inicio as fecha_activacion, s.fecha_fin as fecha_vencimiento, 
+                   s.fecha_inicio, s.fecha_fin, 
                    s.estado, e.activo, e.created_at
             FROM sistema_facturacion.empresas e
             JOIN sistema_facturacion.suscripciones s ON e.id = s.empresa_id

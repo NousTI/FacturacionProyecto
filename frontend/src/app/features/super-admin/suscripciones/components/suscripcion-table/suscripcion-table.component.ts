@@ -39,7 +39,7 @@ import { Suscripcion } from '../../services/suscripcion.service';
                 <td>
                   <span class="badge-cycle">{{ sub.plan_nombre || 'Sin Plan' }}</span>
                   <div class="mt-1" *ngIf="sub.precio_plan">
-                    <small class="text-muted">{{ sub.precio_plan | currency:'USD' }}/mes</small>
+                    <small class="text-muted">{{ sub.precio_plan | currency:'USD' }}/año</small>
                   </div>
                 </td>
                 <td>

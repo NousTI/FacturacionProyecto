@@ -33,7 +33,7 @@ import { Plan } from '../../services/plan.service';
             <div class="price-header">
               <span class="currency">$</span>
               <span class="amount">{{ plan.price | number:'1.2-2' }}</span>
-              <span class="period">/mes</span>
+              <span class="period">/año</span>
             </div>
             <div class="plan-status">
               <span class="status-badge" [ngClass]="plan.status === 'ACTIVO' ? 'active' : 'inactive'">

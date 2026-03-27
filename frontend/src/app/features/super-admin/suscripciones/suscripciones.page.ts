@@ -282,7 +282,7 @@ export class SuscripcionesPage implements OnInit {
         let estado: any = c.estado || (c.activo ? 'ACTIVA' : 'SUSPENDIDA');
         
         // Logical check for UI indicators (overdue badge)
-        const isOverdue = c.fecha_vencimiento ? new Date(c.fecha_vencimiento) < new Date() : false;
+        const isOverdue = c.fecha_fin ? new Date(c.fecha_fin) < new Date() : false;
 
         return {
             id: c.suscripcion_id || c.id, 
@@ -291,8 +291,8 @@ export class SuscripcionesPage implements OnInit {
             plan_id: c.plan_id,
             plan_nombre: c.plan_nombre,
             precio_plan: c.precio_plan,
-            fecha_inicio: c.fecha_inicio || c.created_at,
-            fecha_fin: c.fecha_vencimiento,
+            fecha_inicio: c.fecha_inicio,
+            fecha_fin: c.fecha_fin,
             estado: estado,
             estado_pago: isOverdue ? 'PENDIENTE' : 'PAGADO',
             created_at: c.created_at || '',
