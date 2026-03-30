@@ -105,6 +105,14 @@ import { forkJoin, switchMap, tap, catchError, of, filter, take, map, Observable
                     </div>
                   </div>
 
+                  <div class="col-md-12 col-lg-3">
+                    <label class="form-label-lux">Guía Remisión</label>
+                    <div class="input-lux-wrapper input-sm">
+                      <i class="bi bi-truck"></i>
+                      <input type="text" class="input-lux" formControlName="guia_remision" placeholder="000-000-000000000">
+                    </div>
+                  </div>
+
                   <div class="col-md-12 col-lg-5">
                     <label class="form-label-lux">Forma de Pago SRI</label>
                     <div class="select-lux-wrapper">
@@ -199,9 +207,7 @@ import { forkJoin, switchMap, tap, catchError, of, filter, take, map, Observable
                           <div class="select-lux-wrapper">
                             <select class="select-lux input-sm" formControlName="tipo_iva">
                               <option value="0">0%</option>
-                              <option value="2">12%</option>
-                              <option value="3">14%</option>
-                              <option value="4">15%</option>
+                              <option value="4">15% (Actual)</option>
                             </select>
                           </div>
                         </td>
@@ -239,16 +245,32 @@ import { forkJoin, switchMap, tap, catchError, of, filter, take, map, Observable
                         <span class="fw-bold">{{ totals.subtotal_sin_iva | currency:'USD' }}</span>
                       </div>
                       <div class="d-flex justify-content-between mb-2">
-                        <span class="text-muted small-cap">Subtotal Con IVA</span>
+                        <span class="text-muted small-cap">Subtotal 15%</span>
                         <span class="fw-bold">{{ totals.subtotal_con_iva | currency:'USD' }}</span>
+                      </div>
+                      <div class="d-flex justify-content-between mb-2">
+                        <span class="text-muted small-cap">Subtotal 0%</span>
+                        <span class="fw-bold">{{ totals.subtotal_sin_iva | currency:'USD' }}</span>
+                      </div>
+                      <div class="d-flex justify-content-between mb-2" *ngIf="totals.subtotal_no_objeto_iva > 0">
+                        <span class="text-muted small-cap">Subtotal No Objeto</span>
+                        <span class="fw-bold">{{ totals.subtotal_no_objeto_iva | currency:'USD' }}</span>
+                      </div>
+                      <div class="d-flex justify-content-between mb-2" *ngIf="totals.subtotal_exento_iva > 0">
+                        <span class="text-muted small-cap">Subtotal Exento</span>
+                        <span class="fw-bold">{{ totals.subtotal_exento_iva | currency:'USD' }}</span>
                       </div>
                        <div class="d-flex justify-content-between mb-2">
                         <span class="text-muted small-cap">Descuento Total</span>
                         <span class="text-danger fw-bold">- {{ totals.descuento | currency:'USD' }}</span>
                       </div>
-                      <div class="d-flex justify-content-between mb-3">
-                        <span class="text-muted small-cap">IVA Acumulado</span>
+                      <div class="d-flex justify-content-between mb-2">
+                        <span class="text-muted small-cap">IVA 15%</span>
                         <span class="fw-bold text-dark">{{ totals.iva | currency:'USD' }}</span>
+                      </div>
+                      <div class="d-flex justify-content-between mb-3" *ngIf="totals.ice > 0">
+                        <span class="text-muted small-cap">ICE Total</span>
+                        <span class="fw-bold text-dark">{{ totals.ice | currency:'USD' }}</span>
                       </div>
                       <div class="total-divider mb-3"></div>
                       <div class="d-flex justify-content-between align-items-center">
@@ -513,8 +535,11 @@ export class CreateFacturaModalComponent implements OnInit {
   totals = {
     subtotal_sin_iva: 0,
     subtotal_con_iva: 0,
+    subtotal_no_objeto_iva: 0,
+    subtotal_exento_iva: 0,
     descuento: 0,
     iva: 0,
+    ice: 0,
     total: 0
   };
 
@@ -536,9 +561,11 @@ export class CreateFacturaModalComponent implements OnInit {
       cliente_id: [null, Validators.required],
       forma_pago_sri: ['01', Validators.required],
       estado_pago: ['PENDIENTE', Validators.required],
+      guia_remision: [null, [Validators.pattern(/^\d{3}-\d{3}-\d{9}$/)]],
       plazo: [0],
       unidad_tiempo: ['DIAS'],
       observaciones: [''],
+      ice: [0],
       detalles: this.fb.array([])
     });
   }
@@ -629,9 +656,11 @@ export class CreateFacturaModalComponent implements OnInit {
           cliente_id: factura.cliente_id,
           forma_pago_sri: factura.forma_pago_sri,
           estado_pago: factura.estado_pago || 'PENDIENTE',
+          guia_remision: factura.guia_remision,
           plazo: factura.plazo || 0,
           unidad_tiempo: factura.unidad_tiempo || 'DIAS',
-          observaciones: factura.observaciones || ''
+          observaciones: factura.observaciones || '',
+          ice: factura.ice || 0
         });
 
         // Trigger filtro puntos y setear punto
@@ -747,18 +776,15 @@ export class CreateFacturaModalComponent implements OnInit {
 
   mapIvaCode(percent: number): string {
     if (percent === 0) return '0';
-    if (percent === 12) return '2';
-    if (percent === 14) return '3';
-    if (percent === 15) return '4';
-    return '4'; // Default
+    return '4'; // Default 15% (SRI Code '10')
   }
 
   getIvaRate(code: string): number {
     switch (code) {
       case '0': return 0;
-      case '2': return 0.12;
-      case '3': return 0.14;
       case '4': return 0.15;
+      case '6': return 0; // No objeto
+      case '7': return 0; // Exento
       default: return 0;
     }
   }
@@ -772,6 +798,8 @@ export class CreateFacturaModalComponent implements OnInit {
   calculateTotals() {
     let sub_sin_iva = 0;
     let sub_con_iva = 0;
+    let sub_no_objeto = 0;
+    let sub_exento = 0;
     let total_desc = 0;
     let total_iva = 0;
 
@@ -785,30 +813,43 @@ export class CreateFacturaModalComponent implements OnInit {
       const base_imponible = Math.max(0, subtotal_linea_gross - descuento_linea);
       const ivaRate = this.getIvaRate(val.tipo_iva);
 
-      if (ivaRate === 0) {
+      if (val.tipo_iva === '0') {
         sub_sin_iva += subtotal_linea_gross;
-      } else {
+      } else if (val.tipo_iva === '4') {
         sub_con_iva += subtotal_linea_gross;
         total_iva += (base_imponible * ivaRate);
+      } else if (val.tipo_iva === '6') {
+        sub_no_objeto += subtotal_linea_gross;
+      } else if (val.tipo_iva === '7') {
+        sub_exento += subtotal_linea_gross;
       }
 
       total_desc += descuento_linea;
     });
 
-    sub_sin_iva = Number(sub_sin_iva.toFixed(2));
-    sub_con_iva = Number(sub_con_iva.toFixed(2));
-    total_desc = Number(total_desc.toFixed(2));
-    total_iva = Number(total_iva.toFixed(2));
+    const ice_total = parseFloat(this.facturaForm.get('ice')?.value) || 0;
 
-    const total_final = Number(((sub_sin_iva + sub_con_iva) - total_desc + total_iva).toFixed(2));
+    this.totals.subtotal_sin_iva = Number(sub_sin_iva.toFixed(2));
+    this.totals.subtotal_con_iva = Number(sub_con_iva.toFixed(2));
+    this.totals.subtotal_no_objeto_iva = Number(sub_no_objeto.toFixed(2));
+    this.totals.subtotal_exento_iva = Number(sub_exento.toFixed(2));
+    this.totals.descuento = Number(total_desc.toFixed(2));
+    this.totals.iva = Number(total_iva.toFixed(2));
+    this.totals.ice = Number(ice_total.toFixed(2));
 
-    this.totals = {
-      subtotal_sin_iva: sub_sin_iva,
-      subtotal_con_iva: sub_con_iva,
-      descuento: total_desc,
-      iva: total_iva,
-      total: total_final
-    };
+    // Total = bases + iva + ice + propina (0 por ahora) - descuento - retenciones (0 en creación)
+    const grand_total = (
+      this.totals.subtotal_sin_iva + 
+      this.totals.subtotal_con_iva + 
+      this.totals.subtotal_no_objeto_iva + 
+      this.totals.subtotal_exento_iva + 
+      this.totals.iva + 
+      this.totals.ice
+    ) - 0; // Menos descuento ya está implícito en el cálculo de las bases según lógica SRI a veces, 
+           // pero aquí las bases sub_* son gross. 
+           // La lógica de backend es: total = bases + iva + ice + propina - descuento - retenciones.
+    
+    this.totals.total = Number((grand_total - this.totals.descuento).toFixed(2));
   }
 
   save() {
@@ -830,15 +871,19 @@ export class CreateFacturaModalComponent implements OnInit {
       observaciones: formVal.observaciones,
       subtotal_sin_iva: Number(this.totals.subtotal_sin_iva.toFixed(2)),
       subtotal_con_iva: Number(this.totals.subtotal_con_iva.toFixed(2)),
+      subtotal_no_objeto_iva: Number(this.totals.subtotal_no_objeto_iva.toFixed(2)),
+      subtotal_exento_iva: Number(this.totals.subtotal_exento_iva.toFixed(2)),
       descuento: Number(this.totals.descuento.toFixed(2)),
       iva: Number(this.totals.iva.toFixed(2)),
+      ice: Number(this.totals.ice.toFixed(2)),
       total: Number(this.totals.total.toFixed(2)),
       propina: 0,
       retencion_iva: 0,
       retencion_renta: 0,
-      ambiente: 1, // Default, sera ignorado en update
+      ambiente: 1, 
       tipo_emision: 1,
       forma_pago_sri: formVal.forma_pago_sri,
+      guia_remision: formVal.guia_remision,
       plazo: formVal.forma_pago_sri !== '01' ? formVal.plazo : null,
       unidad_tiempo: formVal.forma_pago_sri !== '01' ? formVal.unidad_tiempo : null,
       origen: 'MANUAL'

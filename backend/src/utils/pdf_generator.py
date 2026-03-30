@@ -114,7 +114,7 @@ def crear_ride_factura(factura_data: dict):
     for detalle in factura_data.get("detalles", []):
         subt = float(detalle.get("subtotal", 0.0))
         tipo_iva = str(detalle.get("tipo_iva", "")).upper()
-        if tipo_iva == "15" or tipo_iva == "12":
+        if tipo_iva == "15" or tipo_iva == "10":
             subtotal_15 += subt
         elif tipo_iva == "0":
             subtotal_0 += subt

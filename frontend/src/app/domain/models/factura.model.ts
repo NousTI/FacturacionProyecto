@@ -60,6 +60,7 @@ export interface Factura {
     forma_pago_sri: string; // '01', etc
     plazo?: number;
     unidad_tiempo?: 'DIAS' | 'MESES' | 'ANIOS';
+    guia_remision?: string;
 
     estado: 'BORRADOR' | 'EN_PROCESO' | 'AUTORIZADA' | 'DEVUELTA' | 'NO_AUTORIZADA' | 'RECHAZADA' | 'ANULADA' | 'ERROR_TECNICO';
     estado_pago: 'PENDIENTE' | 'PAGADO' | 'PARCIAL' | 'VENCIDO';
@@ -72,7 +73,10 @@ export interface Factura {
     // Montos
     subtotal_sin_iva: number;
     subtotal_con_iva: number;
+    subtotal_no_objeto_iva: number;
+    subtotal_exento_iva: number;
     iva: number;
+    ice: number;
     descuento: number;
     propina: number;
     retencion_iva: number;
@@ -108,13 +112,17 @@ export interface FacturaCreacion {
     forma_pago_sri?: string;
     plazo?: number;
     unidad_tiempo?: 'DIAS' | 'MESES' | 'ANIOS';
+    guia_remision?: string;
 
     fecha_emision: string;
     fecha_vencimiento?: string;
 
     subtotal_sin_iva?: number;
     subtotal_con_iva?: number;
+    subtotal_no_objeto_iva?: number;
+    subtotal_exento_iva?: number;
     iva?: number;
+    ice?: number;
     descuento?: number;
     propina?: number;
     retencion_iva?: number;

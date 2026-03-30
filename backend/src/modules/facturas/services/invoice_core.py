@@ -106,9 +106,9 @@ class ServicioFacturaCore:
             valor_iva_detalle = float(d.get('valor_iva', 0))
             tipo_iva = d.get('tipo_iva', '0')
             
-            # Clasificar según el tipo de IVA
+            # Clasificar según el tipo de IVA (Solo 15% y 0% permitidos)
             tipo_iva_str = str(tipo_iva).upper()
-            if tipo_iva_str in ['12', '15', '2', '10']:
+            if tipo_iva_str in ['15', '10']:
                 subtotal_con_iva += subtotal_detalle
                 total_iva += valor_iva_detalle
             elif tipo_iva_str in ['0']:

@@ -135,7 +135,7 @@
                 <tr><td class="font-bold w-1_3">Razón Social:</td><td>{{ factura.snapshot_empresa.razon_social }}</td></tr>
                 <tr><td class="font-bold">Dir. Matriz:</td><td>{{ factura.snapshot_empresa.direccion }}</td></tr>
                 <tr><td class="font-bold">Dir. Sucursal:</td>
-                    <td>xx</td>
+                    <td>{{ factura.snapshot_establecimiento.direccion or '--' }}</td>
                 </tr>
                 <tr><td class="font-bold">Obligado A Llevar Contabilidad:</td><td>{{ 'SI' if factura.snapshot_empresa.obligado_contabilidad else 'NO' }}</td></tr>
                 <tr><td class="font-bold">Contribuyente Régimen:</td>
