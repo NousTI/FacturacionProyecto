@@ -15,6 +15,12 @@ class FacturaDetalleBase(BaseModel):
     subtotal: Decimal
     tipo_iva: str = Field(..., description="Tarifa IVA (ej: '0', '2', '3') o porcentaje")
     valor_iva: Decimal
+    
+    # NUEVOS CAMPOS SRI
+    codigo_impuesto: str = '2'
+    tarifa_iva: Decimal = Decimal('0.00')
+    base_imponible: Decimal = Decimal('0.00')
+    
     costo_unitario: Optional[Decimal] = None
 
 class FacturaDetalleCreacion(BaseModel):
@@ -29,8 +35,13 @@ class FacturaDetalleCreacion(BaseModel):
     precio_unitario: Decimal = Field(..., ge=0)
     descuento: Decimal = Field(default=Decimal(0), ge=0)
     subtotal: Optional[Decimal] = None  # Se calcula en el backend
-    tipo_iva: str = Field(..., description="Tarifa IVA (ej: '0', '2', '3') o porcentaje")
+    tipo_iva: str = Field(..., description="Código SRI Tarifa IVA (ej: '0', '2', '3', '4', '10')")
     valor_iva: Optional[Decimal] = None  # Se calcula en el backend
+    
+    # NUEVOS CAMPOS SRI
+    codigo_impuesto: str = Field(default='2', description="Código del impuesto (2=IVA SRI)")
+    tarifa_iva: Optional[Decimal] = Field(default=Decimal(0), description="Porcentaje real (ej: 0.00, 15.00)")
+    base_imponible: Optional[Decimal] = None  # Suele ser igual al subtotal
     costo_unitario: Optional[Decimal] = None
 
 class FacturaDetalleActualizacion(BaseModel):

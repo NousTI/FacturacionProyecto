@@ -92,18 +92,22 @@ class ServicioFacturaCore:
             subtotal_linea = round((cantidad * precio) - descuento, 2)
             
             det_payload['subtotal'] = subtotal_linea
+            det_payload['base_imponible'] = subtotal_linea
             
-            # Calcular IVA línea si no viene o para asegurar consistencia
+            # Mapeo exacto SRI: Código -> Tarifa
             t_iva = str(det_payload.get('tipo_iva', '0'))
-            rate = 0.15 if t_iva in ['4', '15', '10'] else 0.0
-            det_payload['valor_iva'] = round(subtotal_linea * rate, 2)
+            mapping = {'0': 0.0, '2': 12.0, '3': 14.0, '4': 15.0, '5': 5.0, '10': 13.0}
+            rate_percent = mapping.get(t_iva, 0.0)
+            
+            det_payload['tarifa_iva'] = rate_percent
+            det_payload['codigo_impuesto'] = '2' # 2=IVA 
+            det_payload['valor_iva'] = round(subtotal_linea * (rate_percent / 100.0), 2)
             
             det_guardado = self.repo.crear_detalle(det_payload)
             if det_guardado:
                 detalles_guardados.append(det_guardado)
 
         # 5. RECALCULO CRÍTICO: Sincronizar cabecera con productos reales
-        # Esto ignora cualquier error de suma que venga del frontend
         self.recalcular_totales(factura_id)
         
         # Obtener la factura actualizada con los totales reales
@@ -141,19 +145,23 @@ class ServicioFacturaCore:
             valor_iva_detalle = float(d.get('valor_iva', 0))
             tipo_iva = d.get('tipo_iva', '0')
             
-            # Clasificar según el tipo de IVA (Solo 15% y 0% permitidos)
-            tipo_iva_str = str(tipo_iva).upper()
-            if tipo_iva_str in ['15', '10']:
+            # Clasificar según el tipo de IVA del SRI (0=0%, 2=12%, 3=14%, 4=15%, 5=5%, 10=13%)
+            tipo_iva_str = str(tipo_iva).strip()
+            
+            # Códigos que representan IVA con valor (positivos)
+            if tipo_iva_str in ['2', '3', '4', '5', '10']:
                 subtotal_con_iva += subtotal_detalle
                 total_iva += valor_iva_detalle
-            elif tipo_iva_str in ['0']:
+            # Códigos que representan IVA 0%
+            elif tipo_iva_str == '0':
                 subtotal_sin_iva += subtotal_detalle
-            elif 'NO_OBJETO' in tipo_iva_str or tipo_iva_str == '6':
+            # Códigos que representan No Objeto o Exento
+            elif tipo_iva_str in ['6', 'NO_OBJETO']:
                 subtotal_no_objeto_iva += subtotal_detalle
-            elif 'EXENTO' in tipo_iva_str or tipo_iva_str == '7':
+            elif tipo_iva_str in ['7', 'EXENTO']:
                 subtotal_exento_iva += subtotal_detalle
             else:
-                # Fallback por si acaso
+                # Fallback: asumimos sin IVA si no se reconoce
                 subtotal_sin_iva += subtotal_detalle
             
             descuento_detalles += float(d.get('descuento', 0))
@@ -179,11 +187,15 @@ class ServicioFacturaCore:
             retencion_renta
         )
         
+        # Total Sin Impuestos = Suma de todas las bases antes de IVA
+        total_sin_impuestos = subtotal_sin_iva + subtotal_con_iva + subtotal_no_objeto_iva + subtotal_exento_iva
+
         update_data = {
             "subtotal_sin_iva": round(subtotal_sin_iva, 2),
             "subtotal_con_iva": round(subtotal_con_iva, 2),
             "subtotal_no_objeto_iva": round(subtotal_no_objeto_iva, 2),
             "subtotal_exento_iva": round(subtotal_exento_iva, 2),
+            "total_sin_impuestos": round(total_sin_impuestos, 2),
             "iva": round(total_iva, 2),
             "ice": round(ice, 2),
             "total": round(total_calculado, 2)

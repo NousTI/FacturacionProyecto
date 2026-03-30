@@ -115,6 +115,10 @@ CREATE TABLE IF NOT EXISTS sistema_facturacion.facturas (
         CHECK (ice >= 0)
         COMMENT 'Impuesto a los Consumos Especiales (ICE)',
 
+    total_sin_impuestos NUMERIC(12,2) NOT NULL DEFAULT 0 
+        CHECK (total_sin_impuestos >= 0)
+        COMMENT 'Suma de todos los subtotales antes de impuestos (nodo totalSinImpuestos SRI)',
+
     total NUMERIC(12,2) NOT NULL 
         CHECK (total = ROUND(subtotal_sin_iva + subtotal_con_iva + subtotal_no_objeto_iva + subtotal_exento_iva + iva + ice + propina - descuento - retencion_iva - retencion_renta, 2))
 

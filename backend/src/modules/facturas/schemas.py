@@ -268,6 +268,7 @@ class FacturaLectura(BaseModel):
     ice: Decimal
     descuento: Decimal
     propina: Decimal
+    total_sin_impuestos: Decimal
     retencion_iva: Decimal
     retencion_renta: Decimal
     total: Decimal
