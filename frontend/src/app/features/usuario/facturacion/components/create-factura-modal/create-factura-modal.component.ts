@@ -15,12 +15,13 @@ import { PuntoEmision } from '../../../../../domain/models/punto-emision.model';
 import { FacturaCreacion, FacturaDetalleCreacion, Factura, FacturaDetalle } from '../../../../../domain/models/factura.model';
 import { ConfigSRI } from '../../../certificado-sri/models/sri-config.model';
 import { ConfirmModalComponent } from '../../../../../shared/components/confirm-modal/confirm-modal.component';
-import { forkJoin, switchMap, tap, catchError, of, filter, take, map, Observable } from 'rxjs';
+import { forkJoin, switchMap, tap, catchError, of, filter, take, map, Observable, fromEvent, Subject, takeUntil } from 'rxjs';
+import { CreateClienteModalComponent } from '../../../clientes/components/create-cliente-modal/create-cliente-modal.component';
 
 @Component({
   selector: 'app-create-factura-modal',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, ConfirmModalComponent],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, ConfirmModalComponent, CreateClienteModalComponent],
   template: `
     <div class="modal-backdrop fade show" style="display: block; background-color: rgba(0,0,0,0.4); backdrop-filter: blur(4px);"></div>
     <div class="modal fade show" style="display: block;" tabindex="-1">
@@ -64,15 +65,41 @@ import { forkJoin, switchMap, tap, catchError, of, filter, take, map, Observable
               <!-- CABECERA UNIFICADA (Cliente, Emisión y Pago) -->
               <div class="section-lux mb-3 py-3">
                 <div class="row g-2 align-items-end">
-                  
-                  <!-- FILA 1: CLIENTE (PRIORIDAD) -->
+                                   <!-- FILA 1: CLIENTE Y EMISIÓN -->
                   <div class="col-md-12 col-lg-6">
                     <label class="form-label-lux">Cliente / Receptor</label>
-                    <div class="select-lux-wrapper">
-                      <select class="select-lux input-sm" formControlName="cliente_id">
-                        <option [ngValue]="null" disabled>Seleccione Cliente...</option>
-                        <option *ngFor="let cli of clientes" [value]="cli.id">{{ cli.razon_social }} ({{ cli.identificacion }})</option>
-                      </select>
+                    <div class="d-flex gap-2">
+                      <div class="search-select-lux-wrapper flex-grow-1">
+                        <div class="input-lux-wrapper input-sm">
+                          <i class="bi bi-search"></i>
+                          <input type="text" 
+                                 class="input-lux" 
+                                 placeholder="Buscar por nombre o cédula..." 
+                                 [(ngModel)]="searchTerm" 
+                                 [ngModelOptions]="{standalone: true}"
+                                 (focus)="onClientSearchFocus()"
+                                 (input)="filterClientes()"
+                                 (click)="$event.stopPropagation()">
+                          <button type="button" class="btn-clear-search" *ngIf="searchTerm" (click)="clearClientSearch()">
+                            <i class="bi bi-x"></i>
+                          </button>
+                        </div>
+                        
+                        <!-- Dropdown Results -->
+                        <div class="search-results-lux custom-scrollbar" *ngIf="isClientDropdownOpen" (click)="$event.stopPropagation()">
+                          <div class="search-item-lux" *ngFor="let cli of filteredClientes" (click)="selectCliente(cli)">
+                            <div class="fw-bold">{{ cli.razon_social }}</div>
+                            <div class="small-info">{{ cli.identificacion }} • {{ cli.email }}</div>
+                          </div>
+                          <div class="search-item-lux no-results p-3 text-center" *ngIf="filteredClientes.length === 0 && searchTerm">
+                            <span class="small text-muted">No se encontraron resultados</span>
+                          </div>
+                        </div>
+                      </div>
+                      <button type="button" class="btn-create-client-lux flex-shrink-0" (click)="openCreateClienteModal()" title="Nuevo Cliente">
+                        <i class="bi bi-person-plus-fill"></i>
+                        <span>Nuevo</span>
+                      </button>
                     </div>
                   </div>
 
@@ -96,8 +123,8 @@ import { forkJoin, switchMap, tap, catchError, of, filter, take, map, Observable
                     </div>
                   </div>
 
-                  <!-- FILA 2: FECHA Y PAGO -->
-                  <div class="col-md-12 col-lg-3">
+                  <!-- FILA 2: FECHA, PAGO Y GUÍA -->
+                  <div class="col-md-6 col-lg-2">
                     <label class="form-label-lux">Fecha Emisión</label>
                     <div class="input-lux-wrapper input-sm">
                       <i class="bi bi-calendar-event"></i>
@@ -105,45 +132,47 @@ import { forkJoin, switchMap, tap, catchError, of, filter, take, map, Observable
                     </div>
                   </div>
 
-                  <div class="col-md-12 col-lg-3">
+                  <div class="col-md-6 col-lg-4">
+                    <label class="form-label-lux">Forma de Pago SRI</label>
+                    <div class="select-lux-wrapper">
+                      <select class="select-lux input-sm" formControlName="forma_pago_sri">
+                        <option value="01">EFECTIVO</option>
+                        <option value="15">COMPENSACIÓN DE DEUDAS</option>
+                        <option value="16">TARJETA DE DÉBITO</option>
+                        <option value="17">DINERO ELECTRÓNICO</option>
+                        <option value="18">TARJETA PREPAGO</option>
+                        <option value="19">TARJETA DE CRÉDITO</option>
+                        <option value="20">SISTEMA FINANCIERO (OTROS)</option>
+                        <option value="21">ENDOSO DE TÍTULOS</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div class="col-md-12 col-lg-3" *ngIf="facturaForm.get('forma_pago_sri')?.value !== '01'">
+                    <div class="row g-1">
+                      <div class="col-6">
+                        <label class="form-label-lux">Plazo</label>
+                        <input type="number" class="input-lux input-sm" formControlName="plazo" min="0">
+                      </div>
+                      <div class="col-6">
+                        <label class="form-label-lux">Unidad</label>
+                        <div class="select-lux-wrapper">
+                          <select class="select-lux input-sm" formControlName="unidad_tiempo">
+                            <option value="DIAS">Días</option>
+                            <option value="MESES">Meses</option>
+                          </select>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div [ngClass]="facturaForm.get('forma_pago_sri')?.value !== '01' ? 'col-md-12 col-lg-3' : 'col-md-12 col-lg-6'">
                     <label class="form-label-lux">Guía Remisión</label>
                     <div class="input-lux-wrapper input-sm">
                       <i class="bi bi-truck"></i>
                       <input type="text" class="input-lux" formControlName="guia_remision" placeholder="000-000-000000000">
                     </div>
                   </div>
-
-                  <div class="col-md-12 col-lg-5">
-                    <label class="form-label-lux">Forma de Pago SRI</label>
-                    <div class="select-lux-wrapper">
-                      <select class="select-lux input-sm" formControlName="forma_pago_sri">
-                        <option value="01">SIN UTILIZACIÓN DEL SISTEMA FINANCIERO (EFECTIVO)</option>
-                        <option value="15">COMPENSACIÓN DE DEUDAS</option>
-                        <option value="16">TARJETA DE DÉBITO</option>
-                        <option value="17">DINERO ELECTRÓNICO</option>
-                        <option value="18">TARJETA PREPAGO</option>
-                        <option value="19">TARJETA DE CRÉDITO</option>
-                        <option value="20">OTROS CON UTILIZACIÓN DEL SISTEMA FINANCIERO</option>
-                        <option value="21">ENDOSO DE TÍTULOS</option>
-                      </select>
-                    </div>
-                  </div>
-
-                  <div class="col-md-6 col-lg-2" *ngIf="facturaForm.get('forma_pago_sri')?.value !== '01'">
-                    <label class="form-label-lux">Plazo</label>
-                    <input type="number" class="input-lux input-sm" formControlName="plazo" min="0" placeholder="0">
-                  </div>
-
-                  <div class="col-md-6 col-lg-2" *ngIf="facturaForm.get('forma_pago_sri')?.value !== '01'">
-                    <label class="form-label-lux">Unidad</label>
-                    <div class="select-lux-wrapper">
-                      <select class="select-lux input-sm" formControlName="unidad_tiempo">
-                        <option value="DIAS">Días</option>
-                        <option value="MESES">Meses</option>
-                      </select>
-                    </div>
-                  </div>
-
                 </div>
               </div>
 
@@ -299,6 +328,14 @@ import { forkJoin, switchMap, tap, catchError, of, filter, take, map, Observable
         </div>
       </div>
     </div>
+
+    <!-- Modal Cliente Nuevo -->
+    <app-create-cliente-modal
+      *ngIf="showCreateClienteModal"
+      [loading]="isCreatingCliente"
+      (onSave)="handleCreateClienteSuccess($event)"
+      (onClose)="showCreateClienteModal = false"
+    ></app-create-cliente-modal>
 
     <!-- Modal de confirmación para eliminar ítem -->
     <app-confirm-modal
@@ -507,6 +544,31 @@ import { forkJoin, switchMap, tap, catchError, of, filter, take, map, Observable
     .custom-scrollbar::-webkit-scrollbar { width: 6px; }
     .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
     .custom-scrollbar::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
+
+    /* SEARCH SELECT STYLES */
+    .search-select-lux-wrapper { position: relative; }
+    .search-results-lux {
+      position: absolute; top: 100%; left: 0; width: 100%;
+      background: white; border: 1px solid #f1f5f9; border-radius: 12px;
+      margin-top: 5px; box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+      max-height: 250px; overflow-y: auto; z-index: 1000;
+    }
+    .search-item-lux {
+      padding: 0.75rem 1rem; cursor: pointer; transition: all 0.2s;
+    }
+    .search-item-lux:hover { background: #f8fafc; }
+    .search-item-lux .small-info { font-size: 0.7rem; color: #94a3b8; font-weight: 500; }
+    .btn-clear-search {
+      position: absolute; right: 0.75rem; top: 50%; transform: translateY(-50%);
+      background: transparent; border: none; color: #94a3b8; font-size: 1.1rem;
+    }
+    .btn-create-client-lux {
+      background: white; border: 1.5px solid #f1f5f9; border-radius: 12px;
+      padding: 0.45rem 0.85rem; height: 38px; display: flex; align-items: center; gap: 0.5rem;
+      color: #161d35; font-weight: 700; font-size: 0.75rem; transition: all 0.2s;
+    }
+    .btn-create-client-lux:hover { background: #f1f5f9; transform: translateY(-2px); border-color: #cbd5e1; }
+    .btn-create-client-lux i { font-size: 1rem; color: #161d35; }
   `]
 })
 export class CreateFacturaModalComponent implements OnInit {
@@ -543,6 +605,17 @@ export class CreateFacturaModalComponent implements OnInit {
     total: 0
   };
 
+  // Searchable Client properties
+  searchTerm = '';
+  isClientDropdownOpen = false;
+  filteredClientes: Cliente[] = [];
+  
+  // Cliente Modal properties
+  showCreateClienteModal = false;
+  isCreatingCliente = false;
+
+  private destroy$ = new Subject<void>();
+
   constructor(
     private fb: FormBuilder,
     private facturasService: FacturasService,
@@ -573,6 +646,21 @@ export class CreateFacturaModalComponent implements OnInit {
   ngOnInit() {
     this.loadData();
     this.setupListeners();
+    this.setupClickAway();
+  }
+
+  ngOnDestroy() {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
+  setupClickAway() {
+    fromEvent(document, 'click')
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => {
+        this.isClientDropdownOpen = false;
+        this.cd.detectChanges();
+      });
   }
 
   get detalles() {
@@ -605,6 +693,7 @@ export class CreateFacturaModalComponent implements OnInit {
       next: (resp: any) => {
         console.log('Catalogos cargados', resp);
         this.clientes = resp.clientes;
+        this.filteredClientes = [...this.clientes];
         this.productos = resp.productos;
         this.establecimientos = resp.establecimientos;
         this.puntosEmision = resp.puntos;
@@ -663,6 +752,12 @@ export class CreateFacturaModalComponent implements OnInit {
           ice: factura.ice || 0
         });
 
+        // Set search term from loaded client
+        const client = this.clientes.find(c => c.id === factura.cliente_id);
+        if (client) {
+          this.searchTerm = `${client.razon_social} (${client.identificacion})`;
+        }
+
         // Trigger filtro puntos y setear punto
         this.filterPuntosEmision(factura.establecimiento_id);
 
@@ -701,6 +796,71 @@ export class CreateFacturaModalComponent implements OnInit {
     });
   }
 
+  // --- CLIENT SEARCH LOGIC ---
+  filterClientes() {
+    const term = this.searchTerm?.trim().toLowerCase() || '';
+    if (!term) {
+      this.filteredClientes = [...this.clientes];
+      this.isClientDropdownOpen = true;
+      return;
+    }
+
+    this.filteredClientes = this.clientes.filter(c => 
+      c.razon_social.toLowerCase().includes(term) || 
+      c.identificacion.includes(term)
+    );
+    this.isClientDropdownOpen = true;
+  }
+
+  onClientSearchFocus() {
+    this.isClientDropdownOpen = true;
+    this.filterClientes();
+  }
+
+  selectCliente(cli: Cliente) {
+    this.facturaForm.patchValue({ cliente_id: cli.id });
+    this.searchTerm = `${cli.razon_social} (${cli.identificacion})`;
+    this.isClientDropdownOpen = false;
+    this.cd.detectChanges();
+  }
+
+  clearClientSearch() {
+    this.searchTerm = '';
+    this.facturaForm.patchValue({ cliente_id: null });
+    this.filteredClientes = [...this.clientes];
+    this.isClientDropdownOpen = false;
+  }
+
+  // --- CLIENT MODAL LOGIC ---
+  openCreateClienteModal() {
+    this.showCreateClienteModal = true;
+  }
+
+  handleCreateClienteSuccess(clienteData: any) {
+    this.isCreatingCliente = true;
+    this.clientesService.createCliente(clienteData).subscribe({
+      next: (resp) => {
+        const nuevoCliente = resp.detalles;
+        if (nuevoCliente) {
+          this.uiService.showToast('Cliente creado exitosamente', 'success');
+          // Add to local list if not already there
+          if (!this.clientes.find(c => c.id === nuevoCliente.id)) {
+            this.clientes.push(nuevoCliente);
+          }
+          // Select it automatically
+          this.selectCliente(nuevoCliente);
+        }
+        this.isCreatingCliente = false;
+        this.showCreateClienteModal = false;
+        this.cd.detectChanges();
+      },
+      error: (err) => {
+        this.uiService.showError(err, 'Error al crear cliente');
+        this.isCreatingCliente = false;
+      }
+    });
+  }
+
   filterPuntosEmision(estabId: string) {
     this.puntosEmisionFiltered = this.puntosEmision.filter(pe => pe.establecimiento_id === estabId && pe.activo);
 
@@ -730,7 +890,7 @@ export class CreateFacturaModalComponent implements OnInit {
       producto_id: [data?.producto_id || null],
       descripcion: [data?.descripcion || '', Validators.required],
       cantidad: [data?.cantidad || 1, [Validators.required, Validators.min(0.01)]],
-      precio_unitario: [data?.precio_unitario || 0, [Validators.required, Validators.min(0)]],
+      precio_unitario: [data?.precio_unitario || 0, [Validators.required, Validators.min(0.01)]],
       descuento: [data?.descuento || 0, [Validators.min(0)]],
       tipo_iva: [data?.tipo_iva || '4', Validators.required] // Default 15%
     });
