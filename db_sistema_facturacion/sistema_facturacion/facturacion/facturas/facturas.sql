@@ -42,6 +42,9 @@ CREATE TABLE IF NOT EXISTS sistema_facturacion.facturas (
     numero_autorizacion VARCHAR(49) UNIQUE
         COMMENT 'Número de autorización SRI - se obtiene tras validación exitosa',
     
+    guia_remision TEXT
+        COMMENT 'Número de guía de remisión relacionada (Formato: NNN-NNN-NNNNNNNNN)',
+    
     -- Tipo de documento SRI: 01=Factura, 04=Nota Crédito, 05=Nota Débito
     tipo_documento VARCHAR(2) DEFAULT '01' 
         CHECK (tipo_documento IN ('01', '04', '05'))
@@ -79,6 +82,14 @@ CREATE TABLE IF NOT EXISTS sistema_facturacion.facturas (
     subtotal_con_iva NUMERIC(12,2) NOT NULL DEFAULT 0 
         CHECK (subtotal_con_iva >= 0)
         COMMENT 'Subtotal con IVA',
+
+    subtotal_no_objeto_iva NUMERIC(12,2) NOT NULL DEFAULT 0 
+        CHECK (subtotal_no_objeto_iva >= 0)
+        COMMENT 'Subtotal no objeto de IVA',
+    
+    subtotal_exento_iva NUMERIC(12,2) NOT NULL DEFAULT 0 
+        CHECK (subtotal_exento_iva >= 0)
+        COMMENT 'Subtotal exento de IVA',
     
     iva NUMERIC(12,2) NOT NULL DEFAULT 0 
         CHECK (iva >= 0)
@@ -100,10 +111,14 @@ CREATE TABLE IF NOT EXISTS sistema_facturacion.facturas (
         CHECK (retencion_renta >= 0)
         COMMENT 'Retención de Renta',
     
-    total NUMERIC(12,2) NOT NULL 
-        CHECK (total = ROUND(subtotal_sin_iva + subtotal_con_iva + iva + propina - descuento - retencion_iva - retencion_renta, 2))
+    ice NUMERIC(12,2) NOT NULL DEFAULT 0 
+        CHECK (ice >= 0)
+        COMMENT 'Impuesto a los Consumos Especiales (ICE)',
 
-        COMMENT 'Total = subtotal + propina - descuento - retenciones',
+    total NUMERIC(12,2) NOT NULL 
+        CHECK (total = ROUND(subtotal_sin_iva + subtotal_con_iva + subtotal_no_objeto_iva + subtotal_exento_iva + iva + ice + propina - descuento - retencion_iva - retencion_renta, 2))
+
+        COMMENT 'Total = subtotal(0+15+NoObjeto+Exento) + iva + ice + propina - descuento - retenciones',
 
     -- =============================================
     -- ESTADOS: Ciclo de vida de la factura
@@ -137,4 +152,3 @@ CREATE TABLE IF NOT EXISTS sistema_facturacion.facturas (
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
         COMMENT 'Timestamp de última modificación'
 );
-a

@@ -205,7 +205,7 @@
                 <td class="font-bold pb-1">Dirección:</td>
                 <td class="pb-1" colspan="2">{{ factura.snapshot_cliente.direccion }}</td>
                 <td class="font-bold pb-1 text-right">Guía de Remisión:</td>
-                <td class="pb-1 pl-2">xx</td>
+                <td class="pb-1 pl-2">{{ factura.guia_remision or '--' }}</td>
             </tr>
             <tr>
                 <td class="font-bold">Correo:</td>
@@ -272,11 +272,11 @@
             <table class="totals-table w-full">
                 <tr><td class="totals-label w-1_2">SUBTOTAL 15%</td><td class="text-right">${{ "%.2f"|format(factura.subtotal_con_iva or 0.0) }}</td></tr>
                 <tr><td class="totals-label">SUBTOTAL 0%</td><td class="text-right">${{ "%.2f"|format(factura.subtotal_sin_iva or 0.0) }}</td></tr>
-                <tr><td class="totals-label">SUBTOTAL NO OBJETO DE IVA</td><td class="text-right">xx</td></tr>
-                <tr><td class="totals-label">SUBTOTAL EXENTO DE IVA</td><td class="text-right">xx</td></tr>
+                <tr><td class="totals-label">SUBTOTAL NO OBJETO DE IVA</td><td class="text-right">${{ "%.2f"|format(factura.subtotal_no_objeto_iva|float or 0.0) }}</td></tr>
+                <tr><td class="totals-label">SUBTOTAL EXENTO DE IVA</td><td class="text-right">${{ "%.2f"|format(factura.subtotal_exento_iva|float or 0.0) }}</td></tr>
                 <tr><td class="totals-label">SUBTOTAL SIN IMPUESTOS</td><td class="text-right">${{ "%.2f"|format((factura.subtotal_sin_iva or 0) + (factura.subtotal_con_iva or 0)) }}</td></tr>
                 <tr><td class="totals-label">DESCUENTO</td><td class="text-right">${{ "%.2f"|format(factura.descuento or 0) if factura.descuento is not none else '--' }}</td></tr>
-                <tr><td class="totals-label">ICE</td><td class="text-right">xx</td></tr>
+                <tr><td class="totals-label">ICE</td><td class="text-right">${{ "%.2f"|format(factura.ice|float or 0.0) }}</td></tr>
                 <tr><td class="totals-label">IVA 15%</td><td class="text-right">${{ "%.2f"|format(factura.iva or 0) }}</td></tr>
                 <tr><td class="totals-label">PROPINA</td><td class="text-right">${{ "%.2f"|format(factura.propina or 0) }}</td></tr>
                 <tr class="totals-final"><td class="totals-label totals-final">VALOR TOTAL</td><td class="text-right font-bold">${{ "%.2f"|format(factura.total or 0) }}</td></tr>

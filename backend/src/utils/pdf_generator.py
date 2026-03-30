@@ -98,7 +98,8 @@ def crear_ride_factura(factura_data: dict):
     
     fields_to_check = [
         "numero_autorizacion", "fecha_autorizacion", "guia_remision", 
-        "observaciones", "clave_acceso", "plazo", "unidad_tiempo"
+        "observaciones", "clave_acceso", "plazo", "unidad_tiempo",
+        "ice", "subtotal_no_objeto_iva", "subtotal_exento_iva"
     ]
     for field in fields_to_check:
         if not factura_data.get(field):
