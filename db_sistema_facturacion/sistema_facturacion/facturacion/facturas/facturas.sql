@@ -109,7 +109,7 @@ CREATE TABLE IF NOT EXISTS sistema_facturacion.facturas (
     
     retencion_renta NUMERIC(12,2) DEFAULT 0 
         CHECK (retencion_renta >= 0)
-        COMMENT 'Retención de Renta',
+        COMMENT 'Retención de Rentaa',
     
     ice NUMERIC(12,2) NOT NULL DEFAULT 0 
         CHECK (ice >= 0)
