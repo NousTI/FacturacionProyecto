@@ -96,6 +96,8 @@ class ServicioFacturaCore:
 
         subtotal_sin_iva = 0
         subtotal_con_iva = 0
+        subtotal_no_objeto_iva = 0
+        subtotal_exento_iva = 0
         total_iva = 0
         descuento_detalles = 0
 
@@ -104,30 +106,51 @@ class ServicioFacturaCore:
             valor_iva_detalle = float(d.get('valor_iva', 0))
             tipo_iva = d.get('tipo_iva', '0')
             
-            # Clasificar según si tiene IVA o no
-            if tipo_iva == '0' or valor_iva_detalle == 0:
-                # Sin IVA
-                subtotal_sin_iva += subtotal_detalle
-            else:
-                # Con IVA
+            # Clasificar según el tipo de IVA
+            tipo_iva_str = str(tipo_iva).upper()
+            if tipo_iva_str in ['12', '15', '2', '10']:
                 subtotal_con_iva += subtotal_detalle
                 total_iva += valor_iva_detalle
+            elif tipo_iva_str in ['0']:
+                subtotal_sin_iva += subtotal_detalle
+            elif 'NO_OBJETO' in tipo_iva_str or tipo_iva_str == '6':
+                subtotal_no_objeto_iva += subtotal_detalle
+            elif 'EXENTO' in tipo_iva_str or tipo_iva_str == '7':
+                subtotal_exento_iva += subtotal_detalle
+            else:
+                # Fallback por si acaso
+                subtotal_sin_iva += subtotal_detalle
             
             descuento_detalles += float(d.get('descuento', 0))
         
         # Otros valores actuales de la factura
         propina = float(factura.get('propina', 0))
+        ice = float(factura.get('ice', 0))
         retencion_iva = float(factura.get('retencion_iva', 0))
         retencion_renta = float(factura.get('retencion_renta', 0))
         descuento_global = float(factura.get('descuento', 0))
         
-        # Total = subtotal_sin_iva + subtotal_con_iva + iva + propina - descuento - retenciones
-        total_calculado = subtotal_sin_iva + subtotal_con_iva + total_iva + propina - descuento_global - retencion_iva - retencion_renta
+        # Total = suma de subtotales + iva + ice + propina - descuento - retenciones
+        total_calculado = (
+            subtotal_sin_iva + 
+            subtotal_con_iva + 
+            subtotal_no_objeto_iva + 
+            subtotal_exento_iva + 
+            total_iva + 
+            ice + 
+            propina - 
+            descuento_global - 
+            retencion_iva - 
+            retencion_renta
+        )
         
         update_data = {
             "subtotal_sin_iva": round(subtotal_sin_iva, 2),
             "subtotal_con_iva": round(subtotal_con_iva, 2),
+            "subtotal_no_objeto_iva": round(subtotal_no_objeto_iva, 2),
+            "subtotal_exento_iva": round(subtotal_exento_iva, 2),
             "iva": round(total_iva, 2),
+            "ice": round(ice, 2),
             "total": round(total_calculado, 2)
         }
         
