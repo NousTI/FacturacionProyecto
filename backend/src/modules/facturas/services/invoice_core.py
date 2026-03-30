@@ -40,7 +40,8 @@ class ServicioFacturaCore:
         # Se asume que las validaciones de negocio ya se hicieron en el orquestador
         payload = datos.model_dump()
         
-        # Extraer variables que no pertenecen a la tabla facturas
+        # 1. Extraer detalles y datos de pago que no van en la tabla principal
+        detalles_datos = payload.pop('detalles', [])
         pago_data = {
             "forma_pago_sri": payload.pop('forma_pago_sri', '01'),
             "valor": payload.get('total', 0),
@@ -69,13 +70,47 @@ class ServicioFacturaCore:
             **snapshots_logic
         })
         
+        # 3. Crear cabecera de la factura
         nueva = self.repo.crear_factura(payload)
         if not nueva:
             raise AppError("Error al crear la factura", 500, "DB_ERROR")
             
-        # Pasar esta data en memoria para que el orquestador final (ServiceFactura) la guarde
-        nueva['_pago_inicial'] = pago_data
-        return nueva
+        # 4. Guardar los detalles (productos) uno a uno
+        factura_id = nueva['id']
+        detalles_guardados = []
+        for d in detalles_datos:
+            det_payload = d if isinstance(d, dict) else d.model_dump()
+            det_payload['factura_id'] = str(factura_id)
+            
+            # Quitar IDs si vienen del frontend para evitar conflictos de insert
+            det_payload.pop('id', None)
+
+            # Asegurar cálculos básicos
+            cantidad = float(det_payload.get('cantidad', 1))
+            precio = float(det_payload.get('precio_unitario', 0))
+            descuento = float(det_payload.get('descuento', 0))
+            subtotal_linea = round((cantidad * precio) - descuento, 2)
+            
+            det_payload['subtotal'] = subtotal_linea
+            
+            # Calcular IVA línea si no viene o para asegurar consistencia
+            t_iva = str(det_payload.get('tipo_iva', '0'))
+            rate = 0.15 if t_iva in ['4', '15', '10'] else 0.0
+            det_payload['valor_iva'] = round(subtotal_linea * rate, 2)
+            
+            det_guardado = self.repo.crear_detalle(det_payload)
+            if det_guardado:
+                detalles_guardados.append(det_guardado)
+
+        # 5. RECALCULO CRÍTICO: Sincronizar cabecera con productos reales
+        # Esto ignora cualquier error de suma que venga del frontend
+        self.recalcular_totales(factura_id)
+        
+        # Obtener la factura actualizada con los totales reales
+        factura_final = self.obtener_factura(factura_id)
+        factura_final['_pago_inicial'] = pago_data
+        factura_final['detalles'] = detalles_guardados
+        return factura_final
 
     def obtener_factura(self, id: UUID) -> dict:
         factura = self.repo.obtener_por_id(id)

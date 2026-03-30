@@ -132,6 +132,7 @@ export interface FacturaCreacion {
     origen?: string; // MANUAL
     estado_pago?: 'PENDIENTE' | 'PAGADO' | 'PARCIAL' | 'VENCIDO';
     observaciones?: string;
+    detalles: any[]; // Usar any temporalmente si no está importado, o FacturaDetalleCreacion[] si existe
 }
 
 export interface FacturaResumen {

@@ -87,18 +87,18 @@ class FacturaBase(BaseModel):
 
 
 
+from .schemas_detalle import FacturaDetalleCreacion
+
 class FacturaCreacion(FacturaBase):
     """
-    Schema para crear una factura.
-    
-    NOTAS:
-    - empresa_id y usuario_id se obtienen del contexto de autenticación
-    - Los snapshots se generan automáticamente en el service
-    - La factura se crea en estado BORRADOR
+    Schema para crear una factura incluyendo sus detalles.
     """
     
     empresa_id: Optional[UUID] = Field(None, description="Se obtiene del token si no se proporciona")
     usuario_id: Optional[UUID] = Field(None, description="Se obtiene del token si no se proporciona")
+
+    # Lista de productos de la factura
+    detalles: List[FacturaDetalleCreacion] = Field(..., min_items=1, description="Al menos un producto es requerido")
 
     # DATOS ASOCIADOS (Legacy mode interop para soportar tabla Formas de Pago sin cambiar Frontend)
     forma_pago_sri: str = Field(default='01', pattern=r'^\d{2}$', description="Código SRI de forma de pago")

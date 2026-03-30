@@ -886,7 +886,17 @@ export class CreateFacturaModalComponent implements OnInit {
       guia_remision: formVal.guia_remision,
       plazo: formVal.forma_pago_sri !== '01' ? formVal.plazo : null,
       unidad_tiempo: formVal.forma_pago_sri !== '01' ? formVal.unidad_tiempo : null,
-      origen: 'MANUAL'
+      origen: 'MANUAL',
+      // Mapeamos los detalles para que incluyan campos obligatorios del backend
+      detalles: (formVal.detalles || []).map((d: any) => {
+        const prod = this.productos.find(p => p.id === d.producto_id);
+        return {
+          ...d,
+          codigo_producto: prod?.codigo || '000',
+          nombre: prod?.nombre || d.descripcion || 'Producto',
+          descripcion: d.descripcion || prod?.nombre || ''
+        };
+      })
     };
 
     console.log('Payload de factura a enviar:', datosFactura);
@@ -922,8 +932,15 @@ export class CreateFacturaModalComponent implements OnInit {
 
     operacionPrincipal$.pipe(
       switchMap((factura) => {
-        // Guardar nuevos detalles
-        console.log('Procesando nuevos detalles:', formVal.detalles.length);
+        // IMPORTANTE: Si es una creación nueva (!facturaId), el backend ya guardó los detalles
+        // que enviamos en el payload inicial. Guardarlos aquí de nuevo causaría duplicidad.
+        if (!this.facturaId) {
+          return of(factura);
+        }
+
+        // Si es una EDICIÓN, el backend actual solo actualiza la cabecera, así que 
+        // aquí guardamos los "nuevos" detalles (luego de haber borrado los anteriores arriba)
+        console.log('Procesando nuevos detalles para edición:', formVal.detalles.length);
         const detalles = formVal.detalles.map((d: any) => {
           const product = this.productos.find(p => p.id === d.producto_id);
           const codigo_producto = product?.codigo || 'GENERICO';
