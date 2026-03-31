@@ -81,7 +81,7 @@ import { SriValidators } from '../../../../../shared/utils/sri-validators';
                     (keypress)="onlyNumbers($event)">
                 </div>
                 <div class="error-feedback" *ngIf="vendedorForm.get('documento_identidad')?.invalid && vendedorForm.get('documento_identidad')?.touched">
-                  Identificación inválida o incompleta
+                  {{ vendedorForm.get('documento_identidad')?.errors?.['message'] || 'Identificación inválida o incompleta' }}
                 </div>
               </div>
 

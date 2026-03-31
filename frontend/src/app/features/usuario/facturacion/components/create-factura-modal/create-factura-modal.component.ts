@@ -62,118 +62,157 @@ import { CreateClienteModalComponent } from '../../../clientes/components/create
 
             <form [formGroup]="facturaForm" *ngIf="!isLoadingData">
               
-              <!-- CABECERA UNIFICADA (Cliente, Emisión y Pago) -->
-              <div class="section-lux mb-3 py-3">
-                <div class="row g-2 align-items-end">
-                                   <!-- FILA 1: CLIENTE Y EMISIÓN -->
-                  <div class="col-md-12 col-lg-6">
-                    <label class="form-label-lux">Cliente / Receptor</label>
-                    <div class="d-flex gap-2">
-                      <div class="search-select-lux-wrapper flex-grow-1">
-                        <div class="input-lux-wrapper input-sm">
-                          <i class="bi bi-search"></i>
-                          <input type="text" 
-                                 class="input-lux" 
-                                 placeholder="Buscar por nombre o cédula..." 
-                                 [(ngModel)]="searchTerm" 
-                                 [ngModelOptions]="{standalone: true}"
-                                 (focus)="onClientSearchFocus()"
-                                 (input)="filterClientes()"
-                                 (click)="$event.stopPropagation()">
-                          <button type="button" class="btn-clear-search" *ngIf="searchTerm" (click)="clearClientSearch()">
-                            <i class="bi bi-x"></i>
-                          </button>
-                        </div>
-                        
-                        <!-- Dropdown Results -->
-                        <div class="search-results-lux custom-scrollbar" *ngIf="isClientDropdownOpen" (click)="$event.stopPropagation()">
-                          <div class="search-item-lux" *ngFor="let cli of filteredClientes" (click)="selectCliente(cli)">
-                            <div class="fw-bold">{{ cli.razon_social }}</div>
-                            <div class="small-info">{{ cli.identificacion }} • {{ cli.email }}</div>
-                          </div>
-                          <div class="search-item-lux no-results p-3 text-center" *ngIf="filteredClientes.length === 0 && searchTerm">
-                            <span class="small text-muted">No se encontraron resultados</span>
-                          </div>
-                        </div>
+              <!-- CABECERA DE FACTURACIÓN REDISEÑADA (Dos Columnas) -->
+              <div class="row g-3 mb-4">
+                
+                <!-- COLUMNA IZQUIERDA: CLIENTE / RECEPTOR -->
+                <div class="col-lg-6">
+                  <div class="section-lux h-100 p-3 border shadow-sm rounded-4 bg-white">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                      <div class="section-title-lux mb-0 border-0 p-0" style="color: #1e293b;">
+                        <i class="bi bi-person-bounding-box me-2 text-primary"></i> Cliente / Receptor
                       </div>
-                      <button type="button" class="btn-create-client-lux flex-shrink-0" (click)="openCreateClienteModal()" title="Nuevo Cliente">
-                        <i class="bi bi-person-plus-fill"></i>
+                      <button type="button" class="btn-create-client-lux btn-sm py-1 px-2" (click)="openCreateClienteModal()" title="Nuevo Cliente">
+                        <i class="bi bi-person-plus-fill me-1"></i>
                         <span>Nuevo</span>
                       </button>
                     </div>
-                  </div>
 
-                  <div class="col-md-6 col-lg-3">
-                    <label class="form-label-lux">Establecimiento</label>
-                    <div class="select-lux-wrapper">
-                      <select class="select-lux input-sm" formControlName="establecimiento_id">
-                        <option [ngValue]="null" disabled>Seleccione...</option>
-                        <option *ngFor="let est of establecimientos" [value]="est.id">{{ est.nombre }} ({{ est.codigo }})</option>
-                      </select>
-                    </div>
-                  </div>
-                  
-                  <div class="col-md-6 col-lg-3">
-                    <label class="form-label-lux">Punto Emisión</label>
-                    <div class="select-lux-wrapper">
-                      <select class="select-lux input-sm" formControlName="punto_emision_id">
-                        <option [ngValue]="null" disabled>Seleccione...</option>
-                        <option *ngFor="let pto of puntosEmisionFiltered" [value]="pto.id">{{ pto.codigo }}</option>
-                      </select>
-                    </div>
-                  </div>
-
-                  <!-- FILA 2: FECHA, PAGO Y GUÍA -->
-                  <div class="col-md-6 col-lg-2">
-                    <label class="form-label-lux">Fecha Emisión</label>
-                    <div class="input-lux-wrapper input-sm">
-                      <i class="bi bi-calendar-event"></i>
-                      <input type="date" class="input-lux" formControlName="fecha_emision">
-                    </div>
-                  </div>
-
-                  <div class="col-md-6 col-lg-4">
-                    <label class="form-label-lux">Forma de Pago SRI</label>
-                    <div class="select-lux-wrapper">
-                      <select class="select-lux input-sm" formControlName="forma_pago_sri">
-                        <option value="01">EFECTIVO</option>
-                        <option value="15">COMPENSACIÓN DE DEUDAS</option>
-                        <option value="16">TARJETA DE DÉBITO</option>
-                        <option value="17">DINERO ELECTRÓNICO</option>
-                        <option value="18">TARJETA PREPAGO</option>
-                        <option value="19">TARJETA DE CRÉDITO</option>
-                        <option value="20">SISTEMA FINANCIERO (OTROS)</option>
-                        <option value="21">ENDOSO DE TÍTULOS</option>
-                      </select>
-                    </div>
-                  </div>
-
-                  <div class="col-md-12 col-lg-3" *ngIf="facturaForm.get('forma_pago_sri')?.value !== '01'">
-                    <div class="row g-1">
-                      <div class="col-6">
-                        <label class="form-label-lux">Plazo</label>
-                        <input type="number" class="input-lux input-sm" formControlName="plazo" min="0">
+                    <!-- Buscador -->
+                    <div class="search-select-lux-wrapper mb-3">
+                      <div class="input-lux-wrapper input-sm">
+                        <i class="bi bi-search"></i>
+                        <input type="text" 
+                               class="input-lux" 
+                               placeholder="Buscar por nombre o cédula..." 
+                               [(ngModel)]="searchTerm" 
+                               [ngModelOptions]="{standalone: true}"
+                               (focus)="onClientSearchFocus()"
+                               (input)="filterClientes()"
+                               (click)="$event.stopPropagation()">
+                        <button type="button" class="btn-clear-search" *ngIf="searchTerm" (click)="clearClientSearch()">
+                          <i class="bi bi-x"></i>
+                        </button>
                       </div>
-                      <div class="col-6">
-                        <label class="form-label-lux">Unidad</label>
+                      
+                      <!-- Dropdown Results -->
+                      <div class="search-results-lux custom-scrollbar" *ngIf="isClientDropdownOpen" (click)="$event.stopPropagation()">
+                        <div class="search-item-lux" *ngFor="let cli of filteredClientes" (click)="selectCliente(cli)">
+                          <div class="fw-bold">{{ cli.razon_social }}</div>
+                          <div class="small-info">{{ cli.identificacion }} • {{ cli.email }}</div>
+                        </div>
+                        <div class="search-item-lux no-results p-3 text-center" *ngIf="filteredClientes.length === 0 && searchTerm">
+                          <span class="small text-muted">No se encontraron resultados</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Sugerencias / Rápidos (Solo si no hay búsqueda y no hay seleccionado) -->
+                    <div *ngIf="!selectedCliente && !searchTerm && clientes.length > 0" class="mb-3">
+                      <label class="form-label-lux mb-2" style="font-size: 0.6rem;">Sugerencias rápidas:</label>
+                      <div class="d-flex flex-wrap gap-2">
+                        <button type="button" *ngFor="let cli of clientes.slice(0, 3)" 
+                                (click)="selectCliente(cli)"
+                                class="badge bg-light text-dark border py-2 px-3 rounded-pill text-decoration-none fw-bold"
+                                style="font-size: 0.7rem; cursor: pointer; transition: all 0.2s; border-color: #e2e8f0 !important;">
+                          <i class="bi bi-person-fill me-1 text-primary"></i> {{ cli.razon_social | slice:0:20 }}{{ cli.razon_social.length > 20 ? '...' : '' }}
+                        </button>
+                      </div>
+                    </div>
+
+                    <!-- Info del Cliente Seleccionado -->
+                    <div *ngIf="selectedCliente" class="client-info-card-lux p-3 rounded-3 animate__animated animate__fadeIn" style="background-color: #f8fafc; border: 1px solid #e2e8f0;">
+                      <div class="d-flex justify-content-between align-items-start">
+                        <div class="flex-grow-1 overflow-hidden">
+                          <h6 class="fw-800 mb-2 text-dark text-truncate">{{ selectedCliente.razon_social }}</h6>
+                          <div class="d-flex flex-wrap gap-2 mb-2">
+                            <span class="badge bg-white text-dark border small-cap px-2 py-1" style="font-size: 0.6rem; border-color: #e2e8f0 !important;">
+                              <i class="bi bi-card-text me-1 text-muted"></i>{{ selectedCliente.identificacion }}
+                            </span>
+                            <span class="badge bg-white text-dark border small-cap px-2 py-1" style="font-size: 0.6rem; border-color: #e2e8f0 !important;">
+                              <i class="bi bi-envelope me-1 text-muted"></i>{{ selectedCliente.email }}
+                            </span>
+                          </div>
+                          <div class="small text-muted text-truncate" style="font-size: 0.75rem;">
+                            <i class="bi bi-geo-alt-fill me-1"></i>{{ selectedCliente.direccion || 'Sin dirección registrada' }}
+                          </div>
+                        </div>
+                        <button type="button" class="btn-edit-client-small ms-2" (click)="openEditClienteModal()" title="Editar información del cliente">
+                          <i class="bi bi-pencil-square"></i>
+                        </button>
+                      </div>
+                    </div>
+
+                    <div *ngIf="!selectedCliente" class="px-3 py-4 text-center border border-dashed rounded-3" style="background: #fafbfc; border-style: dashed !important;">
+                      <i class="bi bi-person-dash text-muted mb-2 d-block" style="font-size: 1.8rem; opacity: 0.5;"></i>
+                      <p class="text-muted small fw-bold mb-0">Seleccione un cliente para la factura</p>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- COLUMNA DERECHA: INFO DEL COMPROBANTE -->
+                <div class="col-lg-6">
+                  <div class="section-lux h-100 p-3 border shadow-sm rounded-4 bg-white">
+                    <div class="section-title-lux mb-3 border-0 p-0" style="color: #1e293b;">
+                      <i class="bi bi-file-earmark-text-fill me-2 text-primary"></i> Información de Emisión
+                    </div>
+                    
+                    <div class="row g-2">
+                      <div class="col-md-6">
+                        <label class="form-label-lux">Establecimiento</label>
                         <div class="select-lux-wrapper">
-                          <select class="select-lux input-sm" formControlName="unidad_tiempo">
-                            <option value="DIAS">Días</option>
-                            <option value="MESES">Meses</option>
+                          <select class="select-lux input-sm" formControlName="establecimiento_id">
+                            <option [ngValue]="null" disabled>Seleccione...</option>
+                            <option *ngFor="let est of establecimientos" [value]="est.id">{{ est.nombre }} ({{ est.codigo }})</option>
                           </select>
+                        </div>
+                      </div>
+                      
+                      <div class="col-md-6">
+                        <label class="form-label-lux">Punto Emisión</label>
+                        <div class="select-lux-wrapper">
+                          <select class="select-lux input-sm" formControlName="punto_emision_id">
+                            <option [ngValue]="null" disabled>Seleccione...</option>
+                            <option *ngFor="let pto of puntosEmisionFiltered" [value]="pto.id">{{ pto.codigo }}</option>
+                          </select>
+                        </div>
+                      </div>
+
+                      <div class="col-md-5">
+                        <label class="form-label-lux">Fecha Emisión</label>
+                        <div class="input-lux-wrapper input-sm">
+                          <i class="bi bi-calendar-event"></i>
+                          <input type="date" class="input-lux" formControlName="fecha_emision">
+                        </div>
+                      </div>
+
+                      <div class="col-md-7">
+                        <label class="form-label-lux">Forma de Pago SRI</label>
+                        <div class="select-lux-wrapper">
+                          <select class="select-lux input-sm" formControlName="forma_pago_sri">
+                            <option value="01">EFECTIVO</option>
+                            <option value="15">COMPENSACIÓN DE DEUDAS</option>
+                            <option value="16">TARJETA DE DÉBITO</option>
+                            <option value="17">DINERO ELECTRÓNICO</option>
+                            <option value="18">TARJETA PREPAGO</option>
+                            <option value="19">TARJETA DE CRÉDITO</option>
+                            <option value="20">SISTEMA FINANCIERO (OTROS)</option>
+                            <option value="21">ENDOSO DE TÍTULOS</option>
+                          </select>
+                        </div>
+                      </div>
+
+                      <div class="col-12 mt-1">
+                        <label class="form-label-lux">Guía Remisión</label>
+                        <div class="input-lux-wrapper input-sm">
+                          <i class="bi bi-truck"></i>
+                          <input type="text" class="input-lux" formControlName="guia_remision" placeholder="000-000-000000000">
                         </div>
                       </div>
                     </div>
                   </div>
-
-                  <div [ngClass]="facturaForm.get('forma_pago_sri')?.value !== '01' ? 'col-md-12 col-lg-3' : 'col-md-12 col-lg-6'">
-                    <label class="form-label-lux">Guía Remisión</label>
-                    <div class="input-lux-wrapper input-sm">
-                      <i class="bi bi-truck"></i>
-                      <input type="text" class="input-lux" formControlName="guia_remision" placeholder="000-000-000000000">
-                    </div>
-                  </div>
                 </div>
+
               </div>
 
               <!-- DETALLES PRODUCTOS -->
@@ -329,12 +368,13 @@ import { CreateClienteModalComponent } from '../../../clientes/components/create
       </div>
     </div>
 
-    <!-- Modal Cliente Nuevo -->
+    <!-- Modal Cliente Nuevo/Edición -->
     <app-create-cliente-modal
       *ngIf="showCreateClienteModal"
+      [cliente]="clienteParaEditar"
       [loading]="isCreatingCliente"
-      (onSave)="handleCreateClienteSuccess($event)"
-      (onClose)="showCreateClienteModal = false"
+      (onSave)="handleClienteSave($event)"
+      (onClose)="closeClienteModal()"
     ></app-create-cliente-modal>
 
     <!-- Modal de confirmación para eliminar ítem -->
@@ -569,6 +609,29 @@ import { CreateClienteModalComponent } from '../../../clientes/components/create
     }
     .btn-create-client-lux:hover { background: #f1f5f9; transform: translateY(-2px); border-color: #cbd5e1; }
     .btn-create-client-lux i { font-size: 1rem; color: #161d35; }
+
+    .btn-edit-client-small {
+      background: white;
+      border: 1px solid #e2e8f0;
+      color: #64748b;
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+    }
+    .btn-edit-client-small:hover {
+      background: #f1f5f9;
+      color: #161d35;
+      border-color: #cbd5e1;
+    }
+
+    .border-dashed {
+      border-style: dashed !important;
+      border-width: 2px !important;
+    }
   `]
 })
 export class CreateFacturaModalComponent implements OnInit {
@@ -609,10 +672,12 @@ export class CreateFacturaModalComponent implements OnInit {
   searchTerm = '';
   isClientDropdownOpen = false;
   filteredClientes: Cliente[] = [];
+  selectedCliente: Cliente | null = null;
   
   // Cliente Modal properties
   showCreateClienteModal = false;
   isCreatingCliente = false;
+  clienteParaEditar: Cliente | null = null;
 
   private destroy$ = new Subject<void>();
 
@@ -755,6 +820,7 @@ export class CreateFacturaModalComponent implements OnInit {
         // Set search term from loaded client
         const client = this.clientes.find(c => c.id === factura.cliente_id);
         if (client) {
+          this.selectedCliente = client;
           this.searchTerm = `${client.razon_social} (${client.identificacion})`;
         }
 
@@ -818,6 +884,7 @@ export class CreateFacturaModalComponent implements OnInit {
   }
 
   selectCliente(cli: Cliente) {
+    this.selectedCliente = cli;
     this.facturaForm.patchValue({ cliente_id: cli.id });
     this.searchTerm = `${cli.razon_social} (${cli.identificacion})`;
     this.isClientDropdownOpen = false;
@@ -826,6 +893,7 @@ export class CreateFacturaModalComponent implements OnInit {
 
   clearClientSearch() {
     this.searchTerm = '';
+    this.selectedCliente = null;
     this.facturaForm.patchValue({ cliente_id: null });
     this.filteredClientes = [...this.clientes];
     this.isClientDropdownOpen = false;
@@ -833,32 +901,76 @@ export class CreateFacturaModalComponent implements OnInit {
 
   // --- CLIENT MODAL LOGIC ---
   openCreateClienteModal() {
+    this.clienteParaEditar = null;
     this.showCreateClienteModal = true;
   }
 
-  handleCreateClienteSuccess(clienteData: any) {
+  openEditClienteModal() {
+    if (this.selectedCliente) {
+      this.clienteParaEditar = { ...this.selectedCliente };
+      this.showCreateClienteModal = true;
+    }
+  }
+
+  closeClienteModal() {
+    this.showCreateClienteModal = false;
+    this.clienteParaEditar = null;
+  }
+
+  handleClienteSave(clienteData: any) {
     this.isCreatingCliente = true;
-    this.clientesService.createCliente(clienteData).subscribe({
-      next: (resp) => {
-        const nuevoCliente = resp.detalles;
-        if (nuevoCliente) {
-          this.uiService.showToast('Cliente creado exitosamente', 'success');
-          // Add to local list if not already there
-          if (!this.clientes.find(c => c.id === nuevoCliente.id)) {
-            this.clientes.push(nuevoCliente);
+
+    if (this.clienteParaEditar) {
+      // MODO EDICIÓN
+      this.clientesService.updateCliente(this.clienteParaEditar.id, clienteData).subscribe({
+        next: (resp) => {
+          const updated = resp.detalles;
+          if (updated) {
+            this.uiService.showToast('Cliente actualizado exitosamente', 'success');
+            // Actualizar en la lista local
+            const index = this.clientes.findIndex(c => c.id === updated.id);
+            if (index !== -1) {
+              this.clientes[index] = updated;
+            }
+            // Actualizar cliente seleccionado si es el mismo
+            if (this.selectedCliente?.id === updated.id) {
+              this.selectCliente(updated);
+            }
           }
-          // Select it automatically
-          this.selectCliente(nuevoCliente);
+          this.isCreatingCliente = false;
+          this.showCreateClienteModal = false;
+          this.clienteParaEditar = null;
+          this.cd.detectChanges();
+        },
+        error: (err) => {
+          this.uiService.showError(err, 'Error al actualizar cliente');
+          this.isCreatingCliente = false;
         }
-        this.isCreatingCliente = false;
-        this.showCreateClienteModal = false;
-        this.cd.detectChanges();
-      },
-      error: (err) => {
-        this.uiService.showError(err, 'Error al crear cliente');
-        this.isCreatingCliente = false;
-      }
-    });
+      });
+    } else {
+      // MODO CREACIÓN
+      this.clientesService.createCliente(clienteData).subscribe({
+        next: (resp) => {
+          const nuevoCliente = resp.detalles;
+          if (nuevoCliente) {
+            this.uiService.showToast('Cliente creado exitosamente', 'success');
+            // Add to local list if not already there
+            if (!this.clientes.find(c => c.id === nuevoCliente.id)) {
+              this.clientes.push(nuevoCliente);
+            }
+            // Select it automatically
+            this.selectCliente(nuevoCliente);
+          }
+          this.isCreatingCliente = false;
+          this.showCreateClienteModal = false;
+          this.cd.detectChanges();
+        },
+        error: (err) => {
+          this.uiService.showError(err, 'Error al crear cliente');
+          this.isCreatingCliente = false;
+        }
+      });
+    }
   }
 
   filterPuntosEmision(estabId: string) {

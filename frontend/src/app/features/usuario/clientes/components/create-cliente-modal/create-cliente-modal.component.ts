@@ -2,6 +2,7 @@ import { Component, EventEmitter, Output, Input, OnInit, OnDestroy } from '@angu
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Cliente } from '../../../../../domain/models/cliente.model';
+import { SriValidators } from '../../../../../shared/utils/sri-validators';
 
 @Component({
     selector: 'app-create-cliente-modal',
@@ -46,10 +47,13 @@ import { Cliente } from '../../../../../domain/models/cliente.model';
                     [class.is-invalid]="clienteForm.get('identificacion')?.invalid && clienteForm.get('identificacion')?.touched"
                     placeholder="Ej: 1712345678001"
                     (keypress)="validateNumbers($event)"
+                    [maxlength]="clienteForm.get('tipo_identificacion')?.value === 'CEDULA' ? 10 : (clienteForm.get('tipo_identificacion')?.value === 'RUC' ? 13 : 20)"
                   >
                   <div class="error-feedback" *ngIf="clienteForm.get('identificacion')?.invalid && clienteForm.get('identificacion')?.touched">
                     <span *ngIf="clienteForm.get('identificacion')?.errors?.['required']">La identificación es obligatoria</span>
-                    <span *ngIf="clienteForm.get('identificacion')?.errors?.['pattern']">Longitud inválida para este tipo de documento</span>
+                    <span *ngIf="clienteForm.get('identificacion')?.errors?.['identificacionEcuador'] || clienteForm.get('identificacion')?.errors?.['rucEcuador']">
+                        {{ clienteForm.get('identificacion')?.errors?.['message'] || 'Número de documento inválido' }}
+                    </span>
                   </div>
                 </div>
               </div>
@@ -361,7 +365,7 @@ export class CreateClienteModalComponent implements OnInit, OnDestroy {
 
     constructor(private fb: FormBuilder) {
         this.clienteForm = this.fb.group({
-            identificacion: ['', [Validators.required, Validators.pattern(/^\d{10,13}$/)]],
+            identificacion: ['', [Validators.required, SriValidators.identificacionEcuador()]],
             tipo_identificacion: ['CEDULA', [Validators.required]],
             razon_social: ['', [Validators.required, Validators.minLength(3)]],
             nombre_comercial: [''],
@@ -379,9 +383,9 @@ export class CreateClienteModalComponent implements OnInit, OnDestroy {
         this.clienteForm.get('tipo_identificacion')?.valueChanges.subscribe(val => {
             const idCont = this.clienteForm.get('identificacion');
             if (val === 'RUC') {
-                idCont?.setValidators([Validators.required, Validators.pattern(/^\d{13}$/)]);
+                idCont?.setValidators([Validators.required, SriValidators.rucEcuador()]);
             } else if (val === 'CEDULA') {
-                idCont?.setValidators([Validators.required, Validators.pattern(/^\d{10}$/)]);
+                idCont?.setValidators([Validators.required, SriValidators.identificacionEcuador()]);
             } else {
                 idCont?.setValidators([Validators.required]);
             }

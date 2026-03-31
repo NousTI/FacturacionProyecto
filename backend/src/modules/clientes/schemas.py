@@ -1,7 +1,8 @@
-from pydantic import BaseModel, EmailStr, Field, validator
+from pydantic import BaseModel, EmailStr, Field, field_validator, ValidationInfo
 from uuid import UUID
 from datetime import datetime
 from typing import Optional, Literal
+from ...utils.validators import validar_identificacion
 
 class ClienteBase(BaseModel):
     identificacion: str
@@ -16,6 +17,16 @@ class ClienteBase(BaseModel):
     dias_credito: int = Field(default=0, ge=0)
     limite_credito: float = Field(default=0.0, ge=0)
     activo: bool = True
+
+    @field_validator("identificacion")
+    @classmethod
+    def validar_documento(cls, v: str, info: ValidationInfo) -> str:
+        # Pydantic v2: info.data contiene los otros campos del modelo
+        tipo = info.data.get("tipo_identificacion")
+        
+        if tipo in ["CEDULA", "RUC"] and v and not validar_identificacion(v):
+            raise ValueError(f"La identificación '{v}' no es un(a) {tipo} válido(a) según SRI.")
+        return v
 
 class ClienteCreacion(ClienteBase):
     pass
@@ -33,6 +44,18 @@ class ClienteActualizacion(BaseModel):
     dias_credito: Optional[int] = Field(None, ge=0)
     limite_credito: Optional[float] = Field(None, ge=0)
     activo: Optional[bool] = None
+
+    @field_validator("identificacion")
+    @classmethod
+    def validar_documento(cls, v: str, info: ValidationInfo) -> Optional[str]:
+        if v is None:
+            return v
+            
+        tipo = info.data.get("tipo_identificacion")
+        
+        if tipo in ["CEDULA", "RUC"] and not validar_identificacion(v):
+            raise ValueError(f"La identificación '{v}' no es un(a) {tipo} válido(a) según SRI.")
+        return v
 
 class ClienteLectura(ClienteBase):
     id: UUID

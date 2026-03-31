@@ -12,7 +12,8 @@ def validar_ruc(ruc: str) -> bool:
         return False
 
     provincia = int(ruc[0:2])
-    if provincia < 1 or provincia > 24:
+    # Del 01 al 24 (Provincias de Ecuador) y el código 30 (Ecuatorianos en el exterior)
+    if not (1 <= provincia <= 24 or provincia == 30):
         return False
 
     tercer_digito = int(ruc[2])
@@ -53,7 +54,8 @@ def _validar_cedula(cedula: str) -> bool:
         return False
 
     provincia = int(cedula[0:2])
-    if provincia < 1 or provincia > 24:
+    # Del 01 al 24 (Provincias de Ecuador) y el código 30 (Ecuatorianos en el exterior)
+    if not (1 <= provincia <= 24 or provincia == 30):
         return False
     
     # Algoritmo de resolución Modulo 10
@@ -77,6 +79,9 @@ def validar_identificacion(identificacion: str) -> bool:
     if not identificacion:
         return False
     
+    if identificacion in ["9999999999", "9999999999999"]:
+        return True
+
     length = len(identificacion)
     if length == 10:
         return _validar_cedula(identificacion)

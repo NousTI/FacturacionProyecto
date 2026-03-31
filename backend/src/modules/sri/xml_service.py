@@ -9,6 +9,7 @@ from .constants import (
     SRICodigoImpuesto, SRITipoIdentificacion, SRI_TARIFAS_IVA
 )
 from .payment_strategies import FactoryPagosSRI
+from ...utils.validators import validar_identificacion
 
 class ServicioSRIXML:
     def _round(self, value, places=2):
@@ -289,53 +290,7 @@ class ServicioSRIXML:
 
     def validar_ruc_cedula(self, identificacion: str, tipo: str) -> bool:
         """
-        Valida RUC o Cédula ecuatoriana usando algoritmo Módulo 10 y Módulo 11.
+        Valida RUC o Cédula ecuatoriana delegando al validador central.
         """
-        if not identificacion or not identificacion.isdigit():
-            return False
-
-        if tipo == SRITipoIdentificacion.CONSUMIDOR_FINAL:
-            return identificacion == '9999999999999'
-
-        longitud = len(identificacion)
-        if longitud not in [10, 13]:
-            return False
-
-        provincia = int(identificacion[:2])
-        if not (1 <= provincia <= 24 or provincia == 30):
-            return False
-
-        digito_verificador = int(identificacion[9])
-        
-        # Validación de Cédula (Módulo 10)
-        if longitud == 10 or (longitud == 13 and identificacion[2] < '6'):
-            coeficientes = [2, 1, 2, 1, 2, 1, 2, 1, 2]
-            suma = 0
-            for i in range(9):
-                valor = int(identificacion[i]) * coeficientes[i]
-                suma += valor - 9 if valor >= 10 else valor
-            
-            residuo = suma % 10
-            resultado = 10 - residuo if residuo != 0 else 0
-            
-            return resultado == digito_verificador
-
-        # Validación RUC Sociedad Privada (Módulo 11) - 3er dígito 9
-        if longitud == 13 and identificacion[2] == '9':
-            coeficientes = [4, 3, 2, 7, 6, 5, 4, 3, 2]
-            suma = sum([int(identificacion[i]) * coeficientes[i] for i in range(9)])
-            residuo = suma % 11
-            resultado = 11 - residuo if residuo != 0 else 0
-            
-            return resultado == digito_verificador
-
-        # Validación RUC Sociedad Pública (Módulo 11) - 3er dígito 6
-        if longitud == 13 and identificacion[2] == '6':
-            coeficientes = [3, 2, 7, 6, 5, 4, 3, 2]
-            suma = sum([int(identificacion[i]) * coeficientes[i] for i in range(8)])
-            residuo = suma % 11
-            resultado = 11 - residuo if residuo != 0 else 0
-            # En públicas, el verificador es el 9no dígito
-            return resultado == int(identificacion[8])
-
-        return True
+        # El validador central ya maneja RUC, Cédula y Consumidor Final (10 y 13 nueves)
+        return validar_identificacion(identificacion)

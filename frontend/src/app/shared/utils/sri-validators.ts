@@ -9,6 +9,9 @@ export class SriValidators {
             const ruc = control.value;
             if (!ruc) return null;
 
+            // Consumidor Final
+            if (ruc === '9999999999999') return null;
+
             // Longitud básica
             if (!/^[0-9]{13}$/.test(ruc)) {
                 return { rucInvalid: true, message: 'El RUC debe tener 13 dígitos numéricos' };
@@ -20,7 +23,7 @@ export class SriValidators {
             }
 
             const provincia = parseInt(ruc.substring(0, 2), 10);
-            if (provincia < 1 || provincia > 24) {
+            if (!((provincia >= 1 && provincia <= 24) || provincia === 30)) {
                 return { rucInvalid: true, message: 'Provincia inválida (primeros 2 dígitos)' };
             }
 
@@ -73,6 +76,9 @@ export class SriValidators {
             const value = control.value;
             if (!value) return null;
 
+            // Consumidor Final
+            if (value === '9999999999' || value === '9999999999999') return null;
+
             const length = value.length;
 
             if (length === 10) {
@@ -95,8 +101,11 @@ export class SriValidators {
     private static validarCedula(cedula: string): boolean {
         if (!cedula || !/^[0-9]{10}$/.test(cedula)) return false;
 
+        // Consumidor Final
+        if (cedula === '9999999999') return true;
+
         const provincia = parseInt(cedula.substring(0, 2), 10);
-        if (provincia < 1 || provincia > 24) return false;
+        if (!((provincia >= 1 && provincia <= 24) || provincia === 30)) return false;
 
         let sum = 0;
         for (let i = 0; i < 9; i++) {
