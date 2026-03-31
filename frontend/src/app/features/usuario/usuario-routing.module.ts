@@ -1,7 +1,6 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { ProfilePage } from './profile/profile.page';
-import { MaintenanceComponent } from '../../shared/components/maintenance/maintenance.component';
 import { RoleGuard } from '../../core/guards/role.guard';
 import { UserRole } from '../../domain/enums/role.enum';
 
@@ -15,6 +14,7 @@ import { ReportesPage } from './reportes/reportes.page';
 import { EstablecimientosPage } from './establecimientos/establecimientos.page';
 import { PuntosEmisionPage } from './puntos-emision/puntos-emision.page';
 import { CuentasCobrarPage } from './cuentas-cobrar/cuentas-cobrar.page';
+import { CuentasPagarPage } from './cuentas-pagar/cuentas-pagar.page';
 
 import { UsuariosPage } from './usuarios/usuarios.page';
 import { CertificadoSriPage } from './certificado-sri/certificado-sri.page';
@@ -44,7 +44,7 @@ const routes: Routes = [
     {
         path: 'empresa',
         component: EmpresaPage,
-        canActivate: [RoleGuard], // Not blocked
+        canActivate: [RoleGuard],
         data: { title: 'Empresa', roles: [UserRole.USUARIO], permission: 'CONFIG_EMPRESA' }
     },
     {
@@ -77,6 +77,12 @@ const routes: Routes = [
         canActivate: [RoleGuard, CompanyActiveGuard],
         data: { title: 'Cuentas por Cobrar', roles: [UserRole.USUARIO], permission: 'CUENTA_COBRAR_VER' }
     },
+    /* {
+        path: 'cuentas-pagar',
+        component: CuentasPagarPage,
+        canActivate: [RoleGuard, CompanyActiveGuard],
+        data: { title: 'Cuentas por Pagar', roles: [UserRole.USUARIO], permission: 'CUENTA_PAGAR_VER' }
+    }, */
     {
         path: 'facturacion-recurrente',
         component: FacturacionRecurrentePage,
@@ -104,7 +110,7 @@ const routes: Routes = [
     {
         path: 'perfil',
         component: ProfilePage,
-        canActivate: [RoleGuard], // Not blocked
+        canActivate: [RoleGuard],
         data: { title: 'Perfil', roles: [UserRole.USUARIO] }
     },
     {
@@ -114,6 +120,7 @@ const routes: Routes = [
         data: { title: 'Certificado SRI', roles: [UserRole.USUARIO], permission: 'CONFIG_SRI' }
     }
 ];
+
 @NgModule({
     imports: [RouterModule.forChild(routes)],
     exports: [RouterModule]

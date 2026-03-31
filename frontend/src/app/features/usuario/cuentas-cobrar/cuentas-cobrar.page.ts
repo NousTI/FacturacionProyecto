@@ -168,10 +168,10 @@ export class CuentasCobrarPage implements OnInit {
 
   tabs = [
     { id: 'resumen', label: 'Consolidado', icon: 'bi bi-pie-chart-fill' },
-    // { id: 'antiguedad', label: 'Antigüedad', icon: 'bi bi-reception-3' },
-    // { id: 'morosos', label: 'Morosos', icon: 'bi bi-person-x-fill' },
-    // { id: 'pagos', label: 'Historial', icon: 'bi bi-receipt-cutoff' },
-    // { id: 'proyeccion', label: 'Proyección', icon: 'bi bi-graph-up-arrow' }
+    { id: 'antiguedad', label: 'Antigüedad', icon: 'bi bi-reception-3' },
+    { id: 'morosos', label: 'Morosos', icon: 'bi bi-person-x-fill' },
+    { id: 'pagos', label: 'Historial', icon: 'bi bi-receipt-cutoff' },
+    { id: 'proyeccion', label: 'Proyección', icon: 'bi bi-graph-up-arrow' }
   ];
 
   constructor(

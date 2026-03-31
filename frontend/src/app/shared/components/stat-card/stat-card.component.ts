@@ -6,15 +6,20 @@ import { CommonModule } from '@angular/common';
     template: `
     <div class="soft-card h-100">
       <div class="d-flex justify-content-between align-items-start mb-3">
-        <div class="icon-box" [style.background]="iconBg">
-          <i [class]="'bi ' + icon" [style.color]="iconColor" style="font-size: 1.5rem;"></i>
+        <div class="icon-box" [style.background]="getBgColor()">
+          <i [class]="'bi ' + icon" [style.color]="iconColor || color" style="font-size: 1.5rem;"></i>
         </div>
         <div *ngIf="trend !== undefined" class="trend-badge" [ngClass]="trend >= 0 ? 'trend-up' : 'trend-down'">
           {{ trend > 0 ? '+' : '' }}{{ trend }}%
         </div>
       </div>
       <div>
-        <h3 class="stat-value mb-1">{{ value }}</h3>
+        <h3 class="stat-value mb-1">
+            <ng-container *ngIf="isCurrency; else normalValue">
+                {{ value | currency }}
+            </ng-container>
+            <ng-template #normalValue>{{ value }}</ng-template>
+        </h3>
         <p class="stat-label mb-0 text-uppercase d-flex align-items-center gap-1">
           {{ title }}<ng-content></ng-content>
         </p>
@@ -66,7 +71,6 @@ import { CommonModule } from '@angular/common';
     .trend-up { background: #ecfdf5; color: #10b981; }
     .trend-down { background: #fef2f2; color: #ef4444; }
   `],
-
     standalone: true,
     imports: [CommonModule]
 })
@@ -74,7 +78,16 @@ export class StatCardComponent {
     @Input() title: string = '';
     @Input() value: string | number = '';
     @Input() icon: string = 'bi-graph-up';
-    @Input() iconBg: string = '#f1f5f9';
-    @Input() iconColor: string = '#64748b';
+    @Input() iconBg: string = '';
+    @Input() iconColor: string = '';
+    @Input() color: string = '#64748b'; // Alias for iconColor
     @Input() trend?: number;
+    @Input() isCurrency: boolean = false;
+
+    getBgColor() {
+        if (this.iconBg) return this.iconBg;
+        const baseColor = this.iconColor || this.color;
+        // Simple trick to get a light version of the color if it's hex
+        return baseColor + '15'; // 15 is ~8% opacity in hex
+    }
 }

@@ -104,6 +104,9 @@ import { Observable, map } from 'rxjs';
                   <a *appHasPermission="'CUENTA_COBRAR_VER'" routerLink="/usuario/cuentas-cobrar" routerLinkActive="active" class="menu-item px-3 mb-1">
                     <i class="bi bi-wallet2 me-3"></i> Cuentas por Cobrar
                   </a>
+                  <!-- <a *appHasPermission="'CUENTA_PAGAR_VER'" routerLink="/usuario/cuentas-pagar" routerLinkActive="active" class="menu-item px-3 mb-1">
+                    <i class="bi bi-journal-check me-3"></i> Cuentas por Pagar
+                  </a> -->
                   <a *appHasPermission="'FACTURA_PROGRAMADA_VER'" routerLink="/usuario/facturacion-recurrente" routerLinkActive="active" class="menu-item px-3 mb-1">
                     <i class="bi bi-arrow-repeat me-3"></i> Fac. Recurrente
                   </a>

@@ -44,7 +44,7 @@ export interface PieChartData {
         </div>
 
         <div class="legend w-100 mt-2">
-            <div *ngFor="let item of data" class="d-flex align-items-center justify-content-between mb-2">
+            <div *ngFor="let item of slices" class="d-flex align-items-center justify-content-between mb-2">
                 <div class="d-flex align-items-center gap-2">
                     <div class="color-dot rounded-circle" [style.background-color]="item.color"></div>
                     <span class="small text-muted fw-medium">{{ item.label }}</span>
@@ -101,6 +101,7 @@ export interface PieChartData {
 export class PieChartComponent {
     @Input() title: string = '';
     @Input() data: PieChartData[] = [];
+    @Input() colors: string[] = [];
     activeLabel: string | null = null;
 
     get slices() {
@@ -108,7 +109,8 @@ export class PieChartComponent {
         const radius = 25;
         const circumference = 2 * Math.PI * radius;
         
-        const colors = ['#6366f1', '#10b981', '#f59e0b', '#ec4899', '#8b5cf6', '#0ea5e9'];
+        const defaultColors = ['#6366f1', '#10b981', '#f59e0b', '#ec4899', '#8b5cf6', '#0ea5e9'];
+        const activeColors = this.colors.length > 0 ? this.colors : defaultColors;
 
         return this.data.map((item, index) => {
             const percent = item.percent;
@@ -119,7 +121,7 @@ export class PieChartComponent {
             
             return {
                 ...item,
-                color: item.color || colors[index % colors.length],
+                color: item.color || activeColors[index % activeColors.length],
                 dashArray,
                 dashOffset
             };
