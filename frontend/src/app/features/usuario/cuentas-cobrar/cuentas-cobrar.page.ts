@@ -49,21 +49,8 @@ import { CuentasCobrarProyeccionComponent } from './components/cuentas-cobrar-pr
           </button>
         </div>
 
-        <!-- FILTROS OPTIMIZADOS -->
-        <div class="d-flex flex-wrap align-items-center gap-2">
-          <!-- Filtro Estado -->
-          <div class="d-flex align-items-center bg-white px-2 rounded-2 border shadow-sm">
-            <i class="bi bi-funnel text-muted small me-1"></i>
-            <select class="form-select form-select-sm border-0 shadow-none ps-1" 
-                    [(ngModel)]="filtros.estado" (change)="cargarDatos()" style="max-width: 140px; font-size: 0.8rem;">
-              <option [value]="undefined">Todos los Estados</option>
-              <option value="pendiente">Pendiente</option>
-              <option value="vencido">Vencido</option>
-              <option value="parcial">Parcial</option>
-            </select>
-          </div>
-
-          <!-- Filtro Fecha Corte -->
+        <!-- FILTROS SIMPLIFICADOS (FECHA Y RECARGA) -->
+        <div class="d-flex align-items-center gap-2">
           <div class="d-flex align-items-center bg-white px-2 rounded-2 border shadow-sm">
             <i class="bi bi-calendar3 text-muted small me-1"></i>
             <input type="date" class="form-control form-control-sm border-0 shadow-none ps-1" 
@@ -194,11 +181,6 @@ export class CuentasCobrarPage implements OnInit {
     this.error = null;
     this.cdr.detectChanges();
 
-    // Solo cargamos lo que realmente necesitamos según las pestañas habilitadas
-    // Para simplificar y arreglar el problema del forkJoin, cargaremos el resumen siempre
-    // y los demás solo si la pestaña está activa o si se desea mantener caché.
-    
-    // Por ahora, carguemos todo individualmente o verifiquemos el resumen primero.
     this.service.getResumen(this.filtros).pipe(
       finalize(() => {
         this.loading = false;
@@ -207,8 +189,6 @@ export class CuentasCobrarPage implements OnInit {
     ).subscribe({
       next: (res) => {
         this.overviewData = res;
-        
-        // Cargar los demás en segundo plano solo si no obstruyen la UI principal
         this.cargarDatosSecundarios();
       },
       error: (err) => {
@@ -219,7 +199,6 @@ export class CuentasCobrarPage implements OnInit {
   }
 
   private cargarDatosSecundarios() {
-    // Estas peticiones no bloquean el loading principal
     this.service.getAntiguedadClientes(this.filtros.fecha_corte).subscribe(data => this.antiguedadData = data);
     this.service.getClientesMorosos(this.filtros.dias_mora || 1).subscribe(data => this.morososData = data);
     this.service.getHistorialPagos({}).subscribe(data => this.pagosData = data);
