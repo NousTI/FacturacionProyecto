@@ -46,12 +46,14 @@ import { SriValidators } from '../../../../../shared/utils/sri-validators';
                     class="lux-input" 
                     [class.is-invalid]="clienteForm.get('identificacion')?.invalid && clienteForm.get('identificacion')?.touched"
                     placeholder="Ej: 1712345678001"
-                    (keypress)="validateNumbers($event)"
+                    (keypress)="validateIdentification($event)"
                     [maxlength]="clienteForm.get('tipo_identificacion')?.value === 'CEDULA' ? 10 : (clienteForm.get('tipo_identificacion')?.value === 'RUC' ? 13 : 20)"
                   >
                   <div class="error-feedback" *ngIf="clienteForm.get('identificacion')?.invalid && clienteForm.get('identificacion')?.touched">
                     <span *ngIf="clienteForm.get('identificacion')?.errors?.['required']">La identificación es obligatoria</span>
-                    <span *ngIf="clienteForm.get('identificacion')?.errors?.['identificacionEcuador'] || clienteForm.get('identificacion')?.errors?.['rucEcuador']">
+                    <span *ngIf="clienteForm.get('identificacion')?.errors?.['identificacionInvalid'] || 
+                                 clienteForm.get('identificacion')?.errors?.['rucInvalid'] || 
+                                 clienteForm.get('identificacion')?.errors?.['passportInvalid']">
                         {{ clienteForm.get('identificacion')?.errors?.['message'] || 'Número de documento inválido' }}
                     </span>
                   </div>
@@ -386,6 +388,8 @@ export class CreateClienteModalComponent implements OnInit, OnDestroy {
                 idCont?.setValidators([Validators.required, SriValidators.rucEcuador()]);
             } else if (val === 'CEDULA') {
                 idCont?.setValidators([Validators.required, SriValidators.identificacionEcuador()]);
+            } else if (val === 'PASAPORTE') {
+                idCont?.setValidators([Validators.required, SriValidators.pasaporte()]);
             } else {
                 idCont?.setValidators([Validators.required]);
             }
@@ -408,6 +412,16 @@ export class CreateClienteModalComponent implements OnInit, OnDestroy {
         if (this.clienteForm.valid) {
             const { pais, ...data } = this.clienteForm.value;
             this.onSave.emit(data);
+        }
+    }
+
+    validateIdentification(event: KeyboardEvent) {
+        const tipoId = this.clienteForm.get('tipo_identificacion')?.value;
+        if (tipoId === 'PASAPORTE') return; // Passports can have letters
+
+        const charCode = event.which ? event.which : event.keyCode;
+        if (charCode > 31 && (charCode < 48 || charCode > 57)) {
+            event.preventDefault();
         }
     }
 

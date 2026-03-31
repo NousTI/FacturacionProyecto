@@ -8,8 +8,8 @@ class VendedorBase(BaseModel):
     nombres: str
     apellidos: str
     telefono: Optional[str] = Field(None, pattern=r"^([0-9]{10})?$")
-    documento_identidad: Optional[str] = Field(None, pattern=r"^([0-9]{10,13})?$")
-    porcentaje_comision: Optional[float] = None
+    documento_identidad: str
+    porcentaje_comision: float = Field(default=0.0, ge=0, le=100)
     porcentaje_comision_inicial: Optional[float] = None
     porcentaje_comision_recurrente: Optional[float] = None
     tipo_comision: Optional[str] = None
@@ -22,9 +22,9 @@ class VendedorBase(BaseModel):
 
     @field_validator("documento_identidad")
     @classmethod
-    def validar_documento(cls, v: str) -> Optional[str]:
-        if v is not None and not validar_identificacion(v):
-            raise ValueError("La identificación (Cédula o RUC) no es válida según los algoritmos del SRI.")
+    def validar_documento(cls, v: str) -> str:
+        if v and not validar_identificacion(v):
+            raise ValueError(f"La identificación '{v}' no es un documento válido (Cédula, RUC o Pasaporte).")
         return v
 
 class VendedorCreacion(VendedorBase):
@@ -35,7 +35,7 @@ class VendedorActualizacion(BaseModel):
     nombres: Optional[str] = None
     apellidos: Optional[str] = None
     telefono: Optional[str] = Field(None, pattern=r"^([0-9]{10})?$")
-    documento_identidad: Optional[str] = Field(None, pattern=r"^([0-9]{10,13})?$")
+    documento_identidad: Optional[str] = Field(None)
     porcentaje_comision: Optional[float] = None
     porcentaje_comision_inicial: Optional[float] = None
     porcentaje_comision_recurrente: Optional[float] = None

@@ -72,6 +72,14 @@ def _validar_cedula(cedula: str) -> bool:
     res = (10 - (sum_total % 10)) % 10
     return res == check_digit
 
+def validar_pasaporte(pasaporte: str) -> bool:
+    """
+    Valida un número de pasaporte (Alfanumérico, hasta 20 caracteres según SRI).
+    """
+    if not pasaporte or not re.match(r"^[a-zA-Z0-9]{3,20}$", pasaporte):
+        return False
+    return True
+
 def validar_identificacion(identificacion: str) -> bool:
     """
     Valida si una identificación es una Cédula (10 dígitos) o RUC (13 dígitos) válidos en Ecuador.
@@ -88,4 +96,5 @@ def validar_identificacion(identificacion: str) -> bool:
     elif length == 13:
         return validar_ruc(identificacion)
     
-    return False
+    # Si no es cédula ni RUC, pero tiene formato de pasaporte
+    return validar_pasaporte(identificacion)

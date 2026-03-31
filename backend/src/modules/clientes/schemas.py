@@ -24,7 +24,7 @@ class ClienteBase(BaseModel):
         # Pydantic v2: info.data contiene los otros campos del modelo
         tipo = info.data.get("tipo_identificacion")
         
-        if tipo in ["CEDULA", "RUC"] and v and not validar_identificacion(v):
+        if v and not validar_identificacion(v):
             raise ValueError(f"La identificación '{v}' no es un(a) {tipo} válido(a) según SRI.")
         return v
 
@@ -53,7 +53,7 @@ class ClienteActualizacion(BaseModel):
             
         tipo = info.data.get("tipo_identificacion")
         
-        if tipo in ["CEDULA", "RUC"] and not validar_identificacion(v):
+        if v and not validar_identificacion(v):
             raise ValueError(f"La identificación '{v}' no es un(a) {tipo} válido(a) según SRI.")
         return v
 

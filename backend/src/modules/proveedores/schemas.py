@@ -20,10 +20,10 @@ class ProveedorBase(BaseModel):
     @field_validator("identificacion")
     @classmethod
     def validar_documento(cls, v: str, info: ValidationInfo) -> str:
-        # En proveedores el tipo_identificacion también define si es CEDULA o RUC
+        # En proveedores el tipo_identificacion puede ser CEDULA, RUC o PASAPORTE
         tipo = info.data.get("tipo_identificacion")
-        if tipo in ["CEDULA", "RUC"] and v and not validar_identificacion(v):
-            raise ValueError(f"La identificación '{v}' no es un(a) {tipo} válido(a) según SRI.")
+        if tipo and v and not validar_identificacion(v):
+            raise ValueError(f"La identificación '{v}' no es un(a) {tipo} válido(a).")
         return v
 
 class ProveedorCreacion(ProveedorBase):
@@ -48,8 +48,8 @@ class ProveedorActualizacion(BaseModel):
         if v is None:
             return v
         tipo = info.data.get("tipo_identificacion")
-        if tipo in ["CEDULA", "RUC"] and not validar_identificacion(v):
-            raise ValueError(f"La identificación '{v}' no es un(a) {tipo} válido(a) según SRI.")
+        if tipo and v and not validar_identificacion(v):
+            raise ValueError(f"La identificación '{v}' no es un(a) {tipo} válido(a).")
         return v
 
 class ProveedorLectura(ProveedorBase):

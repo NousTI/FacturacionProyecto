@@ -70,20 +70,28 @@ import { SriValidators } from '../../../../../shared/utils/sri-validators';
                 </div>
               </div>
 
-              <!-- Identificación -->
-              <div class="col-md-6">
-                <label class="form-label-premium">Identificación *</label>
+                <label class="form-label-premium">Tipo de Identificación *</label>
+                <div class="input-premium-group mb-2">
+                  <i class="bi bi-tag input-icon"></i>
+                  <select formControlName="tipo_identificacion" class="form-select-premium" (change)="onTipoIdChange()" [disabled]="saving">
+                    <option value="CEDULA">Cédula</option>
+                    <option value="RUC">RUC</option>
+                    <option value="PASAPORTE">Pasaporte Internac.</option>
+                  </select>
+                </div>
+
+                <label class="form-label-premium">Número de Identificación *</label>
                 <div class="input-premium-group">
                   <i class="bi bi-card-text input-icon"></i>
                   <input type="text" formControlName="documento_identidad" class="form-control-premium" 
                     [class.is-invalid]="vendedorForm.get('documento_identidad')?.invalid && vendedorForm.get('documento_identidad')?.touched"
-                    placeholder="0000000000" [disabled]="saving" maxlength="13"
-                    (keypress)="onlyNumbers($event)">
+                    [placeholder]="vendedorForm.get('tipo_identificacion')?.value === 'PASAPORTE' ? 'Alfanumérico' : '0000000000'" 
+                    [disabled]="saving" [maxlength]="vendedorForm.get('tipo_identificacion')?.value === 'PASAPORTE' ? 20 : 13"
+                    (keypress)="vendedorForm.get('tipo_identificacion')?.value === 'PASAPORTE' ? null : onlyNumbers($event)">
                 </div>
                 <div class="error-feedback" *ngIf="vendedorForm.get('documento_identidad')?.invalid && vendedorForm.get('documento_identidad')?.touched">
                   {{ vendedorForm.get('documento_identidad')?.errors?.['message'] || 'Identificación inválida o incompleta' }}
                 </div>
-              </div>
 
               <!-- Email -->
               <div class="col-md-6" *ngIf="editing">
@@ -414,13 +422,14 @@ export class VendedorFormModalComponent {
   @Output() onSave = new EventEmitter<any>();
   @Output() onClose = new EventEmitter<void>();
 
-  vendedorForm: FormGroup;
+  vendedorForm!: FormGroup;
   activeTab: 'general' | 'comisiones' | 'permisos' = 'general';
 
   constructor(private fb: FormBuilder) {
     this.vendedorForm = this.fb.group({
       nombres: ['', [Validators.required, Validators.minLength(3)]],
       apellidos: ['', [Validators.required, Validators.minLength(3)]],
+      tipo_identificacion: ['CEDULA', Validators.required],
       documento_identidad: ['', [Validators.required, SriValidators.identificacionEcuador()]],
       email: [''],
       telefono: ['', [Validators.required, Validators.pattern(/^[0-9]{10}$/)]],
@@ -434,6 +443,11 @@ export class VendedorFormModalComponent {
       puede_acceder_empresas: [false],
       puede_ver_reportes: [false]
     });
+
+    // Suscripción reactiva para cambiar validadores automáticamente
+    this.vendedorForm.get('tipo_identificacion')?.valueChanges.subscribe(() => {
+      this.onTipoIdChange();
+    });
   }
 
   get hasAtLeastOnePermission(): boolean {
@@ -445,12 +459,27 @@ export class VendedorFormModalComponent {
       controls['puede_ver_reportes'].value
     );
   }
-
   togglePermission(controlName: string) {
     if (this.saving) return;
     const control = this.vendedorForm.get(controlName);
     if (control) {
       control.setValue(!control.value);
+    }
+  }
+
+  onTipoIdChange() {
+    const tipo = this.vendedorForm.get('tipo_identificacion')?.value;
+    const docControl = this.vendedorForm.get('documento_identidad');
+    
+    if (docControl) {
+      const validators = [Validators.required];
+      if (tipo === 'PASAPORTE') {
+        validators.push(SriValidators.pasaporte());
+      } else {
+        validators.push(SriValidators.identificacionEcuador());
+      }
+      docControl.setValidators(validators);
+      docControl.updateValueAndValidity();
     }
   }
 

@@ -98,6 +98,23 @@ export class SriValidators {
         };
     }
 
+    /**
+     * Validador de Pasaporte (SRI permite alfanumérico, hasta 20 caracteres)
+     */
+    static pasaporte(): ValidatorFn {
+        return (control: AbstractControl): ValidationErrors | null => {
+            const passport = control.value;
+            if (!passport) return null;
+
+            // Alfanumérico, de 3 a 20 caracteres (longitud razonable para pasaportes globales)
+            if (!/^[a-zA-Z0-9]{3,20}$/.test(passport)) {
+                return { passportInvalid: true, message: 'El pasaporte debe ser alfanumérico (3-20 caracteres)' };
+            }
+
+            return null;
+        };
+    }
+
     private static validarCedula(cedula: string): boolean {
         if (!cedula || !/^[0-9]{10}$/.test(cedula)) return false;
 
