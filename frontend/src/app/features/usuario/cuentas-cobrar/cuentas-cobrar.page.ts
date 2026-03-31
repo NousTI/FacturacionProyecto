@@ -36,42 +36,46 @@ import { CuentasCobrarProyeccionComponent } from './components/cuentas-cobrar-pr
   ],
   template: `
     <div class="page-container p-3">
-      <!-- FILTROS OPTIMIZADOS -->
-      <div class="d-flex flex-wrap justify-content-end align-items-center gap-2 mb-3 bg-light p-2 rounded-3 shadow-sm border border-white">
-        <!-- Filtro Estado -->
-        <div class="d-flex align-items-center bg-white px-2 rounded-2 border">
-          <i class="bi bi-funnel text-muted small me-1"></i>
-          <select class="form-select form-select-sm border-0 shadow-none ps-1" 
-                  [(ngModel)]="filtros.estado" (change)="cargarDatos()" style="max-width: 140px; font-size: 0.8rem;">
-            <option [value]="undefined">Todos los Estados</option>
-            <option value="pendiente">Pendiente</option>
-            <option value="vencido">Vencido</option>
-            <option value="parcial">Parcial</option>
-          </select>
+      <!-- CABECERA CON TABS Y FILTROS -->
+      <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4 border-bottom pb-2">
+        <!-- TABS NAVIGATION -->
+        <div *ngIf="tabs.length > 1" class="tabs-slider d-flex gap-2">
+          <button *ngFor="let tab of tabs" 
+                  (click)="activeTab = tab.id"
+                  class="tab-btn btn border-0 rounded-pill px-3 py-2 fw-medium text-nowrap"
+                  [class.active]="activeTab === tab.id"
+                  style="font-size: 0.85rem;">
+            <i [class]="tab.icon + ' me-2'"></i>{{ tab.label }}
+          </button>
         </div>
 
-        <!-- Filtro Fecha Corte -->
-        <div class="d-flex align-items-center bg-white px-2 rounded-2 border">
-          <i class="bi bi-calendar3 text-muted small me-1"></i>
-          <input type="date" class="form-control form-control-sm border-0 shadow-none ps-1" 
-                 [(ngModel)]="filtros.fecha_corte" (change)="cargarDatos()" 
-                 style="font-size: 0.8rem; height: 31px;">
-        </div>
-        
-        <button class="btn btn-primary btn-sm rounded-2 px-3 shadow-none border-0" 
-                (click)="cargarDatos()" [disabled]="loading" style="height: 31px;">
-          <i class="bi bi-arrow-clockwise" [class.spin]="loading"></i>
-        </button>
-      </div>
+        <!-- FILTROS OPTIMIZADOS -->
+        <div class="d-flex flex-wrap align-items-center gap-2">
+          <!-- Filtro Estado -->
+          <div class="d-flex align-items-center bg-white px-2 rounded-2 border shadow-sm">
+            <i class="bi bi-funnel text-muted small me-1"></i>
+            <select class="form-select form-select-sm border-0 shadow-none ps-1" 
+                    [(ngModel)]="filtros.estado" (change)="cargarDatos()" style="max-width: 140px; font-size: 0.8rem;">
+              <option [value]="undefined">Todos los Estados</option>
+              <option value="pendiente">Pendiente</option>
+              <option value="vencido">Vencido</option>
+              <option value="parcial">Parcial</option>
+            </select>
+          </div>
 
-      <!-- TABS NAVIGATION -->
-      <div *ngIf="tabs.length > 1" class="tabs-slider d-flex gap-3 mb-4 overflow-auto pb-2 border-bottom">
-        <button *ngFor="let tab of tabs" 
-                (click)="activeTab = tab.id"
-                class="tab-btn btn border-0 rounded-pill px-4 py-2 fw-medium text-nowrap"
-                [class.active]="activeTab === tab.id">
-          <i [class]="tab.icon + ' me-2'"></i>{{ tab.label }}
-        </button>
+          <!-- Filtro Fecha Corte -->
+          <div class="d-flex align-items-center bg-white px-2 rounded-2 border shadow-sm">
+            <i class="bi bi-calendar3 text-muted small me-1"></i>
+            <input type="date" class="form-control form-control-sm border-0 shadow-none ps-1" 
+                   [(ngModel)]="filtros.fecha_corte" (change)="cargarDatos()" 
+                   style="font-size: 0.8rem; height: 31px;">
+          </div>
+          
+          <button class="btn btn-primary btn-sm rounded-pill px-3 shadow-sm border-0" 
+                  (click)="cargarDatos()" [disabled]="loading" style="height: 31px;">
+            <i class="bi bi-arrow-clockwise" [class.spin]="loading"></i>
+          </button>
+        </div>
       </div>
 
       <!-- LOADING STATE -->
