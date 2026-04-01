@@ -98,7 +98,9 @@ declare var bootstrap: any;
             
             <div class="mb-3">
               <label class="form-label fw-bold small">1. Seleccionar Empresa</label>
-              <select class="form-select border-0 bg-light p-3 rounded-3 shadow-none" [(ngModel)]="nuevaSolicitud.empresa_id">
+              <select class="form-select border-0 bg-light p-3 rounded-3 shadow-none" 
+                      [(ngModel)]="nuevaSolicitud.empresa_id"
+                      (change)="onEmpresaChange()">
                 <option value="" disabled selected>Selecciona una empresa...</option>
                 <option *ngFor="let e of empresas" [value]="e.id">{{ e.razonSocial }} ({{ e.ruc }})</option>
               </select>
@@ -106,9 +108,16 @@ declare var bootstrap: any;
 
             <div class="mb-3">
               <label class="form-label fw-bold small">2. Seleccionar Plan de Renovación</label>
-              <select class="form-select border-0 bg-light p-3 rounded-3 shadow-none" [(ngModel)]="nuevaSolicitud.plan_id">
-                <option value="" disabled selected>Selecciona un plan...</option>
-                <option *ngFor="let p of planes" [value]="p.id">{{ p.nombre }} - {{ p.precio_anual | currency }}/año</option>
+              <select class="form-select border-0 bg-light p-3 rounded-3 shadow-none" 
+                      [(ngModel)]="nuevaSolicitud.plan_id"
+                      [disabled]="!nuevaSolicitud.empresa_id">
+                <option value="" disabled selected>{{ !nuevaSolicitud.empresa_id ? 'Primero selecciona una empresa...' : 'Selecciona un plan...' }}</option>
+                <option *ngFor="let p of planes" 
+                        [value]="p.id" 
+                        [disabled]="p.id === selectedEmpresaPlanId">
+                  {{ p.nombre }} - {{ p.precio_anual | currency }}/año
+                  <span *ngIf="p.id === selectedEmpresaPlanId"> (Plan Actual)</span>
+                </option>
               </select>
             </div>
 
@@ -215,6 +224,7 @@ export class RenovacionesVendedorPage implements OnInit, OnDestroy {
   cargando: boolean = false;
   highlightedId: string | null = null;
   verHistorial: boolean = false;
+  selectedEmpresaPlanId: string | null = null;
   
   private lastOpenedId: string | null = null;
   private destroy$ = new Subject<void>();
@@ -291,6 +301,12 @@ export class RenovacionesVendedorPage implements OnInit, OnDestroy {
     });
   }
 
+  onEmpresaChange() {
+    this.nuevaSolicitud.plan_id = '';
+    const emp = this.empresas.find(e => e.id === this.nuevaSolicitud.empresa_id);
+    this.selectedEmpresaPlanId = emp ? emp.planId : null;
+  }
+
   cargarPlanes() {
     this.vendedorService.getPlanes().subscribe(data => {
       this.planes = data;
@@ -307,6 +323,8 @@ export class RenovacionesVendedorPage implements OnInit, OnDestroy {
   }
 
   abrirModalNuevaSolicitud() {
+    this.nuevaSolicitud = { empresa_id: '', plan_id: '', comprobante_url: '' };
+    this.selectedEmpresaPlanId = null;
     const modalEl = document.getElementById('modalVendedorRenovacion');
     if (modalEl) {
       this.modalNueva = new bootstrap.Modal(modalEl);
