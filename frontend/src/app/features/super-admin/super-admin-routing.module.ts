@@ -11,6 +11,7 @@ import { SuperAdminReportesPage } from './reportes/super-admin-reportes.page';
 import { AuditoriaPage } from './auditoria/auditoria.page';
 import { RoleGuard } from '../../core/guards/role.guard';
 import { UserRole } from '../../domain/enums/role.enum';
+import { RenovacionesAdminPage } from './renovaciones/renovaciones-admin.page';
 
 const routes: Routes = [
     {
@@ -54,6 +55,12 @@ const routes: Routes = [
         component: ComisionesPage,
         canActivate: [RoleGuard],
         data: { title: 'Comisiones', roles: [UserRole.SUPERADMIN], description: 'Cálculo y pagos pendientes' }
+    },
+    {
+        path: 'renovaciones',
+        component: RenovacionesAdminPage,
+        canActivate: [RoleGuard],
+        data: { title: 'Gestión de Renovaciones', roles: [UserRole.SUPERADMIN], description: 'Aprobar solicitudes de empresas' }
     },
     {
         path: 'certificados-sri',

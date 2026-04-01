@@ -1,6 +1,7 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { VendedorHomeComponent } from './dashboard/vendedor-home.component';
+import { RenovacionesVendedorPage } from './renovaciones/renovaciones-vendedor.page';
 
 const routes: Routes = [
     {
@@ -41,6 +42,11 @@ const routes: Routes = [
         path: 'reportes',
         loadComponent: () => import('./reportes/vendedor-reportes.page').then(m => m.VendedorReportesPage),
         data: { title: 'Reportes', description: 'Dashboard y generación de archivos' }
+    },
+    {
+        path: 'renovaciones',
+        component: RenovacionesVendedorPage,
+        data: { title: 'Seguimiento de Renovaciones', description: 'Empresas en proceso de renovación' }
     }
 ];
 

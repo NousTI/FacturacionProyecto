@@ -30,6 +30,12 @@ api_router.include_router(vendedores_router, prefix="/vendedores", tags=["Vended
 from ..modules.superadmin.routes import router as superadmin_router
 api_router.include_router(superadmin_router, prefix="/superadmin", tags=["Súper Admin"])
 
+from ..modules.notificaciones.routes import router as notificaciones_router
+api_router.include_router(notificaciones_router, prefix="/notificaciones", tags=["Notificaciones"])
+
+from ..modules.renovaciones.routes import router as renovaciones_router
+api_router.include_router(renovaciones_router, prefix="/renovaciones", tags=["Solicitudes de Renovación"])
+
 
 # --- Módulos Operativos (bloqueados si la suscripción no es ACTIVA) ---
 operativo = [Depends(requerir_suscripcion_activa)]

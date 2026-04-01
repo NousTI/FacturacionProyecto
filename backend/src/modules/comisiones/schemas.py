@@ -10,8 +10,8 @@ class ComisionBase(BaseModel):
     monto: Decimal
     porcentaje_aplicado: Decimal
     estado: str = "PENDIENTE"
-    fecha_generacion: date = date.today()
-    fecha_pago: Optional[date] = None
+    fecha_generacion: datetime = datetime.now()
+    fecha_pago: Optional[datetime] = None
     metodo_pago: Optional[str] = None
     observaciones: Optional[str] = None
 
@@ -20,7 +20,7 @@ class ComisionCreacion(ComisionBase):
 
 class ComisionActualizacion(BaseModel):
     estado: Optional[str] = None
-    fecha_pago: Optional[date] = None
+    fecha_pago: Optional[datetime] = None
     metodo_pago: Optional[str] = None
     observaciones: Optional[str] = None
 

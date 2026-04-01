@@ -9,7 +9,7 @@ class VendedorBase(BaseModel):
     apellidos: str
     telefono: Optional[str] = Field(None, pattern=r"^([0-9]{10})?$")
     documento_identidad: str
-    porcentaje_comision: float = Field(default=0.0, ge=0, le=100)
+    porcentaje_comision: Optional[float] = Field(default=0.0, ge=0, le=100)
     porcentaje_comision_inicial: Optional[float] = None
     porcentaje_comision_recurrente: Optional[float] = None
     tipo_comision: Optional[str] = None

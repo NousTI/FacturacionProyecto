@@ -47,6 +47,9 @@ import { Observable, map } from 'rxjs';
               <a routerLink="/suscripciones" routerLinkActive="active" class="menu-item px-3 mb-1">
                 <i class="bi bi-credit-card me-3"></i> Suscripciones y Pagos
               </a>
+              <a routerLink="/renovaciones" routerLinkActive="active" class="menu-item px-3 mb-1">
+                <i class="bi bi-arrow-repeat me-3"></i> Renovaciones
+              </a>
             </ng-container>
 
             <!-- Vendedor Menu -->
@@ -68,6 +71,9 @@ import { Observable, map } from 'rxjs';
                </a>
                <a *appHasPermission="'ver_reportes'" routerLink="/vendedor/reportes" routerLinkActive="active" class="menu-item px-3 mb-1">
                  <i class="bi bi-bar-chart me-3"></i> Reportes
+               </a>
+               <a routerLink="/vendedor/renovaciones" routerLinkActive="active" class="menu-item px-3 mb-1">
+                 <i class="bi bi-arrow-repeat me-3"></i> Renovaciones
                </a>
                <a routerLink="/vendedor/perfil" routerLinkActive="active" class="menu-item px-3 mb-1">
                  <i class="bi bi-person-circle me-3"></i> Mi Perfil

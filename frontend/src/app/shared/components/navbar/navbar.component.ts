@@ -5,6 +5,8 @@ import { User } from '../../../domain/models/user.model';
 import { Router, NavigationEnd, ActivatedRoute } from '@angular/router';
 import { UiService } from '../../services/ui.service';
 import { ChangeDetectorRef } from '@angular/core';
+import { NotificacionesFacade } from '../../../core/notificaciones/notificaciones.facade';
+import { Notificacion } from '../../../domain/models/notificacion.model';
 
 @Component({
   selector: 'app-navbar',
@@ -25,9 +27,56 @@ import { ChangeDetectorRef } from '@angular/core';
         </div>
 
         <div class="d-flex align-items-center">
-          <button class="btn btn-icon me-3">
-            <i class="bi bi-bell"></i>
-          </button>
+          <!-- Notificaciones Dropdown -->
+          <div class="dropdown me-3">
+            <button class="btn btn-icon position-relative" id="notifDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+              <i class="bi bi-bell"></i>
+              <span *ngIf="(unreadCount$ | async) as count" 
+                    class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" 
+                    style="font-size: 0.65rem; padding: 0.25em 0.5em;">
+                {{ count > 9 ? '+9' : count }}
+              </span>
+            </button>
+            
+            <ul class="dropdown-menu dropdown-menu-end border-0 shadow-lg rounded-4 p-0 notif-dropdown" aria-labelledby="notifDropdown">
+              <li class="p-3 border-bottom d-flex justify-content-between align-items-center">
+                <h6 class="mb-0 fw-bold">Notificaciones</h6>
+                <button class="btn btn-link btn-sm text-decoration-none p-0" (click)="marcarTodasComoLeidas()">Limpiar todo</button>
+              </li>
+              <div class="notif-list-container">
+                <ng-container *ngIf="(notificaciones$ | async) as notifs; else noNotifs">
+                  <li *ngFor="let n of notifs | slice:0:10" 
+                      class="dropdown-item p-3 notif-item" 
+                      [class.unread]="!n.leido"
+                      (click)="leerNotificacion(n)">
+                    <div class="d-flex gap-3">
+                      <div class="notif-icon-circle" [ngClass]="getNotifTipoClass(n.tipo)">
+                        <i [class]="getNotifIcon(n.tipo)"></i>
+                      </div>
+                      <div class="notif-content flex-grow-1">
+                        <div class="d-flex justify-content-between">
+                          <span class="fw-bold small">{{ n.titulo }}</span>
+                          <span class="text-muted smallest">{{ n.created_at | date:'shortTime' }}</span>
+                        </div>
+                        <p class="mb-0 text-muted small text-truncate-2">{{ n.mensaje }}</p>
+                      </div>
+                    </div>
+                  </li>
+                  <li *ngIf="notifs.length === 0" class="p-4 text-center">
+                    <p class="text-muted small mb-0">No tienes notificaciones</p>
+                  </li>
+                </ng-container>
+                <ng-template #noNotifs>
+                  <li class="p-4 text-center">
+                    <p class="text-muted small mb-0">Cargando...</p>
+                  </li>
+                </ng-template>
+              </div>
+              <li class="p-2 border-top text-center">
+                <a routerLink="/notificaciones" class="small text-decoration-none fw-bold">Ver todas</a>
+              </li>
+            </ul>
+          </div>
           
           <div class="user-profile d-flex align-items-center" *ngIf="user$ | async as user" [attr.data-bs-toggle]="'dropdown'">
             <div class="avatar-circle me-3">
@@ -121,6 +170,43 @@ import { ChangeDetectorRef } from '@angular/core';
     .user-role::first-letter {
       text-transform: uppercase;
     }
+    .notif-dropdown {
+      width: 350px;
+    }
+    .notif-list-container {
+      max-height: 400px;
+      overflow-y: auto;
+    }
+    .notif-item {
+      cursor: pointer;
+      transition: background 0.2s;
+      white-space: normal !important;
+      border-bottom: 1px solid rgba(0,0,0,0.03);
+    }
+    .notif-item:hover {
+      background: #f8fafc;
+    }
+    .notif-item.unread {
+      background: #f0f9ff;
+    }
+    .notif-icon-circle {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .text-truncate-2 {
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .smallest {
+      font-size: 0.65rem;
+    }
   `],
   standalone: false
 })
@@ -137,9 +223,18 @@ export class NavbarComponent implements OnInit, OnDestroy {
     private router: Router,
     private activatedRoute: ActivatedRoute,
     private uiService: UiService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private notifFacade: NotificacionesFacade
   ) {
     this.user$ = this.authFacade.user$;
+  }
+
+  get notificaciones$(): Observable<Notificacion[]> {
+    return this.notifFacade.notificaciones$;
+  }
+
+  get unreadCount$(): Observable<number> {
+    return this.notifFacade.unreadCount$;
   }
 
   ngOnInit() {
@@ -192,5 +287,46 @@ export class NavbarComponent implements OnInit, OnDestroy {
 
   logout() {
     this.authFacade.logout();
+  }
+
+  getNotifIcon(tipo: string): string {
+    switch (tipo) {
+      case 'RENOVACION': return 'bi bi-arrow-repeat';
+      case 'PAGO': return 'bi bi-credit-card';
+      case 'SISTEMA': return 'bi bi-cpu';
+      default: return 'bi bi-info-circle';
+    }
+  }
+
+  getNotifTipoClass(tipo: string): string {
+    switch (tipo) {
+      case 'RENOVACION': return 'bg-primary-subtle text-primary';
+      case 'PAGO': return 'bg-success-subtle text-success';
+      case 'SISTEMA': return 'bg-warning-subtle text-warning';
+      default: return 'bg-light text-secondary';
+    }
+  }
+
+  leerNotificacion(n: Notificacion) {
+    if (!n.leido) {
+      this.notifFacade.marcarComoLeida(n.id);
+    }
+    
+    if (n.tipo === 'RENOVACION' && n.metadata?.solicitud_id) {
+       const role = this.authFacade.getUserRole();
+       
+       if (role === 'SUPERADMIN') {
+         this.router.navigate(['/renovaciones'], { queryParams: { id: n.metadata.solicitud_id } });
+       } else if (role === 'VENDEDOR') {
+         this.router.navigate(['/vendedor/renovaciones'], { queryParams: { id: n.metadata.solicitud_id } });
+       } else {
+         // Empresa: Lo llevamos a ver los datos de su suscripción en el perfil de empresa
+         this.router.navigate(['/usuario/empresa']);
+       }
+    }
+  }
+
+  marcarTodasComoLeidas() {
+    this.notifFacade.marcarTodasComoLeidas();
   }
 }

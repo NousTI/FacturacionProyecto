@@ -141,14 +141,16 @@ class RepositorioSuscripciones:
                 "motivo": pago_data.get("observaciones", "Cambio de plan / Registro de pago")
             }
             l_fields = list(log_data.keys())
-            cur.execute(f"INSERT INTO sistema_facturacion.suscripciones_log ({', '.join(l_fields)}) VALUES ({', '.join(['%s']*len(l_fields))})", tuple(log_data.values()))
+            l_values = [str(v) if isinstance(v, UUID) else v for v in log_data.values()]
+            cur.execute(f"INSERT INTO sistema_facturacion.suscripciones_log ({', '.join(l_fields)}) VALUES ({', '.join(['%s']*len(l_fields))})", tuple(l_values))
 
             # 3. Comision
             if comision_data:
                 comision_data['pago_suscripcion_id'] = str(pago_id)
                 c_fields = list(comision_data.keys())
+                c_values = [str(v) if isinstance(v, UUID) else v for v in comision_data.values()]
                 placeholder_c = ["%s"] * len(c_fields)
-                cur.execute(f"INSERT INTO sistema_facturacion.comisiones ({', '.join(c_fields)}) VALUES ({', '.join(placeholder_c)}) RETURNING id", tuple(comision_data.values()))
+                cur.execute(f"INSERT INTO sistema_facturacion.comisiones ({', '.join(c_fields)}) VALUES ({', '.join(placeholder_c)}) RETURNING id", tuple(c_values))
                 comision_id = cur.fetchone()['id']
 
                 # 3.5 Log de Comision
