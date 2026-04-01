@@ -198,6 +198,19 @@ class ServicioRenovaciones:
                         metadata={"solicitud_id": str(solicitud_id)}
                     ))
 
+            # Notificar Vendedor
+            if solicitud['vendedor_id']:
+                vendedor_info = self.repo.obtener_vendedor_por_empresa(empresa_id)
+                if vendedor_info:
+                    self.notif_service.crear_notificacion(NotificacionCreate(
+                        user_id=vendedor_info['user_id'],
+                        titulo="Renovación Rechazada",
+                        mensaje=f"La solicitud de renovación para '{solicitud['empresa_nombre']}' ha sido rechazada. Motivo: {data.motivo_rechazo}",
+                        tipo="RENOVACION",
+                        prioridad="ALTA",
+                        metadata={"solicitud_id": str(solicitud_id)}
+                    ))
+
         return self.repo.actualizar_estado(solicitud_id, update_data)
 
     def listar_solicitudes(self, usuario: dict, ver_historial: bool = False) -> List[dict]:
