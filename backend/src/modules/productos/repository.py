@@ -175,4 +175,14 @@ class RepositorioProductos:
             WHERE producto_id = %s
         """
         params = [str(producto_id)]
-        if fecha_in
+        if fecha_inicio:
+             query += " AND fecha_movimiento >= %s"
+             params.append(fecha_inicio)
+        if fecha_fin:
+             query += " AND fecha_movimiento <= %s"
+             params.append(fecha_fin)
+             
+        query += " ORDER BY fecha_movimiento ASC"
+        with self.db.cursor() as cur:
+            cur.execute(query, tuple(params))
+            return [dict(row) for row in cur.fetchall()]

@@ -52,8 +52,9 @@ class ServicioProductos:
         permisos = usuario_actual.get("permisos", [])
         if PermissionCodes.PRODUCTOS_VER_COSTOS not in permisos:
             producto["costo"] = None
-            # Aquí se pueden limpiar otros campos sensibles si existieran
-            
+            if "utilidad" in producto: producto["utilidad"] = None
+            if "margen" in producto: producto["margen"] = None
+            # 
         return producto
 
     def crear_producto(self, datos: ProductoCreacion, usuario_actual: dict):
