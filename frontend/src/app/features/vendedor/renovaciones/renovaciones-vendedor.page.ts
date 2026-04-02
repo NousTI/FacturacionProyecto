@@ -11,26 +11,26 @@ declare var bootstrap: any;
 @Component({
   selector: 'app-renovaciones-vendedor',
   template: `
-    <div class="container-fluid p-4">
+    <div class="container-fluid p-3">
       <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
-        <div class="card-header bg-white border-0 p-4">
+        <div class="card-header bg-white border-0 p-3">
           <div class="d-flex justify-content-between align-items-center">
             <div>
-              <h5 class="mb-0 fw-bold">Seguimiento de Renovaciones</h5>
-              <p class="text-muted small mb-0">Estado de renovaciones de tus empresas asignadas</p>
+              <h6 class="mb-0 fw-bold">Seguimiento de Renovaciones</h6>
+              <p class="text-muted smallest mb-0">Estado de renovaciones de tus empresas asignadas</p>
             </div>
             <div class="d-flex gap-2">
-              <button class="btn btn-outline-secondary rounded-3 d-flex align-items-center gap-2" 
+              <button class="btn btn-sm btn-outline-secondary rounded-3 d-flex align-items-center gap-2" 
                       [class.btn-primary]="verHistorial"
                       [class.text-white]="verHistorial"
                       (click)="toggleHistorial()">
                 <i class="bi" [ngClass]="verHistorial ? 'bi-journal-check' : 'bi-journal-text'"></i>
-                <span class="d-none d-sm-inline">{{ verHistorial ? 'Viendo Historial' : 'Ver Historial' }}</span>
+                <span class="d-none d-sm-inline">{{ verHistorial ? 'Historial' : 'Ver Historial' }}</span>
               </button>
-              <button class="btn btn-primary rounded-3 px-4 shadow-sm fw-bold" (click)="abrirModalNuevaSolicitud()">
+              <button class="btn btn-sm btn-primary rounded-3 px-3 shadow-sm fw-bold" (click)="abrirModalNuevaSolicitud()">
                 <i class="bi bi-plus-lg me-2"></i> Nueva Solicitud
               </button>
-              <button class="btn btn-light rounded-3" (click)="cargarSolicitudes()">
+              <button class="btn btn-sm btn-light rounded-3" (click)="cargarSolicitudes()">
                 <i class="bi bi-arrow-clockwise"></i>
               </button>
             </div>
@@ -42,35 +42,35 @@ declare var bootstrap: any;
             <table class="table table-hover align-middle mb-0">
               <thead class="bg-light">
                 <tr>
-                  <th class="ps-4 py-3">Empresa</th>
-                  <th class="py-3">Plan Solicitado</th>
-                  <th class="py-3">Fecha Solicitud</th>
-                  <th class="py-3 text-center">Estado</th>
-                  <th class="pe-4 py-3 text-end">Procesado el</th>
+                  <th class="ps-3 py-2 small">Empresa</th>
+                  <th class="py-2 small">Plan Solicitado</th>
+                  <th class="py-2 small">Fecha Solicitud</th>
+                  <th class="py-2 small text-center">Estado</th>
+                  <th class="pe-3 py-2 small text-end">Procesado el</th>
                 </tr>
               </thead>
               <tbody>
                 <tr *ngFor="let s of solicitudes" [class.table-highlighted]="s.id === highlightedId">
-                  <td class="ps-4">
+                  <td class="ps-3 py-2">
                     <div class="d-flex align-items-center">
-                      <div class="avatar-sm bg-primary-subtle text-primary me-3">
+                      <div class="avatar-sm bg-primary-subtle text-primary me-2">
                         {{ (s.empresa_nombre?.charAt(0) || 'E') }}
                       </div>
-                      <span class="fw-bold">{{ s.empresa_nombre }}</span>
+                      <span class="fw-bold small">{{ s.empresa_nombre }}</span>
                     </div>
                   </td>
-                  <td><span class="fw-medium">{{ s.plan_nombre }}</span></td>
-                  <td>{{ s.fecha_solicitud | date:'short' }}</td>
-                  <td class="text-center">
+                  <td class="py-2"><span class="fw-medium small">{{ s.plan_nombre }}</span></td>
+                  <td class="py-2 small">{{ s.fecha_solicitud | date:'short' }}</td>
+                  <td class="py-2 text-center">
                     <span class="badge rounded-pill" [ngClass]="getEstadoClass(s.estado)">
                       {{ s.estado }}
                     </span>
                   </td>
-                  <td class="pe-4 text-end">
-                    <span *ngIf="s.estado !== 'PENDIENTE'" class="text-muted small">
+                  <td class="pe-3 py-2 text-end">
+                    <span *ngIf="s.estado !== 'PENDIENTE'" class="text-muted smallest">
                       {{ (s.fecha_procesamiento || s.updated_at) | date:'shortDate' }}
                     </span>
-                    <span *ngIf="s.estado === 'PENDIENTE'" class="text-muted small italic">Aún en revisión</span>
+                    <span *ngIf="s.estado === 'PENDIENTE'" class="text-muted smallest italic">Revisión</span>
                   </td>
                 </tr>
                 <tr *ngIf="solicitudes.length === 0">
@@ -196,8 +196,8 @@ declare var bootstrap: any;
     </div>
   `,
   styles: [`
-    .avatar-sm { width: 38px; height: 38px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: 700; }
-    .badge { padding: 0.5em 1em; font-weight: 600; }
+    .avatar-sm { width: 32px; height: 32px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.85rem; }
+    .badge { padding: 0.35em 0.8em; font-weight: 600; font-size: 0.7rem; }
     .bg-primary-subtle { background-color: #e0f2fe !important; }
     .bg-success-subtle { background-color: #dcfce7 !important; }
     .bg-warning-subtle { background-color: #fef9c3 !important; }

@@ -9,27 +9,27 @@ import { FormsModule } from '@angular/forms';
   imports: [CommonModule, FormsModule],
   template: `
     <div class="card-premium h-100">
-      <div class="card-body p-4">
+      <div class="card-body p-3">
         <!-- Vista Normal -->
         <ng-container *ngIf="!isEditing">
-          <div class="text-center mb-4 position-relative">
+          <div class="text-center mb-3 position-relative">
             <button class="btn btn-sm btn-outline-primary position-absolute top-0 end-0 rounded-circle" 
                     (click)="startEdit()" 
                     title="Editar Perfil"
                     style="width: 35px; height: 35px; padding: 0; display: flex; align-items: center; justify-content: center;">
               <i class="bi bi-pencil-fill"></i>
             </button>
-            <div class="avatar-circle mx-auto mb-3">
+            <div class="avatar-circle mx-auto mb-2">
               {{ getInitials(nombres, apellidos) }}
             </div>
-            <h3 class="fw-bold mb-1 header-font">{{ nombres }} {{ apellidos }}</h3>
-            <p class="text-muted mb-2">{{ email }}</p>
+            <h5 class="fw-bold mb-0 header-font">{{ nombres }} {{ apellidos }}</h5>
+            <p class="text-muted smallest mb-2">{{ email }}</p>
             <span class="badge" [ngClass]="activo ? 'bg-success-subtle text-success' : 'bg-danger-subtle text-danger'">
               {{ activo ? 'Activo' : 'Inactivo' }}
             </span>
           </div>
 
-          <hr class="border-light opacity-50 my-4">
+          <hr class="border-light opacity-50 my-3">
 
           <!-- CAMBIO PASSWORD BUTTON -->
           <div class="mb-4" *ngIf="!isChangingPassword">
@@ -165,15 +165,15 @@ import { FormsModule } from '@angular/forms';
         box-shadow: 0 20px 40px -10px rgba(0,0,0,0.1);
     }
     .avatar-circle {
-      width: 90px;
-      height: 90px;
+      width: 70px;
+      height: 70px;
       background: linear-gradient(135deg, #4f46e5 0%, #3730a3 100%);
       color: white;
       border-radius: 50%;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 2rem;
+      font-size: 1.5rem;
       font-weight: 700;
       box-shadow: 0 10px 20px rgba(79, 70, 229, 0.3);
     }
@@ -182,15 +182,15 @@ import { FormsModule } from '@angular/forms';
         color: #1e293b;
     }
     .info-label {
-      font-size: 0.75rem;
+      font-size: 0.625rem;
       text-transform: uppercase;
       letter-spacing: 0.5px;
       color: #94a3b8;
       font-weight: 600;
-      margin-bottom: 0.25rem;
+      margin-bottom: 0.15rem;
     }
     .info-value {
-      font-size: 0.95rem;
+      font-size: 0.85rem;
       color: #334155;
       font-weight: 600;
       margin-bottom: 0;

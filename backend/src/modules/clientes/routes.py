@@ -3,6 +3,12 @@ from typing import List, Optional
 from uuid import UUID
 
 from .schemas import ClienteCreacion, ClienteLectura, ClienteStats, ClienteActualizacion
+from .analitica_schemas import (
+    ReporteNuevosClientesResponse,
+    ReporteTopClientesResponse,
+    ReporteClientesInactivosResponse,
+    ReporteAnalisisClientesResponse,
+)
 from .controller import ClienteController
 from ..autenticacion.permissions import requerir_permiso
 from ...constants.permissions import PermissionCodes
@@ -25,6 +31,53 @@ def exportar_clientes(
     controller: ClienteController = Depends()
 ):
     return controller.exportar_clientes(usuario, start_date, end_date)
+
+# ----------------------------------------------------------------
+# ANALÍTICA (deben ir ANTES de /{id} para evitar conflictos)
+# ----------------------------------------------------------------
+
+@router.get("/analitica/nuevos-por-mes", response_model=RespuestaBase[ReporteNuevosClientesResponse])
+def analitica_nuevos_por_mes(
+    meses: int = Query(default=6, ge=1, le=24, description="Número de meses a analizar"),
+    usuario: dict = Depends(requerir_permiso(PermissionCodes.CLIENTES_VER)),
+    controller: ClienteController = Depends()
+):
+    """R-017: Clientes nuevos registrados por mes con primera compra vs sin compras."""
+    return controller.obtener_nuevos_por_mes(usuario, meses)
+
+@router.get("/analitica/top", response_model=RespuestaBase[ReporteTopClientesResponse])
+def analitica_top_clientes(
+    fecha_inicio: Optional[str] = Query(None, description="Fecha inicio YYYY-MM-DD"),
+    fecha_fin: Optional[str] = Query(None, description="Fecha fin YYYY-MM-DD"),
+    criterio: str = Query(default="monto", description="'monto' o 'facturas'"),
+    limit: int = Query(default=10, description="5, 10 o 20"),
+    usuario: dict = Depends(requerir_permiso(PermissionCodes.CLIENTES_VER)),
+    controller: ClienteController = Depends()
+):
+    """R-018: Ranking de mejores compradores por monto o cantidad de facturas."""
+    return controller.obtener_top_clientes(usuario, fecha_inicio, fecha_fin, criterio, limit)
+
+@router.get("/analitica/inactivos", response_model=RespuestaBase[ReporteClientesInactivosResponse])
+def analitica_clientes_inactivos(
+    dias: int = Query(default=90, ge=1, description="Días sin factura para considerar inactivo"),
+    usuario: dict = Depends(requerir_permiso(PermissionCodes.CLIENTES_VER)),
+    controller: ClienteController = Depends()
+):
+    """R-019: Clientes sin compras en los últimos X días."""
+    return controller.obtener_clientes_inactivos(usuario, dias)
+
+@router.get("/analitica/analisis", response_model=RespuestaBase[ReporteAnalisisClientesResponse])
+def analitica_analisis_clientes(
+    periodo_meses: int = Query(default=3, ge=1, le=12, description="Meses para calcular frecuencia de compra"),
+    usuario: dict = Depends(requerir_permiso(PermissionCodes.CLIENTES_VER)),
+    controller: ClienteController = Depends()
+):
+    """R-020: Segmentación de cartera y análisis Pareto 80/20."""
+    return controller.obtener_analisis_clientes(usuario, periodo_meses)
+
+# ----------------------------------------------------------------
+# CRUD BASE
+# ----------------------------------------------------------------
 
 @router.get("", response_model=RespuestaBase[List[ClienteLectura]])
 def listar_clientes(
@@ -66,4 +119,3 @@ def eliminar_cliente(
     controller: ClienteController = Depends()
 ):
     return controller.eliminar_cliente(id, usuario)
-

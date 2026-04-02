@@ -15,6 +15,7 @@ import { ToastComponent } from '../../../shared/components/toast/toast.component
 import { ClientesService } from './services/clientes.service';
 import { UiService } from '../../../shared/services/ui.service';
 import { Cliente, ClienteStats } from '../../../domain/models/cliente.model';
+import { ClienteAnaliticaComponent } from './components/cliente-analitica/cliente-analitica.component';
 
 @Component({
   selector: 'app-usuario-clientes',
@@ -29,31 +30,58 @@ import { Cliente, ClienteStats } from '../../../domain/models/cliente.model';
     ClienteDetailModalComponent,
     ExportClientesModalComponent,
     ConfirmModalComponent,
-    ToastComponent
+    ToastComponent,
+    ClienteAnaliticaComponent
   ],
   template: `
     <div class="clientes-page-container">
-      <!-- ESTADÍSTICAS -->
-      <app-cliente-stats
-        *ngIf="stats$ | async as st"
-        [total]="st.total"
-        [active]="st.activos"
-        [credit]="st.con_credito"
-      ></app-cliente-stats>
+      <!-- TABS PRINCIPALES NAV -->
+      <div class="main-tabs-wrapper">
+        <div class="main-tabs">
+          <button class="main-tab-btn" 
+                  [class.active]="activeTab === 'directorio'" 
+                  (click)="activeTab = 'directorio'">
+            <i class="bi bi-people-fill"></i> Directorio de Clientes
+          </button>
+          <button class="main-tab-btn" 
+                  [class.active]="activeTab === 'analitica'" 
+                  (click)="activeTab = 'analitica'">
+            <i class="bi bi-bar-chart-fill"></i> Analítica
+          </button>
+        </div>
+      </div>
 
-      <!-- ACCIONES Y FILTROS -->
-      <app-cliente-actions
-        [(searchQuery)]="searchQuery"
-        (onFilterChangeEmit)="handleFilters($event)"
-        (onCreate)="openCreateModal()"
-        (onExport)="showExportModal = true"
-      ></app-cliente-actions>
+      <!-- TAB: DIRECTORIO -->
+      <div class="view-section" *ngIf="activeTab === 'directorio'">
+        <!-- ESTADÍSTICAS -->
+        <app-cliente-stats
+          *ngIf="stats$ | async as st"
+          [total]="st.total"
+          [active]="st.activos"
+          [credit]="st.con_credito"
+        ></app-cliente-stats>
 
-      <!-- TABLA DE CLIENTES -->
-      <app-cliente-table
-        [clientes]="filteredClientes"
-        (onAction)="handleAction($event)"
-      ></app-cliente-table>
+        <!-- ACCIONES Y FILTROS -->
+        <app-cliente-actions
+          [(searchQuery)]="searchQuery"
+          (onFilterChangeEmit)="handleFilters($event)"
+          (onCreate)="openCreateModal()"
+          (onExport)="showExportModal = true"
+        ></app-cliente-actions>
+
+        <!-- TABLA DE CLIENTES -->
+        <app-cliente-table
+          [clientes]="filteredClientes"
+          (onAction)="handleAction($event)"
+        ></app-cliente-table>
+      </div>
+
+      <!-- TAB: ANALÍTICA -->
+      <div class="view-section" *ngIf="activeTab === 'analitica'">
+        <div class="analitica-section">
+          <app-cliente-analitica></app-cliente-analitica>
+        </div>
+      </div>
 
       <!-- MODAL DE CREACIÓN/EDICIÓN -->
       <app-create-cliente-modal
@@ -98,7 +126,53 @@ import { Cliente, ClienteStats } from '../../../domain/models/cliente.model';
   styles: [`
     .clientes-page-container {
       min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
     }
+
+    /* TABS STYLES */
+    .main-tabs-wrapper {
+      margin-bottom: 0.5rem;
+      border-bottom: 1px solid #e2e8f0;
+    }
+    .main-tabs {
+      display: flex;
+      gap: 1.5rem;
+    }
+    .main-tab-btn {
+      background: none;
+      border: none;
+      padding: 0.75rem 0.5rem;
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: #64748b;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      border-bottom: 3px solid transparent;
+      transition: all 0.2s ease;
+    }
+    .main-tab-btn i { font-size: 1.1rem; }
+    .main-tab-btn:hover { color: #1e293b; }
+    .main-tab-btn.active {
+      color: #3b82f6;
+      border-bottom-color: #3b82f6;
+    }
+
+    .view-section {
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+      animation: fadeIn 0.3s ease;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(5px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .analitica-section { display: flex; flex-direction: column; gap: 0; }
 
     .lux-page-header {
       padding-bottom: 2rem;
@@ -126,6 +200,9 @@ import { Cliente, ClienteStats } from '../../../domain/models/cliente.model';
   `]
 })
 export class ClientesPage implements OnInit, OnDestroy {
+  // Navigation State
+  activeTab: 'directorio' | 'analitica' = 'directorio';
+
   // Observables for reactive UI
   clientes$: Observable<Cliente[]>;
   stats$: Observable<ClienteStats | null>;

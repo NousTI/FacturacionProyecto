@@ -10,6 +10,7 @@ import { CreateProductoModalComponent } from './components/create-producto-modal
 import { ProductoDetailModalComponent } from './components/producto-detail-modal/producto-detail-modal.component';
 import { ConfirmModalComponent } from '../../../shared/components/confirm-modal/confirm-modal.component';
 import { ToastComponent } from '../../../shared/components/toast/toast.component';
+import { ProductoAnaliticaComponent } from './components/producto-analitica/producto-analitica.component';
 
 import { ProductosService } from './services/productos.service';
 import { UiService } from '../../../shared/services/ui.service';
@@ -27,12 +28,29 @@ import { Producto, ProductoStats } from '../../../domain/models/producto.model';
     CreateProductoModalComponent,
     ProductoDetailModalComponent,
     ConfirmModalComponent,
-    ToastComponent
+    ToastComponent,
+    ProductoAnaliticaComponent
   ],
   template: `
     <div class="productos-page-container">
 
-      <div class="">
+      <!-- TABS PRINCIPALES NAV -->
+      <div class="main-tabs-wrapper">
+        <div class="main-tabs">
+          <button class="main-tab-btn" 
+                  [class.active]="activeTab === 'catalogo'" 
+                  (click)="activeTab = 'catalogo'">
+            <i class="bi bi-box-seam"></i> Catálogo de Productos
+          </button>
+          <button class="main-tab-btn" 
+                  [class.active]="activeTab === 'analitica'" 
+                  (click)="activeTab = 'analitica'">
+            <i class="bi bi-bar-chart-fill"></i> Analítica e Inventarios
+          </button>
+        </div>
+      </div>
+
+      <div class="view-section" *ngIf="activeTab === 'catalogo'">
         <!-- ESTADÍSTICAS (Sectional Cards) -->
         <app-producto-stats
           *ngIf="stats$ | async as st"
@@ -42,15 +60,12 @@ import { Producto, ProductoStats } from '../../../domain/models/producto.model';
           [bajoStock]="st.bajo_stock"
         ></app-producto-stats>
 
-        <!-- TOOLBAR -->
-        <div class="toolbar-minimal my-4 border-bottom pb-3 d-flex align-items-center">
-          <app-producto-actions
-            class="flex-grow-1"
-            [(searchQuery)]="searchQuery"
-            (onFilterChangeEmit)="handleFilters($event)"
-            (onCreate)="openCreateModal()"
-          ></app-producto-actions>
-        </div>
+        <!-- ACCIONES Y FILTROS -->
+        <app-producto-actions
+          [(searchQuery)]="searchQuery"
+          (onFilterChangeEmit)="handleFilters($event)"
+          (onCreate)="openCreateModal()"
+        ></app-producto-actions>
 
         <!-- MAIN CONTENT TABLE -->
         <div class="table-minimal">
@@ -58,6 +73,13 @@ import { Producto, ProductoStats } from '../../../domain/models/producto.model';
             [productos]="filteredProductos"
             (onAction)="handleAction($event)"
           ></app-producto-table>
+        </div>
+      </div>
+
+      <!-- TAB: ANALÍTICA -->
+      <div class="view-section" *ngIf="activeTab === 'analitica'">
+        <div class="analitica-section">
+          <app-producto-analitica></app-producto-analitica>
         </div>
       </div>
 
@@ -95,8 +117,49 @@ import { Producto, ProductoStats } from '../../../domain/models/producto.model';
   styles: [`
     .productos-page-container {
       min-height: 100vh;
-      background: var(--bg-main);
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
     }
+
+    /* TABS STYLES - COPIED FROM CLIENTES */
+    .main-tabs-wrapper {
+      margin-bottom: 0.5rem;
+      border-bottom: 1px solid #e2e8f0;
+    }
+    .main-tabs {
+      display: flex;
+      gap: 1.5rem;
+    }
+    .main-tab-btn {
+      background: none;
+      border: none;
+      padding: 0.75rem 0.5rem;
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: #64748b;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      border-bottom: 3px solid transparent;
+      transition: all 0.2s ease;
+    }
+    .main-tab-btn i { font-size: 1.1rem; }
+    .main-tab-btn:hover { color: #1e293b; }
+    .main-tab-btn.active {
+      color: #3b82f6;
+      border-bottom-color: #3b82f6;
+    }
+
+    .view-section {
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+      animation: fadeIn 0.3s ease;
+    }
+
+    .analitica-section { display: flex; flex-direction: column; gap: 0; }
     
     .toolbar-minimal {
       background: transparent;
@@ -126,13 +189,16 @@ import { Producto, ProductoStats } from '../../../domain/models/producto.model';
       overflow: visible;
     }
 
-    .spinning i { animation: spin 0.8s linear infinite; }
-    @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-    .animate-fade-in { animation: fadeIn 0.4s ease-out forwards; }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(5px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
   `]
 })
 export class ProductosPage implements OnInit, OnDestroy {
+  // Navigation State
+  activeTab: 'catalogo' | 'analitica' = 'catalogo';
+
   productos$: Observable<Producto[]>;
   stats$: Observable<ProductoStats | null>;
 

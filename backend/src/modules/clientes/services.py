@@ -8,6 +8,12 @@ from datetime import datetime, date
 
 from .repository import RepositorioClientes
 from .schemas import ClienteCreacion, ClienteActualizacion
+from .analitica_schemas import (
+    ReporteNuevosClientesResponse, PeriodoNuevosClientes,
+    ReporteTopClientesResponse, TopClienteItem,
+    ReporteClientesInactivosResponse, ClienteInactivoItem,
+    ReporteAnalisisClientesResponse, SegmentoCliente, ParetoItem
+)
 from ..vendedores.repositories import RepositorioVendedores
 from ..empresas.repositories import RepositorioEmpresas
 from ...constants.enums import AuthKeys
@@ -237,3 +243,175 @@ class ServicioClientes:
         output.seek(0)
         return output
 
+    # ----------------------------------------------------------------
+    # R-017: CLIENTES NUEVOS POR MES
+    # ----------------------------------------------------------------
+    def obtener_nuevos_por_mes(self, usuario_actual: dict, meses: int = 6) -> ReporteNuevosClientesResponse:
+        logger.info("[R-017] Obteniendo clientes nuevos por mes")
+        ctx = self._get_context(usuario_actual)
+        empresa_id = ctx.get("empresa_id")
+        if not empresa_id:
+            raise AppError("Contexto de empresa requerido", 400)
+
+        filas = self.repo.obtener_nuevos_por_mes(empresa_id, meses)
+        periodos = [
+            PeriodoNuevosClientes(
+                mes=r["mes"].strip(),
+                anio=r["anio"],
+                mes_numero=r["mes_numero"],
+                nuevos_clientes=r["nuevos_clientes"],
+                con_primera_compra=r["con_primera_compra"],
+                sin_compras=r["sin_compras"],
+            )
+            for r in filas
+        ]
+        return ReporteNuevosClientesResponse(
+            periodos=periodos,
+            total_nuevos=sum(p.nuevos_clientes for p in periodos),
+            total_con_compra=sum(p.con_primera_compra for p in periodos),
+            total_sin_compra=sum(p.sin_compras for p in periodos),
+        )
+
+    # ----------------------------------------------------------------
+    # R-018: TOP CLIENTES
+    # ----------------------------------------------------------------
+    def obtener_top_clientes(
+        self,
+        usuario_actual: dict,
+        fecha_inicio: Optional[str] = None,
+        fecha_fin: Optional[str] = None,
+        criterio: str = "monto",
+        limit: int = 10,
+    ) -> ReporteTopClientesResponse:
+        logger.info("[R-018] Obteniendo top clientes")
+        ctx = self._get_context(usuario_actual)
+        empresa_id = ctx.get("empresa_id")
+        if not empresa_id:
+            raise AppError("Contexto de empresa requerido", 400)
+
+        if criterio not in ("monto", "facturas"):
+            raise AppError("Criterio inválido. Use 'monto' o 'facturas'", 400)
+        if limit not in (5, 10, 20):
+            raise AppError("Top inválido. Use 5, 10 o 20", 400)
+
+        filas = self.repo.obtener_top_clientes(empresa_id, fecha_inicio, fecha_fin, criterio, limit)
+        clientes = [
+            TopClienteItem(
+                ranking=r["ranking"],
+                cliente_id=r["cliente_id"],
+                razon_social=r["razon_social"],
+                total_facturas=r["total_facturas"],
+                total_compras=r["total_compras"],
+                ticket_promedio=r["ticket_promedio"],
+                ultima_compra=r["ultima_compra"],
+                email=r.get("email"),
+                telefono=r.get("telefono"),
+            )
+            for r in filas
+        ]
+        return ReporteTopClientesResponse(
+            clientes=clientes,
+            criterio=criterio,
+            fecha_inicio=fecha_inicio,
+            fecha_fin=fecha_fin,
+            total_registros=len(clientes),
+        )
+
+    # ----------------------------------------------------------------
+    # R-019: CLIENTES INACTIVOS
+    # ----------------------------------------------------------------
+    def obtener_clientes_inactivos(
+        self, usuario_actual: dict, dias: int = 90
+    ) -> ReporteClientesInactivosResponse:
+        logger.info(f"[R-019] Clientes inactivos (>{dias} días)")
+        ctx = self._get_context(usuario_actual)
+        empresa_id = ctx.get("empresa_id")
+        if not empresa_id:
+            raise AppError("Contexto de empresa requerido", 400)
+
+        filas = self.repo.obtener_clientes_inactivos(empresa_id, dias)
+        clientes = [
+            ClienteInactivoItem(
+                cliente_id=r["cliente_id"],
+                razon_social=r["razon_social"],
+                ultima_factura=r["ultima_factura"],
+                dias_sin_comprar=int(r["dias_sin_comprar"]),
+                total_historico=r["total_historico"],
+                email=r.get("email"),
+                telefono=r.get("telefono"),
+            )
+            for r in filas
+        ]
+        sin_hist = sum(1 for c in clientes if c.total_historico == 0)
+        return ReporteClientesInactivosResponse(
+            clientes=clientes,
+            dias_umbral=dias,
+            total_inactivos=len(clientes),
+            total_sin_compras_historicas=sin_hist,
+        )
+
+    # ----------------------------------------------------------------
+    # R-020: ANÁLISIS DE SEGMENTACIÓN
+    # ----------------------------------------------------------------
+    def obtener_analisis_clientes(
+        self, usuario_actual: dict, periodo_meses: int = 3
+    ) -> ReporteAnalisisClientesResponse:
+        logger.info("[R-020] Análisis de segmentación de clientes")
+        ctx = self._get_context(usuario_actual)
+        empresa_id = ctx.get("empresa_id")
+        if not empresa_id:
+            raise AppError("Contexto de empresa requerido", 400)
+
+        filas = self.repo.obtener_segmentacion_clientes(empresa_id, periodo_meses)
+
+        monto_total = sum(r["monto_periodo"] for r in filas) or 1
+        total_clientes = len(filas) or 1
+
+        # Agrupar por segmento
+        segmentos_def = {
+            "FRECUENTES":  "> 10 facturas en el período",
+            "REGULARES":   "5-10 facturas en el período",
+            "OCASIONALES": "1-4 facturas en el período",
+            "NUEVOS":      "Primer mes, sin compras aún",
+            "INACTIVOS":   "Sin compras en el período",
+        }
+        segmentos_map: dict = {k: {"clientes": 0, "monto": 0} for k in segmentos_def}
+
+        for r in filas:
+            seg = r["segmento"]
+            segmentos_map[seg]["clientes"] += 1
+            segmentos_map[seg]["monto"] += float(r["monto_periodo"])
+
+        segmentos = [
+            SegmentoCliente(
+                nombre=nombre,
+                descripcion=desc,
+                total_clientes=segmentos_map[nombre]["clientes"],
+                monto_total=round(segmentos_map[nombre]["monto"], 2),
+                porcentaje_monto=round(segmentos_map[nombre]["monto"] / float(monto_total) * 100, 1),
+                porcentaje_clientes=round(segmentos_map[nombre]["clientes"] / total_clientes * 100, 1),
+            )
+            for nombre, desc in segmentos_def.items()
+            if segmentos_map[nombre]["clientes"] > 0
+        ]
+
+        # Pareto 80/20
+        acumulado = 0.0
+        pareto: list[ParetoItem] = []
+        for r in filas:
+            acumulado += float(r["monto_periodo"])
+            pareto.append(ParetoItem(
+                cliente_razon_social=r["razon_social"],
+                total_compras=r["monto_periodo"],
+                porcentaje_acumulado=round(acumulado / float(monto_total) * 100, 1),
+            ))
+            if acumulado / float(monto_total) >= 0.80:
+                break
+
+        return ReporteAnalisisClientesResponse(
+            segmentos=segmentos,
+            pareto=pareto,
+            total_clientes_analizados=len(filas),
+            monto_total_general=round(monto_total, 2),
+            periodo_meses=periodo_meses,
+        )

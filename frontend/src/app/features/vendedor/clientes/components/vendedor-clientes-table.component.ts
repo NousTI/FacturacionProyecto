@@ -99,42 +99,42 @@ import { CommonModule } from '@angular/common';
     </section>
   `,
   styles: [`
-    .module-table { margin-top: 1rem; }
+    .module-table { margin-top: 0.5rem; }
     .table-container {
       background: #ffffff;
-      border-radius: 24px;
+      border-radius: 16px;
       border: 1px solid #f1f5f9;
       overflow: visible !important;
     }
     .table-responsive-premium { overflow: visible !important; position: relative; }
     .table thead th {
       background: #f8fafc;
-      padding: 1.15rem 1.5rem;
-      font-size: 0.7rem;
+      padding: 0.75rem 1.25rem;
+      font-size: 0.65rem;
       text-transform: uppercase;
       letter-spacing: 1px;
       color: #94a3b8;
       font-weight: 800;
       border-bottom: 2px solid #f1f5f9;
     }
-    .table tbody td { padding: 1.25rem 1.5rem; border-bottom: 1px solid #f8fafc; }
+    .table tbody td { padding: 0.75rem 1.25rem; border-bottom: 1px solid #f8fafc; }
     
     .avatar-soft-premium {
-      width: 40px; height: 40px; border-radius: 12px;
+      width: 32px; height: 32px; border-radius: 10px;
       display: flex; align-items: center; justify-content: center;
-      font-weight: 800; font-size: 0.85rem;
+      font-weight: 800; font-size: 0.75rem;
     }
     
     .badge-status-premium {
-      padding: 0.4rem 0.85rem; border-radius: 100px;
-      font-size: 0.7rem; font-weight: 800; text-transform: uppercase;
+      padding: 0.25rem 0.65rem; border-radius: 100px;
+      font-size: 0.65rem; font-weight: 800; text-transform: uppercase;
     }
     .badge-status-premium.activo { background: #dcfce7; color: #15803d; }
     .badge-status-premium.inactivo { background: #fee2e2; color: #b91c1c; }
 
     .badge-role-premium {
-      padding: 0.4rem 0.85rem; border-radius: 100px;
-      font-size: 0.7rem; font-weight: 700;
+      padding: 0.25rem 0.65rem; border-radius: 100px;
+      font-size: 0.65rem; font-weight: 700;
       background: rgba(22, 29, 53, 0.05);
       color: #161d35;
     }

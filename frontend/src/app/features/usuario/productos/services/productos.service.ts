@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, BehaviorSubject, tap, map, filter } from 'rxjs';
+import { Observable, BehaviorSubject, tap, map, filter, of } from 'rxjs';
 import { BaseApiService } from '../../../../core/api/base-api.service';
 import { Producto, ProductoStats } from '../../../../domain/models/producto.model';
 import { ApiResponse } from '../../../../core/api/api-response.model';
@@ -15,6 +15,7 @@ export class ProductosService extends BaseApiService {
     private _productos$ = new BehaviorSubject<Producto[] | null>(null);
     private _stats$ = new BehaviorSubject<ProductoStats | null>(null);
     private _loaded = false;
+    private _analiticaCache = new Map<string, any>();
 
     constructor(http: HttpClient) {
         super(http);
@@ -110,6 +111,47 @@ export class ProductosService extends BaseApiService {
 
     refresh(): void {
         this._loaded = false;
+        this._analiticaCache.clear();
         this.loadInitialData();
+    }
+
+    getProductosMasVendidos(limit: number = 10, criterio: 'cantidad' | 'monto' = 'cantidad'): Observable<ApiResponse<import('../../../../domain/models/producto.model').ProductoMasVendido[]>> {
+        const cacheKey = `mas-vendidos-${limit}-${criterio}`;
+        if (this._analiticaCache.has(cacheKey)) {
+            return of({ detalles: this._analiticaCache.get(cacheKey) } as any);
+        }
+        return this.get<ApiResponse<any>>(`${this.ENDPOINT}/analiticas/mas-vendidos?limit=${limit}&criterio=${criterio}`).pipe(
+            tap(resp => { if (resp && resp.detalles) this._analiticaCache.set(cacheKey, resp.detalles); })
+        );
+    }
+
+    getProductosSinMovimiento(dias: number = 30): Observable<ApiResponse<import('../../../../domain/models/producto.model').ProductoSinMovimiento[]>> {
+        const cacheKey = `sin-movimiento-${dias}`;
+        if (this._analiticaCache.has(cacheKey)) {
+            return of({ detalles: this._analiticaCache.get(cacheKey) } as any);
+        }
+        return this.get<ApiResponse<any>>(`${this.ENDPOINT}/analiticas/sin-movimiento?dias=${dias}`).pipe(
+            tap(resp => { if (resp && resp.detalles) this._analiticaCache.set(cacheKey, resp.detalles); })
+        );
+    }
+
+    getRentabilidadProductos(): Observable<ApiResponse<import('../../../../domain/models/producto.model').ProductoRentabilidad[]>> {
+        const cacheKey = `rentabilidad`;
+        if (this._analiticaCache.has(cacheKey)) {
+            return of({ detalles: this._analiticaCache.get(cacheKey) } as any);
+        }
+        return this.get<ApiResponse<any>>(`${this.ENDPOINT}/analiticas/rentabilidad`).pipe(
+            tap(resp => { if (resp && resp.detalles) this._analiticaCache.set(cacheKey, resp.detalles); })
+        );
+    }
+
+    getReporteInventario(): Observable<ApiResponse<import('../../../../domain/models/producto.model').ProductoReporteInventario[]>> {
+        const cacheKey = `inventario`;
+        if (this._analiticaCache.has(cacheKey)) {
+            return of({ detalles: this._analiticaCache.get(cacheKey) } as any);
+        }
+        return this.get<ApiResponse<any>>(`${this.ENDPOINT}/analiticas/reporte-inventario`).pipe(
+            tap(resp => { if (resp && resp.detalles) this._analiticaCache.set(cacheKey, resp.detalles); })
+        );
     }
 }

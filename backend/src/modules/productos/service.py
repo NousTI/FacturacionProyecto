@@ -113,3 +113,49 @@ class ServicioProductos:
         if not self.repo.eliminar_producto(producto_id):
              raise AppError("Error al eliminar producto", 500, "DB_ERROR")
         return True
+
+    def obtener_productos_mas_vendidos(self, usuario_actual: dict, fecha_inicio: Optional[str] = None, fecha_fin: Optional[str] = None, limit: int = 10, criterio: str = 'cantidad'):
+        empresa_id = usuario_actual.get("empresa_id")
+        if not empresa_id and not usuario_actual.get(AuthKeys.IS_SUPERADMIN):
+            raise AppError("Usuario no asociado a una empresa", 400, "VAL_ERROR")
+        productos = self.repo.obtener_productos_mas_vendidos(empresa_id, fecha_inicio, fecha_fin, limit, criterio)
+        return [self._filtrar_costos(p, usuario_actual) for p in productos]
+
+    def obtener_productos_sin_movimiento(self, usuario_actual: dict, dias: int = 30):
+        empresa_id = usuario_actual.get("empresa_id")
+        if not empresa_id and not usuario_actual.get(AuthKeys.IS_SUPERADMIN):
+            raise AppError("Usuario no asociado a una empresa", 400, "VAL_ERROR")
+        productos = self.repo.obtener_productos_sin_movimiento(empresa_id, dias)
+        return [self._filtrar_costos(p, usuario_actual) for p in productos]
+
+    def obtener_rentabilidad_productos(self, usuario_actual: dict):
+        empresa_id = usuario_actual.get("empresa_id")
+        if not usuario_actual.get(AuthKeys.IS_SUPERADMIN):
+            permisos = usuario_actual.get("permisos", [])
+            if PermissionCodes.PRODUCTOS_VER_COSTOS not in permisos:
+                raise AppError("No autorizado para ver rentabilidad (requiere permisos de costos)", 403, "AUTH_FORBIDDEN")
+        return self.repo.obtener_rentabilidad_productos(empresa_id)
+
+    def obtener_reporte_inventario(self, usuario_actual: dict):
+        empresa_id = usuario_actual.get("empresa_id")
+        productos = self.repo.obtener_reporte_inventario(empresa_id)
+        if not usuario_actual.get(AuthKeys.IS_SUPERADMIN):
+            permisos = usuario_actual.get("permisos", [])
+            can_see_costs = PermissionCodes.PRODUCTOS_VER_COSTOS in permisos
+            for p in productos:
+                if not can_see_costs:
+                    p['costo_unitario'] = None
+                    p['valor_total_inventario'] = None
+        return productos
+
+    def obtener_kardex_producto(self, producto_id: UUID, usuario_actual: dict, fecha_inicio: Optional[str] = None, fecha_fin: Optional[str] = None):
+        producto = self.obtener_producto(producto_id, usuario_actual)
+        empresa_id = usuario_actual.get("empresa_id")
+        movimientos = self.repo.obtener_kardex_producto(producto_id, empresa_id, fecha_inicio, fecha_fin)
+        if not usuario_actual.get(AuthKeys.IS_SUPERADMIN):
+            permisos = usuario_actual.get("permisos", [])
+            if PermissionCodes.PRODUCTOS_VER_COSTOS not in permisos:
+                for idx in range(len(movimientos)):
+                     movimientos[idx]['costo_unitario'] = None
+                     movimientos[idx]['costo_total'] = None
+        return movimientos

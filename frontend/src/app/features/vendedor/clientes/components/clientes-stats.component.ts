@@ -4,7 +4,7 @@ import { CommonModule } from '@angular/common';
 @Component({
     selector: 'app-clientes-stats',
     template: `
-    <div class="stats-compact-row mb-4">
+    <div class="stats-compact-row mb-3">
       <div class="stat-item-mini">
         <div class="icon-circle" style="background: rgba(22, 29, 53, 0.05); color: #161d35;">
           <i class="bi bi-people"></i>
@@ -43,8 +43,8 @@ import { CommonModule } from '@angular/common';
     styles: [`
     .stats-compact-row {
       background: white;
-      border-radius: 20px;
-      padding: 1.25rem 2rem;
+      border-radius: 16px;
+      padding: 0.75rem 1.5rem;
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -58,13 +58,13 @@ import { CommonModule } from '@angular/common';
       flex: 1;
     }
     .icon-circle {
-      width: 42px;
-      height: 42px;
-      border-radius: 12px;
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 1.2rem;
+      font-size: 1rem;
     }
     .stat-info {
       display: flex;
@@ -78,16 +78,16 @@ import { CommonModule } from '@angular/common';
       letter-spacing: 0.5px;
     }
     .stat-value {
-      font-size: 1.35rem;
+      font-size: 1.15rem;
       font-weight: 800;
       color: #1e293b;
       line-height: 1.2;
     }
     .stat-divider {
       width: 1px;
-      height: 35px;
+      height: 25px;
       background: #f1f5f9;
-      margin: 0 1.5rem;
+      margin: 0 1.25rem;
     }
     @media (max-width: 992px) {
       .stats-compact-row {

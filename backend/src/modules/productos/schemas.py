@@ -1,7 +1,7 @@
 from typing import Optional
 from pydantic import BaseModel, Field
 from uuid import UUID
-from datetime import datetime
+from datetime import datetime, date
 
 class ProductoBase(BaseModel):
     empresa_id: Optional[UUID] = None
@@ -45,3 +45,52 @@ class ProductoLectura(ProductoBase):
 
     class Config:
         from_attributes = True
+
+class ProductoMasVendido(BaseModel):
+    id: UUID
+    codigo: str
+    nombre: str
+    cantidad_vendida: float
+    total_vendido: float
+    utilidad: Optional[float] = None
+    margen: Optional[float] = None
+
+class ProductoSinMovimiento(BaseModel):
+    id: UUID
+    codigo: str
+    nombre: str
+    ultima_venta: Optional[date] = None
+    dias_sin_movimiento: Optional[int] = None
+    stock_actual: float
+    costo: float
+
+class ProductoRentabilidad(BaseModel):
+    id: UUID
+    codigo: str
+    nombre: str
+    precio: float
+    costo: float
+    utilidad_unitaria: float
+    margen: float
+    cantidad_vendida: float
+    utilidad_total: float
+
+class ProductoReporteInventario(BaseModel):
+    id: UUID
+    codigo: str
+    nombre: str
+    stock_actual: float
+    stock_minimo: float
+    estado_alerta: str
+    costo_unitario: float
+    valor_total_inventario: float
+
+class ProductoKardexItem(BaseModel):
+    fecha: datetime
+    tipo: str
+    documento: Optional[str] = None
+    entrada: float
+    salida: float
+    saldo: float
+    costo_unitario: float
+    costo_total: float

@@ -1,8 +1,12 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, BehaviorSubject, tap, map, filter } from 'rxjs';
+import { Observable, BehaviorSubject, tap, map, filter, shareReplay } from 'rxjs';
+import { HttpParams } from '@angular/common/http';
 import { BaseApiService } from '../../../../core/api/base-api.service';
-import { Cliente, ClienteCreate, ClienteUpdate, ClienteStats } from '../../../../domain/models/cliente.model';
+import { Cliente, ClienteCreate, ClienteUpdate, ClienteStats,
+    ReporteNuevosClientes, ReporteTopClientes,
+    ReporteClientesInactivos, ReporteAnalisisClientes
+} from '../../../../domain/models/cliente.model';
 
 import { ApiResponse } from '../../../../core/api/api-response.model';
 
@@ -16,6 +20,12 @@ export class ClientesService extends BaseApiService {
     private _clientes$ = new BehaviorSubject<Cliente[] | null>(null);
     private _stats$ = new BehaviorSubject<ClienteStats | null>(null);
     private _loaded = false;
+
+    // Caching State para Analítica
+    private cacheNuevos = new Map<number, Observable<ApiResponse<ReporteNuevosClientes>>>();
+    private cacheTop = new Map<string, Observable<ApiResponse<ReporteTopClientes>>>();
+    private cacheInactivos = new Map<number, Observable<ApiResponse<ReporteClientesInactivos>>>();
+    private cacheAnalisis = new Map<number, Observable<ApiResponse<ReporteAnalisisClientes>>>();
 
     constructor(http: HttpClient) {
         super(http);
@@ -165,6 +175,71 @@ export class ClientesService extends BaseApiService {
      */
     refresh(): void {
         this._loaded = false;
+        this.cacheNuevos.clear();
+        this.cacheTop.clear();
+        this.cacheInactivos.clear();
+        this.cacheAnalisis.clear();
         this.loadInitialData();
+    }
+
+    // ── Analítica ────────────────────────────────────────────────────────
+
+    /** R-017: Clientes nuevos por mes */
+    getNuevosPorMes(meses: number = 6): Observable<ApiResponse<ReporteNuevosClientes>> {
+        if (!this.cacheNuevos.has(meses)) {
+            const params = new HttpParams().set('meses', meses.toString());
+            const req = this.get<ApiResponse<ReporteNuevosClientes>>(
+                `${this.ENDPOINT}/analitica/nuevos-por-mes`, params
+            ).pipe(shareReplay(1));
+            this.cacheNuevos.set(meses, req);
+        }
+        return this.cacheNuevos.get(meses)!;
+    }
+
+    /** R-018: Top clientes */
+    getTopClientes(opts: {
+        fechaInicio?: string;
+        fechaFin?: string;
+        criterio?: 'monto' | 'facturas';
+        limit?: 5 | 10 | 20;
+    } = {}): Observable<ApiResponse<ReporteTopClientes>> {
+        const cacheKey = JSON.stringify(opts);
+        if (!this.cacheTop.has(cacheKey)) {
+            let params = new HttpParams();
+            if (opts.fechaInicio) params = params.set('fecha_inicio', opts.fechaInicio);
+            if (opts.fechaFin)    params = params.set('fecha_fin',    opts.fechaFin);
+            if (opts.criterio)    params = params.set('criterio',     opts.criterio);
+            if (opts.limit)       params = params.set('limit',        opts.limit.toString());
+            
+            const req = this.get<ApiResponse<ReporteTopClientes>>(
+                `${this.ENDPOINT}/analitica/top`, params
+            ).pipe(shareReplay(1));
+            this.cacheTop.set(cacheKey, req);
+        }
+        return this.cacheTop.get(cacheKey)!;
+    }
+
+    /** R-019: Clientes inactivos */
+    getClientesInactivos(dias: number = 90): Observable<ApiResponse<ReporteClientesInactivos>> {
+        if (!this.cacheInactivos.has(dias)) {
+            const params = new HttpParams().set('dias', dias.toString());
+            const req = this.get<ApiResponse<ReporteClientesInactivos>>(
+                `${this.ENDPOINT}/analitica/inactivos`, params
+            ).pipe(shareReplay(1));
+            this.cacheInactivos.set(dias, req);
+        }
+        return this.cacheInactivos.get(dias)!;
+    }
+
+    /** R-020: Análisis de segmentación */
+    getAnalisisClientes(periodoMeses: number = 3): Observable<ApiResponse<ReporteAnalisisClientes>> {
+        if (!this.cacheAnalisis.has(periodoMeses)) {
+            const params = new HttpParams().set('periodo_meses', periodoMeses.toString());
+            const req = this.get<ApiResponse<ReporteAnalisisClientes>>(
+                `${this.ENDPOINT}/analitica/analisis`, params
+            ).pipe(shareReplay(1));
+            this.cacheAnalisis.set(periodoMeses, req);
+        }
+        return this.cacheAnalisis.get(periodoMeses)!;
     }
 }

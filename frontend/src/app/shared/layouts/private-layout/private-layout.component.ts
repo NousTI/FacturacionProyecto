@@ -2,12 +2,13 @@ import { Component, OnInit } from '@angular/core';
 import { AuthService } from '../../../core/auth/auth.service';
 import { Router } from '@angular/router';
 import { UserRole } from '../../../domain/enums/role.enum';
+import { SidebarService } from '../../components/sidebar/sidebar.service';
 
 @Component({
   selector: 'app-private-layout',
   template: `
     <div class="dashboard-wrapper">
-      <app-sidebar class="sidebar-container"></app-sidebar>
+      <app-sidebar class="sidebar-container" [class.collapsed]="sidebarService.isCollapsed$ | async"></app-sidebar>
       <div class="main-content">
         <app-navbar></app-navbar>
         
@@ -34,10 +35,14 @@ import { UserRole } from '../../../domain/enums/role.enum';
       overflow: hidden;
     }
     .sidebar-container {
-      width: 280px;
+      width: 255px;
       flex-shrink: 0;
       background: white;
       border-right: 1px solid rgba(0,0,0,0.05);
+      transition: width 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .sidebar-container.collapsed {
+      width: 80px;
     }
     .main-content {
       flex-grow: 1;
@@ -89,7 +94,8 @@ export class PrivateLayoutComponent implements OnInit {
 
     constructor(
         private authService: AuthService,
-        private router: Router
+        private router: Router,
+        public sidebarService: SidebarService
     ) {}
 
     ngOnInit(): void {

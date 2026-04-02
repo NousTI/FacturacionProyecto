@@ -43,3 +43,28 @@ class ClienteController:
             media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
             headers={"Content-Disposition": f"attachment; filename={filename}"}
         )
+
+    # ---- Analítica -----------------------------------------------
+
+    def obtener_nuevos_por_mes(self, usuario_actual: dict, meses: int = 6):
+        data = self.service.obtener_nuevos_por_mes(usuario_actual, meses)
+        return success_response(data)
+
+    def obtener_top_clientes(
+        self,
+        usuario_actual: dict,
+        fecha_inicio: Optional[str] = None,
+        fecha_fin: Optional[str] = None,
+        criterio: str = "monto",
+        limit: int = 10,
+    ):
+        data = self.service.obtener_top_clientes(usuario_actual, fecha_inicio, fecha_fin, criterio, limit)
+        return success_response(data)
+
+    def obtener_clientes_inactivos(self, usuario_actual: dict, dias: int = 90):
+        data = self.service.obtener_clientes_inactivos(usuario_actual, dias)
+        return success_response(data)
+
+    def obtener_analisis_clientes(self, usuario_actual: dict, periodo_meses: int = 3):
+        data = self.service.obtener_analisis_clientes(usuario_actual, periodo_meses)
+        return success_response(data)

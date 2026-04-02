@@ -10,7 +10,7 @@ import { UiService } from '../../../shared/services/ui.service';
   standalone: true,
   imports: [CommonModule, ProfileCardComponent, PermissionsCardComponent],
   template: `
-    <div class="container-fluid py-4 min-vh-100 bg-light-subtle">
+    <div class="container-fluid py-3 min-vh-100 bg-light-subtle">
       <!-- Loading State -->
       <div *ngIf="loading" class="d-flex justify-content-center align-items-center vh-50">
         <div class="spinner-border text-primary" role="status">
@@ -32,7 +32,7 @@ import { UiService } from '../../../shared/services/ui.service';
       <!-- Content -->
       <div *ngIf="perfil && !loading">
         <!-- ALERT: CHANGE PASSWORD REQUIRED -->
-        <div *ngIf="perfil?.requiere_cambio_password" class="alert-cambio-password mb-4 animate-fade-in shadow-sm">
+        <div *ngIf="perfil?.requiere_cambio_password" class="alert-cambio-password mb-3 animate-fade-in shadow-sm">
           <div class="d-flex align-items-center gap-3">
             <div class="alert-icon">
               <i class="bi bi-shield-lock-fill"></i>
@@ -44,7 +44,7 @@ import { UiService } from '../../../shared/services/ui.service';
           </div>
         </div>
 
-        <div class="row g-4">
+        <div class="row g-3">
           <!-- Profile Info Card -->
           <div class="col-lg-5 col-xl-4">
             <app-profile-card
@@ -66,7 +66,7 @@ import { UiService } from '../../../shared/services/ui.service';
 
           <!-- Permissions & Stats -->
           <div class="col-lg-7 col-xl-8">
-             <div class="row g-4">
+             <div class="row g-3">
                 <div class="col-12">
                     <app-permissions-card
                         [canCreateCompanies]="perfil.puede_crear_empresas"
@@ -87,16 +87,16 @@ import { UiService } from '../../../shared/services/ui.service';
 
     .alert-cambio-password {
       background: #fff9db;
-      border-left: 6px solid #fab005;
-      padding: 1.25rem;
-      border-radius: 18px;
+      border-left: 5px solid #fab005;
+      padding: 0.85rem 1.15rem;
+      border-radius: 14px;
     }
     
     .alert-icon {
-      width: 44px; height: 44px;
+      width: 38px; height: 38px;
       display: flex; align-items: center; justify-content: center;
       background: #fab005; color: #fff;
-      border-radius: 12px; font-size: 1.1rem;
+      border-radius: 10px; font-size: 1rem;
     }
 
     .animate-fade-in {

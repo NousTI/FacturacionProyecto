@@ -7,45 +7,45 @@ import { CommonModule } from '@angular/common';
     standalone: true,
     imports: [CommonModule],
     template: `
-    <div class="card bg-white border-0 shadow-sm p-4 h-100">
-      <h3 class="fw-bold mb-4 text-primary">Permisos y Accesos</h3>
+    <div class="card bg-white border-0 shadow-sm p-3 h-100">
+      <h6 class="fw-bold mb-3 text-primary">Permisos y Accesos</h6>
       
       <div class="list-group list-group-flush">
         
-        <div class="list-group-item d-flex justify-content-between align-items-center bg-transparent border-bottom-dashed py-3">
+        <div class="list-group-item d-flex justify-content-between align-items-center bg-transparent border-bottom-dashed py-2">
           <div>
-            <h6 class="mb-0 fw-semibold text-dark">Crear Empresas</h6>
-            <small class="text-muted">Capacidad para registrar nuevas empresas en el sistema</small>
+            <h6 class="mb-0 fw-semibold text-dark small">Crear Empresas</h6>
+            <small class="text-muted smallest">Registro de nuevas empresas</small>
           </div>
           <span class="badge rounded-pill" [ngClass]="canCreateCompanies ? 'bg-success' : 'bg-secondary'">
             {{ canCreateCompanies ? 'Habilitado' : 'Deshabilitado' }}
           </span>
         </div>
 
-        <div class="list-group-item d-flex justify-content-between align-items-center bg-transparent border-bottom-dashed py-3">
+        <div class="list-group-item d-flex justify-content-between align-items-center bg-transparent border-bottom-dashed py-2">
           <div>
-            <h6 class="mb-0 fw-semibold text-dark">Gestionar Planes</h6>
-            <small class="text-muted">Modificar planes y suscripciones de clientes</small>
+            <h6 class="mb-0 fw-semibold text-dark small">Gestionar Planes</h6>
+            <small class="text-muted smallest">Modificar planes y suscripciones</small>
           </div>
           <span class="badge rounded-pill" [ngClass]="canManagePlans ? 'bg-success' : 'bg-secondary'">
              {{ canManagePlans ? 'Habilitado' : 'Deshabilitado' }}
           </span>
         </div>
 
-        <div class="list-group-item d-flex justify-content-between align-items-center bg-transparent border-bottom-dashed py-3">
+        <div class="list-group-item d-flex justify-content-between align-items-center bg-transparent border-bottom-dashed py-2">
           <div>
-            <h6 class="mb-0 fw-semibold text-dark">Acceso a Empresas</h6>
-            <small class="text-muted">Ingresar al dashboard de empresas asignadas</small>
+            <h6 class="mb-0 fw-semibold text-dark small">Acceso a Empresas</h6>
+            <small class="text-muted smallest">Dashboard de empresas asignadas</small>
           </div>
           <span class="badge rounded-pill" [ngClass]="canAccessCompanies ? 'bg-success' : 'bg-secondary'">
              {{ canAccessCompanies ? 'Habilitado' : 'Deshabilitado' }}
           </span>
         </div>
 
-        <div class="list-group-item d-flex justify-content-between align-items-center bg-transparent border-bottom-dashed py-3">
+        <div class="list-group-item d-flex justify-content-between align-items-center bg-transparent border-bottom-dashed py-2">
           <div>
-            <h6 class="mb-0 fw-semibold text-dark">Ver Reportes</h6>
-            <small class="text-muted">Acceso a reportes financieros avanzados</small>
+            <h6 class="mb-0 fw-semibold text-dark small">Ver Reportes</h6>
+            <small class="text-muted smallest">Reportes financieros avanzados</small>
           </div>
           <span class="badge rounded-pill" [ngClass]="canViewReports ? 'bg-success' : 'bg-secondary'">
              {{ canViewReports ? 'Habilitado' : 'Deshabilitado' }}
@@ -60,8 +60,8 @@ import { CommonModule } from '@angular/common';
         border-bottom: 1px dashed #e2e8f0 !important;
     }
     .badge {
-        font-size: 0.75rem;
-        padding: 0.5em 1em;
+        font-size: 0.65rem;
+        padding: 0.35em 0.8em;
         font-weight: 600;
         box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
     }

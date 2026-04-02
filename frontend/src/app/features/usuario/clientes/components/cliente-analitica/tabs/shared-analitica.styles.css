@@ -1,0 +1,159 @@
+/* Shared styles for all analitica tab components */
+
+/* ── Loading ──────────────────────────────────────────────────────── */
+.loading-box {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  padding: 3rem;
+  color: #94a3b8;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+.spinner {
+  width: 22px; height: 22px;
+  border: 2px solid #e2e8f0;
+  border-top-color: #3b82f6;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── Tab header ───────────────────────────────────────────────────── */
+.tab-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+}
+.tab-title {
+  font-size: 1rem;
+  font-weight: 800;
+  color: #1e293b;
+  margin: 0 0 0.25rem;
+}
+.tab-sub { font-size: 0.8rem; color: #94a3b8; margin: 0; }
+
+/* ── Filters ──────────────────────────────────────────────────────── */
+.filter-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+.filter-group { display: flex; flex-direction: column; gap: 0.2rem; }
+.filter-label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #94a3b8;
+  text-transform: uppercase;
+}
+.filter-select {
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 0.4rem 0.65rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #334155;
+  background: #fff;
+  outline: none;
+  cursor: pointer;
+}
+.filter-select:focus { border-color: #3b82f6; }
+
+/* ── Mini stats ───────────────────────────────────────────────────── */
+.mini-stats {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+  flex-wrap: wrap;
+}
+.mini-card {
+  flex: 1;
+  min-width: 120px;
+  border-radius: 14px;
+  padding: 1rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+.mini-card.blue  { background: #eff6ff; }
+.mini-card.green { background: #ecfdf5; }
+.mini-card.amber { background: #fffbeb; }
+.mini-card.red   { background: #fef2f2; }
+
+.mini-val {
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: #1e293b;
+  line-height: 1;
+}
+.mini-lbl {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+/* ── Table ────────────────────────────────────────────────────────── */
+.data-table-wrap {
+  overflow-x: auto;
+  border-radius: 12px;
+  border: 1px solid #f1f5f9;
+}
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.8rem;
+}
+.data-table thead tr { background: #f8fafc; }
+.data-table th {
+  padding: 0.65rem 1rem;
+  font-size: 0.68rem;
+  font-weight: 800;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-bottom: 1px solid #f1f5f9;
+}
+.data-table td {
+  padding: 0.7rem 1rem;
+  color: #334155;
+  border-bottom: 1px solid #f8fafc;
+  vertical-align: middle;
+}
+.data-table tbody tr:last-child td { border-bottom: none; }
+.data-table tbody tr:hover { background: #f8fafc; }
+
+/* ── Utilities ────────────────────────────────────────────────────── */
+.text-right { text-align: right; }
+.text-muted { color: #94a3b8; }
+.text-blue  { color: #3b82f6; }
+.fw-600     { font-weight: 600; }
+.fw-700     { font-weight: 700; }
+.small      { font-size: 0.73rem; }
+
+/* ── Badges ───────────────────────────────────────────────────────── */
+.badge-num {
+  display: inline-block;
+  padding: 0.15rem 0.6rem;
+  border-radius: 50px;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+.badge-num.blue  { background: #eff6ff; color: #3b82f6; }
+.badge-num.green { background: #ecfdf5; color: #10b981; }
+.badge-num.amber { background: #fffbeb; color: #f59e0b; }
+
+/* ── Empty state ──────────────────────────────────────────────────── */
+.empty-state {
+  text-align: center;
+  padding: 3rem;
+  color: #94a3b8;
+  font-size: 0.875rem;
+  font-weight: 500;
+}

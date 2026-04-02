@@ -42,8 +42,8 @@ interface ClienteStats {
       ></app-clientes-stats>
 
       <!-- SEARCH & ACTIONS BAR -->
-      <section class="module-actions mb-4">
-        <div class="actions-bar-container shadow-sm py-2 px-4 rounded-4">
+      <section class="module-actions mb-3">
+        <div class="actions-bar-container shadow-sm py-1 px-3 rounded-3">
             <div class="row align-items-center g-3">
             
             <!-- Búsqueda -->
@@ -139,9 +139,9 @@ interface ClienteStats {
     .form-control-premium-search {
       background: #f8fafc;
       border: 1.5px solid rgba(0, 0, 0, 0.05);
-      border-radius: 14px;
-      padding: 0 1.25rem 0 3.25rem;
-      height: 40px;
+      border-radius: 10px;
+      padding: 0 1rem 0 2.75rem;
+      height: 36px;
       font-size: 0.9rem;
       font-weight: 500;
       color: #161d35;
@@ -157,9 +157,9 @@ interface ClienteStats {
     .form-select-premium {
       background: #f8fafc;
       border: 1.5px solid rgba(0, 0, 0, 0.05);
-      border-radius: 14px;
-      padding: 0 1rem;
-      height: 40px;
+      border-radius: 10px;
+      padding: 0 0.75rem;
+      height: 36px;
       font-size: 0.85rem;
       font-weight: 600;
       color: #475569;
@@ -176,10 +176,10 @@ interface ClienteStats {
         background: #161d35;
         color: #ffffff;
         border: none;
-        padding: 0 1.5rem;
-        border-radius: 12px;
+        padding: 0 1.25rem;
+        border-radius: 10px;
         font-weight: 700;
-        font-size: 0.95rem;
+        font-size: 0.85rem;
         display: flex;
         align-items: center;
         transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
