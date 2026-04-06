@@ -1,10 +1,10 @@
 -- =========================================
 -- TABLA: proveedor
 -- =========================================
-CREATE TABLE IF NOT EXISTS public.proveedor (
+CREATE TABLE IF NOT EXISTS sistema_facturacion.proveedores (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
 
-    empresa_id UUID NOT null REFERENCES public.empresa(id) ON DELETE CASCADE,
+    empresa_id UUID NOT null REFERENCES sistema_facturacion.empresas(id) ON DELETE CASCADE,
 
     identificacion TEXT NOT NULL,
     tipo_identificacion TEXT NOT NULL, -- RUC | CEDULA | PASAPORTE
@@ -66,7 +66,7 @@ CREATE TABLE IF NOT EXISTS sistema_facturacion.reporte_generado (
 -- =====================================================
 -- MÓDULO: MODULO
 -- =====================================================
-CREATE TABLE IF NOT EXISTS public.modulo (
+CREATE TABLE IF NOT EXISTS sistema_facturacion.modulos (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
 
     codigo TEXT NOT NULL,
@@ -91,14 +91,14 @@ CREATE TABLE IF NOT EXISTS public.modulo (
 -- =====================================================
 -- MÓDULO: MODULO_PLAN
 -- =====================================================
-CREATE TABLE IF NOT EXISTS public.modulo_plan (
+CREATE TABLE IF NOT EXISTS sistema_facturacion.modulos_plan (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
 
     plan_id UUID NOT NULL
-        REFERENCES public.plan(id) ON DELETE CASCADE,
+        REFERENCES sistema_facturacion.planes(id) ON DELETE CASCADE,
 
     modulo_id UUID NOT NULL
-        REFERENCES public.modulo(id) ON DELETE CASCADE,
+        REFERENCES sistema_facturacion.modulos(id) ON DELETE CASCADE,
 
     incluido BOOLEAN NOT NULL DEFAULT TRUE,
 
@@ -113,14 +113,14 @@ CREATE TABLE IF NOT EXISTS public.modulo_plan (
 -- =====================================================
 -- MÓDULO: MODULO_EMPRESA
 -- =====================================================
-CREATE TABLE IF NOT EXISTS public.modulo_empresa (
+CREATE TABLE IF NOT EXISTS sistema_facturacion.modulo_empresa (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
 
     empresa_id UUID NOT NULL
-        REFERENCES public.empresa(id) ON DELETE CASCADE,
+        REFERENCES sistema_facturacion.empresas(id) ON DELETE CASCADE,
 
     modulo_id UUID NOT NULL
-        REFERENCES public.modulo(id) ON DELETE CASCADE,
+        REFERENCES sistema_facturacion.modulos(id) ON DELETE CASCADE,
 
     activo BOOLEAN NOT NULL DEFAULT TRUE,
 
@@ -141,11 +141,11 @@ CREATE TABLE IF NOT EXISTS public.modulo_empresa (
 -- =====================================================
 -- TABLA: CATEGORIA_GASTO
 -- =====================================================
-CREATE TABLE IF NOT EXISTS public.categoria_gasto (
+CREATE TABLE IF NOT EXISTS sistema_facturacion.categoria_gasto (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
 
     empresa_id UUID NOT NULL
-        REFERENCES public.empresa(id) ON DELETE CASCADE,
+        REFERENCES sistema_facturacion.empresas(id) ON DELETE CASCADE,
 
     codigo TEXT NOT NULL,
     nombre TEXT NOT NULL,
@@ -165,20 +165,20 @@ CREATE TABLE IF NOT EXISTS public.categoria_gasto (
 -- =====================================================
 -- TABLA: GASTO
 -- =====================================================
-CREATE TABLE IF NOT EXISTS public.gasto (
+CREATE TABLE IF NOT EXISTS sistema_facturacion.gasto (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
 
     empresa_id UUID NOT NULL
-        REFERENCES public.empresa(id) ON DELETE CASCADE,
+        REFERENCES sistema_facturacion.empresas(id) ON DELETE CASCADE,
 
     proveedor_id UUID
-        REFERENCES public.proveedor(id) ON DELETE SET NULL,
+        REFERENCES sistema_facturacion.proveedores(id) ON DELETE SET NULL,
 
     categoria_gasto_id UUID NOT NULL
-        REFERENCES public.categoria_gasto(id) ON DELETE RESTRICT,
+        REFERENCES sistema_facturacion.categoria_gasto(id) ON DELETE RESTRICT,
 
     usuario_id UUID NOT NULL
-        REFERENCES public.usuario(id) ON DELETE RESTRICT,
+        REFERENCES sistema_facturacion.usuarios(id) ON DELETE RESTRICT,
 
     numero_factura TEXT,
 
@@ -205,14 +205,14 @@ CREATE TABLE IF NOT EXISTS public.gasto (
 -- =====================================================
 -- TABLA: PAGO_GASTO
 -- =====================================================
-CREATE TABLE IF NOT EXISTS public.pago_gasto (
+CREATE TABLE IF NOT EXISTS sistema_facturacion.pago_gasto (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
 
     gasto_id UUID NOT NULL
-        REFERENCES public.gasto(id) ON DELETE CASCADE,
+        REFERENCES sistema_facturacion.gasto(id) ON DELETE CASCADE,
 
     usuario_id UUID NOT NULL
-        REFERENCES public.usuario(id) ON DELETE RESTRICT,
+        REFERENCES sistema_facturacion.usuarios(id) ON DELETE RESTRICT,
 
     numero_comprobante TEXT,
 
@@ -232,20 +232,20 @@ CREATE TABLE IF NOT EXISTS public.pago_gasto (
 -- =====================================================
 -- TABLA: MOVIMIENTO_INVENTARIO
 -- =====================================================
-CREATE TABLE IF NOT EXISTS public.movimiento_inventario (
+CREATE TABLE IF NOT EXISTS sistema_facturacion.movimiento_inventario (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
 
     empresa_id UUID NOT NULL
-        REFERENCES public.empresa(id) ON DELETE CASCADE,
+        REFERENCES sistema_facturacion.empresas(id) ON DELETE CASCADE,
 
     producto_id UUID NOT NULL
-        REFERENCES public.producto(id) ON DELETE RESTRICT,
+        REFERENCES sistema_facturacion.productos(id) ON DELETE RESTRICT,
 
     usuario_id UUID NOT NULL
-        REFERENCES public.usuario(id) ON DELETE RESTRICT,
+        REFERENCES sistema_facturacion.usuarios(id) ON DELETE RESTRICT,
 
     factura_id UUID
-        REFERENCES public.factura(id) ON DELETE SET NULL,
+        REFERENCES sistema_facturacion.facturas(id) ON DELETE SET NULL,
 
     tipo_movimiento TEXT NOT NULL,      -- entrada | salida | ajuste | devolucion
 
