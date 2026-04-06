@@ -51,3 +51,11 @@ def eliminar_proveedor(
 ):
     servicio.eliminar_proveedor(proveedor_id, usuario)
     return success_response(None, "Proveedor eliminado correctamente")
+
+@router.patch("/{proveedor_id}/toggle-activo", response_model=ProveedorLectura)
+def toggle_activo_proveedor(
+    proveedor_id: UUID,
+    usuario: dict = Depends(requerir_permiso(PermissionCodes.PROVEEDOR_EDITAR)),
+    servicio: ServicioProveedores = Depends()
+):
+    return servicio.toggle_activo(proveedor_id, usuario)

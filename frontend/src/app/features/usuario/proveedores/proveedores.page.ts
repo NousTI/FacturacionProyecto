@@ -8,6 +8,7 @@ import { ProveedorActionsComponent } from './components/proveedor-actions/provee
 import { ProveedorTableComponent } from './components/proveedor-table/proveedor-table.component';
 import { CreateProveedorModalComponent } from './components/create-proveedor-modal/create-proveedor-modal.component';
 import { ProveedorDetailModalComponent } from './components/proveedor-detail-modal/proveedor-detail-modal.component';
+import { ToggleProveedorModalComponent } from './components/toggle-proveedor-modal/toggle-proveedor-modal.component';
 import { ConfirmModalComponent } from '../../../shared/components/confirm-modal/confirm-modal.component';
 import { ToastComponent } from '../../../shared/components/toast/toast.component';
 
@@ -26,6 +27,7 @@ import { Proveedor } from '../../../domain/models/proveedor.model';
         ProveedorTableComponent,
         CreateProveedorModalComponent,
         ProveedorDetailModalComponent,
+        ToggleProveedorModalComponent,
         ConfirmModalComponent,
         ToastComponent
     ],
@@ -67,6 +69,15 @@ import { Proveedor } from '../../../domain/models/proveedor.model';
         [proveedor]="selectedProveedor"
         (onClose)="showDetailModal = false"
       ></app-proveedor-detail-modal>
+
+      <!-- MODAL TOGGLE ACTIVO/INACTIVO -->
+      <app-toggle-proveedor-modal
+        *ngIf="showToggleModal && selectedProveedor"
+        [proveedor]="selectedProveedor"
+        [loading]="isToggling"
+        (onConfirm)="confirmToggle()"
+        (onClose)="showToggleModal = false"
+      ></app-toggle-proveedor-modal>
 
       <!-- MODAL CONFIRMACION ELIMINAR -->
       <app-confirm-modal
@@ -110,11 +121,13 @@ export class ProveedoresPage implements OnInit, OnDestroy {
     showCreateModal = false;
     showDetailModal = false;
     showConfirmModal = false;
+    showToggleModal = false;
     selectedProveedor: Proveedor | null = null;
 
     // Loading
     isSaving = false;
     isDeleting = false;
+    isToggling = false;
 
     private destroy$ = new Subject<void>();
 
@@ -183,6 +196,8 @@ export class ProveedoresPage implements OnInit, OnDestroy {
             this.showConfirmModal = true;
         } else if (event.type === 'view') {
             this.showDetailModal = true;
+        } else if (event.type === 'toggle') {
+            this.showToggleModal = true;
         }
     }
 
@@ -226,6 +241,26 @@ export class ProveedoresPage implements OnInit, OnDestroy {
                 },
                 error: (err) => {
                     this.uiService.showError(err, 'Error al eliminar proveedor');
+                }
+            });
+    }
+
+    confirmToggle() {
+        if (!this.selectedProveedor) return;
+        this.isToggling = true;
+        this.proveedoresService.toggleActivo(this.selectedProveedor.id)
+            .pipe(finalize(() => {
+                this.isToggling = false;
+                this.cd.detectChanges();
+            }))
+            .subscribe({
+                next: (updated) => {
+                    const estado = updated.activo ? 'activado' : 'desactivado';
+                    this.uiService.showToast(`Proveedor ${estado} correctamente`, 'success');
+                    this.showToggleModal = false;
+                },
+                error: (err) => {
+                    this.uiService.showError(err, 'Error al cambiar estado');
                 }
             });
     }

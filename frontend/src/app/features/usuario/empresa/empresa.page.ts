@@ -171,7 +171,7 @@ import { Empresa } from '../../../domain/models/empresa.model';
                 
                 <div class="usage-meter mb-4">
                   <div class="d-flex justify-content-between mb-2">
-                    <span class="meter-label">Comprobantes / mes</span>
+                    <span class="meter-label">Comprobantes / año</span>
                     <span class="meter-value">{{ empresa.max_facturas_mes || '∞' }}</span>
                   </div>
                   <div class="progress-premium">

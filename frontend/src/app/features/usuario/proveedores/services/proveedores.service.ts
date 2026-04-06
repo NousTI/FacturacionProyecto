@@ -83,6 +83,21 @@ export class ProveedoresService extends BaseApiService {
         );
     }
 
+    toggleActivo(id: string): Observable<Proveedor> {
+        return this.patch<Proveedor>(`${this.ENDPOINT}/${id}/toggle-activo`, {}).pipe(
+            tap(updated => {
+                if (updated) {
+                    const current = this._proveedores$.value || [];
+                    const index = current.findIndex(p => p.id === id);
+                    if (index !== -1) {
+                        current[index] = { ...current[index], ...updated };
+                        this._proveedores$.next([...current]);
+                    }
+                }
+            })
+        );
+    }
+
     refresh(): void {
         this._loaded = false;
         this._proveedores$.next(null);

@@ -43,7 +43,8 @@ import { DashboardKPIs } from '../../../../../shared/services/dashboard.service'
           <app-info-tooltip message="Total de facturas autorizadas que aún no han sido cobradas en este periodo."></app-info-tooltip>
         </app-stat-card>
       </div>
-      <div class="col-6 col-lg-3">
+      <!-- Card de Gastos oculta -->
+      <!-- <div class="col-6 col-lg-3">
         <app-stat-card
           title="Gastos (Mes)"
           [value]="(kpis?.total_gastos | currency:'USD':'symbol':'1.2-2') || '$0.00'"
@@ -53,7 +54,7 @@ import { DashboardKPIs } from '../../../../../shared/services/dashboard.service'
           iconColor="#ef4444">
           <app-info-tooltip message="Total de gastos registrados en el sistema durante el periodo actual."></app-info-tooltip>
         </app-stat-card>
-      </div>
+      </div> -->
 
       <!-- Fila 2: Ejecutiva (Solo si hay datos ejecutivos) -->
       <ng-container *ngIf="kpis?.ticket_promedio">
