@@ -20,6 +20,7 @@ import { UsuariosPage } from './usuarios/usuarios.page';
 import { CertificadoSriPage } from './certificado-sri/certificado-sri.page';
 import { EmpresaPage } from './empresa/empresa.page';
 import { RolesPermisosPage } from './roles/roles.page';
+import { ProveedoresPage } from './proveedores/proveedores.page';
 
 import { CompanyActiveGuard } from '../../core/guards/company-active.guard';
 
@@ -58,6 +59,12 @@ const routes: Routes = [
         component: ClientesPage,
         canActivate: [RoleGuard, CompanyActiveGuard],
         data: { title: 'Clientes', roles: [UserRole.USUARIO, UserRole.VENDEDOR], permission: 'CLIENTES_VER' }
+    },
+    {
+        path: 'proveedores',
+        component: ProveedoresPage,
+        canActivate: [RoleGuard, CompanyActiveGuard],
+        data: { title: 'Proveedores', roles: [UserRole.USUARIO], permission: 'PROVEEDOR_VER' }
     },
     {
         path: 'productos',

@@ -100,6 +100,9 @@ import { SidebarService } from './sidebar.service';
                   <a *appHasPermission="'CLIENTES_VER'" routerLink="/usuario/clientes" routerLinkActive="active" class="menu-item px-3 mb-1" title="Clientes">
                     <i class="bi bi-people"></i> <span class="menu-text ms-3">Clientes</span>
                   </a>
+                  <a *appHasPermission="'PROVEEDOR_VER'" routerLink="/usuario/proveedores" routerLinkActive="active" class="menu-item px-3 mb-1" title="Proveedores">
+                    <i class="bi bi-truck"></i> <span class="menu-text ms-3">Proveedores</span>
+                  </a>
                   <a *appHasPermission="'PRODUCTOS_VER'" routerLink="/usuario/productos" routerLinkActive="active" class="menu-item px-3 mb-1" title="Productos">
                     <i class="bi bi-box-seam"></i> <span class="menu-text ms-3">Productos</span>
                   </a>

@@ -9,7 +9,7 @@ class RepositorioProveedores:
         self.db = db
 
     def listar_proveedores(self, empresa_id: Optional[UUID] = None) -> List[dict]:
-        query = "SELECT * FROM proveedor WHERE activo = TRUE"
+        query = "SELECT * FROM sistema_facturacion.proveedores WHERE activo = TRUE"
         params = []
         
         if empresa_id:
@@ -23,7 +23,7 @@ class RepositorioProveedores:
             return [dict(row) for row in cur.fetchall()]
 
     def obtener_por_id(self, proveedor_id: UUID) -> Optional[dict]:
-        query = "SELECT * FROM proveedor WHERE id = %s"
+        query = "SELECT * FROM sistema_facturacion.proveedores WHERE id = %s"
         with self.db.cursor() as cur:
             cur.execute(query, (str(proveedor_id),))
             row = cur.fetchone()
@@ -32,7 +32,7 @@ class RepositorioProveedores:
     def identificacion_existe(self, identificacion: str, empresa_id: UUID) -> bool:
         with self.db.cursor() as cur:
             cur.execute(
-                "SELECT id FROM proveedor WHERE identificacion = %s AND empresa_id = %s", 
+                "SELECT id FROM sistema_facturacion.proveedores WHERE identificacion = %s AND empresa_id = %s", 
                 (identificacion, str(empresa_id))
             )
             return cur.fetchone() is not None
@@ -43,7 +43,7 @@ class RepositorioProveedores:
         placeholders = ["%s"] * len(fields)
         
         query = f"""
-            INSERT INTO proveedor ({', '.join(fields)})
+            INSERT INTO sistema_facturacion.proveedores ({', '.join(fields)})
             VALUES ({', '.join(placeholders)})
             RETURNING *
         """
@@ -59,7 +59,7 @@ class RepositorioProveedores:
         clean_values = [str(v) if isinstance(v, UUID) else v for v in data.values()]
         clean_values.append(str(proveedor_id))
 
-        query = f"UPDATE proveedor SET {', '.join(set_clauses)}, updated_at = NOW() WHERE id = %s RETURNING *"
+        query = f"UPDATE sistema_facturacion.proveedores SET {', '.join(set_clauses)}, updated_at = NOW() WHERE id = %s RETURNING *"
         
         with db_transaction(self.db) as cur:
             cur.execute(query, tuple(clean_values))
@@ -67,8 +67,19 @@ class RepositorioProveedores:
             return dict(row) if row else None
 
     def eliminar_proveedor(self, proveedor_id: UUID) -> bool:
-        # Soft Delete
-        query = "UPDATE proveedor SET activo = FALSE, updated_at = NOW() WHERE id=%s"
+        query = "DELETE FROM sistema_facturacion.proveedores WHERE id = %s"
         with db_transaction(self.db) as cur:
             cur.execute(query, (str(proveedor_id),))
             return cur.rowcount > 0
+
+    def toggle_activo(self, proveedor_id: UUID) -> Optional[dict]:
+        query = """
+            UPDATE sistema_facturacion.proveedores
+            SET activo = NOT activo, updated_at = NOW()
+            WHERE id = %s
+            RETURNING *
+        """
+        with db_transaction(self.db) as cur:
+            cur.execute(query, (str(proveedor_id),))
+            row = cur.fetchone()
+            return dict(row) if row else None

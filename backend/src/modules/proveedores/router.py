@@ -16,7 +16,7 @@ def listar_proveedores(
     usuario: dict = Depends(requerir_permiso(PermissionCodes.PROVEEDOR_VER)),
     servicio: ServicioProveedores = Depends()
 ):
-    return servicio.listar_proveedores(usuario, empresa_id)
+    return servicio.listar_proveedores(usuario, empresa_id_filtro=empresa_id)
 
 @router.get("/{proveedor_id}", response_model=ProveedorLectura)
 def obtener_proveedor(
@@ -34,7 +34,7 @@ def crear_proveedor(
 ):
     return servicio.crear_proveedor(datos, usuario)
 
-@router.put("/{proveedor_id}", response_model=ProveedorLectura)
+@router.patch("/{proveedor_id}", response_model=ProveedorLectura)
 def actualizar_proveedor(
     proveedor_id: UUID,
     datos: ProveedorActualizacion,
