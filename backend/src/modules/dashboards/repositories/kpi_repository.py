@@ -92,57 +92,8 @@ class KpiRepository(BaseRepository):
                 """, (empresa_id,))
                 kpis['facturas_rechazadas'] = cur.fetchone()['count']
 
-                # --- KPIs Ejecutivos Detallados ---
-                cur.execute(f"""
-                    SELECT COALESCE(AVG(total), 0) as avg_ticket
-                    FROM sistema_facturacion.facturas
-                    WHERE empresa_id = %s AND estado != 'ANULADA' AND {date_filter}
-                """, (empresa_id,))
-                kpis['ticket_promedio'] = float(cur.fetchone()['avg_ticket'])
 
-                cur.execute(f"""
-                    SELECT COUNT(DISTINCT cliente_id) as count
-                    FROM sistema_facturacion.facturas
-                    WHERE empresa_id = %s AND estado != 'ANULADA' AND {date_filter}
-                """, (empresa_id,))
-                kpis['clientes_activos'] = cur.fetchone()['count']
 
-                cur.execute(f"""
-                    WITH pagos as (
-                        SELECT SUM(p.monto) as total_pagado
-                        FROM sistema_facturacion.pagos_factura p
-                        JOIN sistema_facturacion.cuentas_cobrar c ON p.cuenta_cobrar_id = c.id
-                        JOIN sistema_facturacion.facturas f ON c.factura_id = f.id
-                        WHERE f.empresa_id = %s AND f.estado != 'ANULADA' AND {date_filter.replace('fecha_emision', 'f.fecha_emision')}
-                    )
-                    SELECT 
-                        CASE WHEN v.total > 0 THEN (p.total_pagado / v.total * 100) ELSE 0 END as percent
-                    FROM (SELECT COALESCE(SUM(total), 0) as total FROM sistema_facturacion.facturas WHERE empresa_id = %s AND estado != 'ANULADA' AND {date_filter}) v,
-                    (SELECT COALESCE(total_pagado, 0) as total_pagado FROM pagos) p
-                """, (empresa_id, empresa_id))
-                kpis['porcentaje_recuperacion'] = float(cur.fetchone()['percent'])
-
-                cur.execute(f"""
-                    SELECT COALESCE(SUM(total), 0) as total
-                    FROM sistema_facturacion.gasto
-                    WHERE empresa_id = %s AND {date_filter}
-                """, (empresa_id,))
-                kpis['total_gastos'] = float(cur.fetchone()['total'])
-
-                cur.execute(f"""
-                    SELECT COALESCE(SUM(costo_total), 0) as total
-                    FROM sistema_facturacion.movimientos_inventario
-                    WHERE empresa_id = %s AND tipo_movimiento = 'SALIDA' 
-                    AND created_at::date BETWEEN 
-                        (SELECT MIN(fecha_emision) FROM sistema_facturacion.facturas WHERE {date_filter})
-                        AND (SELECT MAX(fecha_emision) FROM sistema_facturacion.facturas WHERE {date_filter})
-                """, (empresa_id,))
-                costo_ventas = float(cur.fetchone()['total'] or 0)
-                
-                kpis['utilidad_bruta'] = kpis['ventas_periodo'] - costo_ventas
-                kpis['margen_bruto'] = (kpis['utilidad_bruta'] / kpis['ventas_periodo'] * 100) if kpis['ventas_periodo'] > 0 else 0
-                kpis['utilidad_neta'] = kpis['utilidad_bruta'] - kpis['total_gastos']
-                kpis['margen_neto'] = (kpis['utilidad_neta'] / kpis['ventas_periodo'] * 100) if kpis['ventas_periodo'] > 0 else 0
 
             elif vendedor_id:
                 # KPIs para Vendedor
