@@ -155,8 +155,14 @@ class ServicioSRI:
         if not config_sri: raise AppError("Configuración SRI no encontrada", 400, "SRI_CONFIG_MISSING")
         
         # Mapeo de ambiente y emisión para el SRI usando Constantes
-        ambiente = SRIAmbiente.MAP.get(config_sri['ambiente'], SRIAmbiente.PRUEBAS)
-        tipo_emision = SRITipoEmision.MAP.get(config_sri['tipo_emision'], SRITipoEmision.NORMAL)
+        # 1. Obtener de la DB
+        ambiente_db = SRIAmbiente.MAP.get(str(config_sri['ambiente']).upper(), SRIAmbiente.PRUEBAS)
+        tipo_emision = SRITipoEmision.MAP.get(str(config_sri['tipo_emision']).upper(), SRITipoEmision.NORMAL)
+        
+        # 2. OVERRIDE FORZADO PARA DESARROLLO (Siempre Pruebas "1")
+        # El backend ignora la entrada del frontend y la DB para proteger la fase de pruebas.
+        ambiente = SRIAmbiente.PRUEBAS 
+        logger.info(f"[SRI-DEV] Forzando ambiente {ambiente} (DB decía: {ambiente_db}) para factura {factura_id}")
         
         signer = None
         # Identificar el intento actual (conteo básico para logs)
@@ -232,7 +238,7 @@ class ServicioSRI:
                         "factura_id": factura_id,
                         "facturacion_programada_id": factura.get('facturacion_programada_id'),
                         "usuario_id": usuario_actual.get('id'),
-                        "ambiente": int(ambiente),
+                        "ambiente": int(SRIAmbiente.PRUEBAS),
                         "clave_acceso": clave,
                         "estado": LogEstado.ERROR_VALIDACION,
                         "sri_estado_raw": res_rec['estado'],
@@ -298,7 +304,7 @@ class ServicioSRI:
                 "factura_id": factura_id,
                 "facturacion_programada_id": factura.get('facturacion_programada_id'),
                 "usuario_id": usuario_actual.get('id'),
-                "ambiente": int(ambiente),
+                "ambiente": int(SRIAmbiente.PRUEBAS),
                 "clave_acceso": clave,
                 "estado": log_estado,
                 "sri_estado_raw": "EN_PROCESO" if (log_estado == LogEstado.EN_PROCESO or ya_en_procesamiento) else estado_aut,
@@ -369,7 +375,7 @@ class ServicioSRI:
             self.factura_repo.crear_log_emision({
                 "factura_id": factura_id,
                 "usuario_id": usuario_actual.get('id'),
-                "ambiente": int(ambiente) if 'ambiente' in locals() else 1,
+                "ambiente": int(SRIAmbiente.PRUEBAS),
                 "clave_acceso": clave if 'clave' in locals() else None,
                 "estado": LogEstado.ERROR_SISTEMA,
                 "fase_falla": "SISTEMA",
@@ -399,7 +405,10 @@ class ServicioSRI:
 
         config_sri = self.repo.obtener_config(factura['empresa_id'])
         if not config_sri: raise AppError("Configuración SRI no encontrada", 400, "SRI_CONFIG_MISSING")
-        ambiente = SRIAmbiente.MAP.get(config_sri['ambiente'], SRIAmbiente.PRUEBAS)
+        # ambiente = SRIAmbiente.MAP.get(config_sri['ambiente'], SRIAmbiente.PRUEBAS)
+        # FORZADO PARA DESARROLLO
+        ambiente = SRIAmbiente.PRUEBAS
+        logger.info(f"[SRI-DEV] Forzando ambiente {ambiente} para consulta de factura {factura_id}")
         
         start_time = time.time()
         client_info = {
@@ -443,7 +452,7 @@ class ServicioSRI:
             self.factura_repo.crear_log_emision({
                 "factura_id": factura_id,
                 "usuario_id": usuario_actual.get('id'),
-                "ambiente": int(ambiente),
+                "ambiente": int(SRIAmbiente.PRUEBAS),
                 "clave_acceso": clave,
                 "estado": log_estado,
                 "sri_estado_raw": estado_aut,

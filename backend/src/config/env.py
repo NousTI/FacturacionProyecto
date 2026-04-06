@@ -10,7 +10,7 @@ class EnvSettings(BaseSettings):
     DB_HOST: str = "localhost"
     DB_NAME: str = "sistema_facturacion"
     DB_USER: str = "postgres"
-    DB_PASSWORD: str = "password"
+    DB_PASSWORD: str
     DB_PORT: int = 5432
 
     # Seguridad / JWT

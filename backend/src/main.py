@@ -9,6 +9,7 @@ from .middlewares.error_middleware import ErrorMiddleware
 from .errors.app_error import AppError
 from .errors.handlers import app_error_handler, validation_error_handler, general_exception_handler
 from .modules.superadmin.automation import automation_service
+from .jobs.session_cleanup import cleanup_expired_sessions
 
 app = FastAPI(
     title="Sistema de Facturación API",
@@ -41,7 +42,11 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 @app.on_event("startup")
 async def startup_event():
     import asyncio
+    # Ejecutar tareas diarias automatizadas
     asyncio.create_task(automation_service.start_daily_tasks())
+    # Ejecutar limpieza de sesiones al inicio de forma asíncrona
+    loop = asyncio.get_event_loop()
+    loop.run_in_executor(None, cleanup_expired_sessions)
     pass
 
 @app.on_event("shutdown")

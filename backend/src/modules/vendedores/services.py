@@ -82,8 +82,10 @@ class ServicioVendedores:
                  level="WARNING"
              )
         
-        # 1. Create user record in users table
-        password = datos.password if datos.password else "password"
+        # 1. Preparar credenciales del usuario
+        if not datos.password:
+            raise AppError("La contraseña es obligatoria para crear un nuevo vendedor", 400)
+        password = datos.password
         
         user_data = {
             "email": datos.email,

@@ -12,12 +12,24 @@ class DashboardKPIs(BaseModel):
     
     # Empresa
     ventas_periodo: Optional[float] = None
-
     ventas_hoy: Optional[float] = None
     cuentas_cobrar: Optional[float] = None
     productos_stock_bajo: Optional[int] = None
     facturas_rechazadas: Optional[int] = None
     firma_expiracion_dias: Optional[int] = None
+
+    # KPIs Ejecutivos (R-028)
+    ticket_promedio: Optional[float] = 0.0
+    clientes_activos: Optional[int] = 0
+    porcentaje_recuperacion: Optional[float] = 0.0
+    total_gastos: Optional[float] = 0.0
+    utilidad_bruta: Optional[float] = 0.0
+    utilidad_neta: Optional[float] = 0.0
+    margen_bruto: Optional[float] = 0.0
+    margen_neto: Optional[float] = 0.0
+    variacion_ventas: Optional[float] = 0.0
+    variacion_gastos: Optional[float] = 0.0
+
 
 
 class DashboardAlerta(BaseModel):

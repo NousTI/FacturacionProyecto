@@ -3,8 +3,8 @@ import requests
 BASE_URL = "http://localhost:8001/api/autenticacion"
 
 def test_superadmin_login():
-    email = "superadmin@system.com"
-    password = "password"
+    email = input("Email: ")
+    password = input("Password: ")
     data = {"correo": email, "clave": password}
     resp = requests.post(f"{BASE_URL}/iniciar-sesion", json=data)
     print("Status:", resp.status_code)

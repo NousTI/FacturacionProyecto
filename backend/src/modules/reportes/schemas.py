@@ -35,5 +35,31 @@ class MetricasVendedorLectura(BaseModel):
     comisiones_mes: float = 0.0
     empresas_inactivas: int = 0
     tendencia_crecimiento: List[Dict[str, Any]] = []
-    # Podriamos agregar distribución o stats de planes despues
+
+class EstadoResultadosItem(BaseModel):
+    nombre: str
+    valor: float
+
+class EstadoResultadosResponse(BaseModel):
+    ingresos: List[EstadoResultadosItem]
+    ingresos_netos: float
+    costos_gastos: List[EstadoResultadosItem]
+    utilidad_bruta: float
+    gastos_operativos: List[EstadoResultadosItem]
+    total_gastos_operativos: float
+    utilidad_operacional: float
+    otros_ingresos: float
+    otros_gastos: float
+    utilidad_neta: float
+
+class ReporteIVAResponse(BaseModel):
+    ventas_tarifa_0: float
+    ventas_tarifa_15: float
+    base_imponible_15: float
+    iva_cobrado_15: float
+    compras_tarifa_0: float
+    compras_tarifa_15: float
+    iva_pagado_15: float
+    iva_a_pagar: float
+
 

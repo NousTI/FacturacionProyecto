@@ -18,10 +18,16 @@ class ServicioDashboards:
         v_id, e_id = self._get_ids(usuario)
         base_kpis = self.repo.obtener_kpis_principales(vendedor_id=v_id, empresa_id=e_id, periodo=periodo)
         
-        # Variación solo para superadmin/vendedor (SaaS context)
-        variacion = 0
+        # Variaciones
+        variacion_ingresos = 0
+        variacion_ventas = 0
+        variacion_gastos = 0
+
         if not e_id:
-            variacion = self.repo.obtener_variacion_ingresos()
+            variacion_ingresos = self.repo.obtener_variacion_ingresos()
+        else:
+            variacion_ventas = self.repo.obtener_variacion_ventas_empresa(e_id)
+            variacion_gastos = self.repo.obtener_variacion_gastos_empresa(e_id)
         
         # Firma info para Empresa
         firma_dias = None
@@ -29,7 +35,13 @@ class ServicioDashboards:
             firma_data = self.repo.obtener_info_firma(e_id)
             firma_dias = firma_data.get('dias_restantes')
             
-        return DashboardKPIs(**base_kpis, variacion_ingresos=round(variacion, 2), firma_expiracion_dias=firma_dias)
+        return DashboardKPIs(
+            **base_kpis, 
+            variacion_ingresos=round(variacion_ingresos, 2), 
+            variacion_ventas=round(variacion_ventas, 2),
+            variacion_gastos=round(variacion_gastos, 2),
+            firma_expiracion_dias=firma_dias
+        )
 
 
     def obtener_alertas(self, usuario: dict) -> DashboardAlertas:

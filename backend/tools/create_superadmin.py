@@ -9,20 +9,37 @@ def get_password_hash(password):
     return pwd_context.hash(password)
 
 def get_db():
+    import os
+    from dotenv import load_dotenv
+    load_dotenv()
+    
+    host = os.getenv("DB_HOST", "localhost")
+    database = os.getenv("DB_NAME", "sistema_facturacion")
+    user = os.getenv("DB_USER", "postgres")
+    password = os.getenv("DB_PASSWORD")
+    port = os.getenv("DB_PORT", "5432")
+    
     try:
-        conn = psycopg2.connect(host="localhost", database="sistema_facturacion", user="postgres", password="password", port=5432, cursor_factory=RealDictCursor)
+        conn = psycopg2.connect(
+            host=host, 
+            database=database, 
+            user=user, 
+            password=password, 
+            port=port, 
+            cursor_factory=RealDictCursor
+        )
         return conn
-    except:
-        conn = psycopg2.connect(host="localhost", database="sistema_facturacion", user="postgres", password="admin", port=5432, cursor_factory=RealDictCursor)
-        return conn
+    except Exception as e:
+        print(f"Error conectando a la DB: {e}")
+        return None
 
 def create_superadmin():
     conn = get_db()
     cur = conn.cursor()
     
-    email = "superadmin@system.com"
-    password = "password"
-    role_id = "9c48c3c8-2c22-4711-8ef8-7bb6eb7e9780"
+    email = input("Email del superadmin: ")
+    password = input("Contraseña: ")
+    role_id = "9c48c3c8-2c22-4711-8ef8-7bb6eb7e9780" # Superadmin Role ID
     user_id = str(uuid4())
     pass_hash = get_password_hash(password)
     

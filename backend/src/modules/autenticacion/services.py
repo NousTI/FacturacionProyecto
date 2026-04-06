@@ -272,6 +272,17 @@ class AuthServices:
         if not user:
             logger.warning(f"[VALIDACIÓN] Usuario no encontrado: {user_id}")
             raise AppError("Usuario no encontrado", 404, "AUTH_USER_NOT_FOUND")
+
+        # 1. Verificar estado de la cuenta global (tabla users)
+        if user.get('estado') != 'ACTIVA':
+            logger.warning(f"[VALIDACIÓN] Cuenta bloqueada o inactiva: {user_id}, estado: {user.get('estado')}")
+            raise AppError(f"Tu cuenta está {user.get('estado')}. Contacta a soporte.", 403, "AUTH_ACCOUNT_INACTIVE")
+
+        # 2. Verificar estado del perfil en la empresa (si aplica)
+        # Nota: Superadmin y Vendedores no tienen registro en tabla 'usuarios' necesariamente o su estado se maneja distinto
+        if str(role).upper() == 'USUARIO' and not user.get('activo', True):
+            logger.warning(f"[VALIDACIÓN] Perfil de usuario inactivo en la empresa: {user_id}")
+            raise AppError("Tu perfil de usuario en esta empresa ha sido desactivado.", 403, "AUTH_PROFILE_INACTIVE")
         
         logger.info(f"[ÉXITO] Token y usuario validados - usuario ID: {user_id}")
 

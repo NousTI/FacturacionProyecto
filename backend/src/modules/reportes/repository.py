@@ -246,3 +246,98 @@ class RepositorioReportes:
         with self.db.cursor() as cur:
             cur.execute(query, tuple(params))
             return [dict(row) for row in cur.fetchall()]
+
+    def obtener_estado_resultados(self, empresa_id: UUID, fecha_inicio: str, fecha_fin: str) -> dict:
+        """Obtiene datos para el Estado de Resultados (PyG)."""
+        res = {}
+        with self.db.cursor() as cur:
+            # 1. Ingresos
+            cur.execute("""
+                SELECT COALESCE(SUM(total), 0) as total, COALESCE(SUM(total_descuento), 0) as descuentos
+                FROM sistema_facturacion.facturas
+                WHERE empresa_id = %s AND estado = 'AUTORIZADA'
+                AND fecha_emision BETWEEN %s AND %s
+            """, (str(empresa_id), fecha_inicio, fecha_fin))
+            row_ingresos = cur.fetchone()
+            ventas = float(row_ingresos['total'])
+            descuentos = float(row_ingresos['descuentos'])
+            res['ventas'] = ventas
+            res['descuentos'] = descuentos
+            res['ingresos_netos'] = ventas - descuentos
+
+            # 2. Costo de Ventas (Desde Movimientos de Inventario)
+            cur.execute("""
+                SELECT COALESCE(SUM(costo_total), 0) as total
+                FROM sistema_facturacion.movimientos_inventario
+                WHERE empresa_id = %s AND tipo_movimiento = 'SALIDA'
+                AND created_at::date BETWEEN %s AND %s
+            """, (str(empresa_id), fecha_inicio, fecha_fin))
+            res['costo_ventas'] = float(cur.fetchone()['total'])
+
+            # 3. Gastos Operativos (Agrupados por categoría)
+            cur.execute("""
+                SELECT cg.nombre, SUM(g.total) as total
+                FROM sistema_facturacion.gasto g
+                JOIN sistema_facturacion.categoria_gasto cg ON g.categoria_id = cg.id
+                WHERE g.empresa_id = %s AND cg.tipo = 'OPERATIVO'
+                AND g.fecha_emision BETWEEN %s AND %s
+                GROUP BY cg.nombre
+            """, (str(empresa_id), fecha_inicio, fecha_fin))
+            gastos_op = [dict(r) for r in cur.fetchall()]
+            res['gastos_operativos'] = [{"nombre": g['nombre'], "valor": float(g['total'])} for g in gastos_op]
+            res['total_gastos_operativos'] = sum(g['valor'] for g in res['gastos_operativos'])
+
+            # 4. Otros Ingresos/Gastos
+            cur.execute("""
+                SELECT COALESCE(SUM(g.total), 0) as total
+                FROM sistema_facturacion.gasto g
+                JOIN sistema_facturacion.categoria_gasto cg ON g.categoria_id = cg.id
+                WHERE g.empresa_id = %s AND cg.tipo = 'FINANCIERO'
+                AND g.fecha_emision BETWEEN %s AND %s
+            """, (str(empresa_id), fecha_inicio, fecha_fin))
+            res['gastos_financieros'] = float(cur.fetchone()['total'])
+
+            res['otros_ingresos'] = 0.0 # Placeholder si no hay tabla específica
+
+        return res
+
+    def obtener_reporte_iva(self, empresa_id: UUID, mes: int, anio: int) -> dict:
+        """Obtiene datos para el Reporte de IVA (Formulario 104)."""
+        res = {}
+        with self.db.cursor() as cur:
+            # Ventas Tarifa 0% y 12/15%
+            # Nota: Asumimos código '2' para 12%, '4' para 0%, y campos base_0, base_imponible, valor_iva en facturas_detalle
+            cur.execute("""
+                SELECT 
+                    SUM(CASE WHEN tarifa = '0' THEN subtotal ELSE 0 END) as ventas_0,
+                    SUM(CASE WHEN tarifa != '0' THEN subtotal ELSE 0 END) as base_gravada,
+                    SUM(CASE WHEN tarifa != '0' THEN valor_iva ELSE 0 END) as iva_cobrado
+                FROM sistema_facturacion.facturas f
+                JOIN sistema_facturacion.facturas_detalle fd ON f.id = fd.factura_id
+                WHERE f.empresa_id = %s AND f.estado = 'AUTORIZADA'
+                AND EXTRACT(MONTH FROM f.fecha_emision) = %s
+                AND EXTRACT(YEAR FROM f.fecha_emision) = %s
+            """, (str(empresa_id), mes, anio))
+            row_v = cur.fetchone()
+            res['ventas_tarifa_0'] = float(row_v['ventas_0'] or 0)
+            res['ventas_tarifa_gravada'] = float(row_v['base_gravada'] or 0)
+            res['iva_cobrado'] = float(row_v['iva_cobrado'] or 0)
+
+            # Compras (Gastos)
+            cur.execute("""
+                SELECT 
+                    SUM(CASE WHEN iva = 0 THEN subtotal ELSE 0 END) as compras_0,
+                    SUM(CASE WHEN iva > 0 THEN subtotal ELSE 0 END) as compras_gravada,
+                    SUM(iva) as iva_pagado
+                FROM sistema_facturacion.gasto
+                WHERE empresa_id = %s
+                AND EXTRACT(MONTH FROM fecha_emision) = %s
+                AND EXTRACT(YEAR FROM fecha_emision) = %s
+            """, (str(empresa_id), mes, anio))
+            row_c = cur.fetchone()
+            res['compras_tarifa_0'] = float(row_c['compras_0'] or 0)
+            res['compras_tarifa_gravada'] = float(row_c['compras_gravada'] or 0)
+            res['iva_pagado'] = float(row_c['iva_pagado'] or 0)
+
+        return res
+

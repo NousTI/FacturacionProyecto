@@ -6,12 +6,22 @@ Centraliza códigos de error, estados y parámetros de configuración.
 class SRIAmbiente:
     PRUEBAS = '1'
     PRODUCCION = '2'
-    MAP = {"PRUEBAS": "1", "PRODUCCION": "2"}
+    MAP = {
+        "PRUEBAS": "1", 
+        "PRODUCCION": "2",
+        "1": "1",
+        "2": "2"
+    }
 
 class SRITipoEmision:
     NORMAL = '1'
     CONTINGENCIA = '2'
-    MAP = {"NORMAL": "1", "CONTINGENCIA": "2"}
+    MAP = {
+        "NORMAL": "1", 
+        "CONTINGENCIA": "2",
+        "1": "1",
+        "2": "2"
+    }
 
 class SRIEstadoRespuesta:
     """Estados devueltos por el WS del SRI (Recepcion/Autorizacion)."""

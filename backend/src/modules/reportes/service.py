@@ -224,4 +224,17 @@ class ServicioReportes:
         elif datos.tipo == 'COMISIONES_MES' and vendedor_id_actual:
             return self.repo.obtener_comisiones_mes(vendedor_id_actual)
             
+        elif datos.tipo == 'ESTADO_RESULTADOS':
+            if not target_empresa_id: raise AppError("ID de empresa requerido", 400)
+            if not fecha_inicio or not fecha_fin: raise AppError("Rango de fechas requerido", 400)
+            return self.repo.obtener_estado_resultados(target_empresa_id, fecha_inicio, fecha_fin)
+
+        elif datos.tipo == 'IVA_104':
+            if not target_empresa_id: raise AppError("ID de empresa requerido", 400)
+            mes = parametros.get('mes')
+            anio = parametros.get('anio') or datetime.now().year
+            if not mes: raise AppError("Mes requerido", 400)
+            return self.repo.obtener_reporte_iva(target_empresa_id, int(mes), int(anio))
+
         raise AppError("Tipo de reporte o permisos no válidos para previsualización", 400)
+

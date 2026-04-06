@@ -3,19 +3,10 @@ from requests.exceptions import RequestException
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
 import xml.etree.ElementTree as ET
-from .constants import SRIEstadoRespuesta, SRI_TIMEOUT_SECONDS
+from ...constants.sri_constants import SRIEstadoRespuesta, SRI_TIMEOUT_SECONDS, SRI_URLS, SRIAmbiente
 
 class ClienteSRI:
-    URLS = {
-        '1': { # Pruebas
-            'recepcion': 'https://celcer.sri.gob.ec/comprobantes-electronicos-ws/RecepcionComprobantesOffline?wsdl',
-            'autorizacion': 'https://celcer.sri.gob.ec/comprobantes-electronicos-ws/AutorizacionComprobantesOffline?wsdl'
-        },
-        '2': { # Producción
-            'recepcion': 'https://cel.sri.gob.ec/comprobantes-electronicos-ws/RecepcionComprobantesOffline?wsdl',
-            'autorizacion': 'https://cel.sri.gob.ec/comprobantes-electronicos-ws/AutorizacionComprobantesOffline?wsdl'
-        }
-    }
+    # Utiliza SRI_URLS importado de constantes globales
 
     def __init__(self):
         # Configurar estrategia de reintentos para fallos de conexión (como el 10054)
@@ -30,8 +21,8 @@ class ClienteSRI:
         self.session.mount("https://", adapter)
         self.session.mount("http://", adapter)
 
-    def validar_comprobante(self, xml_b64: str, ambiente: str = '1') -> dict:
-        url = self.URLS.get(ambiente, self.URLS['1'])['recepcion']
+    def validar_comprobante(self, xml_b64: str, ambiente: str = SRIAmbiente.PRUEBAS) -> dict:
+        url = SRI_URLS.get(ambiente, SRI_URLS[SRIAmbiente.PRUEBAS])['recepcion']
         soap_body = f"""
         <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:ec="http://ec.gob.sri.ws.recepcion">
            <soapenv:Header/>
@@ -56,8 +47,8 @@ class ClienteSRI:
              elif "timeout" in err_msg.lower(): err_code = "TIMEOUT"
              return {"estado": SRIEstadoRespuesta.ERROR_CONEXION, "mensaje": err_msg, "codigos": [err_code]}
 
-    def autorizar_comprobante(self, clave_acceso: str, ambiente: str = '1') -> dict:
-        url = self.URLS.get(ambiente, self.URLS['1'])['autorizacion']
+    def autorizar_comprobante(self, clave_acceso: str, ambiente: str = SRIAmbiente.PRUEBAS) -> dict:
+        url = SRI_URLS.get(ambiente, SRI_URLS[SRIAmbiente.PRUEBAS])['autorizacion']
         soap_body = f"""
         <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:ec="http://ec.gob.sri.ws.autorizacion">
            <soapenv:Header/>

@@ -89,8 +89,9 @@ class ServicioUsuarios:
                 raise AppError("No se pudo determinar la empresa del usuario", 400)
             data.empresa_id = empresa_id_actual
 
-        # Force default password
-        data.password = "password"
+        # Validar que la contraseña ha sido provista (ahora requerida por el esquema)
+        if not data.password:
+            raise AppError("La contraseña es obligatoria para crear un nuevo usuario", 400)
 
         # Verify user is creating in their empresa or is a vendor for that empresa
         if not usuario_actual.get(AuthKeys.IS_SUPERADMIN):

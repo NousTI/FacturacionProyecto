@@ -14,7 +14,7 @@ class UsuarioBase(BaseModel):
 
 class UsuarioCreacion(BaseModel):
     email: Optional[EmailStr] = None
-    password: str = "password"
+    password: str = Field(..., min_length=6)
     empresa_id: Optional[UUID] = None   # Se inyecta automáticamente desde el usuario actual si no se provee
     empresa_rol_id: Optional[UUID] = None
     nombres: str = Field(..., min_length=3)

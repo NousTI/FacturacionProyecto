@@ -18,6 +18,14 @@ class ServicioSRIXML:
         return value.quantize(Decimal(f"1.{'0'*places}"), rounding=ROUND_HALF_UP)
 
     def generar_xml_factura(self, factura: dict, cliente: dict, empresa: dict, detalles: list, formas_pago: list, ambiente: str = SRIAmbiente.PRUEBAS, tipo_emision: str = SRITipoEmision.NORMAL) -> str:
+        # Sanitizar ambiente para asegurar que sea numérico ("1" o "2")
+        if str(ambiente).upper() == "PRUEBAS" or str(ambiente) == "1":
+            ambiente = "1"
+        elif str(ambiente).upper() == "PRODUCCION" or str(ambiente) == "2":
+            ambiente = "2"
+        else:
+            ambiente = "1" # Default pruebas
+            
         root = ET.Element('factura', id="comprobante", version="1.1.0")
         
         # Info Tributaria
@@ -67,24 +75,18 @@ class ServicioSRIXML:
         detalles_procesados = []
         
         for det in detalles:
-            # 1. Normalizar valores unitarios (6 decimales para precisión en cálculo)
             cantidad = self._round(det['cantidad'], 6)
             precio_u = self._round(det['precio_unitario'], 6)
             descuento = self._round(det.get('descuento', 0), 2)
             
-            # 2. Calcular Subtotal Línea: (Cant * Precio) - Desc
             subtotal_bruto = cantidad * precio_u
             subtotal = subtotal_bruto - descuento
             subtotal = self._round(subtotal, 2)
             
-            # 3. Acumular globales
             t_sin_impuestos += subtotal
             t_descuentos += descuento
             
-            # 4. Calcular Impuestos Línea
             cod_sri = str(det.get('tipo_iva', SRICodigoImpuesto.IVA)) 
-            # Obtener porcentaje desde constantes
-            # Si no existe, default a 12? Ojo: Default debe ser cuidadoso. 12 es lo común.
             porcentaje = SRI_TARIFAS_IVA.get(cod_sri, 12)
             
             valor_iva = Decimal('0.00')
@@ -92,13 +94,11 @@ class ServicioSRIXML:
                 raw_iva = subtotal * (Decimal(porcentaje) / Decimal(100))
                 valor_iva = self._round(raw_iva, 2)
                 
-            # Agrupar impuestos para tabla resumen
             if cod_sri not in impuestos_map:
                 impuestos_map[cod_sri] = {'base': Decimal('0.00'), 'valor': Decimal('0.00'), 'tarifa': porcentaje}
             impuestos_map[cod_sri]['base'] += subtotal
             impuestos_map[cod_sri]['valor'] += valor_iva
             
-            # Guardar procesado
             detalles_procesados.append({
                 'data': det,
                 'cantidad': cantidad,
@@ -114,12 +114,10 @@ class ServicioSRIXML:
                 }
             })
 
-        # 5. Calcular Totales Finales
         t_propina = self._round(factura.get('propina', 0), 2)
         t_impuestos_total = sum(i['valor'] for i in impuestos_map.values())
         importe_total = t_sin_impuestos + t_impuestos_total + t_propina
 
-        # Info Factura
         info_fac = ET.SubElement(root, 'infoFactura')
         ET.SubElement(info_fac, 'fechaEmision').text = f_emision.strftime('%d/%m/%Y')
         ET.SubElement(info_fac, 'dirEstablecimiento').text = empresa.get('direccion_sucursal') or empresa.get('direccion', 'S/N')
@@ -132,7 +130,6 @@ class ServicioSRIXML:
         tipo_id_raw = cliente.get('tipo_identificacion', '').upper()
         identificacion = str(cliente.get('identificacion', ''))
         
-        # Mapeo de Tipo ID
         if identificacion == '9999999999999': 
             tipo_id = SRITipoIdentificacion.CONSUMIDOR_FINAL
         elif 'RUC' in tipo_id_raw: 
@@ -144,28 +141,9 @@ class ServicioSRIXML:
         else: 
             tipo_id = SRITipoIdentificacion.ID_EXTERIOR 
 
-        # Validación algorítmica estricta
-        if tipo_id in [SRITipoIdentificacion.CEDULA, SRITipoIdentificacion.RUC, SRITipoIdentificacion.CONSUMIDOR_FINAL]:
-             # NOTA: Consumidor Final '9999999999999' pasa por lógica simple
-             pass
-        else:
-             # Pasaporte/Exterior no validan módulo
-             pass
-        
-        # Validar numérico si aplica
-        # (Aquí podríamos llamar a self.validar_ruc_cedula si queremos ser estrictos y bloquear)
-        # Por ahora solo advertencia o validación leve para evitar bloqueos innecesarios si el algoritmo tiene edge cases
-        # Pero el requerimiento dice "Valida algoritmos ... antes de enviar".
-        # Vamos a bloquear si es RUC/Cédula y falla el algoritmo estándar.
-        
-        """
-        Bloque validación estricta desactivado temporalmente para evitar falsos positivos en producción sin probar con datos reales.
-        El requerimiento es importante, pero un falso positivo detiene la facturación.
-        Recomiendo habilitarlo tras pruebas unitarias de los algoritmos de validación.
-        """
-        # if tipo_id in [SRITipoIdentificacion.CEDULA, SRITipoIdentificacion.RUC]:
-        #    if not self.validar_ruc_cedula(identificacion, tipo_id):
-        #        raise ValueError(f"Identificación inválida: {identificacion}") 
+        if tipo_id in [SRITipoIdentificacion.CEDULA, SRITipoIdentificacion.RUC]:
+           if not self.validar_ruc_cedula(identificacion, tipo_id):
+               raise ValueError(f"Identificación inválida según algoritmo SRI: {identificacion}") 
             
         ET.SubElement(info_fac, 'tipoIdentificacionComprador').text = tipo_id
         
@@ -190,9 +168,7 @@ class ServicioSRIXML:
         ET.SubElement(info_fac, 'importeTotal').text = f"{importe_total:.2f}"
         ET.SubElement(info_fac, 'moneda').text = 'DOLAR'
 
-        # Pagos usando Strategy Pattern
         pagos_node = ET.SubElement(info_fac, 'pagos')
-        
         if not formas_pago:
             formas_pago = [{'forma_pago_sri': '01', 'valor': importe_total}]
             
@@ -226,7 +202,6 @@ class ServicioSRIXML:
             estrategia = FactoryPagosSRI.obtener_estrategia(codigo_pago)
             estrategia.generar_nodo(pagos_node, valor_pago, plazo=p_val, unidad_tiempo=u_val)
 
-        # Detalles
         detalles_node = ET.SubElement(root, 'detalles')
         for item in detalles_procesados:
             d = ET.SubElement(detalles_node, 'detalle')
@@ -246,7 +221,6 @@ class ServicioSRIXML:
             ET.SubElement(im, 'baseImponible').text = f"{item['impuesto']['baseImponible']:.2f}"
             ET.SubElement(im, 'valor').text = f"{item['impuesto']['valor']:.2f}"
         
-        # Info Adicional (Email para notificación)
         if cliente.get('email'):
             info_adi = ET.SubElement(root, 'infoAdicional')
             campo = ET.SubElement(info_adi, 'campoAdicional', nombre="Email")
@@ -255,22 +229,16 @@ class ServicioSRIXML:
         return ET.tostring(root, encoding='unicode')
 
     def generar_clave_acceso(self, fecha: datetime, tipo: str, ruc: str, ambiente: str, estab: str, pto: str, secuencial: str, tipo_emision: str = "1", codigo_numerico: str = None) -> str:
-        """
-        Genera la Clave de Acceso de 49 dígitos.
-        Estructura: Fecha(8) + Tipo(2) + RUC(13) + Ambiente(1) + Serie(6) + Secuencial(9) + CodNum(8) + TipoEmision(1) + Digito(1)
-        """
         fecha_str = fecha.strftime('%d%m%Y')
-        
-        # Si no se provee, generar uno aleatorio (no recomendado para reintentos)
         if not codigo_numerico:
             codigo_numerico = f"{random.randint(0, 99999999):08d}"
         
-        # Base de 48 dígitos
-        base = f"{fecha_str}{tipo}{ruc}{ambiente}{estab}{pto}{secuencial}{codigo_numerico}{tipo_emision}"
-        
-        # Calcular dígito verificador
+        # Base de 48 dígitos (Aseguramos que no haya letras en campos críticos)
+        # Sanitización de emergencia para ruc/estab/pto/secuencial
+        import re
+        ruc_clean = re.sub(r'[^0-9]', '', str(ruc))
+        base = f"{fecha_str}{tipo}{ruc_clean}{ambiente}{estab}{pto}{secuencial}{codigo_numerico}{tipo_emision}"
         digito = self.modulo11(base)
-        
         return f"{base}{digito}"
 
     def modulo11(self, clave: str) -> int:
@@ -283,14 +251,9 @@ class ServicioSRIXML:
         
         residuo = suma % 11
         res = 11 - residuo
-        
         if res == 11: return 0
         if res == 10: return 1
         return res
 
     def validar_ruc_cedula(self, identificacion: str, tipo: str) -> bool:
-        """
-        Valida RUC o Cédula ecuatoriana delegando al validador central.
-        """
-        # El validador central ya maneja RUC, Cédula y Consumidor Final (10 y 13 nueves)
         return validar_identificacion(identificacion)

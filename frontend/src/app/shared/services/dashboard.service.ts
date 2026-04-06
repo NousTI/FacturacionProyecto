@@ -16,6 +16,19 @@ export interface DashboardKPIs {
     cuentas_cobrar?: number;
     productos_stock_bajo?: number;
     facturas_rechazadas?: number;
+
+    // KPIs Ejecutivos (R-028)
+    ticket_promedio?: number;
+    clientes_activos?: number;
+    porcentaje_recuperacion?: number;
+    total_gastos?: number;
+    utilidad_bruta?: number;
+    utilidad_neta?: number;
+    margen_bruto?: number;
+    margen_neto?: number;
+    variacion_ventas?: number;
+    variacion_gastos?: number;
+
 }
 
 
