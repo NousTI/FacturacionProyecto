@@ -21,13 +21,11 @@ class ServicioDashboards:
         # Variaciones
         variacion_ingresos = 0
         variacion_ventas = 0
-        variacion_gastos = 0
 
         if not e_id:
             variacion_ingresos = self.repo.obtener_variacion_ingresos()
         else:
             variacion_ventas = self.repo.obtener_variacion_ventas_empresa(e_id)
-            variacion_gastos = self.repo.obtener_variacion_gastos_empresa(e_id)
         
         # Firma info para Empresa
         firma_dias = None
@@ -39,7 +37,6 @@ class ServicioDashboards:
             **base_kpis, 
             variacion_ingresos=round(variacion_ingresos, 2), 
             variacion_ventas=round(variacion_ventas, 2),
-            variacion_gastos=round(variacion_gastos, 2),
             firma_expiracion_dias=firma_dias
         )
 

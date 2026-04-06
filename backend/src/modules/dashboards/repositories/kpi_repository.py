@@ -172,27 +172,8 @@ class KpiRepository(BaseRepository):
             if anterior == 0: return 100.0 if actual > 0 else 0.0
             return ((actual - anterior) / anterior) * 100
 
-    def obtener_variacion_gastos_empresa(self, empresa_id: UUID) -> float:
-        """Calcula variación porcentual de gastos de la empresa vs mes anterior."""
-        with self.db.cursor() as cur:
-            cur.execute("""
-                SELECT COALESCE(SUM(total), 0) as total 
-                FROM sistema_facturacion.gasto 
-                WHERE empresa_id = %s
-                AND DATE_TRUNC('month', fecha_emision) = DATE_TRUNC('month', CURRENT_DATE)
-            """, (str(empresa_id),))
-            actual = float(cur.fetchone()['total'])
 
-            cur.execute("""
-                SELECT COALESCE(SUM(total), 0) as total 
-                FROM sistema_facturacion.gasto 
-                WHERE empresa_id = %s
-                AND DATE_TRUNC('month', fecha_emision) = DATE_TRUNC('month', CURRENT_DATE - INTERVAL '1 month')
-            """, (str(empresa_id),))
-            anterior = float(cur.fetchone()['total'])
 
-            if anterior == 0: return 100.0 if actual > 0 else 0.0
-            return ((actual - anterior) / anterior) * 100
 
     def obtener_variacion_ingresos(self) -> float:
         """Calcula variación porcentual de ingresos vs mes anterior."""
