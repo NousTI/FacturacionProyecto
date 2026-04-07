@@ -1,6 +1,7 @@
 from fastapi import Depends, Request
 from .services import ServicioVendedores
 from .schemas import VendedorCreacion, VendedorActualizacion, ReasignacionEmpresas, VendedorPerfilActualizacion
+from ..usuarios.schemas import CambioPassword
 from uuid import UUID
 from ...utils.response import success_response
 
@@ -27,6 +28,10 @@ class VendedorController:
     def obtener_home_data(self, usuario_actual: dict):
         home_data = self.service.obtener_home_data(usuario_actual)
         return success_response(home_data)
+
+    def cambiar_password(self, body: CambioPassword, usuario_actual: dict):
+        self.service.cambiar_password(body, usuario_actual)
+        return success_response(None, "Contraseña actualizada correctamente")
 
     def actualizar_mi_perfil(self, body: VendedorPerfilActualizacion, usuario_actual: dict):
         vendedor = self.service.actualizar_mi_perfil(body, usuario_actual)

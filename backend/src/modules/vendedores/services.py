@@ -7,6 +7,7 @@ from .repositories import RepositorioVendedores
 from ..empresas.repositories import RepositorioEmpresas
 from ..usuarios.repositories import RepositorioUsuarios
 from .schemas import VendedorCreacion, VendedorActualizacion, ReasignacionEmpresas, VendedorPerfilActualizacion
+from ..usuarios.schemas import CambioPassword
 from ...utils.password import get_password_hash
 from ...constants.enums import AuthKeys
 from ...errors.app_error import AppError
@@ -156,6 +157,35 @@ class ServicioVendedores:
                  code=ErrorCodes.AUTH_USER_NOT_FOUND
              )
         return self._sanitize(self.repo.obtener_por_id(vendedor['id']))
+
+    def cambiar_password(self, data: CambioPassword, usuario_actual: dict):
+        if not usuario_actual.get(AuthKeys.IS_VENDEDOR):
+             raise AppError(
+                 message=AppMessages.PERM_FORBIDDEN, 
+                 status_code=403, 
+                 code=ErrorCodes.PERM_FORBIDDEN
+             )
+        user_id = usuario_actual.get('id')
+        vendedor = self.repo.obtener_por_user_id(user_id)
+        if not vendedor:
+             raise AppError(
+                 message=AppMessages.AUTH_USER_NOT_FOUND, 
+                 status_code=404, 
+                 code=ErrorCodes.AUTH_USER_NOT_FOUND
+             )
+
+        hashed_password = get_password_hash(data.nueva_password)
+        if not self.repo_usuarios.actualizar_password(user_id, hashed_password):
+            raise AppError("No se pudo actualizar la contraseña", 500)
+        
+        self.logs_service.registrar_evento(
+            user_id=user_id,
+            evento='PASSWORD_CAMBIADA',
+            detail=f"Vendedor {usuario_actual.get('email')} cambió su contraseña",
+            origen='USUARIO'
+        )
+        
+        return {"mensaje": "Contraseña actualizada correctamente"}
 
     def actualizar_mi_perfil(self, datos: VendedorPerfilActualizacion, usuario_actual: dict):
         if not usuario_actual.get(AuthKeys.IS_VENDEDOR):

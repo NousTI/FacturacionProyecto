@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, Request
 from typing import List
 from uuid import UUID
 from .schemas import VendedorCreacion, VendedorActualizacion, VendedorLectura, VendedorStats, ReasignacionEmpresas, VendedorPerfilActualizacion
+from ..usuarios.schemas import CambioPassword
 from .controller import VendedorController
 from ..autenticacion.routes import obtener_usuario_actual
 from ...utils.response_schemas import RespuestaBase
@@ -46,6 +47,14 @@ def obtener_home_data(
     controller: VendedorController = Depends()
 ):
     return controller.obtener_home_data(usuario)
+
+@router.patch("/me/password", response_model=RespuestaBase)
+def cambiar_password(
+    datos: CambioPassword,
+    usuario: dict = Depends(obtener_usuario_actual),
+    controller: VendedorController = Depends()
+):
+    return controller.cambiar_password(datos, usuario)
 
 @router.patch("/me", response_model=RespuestaBase[VendedorLectura])
 def actualizar_mi_perfil(
