@@ -8,88 +8,100 @@ import { FormsModule } from '@angular/forms';
   standalone: true,
   imports: [CommonModule, FormsModule],
   template: `
-    <div class="card-premium h-100">
-      <div class="card-body p-3">
+    <div class="card-empresas-style h-100">
+      <div class="card-body p-4 position-relative">
+        
         <!-- Vista Normal -->
         <ng-container *ngIf="!isEditing">
-          <div class="text-center mb-3 position-relative">
-            <button class="btn btn-sm btn-outline-primary position-absolute top-0 end-0 rounded-circle" 
+          <div class="text-center mb-4 position-relative">
+            <button class="btn btn-action-edit position-absolute top-0 end-0" 
                     (click)="startEdit()" 
-                    title="Editar Perfil"
-                    style="width: 35px; height: 35px; padding: 0; display: flex; align-items: center; justify-content: center;">
+                    title="Editar Perfil">
               <i class="bi bi-pencil-fill"></i>
             </button>
-            <div class="avatar-circle mx-auto mb-2">
+            <div class="avatar-circle mx-auto mb-3">
               {{ getInitials(nombres, apellidos) }}
             </div>
-            <h5 class="fw-bold mb-0 header-font">{{ nombres }} {{ apellidos }}</h5>
-            <p class="text-muted smallest mb-2">{{ email }}</p>
-            <span class="badge" [ngClass]="activo ? 'bg-success-subtle text-success' : 'bg-danger-subtle text-danger'">
-              {{ activo ? 'Activo' : 'Inactivo' }}
+            <h4 class="fw-bold mb-1 header-font text-dark">{{ nombres }} {{ apellidos }}</h4>
+            <p class="text-secondary small mb-3">{{ email }}</p>
+            <span class="custom-badge" [ngClass]="activo ? 'badge-active' : 'badge-inactive'">
+              <i class="bi me-1" [ngClass]="activo ? 'bi-check-circle-fill' : 'bi-x-circle-fill'"></i>
+              {{ activo ? 'Cuenta Activa' : 'Cuenta Inactiva' }}
             </span>
           </div>
 
-          <hr class="border-light opacity-50 my-3">
+          <hr class="border-light opacity-50 my-4">
 
           <!-- CAMBIO PASSWORD BUTTON -->
-          <div class="mb-4" *ngIf="!isChangingPassword">
-             <button class="btn btn-sm btn-link text-primary fw-bold p-0 text-decoration-none" (click)="startChangePassword()">
-                <i class="bi bi-key-fill me-1"></i> Cambiar Contraseña
+          <div class="mb-4 text-center" *ngIf="!isChangingPassword">
+             <button class="btn btn-outline-secondary fw-bold rounded-3" style="font-size:0.9rem;" (click)="startChangePassword()">
+                <i class="bi bi-key-fill me-2"></i> Cambiar Contraseña
              </button>
           </div>
 
           <!-- PASSWORD CHANGE FORM -->
-          <div *ngIf="isChangingPassword" class="mb-4 animate-fade-in shadow-sm p-3 border rounded-4 bg-light">
-              <h5 class="fw-bold header-font mb-3" style="font-size: 1rem;">Actualizar Contraseña</h5>
-              <div class="mb-3">
-                  <label class="form-label info-label">Nueva Contraseña</label>
-                  <div class="input-group">
+          <div *ngIf="isChangingPassword" class="mb-4 animate-fade-in border p-4 rounded-4" style="background-color: #fafbfc; border-color: rgba(0,0,0,0.05) !important;">
+              <div class="d-flex justify-content-between align-items-center mb-4">
+                  <h6 class="fw-bold mb-0 text-dark header-font d-flex align-items-center gap-2">
+                     <i class="bi bi-shield-lock text-primary"></i> Actualizar Contraseña
+                  </h6>
+                  <button class="btn-close" (click)="cancelChangePassword()"></button>
+              </div>
+              
+              <div class="mb-4">
+                  <label class="form-label text-muted small fw-semibold mb-2">Ingresa tu nueva contraseña</label>
+                  <div class="position-relative">
+                      <i class="bi bi-lock position-absolute text-muted" style="left: 14px; top: 50%; transform: translateY(-50%); z-index: 5;"></i>
                       <input [type]="showPassword ? 'text' : 'password'" 
-                             class="form-control" 
+                             class="form-control form-control-premium" 
+                             style="padding-left: 2.5rem; padding-right: 2.5rem;"
                              [(ngModel)]="nuevaPassword" 
-                             placeholder="Mín. 6 caracteres"
-                             style="border-radius: 12px 0 0 12px;">
-                      <button class="btn btn-outline-secondary" type="button" 
+                             placeholder="Mín. 6 caracteres">
+                      <button class="btn position-absolute top-50 end-0 translate-middle-y border-0 text-muted shadow-none" 
+                              type="button" 
                               (click)="showPassword = !showPassword"
-                              style="border-color: #dee2e6; border-radius: 0 12px 12px 0; background: white;">
+                              style="z-index: 5;">
                           <i class="bi" [class.bi-eye]="!showPassword" [class.bi-eye-slash]="showPassword"></i>
                       </button>
                   </div>
               </div>
-              <div class="d-flex gap-2">
-                  <button class="btn btn-primary btn-sm px-3" [disabled]="nuevaPassword.length < 6 || isSaving" (click)="savePassword()" style="border-radius: 10px;">
-                      <span *ngIf="isSaving" class="spinner-border spinner-border-sm me-1"></span>
-                      Confirmar
-                  </button>
-                  <button class="btn btn-light btn-sm px-3" (click)="cancelChangePassword()" [disabled]="isSaving" style="border-radius: 10px;">
-                      Cancelar
-                  </button>
-              </div>
+              
+              <button class="btn-premium-primary w-100 justify-content-center" 
+                      style="height: 44px; border-radius: 12px;"
+                      [disabled]="nuevaPassword.length < 6 || isSaving" 
+                      (click)="savePassword()">
+                  <span *ngIf="isSaving" class="spinner-border spinner-border-sm me-2"></span>
+                  Guardar Contraseña
+              </button>
           </div>
 
           <div class="row g-3" *ngIf="!isChangingPassword">
             <div class="col-6">
-              <div class="profile-info-item">
-                <label class="info-label">Documento</label>
-                <p class="info-value">{{ documento_identidad || 'N/A' }}</p>
+              <div class="info-box p-3 h-100 rounded-4">
+                <div class="info-icon text-primary mb-2"><i class="bi bi-card-heading"></i></div>
+                <label class="d-block text-muted small fw-semibold mb-1">Documento</label>
+                <p class="mb-0 fw-bold text-dark">{{ documento_identidad || 'N/A' }}</p>
               </div>
             </div>
             <div class="col-6">
-              <div class="profile-info-item">
-                <label class="info-label">Teléfono</label>
-                <p class="info-value">{{ telefono || 'N/A' }}</p>
+              <div class="info-box p-3 h-100 rounded-4">
+                <div class="info-icon text-info mb-2"><i class="bi bi-telephone"></i></div>
+                <label class="d-block text-muted small fw-semibold mb-1">Teléfono</label>
+                <p class="mb-0 fw-bold text-dark">{{ telefono || 'N/A' }}</p>
               </div>
             </div>
             <div class="col-6">
-              <div class="profile-info-item">
-                <label class="info-label">Tipo Comisión</label>
-                <p class="info-value">{{ tipo_comision || 'N/A' }}</p>
+              <div class="info-box p-3 h-100 rounded-4">
+                <div class="info-icon text-warning mb-2"><i class="bi bi-percent"></i></div>
+                <label class="d-block text-muted small fw-semibold mb-1">Comisión</label>
+                <p class="mb-0 fw-bold text-dark">{{ tipo_comision || 'N/A' }}</p>
               </div>
             </div>
             <div class="col-6">
-               <div class="profile-info-item">
-                <label class="info-label">Fecha Registro</label>
-                <p class="info-value">{{ fecha_registro | date:'mediumDate' }}</p>
+               <div class="info-box p-3 h-100 rounded-4">
+                <div class="info-icon text-success mb-2"><i class="bi bi-calendar3"></i></div>
+                <label class="d-block text-muted small fw-semibold mb-1">Registro</label>
+                <p class="mb-0 fw-bold text-dark">{{ fecha_registro | date:'mediumDate' }}</p>
               </div>
             </div>
           </div>
@@ -97,38 +109,42 @@ import { FormsModule } from '@angular/forms';
 
         <!-- Vista de Edición -->
         <ng-container *ngIf="isEditing">
-          <div class="mb-4">
-            <h4 class="fw-bold header-font mb-3">Editar Perfil</h4>
+          <div class="mb-2">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h4 class="fw-bold mb-0 header-font text-dark d-flex align-items-center gap-2">
+                   <i class="bi bi-pencil-square text-primary"></i> Editar Perfil
+                </h4>
+                <button class="btn-close" (click)="cancelEdit()"></button>
+            </div>
             
-            <form (ngSubmit)="saveEdit()" #editForm="ngForm">
-              <div class="row g-3">
+            <form (ngSubmit)="saveEdit()" #editForm="ngForm" class="edit-form">
+              <div class="row g-4">
                 <div class="col-sm-6">
-                  <label class="form-label info-label">Nombres</label>
-                  <input type="text" class="form-control" [(ngModel)]="editData.nombres" name="nombres" #nombresInput="ngModel" required minlength="3">
-                  <div class="invalid-feedback d-block" *ngIf="nombresInput.invalid && nombresInput.touched">
-                    Nombre requerido (mín. 3)
+                  <label class="form-label text-muted small fw-semibold">Nombres</label>
+                  <input type="text" class="form-control form-control-premium shadow-none" [(ngModel)]="editData.nombres" name="nombres" #nombresInput="ngModel" required minlength="3">
+                  <div class="invalid-feedback fw-semibold mt-1" [class.d-block]="nombresInput.invalid && nombresInput.touched">
+                    Mínimo 3 caracteres.
                   </div>
                 </div>
                 <div class="col-sm-6">
-                  <label class="form-label info-label">Apellidos</label>
-                  <input type="text" class="form-control" [(ngModel)]="editData.apellidos" name="apellidos" #apellidosInput="ngModel" required minlength="3">
-                  <div class="invalid-feedback d-block" *ngIf="apellidosInput.invalid && apellidosInput.touched">
-                    Apellido requerido (mín. 3)
+                  <label class="form-label text-muted small fw-semibold">Apellidos</label>
+                  <input type="text" class="form-control form-control-premium shadow-none" [(ngModel)]="editData.apellidos" name="apellidos" #apellidosInput="ngModel" required minlength="3">
+                  <div class="invalid-feedback fw-semibold mt-1" [class.d-block]="apellidosInput.invalid && apellidosInput.touched">
+                    Mínimo 3 caracteres.
                   </div>
                 </div>
                 <div class="col-12">
-                  <label class="form-label info-label">Teléfono</label>
-                  <input type="text" class="form-control" [(ngModel)]="editData.telefono" name="telefono" #telefonoInput="ngModel" required pattern="^[0-9]{10}$" maxlength="10">
-                  <div class="invalid-feedback d-block" *ngIf="telefonoInput.invalid && (telefonoInput.touched || editForm.submitted)">
-                    Teléfono requerido (10 dígitos numéricos)
+                  <label class="form-label text-muted small fw-semibold">Teléfono</label>
+                  <input type="text" class="form-control form-control-premium shadow-none" [(ngModel)]="editData.telefono" name="telefono" #telefonoInput="ngModel" required pattern="^[0-9]{10}$" maxlength="10">
+                  <div class="invalid-feedback fw-semibold mt-1" [class.d-block]="telefonoInput.invalid && (telefonoInput.touched || editForm.submitted)">
+                    Debe contener 10 dígitos numéricos.
                   </div>
                 </div>
               </div>
 
-              <div class="d-flex justify-content-end gap-2 mt-4">
-                <button type="button" class="btn btn-light" (click)="cancelEdit()">Cancelar</button>
-                <button type="submit" class="btn btn-primary" [disabled]="!editForm.form.valid || isSaving">
-                  <span *ngIf="isSaving" class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+              <div class="mt-4 pt-2">
+                <button type="submit" class="btn-premium-primary w-100 justify-content-center" style="height: 44px;" [disabled]="!editForm.form.valid || isSaving">
+                  <span *ngIf="isSaving" class="spinner-border spinner-border-sm me-2"></span>
                   {{ isSaving ? 'Guardando...' : 'Guardar Cambios' }}
                 </button>
               </div>
@@ -137,14 +153,14 @@ import { FormsModule } from '@angular/forms';
         </ng-container>
 
         <ng-container *ngIf="!isEditing && !isChangingPassword">
-          <div class="mt-4 p-3 rounded-3 bg-light-subtle row g-2">
-              <div class="col-6 text-center border-end">
-                  <small class="d-block text-muted fw-semibold">Empresas</small>
-                  <span class="fs-4 fw-bold text-dark">{{ empresas_asignadas }}</span>
+          <div class="mt-4 stats-container p-4 rounded-4 border row g-0">
+              <div class="col-6 text-center border-end border-light">
+                  <h3 class="fw-bolder text-dark mb-0">{{ empresas_asignadas }}</h3>
+                  <small class="text-muted fw-semibold">Empresas Asignadas</small>
               </div>
               <div class="col-6 text-center">
-                  <small class="d-block text-muted fw-semibold">Generado</small>
-                  <span class="fs-4 fw-bold text-success">{{ ingresos_generados | currency }}</span>
+                  <h3 class="fw-bolder text-success mb-0">{{ ingresos_generados | currency }}</h3>
+                  <small class="text-muted fw-semibold">Total Generado</small>
               </div>
           </div>
         </ng-container>
@@ -153,21 +169,20 @@ import { FormsModule } from '@angular/forms';
     </div>
   `,
   styles: [`
-    .card-premium {
-      background: white;
-      border: 1px solid #eef2f6;
-      border-radius: 20px;
-      box-shadow: 0 10px 30px -10px rgba(0,0,0,0.05);
-      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    .card-empresas-style {
+      background: #ffffff;
+      border: 1px solid rgba(0, 0, 0, 0.05);
+      border-radius: 16px;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02);
     }
-    .card-premium:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 20px 40px -10px rgba(0,0,0,0.1);
+    .header-font {
+        font-family: 'Plus Jakarta Sans', sans-serif; letter-spacing: -0.5px;
     }
+    
     .avatar-circle {
       width: 70px;
       height: 70px;
-      background: linear-gradient(135deg, #4f46e5 0%, #3730a3 100%);
+      background: #161d35;
       color: white;
       border-radius: 50%;
       display: flex;
@@ -175,39 +190,79 @@ import { FormsModule } from '@angular/forms';
       justify-content: center;
       font-size: 1.5rem;
       font-weight: 700;
-      box-shadow: 0 10px 20px rgba(79, 70, 229, 0.3);
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
     }
-    .header-font {
-        font-family: 'Plus Jakarta Sans', sans-serif;
-        color: #1e293b;
+    
+    .btn-action-edit {
+        width: 36px; height: 36px;
+        border-radius: 10px;
+        background: #f8fafc;
+        color: #64748b; border: 1px solid #e2e8f0;
+        display: flex; align-items: center; justify-content: center;
+        transition: all 0.2s;
     }
-    .info-label {
-      font-size: 0.625rem;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      color: #94a3b8;
-      font-weight: 600;
-      margin-bottom: 0.15rem;
+    .btn-action-edit:hover { background: #e2e8f0; color: #1e293b; }
+
+    .custom-badge {
+        padding: 0.4rem 1rem; border-radius: 30px;
+        font-size: 0.75rem; font-weight: 700;
+        display: inline-flex; align-items: center;
     }
-    .info-value {
-      font-size: 0.85rem;
-      color: #334155;
-      font-weight: 600;
-      margin-bottom: 0;
+    .badge-active { background: #dcfce7; color: #166534; }
+    .badge-inactive { background: #fee2e2; color: #991b1b; }
+
+    .form-control-premium {
+      background: #f8fafc;
+      border: 1.5px solid rgba(0, 0, 0, 0.05);
+      border-radius: 14px;
+      height: 40px;
+      font-size: 0.9rem;
+      font-weight: 500;
+      color: #161d35;
+      transition: all 0.2s;
+      width: 100%;
     }
-    .badge {
-        font-size: 0.75rem;
-        padding: 0.5em 1em;
-        border-radius: 50px;
-        font-weight: 600;
+    .form-control-premium:focus {
+      background: #ffffff;
+      border-color: #161d35;
+      box-shadow: 0 0 0 4px rgba(22, 29, 53, 0.05);
+      outline: none;
     }
-    .animate-fade-in {
-        animation: fadeIn 0.3s ease;
+
+    .info-box {
+        background: #f8fafc;
+        border: 1px solid #f1f5f9;
     }
-    @keyframes fadeIn {
-        from { opacity: 0; transform: translateY(10px); }
-        to { opacity: 1; transform: translateY(0); }
+    .info-icon { font-size: 1.5rem; }
+
+    .stats-container { background: #fafafa; }
+
+    .btn-premium-primary {
+        background: #161d35;
+        color: #ffffff;
+        border: none;
+        padding: 0 1.5rem;
+        border-radius: 12px;
+        font-weight: 700;
+        font-size: 0.95rem;
+        display: flex;
+        align-items: center;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 0 10px 20px -5px rgba(22, 29, 53, 0.3);
     }
+    .btn-premium-primary:not(:disabled):hover {
+        transform: translateY(-2px);
+        box-shadow: 0 20px 30px -8px rgba(22, 29, 53, 0.4);
+        background: #232d4d;
+    }
+    .btn-premium-primary:disabled {
+        background: #94a3b8;
+        cursor: not-allowed;
+        box-shadow: none;
+    }
+
+    .animate-fade-in { animation: fadeIn 0.4s ease; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
   `]
 })
 export class ProfileCardComponent implements OnChanges {
