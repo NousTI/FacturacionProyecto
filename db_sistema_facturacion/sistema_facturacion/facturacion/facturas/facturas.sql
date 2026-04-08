@@ -137,7 +137,7 @@ CREATE TABLE IF NOT EXISTS sistema_facturacion.facturas (
         COMMENT 'PENDIENTE, PAGADO, PARCIAL, VENCIDO',
     
     -- Origen de la factura
-    origen VARCHAR(20) 
+    origen VARCHAR(50) 
         CHECK (origen IN ('MANUAL', 'IMPORTADO', 'API', 'FACTURACION_PROGRAMADA'))
         COMMENT 'Cómo se creó: MANUAL, IMPORTADO, API, o FACTURACION_PROGRAMADA',
 

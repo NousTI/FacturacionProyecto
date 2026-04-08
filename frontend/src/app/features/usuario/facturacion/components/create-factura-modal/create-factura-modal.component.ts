@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, OnInit, Output, ChangeDetectorRef } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output, ChangeDetectorRef, ViewEncapsulation } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators, FormArray } from '@angular/forms';
 import { FacturasService } from '../../services/facturas.service';
@@ -6,6 +6,7 @@ import { ClientesService } from '../../../clientes/services/clientes.service';
 import { ProductosService } from '../../../productos/services/productos.service';
 import { EstablecimientosService } from '../../../establecimientos/services/establecimientos.service';
 import { PuntosEmisionService } from '../../../puntos-emision/services/puntos-emision.service';
+import { FacturacionProgramadaService } from '../../../facturacion-recurrente/services/facturacion-programada.service';
 import { SriConfigService } from '../../../certificado-sri/services/sri-config.service';
 import { UiService } from '../../../../../shared/services/ui.service';
 import { Cliente } from '../../../../../domain/models/cliente.model';
@@ -18,10 +19,21 @@ import { ConfirmModalComponent } from '../../../../../shared/components/confirm-
 import { forkJoin, switchMap, tap, catchError, of, filter, take, map, Observable, fromEvent, Subject, takeUntil } from 'rxjs';
 import { CreateClienteModalComponent } from '../../../clientes/components/create-cliente-modal/create-cliente-modal.component';
 
+import { FacturaClienteHeaderComponent } from './components/factura-cliente-header/factura-cliente-header.component';
+import { FacturaEmisionHeaderComponent } from './components/factura-emision-header/factura-emision-header.component';
+import { FacturaDetallesTableComponent } from './components/factura-detalles-table/factura-detalles-table.component';
+import { FacturaRecurrenteConfigComponent } from './components/factura-recurrente-config/factura-recurrente-config.component';
+import { FacturaTotalesPanelComponent } from './components/factura-totales-panel/factura-totales-panel.component';
+
 @Component({
   selector: 'app-create-factura-modal',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, ConfirmModalComponent, CreateClienteModalComponent],
+  encapsulation: ViewEncapsulation.None,
+  imports: [
+    CommonModule, FormsModule, ReactiveFormsModule, ConfirmModalComponent, CreateClienteModalComponent,
+    FacturaClienteHeaderComponent, FacturaEmisionHeaderComponent, FacturaDetallesTableComponent, 
+    FacturaRecurrenteConfigComponent, FacturaTotalesPanelComponent
+  ],
   template: `
     <div class="modal-backdrop fade show" style="display: block; background-color: rgba(0,0,0,0.4); backdrop-filter: blur(4px);"></div>
     <div class="modal fade show" style="display: block;" tabindex="-1">
@@ -64,239 +76,32 @@ import { CreateClienteModalComponent } from '../../../clientes/components/create
               
               <!-- CABECERA DE FACTURACIÓN REDISEÑADA (Dos Columnas) -->
               <div class="row g-3 mb-4">
-                
-                <!-- COLUMNA IZQUIERDA: CLIENTE / RECEPTOR -->
                 <div class="col-lg-6">
-                  <div class="section-lux h-100 p-3 border shadow-sm rounded-4 bg-white">
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                      <div class="section-title-lux mb-0 border-0 p-0" style="color: #1e293b;">
-                        <i class="bi bi-person-bounding-box me-2 text-primary"></i> Cliente / Receptor
-                      </div>
-                      <button type="button" class="btn-create-client-lux btn-sm py-1 px-2" (click)="openCreateClienteModal()" title="Nuevo Cliente">
-                        <i class="bi bi-person-plus-fill me-1"></i>
-                        <span>Nuevo</span>
-                      </button>
-                    </div>
-
-                    <!-- Buscador -->
-                    <div class="search-select-lux-wrapper mb-3">
-                      <div class="input-lux-wrapper input-sm">
-                        <i class="bi bi-search"></i>
-                        <input type="text" 
-                               class="input-lux" 
-                               placeholder="Buscar por nombre o cédula..." 
-                               [(ngModel)]="searchTerm" 
-                               [ngModelOptions]="{standalone: true}"
-                               (focus)="onClientSearchFocus()"
-                               (input)="filterClientes()"
-                               (click)="$event.stopPropagation()">
-                        <button type="button" class="btn-clear-search" *ngIf="searchTerm" (click)="clearClientSearch()">
-                          <i class="bi bi-x"></i>
-                        </button>
-                      </div>
-                      
-                      <!-- Dropdown Results -->
-                      <div class="search-results-lux custom-scrollbar" *ngIf="isClientDropdownOpen" (click)="$event.stopPropagation()">
-                        <div class="search-item-lux" *ngFor="let cli of filteredClientes" (click)="selectCliente(cli)">
-                          <div class="fw-bold">{{ cli.razon_social }}</div>
-                          <div class="small-info">{{ cli.identificacion }} • {{ cli.email }}</div>
-                        </div>
-                        <div class="search-item-lux no-results p-3 text-center" *ngIf="filteredClientes.length === 0 && searchTerm">
-                          <span class="small text-muted">No se encontraron resultados</span>
-                        </div>
-                      </div>
-                    </div>
-
-                    <!-- Sugerencias / Rápidos (Solo si no hay búsqueda y no hay seleccionado) -->
-                    <div *ngIf="!selectedCliente && !searchTerm && clientes.length > 0" class="mb-3">
-                      <label class="form-label-lux mb-2" style="font-size: 0.6rem;">Sugerencias rápidas:</label>
-                      <div class="d-flex flex-wrap gap-2">
-                        <button type="button" *ngFor="let cli of clientes.slice(0, 3)" 
-                                (click)="selectCliente(cli)"
-                                class="badge bg-light text-dark border py-2 px-3 rounded-pill text-decoration-none fw-bold"
-                                style="font-size: 0.7rem; cursor: pointer; transition: all 0.2s; border-color: #e2e8f0 !important;">
-                          <i class="bi bi-person-fill me-1 text-primary"></i> {{ cli.razon_social | slice:0:20 }}{{ cli.razon_social.length > 20 ? '...' : '' }}
-                        </button>
-                      </div>
-                    </div>
-
-                    <!-- Info del Cliente Seleccionado -->
-                    <div *ngIf="selectedCliente" class="client-info-card-lux p-3 rounded-3 animate__animated animate__fadeIn" style="background-color: #f8fafc; border: 1px solid #e2e8f0;">
-                      <div class="d-flex justify-content-between align-items-start">
-                        <div class="flex-grow-1 overflow-hidden">
-                          <h6 class="fw-800 mb-2 text-dark text-truncate">{{ selectedCliente.razon_social }}</h6>
-                          <div class="d-flex flex-wrap gap-2 mb-2">
-                            <span class="badge bg-white text-dark border small-cap px-2 py-1" style="font-size: 0.6rem; border-color: #e2e8f0 !important;">
-                              <i class="bi bi-card-text me-1 text-muted"></i>{{ selectedCliente.identificacion }}
-                            </span>
-                            <span class="badge bg-white text-dark border small-cap px-2 py-1" style="font-size: 0.6rem; border-color: #e2e8f0 !important;">
-                              <i class="bi bi-envelope me-1 text-muted"></i>{{ selectedCliente.email }}
-                            </span>
-                          </div>
-                          <div class="small text-muted text-truncate" style="font-size: 0.75rem;">
-                            <i class="bi bi-geo-alt-fill me-1"></i>{{ selectedCliente.direccion || 'Sin dirección registrada' }}
-                          </div>
-                        </div>
-                        <button type="button" class="btn-edit-client-small ms-2" (click)="openEditClienteModal()" title="Editar información del cliente">
-                          <i class="bi bi-pencil-square"></i>
-                        </button>
-                      </div>
-                    </div>
-
-                    <div *ngIf="!selectedCliente" class="px-3 py-4 text-center border border-dashed rounded-3" style="background: #fafbfc; border-style: dashed !important;">
-                      <i class="bi bi-person-dash text-muted mb-2 d-block" style="font-size: 1.8rem; opacity: 0.5;"></i>
-                      <p class="text-muted small fw-bold mb-0">Seleccione un cliente para la factura</p>
-                    </div>
-                  </div>
+                  <app-factura-cliente-header
+                    [parentForm]="facturaForm"
+                    [clientes]="clientes"
+                    (openCreateClienteModal)="openCreateClienteModal()"
+                    (openEditClienteModal)="openEditClienteModal($event)">
+                  </app-factura-cliente-header>
                 </div>
 
-                <!-- COLUMNA DERECHA: INFO DEL COMPROBANTE -->
                 <div class="col-lg-6">
-                  <div class="section-lux h-100 p-3 border shadow-sm rounded-4 bg-white">
-                    <div class="section-title-lux mb-3 border-0 p-0" style="color: #1e293b;">
-                      <i class="bi bi-file-earmark-text-fill me-2 text-primary"></i> Información de Emisión
-                    </div>
-                    
-                    <div class="row g-2">
-                      <div class="col-md-6">
-                        <label class="form-label-lux">Establecimiento</label>
-                        <div class="select-lux-wrapper">
-                          <select class="select-lux input-sm" formControlName="establecimiento_id">
-                            <option [ngValue]="null" disabled>Seleccione...</option>
-                            <option *ngFor="let est of establecimientos" [value]="est.id">{{ est.nombre }} ({{ est.codigo }})</option>
-                          </select>
-                        </div>
-                      </div>
-                      
-                      <div class="col-md-6">
-                        <label class="form-label-lux">Punto Emisión</label>
-                        <div class="select-lux-wrapper">
-                          <select class="select-lux input-sm" formControlName="punto_emision_id">
-                            <option [ngValue]="null" disabled>Seleccione...</option>
-                            <option *ngFor="let pto of puntosEmisionFiltered" [value]="pto.id">{{ pto.codigo }}</option>
-                          </select>
-                        </div>
-                      </div>
-
-                      <div class="col-md-5">
-                        <label class="form-label-lux">Fecha Emisión</label>
-                        <div class="input-lux-wrapper input-sm">
-                          <i class="bi bi-calendar-event"></i>
-                          <input type="date" class="input-lux" formControlName="fecha_emision">
-                        </div>
-                      </div>
-
-                      <div class="col-md-7">
-                        <label class="form-label-lux">Forma de Pago SRI</label>
-                        <div class="select-lux-wrapper">
-                          <select class="select-lux input-sm" formControlName="forma_pago_sri">
-                            <option value="01">EFECTIVO</option>
-                            <option value="15">COMPENSACIÓN DE DEUDAS</option>
-                            <option value="16">TARJETA DE DÉBITO</option>
-                            <option value="17">DINERO ELECTRÓNICO</option>
-                            <option value="18">TARJETA PREPAGO</option>
-                            <option value="19">TARJETA DE CRÉDITO</option>
-                            <option value="20">SISTEMA FINANCIERO (OTROS)</option>
-                            <option value="21">ENDOSO DE TÍTULOS</option>
-                          </select>
-                        </div>
-                      </div>
-
-                      <div class="col-12 mt-1">
-                        <label class="form-label-lux">Guía Remisión</label>
-                        <div class="input-lux-wrapper input-sm">
-                          <i class="bi bi-truck"></i>
-                          <input type="text" class="input-lux" formControlName="guia_remision" placeholder="000-000-000000000">
-                        </div>
-                      </div>
-                    </div>
-                  </div>
+                  <app-factura-emision-header
+                    [parentForm]="facturaForm"
+                    [establecimientos]="establecimientos"
+                    [puntosEmisionFiltered]="puntosEmisionFiltered">
+                  </app-factura-emision-header>
                 </div>
-
               </div>
 
               <!-- DETALLES PRODUCTOS -->
-              <div class="section-lux mb-4">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                  <div class="section-title-lux mb-0">
-                    <i class="bi bi-cart-fill me-2"></i> Detalle de Productos
-                  </div>
-                  <button type="button" class="btn btn-add-lux-white" (click)="addDetalle()">
-                    <i class="bi bi-plus-lg"></i> Agregar Item
-                  </button>
-                </div>
-
-                <div class="table-responsive rounded-3 overflow-hidden border">
-                  <table class="table table-lux-white align-middle mb-0">
-                    <thead>
-                      <tr>
-                        <th style="min-width: 300px;">Producto / Descripción</th>
-                        <th style="width: 100px;">Cant.</th>
-                        <th style="width: 140px;">P. Unit ($)</th>
-                        <th style="width: 120px;">Desc. ($)</th>
-                        <th style="width: 110px;">IVA</th>
-                        <th style="width: 140px;" class="text-end">Subtotal</th>
-                        <th style="width: 60px;"></th>
-                      </tr>
-                    </thead>
-                    <tbody formArrayName="detalles">
-                      <tr *ngFor="let item of detalles.controls; let i=index" [formGroupName]="i" class="border-bottom-light">
-                        <td>
-                          <div class="select-lux-wrapper">
-                            <select class="select-lux input-sm" formControlName="producto_id" (change)="onProductoSelect(i)">
-                              <option [ngValue]="null">Seleccione Producto...</option>
-                              <option *ngFor="let prod of productos" [value]="prod.id">{{ prod.nombre }}</option>
-                            </select>
-                          </div>
-                          <input *ngIf="!item.get('producto_id')?.value" type="text" 
-                                 class="input-lux input-sm mt-2" 
-                                 placeholder="Descripción manual..." 
-                                 formControlName="descripcion">
-                        </td>
-                        <td>
-                          <input type="number" class="input-lux input-sm text-center" 
-                                 formControlName="cantidad" min="1">
-                        </td>
-                        <td>
-                          <div class="input-lux-wrapper input-sm">
-                            <span class="prefix">$</span>
-                            <input type="number" class="input-lux" 
-                                   formControlName="precio_unitario" min="0">
-                          </div>
-                        </td>
-                         <td>
-                          <div class="input-lux-wrapper input-sm">
-                            <span class="prefix">$</span>
-                            <input type="number" class="input-lux" 
-                                   formControlName="descuento" min="0">
-                          </div>
-                        </td>
-                        <td>
-                          <div class="select-lux-wrapper">
-                            <select class="select-lux input-sm" formControlName="tipo_iva">
-                              <option value="0">0%</option>
-                              <option value="4">15% (Actual)</option>
-                            </select>
-                          </div>
-                        </td>
-                        <td class="text-end fw-bold text-dark fs-6">
-                          {{ calculateRowTotal(i) | currency:'USD' }}
-                        </td>
-                        <td class="text-center">
-                          <button type="button" class="btn-delete-lux" (click)="removeDetalle(i)">
-                            <i class="bi bi-trash-fill"></i>
-                          </button>
-                        </td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-                
-                <div *ngIf="detalles.length === 0" class="empty-state-lux py-5 text-center">
-                  <i class="bi bi-bag-plus text-muted mb-3 d-block" style="font-size: 2.5rem;"></i>
-                  <p class="text-muted small fw-bold mb-0">No se han agregado productos a la factura</p>
-                </div>
-              </div>
+              <app-factura-detalles-table
+                [parentForm]="facturaForm"
+                [productos]="productos"
+                (onAdd)="addDetalle()"
+                (onRemove)="removeDetalle($event)"
+                (onProductSelect)="onProductoSelect($event)">
+              </app-factura-detalles-table>
 
               <!-- BOTTOM: TOTALS AND OBS -->
               <div class="row g-4">
@@ -307,45 +112,14 @@ import { CreateClienteModalComponent } from '../../../clientes/components/create
                   </div>
                 </div>
                 <div class="col-lg-5">
-                   <div class="totals-card-lux">
-                      <div class="d-flex justify-content-between mb-2">
-                        <span class="text-muted small-cap">Subtotal Sin IVA</span>
-                        <span class="fw-bold">{{ totals.subtotal_sin_iva | currency:'USD' }}</span>
-                      </div>
-                      <div class="d-flex justify-content-between mb-2">
-                        <span class="text-muted small-cap">Subtotal 15%</span>
-                        <span class="fw-bold">{{ totals.subtotal_con_iva | currency:'USD' }}</span>
-                      </div>
-                      <div class="d-flex justify-content-between mb-2">
-                        <span class="text-muted small-cap">Subtotal 0%</span>
-                        <span class="fw-bold">{{ totals.subtotal_sin_iva | currency:'USD' }}</span>
-                      </div>
-                      <div class="d-flex justify-content-between mb-2" *ngIf="totals.subtotal_no_objeto_iva > 0">
-                        <span class="text-muted small-cap">Subtotal No Objeto</span>
-                        <span class="fw-bold">{{ totals.subtotal_no_objeto_iva | currency:'USD' }}</span>
-                      </div>
-                      <div class="d-flex justify-content-between mb-2" *ngIf="totals.subtotal_exento_iva > 0">
-                        <span class="text-muted small-cap">Subtotal Exento</span>
-                        <span class="fw-bold">{{ totals.subtotal_exento_iva | currency:'USD' }}</span>
-                      </div>
-                       <div class="d-flex justify-content-between mb-2">
-                        <span class="text-muted small-cap">Descuento Total</span>
-                        <span class="text-danger fw-bold">- {{ totals.descuento | currency:'USD' }}</span>
-                      </div>
-                      <div class="d-flex justify-content-between mb-2">
-                        <span class="text-muted small-cap">IVA 15%</span>
-                        <span class="fw-bold text-dark">{{ totals.iva | currency:'USD' }}</span>
-                      </div>
-                      <div class="d-flex justify-content-between mb-3" *ngIf="totals.ice > 0">
-                        <span class="text-muted small-cap">ICE Total</span>
-                        <span class="fw-bold text-dark">{{ totals.ice | currency:'USD' }}</span>
-                      </div>
-                      <div class="total-divider mb-3"></div>
-                      <div class="d-flex justify-content-between align-items-center">
-                        <span class="fw-900 fs-5 text-dark">TOTAL PAGAR</span>
-                        <span class="fw-900 fs-3 text-dark">{{ totals.total | currency:'USD' }}</span>
-                      </div>
-                   </div>
+                   <app-factura-recurrente-config
+                     [mode]="mode"
+                     [parentForm]="facturaForm">
+                   </app-factura-recurrente-config>
+
+                   <app-factura-totales-panel
+                     [totals]="totals">
+                   </app-factura-totales-panel>
                 </div>
               </div>
 
@@ -354,8 +128,9 @@ import { CreateClienteModalComponent } from '../../../clientes/components/create
 
           <!-- 3. FOOTER: BOTONES DE ACCION -->
           <div class="modal-footer border-0 p-4 bg-light-soft">
-             <button type="button" class="btn-cancel-lux" (click)="close()">Cancelar</button>
+             <button type="button" class="btn-cancel-lux" (click)="close()">{{ isViewOnly ? 'Cerrar' : 'Cancelar' }}</button>
              <button type="button" class="btn-save-lux ms-3" 
+                     *ngIf="!isViewOnly"
                      [disabled]="facturaForm.invalid || isSaving || detalles.length === 0 || isLoadingData"
                      (click)="save()">
                <span *ngIf="isSaving" class="spinner-border spinner-border-sm me-2"></span>
@@ -632,10 +407,16 @@ import { CreateClienteModalComponent } from '../../../clientes/components/create
       border-style: dashed !important;
       border-width: 2px !important;
     }
+    .bg-white-10 { background: rgba(255,255,255,0.1) !important; }
+    .text-white-50 { color: rgba(255,255,255,0.7) !important; }
+    .border-white-10 { border-color: rgba(255,255,255,0.1) !important; }
   `]
 })
 export class CreateFacturaModalComponent implements OnInit {
   @Input() facturaId?: string;
+  @Input() mode: 'NORMAL' | 'RECURRENTE' = 'NORMAL';
+  @Input() programacionId?: string;
+  @Input() isViewOnly: boolean = false;
   @Output() onClose = new EventEmitter<boolean>();
 
   facturaForm: FormGroup;
@@ -668,12 +449,7 @@ export class CreateFacturaModalComponent implements OnInit {
     total: 0
   };
 
-  // Searchable Client properties
-  searchTerm = '';
-  isClientDropdownOpen = false;
-  filteredClientes: Cliente[] = [];
-  selectedCliente: Cliente | null = null;
-  
+
   // Cliente Modal properties
   showCreateClienteModal = false;
   isCreatingCliente = false;
@@ -688,6 +464,7 @@ export class CreateFacturaModalComponent implements OnInit {
     private productosService: ProductosService,
     private establecimientosService: EstablecimientosService,
     private puntosEmisionService: PuntosEmisionService,
+    private programacionService: FacturacionProgramadaService,
     private sriConfigService: SriConfigService,
     private uiService: UiService,
     private cd: ChangeDetectorRef
@@ -704,6 +481,11 @@ export class CreateFacturaModalComponent implements OnInit {
       unidad_tiempo: ['DIAS'],
       observaciones: [''],
       ice: [0],
+      // Campos extra para recurrencia
+      tipo_frecuencia: ['MENSUAL'],
+      dia_emision: [new Date().getDate(), [Validators.min(1), Validators.max(31)]],
+      fecha_inicio: [new Date().toISOString().split('T')[0]],
+      fecha_fin: [null],
       detalles: this.fb.array([])
     });
   }
@@ -711,7 +493,10 @@ export class CreateFacturaModalComponent implements OnInit {
   ngOnInit() {
     this.loadData();
     this.setupListeners();
-    this.setupClickAway();
+    
+    if (this.isViewOnly) {
+      this.facturaForm.disable();
+    }
   }
 
   ngOnDestroy() {
@@ -719,14 +504,6 @@ export class CreateFacturaModalComponent implements OnInit {
     this.destroy$.complete();
   }
 
-  setupClickAway() {
-    fromEvent(document, 'click')
-      .pipe(takeUntil(this.destroy$))
-      .subscribe(() => {
-        this.isClientDropdownOpen = false;
-        this.cd.detectChanges();
-      });
-  }
 
   get detalles() {
     return this.facturaForm.get('detalles') as FormArray;
@@ -746,7 +523,7 @@ export class CreateFacturaModalComponent implements OnInit {
       tap((d: any[]) => console.log(`${name} cargados:`, d.length))
     );
 
-    const reqs = {
+    const reqs: any = {
       clientes: waitForData(this.clientesService.getActivos(), 'Clientes'),
       productos: waitForData(this.productosService.getActivos(), 'Productos'),
       establecimientos: waitForData(this.establecimientosService.getActivos(), 'Establecimientos'),
@@ -754,18 +531,23 @@ export class CreateFacturaModalComponent implements OnInit {
       sri: this.sriConfigService.obtenerConfiguracion().pipe(take(1))
     };
 
+    if (this.facturaId) {
+      console.log('Solicitando datos de factura simultáneamente:', this.facturaId);
+      reqs.factura = this.facturasService.obtenerFactura(this.facturaId);
+      reqs.facturaDetalles = this.facturasService.obtenerDetalles(this.facturaId);
+    }
+
     forkJoin(reqs).subscribe({
       next: (resp: any) => {
-        console.log('Catalogos cargados', resp);
+        console.log('Datos consolidados cargados', resp);
         this.clientes = resp.clientes;
-        this.filteredClientes = [...this.clientes];
         this.productos = resp.productos;
         this.establecimientos = resp.establecimientos;
         this.puntosEmision = resp.puntos;
         this.sriConfig = resp.sri;
 
-        if (this.facturaId) {
-          this.loadFacturaForEdit(this.facturaId);
+        if (this.facturaId && resp.factura && resp.facturaDetalles) {
+          this.processFacturaForEdit(resp.factura, resp.facturaDetalles);
         } else {
           // Modo creación: Autoseleccionar si solo hay 1 establecimiento
           if (this.establecimientos && this.establecimientos.length === 1) {
@@ -774,17 +556,16 @@ export class CreateFacturaModalComponent implements OnInit {
           this.isLoadingData = false;
           this.cd.detectChanges();
         }
+
+        // Si tenemos programacionId, cargar sus datos (frecuencia, etc)
+        if (this.programacionId && this.mode === 'RECURRENTE') {
+          this.loadProgramacionData(this.programacionId);
+        }
       },
       error: (err) => {
         console.error('Error loading data', err);
-        // En modo desarrollo a veces los catalogos pueden estar vacios al inicio
-        // Si es un error de "EmptyError" de RxJS significa que no emitio nada, lo cual puede pasar si el filtro es estricto
-        // Pero si falla la carga completa, no podemos continuar bien.
         if (err.name !== 'EmptyError') {
-          this.uiService.showError(err, 'Error cargando catálogos');
-        } else {
-          // Si falla por vacio, intentamos cargar factura de todas formas si es edicion?
-          // No, necesitamos los catalogos para mostrar nombres.
+          this.uiService.showError(err, 'Error cargando datos para el formulario');
         }
         this.isLoadingData = false;
         this.cd.detectChanges();
@@ -792,21 +573,17 @@ export class CreateFacturaModalComponent implements OnInit {
     });
   }
 
-  loadFacturaForEdit(id: string) {
-    console.log('Cargando factura para editar:', id);
-    forkJoin({
-      factura: this.facturasService.obtenerFactura(id),
-      detalles: this.facturasService.obtenerDetalles(id)
-    }).subscribe({
-      next: ({ factura, detalles }) => {
-        console.log('Factura y detalles cargados', factura, detalles);
-        this.originalDetalles = detalles;
+  processFacturaForEdit(factura: any, detalles: FacturaDetalle[]) {
+    console.log('Procesando Factura y detalles cargados', factura, detalles);
+    this.originalDetalles = detalles;
 
-        // Parchar cabecera
-        this.facturaForm.patchValue({
-          establecimiento_id: factura.establecimiento_id,
-          // punto_emision: se setea despues al filtrar
-          fecha_emision: factura.fecha_emision.split('T')[0],
+    // Parchar cabecera
+    this.facturaForm.patchValue({
+      establecimiento_id: factura.establecimiento_id,
+      // punto_emision: se setea despues al filtrar
+      fecha_emision: factura.fecha_emision.split('T')[0],
+
+
           cliente_id: factura.cliente_id,
           forma_pago_sri: factura.forma_pago_sri,
           estado_pago: factura.estado_pago || 'PENDIENTE',
@@ -817,12 +594,6 @@ export class CreateFacturaModalComponent implements OnInit {
           ice: factura.ice || 0
         });
 
-        // Set search term from loaded client
-        const client = this.clientes.find(c => c.id === factura.cliente_id);
-        if (client) {
-          this.selectedCliente = client;
-          this.searchTerm = `${client.razon_social} (${client.identificacion})`;
-        }
 
         // Trigger filtro puntos y setear punto
         this.filterPuntosEmision(factura.establecimiento_id);
@@ -843,11 +614,21 @@ export class CreateFacturaModalComponent implements OnInit {
           this.isLoadingData = false;
           this.cd.detectChanges();
         }, 100);
-      },
-      error: (err) => {
-        console.error('Error loading factura details', err);
-        this.uiService.showError(err, 'Error cargando factura');
-        this.close();
+      }
+
+
+  loadProgramacionData(id: string) {
+    this.programacionService.listar().subscribe(progs => {
+      const prog = progs.find(p => p.id === id);
+      if (prog) {
+        this.facturaForm.patchValue({
+          tipo_frecuencia: prog.tipo_frecuencia,
+          dia_emision: prog.dia_emision,
+          fecha_inicio: prog.fecha_inicio,
+          fecha_fin: prog.fecha_fin
+        });
+        if (this.isViewOnly) this.facturaForm.disable();
+        this.cd.detectChanges();
       }
     });
   }
@@ -862,42 +643,9 @@ export class CreateFacturaModalComponent implements OnInit {
     });
   }
 
-  // --- CLIENT SEARCH LOGIC ---
-  filterClientes() {
-    const term = this.searchTerm?.trim().toLowerCase() || '';
-    if (!term) {
-      this.filteredClientes = [...this.clientes];
-      this.isClientDropdownOpen = true;
-      return;
-    }
 
-    this.filteredClientes = this.clientes.filter(c => 
-      c.razon_social.toLowerCase().includes(term) || 
-      c.identificacion.includes(term)
-    );
-    this.isClientDropdownOpen = true;
-  }
 
-  onClientSearchFocus() {
-    this.isClientDropdownOpen = true;
-    this.filterClientes();
-  }
 
-  selectCliente(cli: Cliente) {
-    this.selectedCliente = cli;
-    this.facturaForm.patchValue({ cliente_id: cli.id });
-    this.searchTerm = `${cli.razon_social} (${cli.identificacion})`;
-    this.isClientDropdownOpen = false;
-    this.cd.detectChanges();
-  }
-
-  clearClientSearch() {
-    this.searchTerm = '';
-    this.selectedCliente = null;
-    this.facturaForm.patchValue({ cliente_id: null });
-    this.filteredClientes = [...this.clientes];
-    this.isClientDropdownOpen = false;
-  }
 
   // --- CLIENT MODAL LOGIC ---
   openCreateClienteModal() {
@@ -905,11 +653,9 @@ export class CreateFacturaModalComponent implements OnInit {
     this.showCreateClienteModal = true;
   }
 
-  openEditClienteModal() {
-    if (this.selectedCliente) {
-      this.clienteParaEditar = { ...this.selectedCliente };
-      this.showCreateClienteModal = true;
-    }
+  openEditClienteModal(cliente: Cliente) {
+    this.clienteParaEditar = { ...cliente };
+    this.showCreateClienteModal = true;
   }
 
   closeClienteModal() {
@@ -921,21 +667,19 @@ export class CreateFacturaModalComponent implements OnInit {
     this.isCreatingCliente = true;
 
     if (this.clienteParaEditar) {
-      // MODO EDICIÓN
       this.clientesService.updateCliente(this.clienteParaEditar.id, clienteData).subscribe({
         next: (resp) => {
           const updated = resp.detalles;
           if (updated) {
             this.uiService.showToast('Cliente actualizado exitosamente', 'success');
-            // Actualizar en la lista local
+            // Actualizar en la lista local y clonar para Change Detection
             const index = this.clientes.findIndex(c => c.id === updated.id);
             if (index !== -1) {
-              this.clientes[index] = updated;
+              const newClientes = [...this.clientes];
+              newClientes[index] = updated;
+              this.clientes = newClientes;
             }
-            // Actualizar cliente seleccionado si es el mismo
-            if (this.selectedCliente?.id === updated.id) {
-              this.selectCliente(updated);
-            }
+            this.facturaForm.patchValue({ cliente_id: updated.id });
           }
           this.isCreatingCliente = false;
           this.showCreateClienteModal = false;
@@ -954,12 +698,10 @@ export class CreateFacturaModalComponent implements OnInit {
           const nuevoCliente = resp.detalles;
           if (nuevoCliente) {
             this.uiService.showToast('Cliente creado exitosamente', 'success');
-            // Add to local list if not already there
             if (!this.clientes.find(c => c.id === nuevoCliente.id)) {
-              this.clientes.push(nuevoCliente);
+              this.clientes = [...this.clientes, nuevoCliente];
             }
-            // Select it automatically
-            this.selectCliente(nuevoCliente);
+            this.facturaForm.patchValue({ cliente_id: nuevoCliente.id });
           }
           this.isCreatingCliente = false;
           this.showCreateClienteModal = false;
@@ -1172,6 +914,86 @@ export class CreateFacturaModalComponent implements OnInit {
     };
 
     console.log('Payload de factura a enviar:', datosFactura);
+
+    if (this.mode === 'RECURRENTE') {
+      if (this.facturaId && this.programacionId) {
+        // --- MODO RECURRENTE: EDICIÓN ---
+        console.log('Modo RECURRENTE - EDICIÓN');
+        
+        const payloadProgramacion = {
+          tipo_frecuencia: formVal.tipo_frecuencia,
+          dia_emision: formVal.dia_emision,
+          fecha_inicio: formVal.fecha_inicio,
+          fecha_fin: formVal.fecha_fin,
+          concepto: datosFactura.detalles.map((d: any) => d.nombre).join(', ')
+        };
+
+        // 1. Actualizar Programación + 2. Actualizar Factura (Cabecera y Detalles)
+        forkJoin({
+          prog: this.programacionService.actualizar(this.programacionId, payloadProgramacion),
+          factura: this.facturasService.actualizarFactura(this.facturaId, datosFactura).pipe(
+            switchMap(f => {
+              // Borrar detalles viejos e insertar nuevos (estabilizado)
+              const deleteObs = this.originalDetalles.map(d => this.facturasService.eliminarDetalle(d.id));
+              const saveNewObs = formVal.detalles.map((d: any) => {
+                const product = this.productos.find(p => p.id === d.producto_id);
+                return this.facturasService.agregarDetalle(f.id, {
+                  producto_id: d.producto_id,
+                  codigo_producto: product?.codigo || 'GENERICO',
+                  nombre: d.descripcion,
+                  descripcion: d.descripcion,
+                  cantidad: d.cantidad,
+                  precio_unitario: d.precio_unitario,
+                  descuento: d.descuento || 0,
+                  tipo_iva: d.tipo_iva
+                });
+              });
+              return (deleteObs.length > 0 ? forkJoin(deleteObs) : of([])).pipe(
+                switchMap(() => saveNewObs.length > 0 ? forkJoin(saveNewObs) : of([]))
+              );
+            })
+          )
+        }).subscribe({
+          next: () => {
+            this.uiService.showToast('Configuración y factura actualizadas correctamente', 'success');
+            this.isSaving = false;
+            this.onClose.emit(true);
+          },
+          error: (err) => {
+            this.isSaving = false;
+            this.uiService.showError(err, 'Error al actualizar programación recurrente');
+          }
+        });
+      } else {
+        // --- MODO RECURRENTE: CREACIÓN ---
+        const payloadUnificado = {
+          programacion: {
+            cliente_id: formVal.cliente_id,
+            tipo_frecuencia: formVal.tipo_frecuencia,
+            dia_emision: formVal.dia_emision,
+            monto: this.totals.total,
+            concepto: datosFactura.detalles.map((d: any) => d.nombre).join(', '),
+            fecha_inicio: formVal.fecha_inicio,
+            fecha_fin: formVal.fecha_fin,
+            activo: true
+          },
+          factura_plantilla: datosFactura
+        };
+
+        this.programacionService.crearUnificada(payloadUnificado).subscribe({
+          next: () => {
+            this.uiService.showToast('Programación recurrente creada exitosamente', 'success');
+            this.isSaving = false;
+            this.onClose.emit(true);
+          },
+          error: (err) => {
+            this.isSaving = false;
+            this.uiService.showError(err, 'Error al crear programación');
+          }
+        });
+      }
+      return;
+    }
 
     let operacionPrincipal$: Observable<Factura>;
 

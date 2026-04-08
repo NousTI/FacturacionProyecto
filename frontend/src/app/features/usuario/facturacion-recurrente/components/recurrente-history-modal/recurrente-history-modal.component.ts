@@ -41,37 +41,52 @@ import { finalize, timeout, catchError, of } from 'rxjs';
           <table *ngIf="!isLoading && historial.length > 0" class="table custom-table-mini">
             <thead>
               <tr>
-                <th>Fecha Emisión</th>
+                <th>Fecha Intento</th>
                 <th>Número Factura</th>
-                <th>Monto</th>
                 <th>Estado</th>
-                <th class="text-end">Info SRI</th>
+                <th class="text-end">Detalle Técnico</th>
               </tr>
             </thead>
             <tbody>
               <tr *ngFor="let item of historial">
                 <td>
-                  <div class="fw-bold">{{ item.fecha_emision | date:'dd/MM/yyyy' }}</div>
-                  <div class="text-muted small">{{ item.fecha_emision | date:'HH:mm' }}</div>
+                  <div class="fw-bold">{{ item.fecha | date:'dd/MM/yyyy' }}</div>
+                  <div class="text-muted small">{{ item.fecha | date:'HH:mm' }}</div>
                 </td>
-                <td>{{ item.numero_factura || 'BORRADOR' }}</td>
-                <td class="fw-bold text-dark">{{ item.monto | currency:'USD' }}</td>
                 <td>
-                  <span class="status-badge" [ngClass]="item.estado.toLowerCase()">
+                  <span *ngIf="item.numero_factura" class="badge bg-light text-dark border">
+                    {{ item.numero_factura }}
+                  </span>
+                  <span *ngIf="!item.numero_factura" class="text-muted small">N/A</span>
+                </td>
+                <td>
+                  <span class="status-badge" [ngClass]="getEstadoClass(item.estado)">
                     {{ item.estado }}
                   </span>
                 </td>
                 <td class="text-end">
-                  <div *ngIf="item.estado_sri" class="text-muted smallest text-truncate" style="max-width: 150px;" [title]="item.estado_sri">
-                    Clave: {{ item.estado_sri }}
-                  </div>
-                  <div *ngIf="item.errores" class="text-danger smallest">
-                    <i class="bi bi-exclamation-circle pe-1"></i> {{ item.errores }}
+                  <div class="text-dark small fw-500">{{ item.detalle }}</div>
+                  <div *ngIf="item.sri_mensajes && item.sri_mensajes.length > 0" class="mt-1">
+                    <button class="btn btn-link p-0 smallest text-primary" (click)="item.showJson = !item.showJson">
+                      {{ item.showJson ? 'Ocultar XML/JSON' : 'Ver respuesta SRI' }}
+                    </button>
+                    <pre *ngIf="item.showJson" class="json-preview text-start">{{ item.sri_mensajes | json }}</pre>
                   </div>
                 </td>
               </tr>
             </tbody>
           </table>
+
+          <!-- Paginación -->
+          <div *ngIf="!isLoading && (offset > 0 || historial.length === limit)" class="d-flex justify-content-between align-items-center mt-3">
+            <button class="btn btn-secondary-premium btn-sm" (click)="prevPage()" [disabled]="offset === 0">
+              <i class="bi bi-chevron-left me-1"></i> Anterior
+            </button>
+            <span class="text-muted small">Registros {{ offset + 1 }} – {{ offset + historial.length }}</span>
+            <button class="btn btn-secondary-premium btn-sm" (click)="nextPage()" [disabled]="historial.length < limit">
+              Siguiente <i class="bi bi-chevron-right ms-1"></i>
+            </button>
+          </div>
         </div>
 
         <div class="modal-footer">
@@ -154,9 +169,10 @@ import { finalize, timeout, catchError, of } from 'rxjs';
       font-weight: 800;
       display: inline-block;
     }
-    .status-badge.autorizada { background: rgba(16, 185, 129, 0.1); color: #10b981; }
+    .status-badge.exitoso { background: rgba(16, 185, 129, 0.1); color: #10b981; }
+    .status-badge.en_proceso { background: rgba(245, 158, 11, 0.1); color: #f59e0b; }
+    .status-badge.error_sistema, .status-badge.error_validacion, .status-badge.error_conectividad { background: rgba(239, 68, 68, 0.1); color: #ef4444; }
     .status-badge.borrador { background: #f1f5f9; color: #64748b; }
-    .status-badge.error_tecnico, .status-badge.devuelta { background: rgba(239, 68, 68, 0.1); color: #ef4444; }
 
     .btn-secondary-premium {
       background: white; border: 1px solid #e2e8f0;
@@ -174,7 +190,17 @@ import { finalize, timeout, catchError, of } from 'rxjs';
       margin: 0 auto;
     }
     @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-    .smallest { font-size: 0.7rem; }
+    .json-preview {
+      background: #f8fafc;
+      padding: 0.75rem;
+      border-radius: 8px;
+      font-size: 0.65rem;
+      margin-top: 0.5rem;
+      max-height: 150px;
+      overflow-y: auto;
+      border: 1px solid #e2e8f0;
+      color: #475569;
+    }
   `]
 })
 export class RecurrenteHistoryModalComponent implements OnInit {
@@ -184,34 +210,49 @@ export class RecurrenteHistoryModalComponent implements OnInit {
 
   historial: HistorialProgramacion[] = [];
   isLoading: boolean = true;
+  readonly limit = 50;
+  offset = 0;
 
   constructor(private service: FacturacionProgramadaService) {}
 
   ngOnInit() {
-    this.showDebug();
     this.loadHistory();
-  }
-
-  showDebug() {
-    console.log("Cargando historial para:", this.programacionId);
   }
 
   loadHistory() {
     if (!this.programacionId) {
-       this.isLoading = false;
-       return;
+      this.isLoading = false;
+      return;
     }
-
     this.isLoading = true;
-    this.service.obtenerHistorial(this.programacionId).pipe(
-      timeout(10000), // 10 segundos de máximo
-      catchError(err => {
-        console.error("Error en historial:", err);
+    this.service.obtenerHistorial(this.programacionId, this.limit, this.offset).pipe(
+      timeout(10000),
+      catchError(() => {
+        this.isLoading = false;
         return of([]);
-      }),
-      finalize(() => this.isLoading = false)
+      })
     ).subscribe({
-      next: (data) => this.historial = data
+      next: (data) => {
+        this.historial = data;
+        this.isLoading = false;
+      },
+      error: () => { this.isLoading = false; }
     });
+  }
+
+  prevPage() {
+    if (this.offset === 0) return;
+    this.offset = Math.max(0, this.offset - this.limit);
+    this.loadHistory();
+  }
+
+  nextPage() {
+    if (this.historial.length < this.limit) return;
+    this.offset += this.limit;
+    this.loadHistory();
+  }
+
+  getEstadoClass(estado: string): string {
+    return estado?.toLowerCase().replace(/_/g, '_') ?? '';
   }
 }

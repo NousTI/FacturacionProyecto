@@ -2,7 +2,13 @@ from fastapi import APIRouter, Depends, Query, status
 from typing import List, Optional
 from uuid import UUID
 
-from ..schemas_programacion import FacturacionProgramadaCreacion, FacturacionProgramadaLectura, FacturacionProgramadaActualizacion
+from ..schemas_programacion import (
+    FacturacionProgramadaCreacion, 
+    FacturacionProgramadaLectura, 
+    FacturacionProgramadaActualizacion,
+    FacturacionProgramadaHistorial,
+    FacturacionProgramadaUnificada
+)
 from ..services.service_recurrentes import ServicioRecurrentes
 from ...autenticacion.routes import requerir_permiso
 from ....constants.permissions import PermissionCodes
@@ -18,6 +24,15 @@ def crear_programacion(
 ):
     """Crea una nueva regla de facturación recurrente."""
     return servicio.crear_programacion(datos, usuario)
+
+@router.post("/unificada", response_model=FacturacionProgramadaLectura)
+def crear_programacion_unificada(
+    datos: FacturacionProgramadaUnificada,
+    usuario: dict = Depends(requerir_permiso(PermissionCodes.FACTURAS_CREAR)),
+    servicio: ServicioRecurrentes = Depends()
+):
+    """Crea una nueva regla de facturación recurrente unificada."""
+    return servicio.crear_programacion_unificada(datos, usuario)
 
 @router.get("/", response_model=List[FacturacionProgramadaLectura])
 def listar_programaciones(
@@ -68,3 +83,27 @@ def ejecutar_emisiones_masivas(
     """
     resultado = servicio.recurrentes.procesar_emisiones_automaticas()
     return success_response(resultado, "Proceso de emisiones automáticas completado")
+
+@router.get("/{id}/historial", response_model=List[FacturacionProgramadaHistorial])
+def obtener_historial(
+    id: UUID,
+    limit: int = Query(50, ge=1, le=200, description="Registros por página"),
+    offset: int = Query(0, ge=0, description="Desplazamiento"),
+    usuario: dict = Depends(requerir_permiso(PermissionCodes.FACTURAS_VER_TODAS)),
+    servicio: ServicioRecurrentes = Depends()
+):
+    """R-007: Obtiene el historial técnico de ejecuciones (logs) de una programación."""
+    return servicio.obtener_historial(id, usuario, limit=limit, offset=offset)
+
+@router.get("/{id}/plantilla")
+def obtener_id_plantilla(
+    id: UUID,
+    usuario: dict = Depends(requerir_permiso(PermissionCodes.FACTURAS_VER_TODAS)),
+    servicio: ServicioRecurrentes = Depends()
+):
+    """Obtiene el ID de la plantilla asociada a una programación."""
+    from ....errors.app_error import AppError
+    plantilla_id = servicio.obtener_id_plantilla(id, usuario)
+    if not plantilla_id:
+        raise AppError("No se encontró una factura plantilla para esta programación", 404, "PLANTILLA_NOT_FOUND")
+    return plantilla_id

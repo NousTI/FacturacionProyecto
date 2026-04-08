@@ -68,6 +68,15 @@ export class FacturacionProgramadaService extends BaseApiService {
     );
   }
 
+  crearUnificada(datos: any): Observable<FacturaProgramada> {
+    return this.post<FacturaProgramada>(`${this.ENDPOINT}/unificada`, datos).pipe(
+      tap(newProg => {
+        const current = this._programaciones$.value || [];
+        this._programaciones$.next([newProg, ...current]);
+      })
+    );
+  }
+
   actualizar(id: string, datos: Partial<FacturaProgramadaCreacion>): Observable<FacturaProgramada> {
     return this.put<FacturaProgramada>(`${this.ENDPOINT}/${id}`, datos).pipe(
       tap(updated => {
@@ -90,11 +99,16 @@ export class FacturacionProgramadaService extends BaseApiService {
     );
   }
 
-  obtenerHistorial(id: string, fechaDesde?: string, fechaHasta?: string): Observable<HistorialProgramacion[]> {
-    let params = new HttpParams();
-    if (fechaDesde) params = params.set('fecha_desde', fechaDesde);
-    if (fechaHasta) params = params.set('fecha_hasta', fechaHasta);
-    
+  obtenerHistorial(id: string, limit: number = 50, offset: number = 0): Observable<HistorialProgramacion[]> {
+    const params = new HttpParams().set('limit', limit).set('offset', offset);
     return this.get<HistorialProgramacion[]>(`${this.ENDPOINT}/${id}/historial`, params);
+  }
+
+  obtenerIdPlantilla(id: string): Observable<string> {
+    return this.get<string>(`${this.ENDPOINT}/${id}/plantilla`);
+  }
+
+  ejecutarMasivo(): Observable<any> {
+    return this.post(`${this.ENDPOINT}/ejecutar-masivo`, {});
   }
 }

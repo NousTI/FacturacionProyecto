@@ -68,6 +68,7 @@ import { CommonModule } from '@angular/common';
     .icon-warning-container.danger { background: #fef2f2; color: #ef4444; }
     .icon-warning-container.success { background: #ecfdf5; color: #10b981; }
     .icon-warning-container.primary { background: #f8fafc; color: #161d35; }
+    .icon-warning-container.warning { background: #fffbeb; color: #f59e0b; }
 
     .confirm-title {
       font-size: 1.25rem;
@@ -109,10 +110,11 @@ import { CommonModule } from '@angular/common';
     }
     .btn-confirm-primary.danger { background: #ef4444; }
     .btn-confirm-primary.danger:hover { background: #dc2626; }
-    .btn-confirm-primary.success { background: #10b981; }
     .btn-confirm-primary.success:hover { background: #059669; }
     .btn-confirm-primary.primary { background: #161d35; }
     .btn-confirm-primary.primary:hover { background: #232d4d; }
+    .btn-confirm-primary.warning { background: #f59e0b; color: #ffffff; }
+    .btn-confirm-primary.warning:hover { background: #d97706; }
 
     .btn-confirm-secondary {
       flex: 1;
@@ -134,7 +136,7 @@ export class ConfirmModalComponent {
   @Input() title: string = '¿Estás seguro?';
   @Input() message: string = 'Esta acción no se puede deshacer.';
   @Input() confirmText: string = 'Confirmar';
-  @Input() type: 'danger' | 'success' | 'primary' = 'primary';
+  @Input() type: 'danger' | 'success' | 'primary' | 'warning' = 'primary';
   @Input() icon: string = 'bi-exclamation-circle';
   @Input() empresaName: string = '';
   @Input() loading: boolean = false;

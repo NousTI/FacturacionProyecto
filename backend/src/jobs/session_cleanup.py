@@ -1,6 +1,6 @@
 import logging
 from datetime import datetime, timezone
-from src.database.session import get_db
+from src.database.session import get_db_connection_raw
 from src.database.transaction import db_transaction
 
 logger = logging.getLogger("facturacion_api.jobs")
@@ -19,7 +19,7 @@ def cleanup_expired_sessions():
         WHERE expires_at < %s OR is_valid = FALSE
     """
     
-    db = next(get_db())
+    db = get_db_connection_raw()
     try:
         with db_transaction(db) as cur:
             cur.execute(query_delete, (datetime.now(timezone.utc),))

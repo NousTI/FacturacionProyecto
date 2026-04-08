@@ -150,6 +150,15 @@ class ServicioFactura:
     def eliminar_factura(self, id: UUID, usuario_actual: dict):
         factura = self.obtener_factura(id, usuario_actual)
         ValidacionesFactura.validar_estado_borrador(factura)
+
+        # Proteger factura plantilla de programación recurrente
+        if factura.get('origen') == 'FACTURACION_PROGRAMADA' and factura.get('facturacion_programada_id'):
+            raise AppError(
+                "Esta factura es la plantilla de una programación recurrente y no puede eliminarse. "
+                "Elimina la programación recurrente para removerla.",
+                400, "FACTURA_ES_PLANTILLA"
+            )
+
         return self.core.repo.eliminar_factura(id)
 
     def anular_factura(self, id: UUID, datos: FacturaAnulacion, usuario_actual: dict):

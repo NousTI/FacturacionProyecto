@@ -49,16 +49,21 @@ class RepositorioProgramacion:
             return dict(row) if row else None
 
     def listar(self, empresa_id: Optional[UUID] = None, activo: Optional[bool] = None) -> List[dict]:
-        query = "SELECT * FROM sistema_facturacion.facturacion_programada WHERE 1=1"
+        query = """
+            SELECT fp.*, c.razon_social as cliente_nombre 
+            FROM sistema_facturacion.facturacion_programada fp
+            JOIN sistema_facturacion.clientes c ON fp.cliente_id = c.id
+            WHERE 1=1
+        """
         params = []
         if empresa_id:
-            query += " AND empresa_id = %s"
+            query += " AND fp.empresa_id = %s"
             params.append(str(empresa_id))
         if activo is not None:
-            query += " AND activo = %s"
+            query += " AND fp.activo = %s"
             params.append(activo)
             
-        query += " ORDER BY proxima_emision ASC"
+        query += " ORDER BY fp.proxima_emision ASC"
         with self.db.cursor() as cur:
             cur.execute(query, tuple(params))
             return [dict(row) for row in cur.fetchall()]
@@ -91,7 +96,7 @@ class RepositorioProgramacion:
     def obtener_pendientes_emision(self) -> List[dict]:
         """Obtiene programaciones que deben ejecutarse hoy o en el pasado, con info de cliente."""
         query = """
-            SELECT fp.*, c.nombre as cliente_nombre 
+            SELECT fp.*, c.razon_social as cliente_nombre 
             FROM sistema_facturacion.facturacion_programada fp
             JOIN sistema_facturacion.clientes c ON fp.cliente_id = c.id
             WHERE fp.activo = TRUE 
@@ -100,4 +105,22 @@ class RepositorioProgramacion:
         """
         with self.db.cursor() as cur:
             cur.execute(query)
+            return [dict(row) for row in cur.fetchall()]
+    def obtener_historial_ejecucion(self, id: UUID, limit: int = 50, offset: int = 0) -> List[dict]:
+        """Obtiene el historial técnico de la tabla de logs para una programación."""
+        query = """
+            SELECT
+                l.timestamp as fecha,
+                l.estado,
+                f.numero_factura,
+                l.observaciones as detalle,
+                l.mensajes as sri_mensajes
+            FROM sistema_facturacion.log_emision_facturas l
+            LEFT JOIN sistema_facturacion.facturas f ON l.factura_id = f.id
+            WHERE l.facturacion_programada_id = %s
+            ORDER BY l.timestamp DESC
+            LIMIT %s OFFSET %s
+        """
+        with self.db.cursor() as cur:
+            cur.execute(query, (str(id), limit, offset))
             return [dict(row) for row in cur.fetchall()]

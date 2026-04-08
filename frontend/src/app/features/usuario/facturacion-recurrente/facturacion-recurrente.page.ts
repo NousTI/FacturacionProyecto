@@ -5,7 +5,7 @@ import { finalize, Subscription, combineLatest, map } from 'rxjs';
 
 import { RecurrenteStatsComponent } from './components/recurrente-stats/recurrente-stats.component';
 import { RecurrenteTableComponent } from './components/recurrente-table/recurrente-table.component';
-import { CreateRecurrenteModalComponent } from './components/create-recurrente-modal/create-recurrente-modal.component';
+import { CreateFacturaModalComponent } from '../facturacion/components/create-factura-modal/create-factura-modal.component';
 import { RecurrenteHistoryModalComponent } from './components/recurrente-history-modal/recurrente-history-modal.component';
 import { ToastComponent } from '../../../shared/components/toast/toast.component';
 import { ConfirmModalComponent } from '../../../shared/components/confirm-modal/confirm-modal.component';
@@ -22,7 +22,7 @@ import { FacturaProgramada } from '../../../domain/models/facturacion-programada
     FormsModule,
     RecurrenteStatsComponent,
     RecurrenteTableComponent,
-    CreateRecurrenteModalComponent,
+    CreateFacturaModalComponent,
     RecurrenteHistoryModalComponent,
     ToastComponent,
     ConfirmModalComponent
@@ -47,6 +47,10 @@ import { FacturaProgramada } from '../../../domain/models/facturacion-programada
                 <button class="btn-refresh-premium" (click)="refreshData()" [class.spinning]="isRefreshing" title="Refrescar">
                   <i class="bi bi-arrow-clockwise"></i>
                 </button>
+                <button class="btn-bulk-premium" (click)="runBulkExecution()" [disabled]="isProcessing" title="Ejecutar Facturaciones Pendientes">
+                  <i class="bi bi-play-circle-fill me-2"></i>
+                  Ejecutar Pendientes
+                </button>
                 <button class="btn-create-premium" (click)="openCreateModal()">
                   <i class="bi bi-plus-lg me-2"></i>
                   Nueva Programación
@@ -70,6 +74,11 @@ import { FacturaProgramada } from '../../../domain/models/facturacion-programada
            <p class="text-muted fw-bold">Cargando programaciones...</p>
         </div>
 
+        <!-- EDIT LOADING OVERLAY (no bloquea la tabla) -->
+        <div *ngIf="isLoadingEdit" class="edit-loading-bar">
+          <div class="edit-loading-bar-inner"></div>
+        </div>
+
         <!-- TABLE -->
         <div class="px-4" *ngIf="!isLoading">
           <app-recurrente-table
@@ -79,12 +88,14 @@ import { FacturaProgramada } from '../../../domain/models/facturacion-programada
         </div>
 
         <!-- MODALS -->
-        <app-create-recurrente-modal
+        <app-create-factura-modal
           *ngIf="showCreateModal"
-          [programacion]="selectedProgramacion"
+          [mode]="'RECURRENTE'"
+          [facturaId]="selectedFacturaId"
+          [programacionId]="selectedProgramacion?.id"
           [isViewOnly]="isViewOnly"
           (onClose)="handleCreateClose($event)"
-        ></app-create-recurrente-modal>
+        ></app-create-factura-modal>
 
         <app-recurrente-history-modal
           *ngIf="showHistoryModal && selectedProgramacion"
@@ -103,6 +114,32 @@ import { FacturaProgramada } from '../../../domain/models/facturacion-programada
           [loading]="isProcessing"
           (onConfirm)="deleteProgramacion()"
           (onCancel)="showConfirmModal = false"
+        ></app-confirm-modal>
+
+        <app-confirm-modal
+          *ngIf="showToggleConfirmModal && selectedProgramacion"
+          [title]="selectedProgramacion.activo ? '¿Desactivar Programación?' : '¿Activar Programación?'"
+          [message]="selectedProgramacion.activo
+            ? 'La programación quedará pausada y no se emitirán nuevas facturas automáticamente.'
+            : 'La programación se reactivará y volverá a emitir facturas según su frecuencia.'"
+          [confirmText]="selectedProgramacion.activo ? 'Sí, desactivar' : 'Sí, activar'"
+          [type]="selectedProgramacion.activo ? 'warning' : 'primary'"
+          [icon]="selectedProgramacion.activo ? 'bi-pause-circle-fill' : 'bi-play-circle-fill'"
+          [loading]="isProcessing"
+          (onConfirm)="toggleProgramacion()"
+          (onCancel)="showToggleConfirmModal = false"
+        ></app-confirm-modal>
+
+        <app-confirm-modal
+          *ngIf="showBulkConfirmModal"
+          title="¿Ejecutar Facturaciones Pendientes?"
+          message="Se generarán automáticamente todas las facturas cuyas fechas de emisión hayan vencido. ¿Deseas continuar?"
+          confirmText="Sí, ejecutar ahora"
+          type="primary"
+          icon="bi-play-circle-fill"
+          [loading]="isProcessing"
+          (onConfirm)="processBulkExecution()"
+          (onCancel)="showBulkConfirmModal = false"
         ></app-confirm-modal>
 
         <app-toast></app-toast>
@@ -131,6 +168,29 @@ import { FacturaProgramada } from '../../../domain/models/facturacion-programada
       transition: all 0.2s;
     }
     .btn-create-premium:hover { background: #0f172a; transform: translateY(-2px); box-shadow: 0 8px 20px rgba(0,0,0,0.1); }
+
+    .btn-bulk-premium {
+      background: #f1f5f9; color: #161d35; border: 1.5px solid #161d35;
+      padding: 0 1.25rem; height: 44px; border-radius: 14px;
+      font-weight: 700; display: flex; align-items: center;
+      transition: all 0.2s;
+    }
+    .btn-bulk-premium:hover:not(:disabled) { background: #e2e8f0; transform: translateY(-2px); }
+    .btn-bulk-premium:disabled { opacity: 0.6; cursor: not-allowed; }
+
+    .edit-loading-bar {
+      height: 3px; background: #f1f5f9; margin: 0 1.5rem 0.5rem;
+      border-radius: 4px; overflow: hidden;
+    }
+    .edit-loading-bar-inner {
+      height: 100%; width: 40%; background: #161d35;
+      border-radius: 4px;
+      animation: loadingSlide 1.2s ease-in-out infinite;
+    }
+    @keyframes loadingSlide {
+      0% { transform: translateX(-100%); }
+      100% { transform: translateX(350%); }
+    }
 
     .search-box-premium { position: relative; max-width: 400px; }
     .search-box-premium i { position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); color: #94a3b8; }
@@ -161,6 +221,7 @@ export class FacturacionRecurrentePage implements OnInit, OnDestroy {
   }
 
   isLoading: boolean = true;
+  isLoadingEdit: boolean = false;
   isRefreshing: boolean = false;
   isProcessing: boolean = false;
   
@@ -168,7 +229,10 @@ export class FacturacionRecurrentePage implements OnInit, OnDestroy {
   isViewOnly: boolean = false; // Nueva bandera
   showHistoryModal: boolean = false;
   showConfirmModal: boolean = false;
+  showBulkConfirmModal: boolean = false;
+  showToggleConfirmModal: boolean = false;
   selectedProgramacion: FacturaProgramada | null = null;
+  selectedFacturaId: string | undefined = undefined;
 
   private subscription: Subscription = new Subscription();
 
@@ -208,6 +272,28 @@ export class FacturacionRecurrentePage implements OnInit, OnDestroy {
     this.service.refresh();
   }
 
+  runBulkExecution() {
+    this.showBulkConfirmModal = true;
+  }
+
+  processBulkExecution() {
+    this.isProcessing = true;
+    this.service.ejecutarMasivo().pipe(
+      finalize(() => {
+        this.isProcessing = false;
+        this.showBulkConfirmModal = false;
+      })
+    ).subscribe({
+      next: (res: any) => {
+        const data = res.data || res;
+        const msg = `Proceso completado: ${data.exitosas} exitosas, ${data.fallidas} fallidas.`;
+        this.uiService.showToast(msg, data.fallidas > 0 ? 'warning' : 'success');
+        this.service.refresh(); // Actualizar contadores en la tabla
+      },
+      error: (err) => this.uiService.showError(err, 'Error en ejecución masiva')
+    });
+  }
+
   calculateStats() {
     this.stats.activeCount = this.programaciones.filter(p => p.activo).length;
     this.stats.successCount = this.programaciones.reduce((acc, p) => acc + (p.emisiones_exitosas || 0), 0);
@@ -238,17 +324,56 @@ export class FacturacionRecurrentePage implements OnInit, OnDestroy {
 
   handleAction(event: {type: string, data: FacturaProgramada}) {
     this.selectedProgramacion = event.data;
-    if (event.type === 'view') {
-      this.isViewOnly = true;
-      this.showCreateModal = true;
-    } else if (event.type === 'edit') {
-      this.isViewOnly = false;
-      this.showCreateModal = true;
+    // Buscamos la factura plantilla (BORRADOR) asociada de forma reactiva o via servicio
+    // Por ahora, asumimos que el servicio puede obtenerla o que la pasamos si la tenemos.
+    // Como no la tenemos en el listado plano, el modal la cargará por nosotros si le pasamos la lógica.
+    // Pero espera, el modal necesita un facturaId. 
+    // Necesitamos un método en el servicio para obtener el ID del borrador de una programación.
+    
+    if (event.type === 'view' || event.type === 'edit') {
+      this.isViewOnly = event.type === 'view';
+      this.isLoadingEdit = true;
+      this.service.obtenerIdPlantilla(event.data.id).subscribe({
+        next: (res: any) => {
+          const facturaId = typeof res === 'string' ? res : (res?.data ?? null);
+          this.isLoadingEdit = false;
+          if (!facturaId) {
+            this.uiService.showToast('No se encontró la factura plantilla para esta programación', 'warning');
+            return;
+          }
+          this.selectedFacturaId = facturaId;
+          this.showCreateModal = true;
+        },
+        error: (err) => {
+          this.uiService.showError(err, 'Error al obtener factura plantilla');
+          this.isLoadingEdit = false;
+        }
+      });
     } else if (event.type === 'history') {
       this.showHistoryModal = true;
     } else if (event.type === 'delete') {
       this.showConfirmModal = true;
+    } else if (event.type === 'toggle') {
+      this.showToggleConfirmModal = true;
     }
+  }
+
+  toggleProgramacion() {
+    if (!this.selectedProgramacion) return;
+    this.isProcessing = true;
+    const nuevoEstado = !this.selectedProgramacion.activo;
+    this.service.actualizar(this.selectedProgramacion.id, { activo: nuevoEstado })
+      .pipe(finalize(() => {
+        this.isProcessing = false;
+        this.showToggleConfirmModal = false;
+      }))
+      .subscribe({
+        next: () => {
+          const msg = nuevoEstado ? 'Programación activada' : 'Programación desactivada';
+          this.uiService.showToast(msg, 'success');
+        },
+        error: (err) => this.uiService.showError(err, 'Error al actualizar programación')
+      });
   }
 
   deleteProgramacion() {

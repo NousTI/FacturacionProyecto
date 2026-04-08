@@ -25,12 +25,12 @@ export interface FacturaProgramada {
 }
 
 export interface HistorialProgramacion {
-  fecha_emision: string;
+  fecha: string;
   numero_factura?: string;
   estado: string;
-  monto: number;
-  estado_sri?: string;
-  errores?: string;
+  detalle?: string;
+  sri_mensajes?: any;
+  showJson?: boolean;
 }
 
 export interface FacturaProgramadaCreacion {

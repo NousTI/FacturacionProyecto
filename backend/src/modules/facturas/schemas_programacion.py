@@ -22,6 +22,12 @@ class FacturacionProgramadaCreacion(FacturacionProgramadaBase):
     empresa_id: Optional[UUID] = None # Se obtiene del contexto
     usuario_id: Optional[UUID] = None # Se obtiene del contexto
 
+from .schemas import FacturaCreacion
+
+class FacturacionProgramadaUnificada(BaseModel):
+    programacion: FacturacionProgramadaCreacion
+    factura_plantilla: FacturaCreacion
+
 class FacturacionProgramadaActualizacion(BaseModel):
     tipo_frecuencia: Optional[TipoFrecuencia] = None
     dia_emision: Optional[int] = Field(None, ge=1, le=31)
@@ -44,6 +50,15 @@ class FacturacionProgramadaLectura(FacturacionProgramadaBase):
     emisiones_fallidas: int
     created_at: datetime
     updated_at: datetime
+
+    class Config:
+        from_attributes = True
+class FacturacionProgramadaHistorial(BaseModel):
+    fecha: datetime
+    estado: str
+    numero_factura: Optional[str] = None
+    detalle: Optional[str] = None
+    sri_mensajes: Optional[Any] = None
 
     class Config:
         from_attributes = True

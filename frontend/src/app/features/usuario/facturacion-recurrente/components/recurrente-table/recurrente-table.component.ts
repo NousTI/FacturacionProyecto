@@ -61,16 +61,25 @@ import { FacturaProgramada } from '../../../../../domain/models/facturacion-prog
               </td>
               <td class="text-end">
                 <div class="btn-group dropdown-minimal">
-                  <button class="btn btn-icon-premium" (click)="onAction.emit({type: 'view', data: prog})" title="Ver Detalles">
-                    <i class="bi bi-eye"></i>
-                  </button>
                   <button class="btn btn-icon-premium" (click)="onAction.emit({type: 'history', data: prog})" title="Ver Historial">
                     <i class="bi bi-clock-history"></i>
                   </button>
                   <button class="btn btn-icon-premium" (click)="onAction.emit({type: 'edit', data: prog})" title="Editar">
                     <i class="bi bi-pencil-square"></i>
                   </button>
-                  <button class="btn btn-icon-premium text-danger" (click)="onAction.emit({type: 'delete', data: prog})" title="Eliminar">
+                  <button
+                    class="btn btn-icon-premium"
+                    [class.text-warning]="prog.activo"
+                    [class.text-success]="!prog.activo"
+                    (click)="onAction.emit({type: 'toggle', data: prog})"
+                    [title]="prog.activo ? 'Pausar programación' : 'Reanudar programación'">
+                    <i [class]="prog.activo ? 'bi bi-pause-circle' : 'bi bi-play-circle'"></i>
+                  </button>
+                  <button
+                    *ngIf="prog.total_emisiones === 0"
+                    class="btn btn-icon-premium text-danger"
+                    (click)="onAction.emit({type: 'delete', data: prog})"
+                    title="Eliminar">
                     <i class="bi bi-trash3"></i>
                   </button>
                 </div>

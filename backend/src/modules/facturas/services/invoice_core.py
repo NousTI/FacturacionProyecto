@@ -125,6 +125,16 @@ class ServicioFacturaCore:
     def actualizar_factura(self, id: UUID, datos_dict: dict):
         return self.repo.actualizar_factura(id, datos_dict)
 
+    def obtener_detalle_completo(self, id: UUID) -> dict:
+        """Obtiene una factura con sus detalles y formas de pago."""
+        factura = self.obtener_factura(id)
+        detalles = self.repo.listar_detalles(id)
+        
+        # Obtener formas de pago desde el repositorio inyectado si es posible, 
+        # o dejar que el orquestador lo maneje. Por ahora, el core solo maneja cabecera y detalles.
+        factura['detalles'] = detalles
+        return factura
+
     def recalcular_totales(self, factura_id: UUID):
         """
         Recalcula los totales de la factura basándose en sus detalles actuales.

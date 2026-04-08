@@ -168,6 +168,19 @@ class RepositorioFacturas:
 
             return data
 
+    def obtener_id_plantilla_por_programacion(self, programacion_id: UUID) -> Optional[str]:
+        """Busca el ID de la factura BORRADOR vinculada a una programación."""
+        query = """
+            SELECT id FROM sistema_facturacion.facturas 
+            WHERE facturacion_programada_id = %s 
+            AND estado = 'BORRADOR'
+            ORDER BY created_at DESC LIMIT 1
+        """
+        with self.db.cursor() as cur:
+            cur.execute(query, (str(programacion_id),))
+            row = cur.fetchone()
+            return str(row['id']) if row else None
+
     def listar_facturas(
         self,
         empresa_id: Optional[UUID] = None,
