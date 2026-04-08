@@ -1,6 +1,6 @@
 from fastapi import Depends, Request
 from uuid import uuid4
-from datetime import datetime, timezone
+from datetime import datetime, timezone, date
 from typing import Dict, Any, Optional
 import logging
 
@@ -30,6 +30,73 @@ class AuthServices:
         self.user_repo = user_repo
         self.auth_repo = auth_repo
         self.vendedor_repo = vendedor_repo
+
+    def _resolver_bloqueo_empresa(self, empresa_id: str) -> tuple[Optional[dict], Optional[dict]]:
+        """
+        Consulta el estado de la empresa y su suscripción para determinar bloqueos o avisos.
+        Retorna (empresa_lock, aviso_renovacion)
+        """
+        empresa_lock = None
+        aviso_renovacion = None
+
+        with self.user_repo.db.cursor() as cur:
+            cur.execute("""
+                SELECT e.ruc, e.razon_social, v.telefono as vendedor_telefono, e.activo,
+                       s.estado as suscripcion_estado, s.fecha_fin,
+                       (SELECT u.telefono FROM sistema_facturacion.usuarios u 
+                        JOIN sistema_facturacion.users us ON u.user_id = us.id 
+                        WHERE us.role = 'SUPERADMIN' AND u.telefono IS NOT NULL LIMIT 1) as admin_telefono
+                FROM sistema_facturacion.empresas e
+                LEFT JOIN sistema_facturacion.vendedores v ON e.vendedor_id = v.id
+                LEFT JOIN sistema_facturacion.suscripciones s ON s.empresa_id = e.id
+                WHERE e.id = %s
+            """, (str(empresa_id),))
+            e_data = cur.fetchone()
+        
+        if e_data:
+            superadmin_phone = e_data['admin_telefono'] or "593900000000"
+            
+            if not e_data['activo']:
+                empresa_lock = {
+                    "type": "COMPANY_DISABLED",
+                    "phone": superadmin_phone,
+                    "message": f"Hola, soy {e_data['razon_social']} (RUC: {e_data['ruc']}). Mi cuenta de empresa aparece inhabilitada. Por favor, desearía saber el motivo y los pasos para reactivarla."
+                }
+            else:
+                estado_s = e_data['suscripcion_estado'] or 'INEXISTENTE'
+                fecha_f = e_data['fecha_fin']
+                
+                # Normalizar a date si es datetime (Postgres TIMESTAMPTZ)
+                if hasattr(fecha_f, 'date'):
+                    fecha_f = fecha_f.date()
+                    
+                vencida = (fecha_f < date.today()) if fecha_f else True
+                
+                if estado_s != 'ACTIVA' or vencida:
+                    target_p = e_data['vendedor_telefono'] or superadmin_phone
+                    
+                    # Al día siguiente del vencimiento (days_diff >= 1) -> SuperAdmin
+                    if fecha_f:
+                        days_diff = (date.today() - fecha_f).days
+                        if days_diff >= 1: target_p = superadmin_phone
+                    
+                    empresa_lock = {
+                        "type": f"SUBSCRIPTION_{estado_s}",
+                        "phone": target_p,
+                        "message": f"Hola, mi nombre es {e_data['razon_social']} (RUC: {e_data['ruc']}). Mi suscripción venció el {fecha_f or 'N/A'} y deseo renovar mi plan. Por favor, ayúdeme con la información para el pago."
+                    }
+                
+                # AVISO DE RENOVACIÓN (Si no hay bloqueo duro, pero faltan <= 7 días)
+                elif fecha_f:
+                    days_left = (fecha_f - date.today()).days
+                    if 0 <= days_left <= 7:
+                        aviso_renovacion = {
+                            "dias": days_left,
+                            "phone": e_data['vendedor_telefono'] or superadmin_phone,
+                            "message": f"Hola, mi nombre es {e_data['razon_social']} (RUC: {e_data['ruc']}). Mi suscripción vence el {fecha_f} (en {days_left} días) y deseo renovar mi plan. Por favor, ayúdeme con la información."
+                        }
+        
+        return empresa_lock, aviso_renovacion
 
     def iniciar_sesion(self, correo: str, clave: str, ip_address: str, user_agent: str):
         logger.info(f"[INICIO] Intentando iniciar sesión - email: {correo}")
@@ -108,65 +175,7 @@ class AuthServices:
         empresa_lock = None
         aviso_renovacion = None
         if not is_superadmin and primary_role == RolCodigo.USUARIO.value and empresa_id:
-            with self.user_repo.db.cursor() as cur:
-                cur.execute("""
-                    SELECT e.ruc, e.razon_social, v.telefono as vendedor_telefono, e.activo,
-                           s.estado as suscripcion_estado, s.fecha_fin,
-                           (SELECT u.telefono FROM sistema_facturacion.usuarios u 
-                            JOIN sistema_facturacion.users us ON u.user_id = us.id 
-                            WHERE us.role = 'SUPERADMIN' AND u.telefono IS NOT NULL LIMIT 1) as admin_telefono
-                    FROM sistema_facturacion.empresas e
-                    LEFT JOIN sistema_facturacion.vendedores v ON e.vendedor_id = v.id
-                    LEFT JOIN sistema_facturacion.suscripciones s ON s.empresa_id = e.id
-                    WHERE e.id = %s
-                """, (str(empresa_id),))
-                e_data = cur.fetchone()
-            
-            if e_data:
-                import os
-                from datetime import date
-                # Fallback interno si no hay superadmin con teléfono en DB
-                superadmin_phone = e_data['admin_telefono'] or "593900000000"
-                
-                if not e_data['activo']:
-                    empresa_lock = {
-                        "type": "COMPANY_DISABLED",
-                        "phone": superadmin_phone,
-                        "message": f"Hola, soy {e_data['razon_social']} (RUC: {e_data['ruc']}). Mi cuenta de empresa aparece inhabilitada. Por favor, desearía saber el motivo y los pasos para reactivarla."
-                    }
-                else:
-                    estado_s = e_data['suscripcion_estado'] or 'INEXISTENTE'
-                    fecha_f = e_data['fecha_fin']
-                    
-                    # Normalizar a date si es datetime (Postgres TIMESTAMPTZ)
-                    if hasattr(fecha_f, 'date'):
-                        fecha_f = fecha_f.date()
-                        
-                    vencida = (fecha_f < date.today()) if fecha_f else True
-                    
-                    if estado_s != 'ACTIVA' or vencida:
-                        target_p = e_data['vendedor_telefono'] or superadmin_phone
-                        
-                        # Al día siguiente del vencimiento (days_diff >= 1) -> SuperAdmin
-                        if fecha_f:
-                            days_diff = (date.today() - fecha_f).days
-                            if days_diff >= 1: target_p = superadmin_phone
-                        
-                        empresa_lock = {
-                            "type": f"SUBSCRIPTION_{estado_s}",
-                            "phone": target_p,
-                            "message": f"Hola, mi nombre es {e_data['razon_social']} (RUC: {e_data['ruc']}). Mi suscripción venció el {fecha_f or 'N/A'} y deseo renovar mi plan. Por favor, ayúdeme con la información para el pago."
-                        }
-                    
-                    # 7. AVISO DE RENOVACIÓN (Si no hay bloqueo duro, pero faltan <= 7 días)
-                    elif fecha_f:
-                        days_left = (fecha_f - date.today()).days
-                        if 0 <= days_left <= 7:
-                            aviso_renovacion = {
-                                "dias": days_left,
-                                "phone": e_data['vendedor_telefono'] or superadmin_phone,
-                                "message": f"Hola, mi nombre es {e_data['razon_social']} (RUC: {e_data['ruc']}). Mi suscripción vence el {fecha_f} (en {days_left} días) y deseo renovar mi plan. Por favor, ayúdeme con la información."
-                            }
+            empresa_lock, aviso_renovacion = self._resolver_bloqueo_empresa(empresa_id)
 
         user_safe = {
             "id": str(user["id"]),
@@ -299,56 +308,7 @@ class AuthServices:
         aviso_renovacion = None
         empresa_id = user.get("empresa_id")
         if not user["is_superadmin"] and user["is_usuario"] and empresa_id:
-            with self.user_repo.db.cursor() as cur:
-                cur.execute("""
-                    SELECT e.ruc, e.razon_social, v.telefono as vendedor_telefono, e.activo,
-                           s.estado as suscripcion_estado, s.fecha_fin,
-                           (SELECT u.telefono FROM sistema_facturacion.usuarios u 
-                            JOIN sistema_facturacion.users us ON u.user_id = us.id 
-                            WHERE us.role = 'SUPERADMIN' AND u.telefono IS NOT NULL LIMIT 1) as admin_telefono
-                    FROM sistema_facturacion.empresas e
-                    LEFT JOIN sistema_facturacion.vendedores v ON e.vendedor_id = v.id
-                    LEFT JOIN sistema_facturacion.suscripciones s ON s.empresa_id = e.id
-                    WHERE e.id = %s
-                """, (str(empresa_id),))
-                e_data = cur.fetchone()
-            
-            if e_data:
-                import os
-                from datetime import date
-                superadmin_phone = e_data['admin_telefono'] or "593900000000"
-                if not e_data['activo']:
-                    empresa_lock = {
-                        "type": "COMPANY_DISABLED", "phone": superadmin_phone,
-                        "message": f"Hola, soy {e_data['razon_social']} (RUC: {e_data['ruc']}). Mi cuenta de empresa aparece inhabilitada. Por favor, desearía saber el motivo y los pasos para reactivarla."
-                    }
-                else:
-                    estado_s = e_data['suscripcion_estado'] or 'INEXISTENTE'
-                    fecha_f = e_data['fecha_fin']
-                    
-                    if hasattr(fecha_f, 'date'):
-                        fecha_f = fecha_f.date()
-                        
-                    vencida = (fecha_f < date.today()) if fecha_f else True
-                    if estado_s != 'ACTIVA' or vencida:
-                        target_p = e_data['vendedor_telefono'] or superadmin_phone
-                        if fecha_f:
-                            days_diff = (date.today() - fecha_f).days
-                            if days_diff >= 1: target_p = superadmin_phone
-                        empresa_lock = {
-                            "type": f"SUBSCRIPTION_{estado_s}", "phone": target_p,
-                            "message": f"Hola, mi nombre es {e_data['razon_social']} (RUC: {e_data['ruc']}). Mi suscripción venció el {fecha_f or 'N/A'} y deseo renovar mi plan. Por favor, ayúdeme con la información para el pago."
-                        }
-                    
-                    # 7. AVISO DE RENOVACIÓN (Si no hay bloqueo duro, pero faltan <= 7 días)
-                    elif fecha_f:
-                        days_left = (fecha_f - date.today()).days
-                        if 0 <= days_left <= 7:
-                            aviso_renovacion = {
-                                "dias": days_left,
-                                "phone": e_data['vendedor_telefono'] or superadmin_phone,
-                                "message": f"Hola, mi nombre es {e_data['razon_social']} (RUC: {e_data['ruc']}). Mi suscripción vence el {fecha_f} (en {days_left} días) y deseo renovar mi plan. Por favor, ayúdeme con la información."
-                            }
+            user["empresa_lock"], user["aviso_renovacion"] = self._resolver_bloqueo_empresa(empresa_id)
 
         user["empresa_lock"] = empresa_lock
         user["aviso_renovacion"] = aviso_renovacion
