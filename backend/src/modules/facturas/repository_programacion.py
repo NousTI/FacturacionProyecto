@@ -89,12 +89,14 @@ class RepositorioProgramacion:
             return cur.rowcount > 0
 
     def obtener_pendientes_emision(self) -> List[dict]:
-        """Obtiene programaciones que deben ejecutarse hoy o en el pasado."""
+        """Obtiene programaciones que deben ejecutarse hoy o en el pasado, con info de cliente."""
         query = """
-            SELECT * FROM sistema_facturacion.facturacion_programada 
-            WHERE activo = TRUE 
-            AND (proxima_emision IS NULL OR proxima_emision <= CURRENT_DATE)
-            AND (fecha_fin IS NULL OR fecha_fin >= CURRENT_DATE)
+            SELECT fp.*, c.nombre as cliente_nombre 
+            FROM sistema_facturacion.facturacion_programada fp
+            JOIN sistema_facturacion.clientes c ON fp.cliente_id = c.id
+            WHERE fp.activo = TRUE 
+            AND (fp.proxima_emision IS NULL OR fp.proxima_emision <= CURRENT_DATE)
+            AND (fp.fecha_fin IS NULL OR fp.fecha_fin >= CURRENT_DATE)
         """
         with self.db.cursor() as cur:
             cur.execute(query)

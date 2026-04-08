@@ -247,6 +247,160 @@ class RepositorioReportes:
             cur.execute(query, tuple(params))
             return [dict(row) for row in cur.fetchall()]
 
+    # =========================================================
+    # NUEVOS REPORTES DE VENTAS (R-001 a R-005)
+    # =========================================================
+
+    def obtener_ventas_resumen(self, empresa_id: UUID, fecha_inicio: str, fecha_fin: str, establecimiento_id: Optional[UUID] = None, punto_emision_id: Optional[UUID] = None, usuario_id: Optional[UUID] = None, estado: Optional[str] = None) -> dict:
+        """R-001: Agregaciones de ventas general."""
+        query = """
+            SELECT 
+                COUNT(*) as cantidad_facturas,
+                COALESCE(SUM(subtotal_sin_iva + subtotal_con_iva + subtotal_no_objeto_iva + subtotal_exento_iva), 0) as subtotal_total,
+                COALESCE(SUM(subtotal_con_iva), 0) as subtotal_15,
+                COALESCE(SUM(iva), 0) as total_iva,
+                COALESCE(SUM(descuento), 0) as total_descuento,
+                COALESCE(SUM(propina), 0) as total_propinas,
+                COALESCE(SUM(total), 0) as total_general,
+                CASE WHEN COUNT(*) > 0 THEN COALESCE(SUM(total), 0) / COUNT(*) ELSE 0 END as ticket_promedio
+            FROM sistema_facturacion.facturas
+            WHERE empresa_id = %s AND fecha_emision BETWEEN %s AND %s
+        """
+        params = [str(empresa_id), fecha_inicio, fecha_fin + " 23:59:59"]
+
+        if establecimiento_id:
+            query += " AND establecimiento_id = %s"
+            params.append(str(establecimiento_id))
+        if punto_emision_id:
+            query += " AND punto_emision_id = %s"
+            params.append(str(punto_emision_id))
+        if usuario_id:
+            query += " AND usuario_id = %s"
+            params.append(str(usuario_id))
+        if estado:
+            query += " AND estado = %s"
+            params.append(estado)
+        else:
+            query += " AND estado != 'ANULADA'"
+
+        with self.db.cursor() as cur:
+            cur.execute(query, tuple(params))
+            return dict(cur.fetchone())
+
+    def obtener_ventas_por_establecimiento(self, empresa_id: UUID, fecha_inicio: str, fecha_fin: str) -> List[dict]:
+        """R-001: Ventas por establecimiento para gráficos."""
+        query = """
+            SELECT e.nombre as label, SUM(f.total) as value
+            FROM sistema_facturacion.facturas f
+            JOIN sistema_facturacion.establecimientos e ON f.establecimiento_id = e.id
+            WHERE f.empresa_id = %s AND f.fecha_emision BETWEEN %s AND %s AND f.estado != 'ANULADA'
+            GROUP BY e.id, e.nombre
+        """
+        with self.db.cursor() as cur:
+            cur.execute(query, (str(empresa_id), fecha_inicio, fecha_fin + " 23:59:59"))
+            return [dict(row) for row in cur.fetchall()]
+
+    def obtener_ventas_por_pago(self, empresa_id: UUID, fecha_inicio: str, fecha_fin: str) -> List[dict]:
+        """R-001: Distribución por forma de pago."""
+        query = """
+            SELECT fp.forma_pago_sri as cod, SUM(fp.valor) as value
+            FROM sistema_facturacion.formas_pago fp
+            JOIN sistema_facturacion.facturas f ON fp.factura_id = f.id
+            WHERE f.empresa_id = %s AND f.fecha_emision BETWEEN %s AND %s AND f.estado != 'ANULADA'
+            GROUP BY fp.forma_pago_sri
+        """
+        with self.db.cursor() as cur:
+            cur.execute(query, (str(empresa_id), fecha_inicio, fecha_fin + " 23:59:59"))
+            return [dict(row) for row in cur.fetchall()]
+
+    def obtener_ventas_periodicas(self, empresa_id: UUID, anio: int) -> List[dict]:
+        """R-002: Ventas agrupadas por mes."""
+        query = """
+            SELECT 
+                TO_CHAR(fecha_emision, 'YYYY-MM') as mes,
+                COUNT(*) as facturas,
+                SUM(subtotal_sin_iva + subtotal_con_iva + subtotal_no_objeto_iva + subtotal_exento_iva) as subtotal,
+                SUM(iva) as iva,
+                SUM(total) as total
+            FROM sistema_facturacion.facturas
+            WHERE empresa_id = %s AND EXTRACT(YEAR FROM fecha_emision) = %s AND estado != 'ANULADA'
+            GROUP BY 1 ORDER BY 1 ASC
+        """
+        with self.db.cursor() as cur:
+            cur.execute(query, (str(empresa_id), anio))
+            return [dict(row) for row in cur.fetchall()]
+
+    def obtener_ventas_por_usuario(self, empresa_id: UUID, fecha_inicio: str, fecha_fin: str) -> List[dict]:
+        """R-003: Ventas por usuario facturador."""
+        query = """
+            SELECT 
+                CONCAT(u.nombres, ' ', u.apellidos) as usuario,
+                COUNT(f.id) as facturas,
+                SUM(f.total) as total_ventas,
+                CASE WHEN COUNT(f.id) > 0 THEN SUM(f.total) / COUNT(f.id) ELSE 0 END as ticket_promedio
+            FROM sistema_facturacion.facturas f
+            JOIN sistema_facturacion.usuarios u ON f.usuario_id = u.id
+            WHERE f.empresa_id = %s AND f.fecha_emision BETWEEN %s AND %s AND f.estado != 'ANULADA'
+            GROUP BY u.id, u.nombres, u.apellidos
+            ORDER BY total_ventas DESC
+        """
+        with self.db.cursor() as cur:
+            cur.execute(query, (str(empresa_id), fecha_inicio, fecha_fin + " 23:59:59"))
+            return [dict(row) for row in cur.fetchall()]
+
+    def obtener_facturas_anuladas(self, empresa_id: UUID, fecha_inicio: str, fecha_fin: str, usuario_id: Optional[UUID] = None) -> List[dict]:
+        """R-004: Listado de facturas anuladas."""
+        query = """
+            SELECT 
+                f.numero_factura,
+                f.fecha_emision,
+                c.razon_social as cliente,
+                f.total,
+                CONCAT(u.nombres, ' ', u.apellidos) as usuario_anulo,
+                f.razon_anulacion as motivo,
+                f.updated_at as fecha_anulacion
+            FROM sistema_facturacion.facturas f
+            JOIN sistema_facturacion.clientes c ON f.cliente_id = c.id
+            JOIN sistema_facturacion.usuarios u ON f.usuario_id = u.id
+            WHERE f.empresa_id = %s AND f.estado = 'ANULADA' AND f.updated_at BETWEEN %s AND %s
+        """
+        params = [str(empresa_id), fecha_inicio, fecha_fin + " 23:59:59"]
+        if usuario_id:
+            query += " AND f.usuario_id = %s"
+            params.append(str(usuario_id))
+            
+        with self.db.cursor() as cur:
+            cur.execute(query, tuple(params))
+            return [dict(row) for row in cur.fetchall()]
+
+    def obtener_facturas_rechazadas_sri(self, empresa_id: UUID, fecha_inicio: str, fecha_fin: str, estado: Optional[str] = None) -> List[dict]:
+        """R-005: Facturas con problemas SRI."""
+        query = """
+            SELECT 
+                f.numero_factura,
+                c.razon_social as cliente,
+                l.timestamp as fecha_intento,
+                l.mensajes::text as mensaje_sri,
+                f.estado as estado_actual
+            FROM sistema_facturacion.facturas f
+            JOIN sistema_facturacion.clientes c ON f.cliente_id = c.id
+            JOIN (
+                SELECT DISTINCT ON (factura_id) * 
+                FROM sistema_facturacion.log_emision_facturas 
+                ORDER BY factura_id, timestamp DESC
+            ) l ON f.id = l.factura_id
+            WHERE f.empresa_id = %s AND f.estado IN ('DEVUELTA', 'NO_AUTORIZADA')
+            AND f.fecha_emision BETWEEN %s AND %s
+        """
+        params = [str(empresa_id), fecha_inicio, fecha_fin + " 23:59:59"]
+        if estado:
+            query += " AND f.estado = %s"
+            params.append(estado)
+            
+        with self.db.cursor() as cur:
+            cur.execute(query, tuple(params))
+            return [dict(row) for row in cur.fetchall()]
+
 
 
 

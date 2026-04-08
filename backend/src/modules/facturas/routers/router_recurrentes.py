@@ -10,7 +10,7 @@ from ....utils.response import success_response
 
 router = APIRouter()
 
-@router.post("/programacion", response_model=FacturacionProgramadaLectura, status_code=status.HTTP_201_CREATED)
+@router.post("/", response_model=FacturacionProgramadaLectura, status_code=status.HTTP_201_CREATED)
 def crear_programacion(
     datos: FacturacionProgramadaCreacion,
     usuario: dict = Depends(requerir_permiso(PermissionCodes.FACTURAS_CREAR)),
@@ -19,7 +19,7 @@ def crear_programacion(
     """Crea una nueva regla de facturación recurrente."""
     return servicio.crear_programacion(datos, usuario)
 
-@router.get("/programacion", response_model=List[FacturacionProgramadaLectura])
+@router.get("/", response_model=List[FacturacionProgramadaLectura])
 def listar_programaciones(
     activo: Optional[bool] = Query(None, description="Filtrar por estado activo/inactivo"),
     usuario: dict = Depends(requerir_permiso(PermissionCodes.FACTURAS_VER_TODAS)),
@@ -28,7 +28,7 @@ def listar_programaciones(
     """Lista las reglas de facturación recurrente de la empresa."""
     return servicio.listar_programaciones(usuario, activo)
 
-@router.get("/programacion/{id}", response_model=FacturacionProgramadaLectura)
+@router.get("/{id}", response_model=FacturacionProgramadaLectura)
 def obtener_programacion(
     id: UUID,
     usuario: dict = Depends(requerir_permiso(PermissionCodes.FACTURAS_VER_TODAS)),
@@ -37,7 +37,7 @@ def obtener_programacion(
     """Obtiene el detalle de una programación específica."""
     return servicio.obtener_programacion(id, usuario)
 
-@router.put("/programacion/{id}", response_model=FacturacionProgramadaLectura)
+@router.put("/{id}", response_model=FacturacionProgramadaLectura)
 def actualizar_programacion(
     id: UUID,
     datos: FacturacionProgramadaActualizacion,
@@ -47,7 +47,7 @@ def actualizar_programacion(
     """Actualiza una regla de facturación recurrente."""
     return servicio.actualizar_programacion(id, datos, usuario)
 
-@router.delete("/programacion/{id}")
+@router.delete("/{id}")
 def eliminar_programacion(
     id: UUID,
     usuario: dict = Depends(requerir_permiso(PermissionCodes.FACTURAS_EDITAR)),
@@ -56,3 +56,15 @@ def eliminar_programacion(
     """Elimina una regla de facturación recurrente."""
     servicio.eliminar_programacion(id, usuario)
     return success_response(None, "Programación eliminada correctamente")
+
+@router.post("/ejecutar-masivo")
+def ejecutar_emisiones_masivas(
+    usuario: dict = Depends(requerir_permiso(PermissionCodes.FACTURAS_CREAR)),
+    servicio: ServicioRecurrentes = Depends()
+):
+    """
+    Dispara el proceso de generación de facturas pendientes.
+    Útil para ser llamado por un Cron Job o trigger externo.
+    """
+    resultado = servicio.recurrentes.procesar_emisiones_automaticas()
+    return success_response(resultado, "Proceso de emisiones automáticas completado")

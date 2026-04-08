@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Reporte de Ventas General</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            color: #1f2937;
+            margin: 0;
+            padding: 0;
+            line-height: 1.5;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #4f46e5 0%, #3730a3 100%);
+            color: white;
+            padding: 40px;
+            text-align: center;
+            border-radius: 0 0 40px 40px;
+        }
+        
+        .header h1 {
+            margin: 0;
+            font-size: 28px;
+            font-weight: 700;
+            letter-spacing: -0.025em;
+        }
+        
+        .header p {
+            margin: 10px 0 0;
+            opacity: 0.9;
+        }
+        
+        .content {
+            padding: 30px;
+        }
+        
+        .grid-kpis {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        
+        .kpi-card {
+            background: #f9fafb;
+            border: 1px solid #e5e7eb;
+            padding: 20px;
+            border-radius: 16px;
+            text-align: center;
+        }
+        
+        .kpi-card .label {
+            font-size: 12px;
+            color: #6b7280;
+            text-transform: uppercase;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+        
+        .kpi-card .value {
+            font-size: 20px;
+            font-weight: 700;
+            color: #111827;
+        }
+        
+        .kpi-card.highlight {
+            background: #eef2ff;
+            border-color: #c7d2fe;
+        }
+        
+        .kpi-card.highlight .value {
+            color: #4f46e5;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            margin-top: 20px;
+        }
+        
+        th {
+            background: #f3f4f6;
+            padding: 12px 15px;
+            text-align: left;
+            font-size: 12px;
+            font-weight: 600;
+            color: #374151;
+            border-bottom: 2px solid #e5e7eb;
+        }
+        
+        td {
+            padding: 12px 15px;
+            font-size: 13px;
+            border-bottom: 1px solid #f3f4f6;
+        }
+        
+        tr:last-child td {
+            border-bottom: none;
+        }
+        
+        .footer {
+            margin-top: 50px;
+            text-align: center;
+            font-size: 11px;
+            color: #9ca3af;
+            border-top: 1px solid #f3f4f6;
+            padding-top: 20px;
+        }
+
+        .variation {
+            font-size: 12px;
+            font-weight: 600;
+            margin-top: 5px;
+        }
+        .variation.up { color: #10b981; }
+        .variation.down { color: #ef4444; }
+
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Reporte de Ventas General</h1>
+        <p>Periodo: {{ params.fecha_inicio }} al {{ params.fecha_fin }}</p>
+    </div>
+
+    <div class="content">
+        <div class="grid-kpis">
+            <div class="kpi-card highlight">
+                <div class="label">Total General</div>
+                <div class="value">${{ "{:,.2f}".format(data.resumen.total_general) }}</div>
+                <div class="variation {{ 'up' if data.resumen.comparacion_anterior_porcentaje >= 0 else 'down' }}">
+                    {{ '+' if data.resumen.comparacion_anterior_porcentaje >= 0 }}{{ data.resumen.comparacion_anterior_porcentaje }}% vs anterior
+                </div>
+            </div>
+            <div class="kpi-card">
+                <div class="label">Facturas</div>
+                <div class="value">{{ data.resumen.cantidad_facturas }}</div>
+            </div>
+            <div class="kpi-card">
+                <div class="label">Total IVA (15%)</div>
+                <div class="value">${{ "{:,.2f}".format(data.resumen.total_iva) }}</div>
+            </div>
+            <div class="kpi-card">
+                <div class="label">Ticket Promedio</div>
+                <div class="value">${{ "{:,.2f}".format(data.resumen.ticket_promedio) }}</div>
+            </div>
+        </div>
+
+        <h3>Distribución por Establecimiento</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Establecimiento</th>
+                    <th>Subtotal</th>
+                    <th>IVA</th>
+                    <th>Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in data.graficos.por_establecimiento %}
+                <tr>
+                    <td>{{ item.label }}</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>${{ "{:,.2f}".format(item.value) }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <h3>Resumen Fiscal</h3>
+        <div style="background: #fdfdfd; padding: 20px; border-radius: 12px; border: 1px dashed #d1d5db; margin-top: 20px;">
+            <p><strong>Subtotal (Sujeto IVA 15%):</strong> ${{ "{:,.2f}".format(data.resumen.subtotal_15) }}</p>
+            <p><strong>Subtotal Total:</strong> ${{ "{:,.2f}".format(data.resumen.subtotal_total) }}</p>
+            <p><strong>Total Descuento:</strong> ${{ "{:,.2f}".format(data.resumen.total_descuento) }}</p>
+            <p><strong>Propinas:</strong> ${{ "{:,.2f}".format(data.resumen.total_propinas) }}</p>
+        </div>
+    </div>
+
+    <div class="footer">
+        Generado el {{ now }} - Sistema de Facturación Premium
+    </div>
+</body>
+</html>

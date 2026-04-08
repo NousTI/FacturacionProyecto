@@ -38,6 +38,7 @@ class FacturacionProgramadaLectura(FacturacionProgramadaBase):
     usuario_id: UUID
     ultima_emision: Optional[date] = None
     proxima_emision: Optional[date] = None
+    cliente_nombre: Optional[str] = None
     total_emisiones: int
     emisiones_exitosas: int
     emisiones_fallidas: int

@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ title }}</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
+        
+        body { font-family: 'Inter', sans-serif; color: #1f2937; margin: 0; padding: 0; line-height: 1.5; }
+        .header { background: #111827; color: white; padding: 30px; text-align: center; }
+        .header h1 { margin: 0; font-size: 24px; }
+        .content { padding: 30px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th { background: #f3f4f6; padding: 10px; text-align: left; font-size: 11px; text-transform: uppercase; color: #4b5563; border-bottom: 2px solid #e5e7eb; }
+        td { padding: 10px; font-size: 12px; border-bottom: 1px solid #f3f4f6; }
+        .footer { margin-top: 50px; text-align: center; font-size: 10px; color: #9ca3af; }
+        .text-right { text-align: right; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>{{ title }}</h1>
+        <p>{{ subtitle }}</p>
+    </div>
+
+    <div class="content">
+        <table>
+            <thead>
+                <tr>
+                    {% for header in headers %}
+                    <th>{{ header }}</th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in data %}
+                <tr>
+                    {% for key in keys %}
+                    <td>{{ row[key] }}</td>
+                    {% endfor %}
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="footer">
+        Generado automáticamente - {{ now }}
+    </div>
+</body>
+</html>

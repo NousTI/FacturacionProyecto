@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, status
-from typing import List
+from typing import List, Optional
+from datetime import datetime
 from uuid import UUID
 
 from .service import ServicioReportes
@@ -113,4 +114,134 @@ def preview_reporte(
     servicio: ServicioReportes = Depends()
 ):
     return servicio.obtener_datos_preview(datos, usuario)
+
+# --- RUTAS DE VENTAS Y FACTURACIÓN (R-001 a R-005) ---
+
+@router.get("/ventas/general")
+def obtener_reporte_ventas_general(
+    fecha_inicio: str,
+    fecha_fin: str,
+    establecimiento_id: Optional[UUID] = None,
+    punto_emision_id: Optional[UUID] = None,
+    usuario_id: Optional[UUID] = None,
+    estado: Optional[str] = None,
+    usuario_actual: dict = Depends(requerir_permiso("REPORTES_VER")),
+    servicio: ServicioReportes = Depends()
+):
+    """R-001: Reporte de Ventas General."""
+    empresa_id = usuario_actual.get("empresa_id")
+    params = {
+        "fecha_inicio": fecha_inicio,
+        "fecha_fin": fecha_fin,
+        "establecimiento_id": establecimiento_id,
+        "punto_emision_id": punto_emision_id,
+        "usuario_id": usuario_id,
+        "estado": estado
+    }
+    return servicio.obtener_ventas_general(empresa_id, params)
+
+@router.get("/ventas/mensuales")
+def obtener_reporte_ventas_mensuales(
+    anio: int,
+    usuario_actual: dict = Depends(requerir_permiso("REPORTES_VER")),
+    servicio: ServicioReportes = Depends()
+):
+    """R-002: Ventas por Mes/Año."""
+    empresa_id = usuario_actual.get("empresa_id")
+    return servicio.obtener_ventas_mensuales(empresa_id, anio)
+
+@router.get("/ventas/usuarios")
+def obtener_reporte_ventas_usuarios(
+    fecha_inicio: str,
+    fecha_fin: str,
+    usuario_id: Optional[UUID] = None,
+    usuario_actual: dict = Depends(requerir_permiso("REPORTES_VER")),
+    servicio: ServicioReportes = Depends()
+):
+    """R-003: Ventas por Usuario."""
+    empresa_id = usuario_actual.get("empresa_id")
+    params = {
+        "fecha_inicio": fecha_inicio,
+        "fecha_fin": fecha_fin,
+        "usuario_id": usuario_id
+    }
+    return servicio.obtener_ventas_por_usuario(empresa_id, params)
+
+@router.get("/ventas/anuladas")
+def obtener_reporte_facturas_anuladas(
+    fecha_inicio: str,
+    fecha_fin: str,
+    usuario_id: Optional[UUID] = None,
+    usuario_actual: dict = Depends(requerir_permiso("REPORTES_VER")),
+    servicio: ServicioReportes = Depends()
+):
+    """R-004: Facturas Anuladas."""
+    empresa_id = usuario_actual.get("empresa_id")
+    params = {
+        "fecha_inicio": fecha_inicio,
+        "fecha_fin": fecha_fin,
+        "usuario_id": usuario_id
+    }
+    return servicio.obtener_facturas_anuladas(empresa_id, params)
+
+@router.get("/ventas/rechazadas-sri")
+def obtener_reporte_facturas_rechazadas_sri(
+    fecha_inicio: str,
+    fecha_fin: str,
+    estado: Optional[str] = None,
+    usuario_actual: dict = Depends(requerir_permiso("REPORTES_VER")),
+    servicio: ServicioReportes = Depends()
+):
+    """R-005: Facturas Rechazadas por SRI."""
+    empresa_id = usuario_actual.get("empresa_id")
+    params = {
+        "fecha_inicio": fecha_inicio,
+        "fecha_fin": fecha_fin,
+        "estado": estado
+    }
+    return servicio.obtener_facturas_rechazadas_sri(empresa_id, params)
+
+@router.get("/exportar")
+def exportar_reporte_ventas(
+    tipo: str,
+    formato: str, # 'pdf' o 'excel'
+    fecha_inicio: Optional[str] = None,
+    fecha_fin: Optional[str] = None,
+    anio: Optional[int] = None,
+    establecimiento_id: Optional[UUID] = None,
+    punto_emision_id: Optional[UUID] = None,
+    usuario_id: Optional[UUID] = None,
+    estado: Optional[str] = None,
+    usuario_actual: dict = Depends(requerir_permiso("REPORTES_EXPORTAR")),
+    servicio: ServicioReportes = Depends()
+):
+    """Genera y descarga un reporte en formato PDF o Excel."""
+    from fastapi.responses import StreamingResponse
+    
+    empresa_id = usuario_actual.get("empresa_id")
+    params = {
+        "fecha_inicio": fecha_inicio,
+        "fecha_fin": fecha_fin,
+        "anio": anio,
+        "establecimiento_id": establecimiento_id,
+        "punto_emision_id": punto_emision_id,
+        "usuario_id": usuario_id,
+        "estado": estado
+    }
+    
+    file_stream = servicio.exportar_reporte(empresa_id, tipo, formato, params)
+    
+    filename = f"reporte_{tipo.lower()}_{datetime.now().strftime('%Y%m%d')}"
+    if formato == 'pdf':
+        media_type = "application/pdf"
+        filename += ".pdf"
+    else:
+        media_type = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        filename += ".xlsx"
+
+    return StreamingResponse(
+        file_stream,
+        media_type=media_type,
+        headers={"Content-Disposition": f"attachment; filename={filename}"}
+    )
 

@@ -4,12 +4,14 @@ from typing import List, Optional
 import csv
 import os
 import uuid
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from .repository import RepositorioReportes
 from .schemas import ReporteCreacion
 from ...constants.enums import AuthKeys
 from ...errors.app_error import AppError
+from ...utils.pdf_generator import render_to_pdf
+from ...utils.excel_generator import generate_excel_report
 
 class ServicioReportes:
     def __init__(self, repo: RepositorioReportes = Depends()):
@@ -226,5 +228,183 @@ class ServicioReportes:
             
 
         raise AppError("Tipo de reporte o permisos no válidos para previsualización", 400)
+
+    # =========================================================
+    # NUEVOS MÉTODOS DE VENTAS (R-001 a R-005)
+    # =========================================================
+
+    def obtener_ventas_general(self, empresa_id: UUID, params: dict):
+        fecha_inicio = params.get('fecha_inicio')
+        fecha_fin = params.get('fecha_fin')
+        if not fecha_inicio or not fecha_fin:
+            raise AppError("Rango de fechas obligatorio", 400)
+
+        # 1. Resumen principal
+        resumen = self.repo.obtener_ventas_resumen(
+            empresa_id=empresa_id,
+            fecha_inicio=fecha_inicio,
+            fecha_fin=fecha_fin,
+            establecimiento_id=params.get('establecimiento_id'),
+            punto_emision_id=params.get('punto_emision_id'),
+            usuario_id=params.get('usuario_id'),
+            estado=params.get('estado')
+        )
+
+        # 2. Comparativa (Periodo anterior)
+        # Lógica simplificada: restamos la diferencia de días al inicio
+        d1 = datetime.strptime(fecha_inicio, '%Y-%m-%d')
+        d2 = datetime.strptime(fecha_fin, '%Y-%m-%d')
+        delta = (d2 - d1).days + 1
+        
+        prev_inicio = (d1 - timedelta(days=delta)).strftime('%Y-%m-%d')
+        prev_fin = (d1 - timedelta(days=1)).strftime('%Y-%m-%d')
+        
+        resumen_prev = self.repo.obtener_ventas_resumen(empresa_id, prev_inicio, prev_fin)
+        total_actual = float(resumen['total_general'])
+        total_prev = float(resumen_prev['total_general'])
+        
+        variacion = 0.0
+        if total_prev > 0:
+            variacion = ((total_actual - total_prev) / total_prev) * 100
+        elif total_actual > 0:
+            variacion = 100.0
+
+        resumen['comparacion_anterior_porcentaje'] = round(variacion, 2)
+
+        # 3. Datos para gráficos
+        graficos = {
+            "por_establecimiento": self.repo.obtener_ventas_por_establecimiento(empresa_id, fecha_inicio, fecha_fin),
+            "por_forma_pago": self.repo.obtener_ventas_por_pago(empresa_id, fecha_inicio, fecha_fin)
+        }
+
+        return {
+            "resumen": resumen,
+            "graficos": graficos
+        }
+
+    def obtener_ventas_mensuales(self, empresa_id: UUID, anio: int):
+        return self.repo.obtener_ventas_periodicas(empresa_id, anio)
+
+    def obtener_ventas_por_usuario(self, empresa_id: UUID, params: dict):
+        fecha_inicio = params.get('fecha_inicio')
+        fecha_fin = params.get('fecha_fin')
+        if not fecha_inicio or not fecha_fin:
+            raise AppError("Rango de fechas obligatorio", 400)
+            
+        data = self.repo.obtener_ventas_por_usuario(empresa_id, fecha_inicio, fecha_fin)
+        # Top 5 ranking
+        ranking = data[:5]
+        return {
+            "detalles": data,
+            "ranking": ranking
+        }
+
+    def obtener_facturas_anuladas(self, empresa_id: UUID, params: dict):
+        fecha_inicio = params.get('fecha_inicio')
+        fecha_fin = params.get('fecha_fin')
+        if not fecha_inicio or not fecha_fin:
+            raise AppError("Rango de fechas obligatorio", 400)
+            
+        return self.repo.obtener_facturas_anuladas(
+            empresa_id=empresa_id,
+            fecha_inicio=fecha_inicio,
+            fecha_fin=fecha_fin,
+            usuario_id=params.get('usuario_id')
+        )
+
+    def obtener_facturas_rechazadas_sri(self, empresa_id: UUID, params: dict):
+        fecha_inicio = params.get('fecha_inicio')
+        fecha_fin = params.get('fecha_fin')
+        if not fecha_inicio or not fecha_fin:
+            raise AppError("Rango de fechas obligatorio", 400)
+            
+        return self.repo.obtener_facturas_rechazadas_sri(
+            empresa_id=empresa_id,
+            fecha_inicio=fecha_inicio,
+            fecha_fin=fecha_fin,
+            estado=params.get('estado')
+        )
+
+    def exportar_reporte(self, empresa_id: UUID, tipo: str, formato: str, params: dict):
+        """
+        Orquesta la generación de archivos PDF/Excel para los reportes de ventas.
+        """
+        now_str = datetime.now().strftime('%Y-%m-%d %H:%M')
+        
+        if tipo == 'VENTAS_GENERAL':
+            data = self.obtener_ventas_general(empresa_id, params)
+            if formato == 'pdf':
+                return render_to_pdf("reports/ventas_general.html", {"data": data, "params": params, "now": now_str})
+            else:
+                headers = ["Categoría", "Valor"]
+                # Aplanar un poco para Excel
+                excel_data = [
+                    {"Categoría": "Cantidad Facturas", "Valor": data['resumen']['cantidad_facturas']},
+                    {"Categoría": "Subtotal Total", "Valor": data['resumen']['subtotal_total']},
+                    {"Categoría": "Total IVA", "Valor": data['resumen']['total_iva']},
+                    {"Categoría": "Total General", "Valor": data['resumen']['total_general']},
+                ]
+                return generate_excel_report("Reporte Ventas General", headers, excel_data, ["Categoría", "Valor"])
+
+        elif tipo == 'VENTAS_MENSUALES':
+            anio = int(params.get('anio', datetime.now().year))
+            data = self.obtener_ventas_mensuales(empresa_id, anio)
+            if formato == 'pdf':
+                headers = ["Mes", "Facturas", "Subtotal", "IVA", "Total"]
+                keys = ["mes", "facturas", "subtotal", "iva", "total"]
+                return render_to_pdf("reports/base_tabla.html", {
+                    "title": f"Ventas Mensuales - {anio}",
+                    "subtitle": f"Empresa ID: {empresa_id}",
+                    "headers": headers, "keys": keys, "data": data, "now": now_str
+                })
+            else:
+                headers = ["Mes", "Facturas", "Subtotal", "IVA", "Total"]
+                return generate_excel_report(f"Ventas Mensuales {anio}", headers, data, ["mes", "facturas", "subtotal", "iva", "total"])
+
+        elif tipo == 'VENTAS_USUARIOS':
+            data = self.obtener_ventas_por_usuario(empresa_id, params)['detalles']
+            if formato == 'pdf':
+                headers = ["Usuario", "Facturas", "Total Ventas", "Ticket Promedio"]
+                keys = ["usuario", "facturas", "total_ventas", "ticket_promedio"]
+                return render_to_pdf("reports/base_tabla.html", {
+                    "title": "Ventas por Usuario",
+                    "subtitle": f"Periodo: {params.get('fecha_inicio')} a {params.get('fecha_fin')}",
+                    "headers": headers, "keys": keys, "data": data, "now": now_str
+                })
+            else:
+                headers = ["Usuario", "Facturas", "Total Ventas", "Ticket Promedio"]
+                return generate_excel_report("Ventas por Usuario", headers, data, ["usuario", "facturas", "total_ventas", "ticket_promedio"])
+
+        elif tipo == 'FACTURAS_ANULADAS':
+            data = self.obtener_facturas_anuladas(empresa_id, params)
+            if formato == 'pdf':
+                headers = ["Número", "Fecha Emisión", "Cliente", "Total", "Motivo"]
+                keys = ["numero_factura", "fecha_emision", "cliente", "total", "motivo"]
+                return render_to_pdf("reports/base_tabla.html", {
+                    "title": "Facturas Anuladas",
+                    "subtitle": f"Periodo: {params.get('fecha_inicio')} a {params.get('fecha_fin')}",
+                    "headers": headers, "keys": keys, "data": data, "now": now_str
+                })
+            else:
+                headers = ["Número", "Fecha Emisión", "Cliente", "Total", "Usuario Anuló", "Motivo", "Fecha Anulación"]
+                keys = ["numero_factura", "fecha_emision", "cliente", "total", "usuario_anulo", "motivo", "fecha_anulacion"]
+                return generate_excel_report("Facturas Anuladas", headers, data, keys)
+
+        elif tipo == 'FACTURAS_RECHAZADAS':
+            data = self.obtener_facturas_rechazadas_sri(empresa_id, params)
+            if formato == 'pdf':
+                headers = ["Número", "Cliente", "Fecha Intento", "Estado"]
+                keys = ["numero_factura", "cliente", "fecha_intento", "estado_actual"]
+                return render_to_pdf("reports/base_tabla.html", {
+                    "title": "Facturas Rechazadas por el SRI",
+                    "subtitle": f"Periodo: {params.get('fecha_inicio')} a {params.get('fecha_fin')}",
+                    "headers": headers, "keys": keys, "data": data, "now": now_str
+                })
+            else:
+                headers = ["Número", "Cliente", "Fecha Intento", "Mensaje SRI", "Estado"]
+                keys = ["numero_factura", "cliente", "fecha_intento", "mensaje_sri", "estado_actual"]
+                return generate_excel_report("Rechazos SRI", headers, data, keys)
+
+        raise AppError("Tipo de reporte o formato no soportado para exportación", 400)
 
 
