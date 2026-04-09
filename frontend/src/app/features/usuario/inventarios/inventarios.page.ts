@@ -16,6 +16,7 @@ import { InventarioStatsComponent } from './components/inventario-stats.componen
 import { InventarioFiltersComponent } from './components/inventario-filters.component';
 import { InventarioTableComponent } from './components/inventario-table.component';
 import { InventarioFormComponent } from './components/inventario-form.component';
+import { InventoryManagementComponent } from './components/inventory-management.component';
 
 @Component({
   selector: 'app-inventarios',
@@ -28,27 +29,43 @@ import { InventarioFormComponent } from './components/inventario-form.component'
     InventarioStatsComponent,
     InventarioFiltersComponent,
     InventarioTableComponent,
-    InventarioFormComponent
+    InventarioFormComponent,
+    InventoryManagementComponent
   ],
   template: `
     <div class="page-container">
       <!-- STATS KPI SECTION -->
       <app-inventario-stats [stats]="stats$ | async"></app-inventario-stats>
 
+      <!-- TABS -->
+      <div class="tabs-wrapper">
+        <button class="tab-btn" [class.active]="activeTab === 'kardex'" (click)="activeTab = 'kardex'">
+          <i class="bi bi-box-seam"></i> Kardex de Movimientos
+        </button>
+        <button class="tab-btn" [class.active]="activeTab === 'inventario'" (click)="activeTab = 'inventario'">
+          <i class="bi bi-boxes"></i> Gestión de Inventario
+        </button>
+      </div>
+
       <!-- TAB: MOVIMIENTOS (KARDEX) -->
-      <div class="tab-content">
+      <div *ngIf="activeTab === 'kardex'" class="tab-content">
         <!-- FILTER BAR -->
-        <app-inventario-filters 
+        <app-inventario-filters
           [isLoading]="isLoading"
           (onFilter)="applyFilters($event)"
           (onCreate)="openCreateMovimientoModal()">
         </app-inventario-filters>
 
         <!-- TABLE SECTION -->
-        <app-inventario-table 
+        <app-inventario-table
           [movimientos]="movimientos$ | async"
           (onDelete)="handleDeleteMovimiento($event)">
         </app-inventario-table>
+      </div>
+
+      <!-- TAB: GESTIÓN DE INVENTARIO -->
+      <div *ngIf="activeTab === 'inventario'" class="tab-content">
+        <app-inventory-management></app-inventory-management>
       </div>
 
       <!-- MODAL: NUEVO MOVIMIENTO -->
@@ -93,6 +110,7 @@ export class InventariosPage implements OnInit, OnDestroy {
   stats$: Observable<any>;
   productos$: Observable<Producto[]> | undefined;
 
+  activeTab: 'kardex' | 'inventario' = 'kardex';
   showMovimientoModal = false;
   showConfirmModal = false;
   
