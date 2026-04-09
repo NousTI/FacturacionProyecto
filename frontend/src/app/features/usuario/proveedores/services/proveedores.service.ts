@@ -28,10 +28,13 @@ export class ProveedoresService extends BaseApiService {
     loadInitialData(): void {
         if (this._loaded) return;
 
-        this.get<Proveedor[]>(this.ENDPOINT).subscribe(resp => {
-            // La API devuelve directamente el array (response_model=List[ProveedorLectura])
-            this._proveedores$.next(Array.isArray(resp) ? resp : []);
-            this._loaded = true;
+        this.get<ApiResponse<Proveedor[]>>(this.ENDPOINT).subscribe(resp => {
+            if (resp && resp.detalles) {
+                this._proveedores$.next(resp.detalles);
+                this._loaded = true;
+            } else {
+                this._proveedores$.next([]);
+            }
         });
     }
 
@@ -49,7 +52,8 @@ export class ProveedoresService extends BaseApiService {
     }
 
     createProveedor(proveedor: ProveedorCreate): Observable<Proveedor> {
-        return this.post<Proveedor>(this.ENDPOINT, proveedor).pipe(
+        return this.post<ApiResponse<Proveedor>>(this.ENDPOINT, proveedor).pipe(
+            map(resp => resp.detalles),
             tap(resp => {
                 if (resp) {
                     const current = this._proveedores$.value || [];
@@ -60,7 +64,8 @@ export class ProveedoresService extends BaseApiService {
     }
 
     updateProveedor(id: string, proveedor: ProveedorUpdate): Observable<Proveedor> {
-        return this.patch<Proveedor>(`${this.ENDPOINT}/${id}`, proveedor).pipe(
+        return this.patch<ApiResponse<Proveedor>>(`${this.ENDPOINT}/${id}`, proveedor).pipe(
+            map(resp => resp.detalles),
             tap(resp => {
                 if (resp) {
                     const current = this._proveedores$.value || [];
@@ -84,7 +89,8 @@ export class ProveedoresService extends BaseApiService {
     }
 
     toggleActivo(id: string): Observable<Proveedor> {
-        return this.patch<Proveedor>(`${this.ENDPOINT}/${id}/toggle-activo`, {}).pipe(
+        return this.patch<ApiResponse<Proveedor>>(`${this.ENDPOINT}/${id}/toggle-activo`, {}).pipe(
+            map(resp => resp.detalles),
             tap(updated => {
                 if (updated) {
                     const current = this._proveedores$.value || [];

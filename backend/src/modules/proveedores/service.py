@@ -29,16 +29,12 @@ class ServicioProveedores:
                  raise AppError("Usuario no tiene empresa asignada", 400, "VAL_ERROR")
             return self.repo.listar_proveedores(empresa_id=ctx["empresa_id"])
 
-        # 2. Superadmin: Puede ver de cualquier empresa (si especifica filtro)
+        # 2. Superadmin: Puede ver de cualquier empresa (filtro opcional)
         if ctx["is_superadmin"]:
-            if not empresa_id_filtro:
-                raise AppError("Superadmin debe especificar empresa_id", 400, "VAL_ERROR")
             return self.repo.listar_proveedores(empresa_id=empresa_id_filtro)
             
-        # 3. Vendedor (opcional, por ahora tratamos como superadmin con filtro o denegamos)
+        # 3. Vendedor: Solo ve proveedores de empresas (por ahora requiere filtro)
         if ctx["is_vendedor"]:
-            # Si se desea implementar lógica similar a clientes, se requeriría RepositorioEmpresas
-            # Por ahora, si es vendedor debe pasar el filtro de empresa
             if not empresa_id_filtro:
                  raise AppError("Vendedor debe especificar empresa_id", 400, "VAL_ERROR")
             return self.repo.listar_proveedores(empresa_id=empresa_id_filtro)
