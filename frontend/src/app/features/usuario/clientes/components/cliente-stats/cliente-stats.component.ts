@@ -6,111 +6,63 @@ import { CommonModule } from '@angular/common';
     standalone: true,
     imports: [CommonModule],
     template: `
-    <div class="stats-lux-container mb-4">
+    <div class="stats-grid mb-4">
       <!-- Total Clientes -->
-      <div class="stat-lux-card">
-        <div class="icon-box-lux primary">
+      <div class="stat-card soft-card">
+        <div class="icon-box primary">
           <i class="bi bi-people-fill"></i>
         </div>
-        <div class="stat-content-lux">
-          <span class="stat-label-lux">Total Clientes</span>
-          <span class="stat-value-lux">{{ total }}</span>
+        <div class="stat-info">
+          <span class="label">Total Clientes</span>
+          <span class="value">{{ total }}</span>
         </div>
       </div>
 
       <!-- Activos -->
-      <div class="stat-lux-card">
-        <div class="icon-box-lux success">
+      <div class="stat-card soft-card">
+        <div class="icon-box success">
           <i class="bi bi-person-check-fill"></i>
         </div>
-        <div class="stat-content-lux">
-          <span class="stat-label-lux">Usuarios Activos</span>
-          <span class="stat-value-lux">{{ active }}</span>
+        <div class="stat-info">
+          <span class="label">Usuarios Activos</span>
+          <span class="value text-success">{{ active }}</span>
         </div>
       </div>
 
       <!-- Con Crédito -->
-      <div class="stat-lux-card">
-        <div class="icon-box-lux info">
+      <div class="stat-card soft-card">
+        <div class="icon-box info">
           <i class="bi bi-credit-card-fill"></i>
         </div>
-        <div class="stat-content-lux">
-          <span class="stat-label-lux">Clientes con Crédito</span>
-          <span class="stat-value-lux">{{ credit }}</span>
+        <div class="stat-info">
+          <span class="label">Con Crédito</span>
+          <span class="value text-info">{{ credit }}</span>
         </div>
       </div>
     </div>
   `,
-    styles: [`
-    .stats-lux-container {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 1.5rem;
+  styles: [`
+    .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; }
+    
+    .stat-card { background: white; padding: 1.5rem; display: flex; align-items: center; gap: 1.25rem; transition: transform 0.2s; }
+    .stat-card:hover { transform: translateY(-3px); }
+    
+    .soft-card { border-radius: 20px; border: 1px solid #f1f5f9; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.05); }
+    
+    .icon-box { 
+      width: 54px; height: 54px; border-radius: 16px; 
+      display: flex; align-items: center; justify-content: center; font-size: 1.5rem; 
     }
+    .icon-box.primary { background: #eff6ff; color: #2563eb; }
+    .icon-box.success { background: #f0fdf4; color: #166534; }
+    .icon-box.info { background: #fdf2f8; color: #ec4899; }
+    
+    .stat-info { display: flex; flex-direction: column; }
+    .stat-info .label { font-size: 0.75rem; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; }
+    .stat-info .value { font-size: 1.75rem; font-weight: 800; color: #1e293b; line-height: 1.1; }
 
-    .stat-lux-card {
-      background: white;
-      border: 1px solid #f1f5f9;
-      border-radius: 24px;
-      padding: 1.5rem 1.75rem;
-      display: flex;
-      align-items: center;
-      gap: 1.25rem;
-      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-
-    .stat-lux-card:hover {
-      border-color: #e2e8f0;
-      box-shadow: 0 10px 20px -5px rgba(15, 23, 42, 0.04);
-      transform: translateY(-2px);
-    }
-
-    .icon-box-lux {
-      width: 52px;
-      height: 52px;
-      border-radius: 16px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1.35rem;
-    }
-
-    .icon-box-lux.primary { background: #eff6ff; color: #3b82f6; }
-    .icon-box-lux.success { background: #ecfdf5; color: #10b981; }
-    .icon-box-lux.info { background: #fdf2f8; color: #ec4899; }
-
-    .stat-content-lux {
-      display: flex;
-      flex-direction: column;
-      gap: 0.15rem;
-    }
-
-    .stat-label-lux {
-      font-size: 0.75rem;
-      font-weight: 700;
-      color: #64748b;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
-
-    .stat-value-lux {
-      font-size: 1.5rem;
-      font-weight: 800;
-      color: #161d35;
-      letter-spacing: -0.5px;
-    }
-
-    @media (max-width: 992px) {
-      .stats-lux-container {
-        grid-template-columns: 1fr 1fr;
-      }
-    }
-
-    @media (max-width: 576px) {
-      .stats-lux-container {
-        grid-template-columns: 1fr;
-      }
-    }
+    @media (max-width: 992px) { .stats-grid { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 576px) { .stats-grid { grid-template-columns: 1fr; } }
   `]
 })
 export class ClienteStatsComponent {

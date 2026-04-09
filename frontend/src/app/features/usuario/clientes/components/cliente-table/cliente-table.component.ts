@@ -8,330 +8,120 @@ import { HasPermissionDirective } from '../../../../../shared/directives/has-per
     standalone: true,
     imports: [CommonModule, HasPermissionDirective],
     template: `
-    <div class="table-container-lux">
-      <div class="table-responsive">
-        <table class="table mb-0 align-middle">
-          <thead>
-            <tr>
-              <th class="ps-4" style="width: 320px">Cliente</th>
-              <th style="width: 160px">Identificación</th>
-              <th style="width: 140px">Estado</th>
-              <th style="width: 200px">Contacto</th>
-              <th style="width: 160px">Crédito</th>
-              <th class="text-end pe-4" style="width: 100px">Acciones</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let cliente of clientes">
-              <!-- CLIENTE INFO -->
-              <td class="ps-4">
-                <div class="d-flex align-items-center gap-3">
-                  <div class="avatar-lux" [style.background]="getAvatarColor(cliente.razon_social, 0.1)" [style.color]="getAvatarColor(cliente.razon_social, 1)">
-                    {{ getInitials(cliente.razon_social) }}
-                  </div>
-                  <div class="d-flex flex-column gap-1">
-                    <span class="client-name-lux">{{ cliente.razon_social }}</span>
-                    <span class="client-subname-lux">{{ cliente.nombre_comercial || 'N/A' }}</span>
-                  </div>
+    <div class="table-responsive soft-card">
+      <table class="table table-hover align-middle mb-0">
+        <thead class="bg-light">
+          <tr>
+            <th class="ps-4">Cliente</th>
+            <th>Identificación</th>
+            <th>Estado</th>
+            <th>Contacto</th>
+            <th>Crédito</th>
+            <th class="text-end pe-4">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let cliente of clientes">
+            <!-- CLIENTE INFO -->
+            <td class="ps-4">
+              <div class="d-flex align-items-center gap-3">
+                <div class="avatar-circle" [style.background]="getAvatarColor(cliente.razon_social, 0.1)" [style.color]="getAvatarColor(cliente.razon_social, 1)">
+                  {{ getInitials(cliente.razon_social) }}
                 </div>
-              </td>
-
-              <!-- IDENTIFICACIÓN -->
-              <td>
                 <div class="d-flex flex-column">
-                  <span class="id-value-lux">{{ cliente.identificacion }}</span>
-                  <span class="id-type-lux">{{ cliente.tipo_identificacion }}</span>
+                  <span class="fw-bold text-dark">{{ cliente.razon_social }}</span>
+                  <small class="text-muted">{{ cliente.nombre_comercial || 'N/A' }}</small>
                 </div>
-              </td>
+              </div>
+            </td>
 
-              <!-- ESTADO -->
-              <td>
-                <div class="status-badge-lux" [ngClass]="cliente.activo ? 'activo' : 'inactivo'">
-                  <span class="dot"></span>
-                  {{ cliente.activo ? 'ACTIVO' : 'INACTIVO' }}
+            <!-- IDENTIFICACIÓN -->
+            <td>
+              <div class="d-flex flex-column">
+                <span class="fw-semibold">{{ cliente.identificacion }}</span>
+                <small class="text-muted text-uppercase" style="font-size: 0.7rem;">{{ cliente.tipo_identificacion }}</small>
+              </div>
+            </td>
+
+            <!-- ESTADO -->
+            <td>
+              <span class="badge" [ngClass]="cliente.activo ? 'badge-success' : 'badge-danger'">
+                {{ cliente.activo ? 'Activo' : 'Inactivo' }}
+              </span>
+            </td>
+
+            <!-- CONTACTO -->
+            <td>
+              <div class="d-flex flex-column gap-1" style="font-size: 0.85rem;">
+                <div class="d-flex align-items-center gap-2">
+                  <i class="bi bi-envelope text-muted"></i>
+                  <span>{{ cliente.email || '—' }}</span>
                 </div>
-              </td>
-
-              <!-- CONTACTO -->
-              <td>
-                <div class="contact-box-lux">
-                  <div class="contact-item-lux">
-                    <i class="bi bi-envelope"></i>
-                    <span>{{ cliente.email || '—' }}</span>
-                  </div>
-                  <div class="contact-item-lux" *ngIf="cliente.telefono">
-                    <i class="bi bi-telephone"></i>
-                    <span>{{ cliente.telefono }}</span>
-                  </div>
+                <div class="d-flex align-items-center gap-2" *ngIf="cliente.telefono">
+                  <i class="bi bi-telephone text-muted"></i>
+                  <span>{{ cliente.telefono }}</span>
                 </div>
-              </td>
+              </div>
+            </td>
 
-              <!-- CRÉDITO -->
-              <td>
-                <div class="credit-box-lux">
-                  <span class="credit-value-lux">{{ cliente.limite_credito | currency:'USD' }}</span>
-                  <span class="credit-days-lux">{{ cliente.dias_credito }} días plazo</span>
-                </div>
-              </td>
+            <!-- CRÉDITO -->
+            <td>
+              <div class="d-flex flex-column">
+                <span class="fw-bold text-dark">{{ (cliente.limite_credito || 0) | number:'1.2-2' }}</span>
+                <small class="text-muted">{{ cliente.dias_credito }} días</small>
+              </div>
+            </td>
 
-              <!-- ACCIONES -->
-              <td class="text-end pe-4">
-                <div class="dropdown">
-                  <button 
-                    class="btn-table-action-lux" 
-                    type="button" 
-                    data-bs-toggle="dropdown"
-                    aria-expanded="false"
-                  >
-                    <i class="bi bi-three-dots"></i>
-                  </button>
-                  <ul class="dropdown-menu dropdown-menu-end shadow-premium-lux border-0 p-2">
-                    <li>
-                      <button class="dropdown-item" (click)="onAction.emit({type: 'view', cliente})">
-                        <i class="bi bi-eye"></i>
-                        <span>Ver Perfil</span>
-                      </button>
-                    </li>
-                    <li *appHasPermission="'CLIENTES_EDITAR'">
-                      <button class="dropdown-item" (click)="onAction.emit({type: 'edit', cliente})">
-                        <i class="bi bi-pencil-square"></i>
-                        <span>Editar</span>
-                      </button>
-                    </li>
-                    <li *appHasPermission="'CLIENTES_ELIMINAR'"><hr class="dropdown-divider"></li>
-                    <li *appHasPermission="'CLIENTES_ELIMINAR'">
-                      <button class="dropdown-item text-danger" (click)="onAction.emit({type: 'delete', cliente})">
-                        <i class="bi bi-trash3"></i>
-                        <span>Eliminar</span>
-                      </button>
-                    </li>
-                  </ul>
-                </div>
-              </td>
-            </tr>
-          </tbody>
-        </table>
+            <!-- ACCIONES -->
+            <td class="text-end pe-4">
+              <div class="action-buttons justify-content-end">
+                <button class="btn-action view" (click)="onAction.emit({type: 'view', cliente})" title="Ver Detalles">
+                  <i class="bi bi-eye"></i>
+                </button>
+                <button *appHasPermission="'CLIENTES_EDITAR'" class="btn-action edit" (click)="onAction.emit({type: 'edit', cliente})" title="Editar">
+                  <i class="bi bi-pencil"></i>
+                </button>
+                <button *appHasPermission="'CLIENTES_ELIMINAR'" class="btn-action delete" (click)="onAction.emit({type: 'delete', cliente})" title="Eliminar">
+                  <i class="bi bi-trash"></i>
+                </button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
 
-        <!-- EMPTY STATE -->
-        <div *ngIf="clientes.length === 0" class="empty-box-lux">
-          <div class="empty-icon-box-lux">
-            <i class="bi bi-people"></i>
-          </div>
-          <h3>No hay clientes</h3>
-          <p>No se encontraron clientes con los filtros aplicados.</p>
-        </div>
+      <!-- EMPTY STATE -->
+      <div *ngIf="clientes.length === 0" class="empty-state py-5 text-center">
+        <i class="bi bi-people text-muted" style="font-size: 3rem;"></i>
+        <h5 class="mt-3 fw-bold">No se encontraron clientes</h5>
+        <p class="text-muted small">Intenta ajustar los filtros de búsqueda</p>
       </div>
     </div>
   `,
-    styles: [`
-    .table-container-lux {
-      background: white;
-      border: 1px solid #f1f5f9;
-      border-radius: 20px;
-      overflow: visible;
+  styles: [`
+    .soft-card { background: white; border-radius: 16px; border: 1px solid #f1f5f9; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.05); overflow: hidden; }
+    
+    .table th { padding: 1.25rem 1rem; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px; border: none; font-weight: 800; color: #64748b; }
+    .table td { padding: 1.1rem 1rem; border-color: #f1f5f9; }
+    
+    .avatar-circle {
+      width: 40px; height: 40px; border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 700; font-size: 0.85rem;
     }
-
-    .table-responsive {
-      overflow: visible !important;
-    }
-
-    .table thead th {
-      background: #f8fafc;
-      padding: 1.25rem 1rem;
-      font-size: 0.75rem;
-      font-weight: 800;
-      color: #94a3b8;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      border-bottom: 2px solid #f1f5f9;
-    }
-
-    .table tbody td {
-      padding: 1.25rem 1rem;
-      border-bottom: 1px solid #f8fafc;
-    }
-
-    .avatar-lux {
-      width: 44px;
-      height: 44px;
-      border-radius: 14px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: 800;
-      font-size: 0.95rem;
-    }
-
-    .client-name-lux {
-      display: block;
-      font-size: 0.95rem;
-      font-weight: 700;
-      color: #1e293b;
-    }
-
-    .client-subname-lux {
-      font-size: 0.75rem;
-      color: #94a3b8;
-      font-weight: 500;
-    }
-
-    .id-value-lux {
-      font-size: 0.9rem;
-      font-weight: 600;
-      color: #1e293b;
-    }
-
-    .id-type-lux {
-      font-size: 0.7rem;
-      color: #94a3b8;
-      font-weight: 600;
-      text-transform: uppercase;
-    }
-
-    .status-badge-lux {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.5rem;
-      padding: 0.45rem 1rem;
-      border-radius: 12px;
-      font-size: 0.7rem;
-      font-weight: 800;
-      letter-spacing: 0.2px;
-    }
-
-    .status-badge-lux.activo { background: #f0fdf4; color: #16a34a; }
-    .status-badge-lux.inactivo { background: #fef2f2; color: #dc2626; }
-
-    .status-badge-lux .dot {
-      width: 6px;
-      height: 6px;
-      border-radius: 50%;
-    }
-
-    .status-badge-lux.activo .dot { background: #16a34a; box-shadow: 0 0 8px rgba(22, 163, 74, 0.4); }
-    .status-badge-lux.inactivo .dot { background: #dc2626; }
-
-    .contact-box-lux {
-      display: flex;
-      flex-direction: column;
-      gap: 0.35rem;
-    }
-
-    .contact-item-lux {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      font-size: 0.8rem;
-      color: #475569;
-      font-weight: 500;
-    }
-
-    .contact-item-lux i {
-      color: #94a3b8;
-      font-size: 0.9rem;
-    }
-
-    .credit-box-lux {
-      display: flex;
-      flex-direction: column;
-    }
-
-    .credit-value-lux {
-      font-size: 0.95rem;
-      font-weight: 700;
-      color: #1e293b;
-    }
-
-    .credit-days-lux {
-      font-size: 0.7rem;
-      color: #64748b;
-      font-weight: 600;
-    }
-
-    .btn-table-action-lux {
-      width: 36px;
-      height: 36px;
-      border-radius: 10px;
-      border: 1px solid #f1f5f9;
-      background: white;
-      color: #94a3b8;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: all 0.2s;
-    }
-
-    .btn-table-action-lux:hover {
-      background: #f8fafc;
-      color: #161d35;
-      border-color: #cbd5e1;
-    }
-
-    .dropdown-menu {
-      border-radius: 16px;
-      padding: 0.5rem;
-      min-width: 180px;
-      border: 1px solid #f1f5f9;
-      box-shadow: 0 15px 35px rgba(22, 29, 53, 0.1);
-      z-index: 9999 !important;
-    }
-
-    .dropdown-item {
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-      padding: 0.6rem 1rem;
-      border-radius: 10px;
-      font-size: 0.85rem;
-      font-weight: 600;
-      color: #475569;
-      cursor: pointer;
-      border: none;
-      background: transparent;
-      width: 100%;
-      text-align: left;
-    }
-
-    .dropdown-item:hover {
-      background: #f8fafc;
-      color: #161d35;
-    }
-
-    .dropdown-item.text-danger:hover {
-      background: #fef2f2;
-    }
-
-    .empty-box-lux {
-      padding: 4rem 2rem;
-      text-align: center;
-    }
-
-    .empty-icon-box-lux {
-      width: 80px;
-      height: 80px;
-      background: #f8fafc;
-      border-radius: 30px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 2.5rem;
-      color: #cbd5e1;
-      margin: 0 auto 1.5rem;
-    }
-
-    .empty-box-lux h3 {
-      font-size: 1.25rem;
-      font-weight: 800;
-      color: #1e293b;
-      margin-bottom: 0.5rem;
-    }
-
-    .empty-box-lux p {
-      color: #94a3b8;
-      font-size: 0.9rem;
-      max-width: 300px;
-      margin: 0 auto;
-    }
+    
+    .badge { padding: 0.4rem 0.8rem; border-radius: 8px; font-weight: 600; text-transform: capitalize; font-size: 0.75rem; }
+    .badge-success { background: #dcfce7; color: #166534; }
+    .badge-danger { background: #fee2e2; color: #991b1b; }
+    
+    .action-buttons { display: flex; gap: 0.5rem; }
+    .btn-action { width: 34px; height: 34px; border: none; border-radius: 10px; display: flex; align-items: center; justify-content: center; transition: all 0.2s; cursor: pointer; }
+    .btn-action.view { background: #f8fafc; color: #64748b; }
+    .btn-action.edit { background: #eff6ff; color: #2563eb; }
+    .btn-action.delete { background: #fef2f2; color: #ef4444; }
+    .btn-action:hover { transform: scale(1.1); }
+    
+    .empty-state i { opacity: 0.5; }
   `]
 })
 export class ClienteTableComponent {

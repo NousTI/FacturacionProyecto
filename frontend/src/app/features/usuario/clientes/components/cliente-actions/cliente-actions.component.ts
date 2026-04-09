@@ -8,184 +8,71 @@ import { HasPermissionDirective } from '../../../../../shared/directives/has-per
     standalone: true,
     imports: [CommonModule, FormsModule, HasPermissionDirective],
     template: `
-    <div class="actions-box-lux">
-      <div class="row align-items-center g-3">
+    <div class="filters-card mb-4">
+      <div class="row g-3">
         <!-- BUSCADOR -->
-        <div class="col-12 col-lg-7">
-          <div class="search-input-wrapper">
-            <i class="bi bi-search search-icon"></i>
+        <div class="col-md-6">
+          <div class="search-box">
+            <i class="bi bi-search"></i>
             <input 
               type="text" 
+              class="form-control" 
               [(ngModel)]="searchQuery" 
               (ngModelChange)="onSearchChange($event)"
               placeholder="Buscar por cliente, identificación o email..." 
-              class="search-input-lux"
             >
           </div>
         </div>
 
         <!-- FILTROS Y ACCIÓN -->
-        <div class="col-12 col-lg-5">
-          <div class="d-flex gap-2 justify-content-lg-end align-items-center">
-            
-            <!-- FILTRO ESTADO -->
-            <div class="dropdown">
-              <button class="btn-filter-lux" type="button" data-bs-toggle="dropdown">
-                <i class="bi bi-filter me-2"></i>
-                {{ filters.estado === 'ALL' ? 'Todos los Estados' : (filters.estado === 'ACTIVO' ? 'Activos' : 'Inactivos') }}
-              </button>
-              <ul class="dropdown-menu dropdown-menu-end shadow-premium-lux border-0 p-2">
-                <li><a class="dropdown-item" (click)="setFilter('ALL')">Todos los Estados</a></li>
-                <li><a class="dropdown-item" (click)="setFilter('ACTIVO')">Activos</a></li>
-                <li><a class="dropdown-item" (click)="setFilter('INACTIVO')">Inactivos</a></li>
-              </ul>
-            </div>
-
-            <button 
-              *appHasPermission="'CLIENTES_EXPORTAR'"
-              (click)="onExport.emit()"
-              class="btn-export-lux"
-            >
-              <i class="bi bi-download me-2"></i>
-              <span>Exportar</span>
+        <div class="col-md-6 d-flex gap-2 justify-content-end">
+          
+          <!-- FILTRO ESTADO -->
+          <div class="dropdown">
+            <button class="btn btn-light dropdown-toggle" type="button" data-bs-toggle="dropdown">
+              <i class="bi bi-filter me-1"></i>
+              {{ filters.estado === 'ALL' ? 'Todos' : (filters.estado === 'ACTIVO' ? 'Activos' : 'Inactivos') }}
             </button>
-
-            <button 
-              *appHasPermission="'CLIENTES_CREAR'"
-              (click)="onCreate.emit()"
-              class="btn-create-lux"
-            >
-              <i class="bi bi-plus-lg me-2"></i>
-              <span>Nuevo Cliente</span>
-            </button>
+            <ul class="dropdown-menu dropdown-menu-end shadow border-0 p-2">
+              <li><a class="dropdown-item" (click)="setFilter('ALL')">Todos los Estados</a></li>
+              <li><a class="dropdown-item" (click)="setFilter('ACTIVO')">Activos</a></li>
+              <li><a class="dropdown-item" (click)="setFilter('INACTIVO')">Inactivos</a></li>
+            </ul>
           </div>
+
+          <button 
+            *appHasPermission="'CLIENTES_EXPORTAR'"
+            (click)="onExport.emit()"
+            class="btn btn-light"
+          >
+            <i class="bi bi-download"></i>
+          </button>
+
+          <button 
+            *appHasPermission="'CLIENTES_CREAR'"
+            (click)="onCreate.emit()"
+            class="btn btn-primary"
+          >
+            <i class="bi bi-plus-lg me-2"></i> Nuevo Cliente
+          </button>
         </div>
       </div>
     </div>
   `,
   styles: [`
-    .actions-box-lux {
-      background: white;
-      border: 1px solid #f1f5f9;
-      border-radius: 20px;
-      padding: 1rem 1.5rem;
-      margin-bottom: 2rem;
-    }
+    .filters-card { background: white; border-radius: 16px; padding: 1.25rem; border: 1px solid #f1f5f9; }
+    
+    .search-box { position: relative; }
+    .search-box i { position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); color: #94a3b8; }
+    .search-box .form-control { padding-left: 2.5rem; border-radius: 10px; border-color: #e2e8f0; font-size: 0.9rem; }
+    
+    .btn { border-radius: 10px; font-weight: 600; padding: 0.6rem 1rem; font-size: 0.9rem; }
+    .btn-primary { background: #2563eb; border: none; }
+    .btn-light { background: #f8fafc; border: 1px solid #e2e8f0; color: #64748b; }
+    .btn-light:hover { background: #f1f5f9; color: #1e293b; }
 
-    .search-input-wrapper {
-      position: relative;
-      display: flex;
-      align-items: center;
-    }
-
-    .search-icon {
-      position: absolute;
-      left: 1.25rem;
-      color: #94a3b8;
-      font-size: 1rem;
-      pointer-events: none;
-    }
-
-    .search-input-lux {
-      width: 100%;
-      background: #f8fafc;
-      border: 1px solid #f1f5f9;
-      border-radius: 14px;
-      padding: 0.7rem 1rem 0.7rem 3rem;
-      font-size: 0.9rem;
-      font-weight: 500;
-      color: #1e293b;
-      transition: all 0.2s;
-    }
-
-    .search-input-lux:focus {
-      background: white;
-      border-color: #3b82f6;
-      box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.05);
-      outline: none;
-    }
-
-    .btn-filter-lux {
-      background: white;
-      border: 1px solid #f1f5f9;
-      padding: 0.7rem 1.25rem;
-      border-radius: 14px;
-      font-size: 0.85rem;
-      font-weight: 700;
-      color: #64748b;
-      display: flex;
-      align-items: center;
-      transition: all 0.2s;
-    }
-
-    .btn-filter-lux:hover {
-      background: #f8fafc;
-      color: #161d35;
-      border-color: #cbd5e1;
-    }
-
-    .btn-export-lux {
-      background: #f8fafc;
-      border: 1px solid #e2e8f0;
-      padding: 0.7rem 1.25rem;
-      border-radius: 14px;
-      font-size: 0.85rem;
-      font-weight: 700;
-      color: #334155;
-      display: flex;
-      align-items: center;
-      transition: all 0.2s;
-    }
-
-    .btn-export-lux:hover {
-      background: #f1f5f9;
-      color: #1e293b;
-      border-color: #cbd5e1;
-      transform: translateY(-2px);
-    }
-
-    .btn-create-lux {
-      background: #161d35;
-      color: white;
-      border: none;
-      padding: 0.7rem 1.5rem;
-      border-radius: 14px;
-      font-size: 0.85rem;
-      font-weight: 800;
-      display: flex;
-      align-items: center;
-      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-
-    .btn-create-lux:hover {
-      background: #232d4b;
-      transform: translateY(-2px);
-      box-shadow: 0 10px 20px -5px rgba(22, 29, 53, 0.3);
-    }
-
-    .dropdown-menu {
-      border-radius: 16px;
-      padding: 0.5rem;
-      min-width: 220px;
-    }
-
-    .dropdown-item {
-      padding: 0.7rem 1rem;
-      border-radius: 10px;
-      font-size: 0.85rem;
-      font-weight: 600;
-      color: #475569;
-      cursor: pointer;
-    }
-
-    .dropdown-item:hover {
-      background: #f8fafc;
-      color: #161d35;
-    }
-
-    .shadow-premium-lux {
-      box-shadow: 0 15px 35px rgba(22, 29, 53, 0.15);
-    }
+    .dropdown-menu { border-radius: 12px; font-size: 0.85rem; min-width: 180px; }
+    .dropdown-item { border-radius: 8px; padding: 0.5rem 0.75rem; font-weight: 500; cursor: pointer; }
   `]
 })
 export class ClienteActionsComponent {

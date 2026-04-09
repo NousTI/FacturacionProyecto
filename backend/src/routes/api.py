@@ -61,11 +61,10 @@ api_router.include_router(formas_pago_router, prefix="/formas-pago", tags=["Form
 from ..modules.facturas.router import router as facturas_router
 api_router.include_router(facturas_router, prefix="/facturas", tags=["Facturas"], dependencies=operativo)
 
-from ..modules.categorias_gasto.router import router as categorias_gasto_router
-api_router.include_router(categorias_gasto_router, prefix="/categoria-gasto", tags=["Categorías de Gasto"], dependencies=operativo)
+# Consolidated Expenses Module (includes categories and payments)
+from ..modules.gastos import router as gastos_router
+api_router.include_router(gastos_router, prefix="/gastos", dependencies=operativo)
 
-from ..modules.gastos.router import router as gastos_router
-api_router.include_router(gastos_router, prefix="/gastos", tags=["Gastos"], dependencies=operativo)
 
 from ..modules.cuentas_cobrar.router import router as cuentas_cobrar_router
 api_router.include_router(cuentas_cobrar_router, prefix="/cuentas-cobrar", tags=["Cuentas por Cobrar"], dependencies=operativo)
@@ -76,8 +75,6 @@ api_router.include_router(cuentas_pagar_router, prefix="/cuentas-pagar", tags=["
 from ..modules.pagos_factura.router import router as pagos_factura_router
 api_router.include_router(pagos_factura_router, prefix="/pagos-factura", tags=["Pagos de Facturas"], dependencies=operativo)
 
-from ..modules.pagos_gasto.router import router as pagos_gasto_router
-api_router.include_router(pagos_gasto_router, prefix="/pagos-gasto", tags=["Pagos de Gastos"], dependencies=operativo)
 
 from ..modules.sri.router import router as sri_router
 api_router.include_router(sri_router, prefix="/sri", tags=["SRI"], dependencies=operativo)

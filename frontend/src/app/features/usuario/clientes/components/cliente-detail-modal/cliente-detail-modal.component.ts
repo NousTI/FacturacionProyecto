@@ -7,286 +7,138 @@ import { Cliente } from '../../../../../domain/models/cliente.model';
     standalone: true,
     imports: [CommonModule],
     template: `
-    <div class="modal-overlay animate__animated animate__fadeIn animate__faster" (click)="close()">
-      <div class="modal-lux-container" (click)="$event.stopPropagation()">
+    <div class="modal-overlay" (click)="close()">
+      <div class="modal-content-container glass-modal shadow-lg" (click)="$event.stopPropagation()" style="max-width: 800px;">
         
         <!-- Header -->
-        <div class="modal-lux-header">
+        <div class="modal-header border-0 pb-0 bg-light-soft">
           <div class="d-flex align-items-center gap-4">
-            <div class="avatar-lux-large" [style.background]="getAvatarColor(cliente.razon_social, 0.1)" [style.color]="getAvatarColor(cliente.razon_social, 1)">
+            <div class="avatar-circle-large" [style.background]="getAvatarColor(cliente.razon_social, 0.1)" [style.color]="getAvatarColor(cliente.razon_social, 1)">
               {{ getInitials(cliente) }}
             </div>
             <div>
-              <h2 class="modal-lux-title">{{ cliente.razon_social }}</h2>
-              <div class="status-lux-badge mt-2" [class.activo]="cliente.activo">
-                <span class="dot"></span>
-                {{ cliente.activo ? 'Perfil Activo' : 'Perfil Suspendido' }}
-              </div>
+              <h4 class="fw-bold mb-1">{{ cliente.razon_social }}</h4>
+              <span class="badge" [ngClass]="cliente.activo ? 'badge-success' : 'badge-danger'">
+                {{ cliente.activo ? 'Cliente Activo' : 'Cliente Inactivo' }}
+              </span>
             </div>
           </div>
-          <button (click)="close()" class="btn-close-lux">
-            <i class="bi bi-x"></i>
-          </button>
+          <button class="btn-close" (click)="close()"></button>
         </div>
 
-        <div class="modal-lux-body scroll-custom">
-          
+        <div class="modal-body py-4 scroll-custom">
           <div class="row g-4">
-            <!-- Información Principal -->
+            <!-- Left Column: Details -->
             <div class="col-md-7">
-              <div class="lux-detail-section">
-                <h3 class="lux-section-title">Identificación & Legal</h3>
-                <div class="lux-info-grid">
-                  <div class="lux-info-item">
-                    <span class="lux-label">Tipo Documento</span>
-                    <span class="lux-value">{{ cliente.tipo_identificacion }}</span>
+              <div class="detail-section mb-4">
+                <h6 class="text-uppercase text-muted fw-bold mb-3 small-tracking">Identificación Legal</h6>
+                <div class="row g-3">
+                  <div class="col-6">
+                    <label class="detail-label">Tipo Documento</label>
+                    <div class="detail-value text-uppercase">{{ cliente.tipo_identificacion }}</div>
                   </div>
-                  <div class="lux-info-item">
-                    <span class="lux-label">Nro. Identificación</span>
-                    <span class="lux-value featured">{{ cliente.identificacion }}</span>
+                  <div class="col-6">
+                    <label class="detail-label">Número</label>
+                    <div class="detail-value fw-bold">{{ cliente.identificacion }}</div>
                   </div>
-                  <div class="lux-info-item col-12" *ngIf="cliente.nombre_comercial">
-                    <span class="lux-label">Nombre Comercial</span>
-                    <span class="lux-value">{{ cliente.nombre_comercial }}</span>
+                  <div class="col-12" *ngIf="cliente.nombre_comercial">
+                    <label class="detail-label">Nombre Comercial</label>
+                    <div class="detail-value">{{ cliente.nombre_comercial }}</div>
                   </div>
                 </div>
               </div>
 
-              <div class="lux-detail-section mt-5">
-                <h3 class="lux-section-title">Contacto & Ubicación</h3>
-                <div class="lux-info-grid">
-                  <div class="lux-info-item col-12">
-                    <span class="lux-label">Correo Electrónico Principal</span>
-                    <span class="lux-value email-lux">{{ cliente.email }}</span>
+              <div class="detail-section">
+                <h6 class="text-uppercase text-muted fw-bold mb-3 small-tracking">Contacto & Ubicación</h6>
+                <div class="row g-3">
+                  <div class="col-12">
+                    <label class="detail-label">Email Principal</label>
+                    <div class="detail-value text-primary fw-semibold">{{ cliente.email }}</div>
                   </div>
-                  <div class="lux-info-item">
-                    <span class="lux-label">Línea Telefónica</span>
-                    <span class="lux-value">{{ cliente.telefono || 'Sin registro' }}</span>
+                  <div class="col-6">
+                    <label class="detail-label">Teléfono</label>
+                    <div class="detail-value">{{ cliente.telefono || '—' }}</div>
                   </div>
-                  <div class="lux-info-item">
-                    <span class="lux-label">Provincia</span>
-                    <span class="lux-value">{{ cliente.provincia || 'N/A' }}</span>
+                  <div class="col-6">
+                    <label class="detail-label">Ciudad</label>
+                    <div class="detail-value">{{ cliente.ciudad || '—' }}, {{ cliente.provincia || '—' }}</div>
                   </div>
-                  <div class="lux-info-item">
-                    <span class="lux-label">Ciudad/Cantón</span>
-                    <span class="lux-value">{{ cliente.ciudad || 'N/A' }}</span>
-                  </div>
-                  <div class="lux-info-item col-12">
-                    <span class="lux-label">Dirección de Facturación</span>
-                    <span class="lux-value address-lux">{{ cliente.direccion || 'Sin dirección registrada' }}</span>
+                  <div class="col-12">
+                    <label class="detail-label">Dirección</label>
+                    <div class="detail-value small text-muted">{{ cliente.direccion || 'Sin dirección registrada' }}</div>
                   </div>
                 </div>
               </div>
             </div>
 
-            <!-- Crédito y Auditoría -->
+            <!-- Right Column: Stats & Audit -->
             <div class="col-md-5">
-              <div class="lux-card-dark p-4">
-                <h3 class="lux-section-title text-white-50 mb-4">Condiciones Comerciales</h3>
-                <div class="d-flex flex-column gap-4">
-                   <div class="lux-metric">
-                      <span class="lux-metric-label">Límite de Crédito</span>
-                      <span class="lux-metric-value">{{ (cliente.limite_credito || 0) | currency }}</span>
-                   </div>
-                   <div class="lux-metric">
-                      <span class="lux-metric-label">Días de Crédito</span>
-                      <span class="lux-metric-value">{{ cliente.dias_credito || 0 }} Días</span>
-                   </div>
-                   <div class="lux-metric">
-                      <span class="lux-metric-label">Cartera Pendiente</span>
-                      <span class="lux-metric-value text-info font-monospace">$ 0.00</span>
-                   </div>
+              <div class="metric-card mb-4">
+                <h6 class="text-white-50 fw-bold mb-3 small-tracking">Perfil Comercial</h6>
+                <div class="d-flex flex-column gap-3">
+                  <div class="metric-item">
+                    <span class="metric-label">Límite de Crédito</span>
+                    <span class="metric-value">{{ (cliente.limite_credito || 0) | currency }}</span>
+                  </div>
+                  <div class="metric-item">
+                    <span class="metric-label">Plazo de Pago</span>
+                    <span class="metric-value">{{ cliente.dias_credito || 0 }} Días</span>
+                  </div>
                 </div>
               </div>
 
-              <div class="lux-audit-section mt-4">
-                <h3 class="lux-section-title">Registro & Auditoría</h3>
-                <div class="lux-audit-card">
-                  <div class="audit-row">
-                    <span class="label">Creado en</span>
-                    <span class="val">{{ cliente.created_at | date:'dd MMM, yyyy' }}</span>
+              <div class="audit-card bg-light border-0">
+                <h6 class="text-muted fw-bold mb-3 small-tracking">Auditoría</h6>
+                <div class="d-flex flex-column gap-2 small">
+                  <div class="d-flex justify-content-between">
+                    <span class="text-muted">F. Registro</span>
+                    <span class="fw-semibold">{{ cliente.created_at | date:'dd/MM/yyyy' }}</span>
                   </div>
-                  <div class="audit-row" *ngIf="cliente.updated_at">
-                    <span class="label">Última actualización</span>
-                    <span class="val">{{ cliente.updated_at | date:'dd MMM, yyyy' }}</span>
+                  <div class="d-flex justify-content-between" *ngIf="cliente.updated_at">
+                    <span class="text-muted">Última mod.</span>
+                    <span class="fw-semibold">{{ cliente.updated_at | date:'dd/MM/yyyy' }}</span>
                   </div>
                 </div>
               </div>
             </div>
           </div>
-
         </div>
 
-        <!-- Footer -->
-        <div class="modal-lux-footer">
-          <button (click)="close()" class="btn-lux-primary w-100">Entendido</button>
+        <div class="modal-footer border-0 pb-4 px-4">
+          <button (click)="close()" class="btn btn-primary w-100 py-2 fw-bold">Cerrar Detalle</button>
         </div>
 
       </div>
     </div>
   `,
-    styles: [`
-    .modal-overlay {
-      position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-      background: rgba(15, 23, 42, 0.3); backdrop-filter: blur(12px);
-      display: flex; align-items: center; justify-content: center; z-index: 10000;
-      padding: 1rem;
-    }
-
-    .modal-lux-container {
-      background: white;
-      width: 820px;
-      max-width: 95vw;
-      max-height: 90vh;
-      border-radius: 32px;
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
-      box-shadow: 0 50px 100px -20px rgba(15, 23, 42, 0.25);
-    }
-
-    .modal-lux-header {
-      padding: 2.5rem;
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      background: linear-gradient(to bottom, #f8fafc, #ffffff);
-      border-bottom: 1px solid #f1f5f9;
-    }
-
-    .avatar-lux-large {
-      width: 72px;
-      height: 72px;
-      border-radius: 22px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1.75rem;
-      font-weight: 800;
-      box-shadow: 0 10px 20px -5px rgba(0, 0, 0, 0.1);
-    }
-
-    .modal-lux-title {
-      font-size: 1.5rem;
-      font-weight: 900;
-      color: #1e293b;
-      margin: 0;
-      letter-spacing: -0.5px;
-    }
-
-    .status-lux-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.5rem;
-      padding: 0.4rem 0.85rem;
-      border-radius: 10px;
-      font-size: 0.75rem;
-      font-weight: 700;
-      background: #f1f5f9;
-      color: #64748b;
-    }
-
-    .status-lux-badge.activo { background: #f0fdf4; color: #16a34a; }
-    .status-lux-badge .dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
-
-    .btn-close-lux {
-      background: white;
-      border: 1px solid #e2e8f0;
-      width: 40px;
-      height: 40px;
-      border-radius: 12px;
-      color: #94a3b8;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: all 0.2s;
-    }
-
-    .btn-close-lux:hover {
-      background: #f8fafc;
-      color: #1e293b;
-    }
-
-    .modal-lux-body {
-      padding: 2.5rem;
-      overflow-y: auto;
-      flex: 1;
-    }
-
-    .lux-section-title {
-      font-size: 0.8rem;
-      font-weight: 800;
-      color: #94a3b8;
-      text-transform: uppercase;
-      letter-spacing: 0.8px;
-      margin-bottom: 1.5rem;
-    }
-
-    .lux-info-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 2rem;
-    }
-
-    .lux-info-item {
-      display: flex;
-      flex-direction: column;
-      gap: 0.35rem;
-    }
-
-    .lux-label { font-size: 0.75rem; font-weight: 700; color: #94a3b8; }
-    .lux-value { font-size: 1rem; font-weight: 700; color: #1e293b; }
-    .lux-value.featured { color: #111827; font-size: 1.15rem; }
-    .lux-value.email-lux { color: #2563eb; }
-
-    .lux-card-dark {
-      background: #111827;
-      border-radius: 28px;
-      color: white;
-      box-shadow: 0 20px 40px rgba(0,0,0,0.15);
-    }
-
-    .lux-metric { display: flex; flex-direction: column; gap: 0.25rem; }
-    .lux-metric-label { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; color: #94a3b8; }
-    .lux-metric-value { font-size: 1.75rem; font-weight: 800; letter-spacing: -0.5px; }
-
-    .lux-audit-card {
-      background: #f8fafc;
-      border-radius: 20px;
-      border: 1px solid #f1f5f9;
-      padding: 1.25rem;
-      display: flex;
-      flex-direction: column;
-      gap: 1rem;
-    }
-
-    .audit-row { display: flex; justify-content: space-between; font-size: 0.8rem; }
-    .audit-row .label { font-weight: 600; color: #64748b; }
-    .audit-row .val { font-weight: 700; color: #1e293b; }
-
-    .modal-lux-footer {
-      padding: 2rem 2.5rem;
-      background: white;
-      border-top: 1px solid #f1f5f9;
-    }
-
-    .btn-lux-primary {
-      background: #111827;
-      color: white;
-      border: none;
-      padding: 1rem;
-      border-radius: 18px;
-      font-weight: 800;
-      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-
-    .btn-lux-primary:hover {
-      background: #1f2937;
-      transform: translateY(-2px);
-      box-shadow: 0 10px 20px rgba(0,0,0,0.1);
-    }
-
-    .scroll-custom::-webkit-scrollbar { width: 6px; }
+  styles: [`
+    .modal-overlay { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.4); backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; z-index: 1050; animation: fadeIn 0.2s; padding: 1rem; }
+    .modal-content-container { background: white; border-radius: 24px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); max-height: 90vh; overflow: hidden; width: 100%; position: relative; display: flex; flex-direction: column; }
+    
+    .bg-light-soft { background: #f8fafc; padding: 2rem; }
+    .avatar-circle-large { width: 64px; height: 64px; border-radius: 18px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; font-weight: 800; }
+    
+    .modal-body { overflow-y: auto; padding: 2rem; }
+    
+    .small-tracking { font-size: 0.7rem; letter-spacing: 1px; }
+    .detail-label { font-size: 0.75rem; color: #94a3b8; font-weight: 700; margin-bottom: 0.2rem; display: block; }
+    .detail-value { font-size: 0.95rem; color: #1e293b; font-weight: 600; }
+    
+    .metric-card { background: #1e293b; border-radius: 20px; padding: 1.5rem; color: white; }
+    .metric-item { display: flex; flex-direction: column; }
+    .metric-label { font-size: 0.65rem; text-transform: uppercase; color: #94a3b8; font-weight: 700; }
+    .metric-value { font-size: 1.5rem; font-weight: 800; }
+    
+    .audit-card { border-radius: 16px; padding: 1.25rem; }
+    
+    .badge { padding: 0.4rem 0.8rem; border-radius: 8px; font-weight: 700; font-size: 0.75rem; }
+    .badge-success { background: #dcfce7; color: #166534; }
+    .badge-danger { background: #fee2e2; color: #991b1b; }
+    
+    .btn-primary { background: #2563eb; border: none; border-radius: 12px; }
+    
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    .scroll-custom::-webkit-scrollbar { width: 4px; }
     .scroll-custom::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
   `]
 })

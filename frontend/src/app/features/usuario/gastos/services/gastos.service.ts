@@ -3,7 +3,8 @@ import { HttpClient } from '@angular/common/http';
 import { Observable, BehaviorSubject, tap, map, filter, forkJoin } from 'rxjs';
 import { BaseApiService } from '../../../../core/api/base-api.service';
 import { Gasto, GastoCreate, GastoUpdate, GastoStats } from '../../../../domain/models/gasto.model';
-import { CategoriaGasto } from '../../../../domain/models/categoria-gasto.model';
+import { CategoriaGasto, CategoriaGastoCreate, CategoriaGastoUpdate } from '../../../../domain/models/categoria-gasto.model';
+import { PagoGasto, PagoGastoCreate, PagoGastoUpdate } from '../../../../domain/models/pago-gasto.model';
 import { Proveedor } from '../../../../domain/models/proveedor.model';
 import { ApiResponse } from '../../../../core/api/api-response.model';
 
@@ -12,77 +13,82 @@ import { ApiResponse } from '../../../../core/api/api-response.model';
 })
 export class GastosService extends BaseApiService {
   private readonly ENDPOINT = 'gastos';
-  private readonly CATEGORIAS_ENDPOINT = 'categoria-gasto';
+  private readonly CATEGORIAS_ENDPOINT = 'gastos/categorias';
+  private readonly PAGOS_ENDPOINT = 'gastos/pagos';
   private readonly PROVEEDORES_ENDPOINT = 'proveedores';
 
-  private _gastos$ = new BehaviorSubject<Gasto[] | null>(null);
-  private _categorias$ = new BehaviorSubject<CategoriaGasto[] | null>(null);
-  private _proveedores$ = new BehaviorSubject<Proveedor[] | null>(null);
+  private _gastos$ = new BehaviorSubject<Gasto[]>([]);
+  private _categorias$ = new BehaviorSubject<CategoriaGasto[]>([]);
+  private _pagos$ = new BehaviorSubject<PagoGasto[]>([]);
+  private _proveedores$ = new BehaviorSubject<Proveedor[]>([]);
   private _stats$ = new BehaviorSubject<GastoStats | null>(null);
+  
   private _loaded = false;
-  private _relatedLoaded = false;
+  private _categoriasLoaded = false;
+  private _pagosLoaded = false;
+  private _proveedoresLoaded = false;
 
   constructor(http: HttpClient) {
     super(http);
   }
 
+  // --- Getters ---
   get gastos$() {
-    return this._gastos$.pipe(
-      filter(data => data !== null),
-      map(data => data as Gasto[])
-    );
+    return this._gastos$.asObservable();
   }
-
   get categorias$() {
-    return this._categorias$.pipe(
-      filter(data => data !== null),
-      map(data => data as CategoriaGasto[])
-    );
+    return this._categorias$.asObservable();
   }
-
+  get pagos$() {
+    return this._pagos$.asObservable();
+  }
   get proveedores$() {
-    return this._proveedores$.pipe(
-      filter(data => data !== null),
-      map(data => data as Proveedor[])
-    );
+    return this._proveedores$.asObservable();
   }
-
   get stats$() {
     return this._stats$.asObservable();
   }
 
-  loadInitialData(): void {
-    if (this._loaded) return;
+  // --- Initial Loading ---
+  loadInitialData(force = false): void {
+    if (!this._loaded || force) {
+      this.get<ApiResponse<Gasto[]>>(this.ENDPOINT).subscribe(resp => {
+        if (resp && resp.detalles) {
+          this._gastos$.next(resp.detalles);
+          this._loaded = true;
+          this._calculateStatsLocally(resp.detalles);
+        }
+      });
+    }
 
-    this.get<ApiResponse<Gasto[]>>(this.ENDPOINT).subscribe(resp => {
-      if (resp && resp.detalles) {
-        this._gastos$.next(resp.detalles);
-        this._loaded = true;
-        this._calculateStatsLocally(resp.detalles);
-      }
-    });
+    if (!this._categoriasLoaded) {
+      this.get<ApiResponse<CategoriaGasto[]>>(this.CATEGORIAS_ENDPOINT).subscribe(resp => {
+        if (resp && resp.detalles) {
+          this._categorias$.next(resp.detalles);
+          this._categoriasLoaded = true;
+        }
+      });
+    }
 
-    if (!this._relatedLoaded) {
-      this._loadRelatedData();
+    if (!this._proveedoresLoaded) {
+      this.get<ApiResponse<Proveedor[]>>(this.PROVEEDORES_ENDPOINT).subscribe(resp => {
+        if (resp && resp.detalles) {
+          this._proveedores$.next(resp.detalles);
+          this._proveedoresLoaded = true;
+        }
+      });
     }
   }
 
-  private _loadRelatedData(): void {
-    forkJoin([
-      this.get<ApiResponse<CategoriaGasto[]>>(this.CATEGORIAS_ENDPOINT),
-      this.get<ApiResponse<Proveedor[]>>(this.PROVEEDORES_ENDPOINT)
-    ]).subscribe({
-      next: (responses) => {
-        if (responses[0] && responses[0].detalles) {
-          this._categorias$.next(responses[0].detalles);
+  loadPagos(force = false): void {
+    if (!this._pagosLoaded || force) {
+      this.get<ApiResponse<PagoGasto[]>>(this.PAGOS_ENDPOINT).subscribe(resp => {
+        if (resp && resp.detalles) {
+          this._pagos$.next(resp.detalles);
+          this._pagosLoaded = true;
         }
-        if (responses[1] && responses[1].detalles) {
-          this._proveedores$.next(responses[1].detalles);
-        }
-        this._relatedLoaded = true;
-      },
-      error: (err) => console.error('Error cargando datos relacionados:', err)
-    });
+      });
+    }
   }
 
   private _calculateStatsLocally(gastos: Gasto[]) {
@@ -95,13 +101,7 @@ export class GastosService extends BaseApiService {
     this._stats$.next(stats);
   }
 
-  getGastos(): Observable<Gasto[]> {
-    if (!this._loaded) {
-      this.loadInitialData();
-    }
-    return this.gastos$;
-  }
-
+  // --- Gastos Crud ---
   createGasto(gasto: GastoCreate): Observable<Gasto> {
     return this.post<ApiResponse<Gasto>>(this.ENDPOINT, gasto).pipe(
       map(resp => resp.detalles),
@@ -118,12 +118,12 @@ export class GastosService extends BaseApiService {
   updateGasto(id: string, gasto: GastoUpdate): Observable<Gasto> {
     return this.put<ApiResponse<Gasto>>(`${this.ENDPOINT}/${id}`, gasto).pipe(
       map(resp => resp.detalles),
-      tap(updatedGasto => {
-        if (updatedGasto) {
+      tap(updated => {
+        if (updated) {
           const current = this._gastos$.value || [];
-          const index = current.findIndex(g => g.id === id);
-          if (index !== -1) {
-            current[index] = updatedGasto;
+          const idx = current.findIndex(g => g.id === id);
+          if (idx !== -1) {
+            current[idx] = updated;
             this._gastos$.next([...current]);
             this._calculateStatsLocally(current);
           }
@@ -142,8 +142,89 @@ export class GastosService extends BaseApiService {
     );
   }
 
+  // --- Categorias Crud ---
+  createCategoria(categoria: CategoriaGastoCreate): Observable<CategoriaGasto> {
+    return this.post<ApiResponse<CategoriaGasto>>(this.CATEGORIAS_ENDPOINT, categoria).pipe(
+      map(resp => resp.detalles),
+      tap(newCat => {
+        if (newCat) {
+          const current = this._categorias$.value || [];
+          this._categorias$.next([newCat, ...current]);
+        }
+      })
+    );
+  }
+
+  updateCategoria(id: string, categoria: CategoriaGastoUpdate): Observable<CategoriaGasto> {
+    return this.put<ApiResponse<CategoriaGasto>>(`${this.CATEGORIAS_ENDPOINT}/${id}`, categoria).pipe(
+      map(resp => resp.detalles),
+      tap(updated => {
+        if (updated) {
+          const current = this._categorias$.value || [];
+          const idx = current.findIndex(c => c.id === id);
+          if (idx !== -1) {
+            current[idx] = updated;
+            this._categorias$.next([...current]);
+          }
+        }
+      })
+    );
+  }
+
+  deleteCategoria(id: string): Observable<ApiResponse<null>> {
+    return this.delete<ApiResponse<null>>(`${this.CATEGORIAS_ENDPOINT}/${id}`).pipe(
+      tap(() => {
+        const current = this._categorias$.value || [];
+        this._categorias$.next(current.filter(c => c.id !== id));
+      })
+    );
+  }
+
+  // --- Pagos Crud ---
+  createPago(pago: PagoGastoCreate): Observable<PagoGasto> {
+    return this.post<ApiResponse<PagoGasto>>(this.PAGOS_ENDPOINT, pago).pipe(
+      map(resp => resp.detalles),
+      tap(newPago => {
+        if (newPago) {
+          const current = this._pagos$.value || [];
+          this._pagos$.next([newPago, ...current]);
+          // Re-load gastos stats because a payment might have changed an expense status
+          this.refresh();
+        }
+      })
+    );
+  }
+
+  updatePago(id: string, pago: PagoGastoUpdate): Observable<PagoGasto> {
+    return this.put<ApiResponse<PagoGasto>>(`${this.PAGOS_ENDPOINT}/${id}`, pago).pipe(
+      map(resp => resp.detalles),
+      tap(updated => {
+        if (updated) {
+          const current = this._pagos$.value || [];
+          const idx = current.findIndex(p => p.id === id);
+          if (idx !== -1) {
+            current[idx] = updated;
+            this._pagos$.next([...current]);
+            this.refresh();
+          }
+        }
+      })
+    );
+  }
+
+  deletePago(id: string): Observable<ApiResponse<null>> {
+    return this.delete<ApiResponse<null>>(`${this.PAGOS_ENDPOINT}/${id}`).pipe(
+      tap(() => {
+        const current = this._pagos$.value || [];
+        this._pagos$.next(current.filter(p => p.id !== id));
+        this.refresh();
+      })
+    );
+  }
+
   refresh(): void {
-    this._loaded = false;
-    this.loadInitialData();
+    // Perform background fetches without clearing subjects to avoid UI flicker
+    this.loadInitialData(true);
+    this.loadPagos(true);
   }
 }

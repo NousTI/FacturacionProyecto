@@ -3,7 +3,7 @@ export interface Gasto {
   empresa_id: string;
   proveedor_id?: string;
   categoria_gasto_id: string;
-  usuario_id: string;
+  user_id: string;
   numero_factura?: string;
   fecha_emision: string;
   fecha_vencimiento?: string;
@@ -11,7 +11,7 @@ export interface Gasto {
   subtotal: number;
   iva: number;
   total: number;
-  estado_pago: 'pendiente' | 'pagado' | 'vencido' | 'cancelado' | 'reembolsado';
+  estado_pago: 'pendiente' | 'parcial' | 'pagado' | 'vencido' | 'cancelado' | 'reembolsado';
   comprobante_url?: string;
   observaciones?: string;
   created_at: string;
@@ -22,7 +22,7 @@ export interface Gasto {
 export interface GastoCreate {
   proveedor_id?: string;
   categoria_gasto_id: string;
-  usuario_id?: string;
+  user_id?: string;
   numero_factura?: string;
   fecha_emision: string;
   fecha_vencimiento?: string;

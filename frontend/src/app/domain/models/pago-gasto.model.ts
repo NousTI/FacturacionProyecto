@@ -1,7 +1,7 @@
 export interface PagoGasto {
   id: string;
   gasto_id: string;
-  usuario_id: string;
+  user_id: string;
   numero_comprobante?: string;
   fecha_pago: string;
   monto: number;
@@ -14,7 +14,7 @@ export interface PagoGasto {
 
 export interface PagoGastoCreate {
   gasto_id: string;
-  usuario_id?: string;
+  user_id?: string;
   numero_comprobante?: string;
   fecha_pago: string;
   monto: number;

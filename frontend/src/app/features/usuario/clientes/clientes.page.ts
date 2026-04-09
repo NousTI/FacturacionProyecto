@@ -34,26 +34,20 @@ import { ClienteAnaliticaComponent } from './components/cliente-analitica/client
     ClienteAnaliticaComponent
   ],
   template: `
-    <div class="clientes-page-container">
-      <!-- TABS PRINCIPALES NAV -->
-      <div class="main-tabs-wrapper">
-        <div class="main-tabs">
-          <button class="main-tab-btn" 
-                  [class.active]="activeTab === 'directorio'" 
-                  (click)="activeTab = 'directorio'">
-            <i class="bi bi-people-fill"></i> Directorio de Clientes
-          </button>
-          <button class="main-tab-btn" 
-                  [class.active]="activeTab === 'analitica'" 
-                  (click)="activeTab = 'analitica'">
-            <i class="bi bi-bar-chart-fill"></i> Analítica
-          </button>
-        </div>
+    <div class="page-container">
+      
+      <!-- Tabs Navigation -->
+      <div class="tabs-minimal mb-4">
+        <button class="tab-btn" [class.active]="activeTab === 'directorio'" (click)="activeTab = 'directorio'">
+          <i class="bi bi-people-fill"></i> Directorio de Clientes
+        </button>
+        <button class="tab-btn" [class.active]="activeTab === 'analitica'" (click)="activeTab = 'analitica'">
+          <i class="bi bi-bar-chart-fill"></i> Analítica
+        </button>
       </div>
 
       <!-- TAB: DIRECTORIO -->
       <div class="view-section" *ngIf="activeTab === 'directorio'">
-        <!-- ESTADÍSTICAS -->
         <app-cliente-stats
           *ngIf="stats$ | async as st"
           [total]="st.total"
@@ -61,7 +55,6 @@ import { ClienteAnaliticaComponent } from './components/cliente-analitica/client
           [credit]="st.con_credito"
         ></app-cliente-stats>
 
-        <!-- ACCIONES Y FILTROS -->
         <app-cliente-actions
           [(searchQuery)]="searchQuery"
           (onFilterChangeEmit)="handleFilters($event)"
@@ -69,7 +62,6 @@ import { ClienteAnaliticaComponent } from './components/cliente-analitica/client
           (onExport)="showExportModal = true"
         ></app-cliente-actions>
 
-        <!-- TABLA DE CLIENTES -->
         <app-cliente-table
           [clientes]="filteredClientes"
           (onAction)="handleAction($event)"
@@ -78,12 +70,10 @@ import { ClienteAnaliticaComponent } from './components/cliente-analitica/client
 
       <!-- TAB: ANALÍTICA -->
       <div class="view-section" *ngIf="activeTab === 'analitica'">
-        <div class="analitica-section">
-          <app-cliente-analitica></app-cliente-analitica>
-        </div>
+        <app-cliente-analitica></app-cliente-analitica>
       </div>
 
-      <!-- MODAL DE CREACIÓN/EDICIÓN -->
+      <!-- MODALES -->
       <app-create-cliente-modal
         *ngIf="showCreateModal"
         [cliente]="selectedCliente"
@@ -92,14 +82,12 @@ import { ClienteAnaliticaComponent } from './components/cliente-analitica/client
         (onClose)="showCreateModal = false"
       ></app-create-cliente-modal>
 
-      <!-- MODAL DE DETALLES -->
       <app-cliente-detail-modal
         *ngIf="showDetailModal && selectedCliente"
         [cliente]="selectedCliente"
         (onClose)="showDetailModal = false"
       ></app-cliente-detail-modal>
 
-      <!-- MODAL DE EXPORTACIÓN -->
       <app-export-clientes-modal
         *ngIf="showExportModal"
         [loading]="isExporting"
@@ -107,7 +95,6 @@ import { ClienteAnaliticaComponent } from './components/cliente-analitica/client
         (onClose)="showExportModal = false"
       ></app-export-clientes-modal>
 
-      <!-- MODAL DE CONFIRMACIÓN PARA ELIMINAR -->
       <app-confirm-modal
         *ngIf="showConfirmModal"
         title="¿Eliminar Cliente?"
@@ -124,77 +111,16 @@ import { ClienteAnaliticaComponent } from './components/cliente-analitica/client
     </div>
   `,
   styles: [`
-    .clientes-page-container {
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      gap: 1.5rem;
-    }
-
-    /* TABS STYLES */
-    .main-tabs-wrapper {
-      margin-bottom: 0.5rem;
-      border-bottom: 1px solid #e2e8f0;
-    }
-    .main-tabs {
-      display: flex;
-      gap: 1.5rem;
-    }
-    .main-tab-btn {
-      background: none;
-      border: none;
-      padding: 0.75rem 0.5rem;
-      font-size: 0.95rem;
-      font-weight: 700;
-      color: #64748b;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      border-bottom: 3px solid transparent;
-      transition: all 0.2s ease;
-    }
-    .main-tab-btn i { font-size: 1.1rem; }
-    .main-tab-btn:hover { color: #1e293b; }
-    .main-tab-btn.active {
-      color: #3b82f6;
-      border-bottom-color: #3b82f6;
-    }
-
-    .view-section {
-      display: flex;
-      flex-direction: column;
-      gap: 1.5rem;
-      animation: fadeIn 0.3s ease;
-    }
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(5px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
-    .analitica-section { display: flex; flex-direction: column; gap: 0; }
-
-    .lux-page-header {
-      padding-bottom: 2rem;
-      border-bottom: 1px solid #f1f5f9;
-    }
-
-    .lux-title-gradient {
-      font-size: 2.25rem;
-      font-weight: 900;
-      background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      letter-spacing: -1px;
-      margin-bottom: 0.5rem;
-    }
-
-    .lux-description {
-      font-size: 1rem;
-      color: #94a3b8;
-      font-weight: 500;
-      margin: 0;
-    }
+    .page-container { animation: fadeIn 0.4s ease-out; }
+    
+    .tabs-minimal { display: flex; gap: 0.5rem; border-bottom: 2px solid #f1f5f9; position: sticky; top: 0; background: #f8fafc; z-index: 10; padding-top: 0.5rem; }
+    .tab-btn { background: none; border: none; padding: 0.75rem 1.25rem; cursor: pointer; color: #64748b; font-weight: 600; font-size: 0.9rem; border-radius: 10px 10px 0 0; border-bottom: 3px solid transparent; transition: all 0.2s; display: flex; align-items: center; gap: 0.5rem; }
+    .tab-btn:hover { background: #f1f5f9; color: #1e293b; }
+    .tab-btn.active { color: #2563eb; border-bottom-color: #2563eb; background: white; }
+    
+    .view-section { display: flex; flex-direction: column; gap: 1.5rem; animation: fadeIn 0.3s ease; }
+    
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
 
     .fw-800 { font-weight: 800; }
   `]

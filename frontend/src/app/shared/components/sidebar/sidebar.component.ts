@@ -106,12 +106,6 @@ import { SidebarService } from './sidebar.service';
                   <a *appHasPermission="'GASTOS_VER'" routerLink="/usuario/gastos" routerLinkActive="active" class="menu-item px-3 mb-1" title="Gastos">
                     <i class="bi bi-cash-stack"></i> <span class="menu-text ms-3">Gastos</span>
                   </a>
-                  <a *appHasPermission="'CATEGORIA_GASTO_VER'" routerLink="/usuario/categorias-gasto" routerLinkActive="active" class="menu-item px-3 mb-1" title="Categorías de Gasto">
-                    <i class="bi bi-tags"></i> <span class="menu-text ms-3">Categorías de Gasto</span>
-                  </a>
-                  <a *appHasPermission="'PAGO_GASTO_VER'" routerLink="/usuario/pagos-gasto" routerLinkActive="active" class="menu-item px-3 mb-1" title="Pagos de Gastos">
-                    <i class="bi bi-credit-card-2-front"></i> <span class="menu-text ms-3">Pagos de Gastos</span>
-                  </a>
                   <a *appHasPermission="'INVENTARIO_VER'" routerLink="/usuario/inventarios" routerLinkActive="active" class="menu-item px-3 mb-1" title="Inventarios">
                     <i class="bi bi-archive"></i> <span class="menu-text ms-3">Inventarios</span>
                   </a>
