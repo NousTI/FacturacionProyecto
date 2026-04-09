@@ -1,9 +1,9 @@
 from fastapi import APIRouter, Depends, status
-from typing import List
+from typing import List, Optional
 from uuid import UUID
 
 from .service import ServicioInventarios
-from .schemas import MovimientoInventarioLectura, MovimientoInventarioCreacion
+from .schemas import MovimientoInventarioLectura, MovimientoInventarioCreacion, InventarioStats
 from ..autenticacion.routes import obtener_usuario_actual, requerir_permiso
 from ...constants.permissions import PermissionCodes
 from ...utils.response import success_response
@@ -13,10 +13,29 @@ router = APIRouter()
 
 @router.get("/", response_model=RespuestaBase[List[MovimientoInventarioLectura]])
 def listar_todos(
+    producto_id: Optional[UUID] = None,
+    tipo: Optional[str] = None,
+    fecha_inicio: Optional[str] = None,
+    fecha_fin: Optional[str] = None,
     usuario: dict = Depends(requerir_permiso(PermissionCodes.INVENTARIO_VER)),
     servicio: ServicioInventarios = Depends()
 ):
-    return success_response(servicio.listar_todos(usuario))
+    filtros = {
+        "producto_id": producto_id,
+        "tipo": tipo,
+        "fecha_inicio": fecha_inicio,
+        "fecha_fin": fecha_fin
+    }
+    # Remove None values
+    filtros = {k: v for k, v in filtros.items() if v is not None}
+    return success_response(servicio.listar_todos(usuario, filtros))
+
+@router.get("/stats", response_model=RespuestaBase[InventarioStats])
+def obtener_stats(
+    usuario: dict = Depends(requerir_permiso(PermissionCodes.INVENTARIO_VER)),
+    servicio: ServicioInventarios = Depends()
+):
+    return success_response(servicio.obtener_stats(usuario))
 
 @router.get("/producto/{producto_id}", response_model=RespuestaBase[List[MovimientoInventarioLectura]])
 def listar_por_producto(

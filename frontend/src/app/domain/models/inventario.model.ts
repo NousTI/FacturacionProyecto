@@ -2,26 +2,33 @@ export interface MovimientoInventario {
   id: string;
   empresa_id: string;
   producto_id: string;
-  tipo_movimiento_id: string;
-  unidad_medida_id: string;
+  usuario_id: string;
+  tipo_movimiento: 'entrada' | 'salida' | 'ajuste' | 'devolucion';
   cantidad: number;
-  fecha: string;
-  estado: string;
-  ubicacion_fisica?: string;
+  stock_anterior: number;
+  stock_nuevo: number;
+  costo_unitario?: number;
+  costo_total?: number;
+  documento_referencia?: string;
   observaciones?: string;
+  factura_id?: string;
+  fecha_movimiento: string;
   created_at: string;
-  updated_at: string;
+
+  // Joined fields
+  producto_nombre?: string;
+  usuario_nombre?: string;
 }
 
 export interface MovimientoInventarioCreate {
   producto_id: string;
-  tipo_movimiento_id: string;
-  unidad_medida_id: string;
+  tipo_movimiento: 'entrada' | 'salida' | 'ajuste' | 'devolucion';
   cantidad: number;
-  fecha?: string;
-  estado?: string;
-  ubicacion_fisica?: string;
+  costo_unitario?: number;
+  costo_total?: number;
+  documento_referencia?: string;
   observaciones?: string;
+  factura_id?: string;
 }
 
 export interface MovimientoInventarioUpdate {

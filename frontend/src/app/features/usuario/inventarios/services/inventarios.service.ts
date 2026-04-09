@@ -12,6 +12,7 @@ export class InventariosService extends BaseApiService {
   private readonly ENDPOINT = 'inventarios';
 
   private _movimientos$ = new BehaviorSubject<MovimientoInventario[] | null>(null);
+  private _stats$ = new BehaviorSubject<any>(null);
   private _loaded = false;
 
   constructor(http: HttpClient) {
@@ -25,21 +26,38 @@ export class InventariosService extends BaseApiService {
     );
   }
 
-  loadInitialData(): void {
-    if (this._loaded) return;
+  get stats$() {
+    return this._stats$.asObservable();
+  }
 
-    this.get<ApiResponse<MovimientoInventario[]>>(this.ENDPOINT).subscribe(resp => {
+  loadInitialData(filtros: any = {}): void {
+    const params = this.buildQueryParams(filtros);
+    this.get<ApiResponse<MovimientoInventario[]>>(`${this.ENDPOINT}${params}`).subscribe(resp => {
       if (resp && resp.detalles) {
         this._movimientos$.next(resp.detalles);
         this._loaded = true;
       }
     });
+
+    this.getStats().subscribe();
   }
 
-  getMovimientos(): Observable<MovimientoInventario[]> {
-    if (!this._loaded) {
-      this.loadInitialData();
-    }
+  getStats(): Observable<any> {
+    return this.get<ApiResponse<any>>(`${this.ENDPOINT}/stats`).pipe(
+      map(resp => resp.detalles),
+      tap(stats => this._stats$.next(stats))
+    );
+  }
+
+  private buildQueryParams(filtros: any): string {
+    const keys = Object.keys(filtros).filter(k => filtros[k] !== null && filtros[k] !== '');
+    if (keys.length === 0) return '';
+    const query = keys.map(k => `${k}=${filtros[k]}`).join('&');
+    return `?${query}`;
+  }
+
+  getMovimientos(filtros: any = {}): Observable<MovimientoInventario[]> {
+    this.loadInitialData(filtros);
     return this.movimientos$;
   }
 

@@ -167,11 +167,11 @@ class RepositorioProductos:
 
     def obtener_kardex_producto(self, producto_id: UUID, empresa_id: UUID, fecha_inicio: Optional[str], fecha_fin: Optional[str]) -> List[dict]:
         query = """
-            SELECT fecha_movimiento as fecha, tipo_movimiento as tipo, referencium as documento,
-                   CASE WHEN tipo_movimiento IN ('ENTRADA', 'AJUSTE_POSITIVO') THEN cantidad ELSE 0 END as entrada,
-                   CASE WHEN tipo_movimiento IN ('SALIDA', 'AJUSTE_NEGATIVO') THEN cantidad ELSE 0 END as salida,
-                   cantidad_despues as saldo, costo_unitario, costo_total
-            FROM movimiento_inventario
+            SELECT fecha_movimiento as fecha, tipo_movimiento as tipo, documento_referencia as documento,
+                   CASE WHEN tipo_movimiento IN ('entrada', 'ajuste', 'devolucion') THEN cantidad ELSE 0 END as entrada,
+                   CASE WHEN tipo_movimiento IN ('salida') THEN cantidad ELSE 0 END as salida,
+                   stock_nuevo as saldo, costo_unitario, costo_total
+            FROM sistema_facturacion.movimiento_inventario
             WHERE producto_id = %s
         """
         params = [str(producto_id)]

@@ -15,12 +15,13 @@ class ServicioInventarios:
     def crear_movimiento(self, datos: MovimientoInventarioCreacion, usuario_actual: dict):
         producto = self.repo.obtener_producto(datos.producto_id)
         if not producto: raise AppError("Producto no encontrado", 404, "PRODUCTO_NOT_FOUND")
-        
+
         if not usuario_actual.get(AuthKeys.IS_SUPERADMIN):
             if str(producto['empresa_id']) != str(usuario_actual.get('empresa_id')):
                 raise AppError("No autorizado", 403, "AUTH_FORBIDDEN")
-                
-        usuario_id = datos.usuario_id or usuario_actual.get('id')
+
+        # usuario_actual['usuario_id'] is the usuarios.id from the auth service
+        usuario_id = datos.usuario_id or usuario_actual.get('usuario_id')
         if not usuario_id: raise AppError("Usuario no identificado", 400, "USER_MISSING")
         
         stock_ant = producto['stock_actual']
@@ -34,6 +35,8 @@ class ServicioInventarios:
             stock_nuevo = stock_ant - datos.cantidad
             
         dict_m = datos.model_dump()
+        # Remove any user_id that might have been added by deserializers
+        dict_m.pop('user_id', None)
         dict_m['empresa_id'] = str(producto['empresa_id'])
         dict_m['usuario_id'] = str(usuario_id)
         dict_m['stock_anterior'] = stock_ant
@@ -65,16 +68,23 @@ class ServicioInventarios:
         movimientos = self.repo.listar_por_producto(producto_id)
         return [self._filtrar_costos(m, usuario_actual) for m in movimientos]
 
-    def listar_todos(self, usuario_actual: dict):
+    def listar_todos(self, usuario_actual: dict, filtros: dict = {}):
         if usuario_actual.get(AuthKeys.IS_SUPERADMIN):
             movimientos = self.repo.listar_todos()
         else:
             empresa_id = usuario_actual.get('empresa_id')
             if not empresa_id:
                 raise AppError("Empresa no identificada", 400, "EMPRESA_MISSING")
-            movimientos = self.repo.listar_por_empresa(empresa_id)
+            movimientos = self.repo.listar_por_empresa(empresa_id, **filtros)
             
         return [self._filtrar_costos(m, usuario_actual) for m in movimientos]
+
+    def obtener_stats(self, usuario_actual: dict):
+        empresa_id = usuario_actual.get('empresa_id')
+        if not empresa_id:
+            raise AppError("Empresa no identificada", 400, "EMPRESA_MISSING")
+            
+        return self.repo.obtener_stats(empresa_id)
 
     def obtener_movimiento(self, id: UUID, usuario_actual: dict):
         movimiento = self.repo.obtener_por_id(id)

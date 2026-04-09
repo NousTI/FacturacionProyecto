@@ -33,7 +33,7 @@ def crear_proveedor(
     usuario: dict = Depends(requerir_permiso(PermissionCodes.PROVEEDOR_CREAR)),
     servicio: ServicioProveedores = Depends()
 ):
-    return success_response(servicio.crear_provider(datos, usuario), "Proveedor creado correctamente")
+    return success_response(servicio.crear_proveedor(datos, usuario), "Proveedor creado correctamente")
 
 @router.patch("/{proveedor_id}", response_model=RespuestaBase[ProveedorLectura])
 def actualizar_proveedor(

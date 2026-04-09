@@ -7,7 +7,7 @@ from pydantic import BaseModel, Field
 class MovimientoInventarioBase(BaseModel):
     producto_id: UUID
     tipo_movimiento: Literal['entrada', 'salida', 'ajuste', 'devolucion']
-    cantidad: int = Field(..., gt=0)
+    cantidad: Decimal = Field(..., gt=0)
     costo_unitario: Optional[Decimal] = Field(None, ge=0)
     costo_total: Optional[Decimal] = Field(None, ge=0)
     documento_referencia: Optional[str] = None
@@ -21,10 +21,19 @@ class MovimientoInventarioLectura(MovimientoInventarioBase):
     id: UUID
     empresa_id: UUID
     usuario_id: UUID
-    stock_anterior: int
-    stock_nuevo: int
+    stock_anterior: Decimal
+    stock_nuevo: Decimal
     fecha_movimiento: datetime
     created_at: datetime
+    
+    # Joined fields
+    producto_nombre: Optional[str] = None
+    usuario_nombre: Optional[str] = None
+
+class InventarioStats(BaseModel):
+    total_valor_inventario: Decimal
+    movimientos_30d: int
+    productos_stock_bajo: int
     
     class Config:
         from_attributes = True

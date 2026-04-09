@@ -5,7 +5,7 @@ CREATE TABLE IF NOT EXISTS sistema_facturacion.inventario (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
 
     empresa_id UUID NOT NULL
-        REFERENCES sistema_facturacion.empresa(id) ON DELETE CASCADE,
+        REFERENCES sistema_facturacion.empresas(id) ON DELETE CASCADE,
 
     producto_id UUID NOT NULL
         REFERENCES sistema_facturacion.productos(id) ON DELETE RESTRICT,
