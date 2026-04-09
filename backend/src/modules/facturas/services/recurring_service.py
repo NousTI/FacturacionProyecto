@@ -128,16 +128,12 @@ class ServicioRecurringBilling:
                 400, "PROGRAMACION_CON_HISTORIAL"
             )
 
-        # Bloquear si tiene una factura plantilla asociada
+        # Eliminar la factura plantilla en cascada si existe (solo si está en BORRADOR)
         from ..repository import RepositorioFacturas
         repo_f = RepositorioFacturas(db=self.repo_prog.db)
         plantilla_id = repo_f.obtener_id_plantilla_por_programacion(id)
         if plantilla_id:
-            raise AppError(
-                "No se puede eliminar una programación que tiene una factura plantilla asociada. "
-                "Desactívala en su lugar.",
-                400, "PROGRAMACION_CON_PLANTILLA"
-            )
+            repo_f.eliminar_factura(UUID(plantilla_id))
 
         return self.repo_prog.eliminar(id)
 
@@ -161,26 +157,44 @@ class ServicioRecurringBilling:
         
         for prog in pendientes:
             try:
-                # 1. Idempotencia: Verificar si ya se emitió una factura hoy para esta programación
+                # 1. Idempotencia: Verificar si ya se procesó hoy para esta programación
                 from ..repository import RepositorioFacturas
                 repo_factura = RepositorioFacturas(db=self.repo_prog.db)
-                
-                # Buscamos si ya se emitió una factura hoy para esta programación
-                ya_emitida = False
+
+                # Buscamos si ya existe una factura (en cualquier estado excepto plantilla)
+                # generada HOY para esta programación — evita duplicados en reintentos
                 query_idempotencia = """
-                    SELECT 1 FROM sistema_facturacion.facturas
+                    SELECT id, estado FROM sistema_facturacion.facturas
                     WHERE facturacion_programada_id = %s
-                    AND estado IN ('AUTORIZADA', 'EN_PROCESO')
+                    AND origen = 'API'
                     AND DATE(fecha_emision) = CURRENT_DATE
+                    ORDER BY created_at DESC
                     LIMIT 1
                 """
+                factura_hoy = None
                 with repo_factura.db.cursor() as cur:
                     cur.execute(query_idempotencia, (str(prog['id']),))
-                    if cur.fetchone():
-                        ya_emitida = True
-                
-                if ya_emitida:
-                    print(f"[RECURRENTE] Saltando programación {prog['id']} - Ya emitida hoy.")
+                    factura_hoy = cur.fetchone()
+
+                if factura_hoy:
+                    estado_hoy = factura_hoy[1] if isinstance(factura_hoy, (list, tuple)) else factura_hoy.get('estado')
+                    if estado_hoy in ('AUTORIZADA', 'EN_PROCESO'):
+                        print(f"[RECURRENTE] Saltando {prog['id']} - Ya autorizada hoy.")
+                        continue
+                    # Existe copia en BORRADOR/ERROR del intento anterior — reutilizarla
+                    factura_hoy_id = factura_hoy[0] if isinstance(factura_hoy, (list, tuple)) else factura_hoy.get('id')
+                    print(f"[RECURRENTE] Reutilizando factura {factura_hoy_id} (estado: {estado_hoy}) del intento anterior.")
+                    usuario_context = {
+                        "id": str(prog['usuario_id']),
+                        "empresa_id": str(prog['empresa_id']),
+                        AuthKeys.IS_SUPERADMIN: True,
+                        "permisos": [],
+                        "usuario_facturacion_id": str(prog['usuario_id'])
+                    }
+                    resultado_sri = self.service_autorizacion.emitir_sri(factura_hoy_id, usuario_context)
+                    logger.info(f"FACTURACION_RECURRENTE: Reintento factura {factura_hoy_id}. Estado: {resultado_sri.get('estado', 'N/A')}")
+                    self.registrar_ejecucion(prog['id'], exitosa=True, frecuencia=prog['tipo_frecuencia'], dia=prog['dia_emision'])
+                    result["exitosas"] += 1
                     continue
 
                 # 2. Buscar la Factura Plantilla (BORRADOR amarrado a esta programación)
@@ -243,7 +257,7 @@ class ServicioRecurringBilling:
                     propina=plantilla.get('propina', 0),
                     total=plantilla['total'],
                     detalles=detalles_clonados,
-                    origen="FACTURACION_PROGRAMADA",
+                    origen="API",
                     observaciones=f"Generada automáticamente desde plantilla. Programación ID: {prog['id']}",
                     forma_pago_sri=plantilla.get('forma_pago_sri', '01'),
                     plazo=plantilla.get('plazo', 0),

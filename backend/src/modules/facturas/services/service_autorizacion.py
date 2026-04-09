@@ -60,7 +60,15 @@ class ServicioAutorizacion:
             usuario_contexto["id"] = usuario_actual['usuario_facturacion_id']
             
         factura = ValidacionesFactura.obtener_y_validar_factura(self.core, id, usuario_actual)
-        
+
+        # Bloquear emisión de facturas plantilla de programaciones recurrentes
+        if factura.get('origen') == 'FACTURACION_PROGRAMADA' and factura.get('facturacion_programada_id'):
+            raise AppError(
+                "Esta factura es una plantilla de facturación recurrente y no puede emitirse directamente. "
+                "La emisión se realiza automáticamente según la programación.",
+                400, "FACTURA_ES_PLANTILLA"
+            )
+
         estados_permitidos = ['BORRADOR', 'DEVUELTA', 'ERROR_TECNICO']
         if factura.get('estado') not in estados_permitidos:
              raise AppError(f"La factura está en estado {factura.get('estado')} y no puede ser emitida.", 400)

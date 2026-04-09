@@ -246,6 +246,9 @@ class RepositorioFacturas:
         if usuario_id:
             query += " AND f.usuario_id = %s"
             params.append(str(usuario_id))
+
+        # Excluir siempre las facturas plantilla de programaciones recurrentes (BORRADORs internos)
+        query += " AND NOT (f.origen = 'FACTURACION_PROGRAMADA' AND f.estado = 'BORRADOR')"
         
         # Filtros adicionales
         if filtros:

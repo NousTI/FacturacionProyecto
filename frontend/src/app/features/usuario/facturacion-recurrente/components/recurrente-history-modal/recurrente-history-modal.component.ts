@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, OnInit } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnInit, ChangeDetectorRef, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FacturacionProgramadaService } from '../../services/facturacion-programada.service';
 import { HistorialProgramacion } from '../../../../../domain/models/facturacion-programada.model';
@@ -213,7 +213,7 @@ export class RecurrenteHistoryModalComponent implements OnInit {
   readonly limit = 50;
   offset = 0;
 
-  constructor(private service: FacturacionProgramadaService) {}
+  constructor(private service: FacturacionProgramadaService, private cdr: ChangeDetectorRef) {}
 
   ngOnInit() {
     this.loadHistory();
@@ -222,21 +222,28 @@ export class RecurrenteHistoryModalComponent implements OnInit {
   loadHistory() {
     if (!this.programacionId) {
       this.isLoading = false;
+      this.cdr.detectChanges();
       return;
     }
     this.isLoading = true;
+    this.cdr.detectChanges();
     this.service.obtenerHistorial(this.programacionId, this.limit, this.offset).pipe(
       timeout(10000),
       catchError(() => {
         this.isLoading = false;
+        this.cdr.detectChanges();
         return of([]);
       })
     ).subscribe({
       next: (data) => {
         this.historial = data;
         this.isLoading = false;
+        this.cdr.detectChanges();
       },
-      error: () => { this.isLoading = false; }
+      error: () => {
+        this.isLoading = false;
+        this.cdr.detectChanges();
+      }
     });
   }
 

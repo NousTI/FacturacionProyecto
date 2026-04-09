@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { finalize, Subscription, combineLatest, map } from 'rxjs';
@@ -238,7 +238,8 @@ export class FacturacionRecurrentePage implements OnInit, OnDestroy {
 
   constructor(
     private service: FacturacionProgramadaService,
-    private uiService: UiService
+    private uiService: UiService,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit() {
@@ -247,14 +248,13 @@ export class FacturacionRecurrentePage implements OnInit, OnDestroy {
     // Suscripción reactiva al cache del servicio
     this.subscription.add(
       this.service.programaciones$.subscribe(data => {
-        // Si data es null, significa que ni siquiera se ha intentado cargar (valor inicial)
-        // Pero si es un array (aunque esté vacío), la carga terminó.
         if (data !== null) {
           this.programaciones = data;
           this.calculateStats();
           this.applyFilters();
           this.isLoading = false;
           this.isRefreshing = false;
+          this.cdr.detectChanges();
         }
       })
     );
@@ -285,9 +285,11 @@ export class FacturacionRecurrentePage implements OnInit, OnDestroy {
       })
     ).subscribe({
       next: (res: any) => {
-        const data = res.data || res;
-        const msg = `Proceso completado: ${data.exitosas} exitosas, ${data.fallidas} fallidas.`;
-        this.uiService.showToast(msg, data.fallidas > 0 ? 'warning' : 'success');
+        const data = res?.data ?? res;
+        const exitosas = data?.exitosas ?? 0;
+        const fallidas = data?.fallidas ?? 0;
+        const msg = `Proceso completado: ${exitosas} exitosas, ${fallidas} fallidas.`;
+        this.uiService.showToast(msg, fallidas > 0 ? 'warning' : 'success');
         this.service.refresh(); // Actualizar contadores en la tabla
       },
       error: (err) => this.uiService.showError(err, 'Error en ejecución masiva')
@@ -332,21 +334,26 @@ export class FacturacionRecurrentePage implements OnInit, OnDestroy {
     
     if (event.type === 'view' || event.type === 'edit') {
       this.isViewOnly = event.type === 'view';
+      // Abrir modal inmediatamente — mostrará su spinner mientras resolvemos la plantilla
+      this.selectedFacturaId = undefined;
+      this.showCreateModal = true;
       this.isLoadingEdit = true;
+      // Resolver el ID de la plantilla en paralelo y pasárselo al modal cuando llegue
       this.service.obtenerIdPlantilla(event.data.id).subscribe({
         next: (res: any) => {
-          const facturaId = typeof res === 'string' ? res : (res?.data ?? null);
           this.isLoadingEdit = false;
+          const facturaId = typeof res === 'string' ? res : (res?.data ?? null);
           if (!facturaId) {
+            this.showCreateModal = false;
             this.uiService.showToast('No se encontró la factura plantilla para esta programación', 'warning');
             return;
           }
           this.selectedFacturaId = facturaId;
-          this.showCreateModal = true;
         },
         error: (err) => {
-          this.uiService.showError(err, 'Error al obtener factura plantilla');
           this.isLoadingEdit = false;
+          this.showCreateModal = false;
+          this.uiService.showError(err, 'Error al obtener factura plantilla');
         }
       });
     } else if (event.type === 'history') {

@@ -45,7 +45,15 @@ export class FacturacionProgramadaService extends BaseApiService {
       },
       error: (err) => {
         console.error('Error al cargar facturaciones programadas', err);
-        this._programaciones$.next([]); // Evita spinner infinito en caso de error
+        // Solo marcar como cargado si el error NO es de autenticación (401/403)
+        // para que un Ctrl+R con token aún no listo no bloquee futuros intentos
+        if (err?.status !== 401 && err?.status !== 403) {
+          this._programaciones$.next([]);
+          this._loaded = true;
+        } else {
+          this._programaciones$.next([]); // Evita spinner infinito
+          // _loaded permanece false para que el próximo loadInitialData() reintente
+        }
       }
     });
   }

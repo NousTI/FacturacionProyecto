@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, OnInit, Output, ChangeDetectorRef, ViewEncapsulation } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, OnChanges, SimpleChanges, Output, ChangeDetectorRef, ViewEncapsulation, NgZone } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators, FormArray } from '@angular/forms';
 import { FacturasService } from '../../services/facturas.service';
@@ -412,7 +412,7 @@ import { FacturaTotalesPanelComponent } from './components/factura-totales-panel
     .border-white-10 { border-color: rgba(255,255,255,0.1) !important; }
   `]
 })
-export class CreateFacturaModalComponent implements OnInit {
+export class CreateFacturaModalComponent implements OnInit, OnChanges {
   @Input() facturaId?: string;
   @Input() mode: 'NORMAL' | 'RECURRENTE' = 'NORMAL';
   @Input() programacionId?: string;
@@ -467,7 +467,8 @@ export class CreateFacturaModalComponent implements OnInit {
     private programacionService: FacturacionProgramadaService,
     private sriConfigService: SriConfigService,
     private uiService: UiService,
-    private cd: ChangeDetectorRef
+    private cd: ChangeDetectorRef,
+    private ngZone: NgZone
   ) {
     this.facturaForm = this.fb.group({
       establecimiento_id: [null, Validators.required],
@@ -493,9 +494,17 @@ export class CreateFacturaModalComponent implements OnInit {
   ngOnInit() {
     this.loadData();
     this.setupListeners();
-    
+
     if (this.isViewOnly) {
       this.facturaForm.disable();
+    }
+  }
+
+  ngOnChanges(changes: SimpleChanges) {
+    // Si facturaId llega tarde (modal abierto antes de resolver la plantilla),
+    // y los catálogos ya terminaron de cargar, recargar con el ID disponible.
+    if (changes['facturaId'] && !changes['facturaId'].firstChange && changes['facturaId'].currentValue) {
+      this.loadData();
     }
   }
 
@@ -600,8 +609,10 @@ export class CreateFacturaModalComponent implements OnInit {
 
         // Timeout pequeno para asegurar que el control se habilito
         setTimeout(() => {
-          this.facturaForm.patchValue({ punto_emision_id: factura.punto_emision_id });
-          this.cd.detectChanges();
+          this.ngZone.run(() => {
+            this.facturaForm.patchValue({ punto_emision_id: factura.punto_emision_id });
+            this.cd.detectChanges();
+          });
         }, 50);
 
         // Cargar detalles
@@ -610,9 +621,11 @@ export class CreateFacturaModalComponent implements OnInit {
 
         // Calcular totales iniciales
         setTimeout(() => {
-          this.calculateTotals();
-          this.isLoadingData = false;
-          this.cd.detectChanges();
+          this.ngZone.run(() => {
+            this.calculateTotals();
+            this.isLoadingData = false;
+            this.cd.detectChanges();
+          });
         }, 100);
       }
 
