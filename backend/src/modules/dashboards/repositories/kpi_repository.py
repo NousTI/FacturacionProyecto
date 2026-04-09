@@ -70,6 +70,7 @@ class KpiRepository(BaseRepository):
                     WHERE f.empresa_id = %s 
                     AND f.estado = 'AUTORIZADA' 
                     AND f.estado_pago != 'PAGADO'
+                    AND {date_filter} -- <--- AGREGAR ESTA LÍNEA
                 """, (empresa_id,))
                 kpis['cuentas_cobrar'] = float(cur.fetchone()['saldo'])
                 
