@@ -10,11 +10,11 @@ CREATE TABLE IF NOT EXISTS sistema_facturacion.inventario (
     producto_id UUID NOT NULL
         REFERENCES sistema_facturacion.productos(id) ON DELETE RESTRICT,
 
-    tipo_movimiento_id UUID NOT NULL
-        REFERENCES sistema_facturacion.tipo_movimiento(id) ON DELETE RESTRICT,
+    tipo_movimiento VARCHAR(20) NOT NULL
+        CHECK (tipo_movimiento IN ('COMPRA', 'VENTA', 'DEVOLUCION')),
 
-    unidad_medida_id UUID NOT NULL
-        REFERENCES sistema_facturacion.unidad_medida(id) ON DELETE RESTRICT,
+    unidad_medida VARCHAR(20) NOT NULL
+        CHECK (unidad_medida IN ('UNIDAD', 'CAJA', 'BULTO', 'KILO', 'METRO', 'LITRO')),
 
     cantidad INT NOT NULL CHECK (cantidad >= 0),
 

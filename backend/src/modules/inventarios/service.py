@@ -6,6 +6,7 @@ from .repository import RepositorioInventarios
 from .schemas import MovimientoInventarioCreacion
 from ...constants.enums import AuthKeys
 from ...constants.permissions import PermissionCodes
+from ...constants.inventario import TIPOS_MOVIMIENTO_KARDEX
 from ...errors.app_error import AppError
 
 class ServicioInventarios:
@@ -26,7 +27,11 @@ class ServicioInventarios:
         
         stock_ant = producto['stock_actual']
         tipo = datos.tipo_movimiento
-        
+
+        # Validar tipo de movimiento
+        if tipo not in TIPOS_MOVIMIENTO_KARDEX:
+            raise AppError(f"Tipo de movimiento inválido: {tipo}", 400, "VAL_ERROR")
+
         if tipo in ['entrada', 'devolucion', 'ajuste']:
             stock_nuevo = stock_ant + datos.cantidad
         else: # salida
