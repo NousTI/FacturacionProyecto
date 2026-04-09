@@ -64,7 +64,11 @@ import { Cliente } from '../../../../../domain/models/cliente.model';
                     <span class="lux-value">{{ cliente.telefono || 'Sin registro' }}</span>
                   </div>
                   <div class="lux-info-item">
-                    <span class="lux-label">Ciudad de Residencia</span>
+                    <span class="lux-label">Provincia</span>
+                    <span class="lux-value">{{ cliente.provincia || 'N/A' }}</span>
+                  </div>
+                  <div class="lux-info-item">
+                    <span class="lux-label">Ciudad/Cantón</span>
                     <span class="lux-value">{{ cliente.ciudad || 'N/A' }}</span>
                   </div>
                   <div class="lux-info-item col-12">

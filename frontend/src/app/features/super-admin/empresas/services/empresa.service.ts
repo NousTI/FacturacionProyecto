@@ -65,7 +65,7 @@ export class EmpresaService {
             usage: {
                 usuarios: e.usuarios_count || 0,
                 establecimientos: e.establecimientos_count || 0,
-                facturas: e.facturas_mes_count || 0
+                facturas: e.facturas_consumidas || 0
             },
             limits: {
                 max_usuarios: e.max_usuarios,

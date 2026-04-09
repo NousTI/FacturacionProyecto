@@ -91,3 +91,16 @@ class RepositorioRenovaciones:
         with self.db.cursor() as cur:
             cur.execute(query)
             return [row['user_id'] for row in cur.fetchall()]
+
+    def listar_user_ids_admins_empresa(self, empresa_id: UUID) -> List[UUID]:
+        """Obtiene los IDs de usuario de quienes tienen rol administrativo en la empresa."""
+        query = """
+            SELECT u.user_id 
+            FROM sistema_facturacion.usuarios u
+            JOIN sistema_facturacion.empresa_roles er ON u.empresa_rol_id = er.id
+            WHERE u.empresa_id = %s 
+            AND (er.es_sistema = TRUE OR er.codigo LIKE 'ADMIN_%' OR er.nombre = 'Administrador de Empresa')
+        """
+        with self.db.cursor() as cur:
+            cur.execute(query, (str(empresa_id),))
+            return [row['user_id'] for row in cur.fetchall()]

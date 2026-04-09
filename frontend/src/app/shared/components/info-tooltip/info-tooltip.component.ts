@@ -27,7 +27,7 @@ import { CommonModule } from '@angular/common';
       align-items: center;
       margin-left: 4px;
       vertical-align: middle;
-      z-index: 100;
+      z-index: 9999;
     }
 
     .info-tooltip-box {
@@ -41,7 +41,7 @@ import { CommonModule } from '@angular/common';
       opacity: 0;
       visibility: hidden;
       transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-      z-index: 9999;
+      z-index: 10000;
     }
 
     .info-tooltip-box.visible {

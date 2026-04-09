@@ -99,6 +99,14 @@ import { SriValidators } from '../../../../../shared/utils/sri-validators';
                     <span *ngIf="clienteForm.get('telefono')?.errors?.['pattern']">Debe tener exactamente 10 números</span>
                   </div>
                 </div>
+                <div class="col-md-6">
+                  <label class="lux-label">Provincia</label>
+                  <input type="text" formControlName="provincia" class="lux-input" placeholder="Ej: Pichincha">
+                </div>
+                <div class="col-md-6">
+                  <label class="lux-label">Ciudad</label>
+                  <input type="text" formControlName="ciudad" class="lux-input" placeholder="Ej: Quito">
+                </div>
                 <div class="col-12">
                   <label class="lux-label">Dirección Fiscal / Residencia</label>
                   <input type="text" formControlName="direccion" class="lux-input" placeholder="Av. Principal N23 y Calle B">
@@ -114,12 +122,18 @@ import { SriValidators } from '../../../../../shared/utils/sri-validators';
                     <label class="lux-label">Límite de Crédito Autorizado ($)</label>
                     <div class="lux-input-group">
                       <span class="prefix">$</span>
-                      <input type="number" formControlName="limite_credito" class="lux-input ps-4" placeholder="0.00">
+                      <input type="number" formControlName="limite_credito" class="lux-input ps-4" placeholder="0.00" (keypress)="validateNoNegative($event)" [class.is-invalid]="clienteForm.get('limite_credito')?.invalid && clienteForm.get('limite_credito')?.touched">
+                    </div>
+                    <div class="error-feedback" *ngIf="clienteForm.get('limite_credito')?.invalid && clienteForm.get('limite_credito')?.touched">
+                      <span *ngIf="clienteForm.get('limite_credito')?.errors?.['min']">No puede ser negativo</span>
                     </div>
                   </div>
                   <div class="col-md-6">
                     <label class="lux-label">Días de Crédito Plazo</label>
-                    <input type="number" formControlName="dias_credito" class="lux-input" placeholder="0">
+                    <input type="number" formControlName="dias_credito" class="lux-input" placeholder="0" (keypress)="validateNoNegative($event)" [class.is-invalid]="clienteForm.get('dias_credito')?.invalid && clienteForm.get('dias_credito')?.touched">
+                    <div class="error-feedback" *ngIf="clienteForm.get('dias_credito')?.invalid && clienteForm.get('dias_credito')?.touched">
+                      <span *ngIf="clienteForm.get('dias_credito')?.errors?.['min']">No puede ser negativo</span>
+                    </div>
                   </div>
                </div>
             </div>
@@ -140,7 +154,7 @@ import { SriValidators } from '../../../../../shared/utils/sri-validators';
             <div class="ms-auto d-flex gap-3">
               <button (click)="close()" class="btn-lux-outline" [disabled]="loading">Cancelar</button>
               <button (click)="submit()" 
-                      [disabled]="clienteForm.invalid || (cliente && clienteForm.pristine) || loading" 
+                      [disabled]="clienteForm.invalid || (cliente && !hasChanges) || loading" 
                       class="btn-lux-submit">
                 <span *ngIf="loading" class="spinner-border spinner-border-sm me-2"></span>
                 {{ loading ? 'Guardando...' : (cliente ? 'Guardar Cambios' : 'Crear Cliente') }}
@@ -299,8 +313,12 @@ import { SriValidators } from '../../../../../shared/utils/sri-validators';
     }
 
     .btn-lux-submit:disabled {
-      opacity: 0.5;
+      background: #e2e8f0;
+      color: #94a3b8;
       cursor: not-allowed;
+      opacity: 1;
+      transform: none;
+      box-shadow: none;
     }
 
     .btn-lux-outline {
@@ -415,6 +433,13 @@ export class CreateClienteModalComponent implements OnInit, OnDestroy {
         }
     }
 
+    validateNoNegative(event: KeyboardEvent) {
+        const charCode = event.which ? event.which : event.keyCode;
+        if (charCode === 45) {
+            event.preventDefault();
+        }
+    }
+
     validateIdentification(event: KeyboardEvent) {
         const tipoId = this.clienteForm.get('tipo_identificacion')?.value;
         if (tipoId === 'PASAPORTE') return; // Passports can have letters
@@ -430,6 +455,26 @@ export class CreateClienteModalComponent implements OnInit, OnDestroy {
         if (charCode > 31 && (charCode < 48 || charCode > 57)) {
             event.preventDefault();
         }
+    }
+
+    get hasChanges(): boolean {
+        if (!this.cliente) return true;
+        const formValue = this.clienteForm.value;
+        const fields = Object.keys(this.clienteForm.controls);
+        
+        for (const field of fields) {
+            const initialValue = (this.cliente as any)[field];
+            const currentValue = formValue[field];
+
+            // Normalize for comparison
+            const normInitial = (initialValue === null || initialValue === undefined) ? '' : initialValue;
+            const normCurrent = (currentValue === null || currentValue === undefined) ? '' : currentValue;
+
+            if (String(normInitial) !== String(normCurrent)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     close() {

@@ -43,7 +43,7 @@ import { PermissionsService } from '../../../../../core/auth/permissions.service
                   <input type="text" [(ngModel)]="formData.nombre" name="nombre" class="dashboard-input" required placeholder="Ej: Producto A">
                 </div>
                 <div class="col-12">
-                  <label class="dashboard-label">Descripción</label>
+                  <label class="dashboard-label">Descripción (Opcional)</label>
                   <textarea [(ngModel)]="formData.descripcion" name="descripcion" class="dashboard-input" rows="2" placeholder="Detalles opcionales..."></textarea>
                 </div>
                 <div class="col-md-6">
@@ -70,7 +70,7 @@ import { PermissionsService } from '../../../../../core/auth/permissions.service
                   <label class="dashboard-label">Precio Publicado (USD) *</label>
                   <div class="input-currency-wrapper">
                     <i class="bi bi-currency-dollar"></i>
-                    <input type="number" [(ngModel)]="formData.precio" name="precio" #precio="ngModel" class="dashboard-input ps-4" required min="0.01" step="0.01" [class.is-invalid-prod]="precio.invalid && precio.touched">
+                    <input type="number" [(ngModel)]="formData.precio" name="precio" #precio="ngModel" class="dashboard-input ps-4" required min="0.01" step="0.01" [class.is-invalid-prod]="precio.invalid && precio.touched" (keypress)="validateNoNegative($event)">
                   </div>
                   <div *ngIf="precio.invalid && precio.touched" class="error-msg-prod">
                     <span *ngIf="precio.errors?.['required']">El precio es requerido</span>
@@ -81,7 +81,10 @@ import { PermissionsService } from '../../../../../core/auth/permissions.service
                   <label class="dashboard-label">Costo de Adquisición</label>
                   <div class="input-currency-wrapper">
                     <i class="bi bi-tag"></i>
-                    <input type="number" [(ngModel)]="formData.costo" name="costo" class="dashboard-input ps-4" min="0" step="0.01">
+                    <input type="number" [(ngModel)]="formData.costo" name="costo" #costo="ngModel" class="dashboard-input ps-4" min="0" step="0.01" [class.is-invalid-prod]="costo.invalid && costo.touched" (keypress)="validateNoNegative($event)">
+                  </div>
+                  <div *ngIf="costo.invalid && costo.touched" class="error-msg-prod">
+                    <span *ngIf="costo.errors?.['min']">No puede ser negativo</span>
                   </div>
                 </div>
                 <div class="col-md-6">
@@ -114,12 +117,16 @@ import { PermissionsService } from '../../../../../core/auth/permissions.service
               
               <div class="row g-3" *ngIf="formData.maneja_inventario">
                 <div class="col-md-4">
-                  <label class="dashboard-label">Balance Inicial</label>
-                  <input type="number" [(ngModel)]="formData.stock_actual" name="stock_actual" class="dashboard-input">
+                  <input type="number" [(ngModel)]="formData.stock_actual" name="stock_actual" #stockActual="ngModel" class="dashboard-input" min="0" [class.is-invalid-prod]="stockActual.invalid && stockActual.touched" (keypress)="validateNoNegative($event)">
+                  <div *ngIf="stockActual.invalid && stockActual.touched" class="error-msg-prod">
+                    <span *ngIf="stockActual.errors?.['min']">No puede ser negativo</span>
+                  </div>
                 </div>
                 <div class="col-md-4">
-                  <label class="dashboard-label">Mínimo de Alerta</label>
-                  <input type="number" [(ngModel)]="formData.stock_minimo" name="stock_minimo" class="dashboard-input">
+                  <input type="number" [(ngModel)]="formData.stock_minimo" name="stock_minimo" #stockMin="ngModel" class="dashboard-input" min="0" [class.is-invalid-prod]="stockMin.invalid && stockMin.touched" (keypress)="validateNoNegative($event)">
+                  <div *ngIf="stockMin.invalid && stockMin.touched" class="error-msg-prod">
+                    <span *ngIf="stockMin.errors?.['min']">No puede ser negativo</span>
+                  </div>
                 </div>
                 <div class="col-md-4">
                   <label class="dashboard-label">Presentación</label>
@@ -141,7 +148,7 @@ import { PermissionsService } from '../../../../../core/auth/permissions.service
           <button type="submit" 
                   form="productoForm"
                   class="btn-dashboard-primary"
-                  [disabled]="loading || !prodForm.valid">
+                  [disabled]="loading || !prodForm.valid || (producto && !hasChanges)">
             <span *ngIf="loading" class="spinner-border spinner-border-sm me-2"></span>
             {{ loading ? 'Sincronizando...' : (producto ? 'Aplicar Cambios' : 'Registrar Item') }}
           </button>
@@ -302,6 +309,14 @@ import { PermissionsService } from '../../../../../core/auth/permissions.service
       box-shadow: 0 10px 20px -5px rgba(22, 29, 53, 0.2);
     }
 
+    .btn-dashboard-primary:disabled {
+      background: #e2e8f0;
+      color: #94a3b8;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+
     .btn-dashboard-secondary {
       background: #ffffff;
       color: #64748b;
@@ -403,9 +418,16 @@ export class CreateProductoModalComponent implements OnInit, OnDestroy {
     }
   }
 
+  validateNoNegative(event: KeyboardEvent) {
+    const charCode = event.which ? event.which : event.keyCode;
+    // Bloquear el signo menos (-) que es el código 45
+    if (charCode === 45) {
+      event.preventDefault();
+    }
+  }
+
   validateNumbers(event: KeyboardEvent) {
     const charCode = event.which ? event.which : event.keyCode;
-    // Permitir números y punto decimal
     if (charCode > 31 && (charCode < 48 || charCode > 57) && charCode !== 46) {
       event.preventDefault();
     }
@@ -452,5 +474,30 @@ export class CreateProductoModalComponent implements OnInit, OnDestroy {
 
       this.onSave.emit(dataToSave);
     }
+  }
+
+  get hasChanges(): boolean {
+    if (!this.producto) return true;
+    
+    // Lista de campos relevantes para comparar
+    const fields = [
+      'codigo', 'nombre', 'descripcion', 'precio', 'costo', 
+      'tipo_iva', 'porcentaje_iva', 'maneja_inventario', 
+      'tipo', 'unidad_medida', 'activo', 'stock_actual', 'stock_minimo'
+    ];
+
+    for (const field of fields) {
+      const initialValue = (this.producto as any)[field];
+      const currentValue = this.formData[field];
+
+      // Normalizar para comparación (tratar null/undefined como string vacío)
+      const normInitial = (initialValue === null || initialValue === undefined) ? '' : initialValue;
+      const normCurrent = (currentValue === null || currentValue === undefined) ? '' : currentValue;
+
+      if (String(normInitial) !== String(normCurrent)) {
+        return true;
+      }
+    }
+    return false;
   }
 }

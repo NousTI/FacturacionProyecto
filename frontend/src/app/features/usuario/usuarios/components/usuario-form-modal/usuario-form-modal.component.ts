@@ -166,7 +166,7 @@ import { AuthService } from '../../../../../core/auth/auth.service';
         <div class="modal-footer-final">
           <button (click)="close()" class="btn-cancel-final" [disabled]="loading">Cancelar</button>
           <button (click)="submit()" 
-                  [disabled]="userForm.invalid || (usuario && userForm.pristine) || loading" 
+                  [disabled]="userForm.invalid || (usuario && !hasChanges()) || loading" 
                   class="btn-submit-final d-flex align-items-center gap-2">
             <span *ngIf="loading" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
             {{ loading ? 'Guardando...' : (usuario ? 'Guardar Cambios' : 'Registrar Usuario') }}
@@ -285,6 +285,7 @@ export class UsuarioFormModalComponent implements OnInit, OnDestroy {
 
   userForm: FormGroup;
   availableRoles: any[] = [];
+  initialValues: any = null;
 
   constructor(
     private fb: FormBuilder,
@@ -326,6 +327,9 @@ export class UsuarioFormModalComponent implements OnInit, OnDestroy {
       this.userForm.get('empresa_rol_id')?.setValidators([Validators.required]);
     }
     this.userForm.get('empresa_rol_id')?.updateValueAndValidity();
+    
+    // Almacenar valores iniciales para comparación
+    this.initialValues = this.userForm.getRawValue();
   }
 
   fetchRoles() {
@@ -351,6 +355,12 @@ export class UsuarioFormModalComponent implements OnInit, OnDestroy {
 
   ngOnDestroy() {
     document.body.style.overflow = 'auto';
+  }
+
+  hasChanges(): boolean {
+    if (!this.usuario || !this.initialValues) return true;
+    const currentValues = this.userForm.getRawValue();
+    return JSON.stringify(currentValues) !== JSON.stringify(this.initialValues);
   }
 
   submit() {

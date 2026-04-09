@@ -9,7 +9,8 @@ class EmpresaRepository(BaseRepository):
                 COALESCE(p.max_facturas_mes, 0) as limite,
                 (SELECT COUNT(*) FROM sistema_facturacion.facturas f 
                  WHERE f.empresa_id = s.empresa_id 
-                 AND DATE_TRUNC('month', f.fecha_emision) = DATE_TRUNC('month', CURRENT_DATE)
+                 AND f.fecha_emision >= s.fecha_inicio 
+                 AND (s.fecha_fin IS NULL OR f.fecha_emision <= s.fecha_fin)
                  AND f.estado != 'ANULADA') as actual
             FROM sistema_facturacion.suscripciones s
             JOIN sistema_facturacion.planes p ON s.plan_id = p.id

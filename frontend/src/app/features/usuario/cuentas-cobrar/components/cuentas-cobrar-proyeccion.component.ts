@@ -2,18 +2,22 @@ import { Component, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ProyeccionCobro } from '../../../../domain/models/cuentas-cobrar.model';
 import { ChartCardComponent } from '../../../../shared/components/chart-card/chart-card.component';
+import { InfoTooltipComponent } from '../../../../shared/components/info-tooltip/info-tooltip.component';
 
 @Component({
   selector: 'app-cuentas-cobrar-proyeccion',
   standalone: true,
-  imports: [CommonModule, ChartCardComponent],
+  imports: [CommonModule, ChartCardComponent, InfoTooltipComponent],
   template: `
     <div class="proyeccion-container">
       <div class="row g-3 mb-4">
         <div class="col-lg-8">
           <div class="soft-card p-4 rounded-4 shadow-sm border-0 bg-white">
+            <div class="d-flex align-items-center mb-3">
+              <span class="badge bg-primary-subtle text-primary rounded-pill border border-primary-subtle small fw-normal">PROYECCIÓN ESTIMADA</span>
+              <app-info-tooltip message="Monto estimado a recibir basado en facturas que aún no vencen. Agrupa los saldos pendientes por su mes de vencimiento futuro (fecha de vencimiento >= hoy)."></app-info-tooltip>
+            </div>
             <div class="table-responsive">
-              <span class="badge bg-primary-subtle text-primary rounded-pill border border-primary-subtle mb-2 small fw-normal">PROYECCIÓN ESTIMADA</span>
               <table class="table table-hover align-middle custom-table">
                 <thead>
                   <tr>

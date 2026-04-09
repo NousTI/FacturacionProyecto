@@ -1,16 +1,20 @@
 import { Component, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { AntiguedadCliente } from '../../../../domain/models/cuentas-cobrar.model';
+import { InfoTooltipComponent } from '../../../../shared/components/info-tooltip/info-tooltip.component';
 
 @Component({
   selector: 'app-cuentas-cobrar-antiguedad',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, InfoTooltipComponent],
   template: `
     <div class="antiguedad-container">
       <div class="soft-card p-4 rounded-4 shadow-sm border-0 bg-white">
+        <div class="d-flex align-items-center mb-3">
+          <span class="badge bg-light text-dark rounded-pill border small fw-normal">REPORTE DE ANTIGÜEDAD</span>
+          <app-info-tooltip message="Calculado restando la fecha de vencimiento de la fecha de corte seleccionada. Clasifica los saldos pendientes en rangos de 1-30, 31-60 y más de 60 días de retraso."></app-info-tooltip>
+        </div>
         <div class="table-responsive">
-          <span class="badge bg-light text-dark rounded-pill border mb-2 small fw-normal">REPORTE DE ANTIGÜEDAD</span>
           <table class="table table-hover align-middle custom-table">
             <thead>
               <tr>

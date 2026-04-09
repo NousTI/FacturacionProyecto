@@ -156,19 +156,17 @@ class ServicioRenovaciones:
             # Ejecutar lógica atómica
             self.repo_suscripciones.registrar_suscripcion_atomica(pago_data, empresa_data, comision_data)
 
-            # Notificar Empresa (A todos sus usuarios)
-            with self.repo.db.cursor() as cur:
-                cur.execute("SELECT user_id FROM sistema_facturacion.usuarios WHERE empresa_id = %s", (str(empresa_id),))
-                rows = cur.fetchall()
-                for u_row in rows:
-                    self.notif_service.crear_notificacion(NotificacionCreate(
-                        user_id=u_row['user_id'],
-                        titulo="Suscripción Renovada con Éxito",
-                        mensaje=f"Tu renovación al plan {plan['nombre']} ha sido aprobada.",
-                        tipo="RENOVACION",
-                        prioridad="ALTA",
-                        metadata={"suscripcion_id": str(suscripcion_actual['id'])}
-                    ))
+            # Notificar Empresa (A sus administradores)
+            admin_ids = self.repo.listar_user_ids_admins_empresa(empresa_id)
+            for admin_user_id in admin_ids:
+                self.notif_service.crear_notificacion(NotificacionCreate(
+                    user_id=admin_user_id,
+                    titulo="Suscripción Renovada con Éxito",
+                    mensaje=f"Tu renovación al plan {plan['nombre']} ha sido aprobada.",
+                    tipo="RENOVACION",
+                    prioridad="ALTA",
+                    metadata={"suscripcion_id": str(suscripcion_actual['id'])}
+                ))
 
             # Notificar Vendedor
             if solicitud['vendedor_id']:
@@ -184,19 +182,17 @@ class ServicioRenovaciones:
                     ))
         
         else:
-            # Si es RECHAZADA, notificar a todos los integrantes de la empresa
-            with self.repo.db.cursor() as cur:
-                cur.execute("SELECT user_id FROM sistema_facturacion.usuarios WHERE empresa_id = %s", (str(empresa_id),))
-                rows = cur.fetchall()
-                for u_row in rows:
-                    self.notif_service.crear_notificacion(NotificacionCreate(
-                        user_id=u_row['user_id'],
-                        titulo="Solicitud de Renovación Rechazada",
-                        mensaje=f"Tu solicitud de renovación ha sido rechazada. Motivo: {data.motivo_rechazo}",
-                        tipo="RENOVACION",
-                        prioridad="ALTA",
-                        metadata={"solicitud_id": str(solicitud_id)}
-                    ))
+            # Si es RECHAZADA, notificar a los administradores de la empresa
+            admin_ids = self.repo.listar_user_ids_admins_empresa(empresa_id)
+            for admin_user_id in admin_ids:
+                self.notif_service.crear_notificacion(NotificacionCreate(
+                    user_id=admin_user_id,
+                    titulo="Solicitud de Renovación Rechazada",
+                    mensaje=f"Tu solicitud de renovación ha sido rechazada. Motivo: {data.motivo_rechazo}",
+                    tipo="RENOVACION",
+                    prioridad="ALTA",
+                    metadata={"solicitud_id": str(solicitud_id)}
+                ))
 
             # Notificar Vendedor
             if solicitud['vendedor_id']:

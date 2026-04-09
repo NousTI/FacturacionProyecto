@@ -79,18 +79,6 @@ import { ChangeDetectorRef } from '@angular/core';
                   </div>
                 </div>
               </div>
-
-              <div class="audit-summary-minimal mt-5 pt-4 border-top">
-                <div class="d-flex gap-3 align-items-center">
-                  <div class="icon-circle-sm bg-light text-primary">
-                    <i class="bi bi-shield-check"></i>
-                  </div>
-                  <div>
-                    <span class="d-block fw-bold text-dark small">Persistencia Automática</span>
-                    <span class="text-muted extra-small">Los cambios se aplican globalmente al cerrar el panel de configuración de cada módulo.</span>
-                  </div>
-                </div>
-              </div>
             </div>
           </div>
 
@@ -123,14 +111,14 @@ import { ChangeDetectorRef } from '@angular/core';
           <div class="modal-body-minimal p-4">
              <div class="minimal-form-item mb-4">
                 <label>Etiqueta del Rol</label>
-                <input type="text" placeholder="Ej: Cajero" [(ngModel)]="roleForm.nombre">
+                <input type="text" placeholder="Ej: Cajero" [(ngModel)]="roleForm.nombre" [readonly]="editingRole && selectedRole?.es_sistema">
              </div>
              <div class="minimal-form-item mb-4">
                 <label>Descripción Operativa</label>
-                <textarea rows="3" placeholder="Describe brevemente las responsabilidades..." [(ngModel)]="roleForm.descripcion"></textarea>
+                <textarea rows="3" placeholder="Describe brevemente las responsabilidades..." [(ngModel)]="roleForm.descripcion" [readonly]="editingRole && selectedRole?.es_sistema"></textarea>
              </div>
 
-             <div class="minimal-toggle-stack">
+             <div class="minimal-toggle-stack" *ngIf="!editingRole || !selectedRole?.es_sistema">
                 <div class="toggle-item-minimal">
                   <span>Estado de Disponibilidad</span>
                   <div class="form-check form-switch custom-switch-lux">
@@ -141,9 +129,11 @@ import { ChangeDetectorRef } from '@angular/core';
           </div>
           <div class="modal-footer-minimal p-4 pt-2">
             <button class="btn btn-minimal-link me-3" (click)="showFormModal = false">Cancelar</button>
-            <button class="btn btn-minimal-dark px-4" (click)="saveRole()" [disabled]="saving">
+            <button class="btn btn-minimal-dark px-4" 
+                    (click)="(editingRole && selectedRole?.es_sistema) ? showFormModal = false : saveRole()" 
+                    [disabled]="saving">
               <span *ngIf="saving" class="spinner-border spinner-border-sm me-2"></span>
-              {{ editingRole ? 'ACTUALIZAR' : 'CREAR ROL' }}
+              {{ (editingRole && selectedRole?.es_sistema) ? 'CERRAR' : (editingRole ? 'ACTUALIZAR' : 'CREAR ROL') }}
             </button>
           </div>
         </div>
@@ -401,7 +391,7 @@ export class RolesPermisosPage implements OnInit {
     this.cargarDatos();
   }
 
-  cargarDatos() {
+  cargarDatos(targetId?: string) {
     console.log('[RolesModule] Iniciando sincronización de seguridad...');
     this.loading = true;
 
@@ -424,10 +414,12 @@ export class RolesPermisosPage implements OnInit {
         this.permisosDisponibles = permisos;
         this.roles = roles;
 
-        if (this.roles.length > 0 && !this.selectedRole) {
-          const firstRole = this.roles[0];
-          this.selectRole(firstRole);
-          console.log('[RolesModule] Rol inicial seleccionado:', firstRole.nombre);
+        if (this.roles.length > 0) {
+          // Si hay un targetId, lo buscamos. Si no, mantenemos el seleccionado o el primero.
+          const idToSelect = targetId || this.selectedRole?.id;
+          const roleToSelect = this.roles.find(r => r.id === idToSelect) || this.roles[0];
+          this.selectRole(roleToSelect);
+          console.log('[RolesModule] Rol seleccionado tras carga:', roleToSelect.nombre);
         }
       },
       error: (err) => {
@@ -537,11 +529,10 @@ export class RolesPermisosPage implements OnInit {
       ).subscribe({
         next: (updated) => {
           console.log('[RolesModule] Rol actualizado exitosamente:', updated.id);
-          const index = this.roles.findIndex(r => r.id === updated.id);
-          this.roles[index] = updated;
-          this.selectedRole = updated;
           this.uiService.showToast('Rol actualizado correctamente', 'success');
           this.showFormModal = false;
+          // Re-sincronizar todo desde el servidor para asegurar datos completos
+          this.cargarDatos(updated.id);
         },
         error: (err) => {
           console.error('[RolesModule] Error actualizando rol:', err);
@@ -629,12 +620,11 @@ export class RolesPermisosPage implements OnInit {
     ).subscribe({
       next: (updated) => {
         console.log('[RolesModule] Permisos sincronizados correctamente');
-        const index = this.roles.findIndex(r => r.id === updated.id);
-        this.roles[index] = updated;
-        this.selectedRole = updated;
         this.uiService.showToast('Configuración sincronizada', 'success');
         this.showPermissionsModal = false;
         this.currentModule = null;
+        // Re-sincronizar todo desde el servidor para asegurar conteos actualizados
+        this.cargarDatos(this.selectedRole?.id);
       },
       error: (err) => {
         console.error('[RolesModule] Error sincronizando permisos:', err);

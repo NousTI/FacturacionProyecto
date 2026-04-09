@@ -33,15 +33,40 @@ import { PerfilUsuario } from '../../../../domain/models/perfil.model';
                     <i class="bi bi-pencil-fill" style="font-size: 0.85rem;"></i>
                   </button>
                 </h1>
-                <div class="d-flex align-items-center gap-3 mt-1">
-                    <span class="role-badge" title="Rol">{{ perfil.rol_nombre }}</span>
-                    <span class="email-text" title="Correo de acceso"><i class="bi bi-envelope me-1"></i> {{ perfil.email }}</span>
-                    <span class="email-text" title="Teléfono"><i class="bi bi-telephone ms-2 me-1"></i> {{ perfil.telefono || 'Sin registrar' }}</span>
+                <div class="d-flex align-items-center gap-4 mt-3 mb-2 flex-wrap">
+                    <!-- Contacto -->
+                    <div class="mini-info-item">
+                        <div class="mini-icon blue"><i class="bi bi-phone"></i></div>
+                        <div class="mini-content">
+                            <label>Contacto</label>
+                            <span>{{ perfil.telefono || 'Sin registrar' }}</span>
+                        </div>
+                    </div>
+                    <!-- Estado -->
+                    <div class="mini-info-item">
+                        <div class="mini-icon green"><i class="bi bi-shield-check"></i></div>
+                        <div class="mini-content">
+                            <label>Estado Laboral</label>
+                            <span>{{ perfil.activo ? 'Activo' : 'Inactivo' }}</span>
+                        </div>
+                    </div>
+                    <!-- Privilegios -->
+                    <div class="mini-info-item">
+                        <div class="mini-icon purple"><i class="bi bi-cpu-fill"></i></div>
+                        <div class="mini-content">
+                            <label>Privilegios de Sistema</label>
+                            <span>{{ perfil.rol_nombre || perfil.system_role }}</span>
+                        </div>
+                    </div>
                 </div>
-                <!-- CAMBIO PASSWORD BUTTON -->
-                <button class="btn btn-sm btn-link text-primary fw-bold p-0 mt-2" style="font-size: 0.75rem; text-decoration: none;" (click)="startChangePassword()">
-                   <i class="bi bi-key-fill me-1"></i> Cambiar Contraseña
-                </button>
+
+                <div class="d-flex align-items-center gap-3 mt-1">
+                    <span class="email-badge" title="Correo de acceso"><i class="bi bi-envelope me-1"></i> {{ perfil.email }}</span>
+                    <!-- CAMBIO PASSWORD BUTTON -->
+                    <button class="btn btn-sm btn-link text-primary fw-bold p-0" style="font-size: 0.75rem; text-decoration: none;" (click)="startChangePassword()">
+                       <i class="bi bi-key-fill me-1"></i> Cambiar Contraseña
+                    </button>
+                </div>
             </div>
 
             <div *ngIf="isChangingPassword" class="w-100 me-3" style="max-width: 400px;">
@@ -104,14 +129,7 @@ import { PerfilUsuario } from '../../../../domain/models/perfil.model';
                  </div>
                </form>
             </div>
-            <div class="d-flex gap-2">
-                <button (click)="onRefresh.emit()" class="btn-action-header" [class.loading]="loading">
-                    <i class="bi bi-arrow-clockwise"></i>
-                </button>
-                <button (click)="onLogout.emit()" class="btn-logout-header">
-                    <i class="bi bi-box-arrow-right"></i>
-                </button>
-            </div>
+            <!-- Actions removed by user request -->
           </div>
         </div>
       </div>
@@ -141,13 +159,32 @@ import { PerfilUsuario } from '../../../../domain/models/perfil.model';
     .status-badge.online { background: #10b981; box-shadow: 0 0 10px rgba(16, 185, 129, 0.4); }
 
     .user-name { font-size: 2rem; font-weight: 950; color: #161d35; margin: 0; letter-spacing: -0.5px; }
-    .role-badge {
-      background: #f1f5f9; color: #475569;
-      padding: 0.4rem 1rem; border-radius: 12px;
-      font-size: 0.75rem; font-weight: 800; text-transform: uppercase;
-      letter-spacing: 0.5px;
+    
+    .mini-info-item {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
     }
-    .email-text { font-size: 0.9rem; color: #94a3b8; font-weight: 600; }
+    .mini-icon {
+      width: 32px; height: 32px;
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1rem;
+    }
+    .mini-icon.blue { background: #eff6ff; color: #3b82f6; }
+    .mini-icon.green { background: #ecfdf5; color: #10b981; }
+    .mini-icon.purple { background: #f5f3ff; color: #8b5cf6; }
+
+    .mini-content { display: flex; flex-direction: column; }
+    .mini-content label { font-size: 0.6rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: -2px; }
+    .mini-content span { font-size: 0.85rem; font-weight: 800; color: #475569; }
+
+    .email-badge {
+      background: #f8fafc; color: #64748b;
+      padding: 0.3rem 0.75rem; border-radius: 8px;
+      font-size: 0.75rem; font-weight: 700;
+      border: 1px solid #f1f5f9;
+    }
 
     .btn-action-header, .btn-logout-header {
       width: 44px; height: 44px; border-radius: 14px; border: 1px solid #eef2f6;
@@ -167,8 +204,7 @@ import { PerfilUsuario } from '../../../../domain/models/perfil.model';
 export class ProfileHeaderComponent implements OnChanges {
     @Input() perfil!: PerfilUsuario;
     @Input() loading: boolean = false;
-    @Output() onRefresh = new EventEmitter<void>();
-    @Output() onLogout = new EventEmitter<void>();
+
     @Output() onUpdate = new EventEmitter<{nombres: string, apellidos: string, telefono: string}>();
     @Output() onChangePassword = new EventEmitter<string>();
 

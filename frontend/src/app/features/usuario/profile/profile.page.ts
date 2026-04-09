@@ -8,7 +8,6 @@ import { UiService } from '../../../shared/services/ui.service';
 
 // Components
 import { ProfileHeaderComponent } from './components/profile-header.component';
-import { ProfileInfoCardsComponent } from './components/profile-info-cards.component';
 import { ProfileEmpresaComponent } from './components/profile-empresa.component';
 import { ProfilePermissionsComponent } from './components/profile-permissions.component';
 import { ProfileAuditComponent } from './components/profile-audit.component';
@@ -19,7 +18,6 @@ import { ProfileAuditComponent } from './components/profile-audit.component';
   imports: [
     CommonModule,
     ProfileHeaderComponent,
-    ProfileInfoCardsComponent,
     ProfileEmpresaComponent,
     ProfilePermissionsComponent,
     ProfileAuditComponent
@@ -35,8 +33,6 @@ import { ProfileAuditComponent } from './components/profile-audit.component';
               [perfil]="perfil"
               [loading]="(loading$ | async) || false"
               [isSaving]="isSaving"
-              (onRefresh)="refreshProfile()"
-              (onLogout)="logout()"
               (onUpdate)="updateProfile($event)"
               (onChangePassword)="changePassword($event)">
           </app-profile-header>
@@ -55,11 +51,6 @@ import { ProfileAuditComponent } from './components/profile-audit.component';
           </div>
 
           <div class="row g-4">
-            <!-- LEFT: Info Summary -->
-            <div class="col-lg-12">
-              <app-profile-info-cards [perfil]="perfil"></app-profile-info-cards>
-            </div>
-
             <!-- BOTTOM LEFT: Empresa & Audit -->
             <div class="col-lg-5">
               <app-profile-empresa [perfil]="perfil"></app-profile-empresa>
@@ -152,14 +143,7 @@ export class ProfilePage implements OnInit, OnDestroy {
     this.destroy$.complete();
   }
 
-  refreshProfile() {
-    this.profileService.refresh();
-  }
 
-  logout() {
-    this.profileService.clearCache();
-    this.authFacade.logout();
-  }
 
   updateProfile(datos: { nombres: string, apellidos: string, telefono: string }) {
     this.isSaving = true;

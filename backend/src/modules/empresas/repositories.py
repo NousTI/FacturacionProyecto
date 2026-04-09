@@ -55,7 +55,8 @@ class RepositorioEmpresas:
                     JOIN sistema_facturacion.puntos_emision pe ON est.id = pe.establecimiento_id 
                     WHERE est.empresa_id = e.id) as puntos_emision_count,
                    (SELECT COUNT(*) FROM sistema_facturacion.usuarios WHERE empresa_id = e.id) as usuarios_count,
-                   (SELECT COUNT(*) FROM sistema_facturacion.facturas WHERE empresa_id = e.id AND date_trunc('month', created_at) = date_trunc('month', CURRENT_DATE)) as facturas_mes_count,
+                   (SELECT COUNT(*) FROM sistema_facturacion.facturas WHERE empresa_id = e.id AND created_at >= s.fecha_inicio AND (s.fecha_fin IS NULL OR created_at <= s.fecha_fin)) as facturas_consumidas,
+                   (SELECT COUNT(*) FROM sistema_facturacion.facturas WHERE empresa_id = e.id AND date_trunc('month', created_at) = date_trunc('month', CURRENT_DATE)) as facturas_mes_count, -- Legacy month count
                    -- Pagos
                    (SELECT MAX(fecha_pago) FROM sistema_facturacion.pagos_suscripciones WHERE empresa_id = e.id) as ultimo_pago_fecha,
                    (SELECT monto FROM sistema_facturacion.pagos_suscripciones WHERE empresa_id = e.id ORDER BY fecha_pago DESC LIMIT 1) as ultimo_pago_monto
@@ -97,6 +98,7 @@ class RepositorioEmpresas:
                    csri.cert_emisor as firma_emisor,
                    (SELECT COUNT(*) FROM sistema_facturacion.usuarios WHERE empresa_id = e.id) as usuarios_count,
                    (SELECT COUNT(*) FROM sistema_facturacion.establecimientos WHERE empresa_id = e.id) as establecimientos_count,
+                   (SELECT COUNT(*) FROM sistema_facturacion.facturas WHERE empresa_id = e.id AND created_at >= s.fecha_inicio AND (s.fecha_fin IS NULL OR created_at <= s.fecha_fin)) as facturas_consumidas,
                    (SELECT COUNT(*) FROM sistema_facturacion.facturas WHERE empresa_id = e.id AND date_trunc('month', created_at) = date_trunc('month', CURRENT_DATE)) as facturas_mes_count,
                    (SELECT MAX(fecha_pago) FROM sistema_facturacion.pagos_suscripciones WHERE empresa_id = e.id) as ultimo_pago_fecha,
                    (SELECT monto FROM sistema_facturacion.pagos_suscripciones WHERE empresa_id = e.id ORDER BY fecha_pago DESC LIMIT 1) as ultimo_pago_monto,

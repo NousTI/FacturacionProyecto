@@ -1,18 +1,22 @@
 import { Component, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ClienteMoroso } from '../../../../domain/models/cuentas-cobrar.model';
+import { InfoTooltipComponent } from '../../../../shared/components/info-tooltip/info-tooltip.component';
 
 @Component({
   selector: 'app-cuentas-cobrar-morosos',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, InfoTooltipComponent],
   template: `
     <div class="morosos-container">
       <div class="soft-card p-4 rounded-4 shadow-sm border-0 bg-white">
-        <div class="table-responsive">
-          <span class="badge bg-danger-subtle text-danger rounded-pill border border-danger-subtle mb-2 small fw-normal">
-             {{ data.length }} CLIENTES MOROSOS IDENTIFICADOS
+        <div class="d-flex align-items-center mb-3">
+          <span class="badge bg-danger-subtle text-danger rounded-pill border border-danger-subtle small fw-normal">
+            {{ data.length }} CLIENTES MOROSOS IDENTIFICADOS
           </span>
+          <app-info-tooltip message="Identifica clientes con facturas que tienen saldo pendiente y cuya fecha de vencimiento ya ha pasado. Se basa en el conteo de documentos vencidos por cada receptor."></app-info-tooltip>
+        </div>
+        <div class="table-responsive">
           <table class="table table-hover align-middle custom-table">
             <thead>
               <tr>

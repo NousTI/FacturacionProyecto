@@ -12,7 +12,7 @@ import { DashboardKPIs } from '../../../../../shared/services/dashboard.service'
   template: `
     <div class="row g-3 mb-4">
       <!-- Fila 1: Operativa -->
-      <div class="col-6 col-lg-3">
+      <div class="col-12 col-md-4">
         <app-stat-card
           [title]="getMontoTitle()"
           [value]="(kpis?.ventas_periodo | currency:'USD':'symbol':'1.2-2') || '$0.00'"
@@ -23,7 +23,7 @@ import { DashboardKPIs } from '../../../../../shared/services/dashboard.service'
           <app-info-tooltip message="Suma total de facturas autorizadas en el periodo seleccionado."></app-info-tooltip>
         </app-stat-card>
       </div>
-      <div class="col-6 col-lg-3">
+      <div class="col-12 col-md-4">
         <app-stat-card
           [title]="getVentasTitle()"
           [value]="kpis?.ventas_hoy?.toString() || '0'"
@@ -33,7 +33,7 @@ import { DashboardKPIs } from '../../../../../shared/services/dashboard.service'
           <app-info-tooltip message="Cantidad de comprobantes emitidos durante el periodo seleccionado."></app-info-tooltip>
         </app-stat-card>
       </div>
-      <div class="col-6 col-lg-3">
+      <div class="col-12 col-md-4">
         <app-stat-card
           [title]="getSaldosTitle()"
           [value]="(kpis?.cuentas_cobrar | currency:'USD':'symbol':'1.2-2') || '$0.00'"

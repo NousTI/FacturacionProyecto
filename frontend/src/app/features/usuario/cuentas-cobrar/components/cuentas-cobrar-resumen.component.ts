@@ -3,38 +3,51 @@ import { CommonModule } from '@angular/common';
 import { CuentasCobrarOverview } from '../../../../domain/models/cuentas-cobrar.model';
 import { PieChartComponent, PieChartData } from '../../../../shared/components/pie-chart/pie-chart.component';
 import { ChartCardComponent } from '../../../../shared/components/chart-card/chart-card.component';
+import { InfoTooltipComponent } from '../../../../shared/components/info-tooltip/info-tooltip.component';
 
 @Component({
   selector: 'app-cuentas-cobrar-resumen',
   standalone: true,
-  imports: [CommonModule, PieChartComponent, ChartCardComponent],
+  imports: [CommonModule, PieChartComponent, ChartCardComponent, InfoTooltipComponent],
   template: `
     <div class="resumen-container" *ngIf="overview">
       <!-- KPIs -->
       <div class="row g-3 mb-4">
         <div class="col-md-3">
           <div class="stat-card p-3 rounded-4 shadow-sm border-0 h-100 bg-primary bg-gradient text-white">
-            <small class="text-white-50 d-block mb-1">Total por Cobrar</small>
+            <div class="d-flex align-items-center mb-1">
+              <small class="text-white-50 mb-0">Total por Cobrar</small>
+              <app-info-tooltip message="Suma total de toda la cartera pendiente de cobro sin importar su estado o antigüedad."></app-info-tooltip>
+            </div>
             <h3 class="fw-bold mb-0">{{ overview.resumen.total_por_cobrar | currency }}</h3>
           </div>
         </div>
         <div class="col-md-3">
           <div class="stat-card p-3 rounded-4 shadow-sm border-0 h-100 bg-white">
-            <small class="text-muted d-block mb-1">Vigente</small>
+            <div class="d-flex align-items-center mb-1">
+              <small class="text-muted mb-0">Vigente</small>
+              <app-info-tooltip message="Monto de facturas emitidas que aún no han superado su fecha de vencimiento."></app-info-tooltip>
+            </div>
             <h4 class="fw-bold mb-0 text-success">{{ overview.resumen.vigente.monto | currency }}</h4>
             <span class="badge bg-success-subtle text-success rounded-pill mt-2">{{ overview.resumen.vigente.porcentaje }}%</span>
           </div>
         </div>
         <div class="col-md-3">
           <div class="stat-card p-3 rounded-4 shadow-sm border-0 h-100 bg-white">
-            <small class="text-muted d-block mb-1">Vencido 1-30 días</small>
+            <div class="d-flex align-items-center mb-1">
+              <small class="text-muted mb-0">Vencido 1-30 días</small>
+              <app-info-tooltip message="Monto de facturas cuya fecha de vencimiento expiró en los últimos 30 días."></app-info-tooltip>
+            </div>
             <h4 class="fw-bold mb-0 text-warning">{{ overview.resumen.vencido_1_30.monto | currency }}</h4>
             <span class="badge bg-warning-subtle text-warning rounded-pill mt-2">{{ overview.resumen.vencido_1_30.porcentaje }}%</span>
           </div>
         </div>
         <div class="col-md-3">
           <div class="stat-card p-3 rounded-4 shadow-sm border-0 h-100 bg-white">
-            <small class="text-muted d-block mb-1">Vencido +30 días</small>
+            <div class="d-flex align-items-center mb-1">
+              <small class="text-muted mb-0">Vencido +30 días</small>
+              <app-info-tooltip message="Suma de las deudas consideradas de recuperación tardía (más de 30 días de vencimiento)."></app-info-tooltip>
+            </div>
             <h4 class="fw-bold mb-0 text-danger">{{ (overview.resumen.vencido_31_60.monto + overview.resumen.vencido_60_mas.monto) | currency }}</h4>
             <span class="badge bg-danger-subtle text-danger rounded-pill mt-2">{{ (overview.resumen.vencido_31_60.porcentaje + overview.resumen.vencido_60_mas.porcentaje) | number:'1.0-2' }}%</span>
           </div>
@@ -61,15 +74,14 @@ import { ChartCardComponent } from '../../../../shared/components/chart-card/cha
 
       <!-- Detail Table -->
       <div class="soft-card p-4 rounded-4 shadow-sm border-0 bg-white">
+        <div class="d-flex align-items-center mb-3">
+          <span class="badge bg-light text-dark rounded-pill border">{{ overview.listado.length }} facturas</span> 
+          <span class="ms-2 text-muted fw-bold" style="font-size: 0.75rem; letter-spacing: 0.05em;">LISTADO DETALLADO PENDIENTE</span>
+          <app-info-tooltip message="Detalle individual de cada factura que mantiene un saldo por cobrar, mostrando su estado respecto a la fecha de vencimiento."></app-info-tooltip>
+        </div>
         <div class="table-responsive">
           <table class="table table-hover align-middle custom-table">
             <thead>
-              <tr class="table-light">
-                <th colspan="9" class="py-2 border-0 bg-light">
-                   <span class="badge bg-light text-dark rounded-pill border">{{ overview.listado.length }} facturas</span> 
-                   <span class="ms-2 text-muted fw-normal" style="font-size: 0.7rem;">LISTADO DETALLADO</span>
-                </th>
-              </tr>
               <tr>
                 <th>Cliente</th>
                 <th>N° Factura</th>

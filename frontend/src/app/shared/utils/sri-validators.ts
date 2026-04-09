@@ -31,7 +31,7 @@ export class SriValidators {
 
             if (tercerDigito < 6) {
                 // Persona Natural (Basado en Cédula)
-                if (!this.validarCedula(ruc.substring(0, 10))) {
+                if (!SriValidators.validarCedula(ruc.substring(0, 10))) {
                     return { rucInvalid: true, message: 'Cédula base del RUC inválida' };
                 }
             } else if (tercerDigito === 6) {
@@ -82,11 +82,11 @@ export class SriValidators {
             const length = value.length;
 
             if (length === 10) {
-                if (!this.validarCedula(value)) {
+                if (!SriValidators.validarCedula(value)) {
                     return { identificacionInvalid: true, message: 'Cédula inválida' };
                 }
             } else if (length === 13) {
-                const rucError = this.rucEcuador()(control);
+                const rucError = SriValidators.rucEcuador()(control);
                 if (rucError) {
                     return { identificacionInvalid: true, message: rucError['message'] };
                 }

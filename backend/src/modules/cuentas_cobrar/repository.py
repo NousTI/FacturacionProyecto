@@ -220,8 +220,7 @@ class RepositorioCuentasCobrar:
             FROM sistema_facturacion.cuentas_cobrar cc
             JOIN sistema_facturacion.clientes c ON cc.cliente_id = c.id
             WHERE cc.empresa_id = %s AND cc.saldo_pendiente > 0 AND cc.fecha_emision <= %s
-            GROUP BY c.razon_social
-            ORDER BY total DESC
+            GROUP BY c.razon_social ORDER BY total DESC
         """
         with self.db.cursor() as cur:
             cur.execute(query, (fecha_corte, fecha_corte, fecha_corte, fecha_corte, fecha_corte, fecha_corte, str(empresa_id), fecha_corte))

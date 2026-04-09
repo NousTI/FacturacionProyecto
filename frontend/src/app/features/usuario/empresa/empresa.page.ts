@@ -12,6 +12,8 @@ import { AuthFacade } from '../../../core/auth/auth.facade';
 import { UiService } from '../../../shared/services/ui.service';
 import { Empresa } from '../../../domain/models/empresa.model';
 
+// Re-check triggered for Empresa interface update
+
 @Component({
   selector: 'app-empresa-page',
   standalone: true,
@@ -146,7 +148,7 @@ import { Empresa } from '../../../domain/models/empresa.model';
                   </div>
                   <div class="detail-row">
                     <span class="label">Desde</span>
-                    <span class="value">{{ (empresa.created_at | date:'dd MMM, yyyy') || 'N/A' }}</span>
+                    <span class="value">{{ (empresa.fecha_inicio | date:'dd MMM, yyyy') || 'N/A' }}</span>
                   </div>
                   <div class="detail-row" *ngIf="empresa.fecha_fin">
                     <span class="label">Vencimiento</span>
@@ -171,11 +173,11 @@ import { Empresa } from '../../../domain/models/empresa.model';
                 
                 <div class="usage-meter mb-4">
                   <div class="d-flex justify-content-between mb-2">
-                    <span class="meter-label">Comprobantes / año</span>
-                    <span class="meter-value">{{ empresa.max_facturas_mes || '∞' }}</span>
+                    <span class="meter-label">Comprobantes / periodo</span>
+                    <span class="meter-value">{{ empresa.facturas_consumidas }} / {{ empresa.max_facturas_mes || '∞' }}</span>
                   </div>
                   <div class="progress-premium">
-                    <div class="progress-bar-lux" [style.width.%]="empresa.max_facturas_mes ? 15 : 100"></div>
+                    <div class="progress-bar-lux" [style.width.%]="empresa.max_facturas_mes ? (empresa.facturas_consumidas / empresa.max_facturas_mes * 100) : 100"></div>
                   </div>
                 </div>
 

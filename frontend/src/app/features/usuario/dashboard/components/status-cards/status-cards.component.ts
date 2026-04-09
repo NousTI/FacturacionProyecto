@@ -55,7 +55,7 @@ import { InfoTooltipComponent } from '../../../../../shared/components/info-tool
 
         <div class="mb-3">
           <div class="d-flex justify-content-between mb-1">
-            <span class="small text-muted" style="font-size: 0.7rem;">Uso de documentos</span>
+            <span class="small text-muted" style="font-size: 0.7rem;">Uso de documentos (periodo)</span>
             <span class="small fw-bold" style="font-size: 0.7rem;">{{ consumoPlan.actual }} / {{ consumoPlan.limite }}</span>
           </div>
           <div class="progress mb-1" style="height: 8px; border-radius: 4px; background-color: #f1f5f9;">
@@ -67,7 +67,7 @@ import { InfoTooltipComponent } from '../../../../../shared/components/info-tool
           </div>
           <div class="d-flex justify-content-between">
             <div class="text-muted" style="font-size: 0.65rem;">
-              {{ (consumoPlan.limite || 0) - (consumoPlan.actual || 0) }} restantes de tu plan contratado
+              {{ (consumoPlan.limite || 0) - (consumoPlan.actual || 0) }} restantes en tu periodo actual
             </div>
           </div>
         </div>

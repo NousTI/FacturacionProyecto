@@ -66,11 +66,14 @@ import { DashboardOverview } from '../../../shared/services/dashboard.service';
 
         <div class="row g-3 mx-0">
           
+          <!-- KPIs a ancho completo -->
+          <div class="col-12 px-3">
+             <app-dashboard-kpis [kpis]="overview.kpis" [selectedPeriod]="selectedPeriod" class="mt-2"></app-dashboard-kpis>
+          </div>
+
           <!-- ── COLUMNA IZQUIERDA: MÉTRICAS Y ACTIVIDAD (8/12) ── -->
           <div class="col-lg-8">
             <div class="d-flex flex-column gap-3">
-              <!-- KPIs -->
-              <app-dashboard-kpis [kpis]="overview.kpis" [selectedPeriod]="selectedPeriod" class="mt-2"></app-dashboard-kpis>
 
               <!-- Análisis de Tendencias (Bajo KPIs como se solicitó) -->
               <app-chart-card 

@@ -156,7 +156,7 @@ import { Empresa } from '../../../../../domain/models/empresa.model';
           <button type="submit" 
                   form="empresaForm"
                   class="btn-submit-lux shadow-sm"
-                  [disabled]="loading || !empForm.valid">
+                  [disabled]="loading || !empForm.valid || !hasChanges()">
             <span *ngIf="loading" class="spinner-border spinner-border-sm me-2"></span>
             {{ loading ? 'Actualizando...' : 'Guardar Cambios' }}
           </button>
@@ -285,6 +285,27 @@ export class EditEmpresaModalComponent implements OnInit, OnDestroy {
     if (charCode > 31 && (charCode < 48 || charCode > 57)) {
       event.preventDefault();
     }
+  }
+
+  hasChanges(): boolean {
+    if (!this.empresa || !this.formData) return false;
+
+    const editableFields: (keyof Empresa)[] = [
+      'razon_social', 'nombre_comercial', 'email', 'telefono',
+      'direccion', 'tipo_contribuyente', 'obligado_contabilidad', 'logo_url'
+    ];
+
+    return editableFields.some(field => {
+      const original = this.empresa[field];
+      const current = this.formData[field];
+
+      // Para strings, normalizamos null/undefined a ''
+      if (typeof original === 'string' || original === null || typeof current === 'string' || current === null) {
+        return (original || '').toString().trim() !== (current || '').toString().trim();
+      }
+
+      return original !== current;
+    });
   }
 
   handleSave(form: any) {

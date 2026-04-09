@@ -49,17 +49,35 @@ import { CuentasCobrarProyeccionComponent } from './components/cuentas-cobrar-pr
           </button>
         </div>
 
-        <!-- FILTROS SIMPLIFICADOS (FECHA Y RECARGA) -->
-        <div class="d-flex align-items-center gap-2">
+        <!-- FILTRO GLOBAL (FECHA DE CORTE Y RECARGA) -->
+        <div class="d-flex align-items-center gap-2" *ngIf="activeTab !== 'pagos'">
           <div class="d-flex align-items-center bg-white px-2 rounded-2 border shadow-sm">
             <i class="bi bi-calendar3 text-muted small me-1"></i>
             <input type="date" class="form-control form-control-sm border-0 shadow-none ps-1" 
                    [(ngModel)]="filtros.fecha_corte" (change)="cargarDatos()" 
                    style="font-size: 0.8rem; height: 31px;">
           </div>
-          
           <button class="btn btn-primary btn-sm rounded-pill px-3 shadow-sm border-0" 
-                  (click)="cargarDatos()" [disabled]="loading" style="height: 31px;">
+                  (click)="cargarDatos()" [disabled]="loading" style="height: 31px;" title="Actualizar">
+            <i class="bi bi-arrow-clockwise" [class.spin]="loading"></i>
+          </button>
+        </div>
+
+        <!-- FILTROS POR RANGO DE FECHAS (EXCLUSIVO HISTORIAL) -->
+        <div class="d-flex align-items-center gap-2" *ngIf="activeTab === 'pagos'">
+          <div class="d-flex align-items-center bg-white px-2 rounded-2 border shadow-sm">
+            <span class="text-muted small me-1 fw-medium" style="font-size: 0.75rem;">Desde:</span>
+            <input type="date" class="form-control form-control-sm border-0 shadow-none px-1" 
+                   [(ngModel)]="filtros.fecha_inicio" (change)="cargarDatosSecundarios()" 
+                   style="font-size: 0.8rem; height: 31px;">
+            <div class="vr bg-secondary opacity-25 mx-1" style="height: 20px;"></div>
+            <span class="text-muted small ms-1 me-1 fw-medium" style="font-size: 0.75rem;">Hasta:</span>
+            <input type="date" class="form-control form-control-sm border-0 shadow-none px-1" 
+                   [(ngModel)]="filtros.fecha_fin" (change)="cargarDatosSecundarios()" 
+                   style="font-size: 0.8rem; height: 31px;">
+          </div>
+          <button class="btn btn-primary btn-sm rounded-pill px-3 shadow-sm border-0" 
+                  (click)="cargarDatosSecundarios()" [disabled]="loading" style="height: 31px;" title="Actualizar">
             <i class="bi bi-arrow-clockwise" [class.spin]="loading"></i>
           </button>
         </div>
@@ -102,10 +120,10 @@ import { CuentasCobrarProyeccionComponent } from './components/cuentas-cobrar-pr
           <app-cuentas-cobrar-pagos [data]="pagosData"></app-cuentas-cobrar-pagos>
         </div>
 
-        <!-- Tab 5: Proyección -->
-        <div *ngIf="activeTab === 'proyeccion'">
+        <!-- Tab 5: Proyección (Oculto temporalmente) -->
+        <!-- <div *ngIf="activeTab === 'proyeccion'">
           <app-cuentas-cobrar-proyeccion [data]="proyeccionData"></app-cuentas-cobrar-proyeccion>
-        </div>
+        </div> -->
 
       </div>
     </div>
@@ -148,6 +166,8 @@ export class CuentasCobrarPage implements OnInit {
   activeTab: string = 'resumen';
   
   filtros: CuentasCobrarFiltros = {
+    fecha_inicio: new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString().split('T')[0],
+    fecha_fin: new Date().toISOString().split('T')[0],
     fecha_corte: new Date().toISOString().split('T')[0]
   };
 
@@ -161,8 +181,8 @@ export class CuentasCobrarPage implements OnInit {
     { id: 'resumen', label: 'Consolidado', icon: 'bi bi-pie-chart-fill' },
     { id: 'antiguedad', label: 'Antigüedad', icon: 'bi bi-reception-3' },
     { id: 'morosos', label: 'Morosos', icon: 'bi bi-person-x-fill' },
-    { id: 'pagos', label: 'Historial', icon: 'bi bi-receipt-cutoff' },
-    { id: 'proyeccion', label: 'Proyección', icon: 'bi bi-graph-up-arrow' }
+    { id: 'pagos', label: 'Historial', icon: 'bi bi-receipt-cutoff' }
+    // { id: 'proyeccion', label: 'Proyección', icon: 'bi bi-graph-up-arrow' }
   ];
 
   constructor(
@@ -198,10 +218,10 @@ export class CuentasCobrarPage implements OnInit {
     });
   }
 
-  private cargarDatosSecundarios() {
+  cargarDatosSecundarios() {
     this.service.getAntiguedadClientes(this.filtros.fecha_corte).subscribe(data => this.antiguedadData = data);
     this.service.getClientesMorosos(this.filtros.dias_mora || 1).subscribe(data => this.morososData = data);
-    this.service.getHistorialPagos({}).subscribe(data => this.pagosData = data);
+    this.service.getHistorialPagos(this.filtros).subscribe(data => this.pagosData = data);
     this.service.getProyeccionCobros().subscribe(data => this.proyeccionData = data);
   }
 }

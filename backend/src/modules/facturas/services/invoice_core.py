@@ -64,6 +64,23 @@ class ServicioFacturaCore:
         elif not fecha_emision:
             payload['fecha_emision'] = ahora
 
+        # Asignar fecha_vencimiento dinámica basada en el plazo si no fue proporcionada explícitamente
+        if not payload.get('fecha_vencimiento'):
+            from dateutil.relativedelta import relativedelta
+            fecha_venc = payload['fecha_emision']
+            plazo = int(pago_data.get('plazo', 0))
+            unidad = str(pago_data.get('unidad_tiempo', 'DIAS')).upper()
+            
+            if plazo > 0:
+                if unidad == 'DIAS':
+                    fecha_venc += relativedelta(days=plazo)
+                elif unidad == 'MESES':
+                    fecha_venc += relativedelta(months=plazo)
+                elif unidad in ['AÑOS', 'ANOS']:
+                    fecha_venc += relativedelta(years=plazo)
+            
+            payload['fecha_vencimiento'] = fecha_venc
+
         payload.update({
             "estado": 'BORRADOR',
             "estado_pago": datos.estado_pago or 'PENDIENTE',

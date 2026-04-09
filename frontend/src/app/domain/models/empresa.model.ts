@@ -1,4 +1,7 @@
 export interface Empresa {
+    facturas_mes_count: number;
+    facturas_consumidas: number;
+    usuarios_count: number;
     // Identidad
     id: string;
     ruc: string;
@@ -64,7 +67,10 @@ export const EMPRESA_TEMPLATE: Partial<Empresa> = {
     max_facturas_mes: 0,
     max_establecimientos: 0,
     establecimientos_count: 0,
-    puntos_emision_count: 0
+    puntos_emision_count: 0,
+    usuarios_count: 0,
+    facturas_mes_count: 0,
+    facturas_consumidas: 0
 };
 
 export interface EmpresaCreate {

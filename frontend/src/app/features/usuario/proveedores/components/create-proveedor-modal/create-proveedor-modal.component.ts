@@ -120,7 +120,10 @@ import { SriValidators } from '../../../../../shared/utils/sri-validators';
               <div class="row g-3 align-items-center">
                 <div class="col-md-6">
                   <label class="lux-label">Días de Crédito Plazo</label>
-                  <input type="number" formControlName="dias_credito" class="lux-input" placeholder="0">
+                  <input type="number" formControlName="dias_credito" class="lux-input" placeholder="0" (keypress)="validateNoNegative($event)" [class.is-invalid]="proveedorForm.get('dias_credito')?.invalid && proveedorForm.get('dias_credito')?.touched">
+                  <div class="error-feedback" *ngIf="proveedorForm.get('dias_credito')?.invalid && proveedorForm.get('dias_credito')?.touched">
+                    <span *ngIf="proveedorForm.get('dias_credito')?.errors?.['min']">No puede ser negativo</span>
+                  </div>
                 </div>
               </div>
             </div>
@@ -138,7 +141,7 @@ import { SriValidators } from '../../../../../shared/utils/sri-validators';
             <div class="ms-auto d-flex gap-3">
               <button (click)="close()" class="btn-lux-outline" [disabled]="loading">Cancelar</button>
               <button (click)="submit()"
-                      [disabled]="proveedorForm.invalid || (proveedor && proveedorForm.pristine) || loading"
+                      [disabled]="proveedorForm.invalid || (proveedor && !hasChanges) || loading"
                       class="btn-lux-submit">
                 <span *ngIf="loading" class="spinner-border spinner-border-sm me-2"></span>
                 {{ loading ? 'Guardando...' : (proveedor ? 'Guardar Cambios' : 'Crear Proveedor') }}
@@ -193,13 +196,15 @@ import { SriValidators } from '../../../../../shared/utils/sri-validators';
     .lux-input.is-invalid { border-color: #ef4444 !important; background: #fef2f2; }
     .error-feedback { font-size: 0.75rem; color: #ef4444; font-weight: 700; margin-top: 0.4rem; display: block; text-transform: uppercase; }
     .modal-lux-footer { padding: 1.5rem 2.5rem; background: white; border-top: 1px solid #f1f5f9; }
-    .btn-lux-submit {
-      background: #161d35; color: white; border: none; padding: 0.85rem 2rem;
-      border-radius: 16px; font-weight: 800; font-size: 0.9rem;
-      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-    }
     .btn-lux-submit:hover:not(:disabled) { background: #232d4b; transform: translateY(-2px); box-shadow: 0 10px 20px -5px rgba(22, 29, 53, 0.3); }
-    .btn-lux-submit:disabled { opacity: 0.5; cursor: not-allowed; }
+    .btn-lux-submit:disabled { 
+      background: #e2e8f0; 
+      color: #94a3b8; 
+      cursor: not-allowed; 
+      opacity: 1;
+      transform: none;
+      box-shadow: none;
+    }
     .btn-lux-outline {
       background: white; color: #64748b; border: 1px solid #f1f5f9;
       padding: 0.85rem 1.75rem; border-radius: 16px; font-weight: 700; font-size: 0.9rem; transition: all 0.2s;
@@ -222,7 +227,7 @@ export class CreateProveedorModalComponent implements OnInit, OnDestroy {
 
     constructor(private fb: FormBuilder) {
         this.proveedorForm = this.fb.group({
-            identificacion: ['', [Validators.required, SriValidators.identificacionEcuador()]],
+            identificacion: ['', [Validators.required, SriValidators.rucEcuador()]],
             tipo_identificacion: ['RUC', [Validators.required]],
             razon_social: ['', [Validators.required, Validators.minLength(3)]],
             nombre_comercial: [''],
@@ -236,24 +241,29 @@ export class CreateProveedorModalComponent implements OnInit, OnDestroy {
         });
 
         this.proveedorForm.get('tipo_identificacion')?.valueChanges.subscribe(val => {
-            const idCont = this.proveedorForm.get('identificacion');
-            if (val === 'RUC') {
-                idCont?.setValidators([Validators.required, SriValidators.rucEcuador()]);
-            } else if (val === 'CEDULA') {
-                idCont?.setValidators([Validators.required, SriValidators.identificacionEcuador()]);
-            } else if (val === 'PASAPORTE') {
-                idCont?.setValidators([Validators.required, SriValidators.pasaporte()]);
-            } else {
-                idCont?.setValidators([Validators.required]);
-            }
-            idCont?.updateValueAndValidity();
+            this.applyValidators(val);
         });
+    }
+
+    private applyValidators(val: string) {
+        const idCont = this.proveedorForm.get('identificacion');
+        if (val === 'RUC') {
+            idCont?.setValidators([Validators.required, SriValidators.rucEcuador()]);
+        } else if (val === 'CEDULA') {
+            idCont?.setValidators([Validators.required, SriValidators.identificacionEcuador()]);
+        } else if (val === 'PASAPORTE') {
+            idCont?.setValidators([Validators.required, SriValidators.pasaporte()]);
+        } else {
+            idCont?.setValidators([Validators.required]);
+        }
+        idCont?.updateValueAndValidity();
     }
 
     ngOnInit() {
         document.body.style.overflow = 'hidden';
         if (this.proveedor) {
             this.proveedorForm.patchValue(this.proveedor);
+            this.applyValidators(this.proveedor.tipo_identificacion);
         }
     }
 
@@ -264,6 +274,13 @@ export class CreateProveedorModalComponent implements OnInit, OnDestroy {
     submit() {
         if (this.proveedorForm.valid) {
             this.onSave.emit(this.proveedorForm.value);
+        }
+    }
+
+    validateNoNegative(event: KeyboardEvent) {
+        const charCode = event.which ? event.which : event.keyCode;
+        if (charCode === 45) {
+            event.preventDefault();
         }
     }
 
@@ -281,6 +298,26 @@ export class CreateProveedorModalComponent implements OnInit, OnDestroy {
         if (charCode > 31 && (charCode < 48 || charCode > 57)) {
             event.preventDefault();
         }
+    }
+
+    get hasChanges(): boolean {
+        if (!this.proveedor) return true;
+        const formValue = this.proveedorForm.value;
+        const fields = Object.keys(this.proveedorForm.controls);
+        
+        for (const field of fields) {
+            const initialValue = (this.proveedor as any)[field];
+            const currentValue = formValue[field];
+
+            // Normalize for comparison (treat null/undefined as empty string if they were initially so)
+            const normInitial = (initialValue === null || initialValue === undefined) ? '' : initialValue;
+            const normCurrent = (currentValue === null || currentValue === undefined) ? '' : currentValue;
+
+            if (String(normInitial) !== String(normCurrent)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     close() {

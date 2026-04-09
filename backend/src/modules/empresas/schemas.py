@@ -96,6 +96,7 @@ class EmpresaLectura(EmpresaBase):
     # Infraestructura real (conteo actual)
     usuarios_count: int = 0
     facturas_mes_count: int = 0
+    facturas_consumidas: int = 0
     establecimientos_count: int = 0
     puntos_emision_count: int = 0
     

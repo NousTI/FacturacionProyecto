@@ -119,7 +119,7 @@ import { Establecimiento } from '../../../../../domain/models/establecimiento.mo
           </button>
           <button
             (click)="submit()"
-            [disabled]="form.invalid || (establecimiento && form.pristine) || loading"
+            [disabled]="form.invalid || (establecimiento && !hasChanges) || loading"
             class="btn-submit-final d-flex align-items-center gap-2"
             type="button"
           >
@@ -351,8 +351,12 @@ import { Establecimiento } from '../../../../../domain/models/establecimiento.mo
     }
 
     .btn-submit-final:disabled {
-      opacity: 0.5;
+      background: #e2e8f0;
+      color: #94a3b8;
       cursor: not-allowed;
+      opacity: 1;
+      box-shadow: none;
+      transform: none;
     }
 
     .btn-cancel-final {
@@ -460,6 +464,26 @@ export class CreateEstablecimientoModalComponent implements OnInit {
     if (this.form.valid) {
       this.onSave.emit(this.form.value);
     }
+  }
+
+  get hasChanges(): boolean {
+    if (!this.establecimiento) return true;
+    const formValue = this.form.value;
+    const fields = Object.keys(this.form.controls);
+
+    for (const field of fields) {
+      const initialValue = (this.establecimiento as any)[field];
+      const currentValue = formValue[field];
+
+      // Normalize for comparison
+      const normInitial = (initialValue === null || initialValue === undefined) ? '' : initialValue;
+      const normCurrent = (currentValue === null || currentValue === undefined) ? '' : currentValue;
+
+      if (String(normInitial) !== String(normCurrent)) {
+        return true;
+      }
+    }
+    return false;
   }
 
   validateNumbers(event: KeyboardEvent) {

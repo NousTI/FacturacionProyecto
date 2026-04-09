@@ -13,6 +13,7 @@ import { ToastComponent } from '../../../shared/components/toast/toast.component
 import { ConfirmModalComponent } from '../../../shared/components/confirm-modal/confirm-modal.component';
 import { PagosFacturaModalComponent } from './components/pagos-factura-modal/pagos-factura-modal.component';
 import { ReportesVentasComponent } from './components/reportes-ventas/reportes-ventas.component';
+import { AnularFacturaModalComponent } from './components/anular-factura-modal/anular-factura-modal.component';
 
 import { FacturasService } from './services/facturas.service';
 import { UiService } from '../../../shared/services/ui.service';
@@ -34,6 +35,7 @@ import { SriConfigService } from '../certificado-sri/services/sri-config.service
     ViewFacturaModalComponent,
     EmailFacturaModalComponent,
     PagosFacturaModalComponent,
+    AnularFacturaModalComponent,
     ReportesVentasComponent,
     ToastComponent,
     ConfirmModalComponent
@@ -130,6 +132,12 @@ import { SriConfigService } from '../certificado-sri/services/sri-config.service
             [factura]="selectedFactura"
             (close)="closePagosModal($event)"
          ></app-pagos-factura-modal>
+
+         <app-anular-factura-modal
+            *ngIf="showAnularModal && selectedFactura"
+            [factura]="selectedFactura"
+            (close)="showAnularModal = false"
+         ></app-anular-factura-modal>
         
          <app-toast></app-toast>
       </div>
@@ -250,6 +258,7 @@ export class FacturacionPage implements OnInit {
   showViewModal: boolean = false;
   showEmailModal: boolean = false;
   showPagosModal: boolean = false;
+  showAnularModal: boolean = false;
 
   // SRI Status
   sriError: string | null = null;
@@ -458,8 +467,7 @@ export class FacturacionPage implements OnInit {
           this.uiService.showToast('No se puede anular: ' + this.sriError, 'warning');
           return;
         }
-        const razon = prompt("Razón de anulación:");
-        if (razon) this.anularFactura(event.factura.id, razon);
+        this.showAnularModal = true;
         break;
       case 'consultar':
         this.selectedFactura = event.factura;
@@ -636,7 +644,7 @@ export class FacturacionPage implements OnInit {
 
   enviarEmail(id: string, email?: string) {
     this.facturasService.enviarEmail(id, email).subscribe({
-      next: () => this.uiService.showToast('Correo enviado', 'success'),
+      next: () => this.uiService.showToast('Correo enviado (No implementado)', 'success'),
       error: (err) => this.uiService.showError(err, 'Error enviando correo')
     });
   }
