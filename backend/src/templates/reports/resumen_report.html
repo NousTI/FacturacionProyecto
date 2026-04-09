@@ -24,7 +24,15 @@
         .progress-container { width: 100%; background: #f1f5f9; border-radius: 10px; height: 15px; margin: 10px 0; overflow: hidden; }
         .progress-bar { height: 100%; background: #3b82f6; border-radius: 10px; }
         
-        .footer { margin-top: 40px; text-align: center; font-size: 10px; color: #94a3b8; }
+        #footer {
+            position: fixed;
+            bottom: 0px;
+            left: 0;
+            width: 100%;
+            text-align: center;
+            font-size: 10px;
+            color: #6b7280;
+        }
     </style>
 </head>
 <body>
@@ -67,7 +75,7 @@
         <div class="section-title">INDICADORES DE EFICIENCIA</div>
         <p style="font-size: 13px;"><strong>Tasa de Recuperación de Cartera:</strong></p>
         <div class="progress-container">
-            <div class="progress-bar" style="width: {{ data.cobros.porcentaje_recuperacion }}%;"></div>
+            <div class="progress-bar" style="{{ 'width: ' ~ (data.cobros.porcentaje_recuperacion or 0) ~ '%;' }}"></div>
         </div>
         <p style="font-size: 11px; color: #64748b;">
             Representa el porcentaje de las ventas del periodo que ya han sido efectivamente cobradas. Una tasa superior al 80% indica una gestión de cobranza saludable.
@@ -91,8 +99,14 @@
         </ul>
     </div>
 
-    <div class="footer">
-        Generado automáticamente por Sistema de Facturación Premium - {{ now }}
+    <div id="footer">
+        Generado por 
+        {% if footer_b64 %}
+        <img src="{{ footer_b64 }}" style="vertical-align: middle; height: 16px; margin: 0 4px;" alt="NOUS"> 
+        {% else %}
+        NOUS
+        {% endif %}
+        www.nous.ec
     </div>
 </body>
 </html>

@@ -89,6 +89,17 @@ def get_image_b64(filepath: str) -> str:
         print(f"Error loading image {filepath}: {e}")
         return ""
 
+def inyectar_footer_contexto(context: dict):
+    """
+    Inyecta las imágenes base64 del logo y pie de página en el contexto de la plantilla.
+    """
+    logo_path = os.path.join(TEMPLATES_DIR, "invoices", "logo.png")
+    footer_path = os.path.join(TEMPLATES_DIR, "invoices", "footer.png")
+    
+    context["logo_b64"] = get_image_b64(logo_path)
+    context["footer_b64"] = get_image_b64(footer_path)
+    return context
+
 def crear_ride_factura(factura_data: dict):
     """
     Prepara el contexto y genera el PDF para una factura (RIDE).
@@ -143,9 +154,7 @@ def crear_ride_factura(factura_data: dict):
     # Logos e imágenes base64 para Playwright
     factura_data["barcode_svg_b64"] = get_barcode_b64(factura_data.get("clave_acceso", ""))
     
-    logo_path = os.path.join(TEMPLATES_DIR, "invoices", "logo.png")
-    footer_path = os.path.join(TEMPLATES_DIR, "invoices", "footer.png")
-    factura_data["logo_b64"] = get_image_b64(logo_path)
-    factura_data["footer_b64"] = get_image_b64(footer_path)
+    # Inyectar logo y footer estándar
+    inyectar_footer_contexto(factura_data)
     
     return render_to_pdf("invoices/ride_classic.html", {"factura": factura_data})

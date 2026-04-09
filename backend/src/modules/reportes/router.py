@@ -45,7 +45,7 @@ def exportar_reporte_ventas(
     punto_emision_id: Optional[UUID] = None,
     usuario_id: Optional[UUID] = None,
     estado: Optional[str] = None,
-    usuario_actual: dict = Depends(requerir_permiso("REPORTES_EXPORTAR")),
+    usuario_actual: dict = Depends(requerir_permiso([PermisosVendedor.VER_REPORTES, "REPORTES_EXPORTAR"])),
     servicio: ServicioReportes = Depends()
 ):
     """Genera y descarga un reporte en formato PDF o Excel."""
@@ -158,7 +158,7 @@ def eliminar_reporte_superadmin(
 @router.post("/preview")
 def preview_reporte(
     datos: ReporteCreacion,
-    usuario: dict = Depends(requerir_permiso("REPORTES_VER")),
+    usuario: dict = Depends(requerir_permiso([PermisosVendedor.VER_REPORTES, "REPORTES_VER"])),
     servicio: ServicioReportes = Depends()
 ):
     return servicio.obtener_datos_preview(datos, usuario)

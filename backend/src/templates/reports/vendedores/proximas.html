@@ -23,7 +23,7 @@
         .date-prox { font-weight: 700; color: #0369a1; }
         .urgency-high { color: #b91c1c; font-weight: 800; }
 
-        .footer { position: fixed; bottom: 0; width: 100%; padding: 20px 30px; text-align: center; font-size: 10px; color: #9ca3af; border-top: 1px solid #f3f4f6; }
+        #footer { position: fixed; bottom: 0; width: 100%; padding: 0; text-align: center; font-size: 10px; color: #6b7280; }
     </style>
 </head>
 <body>
@@ -74,8 +74,14 @@
         </table>
     </div>
 
-    <div class="footer">
-        Reporte preventivo para optimización de renovaciones.
+    <div id="footer">
+        Generado por 
+        {% if footer_b64 %}
+        <img src="{{ footer_b64 }}" style="vertical-align: middle; height: 16px; margin: 0 4px;" alt="NOUS"> 
+        {% else %}
+        NOUS
+        {% endif %}
+        www.nous.ec
     </div>
 </body>
 </html>

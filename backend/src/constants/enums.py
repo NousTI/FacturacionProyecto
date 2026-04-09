@@ -36,3 +36,4 @@ class AuthKeys:
     IS_VENDEDOR = "is_vendedor"
     IS_USUARIO = "is_usuario"
     ROLE = "role" # Changed from rol_id to role
+    INTERNAL_VENDEDOR_ID = "internal_vendedor_id"

@@ -3,7 +3,7 @@ import uuid
 from datetime import datetime
 from fastapi import Depends
 from .repository import RepositorioRV004
-from .....utils.pdf_generator import render_to_pdf
+from .....utils.pdf_generator import render_to_pdf, inyectar_footer_contexto
 
 class ServicioRV004:
     def __init__(self, repo: RepositorioRV004 = Depends()):
@@ -24,6 +24,7 @@ class ServicioRV004:
             "now": now_str,
             "params": parametros
         }
+        inyectar_footer_contexto(context)
         
         # 3. Renderizar PDF
         pdf_stream = render_to_pdf("reports/vendedores/comisiones.html", context)

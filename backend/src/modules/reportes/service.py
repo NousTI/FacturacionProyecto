@@ -22,7 +22,7 @@ from ..empresas.repositories import RepositorioEmpresas
 from .schemas import ReporteCreacion
 from ...constants.enums import AuthKeys
 from ...errors.app_error import AppError
-from ...utils.pdf_generator import render_to_pdf
+from ...utils.pdf_generator import render_to_pdf, inyectar_footer_contexto
 from ...utils.excel_generator import generate_excel_report
 
 class ServicioReportes:
@@ -101,18 +101,20 @@ class ServicioReportes:
             if datos.tipo == 'INGRESOS_FINANCIEROS':
                 estado = parametros.get('estado')
                 ingresos = self.repo.obtener_ingresos_financieros(fecha_inicio, fecha_fin, estado)
-                filename = f"reporte_ingresos_{uuid.uuid4().hex[:8]}.csv"
+                
+                context = inyectar_footer_contexto({
+                    "data": ingresos,
+                    "params": parametros,
+                    "now": datetime.now().strftime('%Y-%m-%d %H:%M')
+                })
+                
+                pdf_stream = render_to_pdf("reports/superadmin/ingresos_financieros.html", context)
+                filename = f"reporte_ingresos_{uuid.uuid4().hex[:8]}.pdf"
                 filepath = os.path.join("static", "reportes", filename)
                 os.makedirs(os.path.dirname(filepath), exist_ok=True)
                 
-                with open(filepath, mode='w', newline='', encoding='utf-8') as f:
-                    writer = csv.writer(f)
-                    writer.writerow(['Fecha de Pago', 'Empresa/Cliente', 'Concepto', 'Monto Total', 'Estado'])
-                    for i in ingresos:
-                        writer.writerow([
-                            i.get('fecha_pago', ''), i.get('empresa_cliente', ''), i.get('concepto', ''),
-                            i.get('monto_total', ''), i.get('estado', '')
-                        ])
+                with open(filepath, "wb") as f:
+                    f.write(pdf_stream.getbuffer())
                         
                 datos_dict['url_descarga'] = f"/static/reportes/{filename}"
                 datos_dict['estado'] = 'COMPLETADO'
@@ -120,18 +122,20 @@ class ServicioReportes:
             elif datos.tipo == 'COMISIONES_PAGOS':
                 vendedor_id_param = parametros.get('vendedor_id')
                 comisiones = self.repo.obtener_comisiones_pagos(vendedor_id_param, fecha_inicio, fecha_fin)
-                filename = f"reporte_pagos_comisiones_{uuid.uuid4().hex[:8]}.csv"
+                
+                context = inyectar_footer_contexto({
+                    "data": comisiones,
+                    "params": parametros,
+                    "now": datetime.now().strftime('%Y-%m-%d %H:%M')
+                })
+                
+                pdf_stream = render_to_pdf("reports/superadmin/pagos_comisiones.html", context)
+                filename = f"reporte_pagos_comisiones_{uuid.uuid4().hex[:8]}.pdf"
                 filepath = os.path.join("static", "reportes", filename)
                 os.makedirs(os.path.dirname(filepath), exist_ok=True)
                 
-                with open(filepath, mode='w', newline='', encoding='utf-8') as f:
-                    writer = csv.writer(f)
-                    writer.writerow(['Vendedor', 'Periodo', 'Monto de la comision', 'Estado'])
-                    for c in comisiones:
-                        writer.writerow([
-                            c.get('vendedor', ''), c.get('periodo', ''), c.get('monto_comision', ''),
-                            c.get('estado', '')
-                        ])
+                with open(filepath, "wb") as f:
+                    f.write(pdf_stream.getbuffer())
                         
                 datos_dict['url_descarga'] = f"/static/reportes/{filename}"
                 datos_dict['estado'] = 'COMPLETADO'
@@ -177,7 +181,7 @@ class ServicioReportes:
 
     def obtener_datos_preview(self, datos: ReporteCreacion, usuario_actual: dict):
         is_superadmin = usuario_actual.get(AuthKeys.IS_SUPERADMIN)
-        vendedor_id_actual = usuario_actual.get('internal_vendedor_id')
+        vendedor_id_actual = usuario_actual.get(AuthKeys.INTERNAL_VENDEDOR_ID)
         
         parametros = datos.parametros or {}
         fecha_inicio = parametros.get('fecha_inicio')
@@ -192,19 +196,19 @@ class ServicioReportes:
             return self.repo.obtener_comisiones_pagos(vendedor_id, fecha_inicio, fecha_fin)
             
         elif datos.tipo == 'MIS_EMPRESAS' and vendedor_id_actual:
-            return self.repo.obtener_empresas_vendedor_detalle(vendedor_id_actual, fecha_inicio, fecha_fin)
+            return self.svc_rv001.repo.obtener_empresas_vendedor_detalle(vendedor_id_actual, fecha_inicio, fecha_fin)
             
         elif datos.tipo == 'SUSCRIPCIONES_VENCIDAS' and vendedor_id_actual:
-            return self.repo.obtener_suscripciones_vencidas(vendedor_id_actual)
+            return self.svc_rv002.repo.obtener_suscripciones_vencidas(vendedor_id_actual)
             
         elif datos.tipo == 'SUSCRIPCIONES_PROXIMAS' and vendedor_id_actual:
             dias = parametros.get('dias', 15)
-            return self.repo.obtener_suscripciones_proximas(vendedor_id_actual, dias)
+            return self.svc_rv003.repo.obtener_suscripciones_proximas(vendedor_id_actual, dias)
             
         elif datos.tipo == 'COMISIONES_MES' and vendedor_id_actual:
             fecha_inicio = parametros.get('fecha_inicio')
             fecha_fin = parametros.get('fecha_fin')
-            return self.repo.obtener_comisiones_mes(vendedor_id_actual, fecha_inicio, fecha_fin)
+            return self.svc_rv004.repo.obtener_comisiones_mes(vendedor_id_actual, fecha_inicio, fecha_fin)
             
 
         raise AppError("Tipo de reporte o permisos no válidos para previsualización", 400)
@@ -378,7 +382,8 @@ class ServicioReportes:
         if tipo == 'VENTAS_GENERAL':
             data = self.obtener_ventas_general(empresa_id, params)
             if formato == 'pdf':
-                return render_to_pdf("reports/ventas_general.html", {"data": data, "params": params, "now": now_str})
+                context = inyectar_footer_contexto({"data": data, "params": params, "now": now_str})
+                return render_to_pdf("reports/ventas_general.html", context)
             else:
                 headers = ["Categoría", "Valor"]
                 # Aplanar un poco para Excel
@@ -396,11 +401,13 @@ class ServicioReportes:
             if formato == 'pdf':
                 headers = ["Mes", "Facturas", "Subtotal", "IVA", "Total"]
                 keys = ["mes", "facturas", "subtotal", "iva", "total"]
-                return render_to_pdf("reports/base_tabla.html", {
+                context = {
                     "title": f"Ventas Mensuales - {anio}",
                     "subtitle": f"Empresa ID: {empresa_id}",
                     "headers": headers, "keys": keys, "data": data, "now": now_str
-                })
+                }
+                inyectar_footer_contexto(context)
+                return render_to_pdf("reports/base_tabla.html", context)
             else:
                 headers = ["Mes", "Facturas", "Subtotal", "IVA", "Total"]
                 return generate_excel_report(f"Ventas Mensuales {anio}", headers, data, ["mes", "facturas", "subtotal", "iva", "total"])
@@ -410,11 +417,13 @@ class ServicioReportes:
             if formato == 'pdf':
                 headers = ["Usuario", "Facturas", "Total Ventas", "Ticket Promedio"]
                 keys = ["usuario", "facturas", "total_ventas", "ticket_promedio"]
-                return render_to_pdf("reports/base_tabla.html", {
+                context = {
                     "title": "Ventas por Usuario",
                     "subtitle": f"Periodo: {params.get('fecha_inicio')} a {params.get('fecha_fin')}",
                     "headers": headers, "keys": keys, "data": data, "now": now_str
-                })
+                }
+                inyectar_footer_contexto(context)
+                return render_to_pdf("reports/base_tabla.html", context)
             else:
                 headers = ["Usuario", "Facturas", "Total Ventas", "Ticket Promedio"]
                 return generate_excel_report("Ventas por Usuario", headers, data, ["usuario", "facturas", "total_ventas", "ticket_promedio"])
@@ -424,11 +433,13 @@ class ServicioReportes:
             if formato == 'pdf':
                 headers = ["Número", "Fecha Emisión", "Cliente", "Total", "Motivo"]
                 keys = ["numero_factura", "fecha_emision", "cliente", "total", "motivo"]
-                return render_to_pdf("reports/base_tabla.html", {
+                context = {
                     "title": "Facturas Anuladas",
                     "subtitle": f"Periodo: {params.get('fecha_inicio')} a {params.get('fecha_fin')}",
                     "headers": headers, "keys": keys, "data": data, "now": now_str
-                })
+                }
+                inyectar_footer_contexto(context)
+                return render_to_pdf("reports/base_tabla.html", context)
             else:
                 headers = ["Número", "Fecha Emisión", "Cliente", "Total", "Usuario Anuló", "Motivo", "Fecha Anulación"]
                 keys = ["numero_factura", "fecha_emision", "cliente", "total", "usuario_anulo", "motivo", "fecha_anulacion"]
@@ -439,11 +450,13 @@ class ServicioReportes:
             if formato == 'pdf':
                 headers = ["Número", "Cliente", "Fecha Intento", "Estado"]
                 keys = ["numero_factura", "cliente", "fecha_intento", "estado_actual"]
-                return render_to_pdf("reports/base_tabla.html", {
+                context = {
                     "title": "Facturas Rechazadas por el SRI",
                     "subtitle": f"Periodo: {params.get('fecha_inicio')} a {params.get('fecha_fin')}",
                     "headers": headers, "keys": keys, "data": data, "now": now_str
-                })
+                }
+                inyectar_footer_contexto(context)
+                return render_to_pdf("reports/base_tabla.html", context)
             else:
                 headers = ["Número", "Cliente", "Fecha Intento", "Mensaje SRI", "Estado"]
                 keys = ["numero_factura", "cliente", "fecha_intento", "mensaje_sri", "estado_actual"]
@@ -467,14 +480,47 @@ class ServicioReportes:
                 template = "reports/resumen_report.html"
                 
             if formato == 'pdf':
-                return render_to_pdf(template, {
+                context = {
                     "data": data, 
                     "params": params, 
                     "empresa": empresa, 
                     "now": now_str
-                })
+                }
+                inyectar_footer_contexto(context)
+                return render_to_pdf(template, context)
             else:
                 raise AppError("Formato no soportado para reportes financieros", 400)
+
+        # --- EXPORTACIÓN DE REPORTES SUPERADMIN (R-031 a R-033) ---
+        
+        elif tipo.startswith('SUPERADMIN_'):
+            fecha_inicio = params.get('fecha_inicio')
+            fecha_fin = params.get('fecha_fin')
+            
+            if tipo == 'SUPERADMIN_GLOBAL':
+                data = self.obtener_reporte_global_superadmin(fecha_inicio, fecha_fin)
+                template = "reports/superadmin/global_report.html"
+            elif tipo == 'SUPERADMIN_COMISIONES':
+                vendedor_id = params.get('vendedor_id')
+                estado = params.get('estado')
+                data = self.obtener_reporte_comisiones_superadmin(vendedor_id, estado, fecha_inicio, fecha_fin)
+                template = "reports/superadmin/comisiones_report.html"
+            elif tipo == 'SUPERADMIN_USO':
+                data = self.obtener_reporte_uso_sistema_superadmin(fecha_inicio, fecha_fin)
+                template = "reports/superadmin/uso_sistema_report.html"
+            else:
+                raise AppError(f"Tipo de reporte Superadmin desconocido: {tipo}", 400)
+                
+            if formato == 'pdf':
+                context = {
+                    "data": data,
+                    "params": params,
+                    "now": now_str
+                }
+                inyectar_footer_contexto(context)
+                return render_to_pdf(template, context)
+            else:
+                raise AppError("El dashboard solo admite exportación a PDF con diseño branding", 400)
 
         raise AppError("Tipo de reporte o formato no soportado para exportación", 400)
 

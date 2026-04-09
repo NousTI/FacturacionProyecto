@@ -11,7 +11,7 @@ class ServicioDashboardVendedor:
         if not usuario_actual.get(AuthKeys.IS_VENDEDOR):
             raise AppError("Solo los vendedores pueden acceder a estas métricas", 403)
         
-        vendedor_id = usuario_actual.get('internal_vendedor_id')
+        vendedor_id = usuario_actual.get(AuthKeys.INTERNAL_VENDEDOR_ID)
         if not vendedor_id:
             raise AppError("Identificador de vendedor no encontrado", 400)
             

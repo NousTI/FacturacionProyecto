@@ -22,7 +22,15 @@
         .text-right { text-align: right; }
         .text-danger { color: #dc2626; }
         
-        .footer { margin-top: 40px; text-align: center; font-size: 10px; color: #94a3b8; }
+        #footer {
+            position: fixed;
+            bottom: 0px;
+            left: 0;
+            width: 100%;
+            text-align: center;
+            font-size: 10px;
+            color: #6b7280;
+        }
     </style>
 </head>
 <body>
@@ -90,8 +98,14 @@
         * Este reporte es informativo y se basa exclusivamente en las facturas emitidas y autorizadas a través del sistema. No constituye una declaración jurada ante el SRI.
     </div>
 
-    <div class="footer">
-        Generado automáticamente por Sistema de Facturación Premium - {{ now }}
+    <div id="footer">
+        Generado por 
+        {% if footer_b64 %}
+        <img src="{{ footer_b64 }}" style="vertical-align: middle; height: 16px; margin: 0 4px;" alt="NOUS"> 
+        {% else %}
+        NOUS
+        {% endif %}
+        www.nous.ec
     </div>
 </body>
 </html>

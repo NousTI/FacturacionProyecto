@@ -152,4 +152,17 @@ export class ReportesService {
     if (params.fecha_fin) httpParams = httpParams.set('fecha_fin', params.fecha_fin);
     return this.http.get<ReporteUso>(`${this.base}/superadmin/uso-empresas`, { params: httpParams });
   }
+
+  exportarPDF(tipo: string, params: any): Observable<Blob> {
+    let httpParams = new HttpParams().set('tipo', tipo).set('formato', 'pdf');
+    Object.keys(params).forEach(key => {
+      if (params[key]) httpParams = httpParams.set(key, params[key]);
+    });
+    // El endpoint de exportación general suele estar en /api/reportes/exportar
+    // Según router.py: router.get("/exportar", ...)
+    return this.http.get(`${this.base}/exportar`, {
+      params: httpParams,
+      responseType: 'blob'
+    });
+  }
 }

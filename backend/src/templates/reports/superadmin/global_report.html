@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Reporte Global Superadmin</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap');
+        
+        #footer {
+            position: fixed;
+            bottom: 0px;
+            left: 0;
+            width: 100%;
+            text-align: center;
+            font-size: 10px;
+            color: #6b7280;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            font-size: 10px;
+            color: #111827;
+            margin: 0; 
+            padding: 30px 35px 50px 35px;
+            line-height: 1.3;
+        }
+
+        .header { margin-bottom: 20px; border-bottom: 2px solid #f3f4f6; padding-bottom: 14px; }
+        .header h1 { margin: 0; font-size: 18px; font-weight: 800; color: #161d35; }
+        .header p { margin: 4px 0 0; color: #64748b; font-size: 10px; }
+
+        .kpi-grid { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 20px; }
+        .kpi-card { 
+            flex: 1; min-width: 120px; 
+            border: 1px solid #e2e8f0; border-radius: 6px; padding: 10px 12px; 
+            background: #f8fafc;
+        }
+        .kpi-label { font-size: 8px; font-weight: 700; color: #64748b; text-transform: uppercase; display: block; margin-bottom: 3px; }
+        .kpi-value { font-size: 14px; font-weight: 800; color: #161d35; }
+        
+        h2 { font-size: 11px; font-weight: 700; color: #161d35; margin: 16px 0 6px; border-left: 3px solid #3b82f6; padding-left: 8px; }
+        
+        table { width: 100%; border-collapse: collapse; margin-bottom: 12px; }
+        th { 
+            background: #f1f5f9; padding: 6px 8px; text-align: left; 
+            font-size: 8px; text-transform: uppercase; color: #475569; 
+            border-bottom: 1px solid #e2e8f0; font-weight: 700;
+        }
+        td { padding: 5px 8px; border-bottom: 1px solid #f1f5f9; font-size: 9px; vertical-align: middle; }
+        tbody tr:nth-child(even) td { background: #fafbfc; }
+
+        .text-right { text-align: right; }
+        .font-bold { font-weight: 700; }
+        
+        .badge { padding: 2px 6px; border-radius: 8px; font-size: 8px; font-weight: 600; }
+        .bg-red { background: #fee2e2; color: #991b1b; }
+        .bg-amber { background: #fef3c7; color: #92400e; }
+        .bg-blue { background: #dbeafe; color: #1e40af; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>REPORTE GLOBAL SUPERADMIN</h1>
+        <p>Generado el {{ now }} &nbsp;·&nbsp; Periodo: {{ params.fecha_inicio or 'Inicio' }} al {{ params.fecha_fin or 'Hoy' }}</p>
+    </div>
+
+    <div class="kpi-grid">
+        <div class="kpi-card">
+            <span class="kpi-label">Empresas Activas</span>
+            <span class="kpi-value">{{ data.empresas_activas }}</span>
+        </div>
+        <div class="kpi-card">
+            <span class="kpi-label">Ingresos Año</span>
+            <span class="kpi-value">${{ "{:,.2f}".format(data.ingresos_anio) }}</span>
+        </div>
+        <div class="kpi-card">
+            <span class="kpi-label">Ingresos Mes</span>
+            <span class="kpi-value">${{ "{:,.2f}".format(data.ingresos_mes) }}</span>
+        </div>
+        <div class="kpi-card">
+            <span class="kpi-label">Tasa Crecimiento</span>
+            <span class="kpi-value">{{ "{:.1f}%".format(data.tasa_crecimiento) }}</span>
+        </div>
+        <div class="kpi-card">
+            <span class="kpi-label">Zona Rescate</span>
+            <span class="kpi-value" style="color: #dc2626;">{{ data.zona_rescate }}</span>
+        </div>
+        <div class="kpi-card">
+            <span class="kpi-label">Zona Upgrade</span>
+            <span class="kpi-value" style="color: #d97706;">{{ data.zona_upgrade }}</span>
+        </div>
+        <div class="kpi-card">
+            <span class="kpi-label">Usuarios Nuevos</span>
+            <span class="kpi-value" style="color: #16a34a;">{{ data.usuarios_nuevos_mes }}</span>
+        </div>
+        <div class="kpi-card">
+            <span class="kpi-label">Tasa Abandono</span>
+            <span class="kpi-value" style="color: #dc2626;">{{ "{:.1f}%".format(data.tasa_abandono) }}</span>
+        </div>
+    </div>
+
+    <h2>Zona de Rescate — Próximos Vencimientos ({{ data.empresas_rescate | length }})</h2>
+    <table>
+        <thead>
+            <tr>
+                <th style="width:30%">Empresa</th>
+                <th style="width:18%">Plan</th>
+                <th style="width:14%">Vencimiento</th>
+                <th style="width:22%">Vendedor</th>
+                <th style="width:16%">Email</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for e in data.empresas_rescate %}
+            <tr>
+                <td class="font-bold">{{ e.nombre_empresa if e.nombre_empresa is string else e['nombre_empresa'] }}</td>
+                <td>{{ e.plan_nombre if e.plan_nombre is defined else e.get('plan_nombre', '--') }}</td>
+                <td>
+                    {% set fv = e.fecha_vencimiento if e.fecha_vencimiento is defined else e.get('fecha_vencimiento') %}
+                    {{ fv.strftime('%d/%m/%Y') if fv and fv is not string else (fv[:10] if fv else '--') }}
+                </td>
+                <td>{{ e.vendedor_nombre or 'Sin asignar' }}</td>
+                <td style="font-size:8px; color:#64748b;">{{ e.email or '--' }}</td>
+            </tr>
+            {% endfor %}
+            {% if not data.empresas_rescate %}
+            <tr><td colspan="5" style="text-align:center; color:#9ca3af; padding: 12px;">Sin empresas en zona de rescate</td></tr>
+            {% endif %}
+        </tbody>
+    </table>
+
+    <h2>Zona de Upgrade — Alto Uso del Plan ({{ data.empresas_upgrade | length }})</h2>
+    <table>
+        <thead>
+            <tr>
+                <th style="width:35%">Empresa</th>
+                <th style="width:25%">Plan Actual</th>
+                <th style="width:20%">Uso Facturas</th>
+                <th class="text-right" style="width:20%">% Uso</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for e in data.empresas_upgrade %}
+            <tr>
+                <td class="font-bold">{{ e.nombre_empresa }}</td>
+                <td>{{ e.plan_nombre }}</td>
+                <td>{{ e.facturas_mes }} / {{ e.max_facturas_mes }}</td>
+                <td class="text-right font-bold">{{ "{:.1f}%".format(e.porcentaje_uso) }}</td>
+            </tr>
+            {% endfor %}
+            {% if not data.empresas_upgrade %}
+            <tr><td colspan="4" style="text-align:center; color:#9ca3af; padding: 12px;">Sin empresas en zona de upgrade</td></tr>
+            {% endif %}
+        </tbody>
+    </table>
+
+    <h2>Top Vendedores</h2>
+    <table>
+        <thead>
+            <tr>
+                <th style="width:50%">Vendedor</th>
+                <th style="width:20%">Empresas</th>
+                <th class="text-right" style="width:30%">Ingresos Generados</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for v in data.top_vendedores %}
+            <tr>
+                <td>{{ v.vendedor }}</td>
+                <td>{{ v.empresas }}</td>
+                <td class="text-right font-bold">${{ "{:,.2f}".format(v.ingresos_generados) }}</td>
+            </tr>
+            {% endfor %}
+            {% if not data.top_vendedores %}
+            <tr><td colspan="3" style="text-align:center; color:#9ca3af; padding: 12px;">Sin datos de vendedores</td></tr>
+            {% endif %}
+        </tbody>
+    </table>
+
+    <h2>Planes Más Vendidos</h2>
+    <table>
+        <thead>
+            <tr>
+                <th style="width:50%">Plan</th>
+                <th style="width:20%">Ventas</th>
+                <th class="text-right" style="width:30%">Ingresos</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for p in data.planes_mas_vendidos %}
+            <tr>
+                <td class="font-bold">{{ p.plan }}</td>
+                <td>{{ p.ventas }}</td>
+                <td class="text-right font-bold">${{ "{:,.2f}".format(p.ingresos) }}</td>
+            </tr>
+            {% endfor %}
+            {% if not data.planes_mas_vendidos %}
+            <tr><td colspan="3" style="text-align:center; color:#9ca3af; padding: 12px;">Sin datos de planes</td></tr>
+            {% endif %}
+        </tbody>
+    </table>
+
+    <div id="footer">
+        Generado por 
+        {% if footer_b64 %}
+        <img src="{{ footer_b64 }}" style="vertical-align: middle; height: 16px; margin: 0 4px;" alt="NOUS"> 
+        {% else %}
+        NOUS
+        {% endif %}
+        www.nous.ec
+    </div>
+</body>
+</html>

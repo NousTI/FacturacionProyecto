@@ -103,13 +103,14 @@
             border-bottom: none;
         }
         
-        .footer {
-            margin-top: 50px;
+        #footer {
+            position: fixed;
+            bottom: 0px;
+            left: 0;
+            width: 100%;
             text-align: center;
-            font-size: 11px;
-            color: #9ca3af;
-            border-top: 1px solid #f3f4f6;
-            padding-top: 20px;
+            font-size: 10px;
+            color: #6b7280;
         }
 
         .variation {
@@ -182,8 +183,14 @@
         </div>
     </div>
 
-    <div class="footer">
-        Generado el {{ now }} - Sistema de Facturación Premium
+    <div id="footer">
+        Generado por 
+        {% if footer_b64 %}
+        <img src="{{ footer_b64 }}" style="vertical-align: middle; height: 16px; margin: 0 4px;" alt="NOUS"> 
+        {% else %}
+        NOUS
+        {% endif %}
+        www.nous.ec
     </div>
 </body>
 </html>

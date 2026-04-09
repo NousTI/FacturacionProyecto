@@ -203,6 +203,7 @@ class AuthServices:
         elif primary_role == RolCodigo.VENDEDOR.value:
             vendedor_profile = self.vendedor_repo.obtener_por_user_id(user_id)
             if vendedor_profile:
+                user_safe["internal_vendedor_id"] = str(vendedor_profile["id"])
                 # Vendor-specific flags for backward compatibility
                 legacy_perms = [
                     "puede_crear_empresas",
@@ -317,6 +318,7 @@ class AuthServices:
         if user["is_vendedor"]:
             vendedor_profile = self.vendedor_repo.obtener_por_user_id(user_id)
             if vendedor_profile:
+                user["internal_vendedor_id"] = str(vendedor_profile["id"])
                 for p in ["puede_crear_empresas", "puede_gestionar_planes", "puede_acceder_empresas", "puede_ver_reportes"]:
                     if p in vendedor_profile: user[p] = vendedor_profile[p]
         

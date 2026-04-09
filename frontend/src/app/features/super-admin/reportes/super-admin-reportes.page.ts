@@ -46,8 +46,10 @@ type RangoTipo = 'mes_actual' | 'mes_anterior' | 'anio_actual' | 'mes_especifico
           <i *ngIf="!loadingGlobal" class="bi bi-arrow-clockwise me-2"></i>
           {{ loadingGlobal ? 'Generando...' : 'Generar Reporte' }}
         </button>
-        <button class="btn-pdf" (click)="imprimirSeccion('global')" [disabled]="!datosGlobal">
-          <i class="bi bi-file-earmark-pdf me-2"></i>Exportar PDF
+        <button class="btn-pdf" (click)="exportarPDFDashboard('global')" [disabled]="!datosGlobal || loadingPDF">
+          <span *ngIf="loadingPDF && tabActivo === 'global'" class="spinner-border spinner-border-sm me-2"></span>
+          <i *ngIf="!loadingPDF || tabActivo !== 'global'" class="bi bi-file-earmark-pdf me-2"></i>
+          {{ loadingPDF && tabActivo === 'global' ? 'Generando PDF...' : 'Exportar PDF' }}
         </button>
       </div>
     </div>
@@ -292,8 +294,10 @@ type RangoTipo = 'mes_actual' | 'mes_anterior' | 'anio_actual' | 'mes_especifico
           <i *ngIf="!loadingComisiones" class="bi bi-arrow-clockwise me-2"></i>
           {{ loadingComisiones ? 'Generando...' : 'Generar Reporte' }}
         </button>
-        <button class="btn-pdf" (click)="imprimirSeccion('comisiones')" [disabled]="!datosComisiones">
-          <i class="bi bi-file-earmark-pdf me-2"></i>Exportar PDF
+        <button class="btn-pdf" (click)="exportarPDFDashboard('comisiones')" [disabled]="!datosComisiones || loadingPDF">
+          <span *ngIf="loadingPDF && tabActivo === 'comisiones'" class="spinner-border spinner-border-sm me-2"></span>
+          <i *ngIf="!loadingPDF || tabActivo !== 'comisiones'" class="bi bi-file-earmark-pdf me-2"></i>
+          {{ loadingPDF && tabActivo === 'comisiones' ? 'Generando PDF...' : 'Exportar PDF' }}
         </button>
       </div>
     </div>
@@ -481,8 +485,10 @@ type RangoTipo = 'mes_actual' | 'mes_anterior' | 'anio_actual' | 'mes_especifico
           <i *ngIf="!loadingUso" class="bi bi-arrow-clockwise me-2"></i>
           {{ loadingUso ? 'Generando...' : 'Generar Reporte' }}
         </button>
-        <button class="btn-pdf" (click)="imprimirSeccion('uso')" [disabled]="!datosUso">
-          <i class="bi bi-file-earmark-pdf me-2"></i>Exportar PDF
+        <button class="btn-pdf" (click)="exportarPDFDashboard('uso')" [disabled]="!datosUso || loadingPDF">
+          <span *ngIf="loadingPDF && tabActivo === 'uso'" class="spinner-border spinner-border-sm me-2"></span>
+          <i *ngIf="!loadingPDF || tabActivo !== 'uso'" class="bi bi-file-earmark-pdf me-2"></i>
+          {{ loadingPDF && tabActivo === 'uso' ? 'Generando PDF...' : 'Exportar PDF' }}
         </button>
       </div>
     </div>
@@ -866,6 +872,9 @@ export class SuperAdminReportesPage implements OnInit, OnDestroy {
   mesFiltroU = new Date().getMonth() + 1;
   anioFiltroU = new Date().getFullYear();
 
+  // PDF export loading
+  loadingPDF = false;
+
   vendedores: Vendedor[] = [];
   anioActual = new Date().getFullYear();
   meses = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
@@ -983,50 +992,57 @@ export class SuperAdminReportesPage implements OnInit, OnDestroy {
   }
 
   // ---- Exportar PDF ----
-  imprimirSeccion(seccion: Tab) {
-    const id = `print-${seccion}`;
-    const el = document.getElementById(id);
-    if (!el) return;
+  exportarPDFDashboard(seccion: Tab) {
+    let tipo = '';
+    let params: any = {};
 
-    const win = window.open('', '_blank', 'width=1100,height=800');
-    if (!win) return;
+    if (seccion === 'global') {
+      tipo = 'SUPERADMIN_GLOBAL';
+      params = {
+        fecha_inicio: this.fechaInicioG,
+        fecha_fin: this.fechaFinG
+      };
+    } else if (seccion === 'comisiones') {
+      tipo = 'SUPERADMIN_COMISIONES';
+      params = {
+        fecha_inicio: this.fechaInicioC,
+        fecha_fin: this.fechaFinC,
+        vendedor_id: this.vendedorIdC,
+        estado: this.estadoC
+      };
+    } else {
+      tipo = 'SUPERADMIN_USO';
+      params = {
+        fecha_inicio: this.fechaInicioU,
+        fecha_fin: this.fechaFinU
+      };
+    }
 
-    const titulo = seccion === 'global' ? 'Reporte Global del Sistema'
-                 : seccion === 'comisiones' ? 'Comisiones por Vendedor'
-                 : 'Uso del Sistema por Empresa';
+    this.loadingPDF = true;
+    const titulo = seccion === 'global' ? 'Reporte Global'
+                 : seccion === 'comisiones' ? 'Reporte de Comisiones'
+                 : 'Reporte de Uso';
+    this.uiService.showToast(`Generando ${titulo}...`, 'info', 'Esto puede tardar unos segundos', 8000);
+    this.cd.detectChanges();
 
-    win.document.write(`
-      <!DOCTYPE html>
-      <html>
-      <head>
-        <meta charset="utf-8">
-        <title>${titulo}</title>
-        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
-        <style>
-          body { font-family: 'Segoe UI', sans-serif; padding: 1.5rem; font-size: 13px; }
-          h2 { color: #161d35; font-weight: 800; margin-bottom: 0.25rem; }
-          .sub { color: #64748b; margin-bottom: 1.5rem; font-size: 0.85rem; }
-          .kpi-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 0.75rem; margin-bottom: 1.5rem; }
-          .kpi-card { border: 1px solid #e2e8f0; border-radius: 10px; padding: 0.85rem; }
-          .kpi-label { font-size: 0.65rem; font-weight: 700; color: #64748b; text-transform: uppercase; display: block; }
-          .kpi-value { font-size: 1.4rem; font-weight: 800; color: #161d35; display: block; }
-          .kpi-sub { font-size: 0.7rem; color: #64748b; }
-          table { width: 100%; border-collapse: collapse; margin-bottom: 1.5rem; }
-          th { font-size: 0.65rem; font-weight: 700; text-transform: uppercase; background: #f8fafc; padding: 0.6rem 0.75rem; border-bottom: 2px solid #e2e8f0; color: #475569; }
-          td { padding: 0.65rem 0.75rem; border-bottom: 1px solid #f1f5f9; font-size: 0.8rem; }
-          .section-title { font-size: 0.85rem; font-weight: 700; background: #f8fafc; padding: 0.65rem 0.75rem; border-bottom: 1px solid #e2e8f0; color: #161d35; margin-bottom: 0; }
-          @media print { body { padding: 0.5rem; } }
-        </style>
-      </head>
-      <body>
-        <h2>${titulo}</h2>
-        <p class="sub">Generado el ${new Date().toLocaleDateString('es-EC', {day:'2-digit',month:'long',year:'numeric'})} &nbsp;·&nbsp; Solo Superadmin</p>
-        ${el.innerHTML}
-        <script>window.onload = function(){ window.print(); }<\/script>
-      </body>
-      </html>
-    `);
-    win.document.close();
+    this.reportesService.exportarPDF(tipo, params).subscribe({
+      next: (blob) => {
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `reporte_${seccion}_${new Date().getTime()}.pdf`;
+        a.click();
+        window.URL.revokeObjectURL(url);
+        this.uiService.showToast('PDF generado exitosamente', 'success', 'El archivo ha sido descargado', 4000);
+      },
+      error: (err) => {
+        console.error('Error exportando PDF:', err);
+        this.uiService.showError(err, 'Error al generar PDF');
+      }
+    }).add(() => {
+      this.loadingPDF = false;
+      this.cd.detectChanges();
+    });
   }
 
   // ---- Helpers gráficas ----
