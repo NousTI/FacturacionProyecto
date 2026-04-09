@@ -92,12 +92,18 @@ import { finalize } from 'rxjs';
 
               <!-- Día y Fecha Inicio -->
               <div class="col-md-6">
-                <label class="premium-label">Día de Emisión (1-28)</label>
+                <label class="premium-label">Día de Emisión (1-31)</label>
                 <div class="input-group-premium" [class.readonly-field]="isViewOnly">
                   <i class="bi bi-calendar-check"></i>
-                  <input type="number" formControlName="dia_emision" class="form-control-premium" placeholder="15" min="1" max="28">
+                  <input type="number" formControlName="dia_emision" class="form-control-premium" placeholder="15" min="1" max="31" (keypress)="validateNoNegative($event)" 
+                         (input)="limitLength($event, 2)">
                 </div>
-                <small class="text-muted smallest">El sistema generará la factura este día de cada periodo.</small>
+                <div class="text-danger smallest mt-1" *ngIf="form.get('dia_emision')?.invalid && form.get('dia_emision')?.touched">
+                  Debe ser un día entre 1 y 31
+                </div>
+                <small class="text-muted smallest" *ngIf="form.get('dia_emision')?.valid || !form.get('dia_emision')?.touched">
+                  El sistema generará la factura este día de cada periodo.
+                </small>
               </div>
 
               <div class="col-md-6">
@@ -216,6 +222,11 @@ import { finalize } from 'rxjs';
       background: #f1f5f9 !important; border-color: #e2e8f0 !important; cursor: default;
     }
 
+    .form-select-premium option {
+      color: #1e293b;
+      background-color: white;
+    }
+
     .form-switch-premium .form-check-input { width: 3rem; height: 1.5rem; cursor: pointer; }
     .form-switch-premium .form-check-label { font-size: 0.9rem; font-weight: 600; color: #475569; }
 
@@ -253,7 +264,7 @@ export class CreateRecurrenteModalComponent implements OnInit {
     this.form = this.fb.group({
       cliente_id: ['', Validators.required],
       tipo_frecuencia: ['MENSUAL', Validators.required],
-      dia_emision: [1, [Validators.required, Validators.min(1), Validators.max(28)]],
+      dia_emision: [1, [Validators.required, Validators.min(1), Validators.max(31)]],
       monto: [0, [Validators.required, Validators.min(0)]],
       concepto: ['', Validators.required],
       fecha_inicio: [new Date().toISOString().split('T')[0], Validators.required],
@@ -308,8 +319,22 @@ export class CreateRecurrenteModalComponent implements OnInit {
         next: () => this.onClose.emit(true),
         error: (err) => {
           console.error("Error al guardar programación", err);
-          // Opcional: Podrías mostrar el error detallado aquí si UiService estuviera disponible
         }
       });
+  }
+
+  validateNoNegative(event: KeyboardEvent) {
+    const charCode = event.which ? event.which : event.keyCode;
+    if (charCode === 45) { // Signo menos '-'
+      event.preventDefault();
+    }
+  }
+
+  limitLength(event: any, max: number) {
+    const input = event.target;
+    if (input.value.length > max) {
+      input.value = input.value.slice(0, max);
+      this.form.get('dia_emision')?.setValue(input.value);
+    }
   }
 }

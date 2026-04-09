@@ -21,8 +21,16 @@ import { FormsModule, ReactiveFormsModule, FormGroup } from '@angular/forms';
           </div>
         </div>
         <div class="col-6">
-          <label class="form-label-lux text-white-50">Día de Emisión</label>
-          <input type="number" class="input-lux input-sm bg-white-10 text-white border-0" formControlName="dia_emision" min="1" max="31">
+          <label class="form-label-lux text-white-50">Día de Emisión (1-31)</label>
+          <input type="number" 
+                 class="input-lux input-sm bg-white-10 text-white border-0" 
+                 formControlName="dia_emision" 
+                 min="1" max="31"
+                 (keypress)="validateNoNegative($event)"
+                 (input)="limitLength($event, 2)">
+          <div class="text-danger smallest mt-1" *ngIf="parentForm.get('dia_emision')?.invalid && parentForm.get('dia_emision')?.touched">
+            Día inválido (1-31)
+          </div>
         </div>
         <div class="col-6">
           <label class="form-label-lux text-white-50">Fecha Inicio</label>
@@ -34,9 +42,30 @@ import { FormsModule, ReactiveFormsModule, FormGroup } from '@angular/forms';
         </div>
       </div>
     </div>
-  `
+  `,
+  styles: [`
+    .select-lux option {
+      color: #1e293b;
+      background-color: white;
+    }
+  `]
 })
 export class FacturaRecurrenteConfigComponent {
   @Input() parentForm!: FormGroup;
   @Input() mode: 'NORMAL' | 'RECURRENTE' = 'NORMAL';
+
+  validateNoNegative(event: KeyboardEvent) {
+    const charCode = event.which ? event.which : event.keyCode;
+    if (charCode === 45) { // Signo menos '-'
+      event.preventDefault();
+    }
+  }
+
+  limitLength(event: any, max: number) {
+    const input = event.target;
+    if (input.value.length > max) {
+      input.value = input.value.slice(0, max);
+      this.parentForm.get('dia_emision')?.setValue(input.value);
+    }
+  }
 }

@@ -275,6 +275,11 @@ import { SriValidators } from '../../../../../shared/utils/sri-validators';
       outline: none;
     }
 
+    .lux-select option {
+      color: #1e293b;
+      background-color: white;
+    }
+
     .lux-input-group {
       position: relative;
       display: flex;
