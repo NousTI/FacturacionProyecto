@@ -112,9 +112,6 @@ interface Company {
                             
                             <div class="d-flex align-items-center justify-content-between mb-4 mt-2">
                                 <h5 class="fw-bold text-dark m-0">Transacciones Recientes</h5>
-                                <button class="btn btn-light btn-sm rounded-pill px-3 fw-bold text-secondary border">
-                                    <i class="bi bi-download me-2"></i>Exportar
-                                </button>
                             </div>
 
                             <div class="timeline-container position-relative">

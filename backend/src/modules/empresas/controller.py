@@ -17,6 +17,22 @@ class EmpresaController:
 
     def crear_empresa(self, body: EmpresaCreacion, usuario_actual: dict):
         nueva = self.service.crear_empresa(body, usuario_actual)
+        
+        # Si viene un plan, registrar la suscripción inicial
+        if body.plan_id:
+            from ..suscripciones.schemas import PagoSuscripcionQuick
+            pago_data = PagoSuscripcionQuick(
+                empresa_id=nueva['id'],
+                plan_id=body.plan_id,
+                monto=body.monto_pago,
+                metodo_pago="MANUAL_VENDEDOR" if usuario_actual.get('is_vendedor') else "MANUAL_SUPERADMIN",
+                numero_comprobante=f"ALTA_{datetime.now().strftime('%Y%m%d%H%M%S')}",
+                observaciones=body.observacion_pago
+            )
+            self.suscripcion_service.registrar_pago_rapido(pago_data, usuario_actual)
+            # Volver a obtener la empresa para que incluya los campos de suscripción en la respuesta
+            nueva = self.service.obtener_empresa(nueva['id'], usuario_actual)
+
         return success_response(nueva, "Empresa creada exitosamente")
 
     def obtener_empresa(self, empresa_id: UUID, usuario_actual: dict):

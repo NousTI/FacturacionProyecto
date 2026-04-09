@@ -72,9 +72,7 @@ import { Notificacion } from '../../../domain/models/notificacion.model';
                   </li>
                 </ng-template>
               </div>
-              <li class="p-2 border-top text-center">
-                <a routerLink="/notificaciones" class="small text-decoration-none fw-bold">Ver todas</a>
-              </li>
+
             </ul>
           </div>
           
@@ -310,19 +308,6 @@ export class NavbarComponent implements OnInit, OnDestroy {
   leerNotificacion(n: Notificacion) {
     if (!n.leido) {
       this.notifFacade.marcarComoLeida(n.id);
-    }
-    
-    if (n.tipo === 'RENOVACION' && n.metadata?.solicitud_id) {
-       const role = this.authFacade.getUserRole();
-       
-       if (role === 'SUPERADMIN') {
-         this.router.navigate(['/renovaciones'], { queryParams: { id: n.metadata.solicitud_id } });
-       } else if (role === 'VENDEDOR') {
-         this.router.navigate(['/vendedor/renovaciones'], { queryParams: { id: n.metadata.solicitud_id } });
-       } else {
-         // Empresa: Lo llevamos a ver los datos de su suscripción en el perfil de empresa
-         this.router.navigate(['/usuario/empresa']);
-       }
     }
   }
 

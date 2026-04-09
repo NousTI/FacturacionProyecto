@@ -24,17 +24,18 @@ import { InfoTooltipComponent } from '../../../../shared/components/info-tooltip
         </div>
       </div>
 
-      <!-- Ingresos del Mes -->
+      <!-- Ingresos Dinámicos -->
       <div class="col-6 col-lg-3">
-        <div class="kpi-card">
+        <div class="kpi-card shadow-sm border-0">
           <div class="kpi-icon" style="color:#6366f1; background:rgba(99,102,241,.1)">
             <i class="bi bi-wallet2"></i>
           </div>
           <div class="kpi-body">
-            <span class="kpi-label d-flex align-items-center gap-1">Ingresos del Mes
-              <app-info-tooltip message="Total recaudado por suscripciones SaaS en el periodo. El % muestra la variación respecto al periodo anterior."></app-info-tooltip>
+            <span class="kpi-label d-flex align-items-center gap-1">
+              {{ getIncomeLabel() }}
+              <app-info-tooltip [message]="getIncomeTooltip()"></app-info-tooltip>
             </span>
-            <span class="kpi-value text-truncate">{{ kpis?.ingresos_mensuales || 0 | number }}</span>
+            <span class="kpi-value text-truncate">{{ kpis?.ingresos_mensuales || 0 | currency:'USD':'symbol':'1.0-2' }}</span>
             <span class="kpi-trend" [ngClass]="(kpis?.variacion_ingresos || 0) >= 0 ? 'up' : 'down'">
               <i class="bi" [ngClass]="(kpis?.variacion_ingresos || 0) >= 0 ? 'bi-arrow-up-short' : 'bi-arrow-down-short'"></i>
               {{ kpis?.variacion_ingresos || 0 }}%
@@ -102,8 +103,23 @@ import { InfoTooltipComponent } from '../../../../shared/components/info-tooltip
 })
 export class SuperAdminStatsComponent implements OnChanges {
   @Input() kpis: DashboardKPIs | undefined;
+  @Input() selectedPeriod: string = 'month';
 
   ngOnChanges() {
     console.log('[StatsGrid] KPIs updated:', this.kpis);
+  }
+
+  getIncomeLabel(): string {
+    switch (this.selectedPeriod) {
+      case 'week': return 'Ingresos de la Semana';
+      case 'year': return 'Ingresos del Año';
+      default: return 'Ingresos del Mes';
+    }
+  }
+
+  getIncomeTooltip(): string {
+    const periodName = this.selectedPeriod === 'week' ? 'los últimos 7 días' : 
+                      this.selectedPeriod === 'year' ? 'el año actual' : 'el mes actual';
+    return `Total recaudado por suscripciones SaaS en ${periodName}. El % muestra la variación respecto al periodo anterior equivalente.`;
   }
 }

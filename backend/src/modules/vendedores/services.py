@@ -84,8 +84,10 @@ class ServicioVendedores:
              )
         
         # 1. Preparar credenciales del usuario
+        # Si no viene password, asignar uno por defecto
         if not datos.password:
-            raise AppError("La contraseña es obligatoria para crear un nuevo vendedor", 400)
+            datos.password = "password"
+        
         password = datos.password
         
         user_data = {

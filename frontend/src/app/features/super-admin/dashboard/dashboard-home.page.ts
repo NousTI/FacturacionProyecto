@@ -24,19 +24,27 @@ import { FormsModule } from '@angular/forms';
   template: `
     <div class="dash-wrap">
       <!-- KPIs principales (Fila de 4) -->
-      <app-super-admin-stats [kpis]="overview?.kpis"></app-super-admin-stats>
+      <app-super-admin-stats 
+        [kpis]="overview?.kpis"
+        [selectedPeriod]="selectedPeriod">
+      </app-super-admin-stats>
 
       <div class="row g-4">
         <!-- COLUMNA PRINCIPAL (Izquierda - 8/12) -->
-        <div class="col-lg-8">
+        <div class="col-lg-8 d-flex flex-column">
           
           <!-- Gráfico de Ingresos SaaS (Largo) -->
           <div class="mb-4">
-            <app-super-admin-charts [charts]="charts" type="income"></app-super-admin-charts>
+            <app-super-admin-charts 
+              [charts]="charts" 
+              type="income"
+              [selectedPeriod]="selectedPeriod"
+              (periodChange)="onPeriodChange($event)">
+            </app-super-admin-charts>
           </div>
 
           <!-- Tabla de Empresas Recientes -->
-          <div class="panel h-100 shadow-sm border-0">
+          <div class="panel flex-grow-1 shadow-sm border-0">
             <div class="panel-header bg-white border-bottom-0 pt-4 px-4">
               <span class="fs-5 fw-bold d-flex align-items-center gap-1">
                 <i class="bi bi-building me-2 text-primary"></i>Empresas Recientes
@@ -87,18 +95,23 @@ import { FormsModule } from '@angular/forms';
         </div>
 
         <!-- COLUMNA LATERAL (Derecha - 4/12) -->
-        <div class="col-lg-4">
+        <div class="col-lg-4 d-flex flex-column">
           
           <!-- Alertas Críticas (Solo si existen) -->
           <app-super-admin-alerts [alertas]="overview?.alertas" class="mb-4 d-block" *ngIf="overview?.alertas?.criticas?.length || overview?.alertas?.advertencias?.length"></app-super-admin-alerts>
 
           <!-- Gráfico de Planes (Formato Vertical/Compacto) -->
           <div class="mb-4">
-            <app-super-admin-charts [charts]="charts" type="plans"></app-super-admin-charts>
+            <app-super-admin-charts 
+              [charts]="charts" 
+              type="plans"
+              [selectedPeriod]="selectedPeriod"
+              (periodChange)="onPeriodChange($event)">
+            </app-super-admin-charts>
           </div>
 
           <!-- Accesos Rápidos (Panel Estilizado) -->
-          <div class="panel shadow-sm border-0">
+          <div class="panel flex-grow-1 shadow-sm border-0">
             <div class="panel-header bg-white border-bottom-0 pt-4 px-4">
               <span class="fw-bold d-flex align-items-center gap-1">
                 <i class="bi bi-lightning-charge me-2 text-warning"></i>Accesos Rápidos
@@ -194,6 +207,11 @@ export class DashboardHomePage implements OnInit {
 
   ngOnInit() {
     this.uiService.setPageHeader('Dashboard', 'Resumen del sistema SaaS');
+    this.loadData();
+  }
+
+  onPeriodChange(period: string) {
+    this.selectedPeriod = period;
     this.loadData();
   }
 

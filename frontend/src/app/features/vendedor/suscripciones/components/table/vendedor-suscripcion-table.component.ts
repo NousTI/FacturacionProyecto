@@ -43,7 +43,7 @@ import { Suscripcion } from '../../services/vendedor-suscripcion.service';
                   <div class="d-flex flex-column">
                     <span class="badge-cycle w-fit mb-1">{{ sub.plan_nombre || 'Sin Plan' }}</span>
                     <small class="text-muted fw-bold" style="font-size: 0.75rem;">
-                       {{ sub.precio_plan | currency:'USD' }} / mes
+                       {{ sub.precio_plan | currency:'USD' }} / año
                     </small>
                   </div>
                 </td>

@@ -75,9 +75,11 @@ import { environment } from '../../../../environments/environment';
                     <button class="btn btn-outline-success flex-grow-1" (click)="exportar('excel')" [disabled]="isLoading || (previewData.length === 0)">
                         <i class="bi bi-file-earmark-excel me-1"></i>Excel
                     </button>
+                    <!-- 
                     <button class="btn btn-outline-danger flex-grow-1" (click)="exportar('pdf')" [disabled]="isLoading || (previewData.length === 0)">
                         <i class="bi bi-file-earmark-pdf me-1"></i>PDF
                     </button>
+                    -->
                 </div>
               </div>
             </div>
@@ -140,10 +142,7 @@ import { environment } from '../../../../environments/environment';
                         </td>
                         <td class="text-end fw-bold">{{ item.monto_total | currency }}</td>
                         <td class="text-center pe-4">
-                          <span class="badge" [class.bg-success-subtle]="item.estado === 'PAGADO'" 
-                                [class.text-success]="item.estado === 'PAGADO'"
-                                [class.bg-warning-subtle]="item.estado === 'PENDIENTE'"
-                                [class.text-warning]="item.estado === 'PENDIENTE'">
+                          <span class="badge" [ngClass]="getEstadoClass(item.estado)">
                             {{ item.estado }}
                           </span>
                         </td>
@@ -162,10 +161,7 @@ import { environment } from '../../../../environments/environment';
                         <td class="text-center">{{ item.periodo }}</td>
                         <td class="text-end fw-bold text-danger">{{ item.monto_comision | currency }}</td>
                         <td class="text-center pe-4">
-                          <span class="badge" [class.bg-info-subtle]="item.estado === 'LIQUIDADO'" 
-                                [class.text-info]="item.estado === 'LIQUIDADO'"
-                                [class.bg-secondary-subtle]="item.estado === 'POR PAGAR'"
-                                [class.text-secondary]="item.estado === 'POR PAGAR'">
+                          <span class="badge" [ngClass]="getEstadoClass(item.estado)">
                             {{ item.estado }}
                           </span>
                         </td>
@@ -454,5 +450,20 @@ export class SuperAdminReportesPage implements OnInit, OnDestroy {
         },
         error: (err) => this.uiService.showError(err, 'Error al exportar')
       });
+  }
+
+  getEstadoClass(estado: string): string {
+    switch (estado) {
+      case 'PAGADO':
+      case 'LIQUIDADO':
+        return 'bg-success-subtle text-dark';
+      case 'PENDIENTE':
+      case 'POR PAGAR':
+        return 'bg-warning-subtle text-dark';
+      case 'RECHAZADA':
+        return 'bg-danger-subtle text-dark';
+      default:
+        return 'bg-light text-dark';
+    }
   }
 }

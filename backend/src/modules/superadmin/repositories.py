@@ -11,6 +11,7 @@ class SuperadminRepository:
     def obtener_perfil_por_user_id(self, user_id: UUID) -> Optional[dict]:
         query = """
             SELECT u.id as user_id, u.email, u.estado, u.requiere_cambio_password,
+                   u.ultimo_acceso, u.created_at,
                    s.id as profile_id, s.nombres, s.apellidos, s.activo
             FROM sistema_facturacion.users u
             LEFT JOIN sistema_facturacion.superadmin s ON u.id = s.user_id

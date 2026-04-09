@@ -102,7 +102,7 @@ import { CommonModule } from '@angular/common';
                         </a>
                       </li>
 
-                      <!-- CHANGE PLAN (Conditional) -->
+                      <!-- CHANGE PLAN (Conditional) - DESACTIVADO POR SOLICITUD
                       <li>
                         <a *ngIf="canChangePlan" class="dropdown-item rounded-3 py-2" href="javascript:void(0)" (click)="onAction.emit({type: 'change_plan', empresa})">
                            <i class="bi bi-arrow-up-right-circle text-corporate"></i>
@@ -114,6 +114,7 @@ import { CommonModule } from '@angular/common';
                            <i class="bi bi-lock-fill ms-auto text-muted" style="font-size: 0.7rem;"></i>
                         </a>
                       </li>
+                      -->
                     </ul>
                   </div>
                 </td>

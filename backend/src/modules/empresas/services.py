@@ -82,6 +82,11 @@ class ServicioEmpresas:
                   )
             payload['vendedor_id'] = ctx["vendedor_id"]
             
+        # Extraer campos de suscripción para que no fallen en el repo
+        plan_id = payload.pop('plan_id', None)
+        monto_pago = payload.pop('monto_pago', None)
+        observacion_pago = payload.pop('observacion_pago', None)
+
         try:
              nueva = self.repo.crear_empresa(payload)
              logger.info(f"[ÉXITO] Empresa creada - ID: {nueva['id']}, RUC: {nueva['ruc']}")
@@ -159,6 +164,14 @@ class ServicioEmpresas:
             return result
 
         if ctx["is_vendedor"]:
+             if not ctx["vendedor_id"]:
+                  logger.error(f"[ERROR] Perfil de vendedor no encontrado para usuario {ctx['user_id']}")
+                  raise AppError(
+                      message="Perfil de Vendedor no encontrado", 
+                      status_code=403, 
+                      code=ErrorCodes.PERM_FORBIDDEN,
+                      description="No se pudo encontrar un perfil de vendedor activo para tu cuenta."
+                  )
              # Si envia un vendedor_id diferente al suyo, bloquearlo
              if vendedor_id and str(vendedor_id) != str(ctx["vendedor_id"]):
                   logger.warning(f"[VALIDACIÓN] Intento de acceso a empresas de otro vendedor")
@@ -187,6 +200,14 @@ class ServicioEmpresas:
             return self.repo.obtener_estadisticas()
             
         if ctx["is_vendedor"]:
+            if not ctx["vendedor_id"]:
+                 logger.error(f"[ERROR] Perfil de vendedor no encontrado para usuario {ctx['user_id']}")
+                 raise AppError(
+                     message="Perfil de Vendedor no encontrado", 
+                     status_code=403, 
+                     code=ErrorCodes.PERM_FORBIDDEN,
+                     description="No se pudo encontrar un perfil de vendedor activo para tu cuenta."
+                 )
             return self.repo.obtener_estadisticas(vendedor_id=ctx["vendedor_id"])
             
         raise AppError(
@@ -377,6 +398,7 @@ class ServicioEmpresas:
 
             # 2. Crear el rol de Administrador
             rol_data = {
+                "codigo": "ADMIN_SISTEMA",
                 "nombre": "Administrador de Empresa",
                 "descripcion": "Rol con todos los permisos del sistema",
                 "es_sistema": True

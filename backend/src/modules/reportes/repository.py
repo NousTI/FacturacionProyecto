@@ -141,7 +141,7 @@ class RepositorioReportes:
             cur.execute(query, (str(vendedor_id), dias))
             return [dict(row) for row in cur.fetchall()]
 
-    def obtener_comisiones_mes(self, vendedor_id: UUID) -> List[dict]:
+    def obtener_comisiones_mes(self, vendedor_id: UUID, fecha_inicio: Optional[str] = None, fecha_fin: Optional[str] = None) -> List[dict]:
         query = """
             SELECT 
                 e.razon_social, c.monto, c.porcentaje_aplicado, c.estado, 
@@ -152,10 +152,20 @@ class RepositorioReportes:
             JOIN sistema_facturacion.empresas e ON ps.empresa_id = e.id
             JOIN sistema_facturacion.planes p ON ps.plan_id = p.id
             WHERE c.vendedor_id = %s
-            ORDER BY c.fecha_generacion DESC
         """
+        params = [str(vendedor_id)]
+
+        if fecha_inicio:
+            query += " AND c.fecha_generacion >= %s"
+            params.append(fecha_inicio)
+        if fecha_fin:
+            query += " AND c.fecha_generacion <= %s"
+            params.append(fecha_fin + " 23:59:59")
+
+        query += " ORDER BY c.fecha_generacion DESC"
+        
         with self.db.cursor() as cur:
-            cur.execute(query, (str(vendedor_id),))
+            cur.execute(query, tuple(params))
             return [dict(row) for row in cur.fetchall()]
 
     def obtener_empresas_vendedor_detalle(self, vendedor_id: UUID, fecha_inicio: Optional[str] = None, fecha_fin: Optional[str] = None) -> List[dict]:

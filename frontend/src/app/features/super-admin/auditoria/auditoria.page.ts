@@ -28,30 +28,17 @@ import { ToastComponent } from '../../../shared/components/toast/toast.component
                       <label class="form-label small fw-bold text-muted text-uppercase mb-1">Evento</label>
                       <select class="form-select form-select-sm" [(ngModel)]="filtros.evento" (change)="cargarLogs()">
                           <option value="">Todos los eventos</option>
-                          <optgroup label="Seguridad & Usuarios">
-                            <option value="LOGIN_OK">Inicio Sesión OK</option>
-                            <option value="LOGIN_FALLIDO">Intento Fallido</option>
-                            <option value="USUARIO_CREADO">Usuario Creado</option>
-                            <option value="USUARIO_ACTUALIZADO">Usuario Modificado</option>
-                            <option value="USUARIO_ESTADO_CAMBIADO">Cambio de Estado Usuario</option>
-                          </optgroup>
-                          <optgroup label="Empresas & Vendedores">
-                            <option value="EMPRESA_ACTUALIZADA">Empresa Editada</option>
-                            <option value="EMPRESA_ESTADO_CAMBIADO">Empresa Activada/Susp.</option>
-                            <option value="EMPRESA_VENDEDOR_ASIGNADO">Vendedor Asignado</option>
-                            <option value="VENDEDOR_ACTUALIZADO">Vendedor Modificado</option>
-                            <option value="VENDEDOR_REASIGNACION_MASIVA">Reasignación de Cartera</option>
-                          </optgroup>
-                          <optgroup label="Suscripciones & Comisiones">
-                            <option value="PLAN_ACTIVO">Suscripción Activada</option>
-                            <option value="PLAN_VENCIDO">Suscripción Vencida</option>
-                            <option value="COMISION_PAGADO">Comisión Pagada</option>
-                            <option value="COMISION_PENDIENTE">Comisión Generada</option>
-                          </optgroup>
-                          <optgroup label="Firma SRI">
-                            <option value="SRI_CERTIFICADO_ACTUALIZADO">Certificado OK</option>
-                            <option value="SRI_CERTIFICADO_FALLIDO">Error de Firma</option>
-                          </optgroup>
+                          <option value="LOGIN_OK">LOGIN OK</option>
+                          <option value="LOGOUT">LOGOUT</option>
+                          <option value="PASSWORD_CAMBIADA">PASSWORD CAMBIADA</option>
+                          <option value="CUENTA_DESBLOQUEADA">CUENTA DESBLOQUEADA</option>
+                          <option value="CUENTA_DESHABILITADA">CUENTA DESHABILITADA</option>
+                          <option value="COMISION_PENDIENTE">COMISION PENDIENTE</option>
+                          <option value="COMISION_APROBADA">COMISION APROBADA</option>
+                          <option value="COMISION_PAGADA">COMISION PAGADA</option>
+                          <option value="PLAN_ACTIVA">PLAN ACTIVA</option>
+                          <option value="PLAN_CANCELADA">PLAN CANCELADA</option>
+
                       </select>
                   </div>
                   <div class="col-md-2">

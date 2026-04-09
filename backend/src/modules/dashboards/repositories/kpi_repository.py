@@ -175,22 +175,30 @@ class KpiRepository(BaseRepository):
 
 
 
-    def obtener_variacion_ingresos(self) -> float:
-        """Calcula variación porcentual de ingresos vs mes anterior."""
+    def obtener_variacion_ingresos(self, periodo: str = 'month') -> float:
+        """Calcula variación porcentual de ingresos vs periodo anterior."""
+        if periodo == 'week':
+            actual_cond = "fecha_pago >= CURRENT_DATE - INTERVAL '6 days'"
+            prev_cond = "fecha_pago >= CURRENT_DATE - INTERVAL '13 days' AND fecha_pago < CURRENT_DATE - INTERVAL '6 days'"
+        elif periodo == 'year':
+            actual_cond = "DATE_TRUNC('year', fecha_pago) = DATE_TRUNC('year', CURRENT_DATE)"
+            prev_cond = "DATE_TRUNC('year', fecha_pago) = DATE_TRUNC('year', CURRENT_DATE - INTERVAL '1 year')"
+        else: # month
+            actual_cond = "DATE_TRUNC('month', fecha_pago) = DATE_TRUNC('month', CURRENT_DATE)"
+            prev_cond = "DATE_TRUNC('month', fecha_pago) = DATE_TRUNC('month', CURRENT_DATE - INTERVAL '1 month')"
+
         with self.db.cursor() as cur:
-            cur.execute("""
+            cur.execute(f"""
                 SELECT COALESCE(SUM(monto), 0) as total 
                 FROM sistema_facturacion.pagos_suscripciones 
-                WHERE estado = 'PAGADO'
-                AND DATE_TRUNC('month', fecha_pago) = DATE_TRUNC('month', CURRENT_DATE)
+                WHERE estado = 'PAGADO' AND {actual_cond}
             """)
             actual = float(cur.fetchone()['total'])
 
-            cur.execute("""
+            cur.execute(f"""
                 SELECT COALESCE(SUM(monto), 0) as total 
                 FROM sistema_facturacion.pagos_suscripciones 
-                WHERE estado = 'PAGADO'
-                AND DATE_TRUNC('month', fecha_pago) = DATE_TRUNC('month', CURRENT_DATE - INTERVAL '1 month')
+                WHERE estado = 'PAGADO' AND {prev_cond}
             """)
             anterior = float(cur.fetchone()['total'])
 

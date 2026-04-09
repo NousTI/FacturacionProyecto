@@ -23,16 +23,15 @@ class RepositorioVendedores:
     def obtener_por_id(self, id: UUID) -> Optional[dict]:
         query = """
             SELECT v.*, u.email, u.ultimo_acceso, u.requiere_cambio_password,
-                   COUNT(DISTINCT e.id) as empresas_asignadas,
-                   COUNT(DISTINCT e.id) FILTER (WHERE e.activo = true) as empresas_activas,
-                   COALESCE(SUM(p.monto), 0) as ingresos_generados
+                   (SELECT COUNT(*) FROM sistema_facturacion.empresas WHERE vendedor_id = v.id) as empresas_asignadas,
+                   (SELECT COUNT(*) FROM sistema_facturacion.empresas WHERE vendedor_id = v.id AND activo = true) as empresas_activas,
+                   (SELECT COALESCE(SUM(c.monto), 0) 
+                    FROM sistema_facturacion.comisiones c
+                    JOIN sistema_facturacion.pagos_suscripciones p ON p.id = c.pago_suscripcion_id 
+                    WHERE c.vendedor_id = v.id AND p.estado = 'PAGADO' AND c.estado = 'PAGADA') as ingresos_generados
             FROM sistema_facturacion.vendedores v
             LEFT JOIN sistema_facturacion.users u ON u.id = v.user_id
-            LEFT JOIN sistema_facturacion.empresas e ON e.vendedor_id = v.id
-            LEFT JOIN sistema_facturacion.comisiones c ON c.vendedor_id = v.id
-            LEFT JOIN sistema_facturacion.pagos_suscripciones p ON p.id = c.pago_suscripcion_id AND p.estado = 'PAGADO'
             WHERE v.id = %s
-            GROUP BY v.id, u.email, u.ultimo_acceso, u.requiere_cambio_password
         """
         with self.db.cursor() as cur:
             cur.execute(query, (str(id),))
@@ -54,15 +53,14 @@ class RepositorioVendedores:
     def listar_todos(self) -> List[dict]:
         query = """
             SELECT v.*, u.email, u.ultimo_acceso,
-                   COUNT(DISTINCT e.id) as empresas_asignadas,
-                   COUNT(DISTINCT e.id) FILTER (WHERE e.activo = true) as empresas_activas,
-                   COALESCE(SUM(p.monto), 0) as ingresos_generados
+                   (SELECT COUNT(*) FROM sistema_facturacion.empresas WHERE vendedor_id = v.id) as empresas_asignadas,
+                   (SELECT COUNT(*) FROM sistema_facturacion.empresas WHERE vendedor_id = v.id AND activo = true) as empresas_activas,
+                   (SELECT COALESCE(SUM(c.monto), 0) 
+                    FROM sistema_facturacion.comisiones c
+                    JOIN sistema_facturacion.pagos_suscripciones p ON p.id = c.pago_suscripcion_id 
+                    WHERE c.vendedor_id = v.id AND p.estado = 'PAGADO' AND c.estado = 'PAGADA') as ingresos_generados
             FROM sistema_facturacion.vendedores v
             LEFT JOIN sistema_facturacion.users u ON u.id = v.user_id
-            LEFT JOIN sistema_facturacion.empresas e ON e.vendedor_id = v.id
-            LEFT JOIN sistema_facturacion.comisiones c ON c.vendedor_id = v.id
-            LEFT JOIN sistema_facturacion.pagos_suscripciones p ON p.id = c.pago_suscripcion_id AND p.estado = 'PAGADO'
-            GROUP BY v.id, u.email, u.ultimo_acceso
             ORDER BY v.created_at DESC
         """
         with self.db.cursor() as cur:
@@ -77,10 +75,10 @@ class RepositorioVendedores:
                 COUNT(*) FILTER (WHERE activo = false) as inactivos,
                 (SELECT COUNT(*) FROM sistema_facturacion.empresas WHERE vendedor_id IS NOT NULL) as empresas_totales,
                 COALESCE((
-                    SELECT SUM(p.monto) 
-                    FROM sistema_facturacion.pagos_suscripciones p
-                    JOIN sistema_facturacion.comisiones c ON c.pago_suscripcion_id = p.id
-                    WHERE p.estado = 'PAGADO'
+                    SELECT SUM(c.monto) 
+                    FROM sistema_facturacion.comisiones c
+                    JOIN sistema_facturacion.pagos_suscripciones p ON c.pago_suscripcion_id = p.id
+                    WHERE p.estado = 'PAGADO' AND c.estado = 'PAGADA'
                 ), 0) as ingresos_generados
             FROM sistema_facturacion.vendedores
         """
@@ -143,9 +141,9 @@ class RepositorioVendedores:
             SELECT 
                 (SELECT COUNT(*) FROM sistema_facturacion.empresas WHERE vendedor_id = %s) as empresas_asignadas,
                 (SELECT COALESCE(SUM(monto), 0) FROM sistema_facturacion.comisiones WHERE vendedor_id = %s AND estado = 'PENDIENTE') as comisiones_pendientes,
-                (SELECT COALESCE(SUM(ps.monto), 0) FROM sistema_facturacion.pagos_suscripciones ps 
-                 JOIN sistema_facturacion.comisiones c ON c.pago_suscripcion_id = ps.id 
-                 WHERE c.vendedor_id = %s AND ps.estado = 'PAGADO') as ingresos_generados,
+                (SELECT COALESCE(SUM(c.monto), 0) FROM sistema_facturacion.comisiones c 
+                 JOIN sistema_facturacion.pagos_suscripciones ps ON c.pago_suscripcion_id = ps.id 
+                 WHERE c.vendedor_id = %s AND ps.estado = 'PAGADO' AND c.estado = 'PAGADA') as ingresos_generados,
                 (SELECT COUNT(*) FROM sistema_facturacion.suscripciones s
                  JOIN sistema_facturacion.empresas e ON s.empresa_id = e.id
                  WHERE e.vendedor_id = %s AND s.estado = 'ACTIVA' AND s.fecha_fin <= NOW() + INTERVAL '15 days') as renovaciones_proximas

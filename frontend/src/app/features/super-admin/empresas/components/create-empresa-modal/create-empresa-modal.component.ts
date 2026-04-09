@@ -163,7 +163,7 @@ import { SriValidators } from '../../../../../shared/utils/sri-validators';
         <!-- Footer -->
         <div class="modal-footer-final">
           <button (click)="close()" class="btn-cancel-final">Cancelar</button>
-          <button (click)="submit()" [disabled]="empresaForm.invalid" class="btn-submit-final">
+          <button (click)="submit()" [disabled]="empresaForm.invalid || (empresa && empresaForm.pristine)" class="btn-submit-final">
             {{ empresa ? 'Guardar Cambios' : 'Crear Empresa' }}
           </button>
         </div>
@@ -378,7 +378,10 @@ export class CreateEmpresaModalComponent implements OnInit, OnDestroy {
       this.empresaForm.patchValue({
         ...this.empresa,
         razon_social: this.empresa.razon_social || this.empresa.razonSocial,
-        vendedor_id: this.empresa.vendedor_id || this.empresa.vendedorId
+        nombre_comercial: this.empresa.nombre_comercial || this.empresa.nombreComercial,
+        vendedor_id: this.empresa.vendedor_id || this.empresa.vendedorId,
+        tipo_contribuyente: this.empresa.tipo_contribuyente || this.empresa.tipoContribuyente,
+        obligado_contabilidad: this.empresa.obligado_contabilidad !== undefined ? this.empresa.obligado_contabilidad : this.empresa.obligadoContabilidad
       });
       
       // Prevent RUC and Plan modification on edit
@@ -386,6 +389,9 @@ export class CreateEmpresaModalComponent implements OnInit, OnDestroy {
 
       this.empresaForm.get('plan_id')?.clearValidators();
       this.empresaForm.get('plan_id')?.updateValueAndValidity();
+      
+      // Asegurar que el formulario recalcule su estado después del parcheo
+      this.empresaForm.updateValueAndValidity();
     }
   }
 

@@ -42,39 +42,51 @@ declare var bootstrap: any;
             <table class="table table-hover align-middle mb-0">
               <thead class="bg-light">
                 <tr>
-                  <th class="ps-3 py-2 small">Empresa</th>
-                  <th class="py-2 small">Plan Solicitado</th>
-                  <th class="py-2 small">Fecha Solicitud</th>
-                  <th class="py-2 small text-center">Estado</th>
-                  <th class="pe-3 py-2 small text-end">Procesado el</th>
+                  <th class="ps-4 py-3">Empresa</th>
+                  <th class="py-3">Plan Solicitado</th>
+                  <th class="py-3">Fecha Solicitud</th>
+                  <th class="py-3 text-center">Estado</th>
+                  <th class="py-3 text-end">Acciones</th>
+                  <th class="pe-4 py-3 text-end">Fecha Procesada</th>
                 </tr>
               </thead>
               <tbody>
-                <tr *ngFor="let s of solicitudes" [class.table-highlighted]="s.id === highlightedId">
-                  <td class="ps-3 py-2">
+                <tr *ngFor="let s of solicitudes" 
+                    [class.table-highlighted]="s.id === highlightedId"
+                    (click)="abrirDetalle(s)"
+                    class="cursor-pointer">
+                  <td class="ps-4">
                     <div class="d-flex align-items-center">
-                      <div class="avatar-sm bg-primary-subtle text-primary me-2">
+                      <div class="avatar-sm bg-primary-subtle text-primary me-3">
                         {{ (s.empresa_nombre?.charAt(0) || 'E') }}
                       </div>
-                      <span class="fw-bold small">{{ s.empresa_nombre }}</span>
+                      <div>
+                        <span class="fw-bold d-block">{{ s.empresa_nombre }}</span>
+                        <span class="smallest text-muted">ID Sub: #{{ (s.suscripcion_id?.substring(0,8) || '---') }}</span>
+                      </div>
                     </div>
                   </td>
-                  <td class="py-2"><span class="fw-medium small">{{ s.plan_nombre }}</span></td>
-                  <td class="py-2 small">{{ s.fecha_solicitud | date:'short' }}</td>
-                  <td class="py-2 text-center">
+                  <td><span class="fw-medium">{{ s.plan_nombre }}</span></td>
+                  <td>{{ s.fecha_solicitud | date:'short' }}</td>
+                  <td class="text-center">
                     <span class="badge rounded-pill" [ngClass]="getEstadoClass(s.estado)">
                       {{ s.estado }}
                     </span>
                   </td>
-                  <td class="pe-3 py-2 text-end">
-                    <span *ngIf="s.estado !== 'PENDIENTE'" class="text-muted smallest">
-                      {{ (s.fecha_procesamiento || s.updated_at) | date:'shortDate' }}
+                  <td class="text-end">
+                    <button class="btn btn-link btn-sm p-0 text-primary" (click)="abrirDetalle(s); $event.stopPropagation()">
+                      <i class="bi bi-eye"></i>
+                    </button>
+                  </td>
+                  <td class="pe-4 text-end">
+                    <span *ngIf="s.estado !== 'PENDIENTE'" class="text-muted small">
+                      {{ (s.fecha_procesamiento || s.updated_at) | date:'short' }}
                     </span>
-                    <span *ngIf="s.estado === 'PENDIENTE'" class="text-muted smallest italic">Revisión</span>
+                    <span *ngIf="s.estado === 'PENDIENTE'" class="text-muted smallest text-uppercase fw-bold opacity-50">En Revisión</span>
                   </td>
                 </tr>
                 <tr *ngIf="solicitudes.length === 0">
-                  <td colspan="5" class="text-center py-5">
+                  <td colspan="6" class="text-center py-5">
                     <p class="text-muted py-5">No hay renovaciones en curso</p>
                   </td>
                 </tr>
@@ -145,51 +157,80 @@ declare var bootstrap: any;
       </div>
     </div>
 
-    <!-- Modal Detalle (Solo Lectura para Vendedor) -->
+    <!-- Modal Detalle Enriquecido -->
     <div class="modal fade" id="modalVendedorDetalle" tabindex="-1">
-      <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-content border-0 shadow-lg rounded-4">
           <div class="modal-header border-0 p-4 pb-0">
              <h5 class="fw-bold">Detalle de Renovación</h5>
              <button type="button" class="btn-close shadow-none" data-bs-dismiss="modal"></button>
           </div>
           <div class="modal-body p-4" *ngIf="seleccionada">
-            <div class="mb-4">
-              <label class="small text-muted d-block uppercase tracking-wider fw-bold mb-1">EMPRESA</label>
-              <h6 class="fw-bold mb-0">{{ seleccionada.empresa_nombre }}</h6>
-            </div>
-            
-            <div class="row mb-4">
-              <div class="col-6">
-                <label class="small text-muted d-block uppercase tracking-wider fw-bold mb-1">PLAN SOLICITADO</label>
-                <span class="fw-medium">{{ seleccionada.plan_nombre }}</span>
+            <div class="row g-4">
+              <!-- Info Principal -->
+              <div class="col-md-7">
+                <div class="bg-light p-4 rounded-4 h-100">
+                  <h6 class="text-uppercase smallest fw-800 text-muted mb-3">Información de la Gestión</h6>
+                  <div class="d-flex align-items-center mb-3">
+                    <div class="avatar-sm bg-primary text-white me-3 p-3">
+                      {{ (seleccionada.empresa_nombre?.charAt(0) || 'E') }}
+                    </div>
+                    <div>
+                      <h5 class="mb-0 fw-bold">{{ seleccionada.empresa_nombre }}</h5>
+                      <span class="text-muted small d-block">ID Empresa: {{ seleccionada.empresa_id }}</span>
+                      <span class="text-muted smallest">ID Suscripción: {{ seleccionada.suscripcion_id }}</span>
+                    </div>
+                  </div>
+                  
+                  <div class="mt-4 pt-3 border-top">
+                    <div class="row g-3">
+                      <div class="col-6">
+                        <label class="smallest text-muted text-uppercase d-block fw-bold">Plan Solicitado</label>
+                        <span class="fw-bold text-dark">{{ seleccionada.plan_nombre }}</span>
+                      </div>
+                      <div class="col-6">
+                        <label class="smallest text-muted text-uppercase d-block fw-bold">Estado</label>
+                        <span class="badge rounded-pill" [ngClass]="getEstadoClass(seleccionada.estado)">{{ seleccionada.estado }}</span>
+                      </div>
+                      <div class="col-6">
+                        <label class="smallest text-muted text-uppercase d-block fw-bold">Fecha Solicitud</label>
+                        <span class="text-dark small">{{ seleccionada.fecha_solicitud | date:'medium' }}</span>
+                      </div>
+                      <div class="col-6" *ngIf="seleccionada.fecha_procesamiento">
+                        <label class="smallest text-muted text-uppercase d-block fw-bold">Fecha Proceso</label>
+                        <span class="text-dark small">{{ seleccionada.fecha_procesamiento | date:'medium' }}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
-              <div class="col-6">
-                <label class="small text-muted d-block uppercase tracking-wider fw-bold mb-1">ESTADO</label>
-                <span class="badge rounded-pill" [ngClass]="getEstadoClass(seleccionada.estado)">{{ seleccionada.estado }}</span>
-              </div>
-            </div>
 
-            <div class="mb-4" *ngIf="seleccionada.estado === 'RECHAZADA' && seleccionada.motivo_rechazo">
-              <label class="small text-danger d-block uppercase tracking-wider fw-bold mb-1">MOTIVO RECHAZO</label>
-              <div class="p-3 bg-danger-subtle rounded-3 small">
-                {{ seleccionada.motivo_rechazo }}
-              </div>
-            </div>
+              <!-- Info Adjuntos y Notas -->
+              <div class="col-md-5">
+                <div class="h-100 d-flex flex-column gap-3">
+                  <div class="bg-light p-3 rounded-4" *ngIf="seleccionada.comprobante_url">
+                    <label class="smallest text-muted text-uppercase d-block fw-bold mb-2">Comprobante Cargado</label>
+                    <a [href]="seleccionada.comprobante_url" target="_blank" class="btn btn-white w-100 text-start border rounded-3 d-flex align-items-center justify-content-between">
+                      <span class="text-truncate small"><i class="bi bi-file-earmark-image me-2 text-primary"></i>Ver Adjunto</span>
+                      <i class="bi bi-box-arrow-up-right smallest text-muted"></i>
+                    </a>
+                  </div>
 
-            <div class="mb-0" *ngIf="seleccionada.comprobante_url">
-               <label class="small text-muted d-block uppercase tracking-wider fw-bold mb-1">COMPROBANTE</label>
-               <a [href]="seleccionada.comprobante_url" target="_blank" class="d-flex align-items-center p-3 border rounded-3 text-primary text-decoration-none bg-light-subtle">
-                 <i class="bi bi-file-earmark-image fs-4 me-3"></i>
-                 <div class="flex-grow-1 overflow-hidden">
-                   <span class="d-block text-truncate fw-medium">Ver comprobante adjunto</span>
-                   <span class="smallest text-muted">Abre en una pestaña nueva</span>
-                 </div>
-               </a>
+                  <div class="bg-danger-subtle p-3 rounded-4" *ngIf="seleccionada.estado === 'RECHAZADA' && seleccionada.motivo_rechazo">
+                    <label class="smallest text-danger text-uppercase d-block fw-bold mb-1">Motivo de Rechazo</label>
+                    <p class="mb-0 small text-danger fw-medium">{{ seleccionada.motivo_rechazo }}</p>
+                  </div>
+
+                  <div class="p-3 bg-blue-light-custom rounded-4 flex-grow-1">
+                    <h6 class="smallest fw-bold text-primary text-uppercase mb-2">Nota Informativa</h6>
+                    <p class="smallest text-muted mb-0">{{ getNotaInformativa(seleccionada.estado) }}</p>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
           <div class="modal-footer border-0 p-4 pt-0">
-            <button class="btn btn-light px-4 py-2 w-100 rounded-3 fw-bold" data-bs-dismiss="modal">Cerrar</button>
+            <button class="btn btn-light px-4 py-2 w-100 rounded-3 fw-bold shadow-sm" data-bs-dismiss="modal">Cerrar Detalle</button>
           </div>
         </div>
       </div>
@@ -208,6 +249,11 @@ declare var bootstrap: any;
       background-color: #f0f9ff !important;
       border-left: 4px solid #0ea5e9;
     }
+    .cursor-pointer { cursor: pointer; }
+    .btn-white { background: white; border: none; }
+    .btn-white:hover { background: #f8fafc; }
+    .bg-blue-light-custom { background-color: #eff6ff; }
+    .fw-800 { font-weight: 800; }
   `],
   standalone: false
 })
@@ -313,12 +359,25 @@ export class RenovacionesVendedorPage implements OnInit, OnDestroy {
     });
   }
 
+  getNotaInformativa(estado?: string): string {
+    switch (estado) {
+      case 'PENDIENTE':
+        return 'Esta solicitud está siendo revisada por el departamento administrativo. Una vez aprobada, el plan del cliente se actualizará automáticamente.';
+      case 'ACEPTADA':
+        return 'Esta solicitud ha sido aprobada con éxito. El plan del cliente ha sido actualizado y la comisión ha sido registrada en tu historial.';
+      case 'RECHAZADA':
+        return 'Esta solicitud ha sido rechazada. Por favor, revisa el motivo indicado arriba y contacta con el cliente para verificar el comprobante o los datos del plan.';
+      default:
+        return 'Solicitud en proceso de gestión administrativa.';
+    }
+  }
+
   getEstadoClass(estado: string): string {
     switch (estado) {
-      case 'PENDIENTE': return 'bg-warning-subtle text-warning';
-      case 'ACEPTADA': return 'bg-success-subtle text-success';
-      case 'RECHAZADA': return 'bg-danger-subtle text-danger';
-      default: return 'bg-light text-secondary';
+      case 'PENDIENTE': return 'bg-warning-subtle text-dark';
+      case 'ACEPTADA': return 'bg-success-subtle text-dark';
+      case 'RECHAZADA': return 'bg-danger-subtle text-dark';
+      default: return 'bg-light text-dark';
     }
   }
 
@@ -327,16 +386,22 @@ export class RenovacionesVendedorPage implements OnInit, OnDestroy {
     this.selectedEmpresaPlanId = null;
     const modalEl = document.getElementById('modalVendedorRenovacion');
     if (modalEl) {
-      this.modalNueva = new bootstrap.Modal(modalEl);
+      if (!this.modalNueva) {
+        this.modalNueva = new bootstrap.Modal(modalEl);
+      }
       this.modalNueva.show();
     }
   }
 
   abrirDetalle(s: SolicitudRenovacion) {
     this.seleccionada = s;
+    this.cd.detectChanges(); // Asegurar que el *ngIf del modal se procese
+    
     const modalEl = document.getElementById('modalVendedorDetalle');
     if (modalEl) {
-      this.modalDetalle = new bootstrap.Modal(modalEl);
+      if (!this.modalDetalle) {
+        this.modalDetalle = new bootstrap.Modal(modalEl);
+      }
       this.modalDetalle.show();
     }
   }

@@ -99,7 +99,7 @@ import { CommonModule } from '@angular/common';
                       <li>
                         <a class="dropdown-item rounded-3 py-2" href="javascript:void(0)" (click)="onAction.emit({type: 'view_details', empresa})">
                           <i class="bi bi-eye text-corporate"></i>
-                          <span class="ms-2">Ver Expediente</span>
+                          <span class="ms-2">Ver Detalles</span>
                         </a>
                       </li>
                       <li>

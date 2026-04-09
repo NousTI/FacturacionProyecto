@@ -9,7 +9,10 @@ import { CommonModule } from '@angular/common';
         <div class="d-flex align-items-center gap-2">
           <div class="title-indicator" [style.background-color]="barColor"></div>
           <h5 class="fw-bold mb-0 text-dark">{{ title }}</h5>
-          <ng-content></ng-content>
+          <ng-content select="[info]"></ng-content>
+        </div>
+        <div class="header-actions">
+          <ng-content select="[actions]"></ng-content>
         </div>
       </div>
       
@@ -17,7 +20,7 @@ import { CommonModule } from '@angular/common';
       <div class="chart-wrapper flex-grow-1 position-relative d-flex w-100">
         <ng-container *ngIf="data && data.length > 0; else noData">
           
-          <!-- VERTICAL MODE -->
+          <!-- VERTICAL MODE (BARRAS) -->
           <ng-container *ngIf="orientation === 'vertical'">
             <div class="y-axis d-flex flex-column justify-content-between text-muted pe-3" 
                  style="font-size: 0.75rem; min-width: 40px; text-align: right; padding-bottom: 24px;">
@@ -110,7 +113,6 @@ import { CommonModule } from '@angular/common';
     .y-axis span:first-child { transform: translateY(0); }
     .y-axis span:last-child { transform: translateY(100%); }
     
-    /* Animation for rows */
     .horizontal-row {
       animation: fadeInRight 0.5s ease-out forwards;
       opacity: 0;
@@ -119,7 +121,6 @@ import { CommonModule } from '@angular/common';
       from { opacity: 0; transform: translateX(-10px); }
       to { opacity: 1; transform: translateX(0); }
     }
-    /* Cascade effect */
     .horizontal-row:nth-child(1) { animation-delay: 0.1s; }
     .horizontal-row:nth-child(2) { animation-delay: 0.15s; }
     .horizontal-row:nth-child(3) { animation-delay: 0.2s; }
@@ -143,7 +144,7 @@ export class ChartCardComponent {
   }
 
   get maxValue(): number {
-    if (!this.data.length) return 100;
+    if (!this.data || !this.data.length) return 100;
     const maxCurrent = Math.max(...this.data.map(d => d.value));
     const maxPrev = Math.max(...this.data.map(d => d.value_prev || 0));
     const overallMax = Math.max(maxCurrent, maxPrev);
@@ -167,39 +168,13 @@ export class ChartCardComponent {
 
   private calculateNiceMax(maxValue: number): number {
     if (maxValue === 0) return 100;
-
-    // Logic to find a "nice" number above maxValue
-    // e.g., 311 -> 400, 85 -> 100, 120 -> 200
-
     const magnitude = Math.pow(10, Math.floor(Math.log10(maxValue)));
     const normalized = maxValue / magnitude;
-
-    let niceScalar;
-    if (normalized <= 1.0) niceScalar = 1.0;
-    else if (normalized <= 2.0) niceScalar = 2.0;
-    else if (normalized <= 2.5) niceScalar = 2.5; // Optional: 250, 2500 etc.
-    else if (normalized <= 5.0) niceScalar = 5.0;
-    else niceScalar = 10.0;
-
-    // If the calculated nice max is actually exactly the max (rare with floats), valid.
-    // If it's smaller (shouldn't happen with the logic above), bump it.
-    // But usually we want a bit of headroom.
-    // The user example: 311 -> 400.
-    // 311: mag=100. norm=3.11. > 2.5, <= 5.0 -> scalar=5.0 -> 500.
-    // Wait, user wanted 400 for 311.
-    // My previous "1-2-5" logic gives 500.
-    // To get 400, we need to allow integer steps like 3, 4, etc.
-    // Let's use the ceil logic: ceil(normalized) * magnitude.
-    // 3.11 -> 4 -> 400.
-    // 8.5 -> 9 -> 900.
-    // 1.2 -> 2 -> 200.
-
     return Math.ceil(normalized) * magnitude;
   }
 
   private formatNumber(num: number): string {
     if (num >= 1000) return (num / 1000).toFixed(0) + 'k';
-    // Remove decimals for clean look unless it's very small
     return Math.round(num).toString();
   }
 }

@@ -23,7 +23,7 @@ class ServicioDashboards:
         variacion_ventas = 0
 
         if not e_id:
-            variacion_ingresos = self.repo.obtener_variacion_ingresos()
+            variacion_ingresos = self.repo.obtener_variacion_ingresos(periodo=periodo)
         else:
             variacion_ventas = self.repo.obtener_variacion_ventas_empresa(e_id)
         

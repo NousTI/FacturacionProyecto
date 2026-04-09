@@ -83,7 +83,9 @@ class ServicioReportes:
                         ])
 
             elif datos.tipo == 'COMISIONES_MES':
-                comisiones = self.repo.obtener_comisiones_mes(vendedor_id)
+                fecha_inicio = parametros.get('fecha_inicio')
+                fecha_fin = parametros.get('fecha_fin')
+                comisiones = self.repo.obtener_comisiones_mes(vendedor_id, fecha_inicio, fecha_fin)
                 filename = f"reporte_comisiones_{uuid.uuid4().hex[:8]}.csv"
                 filepath = os.path.join("static", "reportes", filename)
                 os.makedirs(os.path.dirname(filepath), exist_ok=True)
@@ -224,7 +226,9 @@ class ServicioReportes:
             return self.repo.obtener_suscripciones_proximas(vendedor_id_actual, dias)
             
         elif datos.tipo == 'COMISIONES_MES' and vendedor_id_actual:
-            return self.repo.obtener_comisiones_mes(vendedor_id_actual)
+            fecha_inicio = parametros.get('fecha_inicio')
+            fecha_fin = parametros.get('fecha_fin')
+            return self.repo.obtener_comisiones_mes(vendedor_id_actual, fecha_inicio, fecha_fin)
             
 
         raise AppError("Tipo de reporte o permisos no válidos para previsualización", 400)

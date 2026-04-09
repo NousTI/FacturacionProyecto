@@ -46,6 +46,7 @@ declare var bootstrap: any;
                   <th class="py-3">Fecha Solicitud</th>
                   <th class="py-3 text-center">Estado</th>
                   <th class="pe-4 py-3 text-end">Acciones</th>
+                  <th class="pe-4 py-3 text-end">Fecha Procesada</th>
                 </tr>
               </thead>
               <tbody>
@@ -80,18 +81,107 @@ declare var bootstrap: any;
                          <i class="bi bi-x-lg text-danger"></i>
                        </button>
                     </div>
+                  </td>
+                  <td class="pe-4 text-end">
                     <span *ngIf="s.estado !== 'PENDIENTE'" class="text-muted small">
-                      Procesada el {{ (s.fecha_procesamiento || s.updated_at) | date:'short' }}
+                      {{ (s.fecha_procesamiento || s.updated_at) | date:'short' }}
                     </span>
+                    <span *ngIf="s.estado === 'PENDIENTE'" class="text-muted smallest text-uppercase fw-bold opacity-50">Pendiente</span>
                   </td>
                 </tr>
                 <tr *ngIf="solicitudes.length === 0">
-                  <td colspan="6" class="text-center py-5">
+                  <td colspan="7" class="text-center py-5">
                     <p class="text-muted py-5">No hay solicitudes para procesar</p>
                   </td>
                 </tr>
               </tbody>
             </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal Detalle -->
+    <div class="modal fade" id="modalDetalle" tabindex="-1">
+      <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content border-0 shadow-lg rounded-4">
+          <div class="modal-header border-0 p-4 pb-0">
+             <h5 class="fw-bold">Detalle de Solicitud</h5>
+             <button type="button" class="btn-close shadow-none" data-bs-dismiss="modal"></button>
+          </div>
+          <div class="modal-body p-4" *ngIf="seleccionada">
+            <div class="row g-4">
+              <!-- Info Principal -->
+              <div class="col-md-7">
+                <div class="bg-light p-4 rounded-4 h-100">
+                  <h6 class="text-uppercase smallest fw-800 text-muted mb-3">Información de la Empresa</h6>
+                  <div class="d-flex align-items-center mb-3">
+                    <div class="avatar-sm bg-primary text-white me-3">
+                      {{ (seleccionada.empresa_nombre?.charAt(0) || 'E') }}
+                    </div>
+                    <div>
+                      <h5 class="mb-0 fw-bold">{{ seleccionada.empresa_nombre }}</h5>
+                      <span class="text-muted small">ID Empresa: {{ seleccionada.empresa_id }}</span>
+                    </div>
+                  </div>
+                  
+                  <div class="mt-4 pt-3 border-top">
+                    <div class="row g-3">
+                      <div class="col-6">
+                        <label class="smallest text-muted text-uppercase d-block fw-bold">Plan Solicitado</label>
+                        <span class="fw-bold text-dark">{{ seleccionada.plan_nombre }}</span>
+                      </div>
+                      <div class="col-6">
+                        <label class="smallest text-muted text-uppercase d-block fw-bold">Estado Actual</label>
+                        <span class="badge rounded-pill" [ngClass]="getEstadoClass(seleccionada.estado)">{{ seleccionada.estado }}</span>
+                      </div>
+                      <div class="col-6">
+                        <label class="smallest text-muted text-uppercase d-block fw-bold">Fecha Solicitud</label>
+                        <span class="text-dark small">{{ seleccionada.fecha_solicitud | date:'medium' }}</span>
+                      </div>
+                      <div class="col-6" *ngIf="seleccionada.fecha_procesamiento">
+                        <label class="smallest text-muted text-uppercase d-block fw-bold">Fecha Proceso</label>
+                        <span class="text-dark small">{{ seleccionada.fecha_procesamiento | date:'medium' }}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Info Secundaria -->
+              <div class="col-md-5">
+                <div class="h-100 d-flex flex-column gap-3">
+                  <div class="bg-light p-3 rounded-4">
+                    <label class="smallest text-muted text-uppercase d-block fw-bold mb-2">Vendedor</label>
+                    <div class="d-flex align-items-center">
+                      <i class="bi bi-person-badge text-corporate me-2"></i>
+                      <span class="fw-bold small">{{ seleccionada.vendedor_nombre || 'Gestión Directa' }}</span>
+                    </div>
+                  </div>
+
+                  <div class="bg-light p-3 rounded-4" *ngIf="seleccionada.comprobante_url">
+                    <label class="smallest text-muted text-uppercase d-block fw-bold mb-2">Comprobante de Pago</label>
+                    <a [href]="seleccionada.comprobante_url" target="_blank" class="btn btn-white w-100 text-start border rounded-3 d-flex align-items-center justify-content-between">
+                      <span class="text-truncate small"><i class="bi bi-file-earmark-image me-2 text-primary"></i>Ver Adjunto</span>
+                      <i class="bi bi-box-arrow-up-right smallest text-muted"></i>
+                    </a>
+                  </div>
+
+                  <div class="bg-danger-subtle p-3 rounded-4" *ngIf="seleccionada.motivo_rechazo">
+                    <label class="smallest text-danger text-uppercase d-block fw-bold mb-1">Motivo de Rechazo</label>
+                    <p class="mb-0 small text-danger">{{ seleccionada.motivo_rechazo }}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer border-0 p-4 pt-0">
+             <button class="btn btn-light px-4 py-2" data-bs-dismiss="modal">Cerrar</button>
+             <button *ngIf="seleccionada?.estado === 'PENDIENTE' && !isVendedor" 
+                     class="btn btn-primary px-4 py-2 fw-bold" 
+                     (click)="irAProcesar()">
+               Procesar Solicitud
+             </button>
           </div>
         </div>
       </div>
@@ -194,6 +284,7 @@ export class RenovacionesAdminPage implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
   private modalAprobar: any;
   private modalRechazar: any;
+  private modalDetalle: any;
 
   constructor(
     private api: RenovacionesApiService,
@@ -265,20 +356,40 @@ export class RenovacionesAdminPage implements OnInit, OnDestroy {
 
   getEstadoClass(estado: string): string {
     switch (estado) {
-      case 'PENDIENTE': return 'bg-warning-subtle text-warning';
-      case 'ACEPTADA': return 'bg-success-subtle text-success';
-      case 'RECHAZADA': return 'bg-danger-subtle text-danger';
-      default: return 'bg-light text-secondary';
+      case 'PENDIENTE': return 'bg-warning-subtle text-dark';
+      case 'ACEPTADA': return 'bg-success-subtle text-dark';
+      case 'RECHAZADA': return 'bg-danger-subtle text-dark';
+      default: return 'bg-light text-dark';
     }
   }
 
   abrirDetalle(s: SolicitudRenovacion) {
+    this.seleccionada = s;
+    const modalEl = document.getElementById('modalDetalle');
+    if (modalEl) {
+      // @ts-ignore
+      this.modalDetalle = new bootstrap.Modal(modalEl);
+      this.modalDetalle.show();
+    }
+  }
+
+  abrirAprobacion(s: SolicitudRenovacion) {
     this.seleccionada = s;
     const modalEl = document.getElementById('modalAprobar');
     if (modalEl) {
       // @ts-ignore
       this.modalAprobar = new bootstrap.Modal(modalEl);
       this.modalAprobar.show();
+    }
+  }
+
+  irAProcesar() {
+    if (this.seleccionada) {
+      const s = { ...this.seleccionada };
+      // Ocultar modal detalle
+      const btn = document.querySelector('#modalDetalle [data-bs-dismiss="modal"]') as HTMLElement;
+      btn?.click();
+      setTimeout(() => this.abrirAprobacion(s), 400);
     }
   }
 

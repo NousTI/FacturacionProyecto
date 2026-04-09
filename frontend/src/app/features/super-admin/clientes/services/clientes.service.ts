@@ -94,9 +94,8 @@ export class ClientesService {
         const baseUrl = this.apiUrl.replace('/admin', '');
         return this.http.post<any>(baseUrl, datos).pipe(
             map(res => res.detalles as Cliente),
-            tap(nuevo => {
-                const current = this._clientes$.value;
-                this._clientes$.next([nuevo, ...current]);
+            tap(() => {
+                this.fetchClientes();
                 this.fetchStats();
             })
         );

@@ -26,6 +26,9 @@ class EmpresaBase(BaseModel):
 
 class EmpresaCreacion(EmpresaBase):
     vendedor_id: Optional[UUID] = None
+    plan_id: Optional[UUID] = None
+    monto_pago: Optional[Decimal] = Field(Decimal('0.00'), ge=0)
+    observacion_pago: Optional[str] = Field(None, max_length=250)
 
 class EmpresaAsignarVendedor(BaseModel):
     vendedor_id: Optional[UUID] = None
@@ -76,6 +79,7 @@ class EmpresaLectura(EmpresaBase):
     fecha_inicio: Optional[datetime] = None
     fecha_fin: Optional[datetime] = None
     suscripcion_estado: Optional[str] = None
+    precio_anual: Optional[Decimal] = None
     
     # Límites y Consumo (del Plan)
     max_usuarios: Optional[int] = None

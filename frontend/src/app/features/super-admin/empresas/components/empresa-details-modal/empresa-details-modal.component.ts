@@ -129,7 +129,7 @@ import { CommonModule } from '@angular/common';
                       </div>
                        <div class="mb-0">
                          <div class="d-flex justify-content-between mb-1">
-                            <span class="text-muted small fw-bold">Facturas Mensuales</span>
+                            <span class="text-muted small fw-bold">Facturas</span>
                             <span class="small fw-800">{{ empresa?.usage?.facturas || 0 }}/{{ empresa?.limits?.max_facturas || '-' }}</span>
                          </div>
                          <div class="progress-premium">
