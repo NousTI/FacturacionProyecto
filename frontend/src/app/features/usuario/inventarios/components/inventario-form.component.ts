@@ -2,6 +2,7 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormGroup, FormBuilder, Validators } from '@angular/forms';
 import { Producto } from '../../../../domain/models/producto.model';
+import { TIPOS_MOVIMIENTO } from '../constants/inventario.constants';
 
 @Component({
   selector: 'app-inventario-form',
@@ -28,10 +29,9 @@ import { Producto } from '../../../../domain/models/producto.model';
               <div class="form-item">
                 <label>Tipo de Movimiento <span class="required">*</span></label>
                 <select formControlName="tipo_movimiento" class="form-select">
-                  <option value="entrada">Entrada</option>
-                  <option value="salida">Salida</option>
-                  <option value="ajuste">Ajuste</option>
-                  <option value="devolucion">Devolución</option>
+                  <option *ngFor="let tipo of tiposMovimiento" [value]="tipo">
+                    {{ tipo | titlecase }}
+                  </option>
                 </select>
               </div>
 
@@ -104,6 +104,7 @@ export class InventarioFormComponent {
   @Output() onClose = new EventEmitter<void>();
   @Output() onSave = new EventEmitter<any>();
 
+  readonly tiposMovimiento = TIPOS_MOVIMIENTO;
   movimientoForm: FormGroup;
 
   constructor(private fb: FormBuilder) {
