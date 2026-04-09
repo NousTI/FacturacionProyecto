@@ -454,9 +454,7 @@ class RepositorioReportes:
                 (SELECT COALESCE(SUM(monto), 0)
                  FROM sistema_facturacion.pagos_suscripciones
                  WHERE estado = 'PAGADO'
-                   AND fecha_pago BETWEEN
-                       (%s::date - (%s::date - %s::date) - interval '1 day')
-                       AND (%s::date - interval '1 day')) as ingresos_mes_anterior,
+                   AND fecha_pago BETWEEN %s AND %s) as ingresos_mes_anterior,
 
                 -- Usuarios nuevos en el período
                 (SELECT COUNT(id)
@@ -469,7 +467,7 @@ class RepositorioReportes:
                  WHERE s.estado = 'ACTIVA'
                    AND DATE_TRUNC('month', s.fecha_inicio) = DATE_TRUNC('month', NOW() - INTERVAL '1 month')) as empresas_activas_mes_anterior,
 
-                -- Zona upgrade: empresas que usaron >=80% de facturas del plan en el período
+                -- Zona upgrade: empresas que usaron >=80%% de facturas del plan en el período
                 (SELECT COUNT(DISTINCT f.empresa_id)
                  FROM (
                      SELECT f.empresa_id, COUNT(f.id) as facturas_periodo
@@ -498,10 +496,17 @@ class RepositorioReportes:
         fi_use = fi_param or default_fi
         ff_use = ff_param or default_ff
 
+        # Calcular período anterior de igual duración
+        fi_date = date.fromisoformat(fi_use)
+        ff_date = date.fromisoformat(ff_use)
+        duracion = (ff_date - fi_date).days + 1
+        fi_anterior = (fi_date - timedelta(days=duracion)).isoformat()
+        ff_anterior = (fi_date - timedelta(days=1)).isoformat()
+
         params = (
             fi_use, ff_use,          # empresas_nuevas_mes
             fi_use, ff_use,          # ingresos_mes
-            ff_use, ff_use, fi_use, fi_use,  # ingresos_mes_anterior (período anterior)
+            fi_anterior, ff_anterior, # ingresos_mes_anterior
             fi_use, ff_use,          # usuarios_nuevos_mes
             fi_use, ff_use,          # zona_upgrade
         )

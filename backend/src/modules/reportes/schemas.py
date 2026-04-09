@@ -122,7 +122,7 @@ class UsoEmpresa(BaseModel):
     max_facturas_mes: Optional[int] = None
     porcentaje_uso: float = 0.0
     modulos_usados: int = 0
-    modulos_total: int = 6
+    modulos_total: int = 5
     plan_nombre: Optional[str] = None
     estado_suscripcion: Optional[str] = None
     ultimo_acceso: Optional[datetime] = None
