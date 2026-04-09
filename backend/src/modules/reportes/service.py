@@ -7,6 +7,9 @@ import uuid
 from datetime import datetime, timedelta
 
 from .repository import RepositorioReportes
+from .superadmin.R_031.repository import RepositorioR031
+from .superadmin.R_032.repository import RepositorioR032
+from .superadmin.R_033.repository import RepositorioR033
 from .schemas import ReporteCreacion
 from ...constants.enums import AuthKeys
 from ...errors.app_error import AppError
@@ -14,8 +17,17 @@ from ...utils.pdf_generator import render_to_pdf
 from ...utils.excel_generator import generate_excel_report
 
 class ServicioReportes:
-    def __init__(self, repo: RepositorioReportes = Depends()):
+    def __init__(
+        self, 
+        repo: RepositorioReportes = Depends(),
+        repo_r031: RepositorioR031 = Depends(),
+        repo_r032: RepositorioR032 = Depends(),
+        repo_r033: RepositorioR033 = Depends()
+    ):
         self.repo = repo
+        self.repo_r031 = repo_r031
+        self.repo_r032 = repo_r032
+        self.repo_r033 = repo_r033
 
     def crear_reporte(self, datos: ReporteCreacion, usuario_actual: dict):
         is_superadmin = usuario_actual.get(AuthKeys.IS_SUPERADMIN)
@@ -334,11 +346,11 @@ class ServicioReportes:
     # =========================================================
 
     def obtener_reporte_global_superadmin(self, fecha_inicio: Optional[str] = None, fecha_fin: Optional[str] = None):
-        kpis = self.repo.obtener_kpis_globales(fecha_inicio=fecha_inicio, fecha_fin=fecha_fin)
-        rescate = self.repo.obtener_zona_rescate(fecha_inicio=fecha_inicio, fecha_fin=fecha_fin)
-        upgrade = self.repo.obtener_zona_upgrade(fecha_inicio=fecha_inicio, fecha_fin=fecha_fin)
-        planes = self.repo.obtener_planes_mas_vendidos(fecha_inicio=fecha_inicio, fecha_fin=fecha_fin)
-        top_vendedores = self.repo.obtener_top_vendedores(fecha_inicio=fecha_inicio, fecha_fin=fecha_fin)
+        kpis = self.repo_r031.obtener_kpis_globales(fecha_inicio=fecha_inicio, fecha_fin=fecha_fin)
+        rescate = self.repo_r031.obtener_zona_rescate(fecha_inicio=fecha_inicio, fecha_fin=fecha_fin)
+        upgrade = self.repo_r031.obtener_zona_upgrade(fecha_inicio=fecha_inicio, fecha_fin=fecha_fin)
+        planes = self.repo_r031.obtener_planes_mas_vendidos(fecha_inicio=fecha_inicio, fecha_fin=fecha_fin)
+        top_vendedores = self.repo_r031.obtener_top_vendedores(fecha_inicio=fecha_inicio, fecha_fin=fecha_fin)
         return {
             **kpis,
             "empresas_rescate": rescate,
@@ -352,10 +364,10 @@ class ServicioReportes:
     # =========================================================
 
     def obtener_reporte_comisiones_superadmin(self, vendedor_id=None, estado=None, fecha_inicio=None, fecha_fin=None):
-        kpis = self.repo.obtener_kpis_comisiones_superadmin(fecha_inicio=fecha_inicio, fecha_fin=fecha_fin, vendedor_id=vendedor_id, estado=estado)
-        detalle = self.repo.obtener_detalle_comisiones_superadmin(vendedor_id, estado, fecha_inicio, fecha_fin)
-        top_vendedores = self.repo.obtener_top_vendedores(fecha_inicio=fecha_inicio, fecha_fin=fecha_fin, vendedor_id=vendedor_id)
-        planes = self.repo.obtener_planes_mas_vendidos(fecha_inicio=fecha_inicio, fecha_fin=fecha_fin, vendedor_id=vendedor_id)
+        kpis = self.repo_r032.obtener_kpis_comisiones_superadmin(fecha_inicio=fecha_inicio, fecha_fin=fecha_fin, vendedor_id=vendedor_id, estado=estado)
+        detalle = self.repo_r032.obtener_detalle_comisiones_superadmin(vendedor_id, estado, fecha_inicio, fecha_fin)
+        top_vendedores = self.repo_r031.obtener_top_vendedores(fecha_inicio=fecha_inicio, fecha_fin=fecha_fin, vendedor_id=vendedor_id)
+        planes = self.repo_r031.obtener_planes_mas_vendidos(fecha_inicio=fecha_inicio, fecha_fin=fecha_fin, vendedor_id=vendedor_id)
         return {
             "kpis": kpis,
             "detalle": detalle,
@@ -368,9 +380,9 @@ class ServicioReportes:
     # =========================================================
 
     def obtener_reporte_uso_sistema_superadmin(self, fecha_inicio: Optional[str] = None, fecha_fin: Optional[str] = None):
-        empresas = self.repo.obtener_uso_sistema_por_empresa(fecha_inicio=fecha_inicio, fecha_fin=fecha_fin)
-        modulos = self.repo.obtener_modulos_mas_usados(fecha_inicio=fecha_inicio, fecha_fin=fecha_fin)
-        promedio = self.repo.obtener_promedio_usuarios_por_empresa(fecha_inicio=fecha_inicio, fecha_fin=fecha_fin)
+        empresas = self.repo_r033.obtener_uso_sistema_por_empresa(fecha_inicio=fecha_inicio, fecha_fin=fecha_fin)
+        modulos = self.repo_r033.obtener_modulos_mas_usados(fecha_inicio=fecha_inicio, fecha_fin=fecha_fin)
+        promedio = self.repo_r033.obtener_promedio_usuarios_por_empresa(fecha_inicio=fecha_inicio, fecha_fin=fecha_fin)
         return {
             "empresas": empresas,
             "modulos_mas_usados": modulos,
