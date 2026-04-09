@@ -4,7 +4,10 @@ from datetime import datetime
 from uuid import UUID
 
 from .service import ServicioReportes
-from .schemas import ReporteLectura, ReporteCreacion, MetricasVendedorLectura
+from .schemas import (
+    ReporteLectura, ReporteCreacion, MetricasVendedorLectura,
+    ReporteGlobalSuperadmin, ReporteComisionesSuperadmin, ReporteUsoSistemaSuperadmin
+)
 from ..autenticacion.routes import obtener_usuario_actual, requerir_permiso
 from ..autenticacion.dependencies import requerir_superadmin
 from ..permisos.constants import PermisosVendedor
@@ -200,6 +203,55 @@ def obtener_reporte_facturas_rechazadas_sri(
         "estado": estado
     }
     return servicio.obtener_facturas_rechazadas_sri(empresa_id, params)
+
+# =========================================================
+# R-031: REPORTE GLOBAL SUPERADMIN
+# =========================================================
+@router.get("/superadmin/global", response_model=ReporteGlobalSuperadmin)
+def obtener_reporte_global(
+    fecha_inicio: Optional[str] = None,
+    fecha_fin: Optional[str] = None,
+    usuario: dict = Depends(requerir_superadmin),
+    servicio: ServicioReportes = Depends()
+):
+    """R-031: Vista consolidada de todas las empresas, ingresos, zonas upgrade/rescate y gráficas globales."""
+    return servicio.obtener_reporte_global_superadmin(fecha_inicio=fecha_inicio, fecha_fin=fecha_fin)
+
+
+# =========================================================
+# R-032: COMISIONES POR VENDEDOR (SUPERADMIN)
+# =========================================================
+@router.get("/superadmin/comisiones", response_model=ReporteComisionesSuperadmin)
+def obtener_reporte_comisiones_superadmin(
+    vendedor_id: Optional[UUID] = None,
+    estado: Optional[str] = None,
+    fecha_inicio: Optional[str] = None,
+    fecha_fin: Optional[str] = None,
+    usuario: dict = Depends(requerir_superadmin),
+    servicio: ServicioReportes = Depends()
+):
+    """R-032: KPIs y detalle de comisiones por vendedor con top vendedores y planes más vendidos."""
+    return servicio.obtener_reporte_comisiones_superadmin(
+        vendedor_id=str(vendedor_id) if vendedor_id else None,
+        estado=estado,
+        fecha_inicio=fecha_inicio,
+        fecha_fin=fecha_fin
+    )
+
+
+# =========================================================
+# R-033: USO DEL SISTEMA POR EMPRESA (SUPERADMIN)
+# =========================================================
+@router.get("/superadmin/uso-empresas", response_model=ReporteUsoSistemaSuperadmin)
+def obtener_reporte_uso_sistema(
+    fecha_inicio: Optional[str] = None,
+    fecha_fin: Optional[str] = None,
+    usuario: dict = Depends(requerir_superadmin),
+    servicio: ServicioReportes = Depends()
+):
+    """R-033: Métricas de uso por empresa: usuarios, facturas, % plan, módulos y último acceso."""
+    return servicio.obtener_reporte_uso_sistema_superadmin(fecha_inicio=fecha_inicio, fecha_fin=fecha_fin)
+
 
 @router.get("/exportar")
 def exportar_reporte_ventas(

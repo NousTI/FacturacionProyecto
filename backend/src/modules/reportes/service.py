@@ -329,6 +329,54 @@ class ServicioReportes:
             estado=params.get('estado')
         )
 
+    # =========================================================
+    # R-031: REPORTE GLOBAL SUPERADMIN
+    # =========================================================
+
+    def obtener_reporte_global_superadmin(self, fecha_inicio: Optional[str] = None, fecha_fin: Optional[str] = None):
+        kpis = self.repo.obtener_kpis_globales(fecha_inicio=fecha_inicio, fecha_fin=fecha_fin)
+        rescate = self.repo.obtener_zona_rescate()
+        upgrade = self.repo.obtener_zona_upgrade()
+        planes = self.repo.obtener_planes_mas_vendidos(fecha_inicio=fecha_inicio, fecha_fin=fecha_fin)
+        top_vendedores = self.repo.obtener_top_vendedores(fecha_inicio=fecha_inicio, fecha_fin=fecha_fin)
+        return {
+            **kpis,
+            "empresas_rescate": rescate,
+            "empresas_upgrade": upgrade,
+            "planes_mas_vendidos": planes,
+            "top_vendedores": top_vendedores,
+        }
+
+    # =========================================================
+    # R-032: COMISIONES POR VENDEDOR (SUPERADMIN)
+    # =========================================================
+
+    def obtener_reporte_comisiones_superadmin(self, vendedor_id=None, estado=None, fecha_inicio=None, fecha_fin=None):
+        kpis = self.repo.obtener_kpis_comisiones_superadmin()
+        detalle = self.repo.obtener_detalle_comisiones_superadmin(vendedor_id, estado, fecha_inicio, fecha_fin)
+        top_vendedores = self.repo.obtener_top_vendedores()
+        planes = self.repo.obtener_planes_mas_vendidos()
+        return {
+            "kpis": kpis,
+            "detalle": detalle,
+            "top_vendedores": top_vendedores,
+            "planes_mas_vendidos": planes,
+        }
+
+    # =========================================================
+    # R-033: USO DEL SISTEMA POR EMPRESA (SUPERADMIN)
+    # =========================================================
+
+    def obtener_reporte_uso_sistema_superadmin(self, fecha_inicio: Optional[str] = None, fecha_fin: Optional[str] = None):
+        empresas = self.repo.obtener_uso_sistema_por_empresa(fecha_inicio=fecha_inicio, fecha_fin=fecha_fin)
+        modulos = self.repo.obtener_modulos_mas_usados(fecha_inicio=fecha_inicio, fecha_fin=fecha_fin)
+        promedio = self.repo.obtener_promedio_usuarios_por_empresa()
+        return {
+            "empresas": empresas,
+            "modulos_mas_usados": modulos,
+            **promedio,
+        }
+
     def exportar_reporte(self, empresa_id: UUID, tipo: str, formato: str, params: dict):
         """
         Orquesta la generación de archivos PDF/Excel para los reportes de ventas.

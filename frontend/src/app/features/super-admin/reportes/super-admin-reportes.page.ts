@@ -2,350 +2,873 @@ import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Subject, takeUntil } from 'rxjs';
-import { ReportesService } from './services/reportes.service';
+import {
+  ReportesService, ReporteGlobal, ReporteComisiones, ReporteUso,
+  EmpresaZonaRescate, EmpresaZonaUpgrade
+} from './services/reportes.service';
 import { VendedorService, Vendedor } from '../vendedores/services/vendedor.service';
 import { UiService } from '../../../shared/services/ui.service';
 import { ToastComponent } from '../../../shared/components/toast/toast.component';
-import { environment } from '../../../../environments/environment';
+
+type Tab = 'global' | 'comisiones' | 'uso';
+type RangoTipo = 'mes_actual' | 'mes_anterior' | 'anio_actual' | 'mes_especifico' | 'anio_especifico' | 'personalizado';
 
 @Component({
   selector: 'app-super-admin-reportes',
   standalone: true,
   imports: [CommonModule, FormsModule, ToastComponent],
   template: `
-    <div class="reportes-container animate__animated animate__fadeIn">
+<div class="reportes-wrap animate__animated animate__fadeIn">
 
-      <div class="row g-4">
-        <!-- Panel de Filtros -->
-        <div class="col-lg-4">
-          <div class="card filter-card">
-            <div class="card-body">
-              <h5 class="card-title mb-4">
-                <i class="bi bi-filter-circle me-2"></i>Configuración de Reporte
-              </h5>
+  <!-- TABS -->
+  <div class="tabs-bar mb-4">
+    <button class="tab-btn" [class.active]="tabActivo === 'global'" (click)="setTab('global')">
+      <i class="bi bi-globe2 me-2"></i>Reporte Global
+    </button>
+    <button class="tab-btn" [class.active]="tabActivo === 'comisiones'" (click)="setTab('comisiones')">
+      <i class="bi bi-cash-coin me-2"></i>Comisiones
+    </button>
+    <button class="tab-btn" [class.active]="tabActivo === 'uso'" (click)="setTab('uso')">
+      <i class="bi bi-bar-chart-line me-2"></i>Uso por Empresa
+    </button>
+  </div>
 
-              <div class="mb-3">
-                <label class="form-label fw-bold">Tipo de Reporte</label>
-                <select class="form-select" [(ngModel)]="tipoReporte" (change)="onTipoChange()">
-                  <option value="INGRESOS_FINANCIEROS">Reporte de Ingresos Financieros</option>
-                  <option value="COMISIONES_PAGOS">Comisiones y Pagos a Vendedores</option>
-                </select>
-                <div class="form-text mt-2">
-                  <i class="bi bi-info-circle me-1"></i>
-                  {{ tipoReporte === 'INGRESOS_FINANCIEROS' ? 'Utilizado para contabilidad e impuestos.' : 'Control de salidas de dinero a ventas.' }}
-                </div>
-              </div>
+  <!-- ===================== R-031: REPORTE GLOBAL ===================== -->
+  <div *ngIf="tabActivo === 'global'">
+    <div class="section-header mb-4">
+      <div>
+        <h5 class="section-title">R-031 — Reporte Global del Sistema</h5>
+        <p class="section-sub">Vista consolidada de todas las empresas, ingresos y zonas críticas</p>
+      </div>
+      <div class="d-flex gap-2">
+        <button class="btn-generar" (click)="generarGlobal()" [disabled]="loadingGlobal">
+          <span *ngIf="loadingGlobal" class="spinner-border spinner-border-sm me-2"></span>
+          <i *ngIf="!loadingGlobal" class="bi bi-arrow-clockwise me-2"></i>
+          {{ loadingGlobal ? 'Generando...' : 'Generar Reporte' }}
+        </button>
+        <button class="btn-pdf" (click)="imprimirSeccion('global')" [disabled]="!datosGlobal">
+          <i class="bi bi-file-earmark-pdf me-2"></i>Exportar PDF
+        </button>
+      </div>
+    </div>
 
-              <div class="row g-2 mb-3">
-                <div class="col-6">
-                  <label class="form-label fw-bold">Desde</label>
-                  <input type="date" class="form-control" [(ngModel)]="fechaInicio">
-                </div>
-                <div class="col-6">
-                  <label class="form-label fw-bold">Hasta</label>
-                  <input type="date" class="form-control" [(ngModel)]="fechaFin">
-                </div>
-              </div>
+    <!-- Filtros R-031 -->
+    <div class="filtros-card mb-4">
+      <div class="row g-3 align-items-end">
+        <div class="col-md-3">
+          <label class="form-label-sm">Rango</label>
+          <select class="form-select form-select-sm" [(ngModel)]="rangoTipoG" (change)="onRangoChange('G')">
+            <option value="mes_actual">Mes actual</option>
+            <option value="mes_anterior">Mes anterior</option>
+            <option value="anio_actual">Año actual</option>
+            <option value="mes_especifico">Mes específico</option>
+            <option value="anio_especifico">Año específico</option>
+            <option value="personalizado">Personalizado</option>
+          </select>
+        </div>
+        <div class="col-md-2" *ngIf="rangoTipoG === 'mes_especifico'">
+          <label class="form-label-sm">Mes</label>
+          <select class="form-select form-select-sm" [(ngModel)]="mesFiltroG" (change)="onRangoChange('G')">
+            <option *ngFor="let m of meses; let i = index" [value]="i+1">{{ m }}</option>
+          </select>
+        </div>
+        <div class="col-md-2" *ngIf="rangoTipoG === 'mes_especifico' || rangoTipoG === 'anio_especifico'">
+          <label class="form-label-sm">Año</label>
+          <input type="number" class="form-control form-control-sm" [(ngModel)]="anioFiltroG" (change)="onRangoChange('G')" [min]="2020" [max]="anioActual">
+        </div>
+        <div class="col-md-2" *ngIf="rangoTipoG === 'personalizado'">
+          <label class="form-label-sm">Desde</label>
+          <input type="date" class="form-control form-control-sm" [(ngModel)]="fechaInicioG">
+        </div>
+        <div class="col-md-2" *ngIf="rangoTipoG === 'personalizado'">
+          <label class="form-label-sm">Hasta</label>
+          <input type="date" class="form-control form-control-sm" [(ngModel)]="fechaFinG">
+        </div>
+        <div class="col-auto">
+          <span class="rango-preview">{{ fechaInicioG }} → {{ fechaFinG }}</span>
+        </div>
+      </div>
+    </div>
 
-              <!-- Filtros Específicos -->
-              <div *ngIf="tipoReporte === 'INGRESOS_FINANCIEROS'" class="mb-4 animate__animated animate__fadeIn">
-                <label class="form-label fw-bold">Estado de Pago</label>
-                <select class="form-select" [(ngModel)]="filtroEstado">
-                  <option value="">Cualquiera</option>
-                  <option value="PAGADO">Pagado</option>
-                  <option value="PENDIENTE">Pendiente</option>
-                </select>
-              </div>
+    <!-- Estado vacío -->
+    <div class="empty-state" *ngIf="!datosGlobal && !loadingGlobal">
+      <i class="bi bi-graph-up-arrow"></i>
+      <p>Presiona <strong>Generar Reporte</strong> para cargar los datos</p>
+    </div>
+    <div class="loading-state" *ngIf="loadingGlobal">
+      <div class="spinner-grow text-primary" role="status"></div>
+      <p>Obteniendo datos del sistema...</p>
+    </div>
 
-              <div *ngIf="tipoReporte === 'COMISIONES_PAGOS'" class="mb-4 animate__animated animate__fadeIn">
-                <label class="form-label fw-bold">Vendedor Específico</label>
-                <select class="form-select" [(ngModel)]="filtroVendedorId">
-                  <option value="">Todos los Vendedores</option>
-                  <option *ngFor="let v of vendedores" [value]="v.id">{{ v.nombre }}</option>
-                </select>
-              </div>
+    <div *ngIf="datosGlobal" id="print-global">
+      <!-- KPIs -->
+      <div class="kpi-grid mb-4">
+        <div class="kpi-card">
+          <span class="kpi-label">Empresas activas</span>
+          <span class="kpi-value">{{ datosGlobal.empresas_activas }}</span>
+          <span class="kpi-sub text-success">+{{ datosGlobal.empresas_nuevas_mes }} este mes</span>
+        </div>
+        <div class="kpi-card">
+          <span class="kpi-label">Ingresos del año</span>
+          <span class="kpi-value">{{ datosGlobal.ingresos_anio | currency:'USD':'symbol':'1.0-0' }}</span>
+          <span class="kpi-sub" [class.text-success]="datosGlobal.variacion_ingresos_anio >= 0" [class.text-danger]="datosGlobal.variacion_ingresos_anio < 0">
+            {{ datosGlobal.variacion_ingresos_anio >= 0 ? '+' : '' }}{{ datosGlobal.variacion_ingresos_anio }}% vs anterior
+          </span>
+        </div>
+        <div class="kpi-card">
+          <span class="kpi-label">Ingresos del mes</span>
+          <span class="kpi-value">{{ datosGlobal.ingresos_mes | currency:'USD':'symbol':'1.0-0' }}</span>
+          <span class="kpi-sub" [class.text-success]="datosGlobal.variacion_ingresos_mes >= 0" [class.text-danger]="datosGlobal.variacion_ingresos_mes < 0">
+            {{ datosGlobal.variacion_ingresos_mes >= 0 ? '+' : '' }}{{ datosGlobal.variacion_ingresos_mes }}% vs anterior
+          </span>
+        </div>
+        <div class="kpi-card">
+          <span class="kpi-label">Usuarios nuevos</span>
+          <span class="kpi-value">{{ datosGlobal.usuarios_nuevos_mes }}</span>
+          <span class="kpi-sub text-muted">Crecimiento neto</span>
+        </div>
+        <div class="kpi-card">
+          <span class="kpi-label">Tasa de crecimiento</span>
+          <span class="kpi-value text-success">{{ datosGlobal.tasa_crecimiento }}%</span>
+          <span class="kpi-sub text-muted">mensual</span>
+        </div>
+        <div class="kpi-card">
+          <span class="kpi-label">Tasa de abandono</span>
+          <span class="kpi-value text-danger">{{ datosGlobal.tasa_abandono }}%</span>
+          <span class="kpi-sub text-muted">de usuarios</span>
+        </div>
+        <div class="kpi-card kpi-warning">
+          <span class="kpi-label">Zona upgrade</span>
+          <span class="kpi-value">{{ datosGlobal.zona_upgrade }}</span>
+          <span class="kpi-sub text-warning">empresas</span>
+        </div>
+        <div class="kpi-card kpi-danger">
+          <span class="kpi-label">Zona de rescate</span>
+          <span class="kpi-value">{{ datosGlobal.zona_rescate }}</span>
+          <span class="kpi-sub text-danger">empresas</span>
+        </div>
+      </div>
 
-              <div class="d-grid gap-2">
-                <button class="btn btn-primary" (click)="previsualizar()" [disabled]="isLoading">
-                  <span *ngIf="isLoading" class="spinner-border spinner-border-sm me-2"></span>
-                  <i *ngIf="!isLoading" class="bi bi-eye me-2"></i>Actualizar Vista Previa
-                </button>
-                
-                <div class="export-actions d-flex gap-2">
-                    <button class="btn btn-outline-success flex-grow-1" (click)="exportar('excel')" [disabled]="isLoading || (previewData.length === 0)">
-                        <i class="bi bi-file-earmark-excel me-1"></i>Excel
-                    </button>
-                    <!-- 
-                    <button class="btn btn-outline-danger flex-grow-1" (click)="exportar('pdf')" [disabled]="isLoading || (previewData.length === 0)">
-                        <i class="bi bi-file-earmark-pdf me-1"></i>PDF
-                    </button>
-                    -->
-                </div>
+      <!-- Gráficas row -->
+      <div class="row g-4 mb-4">
+        <!-- Donut: rescate vs upgrade -->
+        <div class="col-md-4">
+          <div class="card-graf">
+            <h6 class="graf-title">Zonas críticas</h6>
+            <div class="donut-wrap">
+              <div class="donut" [style.background]="donutGlobal()"></div>
+              <div class="donut-legend">
+                <span class="dot dot-danger"></span> Rescate ({{ datosGlobal.zona_rescate }})
+                <span class="dot dot-warning ms-3"></span> Upgrade ({{ datosGlobal.zona_upgrade }})
               </div>
             </div>
-          </div>
-
-          <!-- Resumen Rápido -->
-          <div class="card mini-stats-card mt-4" *ngIf="previewData.length > 0">
-              <div class="card-body">
-                  <div class="d-flex justify-content-between align-items-center mb-3">
-                      <span class="text-muted small fw-bold">RESUMEN DE VISTA</span>
-                      <span class="badge bg-primary rounded-pill">{{ previewData.length }} registros</span>
-                  </div>
-                  <div class="stat-item">
-                      <span class="stat-label">{{ tipoReporte === 'INGRESOS_FINANCIEROS' ? 'Total Ingresos' : 'Total Comisiones' }}</span>
-                      <span class="stat-value">{{ totalPreview | currency }}</span>
-                  </div>
-              </div>
           </div>
         </div>
-
-        <!-- Panel de Resultados -->
-        <div class="col-lg-8">
-          <div class="card preview-card h-100">
-            <div class="card-header bg-transparent d-flex justify-content-between align-items-center py-3">
-              <h5 class="mb-0">Previsualización en Pantalla</h5>
-              <span class="text-muted small italic" *ngIf="lastUpdate">Última actualización: {{ lastUpdate | date:'shortTime' }}</span>
-            </div>
-            <div class="card-body p-0">
-              <div class="table-container" *ngIf="previewData.length > 0">
-                <table class="table table-hover align-middle mb-0">
-                  <thead class="bg-light">
-                    <!-- Cabeceras Dinámicas -->
-                    <tr *ngIf="tipoReporte === 'INGRESOS_FINANCIEROS'">
-                      <th class="ps-4">Fecha</th>
-                      <th>Empresa/Cliente</th>
-                      <th>Concepto</th>
-                      <th class="text-end">Monto</th>
-                      <th class="text-center pe-4">Estado</th>
-                    </tr>
-                    <tr *ngIf="tipoReporte === 'COMISIONES_PAGOS'">
-                      <th class="ps-4">Vendedor</th>
-                      <th class="text-center">Periodo</th>
-                      <th class="text-end">Monto Comisión</th>
-                      <th class="text-center pe-4">Estado</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <!-- Filas Dinámicas de Ingresos -->
-                    <ng-container *ngIf="tipoReporte === 'INGRESOS_FINANCIEROS'">
-                      <tr *ngFor="let item of previewData" class="animate__animated animate__fadeIn">
-                        <td class="ps-4">
-                            <div class="d-flex flex-column">
-                                <span class="fw-medium">{{ item.fecha_pago | date:'mediumDate' }}</span>
-                                <span class="text-muted x-small">{{ item.fecha_pago | date:'shortTime' }}</span>
-                            </div>
-                        </td>
-                        <td>{{ item.empresa_cliente }}</td>
-                        <td>
-                            <span class="concepto-tag">{{ item.concepto }}</span>
-                        </td>
-                        <td class="text-end fw-bold">{{ item.monto_total | currency }}</td>
-                        <td class="text-center pe-4">
-                          <span class="badge" [ngClass]="getEstadoClass(item.estado)">
-                            {{ item.estado }}
-                          </span>
-                        </td>
-                      </tr>
-                    </ng-container>
-
-                    <!-- Filas Dinámicas de Comisiones -->
-                    <ng-container *ngIf="tipoReporte === 'COMISIONES_PAGOS'">
-                      <tr *ngFor="let item of previewData" class="animate__animated animate__fadeIn">
-                        <td class="ps-4">
-                            <div class="d-flex align-items-center">
-                                <div class="avatar-circle me-3">{{ item.vendedor ? item.vendedor.charAt(0) : 'V' }}</div>
-                                <span class="fw-medium">{{ item.vendedor }}</span>
-                            </div>
-                        </td>
-                        <td class="text-center">{{ item.periodo }}</td>
-                        <td class="text-end fw-bold text-danger">{{ item.monto_comision | currency }}</td>
-                        <td class="text-center pe-4">
-                          <span class="badge" [ngClass]="getEstadoClass(item.estado)">
-                            {{ item.estado }}
-                          </span>
-                        </td>
-                      </tr>
-                    </ng-container>
-                  </tbody>
-                </table>
-              </div>
-
-              <!-- Estado Vacío -->
-              <div class="empty-state" *ngIf="previewData.length === 0 && !isLoading">
-                <i class="bi bi-file-earmark-bar-graph"></i>
-                <p>No hay datos para mostrar con los filtros actuales</p>
-                <small>Selecciona tus parámetros y presiona "Actualizar Vista Previa"</small>
-              </div>
-
-              <!-- Cargando -->
-              <div class="loading-overlay" *ngIf="isLoading">
-                <div class="text-center">
-                    <div class="spinner-grow text-primary mb-3" role="status"></div>
-                    <p class="fw-bold text-primary mb-0">Obteniendo datos reales...</p>
+        <!-- Barras: planes más vendidos -->
+        <div class="col-md-4">
+          <div class="card-graf">
+            <h6 class="graf-title">Planes más vendidos</h6>
+            <div class="bar-chart">
+              <div *ngFor="let p of datosGlobal.planes_mas_vendidos" class="bar-row">
+                <span class="bar-label">{{ p.plan }}</span>
+                <div class="bar-track">
+                  <div class="bar-fill bg-primary" [style.width.%]="barPct(p.ventas, maxPlanVentas)"></div>
                 </div>
+                <span class="bar-val">{{ p.ventas }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- Barras: top vendedores -->
+        <div class="col-md-4">
+          <div class="card-graf">
+            <h6 class="graf-title">Top vendedores</h6>
+            <div class="bar-chart">
+              <div *ngFor="let v of datosGlobal.top_vendedores | slice:0:5" class="bar-row">
+                <span class="bar-label">{{ v.vendedor.split(' ')[0] }}</span>
+                <div class="bar-track">
+                  <div class="bar-fill bg-success" [style.width.%]="barPct(v.ingresos_generados, maxVendedorIngresos)"></div>
+                </div>
+                <span class="bar-val">{{ v.ingresos_generados | currency:'USD':'symbol':'1.0-0' }}</span>
               </div>
             </div>
           </div>
         </div>
       </div>
 
-      <app-toast></app-toast>
+      <!-- Tabla: Zona de Rescate -->
+      <div class="card-tabla mb-4">
+        <div class="tabla-header">
+          <span><i class="bi bi-exclamation-triangle-fill text-danger me-2"></i>Zona de Rescate ({{ datosGlobal.empresas_rescate.length }})</span>
+        </div>
+        <div class="table-responsive">
+          <table class="table table-hover align-middle mb-0">
+            <thead>
+              <tr>
+                <th>Empresa</th>
+                <th>Plan vencido</th>
+                <th>Últ. acceso</th>
+                <th>Venció</th>
+                <th>Correo</th>
+                <th>Teléfono</th>
+                <th>Deadline</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let e of datosGlobal.empresas_rescate">
+                <td>
+                  <span class="empresa-tooltip" [title]="tooltipRescate(e)">
+                    {{ e.nombre_empresa }} <i class="bi bi-info-circle text-muted ms-1 small"></i>
+                  </span>
+                </td>
+                <td><span class="badge-plan">{{ e.plan_nombre }}</span></td>
+                <td class="text-muted small">{{ formatAcceso(e.ultimo_acceso) }}</td>
+                <td class="text-muted small">{{ formatFecha(e.fecha_vencimiento) }}</td>
+                <td class="small">{{ e.email || '—' }}</td>
+                <td class="small">{{ e.telefono || '—' }}</td>
+                <td>
+                  <span class="badge-deadline" [ngClass]="deadlineClass(e.deadline)">
+                    {{ formatDeadline(e.deadline) }}
+                  </span>
+                </td>
+              </tr>
+              <tr *ngIf="datosGlobal.empresas_rescate.length === 0">
+                <td colspan="7" class="text-center text-muted py-4">Sin empresas en zona de rescate</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Tabla: Zona de Upgrade -->
+      <div class="card-tabla">
+        <div class="tabla-header">
+          <span><i class="bi bi-arrow-up-circle-fill text-warning me-2"></i>Zona de Upgrade ({{ datosGlobal.empresas_upgrade.length }})</span>
+        </div>
+        <div class="table-responsive">
+          <table class="table table-hover align-middle mb-0">
+            <thead>
+              <tr>
+                <th>Empresa</th>
+                <th>Plan actual</th>
+                <th>Facturas este mes</th>
+                <th>Límite del plan</th>
+                <th>% Uso</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let e of datosGlobal.empresas_upgrade">
+                <td class="fw-medium">{{ e.nombre_empresa }}</td>
+                <td><span class="badge-plan">{{ e.plan_nombre }}</span></td>
+                <td>{{ e.facturas_mes }}</td>
+                <td>{{ e.max_facturas_mes }}</td>
+                <td>
+                  <div class="progress-wrap">
+                    <div class="progress-bar-custom" [style.width.%]="e.porcentaje_uso" [ngClass]="e.porcentaje_uso >= 95 ? 'bg-danger' : 'bg-warning'"></div>
+                    <span class="progress-label">{{ e.porcentaje_uso }}%</span>
+                  </div>
+                </td>
+              </tr>
+              <tr *ngIf="datosGlobal.empresas_upgrade.length === 0">
+                <td colspan="5" class="text-center text-muted py-4">Sin empresas en zona de upgrade</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
+  </div>
+
+  <!-- ===================== R-032: COMISIONES ===================== -->
+  <div *ngIf="tabActivo === 'comisiones'">
+    <div class="section-header mb-4">
+      <div>
+        <h5 class="section-title">R-032 — Comisiones por Vendedor</h5>
+        <p class="section-sub">Control de comisiones generadas, estados de aprobación y pago</p>
+      </div>
+      <div class="d-flex gap-2">
+        <button class="btn-generar" (click)="generarComisiones()" [disabled]="loadingComisiones">
+          <span *ngIf="loadingComisiones" class="spinner-border spinner-border-sm me-2"></span>
+          <i *ngIf="!loadingComisiones" class="bi bi-arrow-clockwise me-2"></i>
+          {{ loadingComisiones ? 'Generando...' : 'Generar Reporte' }}
+        </button>
+        <button class="btn-pdf" (click)="imprimirSeccion('comisiones')" [disabled]="!datosComisiones">
+          <i class="bi bi-file-earmark-pdf me-2"></i>Exportar PDF
+        </button>
+      </div>
+    </div>
+
+    <!-- Filtros comisiones -->
+    <div class="filtros-card mb-4">
+      <div class="row g-3 align-items-end">
+        <!-- Rango de fechas -->
+        <div class="col-md-3">
+          <label class="form-label-sm">Rango</label>
+          <select class="form-select form-select-sm" [(ngModel)]="rangoTipoC" (change)="onRangoChange('C')">
+            <option value="mes_actual">Mes actual</option>
+            <option value="mes_anterior">Mes anterior</option>
+            <option value="anio_actual">Año actual</option>
+            <option value="mes_especifico">Mes específico</option>
+            <option value="anio_especifico">Año específico</option>
+            <option value="personalizado">Personalizado</option>
+          </select>
+        </div>
+        <div class="col-md-2" *ngIf="rangoTipoC === 'mes_especifico'">
+          <label class="form-label-sm">Mes</label>
+          <select class="form-select form-select-sm" [(ngModel)]="mesFiltroC" (change)="onRangoChange('C')">
+            <option *ngFor="let m of meses; let i = index" [value]="i+1">{{ m }}</option>
+          </select>
+        </div>
+        <div class="col-md-2" *ngIf="rangoTipoC === 'mes_especifico' || rangoTipoC === 'anio_especifico'">
+          <label class="form-label-sm">Año</label>
+          <input type="number" class="form-control form-control-sm" [(ngModel)]="anioFiltroC" (change)="onRangoChange('C')" [min]="2020" [max]="anioActual">
+        </div>
+        <div class="col-md-2" *ngIf="rangoTipoC === 'personalizado'">
+          <label class="form-label-sm">Desde</label>
+          <input type="date" class="form-control form-control-sm" [(ngModel)]="fechaInicioC">
+        </div>
+        <div class="col-md-2" *ngIf="rangoTipoC === 'personalizado'">
+          <label class="form-label-sm">Hasta</label>
+          <input type="date" class="form-control form-control-sm" [(ngModel)]="fechaFinC">
+        </div>
+        <!-- Vendedor -->
+        <div class="col-md-3">
+          <label class="form-label-sm">Vendedor</label>
+          <select class="form-select form-select-sm" [(ngModel)]="vendedorIdC">
+            <option value="">Todos</option>
+            <option *ngFor="let v of vendedores" [value]="v.id">{{ v.nombre }}</option>
+          </select>
+        </div>
+        <!-- Estado -->
+        <div class="col-md-2">
+          <label class="form-label-sm">Estado</label>
+          <select class="form-select form-select-sm" [(ngModel)]="estadoC">
+            <option value="">Todos</option>
+            <option value="PENDIENTE">Pendiente</option>
+            <option value="APROBADA">Aprobada</option>
+            <option value="PAGADA">Pagada</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div class="empty-state" *ngIf="!datosComisiones && !loadingComisiones">
+      <i class="bi bi-cash-stack"></i>
+      <p>Configura los filtros y presiona <strong>Generar Reporte</strong></p>
+    </div>
+    <div class="loading-state" *ngIf="loadingComisiones">
+      <div class="spinner-grow text-primary" role="status"></div>
+      <p>Calculando comisiones...</p>
+    </div>
+
+    <div *ngIf="datosComisiones" id="print-comisiones">
+      <!-- KPIs -->
+      <div class="kpi-grid mb-4">
+        <div class="kpi-card kpi-warning">
+          <span class="kpi-label">Comisiones pendientes</span>
+          <span class="kpi-value">{{ datosComisiones.kpis.comisiones_pendientes | currency:'USD':'symbol':'1.2-2' }}</span>
+          <span class="kpi-sub text-warning">de aprobación</span>
+        </div>
+        <div class="kpi-card kpi-success">
+          <span class="kpi-label">Pagadas este mes</span>
+          <span class="kpi-value">{{ datosComisiones.kpis.pagadas_mes | currency:'USD':'symbol':'1.2-2' }}</span>
+          <span class="kpi-sub text-success">ya procesadas</span>
+        </div>
+        <div class="kpi-card">
+          <span class="kpi-label">Vendedores activos</span>
+          <span class="kpi-value">{{ datosComisiones.kpis.vendedores_activos }}</span>
+          <span class="kpi-sub text-muted">en el sistema</span>
+        </div>
+        <div class="kpi-card kpi-success">
+          <span class="kpi-label">Upgrades concretados</span>
+          <span class="kpi-value">{{ datosComisiones.kpis.porcentaje_upgrades ?? 0 }}%</span>
+          <span class="kpi-sub text-success">de éxito</span>
+        </div>
+        <div class="kpi-card kpi-danger">
+          <span class="kpi-label">Clientes perdidos</span>
+          <span class="kpi-value">{{ datosComisiones.kpis.porcentaje_clientes_perdidos ?? 0 }}%</span>
+          <span class="kpi-sub text-danger">en zona rescate</span>
+        </div>
+      </div>
+
+      <!-- Gráficas -->
+      <div class="row g-4 mb-4">
+        <div class="col-md-6">
+          <div class="card-graf">
+            <h6 class="graf-title">Top vendedores por ingresos</h6>
+            <div class="bar-chart">
+              <div *ngFor="let v of datosComisiones.top_vendedores | slice:0:5" class="bar-row">
+                <span class="bar-label">{{ v.vendedor.split(' ')[0] }}</span>
+                <div class="bar-track">
+                  <div class="bar-fill bg-primary" [style.width.%]="barPct(v.ingresos_generados, maxVendedorIngresosC)"></div>
+                </div>
+                <span class="bar-val">{{ v.ingresos_generados | currency:'USD':'symbol':'1.0-0' }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="card-graf">
+            <h6 class="graf-title">Planes más vendidos</h6>
+            <div class="bar-chart">
+              <div *ngFor="let p of datosComisiones.planes_mas_vendidos" class="bar-row">
+                <span class="bar-label">{{ p.plan }}</span>
+                <div class="bar-track">
+                  <div class="bar-fill bg-success" [style.width.%]="barPct(p.ventas, maxPlanVentasC)"></div>
+                </div>
+                <span class="bar-val">{{ p.ventas }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tabla detalle -->
+      <div class="card-tabla">
+        <div class="tabla-header">
+          <span><i class="bi bi-table me-2"></i>Detalle de comisiones ({{ datosComisiones.detalle.length }} registros)</span>
+        </div>
+        <div class="table-responsive">
+          <table class="table table-hover align-middle mb-0">
+            <thead>
+              <tr>
+                <th>Vendedor</th>
+                <th>Empresa</th>
+                <th>Tipo de venta</th>
+                <th>Plan</th>
+                <th class="text-end">Comisión</th>
+                <th class="text-center">Estado</th>
+                <th>Fecha</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let c of datosComisiones.detalle">
+                <td>
+                  <div class="d-flex align-items-center gap-2">
+                    <div class="avatar-sm">{{ c.vendedor.charAt(0) }}</div>
+                    {{ c.vendedor }}
+                  </div>
+                </td>
+                <td class="text-muted small">{{ c.empresa }}</td>
+                <td><span class="badge-tipo" [ngClass]="tipoVentaClass(c.tipo_venta)">{{ c.tipo_venta }}</span></td>
+                <td><span class="badge-plan">{{ c.plan }}</span></td>
+                <td class="text-end fw-bold">{{ c.comision | currency }}</td>
+                <td class="text-center">
+                  <span class="badge-estado" [ngClass]="estadoComisionClass(c.estado)">{{ c.estado }}</span>
+                </td>
+                <td class="text-muted small">{{ c.fecha || '—' }}</td>
+              </tr>
+              <tr *ngIf="datosComisiones.detalle.length === 0">
+                <td colspan="7" class="text-center text-muted py-4">Sin comisiones con los filtros seleccionados</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================== R-033: USO POR EMPRESA ===================== -->
+  <div *ngIf="tabActivo === 'uso'">
+    <div class="section-header mb-4">
+      <div>
+        <h5 class="section-title">R-033 — Uso del Sistema por Empresa</h5>
+        <p class="section-sub">Métricas de uso para detectar empresas cerca del límite de su plan</p>
+      </div>
+      <div class="d-flex gap-2">
+        <button class="btn-generar" (click)="generarUso()" [disabled]="loadingUso">
+          <span *ngIf="loadingUso" class="spinner-border spinner-border-sm me-2"></span>
+          <i *ngIf="!loadingUso" class="bi bi-arrow-clockwise me-2"></i>
+          {{ loadingUso ? 'Generando...' : 'Generar Reporte' }}
+        </button>
+        <button class="btn-pdf" (click)="imprimirSeccion('uso')" [disabled]="!datosUso">
+          <i class="bi bi-file-earmark-pdf me-2"></i>Exportar PDF
+        </button>
+      </div>
+    </div>
+
+    <!-- Filtros R-033 -->
+    <div class="filtros-card mb-4">
+      <div class="row g-3 align-items-end">
+        <div class="col-md-3">
+          <label class="form-label-sm">Rango</label>
+          <select class="form-select form-select-sm" [(ngModel)]="rangoTipoU" (change)="onRangoChange('U')">
+            <option value="mes_actual">Mes actual</option>
+            <option value="mes_anterior">Mes anterior</option>
+            <option value="anio_actual">Año actual</option>
+            <option value="mes_especifico">Mes específico</option>
+            <option value="anio_especifico">Año específico</option>
+            <option value="personalizado">Personalizado</option>
+          </select>
+        </div>
+        <div class="col-md-2" *ngIf="rangoTipoU === 'mes_especifico'">
+          <label class="form-label-sm">Mes</label>
+          <select class="form-select form-select-sm" [(ngModel)]="mesFiltroU" (change)="onRangoChange('U')">
+            <option *ngFor="let m of meses; let i = index" [value]="i+1">{{ m }}</option>
+          </select>
+        </div>
+        <div class="col-md-2" *ngIf="rangoTipoU === 'mes_especifico' || rangoTipoU === 'anio_especifico'">
+          <label class="form-label-sm">Año</label>
+          <input type="number" class="form-control form-control-sm" [(ngModel)]="anioFiltroU" (change)="onRangoChange('U')" [min]="2020" [max]="anioActual">
+        </div>
+        <div class="col-md-2" *ngIf="rangoTipoU === 'personalizado'">
+          <label class="form-label-sm">Desde</label>
+          <input type="date" class="form-control form-control-sm" [(ngModel)]="fechaInicioU">
+        </div>
+        <div class="col-md-2" *ngIf="rangoTipoU === 'personalizado'">
+          <label class="form-label-sm">Hasta</label>
+          <input type="date" class="form-control form-control-sm" [(ngModel)]="fechaFinU">
+        </div>
+        <div class="col-auto">
+          <span class="rango-preview">{{ fechaInicioU }} → {{ fechaFinU }}</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="empty-state" *ngIf="!datosUso && !loadingUso">
+      <i class="bi bi-speedometer2"></i>
+      <p>Presiona <strong>Generar Reporte</strong> para ver el uso del sistema</p>
+    </div>
+    <div class="loading-state" *ngIf="loadingUso">
+      <div class="spinner-grow text-primary" role="status"></div>
+      <p>Analizando uso del sistema...</p>
+    </div>
+
+    <div *ngIf="datosUso" id="print-uso">
+      <!-- KPIs -->
+      <div class="kpi-grid mb-4">
+        <div class="kpi-card">
+          <span class="kpi-label">Promedio usuarios/empresa</span>
+          <span class="kpi-value">{{ datosUso.promedio_usuarios ?? 0 }}</span>
+          <span class="kpi-sub text-muted">usuarios por empresa</span>
+        </div>
+        <div class="kpi-card">
+          <span class="kpi-label">Máx. usuarios en una empresa</span>
+          <span class="kpi-value">{{ datosUso.max_usuarios ?? 0 }}</span>
+          <span class="kpi-sub text-muted">usuarios</span>
+        </div>
+        <div class="kpi-card">
+          <span class="kpi-label">Mín. usuarios en una empresa</span>
+          <span class="kpi-value">{{ datosUso.min_usuarios ?? 0 }}</span>
+          <span class="kpi-sub text-muted">usuarios</span>
+        </div>
+        <div class="kpi-card">
+          <span class="kpi-label">Empresas activas analizadas</span>
+          <span class="kpi-value">{{ datosUso.empresas.length }}</span>
+          <span class="kpi-sub text-muted">en el sistema</span>
+        </div>
+      </div>
+
+      <!-- Gráficas -->
+      <div class="row g-4 mb-4">
+        <div class="col-md-5">
+          <div class="card-graf">
+            <h6 class="graf-title">Módulos más usados</h6>
+            <div class="donut-modulos-wrap">
+              <div *ngFor="let m of datosUso.modulos_mas_usados" class="modulo-row">
+                <span class="modulo-label">{{ m.modulo }}</span>
+                <div class="bar-track">
+                  <div class="bar-fill bg-primary" [style.width.%]="m.porcentaje"></div>
+                </div>
+                <span class="bar-val">{{ m.porcentaje }}%</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-7">
+          <div class="card-graf">
+            <h6 class="graf-title">Empresas con más usuarios</h6>
+            <div class="bar-chart">
+              <div *ngFor="let e of topEmpresasPorUsuarios | slice:0:6" class="bar-row">
+                <span class="bar-label">{{ e.empresa | slice:0:14 }}</span>
+                <div class="bar-track">
+                  <div class="bar-fill bg-info" [style.width.%]="barPct(e.total_usuarios, maxUsuariosEmpresa)"></div>
+                </div>
+                <span class="bar-val">{{ e.total_usuarios }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tabla -->
+      <div class="card-tabla">
+        <div class="tabla-header">
+          <span><i class="bi bi-table me-2"></i>Uso por empresa — mes actual ({{ datosUso.empresas.length }} empresas)</span>
+        </div>
+        <div class="table-responsive">
+          <table class="table table-hover align-middle mb-0">
+            <thead>
+              <tr>
+                <th>Empresa</th>
+                <th class="text-center">Usuarios</th>
+                <th class="text-center">Fact. mes</th>
+                <th>% de uso</th>
+                <th class="text-center">Módulos</th>
+                <th>Último acceso</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let e of datosUso.empresas">
+                <td>
+                  <div class="d-flex flex-column">
+                    <span class="fw-medium">{{ e.empresa }}</span>
+                    <span class="text-muted small">{{ e.plan_nombre || 'Sin plan' }}</span>
+                  </div>
+                </td>
+                <td class="text-center">{{ e.usuarios_activos }}<span class="text-muted">/{{ e.total_usuarios }}</span></td>
+                <td class="text-center">{{ e.facturas_mes }}</td>
+                <td>
+                  <div class="progress-wrap">
+                    <div class="progress-bar-custom"
+                      [style.width.%]="e.porcentaje_uso"
+                      [ngClass]="e.porcentaje_uso >= 80 ? (e.porcentaje_uso >= 95 ? 'bg-danger' : 'bg-warning') : 'bg-success'">
+                    </div>
+                    <span class="progress-label">{{ e.porcentaje_uso }}%</span>
+                  </div>
+                </td>
+                <td class="text-center">
+                  <span class="modulos-badge">{{ e.modulos_usados }}<span class="text-muted">/{{ e.modulos_total }}</span></span>
+                </td>
+                <td class="text-muted small">{{ formatAcceso(e.ultimo_acceso) }}</td>
+              </tr>
+              <tr *ngIf="datosUso.empresas.length === 0">
+                <td colspan="6" class="text-center text-muted py-4">Sin datos disponibles</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+<app-toast></app-toast>
   `,
   styles: [`
-    .reportes-container {
-      padding: 1rem 0;
-    }
-    .title {
-      font-size: 1.75rem;
-      font-weight: 850;
-      color: #161d35;
-      letter-spacing: -0.5px;
-    }
-    .subtitle {
-      color: #64748b;
-      margin: 0;
-    }
+    .reportes-wrap { padding: 0.5rem 0; }
 
-    .card {
+    /* TABS */
+    .tabs-bar {
+      display: flex;
+      gap: 0.5rem;
+      border-bottom: 2px solid #e2e8f0;
+      padding-bottom: 0;
+    }
+    .tab-btn {
+      background: none;
       border: none;
-      border-radius: 16px;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.04);
-    }
-    .filter-card {
-        background: #f8fafc;
-        border: 1px solid #e2e8f0;
-    }
-    .preview-card {
-        border: 1px solid #f1f5f9;
-        overflow: hidden;
-    }
-
-    .form-label {
-      font-size: 0.85rem;
-      color: #475569;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
-    .form-control, .form-select {
-      border-radius: 12px;
-      padding: 0.75rem 1rem;
-      border-color: #e2e8f0;
-    }
-    .form-control:focus {
-        box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
-        border-color: #3b82f6;
-    }
-
-    .btn-primary {
-      padding: 0.75rem;
-      border-radius: 12px;
-      font-weight: 700;
-      background: #161d35;
-      border: none;
-    }
-    .btn-primary:hover {
-        background: #232d4d;
-        transform: translateY(-2px);
-    }
-
-    .table-container {
-      max-height: 600px;
-      overflow-y: auto;
-    }
-    .table thead th {
-      font-size: 0.75rem;
-      font-weight: 700;
+      padding: 0.75rem 1.25rem;
+      font-weight: 600;
+      font-size: 0.9rem;
       color: #64748b;
-      text-transform: uppercase;
-      padding: 1rem 0.75rem;
-      border-bottom: 2px solid #f1f5f9;
-      position: sticky;
-      top: 0;
-      z-index: 10;
+      border-bottom: 3px solid transparent;
+      margin-bottom: -2px;
+      cursor: pointer;
+      border-radius: 0;
+      transition: all 0.2s;
+    }
+    .tab-btn:hover { color: #161d35; }
+    .tab-btn.active { color: #161d35; border-bottom-color: #161d35; }
+
+    /* SECTION HEADER */
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+    .section-title { font-size: 1.1rem; font-weight: 800; color: #161d35; margin: 0; }
+    .section-sub { color: #64748b; font-size: 0.875rem; margin: 0.25rem 0 0; }
+
+    /* BOTONES */
+    .btn-generar {
+      display: inline-flex; align-items: center;
+      background: #161d35; color: #fff;
+      border: none; border-radius: 10px;
+      padding: 0.6rem 1.25rem; font-weight: 700; font-size: 0.875rem;
+      cursor: pointer; transition: all 0.2s;
+    }
+    .btn-generar:hover:not(:disabled) { background: #232d4d; transform: translateY(-1px); }
+    .btn-generar:disabled { opacity: 0.6; cursor: not-allowed; }
+    .btn-pdf {
+      display: inline-flex; align-items: center;
+      background: #fff; color: #dc2626;
+      border: 1.5px solid #fca5a5; border-radius: 10px;
+      padding: 0.6rem 1.25rem; font-weight: 700; font-size: 0.875rem;
+      cursor: pointer; transition: all 0.2s;
+    }
+    .btn-pdf:hover:not(:disabled) { background: #fff1f1; }
+    .btn-pdf:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    /* FILTROS */
+    .filtros-card {
+      background: #f8fafc; border: 1px solid #e2e8f0;
+      border-radius: 14px; padding: 1.25rem 1.5rem;
+    }
+    .form-label-sm { font-size: 0.75rem; font-weight: 700; color: #475569; text-transform: uppercase; letter-spacing: 0.4px; display: block; margin-bottom: 0.35rem; }
+    .form-select, .form-control { border-radius: 8px; border-color: #e2e8f0; font-size: 0.875rem; }
+
+    /* KPI GRID */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 1rem;
+    }
+    .kpi-card {
+      background: #fff;
+      border: 1px solid #f1f5f9;
+      border-radius: 14px;
+      padding: 1.25rem 1rem;
+      display: flex; flex-direction: column; gap: 0.25rem;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    }
+    .kpi-card.kpi-warning { border-left: 3px solid #f59e0b; }
+    .kpi-card.kpi-danger  { border-left: 3px solid #ef4444; }
+    .kpi-card.kpi-success { border-left: 3px solid #22c55e; }
+    .kpi-label { font-size: 0.75rem; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.4px; }
+    .kpi-value { font-size: 1.6rem; font-weight: 850; color: #161d35; line-height: 1.1; }
+    .kpi-sub   { font-size: 0.78rem; font-weight: 500; }
+
+    /* GRÁFICAS */
+    .card-graf {
+      background: #fff; border: 1px solid #f1f5f9;
+      border-radius: 14px; padding: 1.25rem;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.04); height: 100%;
+    }
+    .graf-title { font-size: 0.8rem; font-weight: 700; color: #475569; text-transform: uppercase; letter-spacing: 0.4px; margin-bottom: 1rem; }
+
+    /* Donut */
+    .donut-wrap { display: flex; flex-direction: column; align-items: center; gap: 1rem; }
+    .donut { width: 120px; height: 120px; border-radius: 50%; }
+    .donut-legend { font-size: 0.8rem; color: #475569; display: flex; align-items: center; flex-wrap: wrap; gap: 0.25rem; }
+    .dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; }
+    .dot-danger  { background: #ef4444; }
+    .dot-warning { background: #f59e0b; }
+
+    /* Bar chart */
+    .bar-chart { display: flex; flex-direction: column; gap: 0.6rem; }
+    .bar-row { display: flex; align-items: center; gap: 0.5rem; }
+    .bar-label { font-size: 0.78rem; color: #475569; width: 70px; text-align: right; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .bar-track { flex: 1; background: #f1f5f9; border-radius: 4px; height: 10px; overflow: hidden; }
+    .bar-fill   { height: 100%; border-radius: 4px; transition: width 0.5s ease; min-width: 4px; }
+    .bar-val    { font-size: 0.75rem; font-weight: 700; color: #475569; min-width: 55px; }
+
+    /* Módulos */
+    .donut-modulos-wrap { display: flex; flex-direction: column; gap: 0.6rem; }
+    .modulo-row { display: flex; align-items: center; gap: 0.5rem; }
+    .modulo-label { font-size: 0.78rem; color: #475569; width: 90px; }
+
+    /* TABLAS */
+    .card-tabla {
+      background: #fff; border: 1px solid #f1f5f9;
+      border-radius: 14px; overflow: hidden;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    }
+    .tabla-header {
+      padding: 1rem 1.5rem;
+      font-size: 0.875rem; font-weight: 700; color: #161d35;
+      border-bottom: 1px solid #f1f5f9;
       background: #f8fafc;
     }
-    .table tbody td {
-      padding: 1.25rem 0.75rem;
-      font-size: 0.95rem;
+    .table thead th {
+      font-size: 0.72rem; font-weight: 700; color: #64748b;
+      text-transform: uppercase; letter-spacing: 0.4px;
+      padding: 0.85rem 1rem;
+      border-bottom: 1px solid #f1f5f9;
+      background: #f8fafc;
+      position: sticky; top: 0; z-index: 1;
     }
+    .table tbody td { padding: 0.9rem 1rem; font-size: 0.875rem; }
+    .table tbody tr:hover td { background: #fafbfc; }
 
-    .badge {
-      padding: 0.5rem 0.85rem;
-      border-radius: 30px;
-      font-weight: 700;
-      font-size: 0.7rem;
-      letter-spacing: 0.3px;
+    /* Badges */
+    .badge-plan {
+      background: #e0f2fe; color: #0369a1;
+      padding: 0.3rem 0.7rem; border-radius: 20px;
+      font-size: 0.75rem; font-weight: 700;
     }
+    .badge-deadline { padding: 0.3rem 0.7rem; border-radius: 20px; font-size: 0.75rem; font-weight: 700; }
+    .deadline-ok      { background: #dcfce7; color: #166534; }
+    .deadline-warning { background: #fef9c3; color: #854d0e; }
+    .deadline-urgent  { background: #fee2e2; color: #991b1b; }
+    .badge-tipo { padding: 0.25rem 0.6rem; border-radius: 20px; font-size: 0.72rem; font-weight: 700; }
+    .tipo-nueva       { background: #dcfce7; color: #166534; }
+    .tipo-renovacion  { background: #e0f2fe; color: #0369a1; }
+    .tipo-upgrade     { background: #fef3c7; color: #92400e; }
+    .badge-estado { padding: 0.3rem 0.7rem; border-radius: 20px; font-size: 0.72rem; font-weight: 700; }
+    .estado-pendiente { background: #fef9c3; color: #854d0e; }
+    .estado-aprobada  { background: #e0f2fe; color: #0369a1; }
+    .estado-pagada    { background: #dcfce7; color: #166534; }
 
-    .empty-state {
-      height: 400px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      color: #94a3b8;
-    }
-    .empty-state i {
-      font-size: 4rem;
-      margin-bottom: 1rem;
-      opacity: 0.2;
-    }
+    /* Progress */
+    .progress-wrap { display: flex; align-items: center; gap: 0.5rem; }
+    .progress-bar-custom { height: 8px; border-radius: 4px; min-width: 4px; transition: width 0.4s ease; }
+    .progress-label { font-size: 0.75rem; font-weight: 700; color: #475569; min-width: 40px; }
 
-    .loading-overlay {
-        height: 400px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        background: rgba(255,255,255,0.8);
-    }
+    /* Misc */
+    .avatar-sm { width: 28px; height: 28px; background: #e2e8f0; color: #1e293b; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 0.75rem; flex-shrink: 0; }
+    .empresa-tooltip { cursor: default; }
+    .modulos-badge { font-weight: 700; }
 
-    .concepto-tag {
-        background: #f1f5f9;
-        padding: 0.35rem 0.75rem;
-        border-radius: 8px;
-        font-size: 0.85rem;
-        color: #475569;
-        font-weight: 500;
-    }
+    /* Rango preview */
+    .rango-preview { font-size: 0.78rem; color: #64748b; background: #e2e8f0; padding: 0.35rem 0.75rem; border-radius: 20px; white-space: nowrap; }
 
-    .avatar-circle {
-        width: 32px;
-        height: 32px;
-        background: #e2e8f0;
-        color: #1e293b;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-weight: 800;
-        font-size: 0.8rem;
-    }
+    /* Empty / Loading */
+    .empty-state { padding: 4rem 2rem; text-align: center; color: #94a3b8; }
+    .empty-state i { font-size: 3.5rem; opacity: 0.2; display: block; margin-bottom: 1rem; }
+    .empty-state p { margin: 0; font-size: 0.95rem; }
+    .loading-state { padding: 4rem 2rem; text-align: center; color: #64748b; }
+    .loading-state p { margin-top: 1rem; font-weight: 600; }
 
-    .x-small { font-size: 0.75rem; }
-
-    .stat-item {
-        display: flex;
-        justify-content: space-between;
-        align-items: flex-end;
+    /* PRINT */
+    @media print {
+      .tabs-bar, .section-header .btn-generar, .section-header .btn-pdf,
+      .filtros-card, app-toast { display: none !important; }
+      .reportes-wrap { padding: 0; }
+      .kpi-grid { grid-template-columns: repeat(4, 1fr); }
+      .card-graf, .card-tabla, .kpi-card { box-shadow: none !important; border: 1px solid #ddd !important; }
+      .table thead th { background: #f0f0f0 !important; }
     }
-    .stat-label { font-size: 0.9rem; color: #64748b; font-weight: 500; }
-    .stat-value { font-size: 1.5rem; font-weight: 850; color: #161d35; line-height: 1; }
   `]
 })
 export class SuperAdminReportesPage implements OnInit, OnDestroy {
-  tipoReporte = 'INGRESOS_FINANCIEROS';
-  fechaInicio = '';
-  fechaFin = '';
-  filtroEstado = '';
-  filtroVendedorId = '';
-  
-  isLoading = false;
-  previewData: any[] = [];
+
+  tabActivo: Tab = 'global';
+
+  // R-031
+  datosGlobal: ReporteGlobal | null = null;
+  loadingGlobal = false;
+  rangoTipoG: RangoTipo = 'mes_actual';
+  fechaInicioG = '';
+  fechaFinG = '';
+  mesFiltroG = new Date().getMonth() + 1;
+  anioFiltroG = new Date().getFullYear();
+
+  // R-032
+  datosComisiones: ReporteComisiones | null = null;
+  loadingComisiones = false;
+  rangoTipoC: RangoTipo = 'mes_actual';
+  fechaInicioC = '';
+  fechaFinC = '';
+  mesFiltroC = new Date().getMonth() + 1;
+  anioFiltroC = new Date().getFullYear();
+  vendedorIdC = '';
+  estadoC = '';
+
+  // R-033
+  datosUso: ReporteUso | null = null;
+  loadingUso = false;
+  rangoTipoU: RangoTipo = 'mes_actual';
+  fechaInicioU = '';
+  fechaFinU = '';
+  mesFiltroU = new Date().getMonth() + 1;
+  anioFiltroU = new Date().getFullYear();
+
   vendedores: Vendedor[] = [];
-  lastUpdate: Date | null = null;
-  totalPreview = 0;
+  anioActual = new Date().getFullYear();
+  meses = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
 
   private destroy$ = new Subject<void>();
 
@@ -354,17 +877,15 @@ export class SuperAdminReportesPage implements OnInit, OnDestroy {
     private vendedorService: VendedorService,
     private uiService: UiService,
     private cd: ChangeDetectorRef
-  ) {
-      // Inicializar con el mes actual
-      const now = new Date();
-      const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
-      this.fechaInicio = firstDay.toISOString().split('T')[0];
-      this.fechaFin = now.toISOString().split('T')[0];
-  }
+  ) {}
 
   ngOnInit() {
-    this.cargarVendedores();
-    this.previsualizar();
+    this.vendedorService.getVendedores()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(data => this.vendedores = data);
+    this.onRangoChange('G');
+    this.onRangoChange('C');
+    this.onRangoChange('U');
   }
 
   ngOnDestroy() {
@@ -372,98 +893,235 @@ export class SuperAdminReportesPage implements OnInit, OnDestroy {
     this.destroy$.complete();
   }
 
-  onTipoChange() {
-      this.previewData = [];
-      this.totalPreview = 0;
+  setTab(tab: Tab) {
+    this.tabActivo = tab;
   }
 
-  cargarVendedores() {
-    this.vendedorService.getVendedores()
-      .pipe(takeUntil(this.destroy$))
-      .subscribe(data => this.vendedores = data);
-  }
-
-  previsualizar() {
-    this.isLoading = true;
-    const params: any = {
-      fecha_inicio: this.fechaInicio,
-      fecha_fin: this.fechaFin
-    };
-
-    if (this.tipoReporte === 'INGRESOS_FINANCIEROS') {
-      if (this.filtroEstado) params.estado = this.filtroEstado;
-    } else {
-      if (this.filtroVendedorId) params.vendedor_id = this.filtroVendedorId;
-    }
-
-    this.reportesService.obtenerDatosPreview(this.tipoReporte, params)
+  // ---- R-031 ----
+  generarGlobal() {
+    this.loadingGlobal = true;
+    this.reportesService.getReporteGlobal({ fecha_inicio: this.fechaInicioG, fecha_fin: this.fechaFinG })
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: (data) => {
-          this.previewData = data;
-          this.calcularTotales();
-          this.lastUpdate = new Date();
-          this.isLoading = false;
-          this.cd.detectChanges();
-        },
-        error: (err) => {
-          this.isLoading = false;
-          this.uiService.showError(err, 'No se pudo cargar la vista previa');
-          this.cd.detectChanges();
-        }
+        next: (data) => { this.datosGlobal = data; this.loadingGlobal = false; this.cd.detectChanges(); },
+        error: (err) => { this.loadingGlobal = false; this.uiService.showError(err, 'Error al cargar reporte global'); this.cd.detectChanges(); }
       });
   }
 
-  calcularTotales() {
-      if (this.tipoReporte === 'INGRESOS_FINANCIEROS') {
-          this.totalPreview = this.previewData.reduce((acc, curr) => acc + (parseFloat(curr.monto_total) || 0), 0);
-      } else {
-          this.totalPreview = this.previewData.reduce((acc, curr) => acc + (parseFloat(curr.monto_comision) || 0), 0);
+  // ---- R-032 ----
+  generarComisiones() {
+    this.loadingComisiones = true;
+    const params: any = {};
+    if (this.rangoTipoC !== 'mes_actual' && this.rangoTipoC !== 'anio_actual' && this.rangoTipoC !== 'mes_anterior') {
+      params.fecha_inicio = this.fechaInicioC;
+      params.fecha_fin = this.fechaFinC;
+    } else {
+      params.fecha_inicio = this.fechaInicioC;
+      params.fecha_fin = this.fechaFinC;
+    }
+    if (this.vendedorIdC) params.vendedor_id = this.vendedorIdC;
+    if (this.estadoC) params.estado = this.estadoC;
+
+    this.reportesService.getReporteComisiones(params)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (data) => { this.datosComisiones = data; this.loadingComisiones = false; this.cd.detectChanges(); },
+        error: (err) => { this.loadingComisiones = false; this.uiService.showError(err, 'Error al cargar comisiones'); this.cd.detectChanges(); }
+      });
+  }
+
+  // ---- R-033 ----
+  generarUso() {
+    this.loadingUso = true;
+    this.reportesService.getReporteUso({ fecha_inicio: this.fechaInicioU, fecha_fin: this.fechaFinU })
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (data) => { this.datosUso = data; this.loadingUso = false; this.cd.detectChanges(); },
+        error: (err) => { this.loadingUso = false; this.uiService.showError(err, 'Error al cargar uso del sistema'); this.cd.detectChanges(); }
+      });
+  }
+
+  // ---- Rango de fechas ----
+  onRangoChange(prefix: 'G' | 'C' | 'U') {
+    const now = new Date();
+    const rangoKey = `rangoTipo${prefix}` as 'rangoTipoG' | 'rangoTipoC' | 'rangoTipoU';
+    const fiKey   = `fechaInicio${prefix}` as 'fechaInicioG' | 'fechaInicioC' | 'fechaInicioU';
+    const ffKey   = `fechaFin${prefix}` as 'fechaFinG' | 'fechaFinC' | 'fechaFinU';
+    const mesKey  = `mesFiltro${prefix}` as 'mesFiltroG' | 'mesFiltroC' | 'mesFiltroU';
+    const anioKey = `anioFiltro${prefix}` as 'anioFiltroG' | 'anioFiltroC' | 'anioFiltroU';
+
+    switch (this[rangoKey]) {
+      case 'mes_actual':
+        this[fiKey] = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0];
+        this[ffKey] = now.toISOString().split('T')[0];
+        break;
+      case 'mes_anterior': {
+        const prev = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+        const prevEnd = new Date(now.getFullYear(), now.getMonth(), 0);
+        this[fiKey] = prev.toISOString().split('T')[0];
+        this[ffKey] = prevEnd.toISOString().split('T')[0];
+        break;
       }
+      case 'anio_actual':
+        this[fiKey] = `${now.getFullYear()}-01-01`;
+        this[ffKey] = now.toISOString().split('T')[0];
+        break;
+      case 'mes_especifico': {
+        const y = this[anioKey], m = this[mesKey];
+        this[fiKey] = `${y}-${String(m).padStart(2,'0')}-01`;
+        const lastDay = new Date(y, m, 0).getDate();
+        this[ffKey] = `${y}-${String(m).padStart(2,'0')}-${String(lastDay).padStart(2,'0')}`;
+        break;
+      }
+      case 'anio_especifico':
+        this[fiKey] = `${this[anioKey]}-01-01`;
+        this[ffKey] = `${this[anioKey]}-12-31`;
+        break;
+      case 'personalizado':
+        break;
+    }
   }
 
-  exportar(formato: 'excel' | 'pdf') {
-    const nombre = this.tipoReporte === 'INGRESOS_FINANCIEROS' ? 'Reporte de Ingresos' : 'Reporte de Comisiones';
-    const params: any = {
-      fecha_inicio: this.fechaInicio,
-      fecha_fin: this.fechaFin,
-      formato: formato // El backend actual genera CSV, pero el usuario pidió botones de Excel/PDF. 
-      // Si el backend solo tiene CSV, avisaremos que se exporta ese formato universal.
-    };
+  // ---- Exportar PDF ----
+  imprimirSeccion(seccion: Tab) {
+    const id = `print-${seccion}`;
+    const el = document.getElementById(id);
+    if (!el) return;
 
-    if (this.tipoReporte === 'INGRESOS_FINANCIEROS') {
-      if (this.filtroEstado) params.estado = this.filtroEstado;
-    } else {
-      if (this.filtroVendedorId) params.vendedor_id = this.filtroVendedorId;
-    }
+    const win = window.open('', '_blank', 'width=1100,height=800');
+    if (!win) return;
 
-    this.uiService.showToast(`Generando archivo ${formato.toUpperCase()}...`, 'info');
-    
-    this.reportesService.generarReporte(this.tipoReporte, nombre, params)
-      .subscribe({
-        next: (res) => {
-          if (res.url_descarga) {
-            const baseUrl = environment.apiUrl.replace(/\/api\/?$/, '');
-            window.open(`${baseUrl}${res.url_descarga}`, '_blank');
-            this.uiService.showToast('Descarga iniciada', 'success');
-          }
-        },
-        error: (err) => this.uiService.showError(err, 'Error al exportar')
-      });
+    const titulo = seccion === 'global' ? 'Reporte Global del Sistema'
+                 : seccion === 'comisiones' ? 'Comisiones por Vendedor'
+                 : 'Uso del Sistema por Empresa';
+
+    win.document.write(`
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="utf-8">
+        <title>${titulo}</title>
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+        <style>
+          body { font-family: 'Segoe UI', sans-serif; padding: 1.5rem; font-size: 13px; }
+          h2 { color: #161d35; font-weight: 800; margin-bottom: 0.25rem; }
+          .sub { color: #64748b; margin-bottom: 1.5rem; font-size: 0.85rem; }
+          .kpi-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 0.75rem; margin-bottom: 1.5rem; }
+          .kpi-card { border: 1px solid #e2e8f0; border-radius: 10px; padding: 0.85rem; }
+          .kpi-label { font-size: 0.65rem; font-weight: 700; color: #64748b; text-transform: uppercase; display: block; }
+          .kpi-value { font-size: 1.4rem; font-weight: 800; color: #161d35; display: block; }
+          .kpi-sub { font-size: 0.7rem; color: #64748b; }
+          table { width: 100%; border-collapse: collapse; margin-bottom: 1.5rem; }
+          th { font-size: 0.65rem; font-weight: 700; text-transform: uppercase; background: #f8fafc; padding: 0.6rem 0.75rem; border-bottom: 2px solid #e2e8f0; color: #475569; }
+          td { padding: 0.65rem 0.75rem; border-bottom: 1px solid #f1f5f9; font-size: 0.8rem; }
+          .section-title { font-size: 0.85rem; font-weight: 700; background: #f8fafc; padding: 0.65rem 0.75rem; border-bottom: 1px solid #e2e8f0; color: #161d35; margin-bottom: 0; }
+          @media print { body { padding: 0.5rem; } }
+        </style>
+      </head>
+      <body>
+        <h2>${titulo}</h2>
+        <p class="sub">Generado el ${new Date().toLocaleDateString('es-EC', {day:'2-digit',month:'long',year:'numeric'})} &nbsp;·&nbsp; Solo Superadmin</p>
+        ${el.innerHTML}
+        <script>window.onload = function(){ window.print(); }<\/script>
+      </body>
+      </html>
+    `);
+    win.document.close();
   }
 
-  getEstadoClass(estado: string): string {
-    switch (estado) {
-      case 'PAGADO':
-      case 'LIQUIDADO':
-        return 'bg-success-subtle text-dark';
-      case 'PENDIENTE':
-      case 'POR PAGAR':
-        return 'bg-warning-subtle text-dark';
-      case 'RECHAZADA':
-        return 'bg-danger-subtle text-dark';
-      default:
-        return 'bg-light text-dark';
-    }
+  // ---- Helpers gráficas ----
+  get maxPlanVentas(): number {
+    return Math.max(...(this.datosGlobal?.planes_mas_vendidos.map(p => p.ventas) ?? [1]));
+  }
+  get maxVendedorIngresos(): number {
+    return Math.max(...(this.datosGlobal?.top_vendedores.map(v => v.ingresos_generados) ?? [1]));
+  }
+  get maxVendedorIngresosC(): number {
+    return Math.max(...(this.datosComisiones?.top_vendedores.map(v => v.ingresos_generados) ?? [1]));
+  }
+  get maxPlanVentasC(): number {
+    return Math.max(...(this.datosComisiones?.planes_mas_vendidos.map(p => p.ventas) ?? [1]));
+  }
+  get topEmpresasPorUsuarios() {
+    return [...(this.datosUso?.empresas ?? [])].sort((a,b) => b.total_usuarios - a.total_usuarios);
+  }
+  get maxUsuariosEmpresa(): number {
+    return Math.max(...(this.datosUso?.empresas.map(e => e.total_usuarios) ?? [1]));
+  }
+
+  barPct(val: number, max: number): number {
+    return max > 0 ? Math.round((val / max) * 100) : 0;
+  }
+
+  donutGlobal(): string {
+    if (!this.datosGlobal) return '#e2e8f0';
+    const total = (this.datosGlobal.zona_rescate + this.datosGlobal.zona_upgrade) || 1;
+    const pctRescate = Math.round((this.datosGlobal.zona_rescate / total) * 100);
+    return `conic-gradient(#ef4444 0% ${pctRescate}%, #f59e0b ${pctRescate}% 100%)`;
+  }
+
+  // ---- Helpers formateo ----
+  formatAcceso(fecha: string | null): string {
+    if (!fecha) return 'Sin acceso';
+    const d = new Date(fecha);
+    const now = new Date();
+    const diffMs = now.getTime() - d.getTime();
+    const diffDays = Math.floor(diffMs / 86400000);
+    if (diffDays === 0) return 'Hoy, ' + d.toLocaleTimeString('es-EC', {hour:'2-digit', minute:'2-digit'});
+    if (diffDays === 1) return 'Ayer, ' + d.toLocaleTimeString('es-EC', {hour:'2-digit', minute:'2-digit'});
+    if (diffDays < 30) return `Hace ${diffDays} días`;
+    return d.toLocaleDateString('es-EC', {day:'2-digit',month:'short',year:'numeric'});
+  }
+
+  formatFecha(fecha: string | null): string {
+    if (!fecha) return '—';
+    const d = new Date(fecha);
+    const now = new Date();
+    const diffMs = d.getTime() - now.getTime();
+    const diffDays = Math.floor(diffMs / 86400000);
+    if (diffDays > -1 && diffDays < 31) return `Hace ${Math.abs(diffDays)} días`;
+    return d.toLocaleDateString('es-EC', {day:'2-digit',month:'short',year:'numeric'});
+  }
+
+  formatDeadline(deadline: string | null): string {
+    if (!deadline) return '—';
+    const d = new Date(deadline);
+    const now = new Date();
+    const diffMs = d.getTime() - now.getTime();
+    const diffH = Math.floor(diffMs / 3600000);
+    const diffDays = Math.floor(diffMs / 86400000);
+    if (diffH < 1) return '< 1 hora';
+    if (diffH < 8) return `< ${diffH}h`;
+    if (diffH < 24) return `< 24hs`;
+    if (diffDays <= 2) return `${diffDays} días`;
+    return `${diffDays} días`;
+  }
+
+  deadlineClass(deadline: string | null): string {
+    if (!deadline) return '';
+    const diffH = Math.floor((new Date(deadline).getTime() - Date.now()) / 3600000);
+    if (diffH < 24) return 'deadline-urgent';
+    if (diffH < 72) return 'deadline-warning';
+    return 'deadline-ok';
+  }
+
+  tooltipRescate(e: EmpresaZonaRescate): string {
+    const antiguedad = e.fecha_registro
+      ? Math.floor((Date.now() - new Date(e.fecha_registro).getTime()) / 86400000) + ' días'
+      : 'N/A';
+    return `Vendedor: ${e.vendedor_nombre || 'N/A'}\nAntigüedad: ${antiguedad}\nRepresentante: ${e.representante || 'N/A'}`;
+  }
+
+  tipoVentaClass(tipo: string): string {
+    if (tipo === 'Nueva') return 'tipo-nueva';
+    if (tipo === 'Upgrade') return 'tipo-upgrade';
+    return 'tipo-renovacion';
+  }
+
+  estadoComisionClass(estado: string): string {
+    if (estado === 'PENDIENTE') return 'estado-pendiente';
+    if (estado === 'APROBADA') return 'estado-aprobada';
+    if (estado === 'PAGADA') return 'estado-pagada';
+    return '';
   }
 }
