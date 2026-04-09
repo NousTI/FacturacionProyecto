@@ -9,39 +9,52 @@ class RepositorioR031:
         self.db = db
 
     def obtener_kpis_globales(self, fecha_inicio: Optional[str] = None, fecha_fin: Optional[str] = None) -> dict:
-        fi_param = fecha_inicio
-        ff_param = fecha_fin
+        today = date.today()
+        first_day = date(today.year, today.month, 1)
+        fi_use = fecha_inicio or first_day.isoformat()
+        ff_use = fecha_fin or today.isoformat()
+
+        # Calcular período anterior de igual duración
+        fi_date = date.fromisoformat(fi_use)
+        ff_date = date.fromisoformat(ff_use)
+        duracion = (ff_date - fi_date).days + 1
+        fi_anterior = (fi_date - timedelta(days=duracion)).isoformat()
+        ff_anterior = (fi_date - timedelta(days=1)).isoformat()
+
+        f_inicio = "%s"
+        f_fin = "%s::timestamp + interval '1 day' - interval '1 second'"
+        f_fin_date = "%s::date"
 
         query = """
             SELECT
-                -- Empresas activas (suscripción activa y vigente)
+                -- Empresas activas (suscripción activa y vigente al final del periodo)
                 (SELECT COUNT(DISTINCT e.id)
                  FROM sistema_facturacion.empresas e
                  JOIN sistema_facturacion.suscripciones s ON s.empresa_id = e.id
-                 WHERE s.estado = 'ACTIVA' AND s.fecha_inicio <= %s::date AND s.fecha_fin >= %s::date) as empresas_activas,
+                 WHERE s.estado = 'ACTIVA' AND s.fecha_inicio <= {f_fin_date} AND s.fecha_fin >= {f_fin_date}) as empresas_activas,
 
                 -- Nuevas empresas en el período
                 (SELECT COUNT(id)
                  FROM sistema_facturacion.empresas
-                 WHERE created_at BETWEEN %s AND %s::timestamp + interval '1 day' - interval '1 second') as empresas_nuevas_mes,
+                 WHERE created_at BETWEEN {f_inicio} AND {f_fin}) as empresas_nuevas_mes,
 
                 -- Ingresos del año de la fecha seleccionada (pagos confirmados)
                 (SELECT COALESCE(SUM(monto), 0)
                  FROM sistema_facturacion.pagos_suscripciones
                  WHERE estado = 'PAGADO'
-                   AND EXTRACT(YEAR FROM fecha_pago) = EXTRACT(YEAR FROM %s::date)) as ingresos_anio,
+                   AND EXTRACT(YEAR FROM fecha_pago) = EXTRACT(YEAR FROM {f_fin_date})) as ingresos_anio,
 
                 -- Ingresos del año anterior para comparativa
                 (SELECT COALESCE(SUM(monto), 0)
                  FROM sistema_facturacion.pagos_suscripciones
                  WHERE estado = 'PAGADO'
-                   AND EXTRACT(YEAR FROM fecha_pago) = EXTRACT(YEAR FROM %s::date) - 1) as ingresos_anio_anterior,
+                   AND EXTRACT(YEAR FROM fecha_pago) = EXTRACT(YEAR FROM {f_fin_date}) - 1) as ingresos_anio_anterior,
 
                 -- Ingresos en el período seleccionado
                 (SELECT COALESCE(SUM(monto), 0)
                  FROM sistema_facturacion.pagos_suscripciones
                  WHERE estado = 'PAGADO'
-                   AND fecha_pago BETWEEN %s AND %s::timestamp + interval '1 day' - interval '1 second') as ingresos_mes,
+                   AND fecha_pago BETWEEN {f_inicio} AND {f_fin}) as ingresos_mes,
 
                 -- Ingresos del período anterior (misma duración) para comparativa
                 (SELECT COALESCE(SUM(monto), 0)
@@ -52,21 +65,21 @@ class RepositorioR031:
                 -- Usuarios nuevos en el período
                 (SELECT COUNT(id)
                  FROM sistema_facturacion.usuarios
-                 WHERE created_at BETWEEN %s AND %s::timestamp + interval '1 day' - interval '1 second') as usuarios_nuevos_mes,
+                 WHERE created_at BETWEEN {f_inicio} AND {f_fin}) as usuarios_nuevos_mes,
 
                 -- Tasa de crecimiento: empresas activas comparadas con el mes anterior a la fecha inicio
                 (SELECT COUNT(DISTINCT s.empresa_id)
                  FROM sistema_facturacion.suscripciones s
                  WHERE s.estado = 'ACTIVA'
-                   AND s.fecha_inicio <= (%s::date - INTERVAL '1 month') 
-                   AND s.fecha_fin >= (%s::date - INTERVAL '1 month')) as empresas_activas_mes_anterior,
+                   AND s.fecha_inicio <= ({f_inicio_date} - INTERVAL '1 month') 
+                   AND s.fecha_fin >= ({f_inicio_date} - INTERVAL '1 month')) as empresas_activas_mes_anterior,
 
-                -- Zona upgrade: empresas que usaron >=80% de facturas del plan en el período
+                -- Zona upgrade: empresas que usaron >=80 por ciento de facturas del plan en el período
                 (SELECT COUNT(DISTINCT f.empresa_id)
                  FROM (
                      SELECT f.empresa_id, COUNT(f.id) as facturas_periodo
                      FROM sistema_facturacion.facturas f
-                     WHERE f.fecha_emision BETWEEN %s AND %s::timestamp + interval '1 day' - interval '1 second'
+                     WHERE f.fecha_emision BETWEEN {f_inicio} AND {f_fin}
                        AND f.estado != 'ANULADA'
                      GROUP BY f.empresa_id
                  ) f
@@ -79,39 +92,31 @@ class RepositorioR031:
                  FROM sistema_facturacion.empresas e
                  JOIN sistema_facturacion.suscripciones s ON s.empresa_id = e.id
                  WHERE s.estado IN ('VENCIDA', 'SUSPENDIDA') AND e.activo = FALSE
-                   AND s.fecha_fin BETWEEN %s AND %s::timestamp + interval '1 day' - interval '1 second') as zona_rescate
+                   AND s.fecha_fin BETWEEN {f_inicio} AND {f_fin}) as zona_rescate
         """
 
-        today = date.today()
-        first_day = date(today.year, today.month, 1)
-        default_fi = first_day.isoformat()
-        default_ff = today.isoformat()
-
-        fi_use = fi_param or default_fi
-        ff_use = ff_param or default_ff
-
-        # Calcular período anterior de igual duración
-        fi_date = date.fromisoformat(fi_use)
-        ff_date = date.fromisoformat(ff_use)
-        duracion = (ff_date - fi_date).days + 1
-        fi_anterior = (fi_date - timedelta(days=duracion)).isoformat()
-        ff_anterior = (fi_date - timedelta(days=1)).isoformat()
-
-        params = (
-            ff_use, ff_use,           # empresas_activas (al final del periodo)
-            fi_use, ff_use,           # empresas_nuevas_mes
-            ff_use,                   # ingresos_anio (año de ff_use)
-            ff_use,                   # ingresos_anio_anterior (año de ff_use - 1)
-            fi_use, ff_use,           # ingresos_mes
-            fi_anterior, ff_anterior, # ingresos_mes_anterior
-            fi_use, ff_use,           # usuarios_nuevos_mes
-            fi_use, fi_use,           # empresas_activas_mes_anterior (mes previo a fi_use)
-            fi_use, ff_use,           # zona_upgrade
-            fi_use, ff_use            # zona_rescate
+        query = query.format(
+            f_inicio=f_inicio,
+            f_fin=f_fin,
+            f_fin_date=f_fin_date,
+            f_inicio_date="%s::date"
         )
 
+        params = [
+            ff_use, ff_use,           # empresas_activas
+            fi_use, ff_use,           # empresas_nuevas_mes
+            ff_use,                   # ingresos_anio
+            ff_use,                   # ingresos_anio_anterior
+            fi_use, ff_use,           # ingresos_mes
+            fi_anterior, ff_anterior, # ingresos_mes_anterior (BETWEEN %s AND %s)
+            fi_use, ff_use,           # usuarios_nuevos_mes
+            fi_use, fi_use,           # empresas_activas_mes_anterior
+            fi_use, ff_use,           # zona_upgrade
+            fi_use, ff_use            # zona_rescate
+        ]
+
         with self.db.cursor() as cur:
-            cur.execute(query, params)
+            cur.execute(query, tuple(params))
             row = cur.fetchone()
             data = dict(row) if row else {}
 
@@ -178,7 +183,7 @@ class RepositorioR031:
             return [dict(row) for row in cur.fetchall()]
 
     def obtener_zona_upgrade(self, fecha_inicio: Optional[str] = None, fecha_fin: Optional[str] = None) -> list:
-        """Empresas con >=80% de uso de facturas del plan en el mes actual."""
+        """Empresas con >=80 por ciento de uso de facturas del plan en el mes actual."""
         query = """
             SELECT
                 e.id,
