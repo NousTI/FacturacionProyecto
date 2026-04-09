@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Resumen Ejecutivo Financiero</title>
+    <style>
+        body { font-family: 'Helvetica', sans-serif; color: #333; margin: 0; padding: 20px; line-height: 1.4; }
+        .header { text-align: center; border-bottom: 2px solid #10b981; padding-bottom: 10px; margin-bottom: 30px; }
+        .header h1 { margin: 0; color: #065f46; font-size: 24px; }
+        .header p { margin: 5px 0; color: #64748b; font-size: 14px; }
+        
+        .grid { display: block; width: 100%; margin-bottom: 30px; }
+        .kpi-row { width: 100%; display: table; border-spacing: 15px; margin-left: -15px; }
+        .kpi-card { display: table-cell; width: 25%; background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 12px; padding: 15px; text-align: center; }
+        .kpi-label { font-size: 10px; font-weight: bold; color: #64748b; text-transform: uppercase; margin-bottom: 8px; }
+        .kpi-value { font-size: 18px; font-weight: bold; color: #1e293b; }
+        .kpi-trend { font-size: 11px; margin-top: 5px; font-weight: bold; }
+        .up { color: #10b981; }
+        .down { color: #ef4444; }
+        
+        .section-box { background: #fff; border: 1px solid #f1f5f9; border-radius: 12px; padding: 20px; margin-bottom: 25px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
+        .section-title { font-size: 15px; font-weight: bold; color: #1e293b; margin-bottom: 15px; border-bottom: 1px solid #f1f5f9; padding-bottom: 8px; }
+        
+        .progress-container { width: 100%; background: #f1f5f9; border-radius: 10px; height: 15px; margin: 10px 0; overflow: hidden; }
+        .progress-bar { height: 100%; background: #3b82f6; border-radius: 10px; }
+        
+        .footer { margin-top: 40px; text-align: center; font-size: 10px; color: #94a3b8; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Resumen Ejecutivo de Gestión</h1>
+        <p>Periodo: {{ params.fecha_inicio }} al {{ params.fecha_fin }}</p>
+        <p>Empresa: {{ empresa.nombre_comercial or empresa.razon_social }}</p>
+    </div>
+
+    <div class="grid">
+        <div class="kpi-row">
+            <div class="kpi-card">
+                <div class="kpi-label">Ventas Totales</div>
+                <div class="kpi-value">${{ "{:,.2f}".format(data.ventas.total_facturado) }}</div>
+                <div class="kpi-trend {{ 'up' if data.ventas.variacion_porcentual >= 0 else 'down' }}">
+                    {{ '+' if data.ventas.variacion_porcentual >= 0 }}{{ data.ventas.variacion_porcentual }}% vs prev.
+                </div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-label">Documentos Emitidos</div>
+                <div class="kpi-value">{{ data.ventas.facturas_emitidas }}</div>
+                <div style="font-size: 10px; color: #94a3b8;">{{ data.ventas.clientes_activos }} Clientes</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-label">Total Recaudado</div>
+                <div class="kpi-value">${{ "{:,.2f}".format(data.cobros.total_cobrado) }}</div>
+                <div class="kpi-trend up">
+                    {{ data.cobros.porcentaje_recuperacion }}% Eficiencia
+                </div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-label">Cartera Pendiente</div>
+                <div class="kpi-value" style="color: #ef4444;">${{ "{:,.2f}".format(data.cobros.pendiente_cobro) }}</div>
+                <div style="font-size: 10px; color: #94a3b8;">Saldos por cobrar</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="section-box">
+        <div class="section-title">INDICADORES DE EFICIENCIA</div>
+        <p style="font-size: 13px;"><strong>Tasa de Recuperación de Cartera:</strong></p>
+        <div class="progress-container">
+            <div class="progress-bar" style="width: {{ data.cobros.porcentaje_recuperacion }}%;"></div>
+        </div>
+        <p style="font-size: 11px; color: #64748b;">
+            Representa el porcentaje de las ventas del periodo que ya han sido efectivamente cobradas. Una tasa superior al 80% indica una gestión de cobranza saludable.
+        </p>
+
+        <p style="font-size: 13px; margin-top: 20px;"><strong>Ticket Promedio de Venta:</strong></p>
+        <div style="font-size: 22px; font-weight: bold; color: #3b82f6;">
+            ${{ "{:,.2f}".format(data.ventas.ticket_promedio) }}
+            <span style="font-size: 12px; color: #64748b; font-weight: normal; margin-left: 10px;">
+                (Variación: {{ '+' if data.ventas.variacion_ticket >= 0 }}{{ data.ventas.variacion_ticket }}%)
+            </span>
+        </div>
+    </div>
+
+    <div class="section-box">
+        <div class="section-title">NOTAS FINANCIERAS</div>
+        <ul style="font-size: 12px; color: #475569;">
+            <li>Los datos de gastos y utilidad neta están limitados a costos directos de venta por falta de módulo de egresos.</li>
+            <li>El reporte incluye todas las facturas autorizadas en estado 'AUTORIZADO' o 'PENDIENTE' de la empresa.</li>
+            <li>Métricas de comparación basadas en el periodo inmediato anterior de igual duración.</li>
+        </ul>
+    </div>
+
+    <div class="footer">
+        Generado automáticamente por Sistema de Facturación Premium - {{ now }}
+    </div>
+</body>
+</html>

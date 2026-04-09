@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Reporte de IVA (Ventas)</title>
+    <style>
+        body { font-family: 'Helvetica', sans-serif; color: #333; margin: 0; padding: 20px; line-height: 1.4; }
+        .header { text-align: center; border-bottom: 2px solid #3b82f6; padding-bottom: 10px; margin-bottom: 20px; }
+        .header h1 { margin: 0; color: #1e3a8a; font-size: 24px; }
+        .header p { margin: 5px 0; color: #64748b; font-size: 14px; }
+        
+        .section-title { font-size: 16px; font-weight: bold; color: #1e3a8a; margin: 25px 0 10px; border-left: 4px solid #3b82f6; padding-left: 10px; }
+        
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th { background: #f8fafc; padding: 12px; font-size: 12px; font-weight: bold; color: #475569; text-align: left; border-bottom: 2px solid #e2e8f0; }
+        td { padding: 12px; font-size: 13px; border-bottom: 1px solid #f1f5f9; }
+        
+        .resumen-card { background: #f1f5f9; border-radius: 12px; padding: 20px; margin-top: 30px; }
+        .resumen-item { display: flex; justify-content: space-between; margin-bottom: 10px; }
+        .resumen-total { border-top: 2px solid #1e3a8a; margin-top: 10px; padding-top: 10px; font-weight: bold; font-size: 18px; color: #1e3a8a; }
+        
+        .text-right { text-align: right; }
+        .text-danger { color: #dc2626; }
+        
+        .footer { margin-top: 40px; text-align: center; font-size: 10px; color: #94a3b8; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Reporte Detallado de IVA (Ventas)</h1>
+        <p>Periodo: {{ params.fecha_inicio }} al {{ params.fecha_fin }}</p>
+        <p>Empresa: {{ empresa.nombre_comercial or empresa.razon_social }}</p>
+    </div>
+
+    <div class="section-title">DETALLE DE VENTAS POR TARIFA</div>
+    <table>
+        <thead>
+            <tr>
+                <th>Concepto / Tarifa de Impuesto</th>
+                <th class="text-right">Base Imponible</th>
+                <th class="text-right">Valor Impuesto (IVA)</th>
+                <th class="text-right">Total Ventas</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>Ventas Locales Tarifa 0%</td>
+                <td class="text-right">${{ "{:,.2f}".format(data.ventas.tarifa_0) }}</td>
+                <td class="text-right">$0.00</td>
+                <td class="text-right">${{ "{:,.2f}".format(data.ventas.tarifa_0) }}</td>
+            </tr>
+            <tr>
+                <td>Ventas Locales Tarifa Vigente (15%)</td>
+                <td class="text-right">${{ "{:,.2f}".format(data.ventas.base_imponible_15) }}</td>
+                <td class="text-right">${{ "{:,.2f}".format(data.ventas.iva_cobrado_15) }}</td>
+                <td class="text-right">${{ "{:,.2f}".format(data.ventas.tarifa_15) }}</td>
+            </tr>
+        </tbody>
+        <tfoot>
+            <tr style="font-weight: bold; background: #f8fafc;">
+                <td>TOTAL VENTAS</td>
+                <td class="text-right">${{ "{:,.2f}".format(data.ventas.tarifa_0 + data.ventas.base_imponible_15) }}</td>
+                <td class="text-right">${{ "{:,.2f}".format(data.ventas.iva_cobrado_15) }}</td>
+                <td class="text-right">${{ "{:,.2f}".format(data.ventas.tarifa_0 + data.ventas.tarifa_15) }}</td>
+            </tr>
+        </tfoot>
+    </table>
+
+    <div class="section-title">CONSOLIDADO FISCAL</div>
+    <div class="resumen-card">
+        <div style="width: 100%;">
+            <table style="background: transparent;">
+                <tr>
+                    <td>IVA Cobrado en Ventas (+)</td>
+                    <td class="text-right fw-bold">${{ "{:,.2f}".format(data.resumen.iva_cobrado) }}</td>
+                </tr>
+                <tr>
+                    <td class="text-danger">IVA Pagado en Compras (-)</td>
+                    <td class="text-right text-danger">(${{ "{:,.2f}".format(data.resumen.iva_pagado) }})</td>
+                </tr>
+                <tr class="resumen-total">
+                    <td style="border: none;">IMPUESTO A LIQUIDAR (IVA A PAGAR)</td>
+                    <td class="text-right" style="border: none;">${{ "{:,.2f}".format(data.resumen.iva_a_pagar) }}</td>
+                </tr>
+            </table>
+        </div>
+    </div>
+
+    <div style="margin-top: 30px; font-size: 11px; color: #64748b;">
+        * Este reporte es informativo y se basa exclusivamente en las facturas emitidas y autorizadas a través del sistema. No constituye una declaración jurada ante el SRI.
+    </div>
+
+    <div class="footer">
+        Generado automáticamente por Sistema de Facturación Premium - {{ now }}
+    </div>
+</body>
+</html>

@@ -13,6 +13,7 @@ from .superadmin.R_033.repository import RepositorioR033
 from .usuarios.R_026.service import ServicioR026
 from .usuarios.R_027.service import ServicioR027
 from .usuarios.R_028.service import ServicioR028
+from ..empresas.repositories import RepositorioEmpresas
 from .schemas import ReporteCreacion
 from ...constants.enums import AuthKeys
 from ...errors.app_error import AppError
@@ -28,7 +29,8 @@ class ServicioReportes:
         repo_r033: RepositorioR033 = Depends(),
         svc_r026: ServicioR026 = Depends(),
         svc_r027: ServicioR027 = Depends(),
-        svc_r028: ServicioR028 = Depends()
+        svc_r028: ServicioR028 = Depends(),
+        repo_empresas: RepositorioEmpresas = Depends()
     ):
         self.repo = repo
         self.repo_r031 = repo_r031
@@ -37,6 +39,7 @@ class ServicioReportes:
         self.svc_r026 = svc_r026
         self.svc_r027 = svc_r027
         self.svc_r028 = svc_r028
+        self.repo_empresas = repo_empresas
 
     def crear_reporte(self, datos: ReporteCreacion, usuario_actual: dict):
         is_superadmin = usuario_actual.get(AuthKeys.IS_SUPERADMIN)
@@ -493,6 +496,33 @@ class ServicioReportes:
                 headers = ["Número", "Cliente", "Fecha Intento", "Mensaje SRI", "Estado"]
                 keys = ["numero_factura", "cliente", "fecha_intento", "mensaje_sri", "estado_actual"]
                 return generate_excel_report("Rechazos SRI", headers, data, keys)
+
+        # --- EXPORTACIÓN DE REPORTES FINANCIEROS (R-026 a R-028) ---
+        
+        elif tipo in ['FINANCIERO_PYG', 'FINANCIERO_IVA', 'FINANCIERO_RESUMEN']:
+            empresa = self.repo_empresas.obtener_por_id(empresa_id)
+            fecha_inicio = params.get('fecha_inicio')
+            fecha_fin = params.get('fecha_fin')
+            
+            if tipo == 'FINANCIERO_PYG':
+                data = self.obtener_pyg_usuario(empresa_id, fecha_inicio, fecha_fin)
+                template = "reports/pyg_report.html"
+            elif tipo == 'FINANCIERO_IVA':
+                data = self.obtener_iva_ventas_usuario(empresa_id, fecha_inicio, fecha_fin)
+                template = "reports/iva_report.html"
+            else: # FINANCIERO_RESUMEN
+                data = self.obtener_resumen_ejecutivo_usuario(empresa_id, fecha_inicio, fecha_fin)
+                template = "reports/resumen_report.html"
+                
+            if formato == 'pdf':
+                return render_to_pdf(template, {
+                    "data": data, 
+                    "params": params, 
+                    "empresa": empresa, 
+                    "now": now_str
+                })
+            else:
+                raise AppError("Formato no soportado para reportes financieros", 400)
 
         raise AppError("Tipo de reporte o formato no soportado para exportación", 400)
 

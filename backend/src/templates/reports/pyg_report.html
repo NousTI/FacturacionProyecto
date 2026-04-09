@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Estado de Resultados (PyG)</title>
+    <style>
+        body { font-family: 'Helvetica', sans-serif; color: #333; margin: 0; padding: 20px; line-height: 1.4; }
+        .header { text-align: center; border-bottom: 2px solid #1e293b; padding-bottom: 10px; margin-bottom: 20px; }
+        .header h1 { margin: 0; color: #1e293b; font-size: 24px; }
+        .header p { margin: 5px 0; color: #64748b; font-size: 14px; }
+        
+        .table-container { margin-top: 20px; }
+        .pyg-table { width: 100%; border-collapse: collapse; }
+        .pyg-table td { padding: 10px; font-size: 14px; border-bottom: 1px solid #f1f5f9; }
+        
+        .row-header { background: #f8fafc; font-weight: bold; text-transform: uppercase; color: #475569; font-size: 12px; }
+        .row-indent { padding-left: 30px !important; }
+        .row-subtotal { font-weight: bold; border-top: 2px solid #e2e8f0; }
+        .row-total-bruto { font-weight: bold; background: #f1f5f9; }
+        .row-final { background: #1e293b; color: #fff; font-weight: bold; font-size: 16px !important; }
+        
+        .text-right { text-align: right; }
+        .text-danger { color: #dc2626; }
+        
+        .footer { margin-top: 40px; text-align: center; font-size: 10px; color: #94a3b8; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Estado de Resultados (P&L)</h1>
+        <p>Periodo: {{ params.fecha_inicio }} al {{ params.fecha_fin }}</p>
+        <p>Empresa: {{ empresa.nombre_comercial or empresa.razon_social }}</p>
+    </div>
+
+    <div class="table-container">
+        <table class="pyg-table">
+            <!-- INGRESOS -->
+            <tr class="row-header">
+                <td colspan="2">INGRESOS</td>
+            </tr>
+            <tr class="row-indent">
+                <td>Ventas Brutas</td>
+                <td class="text-right">${{ "{:,.2f}".format(data.estructura.ingresos.ventas) }}</td>
+            </tr>
+            <tr class="row-indent text-danger">
+                <td>(-) Descuentos</td>
+                <td class="text-right">(${{ "{:,.2f}".format(data.estructura.ingresos.descuentos) }})</td>
+            </tr>
+            <tr class="row-subtotal">
+                <td>INGRESOS NETOS</td>
+                <td class="text-right">${{ "{:,.2f}".format(data.estructura.ingresos.ingresos_netos) }}</td>
+            </tr>
+
+            <!-- COSTOS -->
+            <tr class="row-header" style="height: 20px;">
+                <td colspan="2"></td>
+            </tr>
+            <tr class="row-header">
+                <td colspan="2">COSTOS Y GASTOS</td>
+            </tr>
+            <tr class="row-indent text-danger">
+                <td>Costo de Ventas (COGS)</td>
+                <td class="text-right">(${{ "{:,.2f}".format(data.estructura.costos_y_gastos.costo_de_ventas) }})</td>
+            </tr>
+            <tr class="row-total-bruto">
+                <td>UTILIDAD BRUTA</td>
+                <td class="text-right">${{ "{:,.2f}".format(data.estructura.costos_y_gastos.utilidad_bruta) }}</td>
+            </tr>
+
+            <tr>
+                <td colspan="2" style="font-size: 11px; color: #94a3b8; font-style: italic; padding-top: 20px;">
+                    Nota: Gastos operativos, financieros y otros ingresos no registrados aún en este periodo.
+                </td>
+            </tr>
+
+            <tr class="row-final">
+                <td style="padding: 15px;">UTILIDAD NETA DEL EJERCICIO</td>
+                <td class="text-right" style="padding: 15px;">${{ "{:,.2f}".format(data.estructura.utilidad_neta) }}</td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="footer">
+        Generado automáticamente por Sistema de Facturación Premium - {{ now }}
+    </div>
+</body>
+</html>

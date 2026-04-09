@@ -33,6 +33,51 @@ def generar_reporte_usuario(
     """Genera un nuevo reporte (Exportación)"""
     return servicio.crear_reporte(datos, usuario)
 
+# Mover /exportar antes de /{id} para evitar conflicto con UUID
+@router.get("/exportar")
+def exportar_reporte_ventas(
+    tipo: str,
+    formato: str, # 'pdf' o 'excel'
+    fecha_inicio: Optional[str] = None,
+    fecha_fin: Optional[str] = None,
+    anio: Optional[int] = None,
+    establecimiento_id: Optional[UUID] = None,
+    punto_emision_id: Optional[UUID] = None,
+    usuario_id: Optional[UUID] = None,
+    estado: Optional[str] = None,
+    usuario_actual: dict = Depends(requerir_permiso("REPORTES_EXPORTAR")),
+    servicio: ServicioReportes = Depends()
+):
+    """Genera y descarga un reporte en formato PDF o Excel."""
+    from fastapi.responses import StreamingResponse
+    
+    empresa_id = usuario_actual.get("empresa_id")
+    params = {
+        "fecha_inicio": fecha_inicio,
+        "fecha_fin": fecha_fin,
+        "anio": anio,
+        "establecimiento_id": establecimiento_id,
+        "punto_emision_id": punto_emision_id,
+        "usuario_id": usuario_id,
+        "estado": estado
+    }
+    
+    file_stream = servicio.exportar_reporte(empresa_id, tipo, formato, params)
+    
+    filename = f"reporte_{tipo.lower()}_{datetime.now().strftime('%Y%m%d')}"
+    if formato == 'pdf':
+        media_type = "application/pdf"
+        filename += ".pdf"
+    else:
+        media_type = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        filename += ".xlsx"
+
+    return StreamingResponse(
+        file_stream,
+        media_type=media_type,
+        headers={"Content-Disposition": f"attachment; filename={filename}"}
+    )
+
 @router.get("/{id}", response_model=ReporteLectura)
 def obtener_reporte_usuario(
     id: UUID,
@@ -288,47 +333,4 @@ def obtener_reporte_uso_sistema(
     return servicio.obtener_reporte_uso_sistema_superadmin(fecha_inicio=fecha_inicio, fecha_fin=fecha_fin)
 
 
-@router.get("/exportar")
-def exportar_reporte_ventas(
-    tipo: str,
-    formato: str, # 'pdf' o 'excel'
-    fecha_inicio: Optional[str] = None,
-    fecha_fin: Optional[str] = None,
-    anio: Optional[int] = None,
-    establecimiento_id: Optional[UUID] = None,
-    punto_emision_id: Optional[UUID] = None,
-    usuario_id: Optional[UUID] = None,
-    estado: Optional[str] = None,
-    usuario_actual: dict = Depends(requerir_permiso("REPORTES_EXPORTAR")),
-    servicio: ServicioReportes = Depends()
-):
-    """Genera y descarga un reporte en formato PDF o Excel."""
-    from fastapi.responses import StreamingResponse
-    
-    empresa_id = usuario_actual.get("empresa_id")
-    params = {
-        "fecha_inicio": fecha_inicio,
-        "fecha_fin": fecha_fin,
-        "anio": anio,
-        "establecimiento_id": establecimiento_id,
-        "punto_emision_id": punto_emision_id,
-        "usuario_id": usuario_id,
-        "estado": estado
-    }
-    
-    file_stream = servicio.exportar_reporte(empresa_id, tipo, formato, params)
-    
-    filename = f"reporte_{tipo.lower()}_{datetime.now().strftime('%Y%m%d')}"
-    if formato == 'pdf':
-        media_type = "application/pdf"
-        filename += ".pdf"
-    else:
-        media_type = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-        filename += ".xlsx"
-
-    return StreamingResponse(
-        file_stream,
-        media_type=media_type,
-        headers={"Content-Disposition": f"attachment; filename={filename}"}
-    )
 

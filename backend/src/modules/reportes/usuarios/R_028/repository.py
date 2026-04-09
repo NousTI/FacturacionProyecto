@@ -28,25 +28,27 @@ class RepositorioR028:
         # Total cobrado en el periodo (de cualquier factura)
         query_cobrado = """
             SELECT COALESCE(SUM(monto), 0) as total_cobrado
-            FROM sistema_facturacion.pagos_facturas pf
+            FROM sistema_facturacion.pagos_factura pf
             JOIN sistema_facturacion.cuentas_cobrar cc ON pf.cuenta_cobrar_id = cc.id
             JOIN sistema_facturacion.facturas f ON cc.factura_id = f.id
             WHERE f.empresa_id = %s 
               AND pf.fecha_pago BETWEEN %s AND %s
         """
         
-        # Pendiente de cobro (saldo actual total de la empresa)
+        # Pendiente de cobro (saldo actual total de la empresa en ese periodo)
         query_pendiente = """
-            SELECT COALESCE(SUM(saldo), 0) as total_pendiente
+            SELECT COALESCE(SUM(saldo_pendiente), 0) as total_pendiente
             FROM sistema_facturacion.cuentas_cobrar
-            WHERE empresa_id = %s AND estado != 'PAGADA'
+            WHERE empresa_id = %s 
+              AND estado != 'pagado'
+              AND fecha_emision BETWEEN %s AND %s
         """
         
         with self.db.cursor() as cur:
             cur.execute(query_cobrado, (str(empresa_id), fecha_inicio, fecha_fin + " 23:59:59"))
             cobrado = cur.fetchone()['total_cobrado']
             
-            cur.execute(query_pendiente, (str(empresa_id),))
+            cur.execute(query_pendiente, (str(empresa_id), fecha_inicio, fecha_fin + " 23:59:59"))
             pendiente = cur.fetchone()['total_pendiente']
             
         return {
