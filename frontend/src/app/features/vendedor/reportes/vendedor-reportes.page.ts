@@ -53,7 +53,7 @@ import { environment } from '../../../../environments/environment';
           iconClass="bi-exclamation-octagon"
           iconBgClass="bg-danger-light"
           buttonClass="btn-danger-custom"
-          buttonIcon="bi-file-earmark-excel"
+          buttonIcon="bi-file-earmark-pdf"
           [loading]="isGeneratingVencidas"
           [disabled]="metricas && metricas.total_vencidas === 0"
           (actionClick)="generarReporteVencidas()">
@@ -63,10 +63,11 @@ import { environment } from '../../../../environments/environment';
         <app-reporte-card
           title="Directorio Completo"
           description="Exporta todos tus clientes asignados con sus datos de contacto."
-          iconClass="bi-file-earmark-spreadsheet"
+          iconClass="bi-file-earmark-pdf"
           iconBgClass="bg-blue-light"
           buttonClass="btn-secondary-custom"
           buttonText="Descargar Empresas"
+          buttonIcon="bi-file-earmark-pdf"
           [loading]="isGeneratingEmpresas"
           (actionClick)="generarReporteEmpresas()">
           
@@ -90,6 +91,7 @@ import { environment } from '../../../../environments/environment';
           iconBgClass="bg-warning-light"
           buttonClass="btn-warning-custom"
           buttonText="Ver Mis Comisiones"
+          buttonIcon="bi-file-earmark-pdf"
           [loading]="isGeneratingComisiones"
           [disabled]="metricas && metricas.monto_comisiones === 0"
           (actionClick)="generarReporteComisiones()">

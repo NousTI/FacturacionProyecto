@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
+        
+        body { font-family: 'Inter', sans-serif; color: #1f2937; margin: 0; padding: 0; line-height: 1.5; }
+        .header { background: #047857; color: white; padding: 40px 30px; text-align: left; position: relative; }
+        .header h1 { margin: 0; font-size: 28px; letter-spacing: -0.025em; }
+        .header p { margin: 5px 0 0; opacity: 0.8; font-size: 14px; }
+        .meta-info { position: absolute; right: 30px; top: 40px; text-align: right; font-size: 12px; }
+        
+        .content { padding: 30px; }
+        .summary-ribbon { background: #f0fdf4; border: 1px solid #dcfce7; padding: 20px; border-radius: 12px; margin-bottom: 30px; display: flex; justify-content: space-between; align-items: center; }
+        .summary-item .label { font-size: 11px; color: #166534; text-transform: uppercase; font-weight: 700; margin-bottom: 4px; }
+        .summary-item .value { font-size: 24px; font-weight: 800; color: #064e3b; }
+
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th { background: #f9fafb; padding: 12px 10px; text-align: left; font-size: 11px; text-transform: uppercase; color: #4b5563; border-bottom: 2px solid #e5e7eb; }
+        td { padding: 12px 10px; font-size: 12px; border-bottom: 1px solid #f3f4f6; }
+        
+        .amount { font-weight: 700; color: #047857; text-align: right; }
+        .badge { display: inline-block; padding: 2px 8px; border-radius: 9999px; font-size: 10px; font-weight: 600; }
+        .badge-paid { background: #dcfce7; color: #166534; }
+        .badge-pending { background: #fef9c3; color: #854d0e; }
+
+        .footer { position: fixed; bottom: 0; width: 100%; padding: 20px 30px; text-align: center; font-size: 10px; color: #9ca3af; border-top: 1px solid #f3f4f6; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Liquidación de Comisiones</h1>
+        <p>Reporte detallado de ingresos generados por ventas y renovaciones.</p>
+        <div class="meta-info">
+            Fecha: {{ now }}<br>
+            Vendedor: {{ vendedor_nombre }}
+        </div>
+    </div>
+
+    <div class="content">
+        {% set total = data|sum(attribute='monto') %}
+        <div class="summary-ribbon">
+            <div class="summary-item">
+                <div class="label">Total Comisiones</div>
+                <div class="value">${{ "{:,.2f}".format(total) }}</div>
+            </div>
+            <div class="summary-item" style="text-align: right;">
+                <div class="label">Periodo</div>
+                <div class="value" style="font-size: 14px;">{{ params.fecha_inicio or 'Inicio' }} al {{ params.fecha_fin or 'Hoy' }}</div>
+            </div>
+        </div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Fecha</th>
+                    <th>Cliente / Empresa</th>
+                    <th>Plan</th>
+                    <th style="text-align: center;">% Com.</th>
+                    <th style="text-align: center;">Estado</th>
+                    <th style="text-align: right;">Monto</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for c in data %}
+                <tr>
+                    <td>{{ c.fecha_generacion }}</td>
+                    <td style="font-weight: 600; color: #111827;">{{ c.razon_social }}</td>
+                    <td>{{ c.plan_nombre }}</td>
+                    <td style="text-align: center;">{{ c.porcentaje_aplicado }}%</td>
+                    <td style="text-align: center;">
+                        {% if c.estado == 'PAGADA' %}
+                        <span class="badge badge-paid">PAGADA</span>
+                        {% else %}
+                        <span class="badge badge-pending">{{ c.estado }}</span>
+                        {% endif %}
+                    </td>
+                    <td class="amount">${{ "{:,.2f}".format(c.monto) }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="footer">
+        Este documento sirve como soporte detallado para el pago de comisiones de venta.
+    </div>
+</body>
+</html>

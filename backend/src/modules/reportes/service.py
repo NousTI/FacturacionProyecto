@@ -13,6 +13,11 @@ from .superadmin.R_033.repository import RepositorioR033
 from .usuarios.R_026.service import ServicioR026
 from .usuarios.R_027.service import ServicioR027
 from .usuarios.R_028.service import ServicioR028
+from .vendedores.dashboard.service import ServicioDashboardVendedor
+from .vendedores.RV_001.service import ServicioRV001
+from .vendedores.RV_002.service import ServicioRV002
+from .vendedores.RV_003.service import ServicioRV003
+from .vendedores.RV_004.service import ServicioRV004
 from ..empresas.repositories import RepositorioEmpresas
 from .schemas import ReporteCreacion
 from ...constants.enums import AuthKeys
@@ -30,6 +35,11 @@ class ServicioReportes:
         svc_r026: ServicioR026 = Depends(),
         svc_r027: ServicioR027 = Depends(),
         svc_r028: ServicioR028 = Depends(),
+        svc_dashboard_vendedor: ServicioDashboardVendedor = Depends(),
+        svc_rv001: ServicioRV001 = Depends(),
+        svc_rv002: ServicioRV002 = Depends(),
+        svc_rv003: ServicioRV003 = Depends(),
+        svc_rv004: ServicioRV004 = Depends(),
         repo_empresas: RepositorioEmpresas = Depends()
     ):
         self.repo = repo
@@ -39,6 +49,11 @@ class ServicioReportes:
         self.svc_r026 = svc_r026
         self.svc_r027 = svc_r027
         self.svc_r028 = svc_r028
+        self.svc_dashboard_vendedor = svc_dashboard_vendedor
+        self.svc_rv001 = svc_rv001
+        self.svc_rv002 = svc_rv002
+        self.svc_rv003 = svc_rv003
+        self.svc_rv004 = svc_rv004
         self.repo_empresas = repo_empresas
 
     def crear_reporte(self, datos: ReporteCreacion, usuario_actual: dict):
@@ -50,78 +65,22 @@ class ServicioReportes:
         datos_dict = datos.model_dump()
         datos_dict['usuario_id'] = target_usuario_id
 
-        # Flujo de generación esencial para Vendedor
+        # Flujo de generación modular para Vendedor (Genera PDF)
         if is_vendedor:
             vendedor_id = usuario_actual.get('internal_vendedor_id')
+            vendedor_nombre = f"{usuario_actual.get('nombres', '')} {usuario_actual.get('apellidos', '')}"
             if not vendedor_id: raise AppError("No autorizado como vendedor", 403)
             
             parametros = datos.parametros or {}
-            fecha_inicio = parametros.get('fecha_inicio')
-            fecha_fin = parametros.get('fecha_fin')
 
             if datos.tipo == 'MIS_EMPRESAS':
-                empresas = self.repo.obtener_empresas_vendedor_detalle(vendedor_id, fecha_inicio, fecha_fin)
-                filename = f"reporte_mis_empresas_{uuid.uuid4().hex[:8]}.csv"
-                filepath = os.path.join("static", "reportes", filename)
-                os.makedirs(os.path.dirname(filepath), exist_ok=True)
-                
-                with open(filepath, mode='w', newline='', encoding='utf-8') as f:
-                    writer = csv.writer(f)
-                    writer.writerow(['RUC', 'Razon Social', 'Nombre Comercial', 'Email', 'Estado', 'Fecha Registro', 'Usuarios'])
-                    for e in empresas:
-                        writer.writerow([
-                            e.get('ruc', ''), e.get('razon_social', ''), e.get('nombre_comercial', ''),
-                            e.get('email', ''), 'ACTIVA' if e.get('activo') else 'INACTIVA', e.get('fecha_registro', ''),
-                            e.get('usuarios_registrados', 0)
-                        ])
-
+                filename = self.svc_rv001.generar_reporte(vendedor_id, vendedor_nombre, parametros)
             elif datos.tipo == 'SUSCRIPCIONES_VENCIDAS':
-                suscripciones = self.repo.obtener_suscripciones_vencidas(vendedor_id)
-                filename = f"reporte_susc_vencidas_{uuid.uuid4().hex[:8]}.csv"
-                filepath = os.path.join("static", "reportes", filename)
-                os.makedirs(os.path.dirname(filepath), exist_ok=True)
-                
-                with open(filepath, mode='w', newline='', encoding='utf-8') as f:
-                    writer = csv.writer(f)
-                    writer.writerow(['RUC', 'Razon Social', 'Telefono', 'Email', 'Plan', 'Fecha Vencimiento'])
-                    for s in suscripciones:
-                        writer.writerow([
-                            s.get('ruc', ''), s.get('razon_social', ''), s.get('telefono', ''),
-                            s.get('email', ''), s.get('plan_nombre', ''), s.get('fecha_fin', '')
-                        ])
-
+                filename = self.svc_rv002.generar_reporte(vendedor_id, vendedor_nombre)
             elif datos.tipo == 'SUSCRIPCIONES_PROXIMAS':
-                dias = parametros.get('dias', 15)
-                suscripciones = self.repo.obtener_suscripciones_proximas(vendedor_id, dias)
-                filename = f"reporte_susc_proximas_{uuid.uuid4().hex[:8]}.csv"
-                filepath = os.path.join("static", "reportes", filename)
-                os.makedirs(os.path.dirname(filepath), exist_ok=True)
-                
-                with open(filepath, mode='w', newline='', encoding='utf-8') as f:
-                    writer = csv.writer(f)
-                    writer.writerow(['RUC', 'Razon Social', 'Telefono', 'Email', 'Plan', 'Fecha Vencimiento'])
-                    for s in suscripciones:
-                        writer.writerow([
-                            s.get('ruc', ''), s.get('razon_social', ''), s.get('telefono', ''),
-                            s.get('email', ''), s.get('plan_nombre', ''), s.get('fecha_fin', '')
-                        ])
-
+                filename = self.svc_rv003.generar_reporte(vendedor_id, vendedor_nombre, parametros)
             elif datos.tipo == 'COMISIONES_MES':
-                fecha_inicio = parametros.get('fecha_inicio')
-                fecha_fin = parametros.get('fecha_fin')
-                comisiones = self.repo.obtener_comisiones_mes(vendedor_id, fecha_inicio, fecha_fin)
-                filename = f"reporte_comisiones_{uuid.uuid4().hex[:8]}.csv"
-                filepath = os.path.join("static", "reportes", filename)
-                os.makedirs(os.path.dirname(filepath), exist_ok=True)
-                
-                with open(filepath, mode='w', newline='', encoding='utf-8') as f:
-                    writer = csv.writer(f)
-                    writer.writerow(['Razon Social', 'Plan', 'Comision (%)', 'Monto Generado', 'Estado', 'Fecha'])
-                    for c in comisiones:
-                        writer.writerow([
-                            c.get('razon_social', ''), c.get('plan_nombre', ''), c.get('porcentaje_aplicado', ''),
-                            c.get('monto', ''), c.get('estado', ''), c.get('fecha_generacion', '')
-                        ])
+                filename = self.svc_rv004.generar_reporte(vendedor_id, vendedor_nombre, parametros)
             else:
                 raise AppError("Tipo de reporte no soportado", 400)
             
@@ -129,7 +88,7 @@ class ServicioReportes:
             datos_dict['estado'] = 'COMPLETADO'
             datos_dict['empresa_id'] = target_empresa_id
             
-            # Devolver objeto en memoria sin guardar en Base de Datos (Segun requerimiento)
+            # Devolver objeto en memoria
             datos_dict['id'] = uuid.uuid4()
             datos_dict['created_at'] = datetime.now()
             datos_dict['updated_at'] = datetime.now()
@@ -196,14 +155,7 @@ class ServicioReportes:
             return datos_dict
 
     def obtener_metricas_vendedor(self, usuario_actual: dict):
-        if not usuario_actual.get(AuthKeys.IS_VENDEDOR):
-            raise AppError("Solo los vendedores pueden acceder a estas métricas", 403)
-        
-        vendedor_id = usuario_actual.get('internal_vendedor_id')
-        if not vendedor_id:
-            raise AppError("Identificador de vendedor no encontrado", 400)
-            
-        return self.repo.obtener_metricas_vendedor(vendedor_id)
+        return self.svc_dashboard_vendedor.obtener_metricas(usuario_actual)
 
     def listar_reportes(self, usuario_actual: dict):
         empresa_id = None if usuario_actual.get(AuthKeys.IS_SUPERADMIN) else usuario_actual.get('empresa_id')

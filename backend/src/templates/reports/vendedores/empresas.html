@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
+        
+        body { font-family: 'Inter', sans-serif; color: #1f2937; margin: 0; padding: 0; line-height: 1.5; }
+        .header { background: #111827; color: white; padding: 40px 30px; text-align: left; position: relative; }
+        .header h1 { margin: 0; font-size: 28px; letter-spacing: -0.025em; }
+        .header p { margin: 5px 0 0; opacity: 0.8; font-size: 14px; }
+        .meta-info { position: absolute; right: 30px; top: 40px; text-align: right; font-size: 12px; }
+        
+        .content { padding: 30px; }
+        .stats-summary { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 30px; }
+        .stat-card { background: #f9fafb; padding: 15px; border-radius: 8px; border: 1px solid #e5e7eb; }
+        .stat-card .label { font-size: 11px; color: #6b7280; text-transform: uppercase; font-weight: 600; }
+        .stat-card .value { font-size: 20px; font-weight: 700; color: #111827; }
+
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th { background: #f9fafb; padding: 12px 10px; text-align: left; font-size: 11px; text-transform: uppercase; color: #4b5563; border-bottom: 2px solid #e5e7eb; }
+        td { padding: 12px 10px; font-size: 12px; border-bottom: 1px solid #f3f4f6; }
+        
+        .badge { display: inline-block; padding: 2px 8px; border-radius: 9999px; font-size: 10px; font-weight: 600; }
+        .badge-success { background: #dcfce7; color: #166534; }
+        .badge-error { background: #fee2e2; color: #991b1b; }
+
+        .footer { position: fixed; bottom: 0; width: 100%; padding: 20px 30px; text-align: center; font-size: 10px; color: #9ca3af; border-top: 1px solid #f3f4f6; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Directorio de Empresas</h1>
+        <p>Listado detallado de clientes asignados y estado de gestión.</p>
+        <div class="meta-info">
+            Fecha de emisión: {{ now }}<br>
+            Vendedor: {{ vendedor_nombre }}
+        </div>
+    </div>
+
+    <div class="content">
+        <div class="stats-summary">
+            <div class="stat-card">
+                <div class="label">Total Empresas</div>
+                <div class="value">{{ data|length }}</div>
+            </div>
+            {% set activas = data|selectattr('activo', 'equalto', true)|list|length %}
+            <div class="stat-card">
+                <div class="label">Activas</div>
+                <div class="value">{{ activas }}</div>
+            </div>
+            <div class="stat-card">
+                <div class="label">Inactivas</div>
+                <div class="value">{{ data|length - activas }}</div>
+            </div>
+        </div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>RUC</th>
+                    <th>Razón Social / Comercial</th>
+                    <th>Email</th>
+                    <th>Estado</th>
+                    <th>Registro</th>
+                    <th style="text-align: center;">Usuarios</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for e in data %}
+                <tr>
+                    <td style="font-weight: 600;">{{ e.ruc }}</td>
+                    <td>
+                        <div style="font-weight: 600; color: #111827;">{{ e.razon_social }}</div>
+                        <div style="font-size: 10px; color: #6b7280;">{{ e.nombre_comercial }}</div>
+                    </td>
+                    <td>{{ e.email }}</td>
+                    <td>
+                        {% if e.activo %}
+                        <span class="badge badge-success">ACTIVA</span>
+                        {% else %}
+                        <span class="badge badge-error">INACTIVA</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ e.fecha_registro }}</td>
+                    <td style="text-align: center;">{{ e.usuarios_registrados }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="footer">
+        Este documento es un reporte oficial generado por el Sistema de Facturación.
+    </div>
+</body>
+</html>

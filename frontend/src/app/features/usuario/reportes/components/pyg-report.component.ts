@@ -28,7 +28,7 @@ import { PyGReport } from '../services/financial-reports.service';
             <span>{{ data.estructura.ingresos.ingresos_netos | currency }}</span>
           </div>
 
-          <div class="pyg-row header mt-3">COSTOS Y GASTOS</div>
+          <div class="pyg-row header mt-3">COSTOS</div>
           <div class="pyg-row indent text-danger">
             <span>Costo de Ventas</span>
             <span>({{ data.estructura.costos_y_gastos.costo_de_ventas | currency }})</span>

@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
+        
+        body { font-family: 'Inter', sans-serif; color: #1f2937; margin: 0; padding: 0; line-height: 1.5; }
+        .header { background: #991b1b; color: white; padding: 40px 30px; text-align: left; position: relative; }
+        .header h1 { margin: 0; font-size: 28px; letter-spacing: -0.025em; }
+        .header p { margin: 5px 0 0; opacity: 0.8; font-size: 14px; }
+        .meta-info { position: absolute; right: 30px; top: 40px; text-align: right; font-size: 12px; }
+        
+        .content { padding: 30px; }
+        .alert-box { background: #fef2f2; border-left: 4px solid #ef4444; padding: 15px; margin-bottom: 25px; border-radius: 4px; }
+        .alert-box .title { font-weight: 700; color: #991b1b; font-size: 14px; margin-bottom: 5px; }
+        .alert-box .desc { font-size: 12px; color: #b91c1c; }
+
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th { background: #f9fafb; padding: 12px 10px; text-align: left; font-size: 11px; text-transform: uppercase; color: #4b5563; border-bottom: 2px solid #e5e7eb; }
+        td { padding: 12px 10px; font-size: 12px; border-bottom: 1px solid #f3f4f6; }
+        
+        .date-venc { font-weight: 700; color: #ef4444; }
+
+        .footer { position: fixed; bottom: 0; width: 100%; padding: 20px 30px; text-align: center; font-size: 10px; color: #9ca3af; border-top: 1px solid #f3f4f6; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Suscripciones Suspendidas</h1>
+        <p>Reporte de recuperación de cartera y servicios cortados.</p>
+        <div class="meta-info">
+            Generado: {{ now }}<br>
+            Vendedor: {{ vendedor_nombre }}
+        </div>
+    </div>
+
+    <div class="content">
+        <div class="alert-box">
+            <div class="title">Acción Recomendada</div>
+            <div class="desc">Estos clientes tienen el servicio suspendido por falta de pago. Se recomienda contacto telefónico inmediato para gestión de cobro.</div>
+        </div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>RUC / Razón Social</th>
+                    <th>Contacto (Email/Tel)</th>
+                    <th>Plan Contratado</th>
+                    <th>Fecha Vencimiento</th>
+                    <th style="text-align: right;">Estado</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for s in data %}
+                <tr>
+                    <td>
+                        <div style="font-weight: 700; color: #111827;">{{ s.razon_social }}</div>
+                        <div style="font-size: 10px; color: #6b7280;">{{ s.ruc }}</div>
+                    </td>
+                    <td>
+                        <div>{{ s.email }}</div>
+                        <div style="font-size: 11px; color: #6b7280;">{{ s.telefono }}</div>
+                    </td>
+                    <td>{{ s.plan_nombre }}</td>
+                    <td class="date-venc">{{ s.fecha_fin }}</td>
+                    <td style="text-align: right;">
+                        <span style="color: #ef4444; font-weight: 800; font-size: 10px;">SUSPENDIDO</span>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="footer">
+        Confidencial - Para uso exclusivo del departamento de ventas.
+    </div>
+</body>
+</html>
