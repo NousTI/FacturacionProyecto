@@ -21,9 +21,6 @@ CREATE TABLE IF NOT EXISTS sistema_facturacion.empresa_permisos (
     -- Descripción funcional del permiso
     descripcion TEXT,
 
-    tipo TEXT NOT NULL
-        CHECK (tipo IN ('LECTURA', 'ESCRITURA', 'ELIMINACION', 'ESPECIAL', 'ADMIN', 'SISTEMA')),
-
     -- Auditoría
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()

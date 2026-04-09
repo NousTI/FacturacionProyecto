@@ -20,13 +20,12 @@ class RepositorioPermisos:
 
     def create_permission(self, data: dict) -> Optional[dict]:
         with db_transaction(self.db) as cur:
-            fields = ["codigo", "nombre", "modulo", "descripcion", "tipo"]
+            fields = ["codigo", "nombre", "modulo", "descripcion"]
             values = [
                 data.get("codigo"),
                 data.get("nombre"),
                 data.get("modulo"),
-                data.get("descripcion"),
-                data.get("tipo")
+                data.get("descripcion")
             ]
             # ID y timestamps se generan en DB por default si está configurado
             query = f"""

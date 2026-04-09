@@ -51,21 +51,31 @@ class ServicioPagosGasto:
         
         if gasto_id:
              gasto = self.gasto_repo.obtener_por_id(gasto_id)
+             if not gasto:
+                  raise AppError("Gasto no encontrado", 404, "GASTO_NOT_FOUND")
              if not is_superadmin and str(gasto['empresa_id']) != str(usuario_actual.get('empresa_id')):
                   raise AppError("No autorizado", 403, "AUTH_FORBIDDEN")
              return self.repo.listar_por_gasto(gasto_id)
              
-        if not is_superadmin:
-             raise AppError("Acceso denegado", 403, "AUTH_FORBIDDEN")
-        return self.repo.listar_todos()
+        if is_superadmin:
+             return self.repo.listar_todos()
+        
+        empresa_id = usuario_actual.get('empresa_id')
+        if not empresa_id:
+             raise AppError("Empresa no identificada", 400, "EMPRESA_MISSING")
+             
+        return self.repo.listar_por_empresa(empresa_id)
 
     def actualizar_pago(self, id: UUID, datos: PagoGastoActualizacion, usuario_actual: dict):
-        if not usuario_actual.get(AuthKeys.IS_SUPERADMIN):
-            raise AppError("Solo Superadmin puede actualizar pagos", 403, "AUTH_FORBIDDEN")
-            
         pago = self.repo.obtener_por_id(id)
         if not pago:
              raise AppError("Pago no encontrado", 404, "PAGO_NOT_FOUND")
+             
+        is_superadmin = usuario_actual.get(AuthKeys.IS_SUPERADMIN, False)
+        if not is_superadmin:
+            gasto = self.gasto_repo.obtener_por_id(pago['gasto_id'])
+            if not gasto or str(gasto['empresa_id']) != str(usuario_actual.get('empresa_id')):
+                raise AppError("No autorizado", 403, "AUTH_FORBIDDEN")
              
         actualizado = self.repo.actualizar_pago(id, datos.model_dump(exclude_unset=True))
         
@@ -79,12 +89,15 @@ class ServicioPagosGasto:
         return actualizado
 
     def eliminar_pago(self, id: UUID, usuario_actual: dict):
-        if not usuario_actual.get(AuthKeys.IS_SUPERADMIN):
-            raise AppError("Solo Superadmin puede eliminar pagos", 403, "AUTH_FORBIDDEN")
-
         pago = self.repo.obtener_por_id(id)
         if not pago:
              raise AppError("Pago no encontrado", 404, "PAGO_NOT_FOUND")
+             
+        is_superadmin = usuario_actual.get(AuthKeys.IS_SUPERADMIN, False)
+        if not is_superadmin:
+            gasto = self.gasto_repo.obtener_por_id(pago['gasto_id'])
+            if not gasto or str(gasto['empresa_id']) != str(usuario_actual.get('empresa_id')):
+                raise AppError("No autorizado", 403, "AUTH_FORBIDDEN")
              
         gasto_id = pago['gasto_id']
         self.repo.eliminar_pago(id)

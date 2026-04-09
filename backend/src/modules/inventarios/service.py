@@ -66,7 +66,51 @@ class ServicioInventarios:
         return [self._filtrar_costos(m, usuario_actual) for m in movimientos]
 
     def listar_todos(self, usuario_actual: dict):
-        if not usuario_actual.get(AuthKeys.IS_SUPERADMIN):
-            raise AppError("Solo superadmin", 403, "AUTH_FORBIDDEN")
-        movimientos = self.repo.listar_todos()
+        if usuario_actual.get(AuthKeys.IS_SUPERADMIN):
+            movimientos = self.repo.listar_todos()
+        else:
+            empresa_id = usuario_actual.get('empresa_id')
+            if not empresa_id:
+                raise AppError("Empresa no identificada", 400, "EMPRESA_MISSING")
+            movimientos = self.repo.listar_por_empresa(empresa_id)
+            
         return [self._filtrar_costos(m, usuario_actual) for m in movimientos]
+
+    def obtener_movimiento(self, id: UUID, usuario_actual: dict):
+        movimiento = self.repo.obtener_por_id(id)
+        if not movimiento:
+            raise AppError("Movimiento no encontrado", 404, "MOVIMIENTO_NOT_FOUND")
+
+        if not usuario_actual.get(AuthKeys.IS_SUPERADMIN):
+            if str(movimiento['empresa_id']) != str(usuario_actual.get('empresa_id')):
+                raise AppError("No autorizado", 403, "AUTH_FORBIDDEN")
+
+        return self._filtrar_costos(movimiento, usuario_actual)
+
+    def actualizar_movimiento(self, id: UUID, datos: dict, usuario_actual: dict):
+        movimiento = self.obtener_movimiento(id, usuario_actual)
+        if not movimiento:
+            raise AppError("Movimiento no encontrado", 404, "MOVIMIENTO_NOT_FOUND")
+
+        try:
+            payload = datos.model_dump(exclude_unset=True)
+            if not payload:
+                return movimiento
+
+            actualizado = self.repo.actualizar_movimiento(id, payload)
+            if not actualizado:
+                raise AppError("Error al actualizar movimiento", 500, "DB_ERROR")
+            return self._filtrar_costos(actualizado, usuario_actual)
+        except Exception as e:
+            if "stock_anterior" in str(e).lower():
+                raise AppError("No se puede cambiar stock anterior", 400, "VAL_ERROR")
+            raise e
+
+    def eliminar_movimiento(self, id: UUID, usuario_actual: dict):
+        movimiento = self.obtener_movimiento(id, usuario_actual)
+        if not movimiento:
+            raise AppError("Movimiento no encontrado", 404, "MOVIMIENTO_NOT_FOUND")
+
+        if not self.repo.eliminar_movimiento(id):
+            raise AppError("No se pudo eliminar movimiento", 500, "DB_ERROR")
+        return True

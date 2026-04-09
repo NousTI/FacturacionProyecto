@@ -11,7 +11,6 @@ import { Permiso } from '../../../../domain/models/perfil.model';
       <div class="d-flex justify-content-between align-items-start mb-2">
         <div class="permiso-id-section">
           <span class="permiso-code">{{ permiso.codigo }}</span>
-          <span class="permiso-type-badge" [class]="permiso.tipo.toLowerCase()">{{ permiso.tipo }}</span>
         </div>
         
         <!-- GRANT STATUS BADGE -->
@@ -58,19 +57,6 @@ import { Permiso } from '../../../../domain/models/perfil.model';
       color: #64748b;
       font-weight: 700;
     }
-    .permiso-type-badge {
-      font-size: 0.6rem;
-      font-weight: 800;
-      text-transform: uppercase;
-      padding: 2px 8px;
-      border-radius: 100px;
-      letter-spacing: 0.5px;
-    }
-    .permiso-type-badge.lectura { background: #dcfce7; color: #166534; }
-    .permiso-type-badge.escritura { background: #fef9c3; color: #854d0e; }
-    .permiso-type-badge.admin { background: #fee2e2; color: #991b1b; }
-    .permiso-type-badge.sistema { background: #e0e7ff; color: #3730a3; }
-    .permiso-type-badge.especial { background: #fae8ff; color: #86198f; }
 
     .grant-status-badge {
       font-size: 0.65rem;

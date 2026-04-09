@@ -9,7 +9,6 @@ class PermisoBase(BaseModel):
     nombre: str
     modulo: str
     descripcion: Optional[str] = None
-    tipo: str  # LECTURA, ACCION, ADMIN, SISTEMA
 
 class PermisoCreacion(PermisoBase):
     pass

@@ -55,7 +55,6 @@ class PermisoSchema(BaseModel):
     codigo: str
     nombre: str
     modulo: str
-    tipo: str
     descripcion: Optional[str] = None
     concedido: bool = False  # Indica si el usuario tiene este permiso otorgado
 

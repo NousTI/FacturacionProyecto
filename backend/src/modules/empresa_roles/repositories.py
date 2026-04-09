@@ -13,7 +13,7 @@ class RepositorioRoles:
         """List all system permissions"""
         query = """
             SELECT * FROM sistema_facturacion.empresa_permisos
-            ORDER BY modulo, tipo, nombre
+            ORDER BY modulo, nombre
         """
         with self.db.cursor() as cur:
             cur.execute(query)
@@ -54,7 +54,6 @@ class RepositorioRoles:
                                'codigo', p.codigo,
                                'nombre', p.nombre,
                                'modulo', p.modulo,
-                               'tipo', p.tipo,
                                'descripcion', p.descripcion,
                                'created_at', p.created_at,
                                'updated_at', p.updated_at
@@ -83,7 +82,6 @@ class RepositorioRoles:
                                'codigo', p.codigo,
                                'nombre', p.nombre,
                                'modulo', p.modulo,
-                               'tipo', p.tipo,
                                'descripcion', p.descripcion,
                                'created_at', p.created_at,
                                'updated_at', p.updated_at

@@ -274,7 +274,7 @@ class RepositorioUsuarios:
             # 2. Get ALL Permissions and check grant status
             # If SuperAdmin, all are granted. If not, join with role permissions.
             query_perms = """
-                SELECT p.id, p.codigo, p.nombre, p.modulo, p.tipo, p.descripcion,
+                SELECT p.id, p.codigo, p.nombre, p.modulo, p.descripcion,
                        (erp.permiso_id IS NOT NULL OR %s) as concedido
                 FROM sistema_facturacion.empresa_permisos p
                 LEFT JOIN sistema_facturacion.empresa_roles_permisos erp ON p.id = erp.permiso_id 

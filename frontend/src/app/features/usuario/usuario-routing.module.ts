@@ -21,6 +21,10 @@ import { CertificadoSriPage } from './certificado-sri/certificado-sri.page';
 import { EmpresaPage } from './empresa/empresa.page';
 import { RolesPermisosPage } from './roles/roles.page';
 import { ProveedoresPage } from './proveedores/proveedores.page';
+import { GastosPage } from './gastos/gastos.page';
+import { CategoriasGastoPage } from './categorias-gasto/categorias-gasto.page';
+import { PagosGastoPage } from './pagos-gasto/pagos-gasto.page';
+import { InventariosPage } from './inventarios/inventarios.page';
 
 import { CompanyActiveGuard } from '../../core/guards/company-active.guard';
 
@@ -125,6 +129,30 @@ const routes: Routes = [
         component: CertificadoSriPage,
         canActivate: [RoleGuard, CompanyActiveGuard],
         data: { title: 'Certificado SRI', roles: [UserRole.USUARIO], permission: 'CONFIG_SRI' }
+    },
+    {
+        path: 'gastos',
+        component: GastosPage,
+        canActivate: [RoleGuard, CompanyActiveGuard],
+        data: { title: 'Gastos', roles: [UserRole.USUARIO], permission: 'GASTOS_VER' }
+    },
+    {
+        path: 'categorias-gasto',
+        component: CategoriasGastoPage,
+        canActivate: [RoleGuard, CompanyActiveGuard],
+        data: { title: 'Categorías de Gasto', roles: [UserRole.USUARIO], permission: 'CATEGORIA_GASTO_VER' }
+    },
+    {
+        path: 'pagos-gasto',
+        component: PagosGastoPage,
+        canActivate: [RoleGuard, CompanyActiveGuard],
+        data: { title: 'Pagos de Gastos', roles: [UserRole.USUARIO], permission: 'PAGO_GASTO_VER' }
+    },
+    {
+        path: 'inventarios',
+        component: InventariosPage,
+        canActivate: [RoleGuard, CompanyActiveGuard],
+        data: { title: 'Inventarios', roles: [UserRole.USUARIO], permission: 'INVENTARIO_VER' }
     }
 ];
 

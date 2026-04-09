@@ -13,7 +13,7 @@ router = APIRouter()
 @router.get("/", response_model=List[CategoriaGastoLectura])
 def listar_categorias(
     empresa_id: Optional[UUID] = None,
-    usuario: dict = Depends(requerir_permiso(PermissionCodes.REPORTE_VER)),
+    usuario: dict = Depends(requerir_permiso(PermissionCodes.CATEGORIA_GASTO_VER)),
     servicio: ServicioCategoriasGasto = Depends()
 ):
     return servicio.listar_categorias(usuario, empresa_id)
@@ -21,7 +21,7 @@ def listar_categorias(
 @router.post("/", response_model=CategoriaGastoLectura, status_code=status.HTTP_201_CREATED)
 def crear_categoria(
     datos: CategoriaGastoCreacion,
-    usuario: dict = Depends(requerir_permiso(PermissionCodes.REPORTE_VER)),
+    usuario: dict = Depends(requerir_permiso(PermissionCodes.CATEGORIA_GASTO_CREAR)),
     servicio: ServicioCategoriasGasto = Depends()
 ):
     return servicio.crear_categoria(datos, usuario)
@@ -29,7 +29,7 @@ def crear_categoria(
 @router.get("/{id}", response_model=CategoriaGastoLectura)
 def obtener_categoria(
     id: UUID,
-    usuario: dict = Depends(requerir_permiso(PermissionCodes.REPORTE_VER)),
+    usuario: dict = Depends(requerir_permiso(PermissionCodes.CATEGORIA_GASTO_VER)),
     servicio: ServicioCategoriasGasto = Depends()
 ):
     return servicio.obtener_categoria(id, usuario)
@@ -38,7 +38,7 @@ def obtener_categoria(
 def actualizar_categoria(
     id: UUID,
     datos: CategoriaGastoActualizacion,
-    usuario: dict = Depends(requerir_permiso(PermissionCodes.REPORTE_VER)),
+    usuario: dict = Depends(requerir_permiso(PermissionCodes.CATEGORIA_GASTO_EDITAR)),
     servicio: ServicioCategoriasGasto = Depends()
 ):
     return servicio.actualizar_categoria(id, datos, usuario)
@@ -46,7 +46,7 @@ def actualizar_categoria(
 @router.delete("/{id}")
 def eliminar_categoria(
     id: UUID,
-    usuario: dict = Depends(requerir_permiso(PermissionCodes.REPORTE_VER)),
+    usuario: dict = Depends(requerir_permiso(PermissionCodes.CATEGORIA_GASTO_ELIMINAR)),
     servicio: ServicioCategoriasGasto = Depends()
 ):
     servicio.eliminar_categoria(id, usuario)

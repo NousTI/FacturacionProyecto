@@ -102,3 +102,12 @@ api_router.include_router(inventarios_router, prefix="/inventarios", tags=["Inve
 
 from ..modules.facturas.routers.router_recurrentes import router as programaciones_router
 api_router.include_router(programaciones_router, prefix="/facturacion-programada", tags=["Facturación Programada"], dependencies=operativo)
+
+from ..modules.tipo_movimiento.router import router as tipo_movimiento_router
+api_router.include_router(tipo_movimiento_router, prefix="/tipo-movimiento", tags=["Tipo de Movimiento"], dependencies=operativo)
+
+from ..modules.unidad_medida.router import router as unidad_medida_router
+api_router.include_router(unidad_medida_router, prefix="/unidad-medida", tags=["Unidades de Medida"], dependencies=operativo)
+
+from ..modules.reporte_generado.router import router as reporte_generado_router
+api_router.include_router(reporte_generado_router, prefix="/reportes-generados", tags=["Reportes Generados"], dependencies=operativo)

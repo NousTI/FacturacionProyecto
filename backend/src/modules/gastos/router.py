@@ -13,7 +13,7 @@ router = APIRouter()
 @router.get("/", response_model=List[GastoLectura])
 def listar_gastos(
     empresa_id: Optional[UUID] = None,
-    usuario: dict = Depends(requerir_permiso(PermissionCodes.REPORTE_VER)),
+    usuario: dict = Depends(requerir_permiso(PermissionCodes.GASTOS_VER)),
     servicio: ServicioGastos = Depends()
 ):
     return servicio.listar_gastos(usuario, empresa_id)
@@ -21,7 +21,7 @@ def listar_gastos(
 @router.post("/", response_model=GastoLectura, status_code=status.HTTP_201_CREATED)
 def crear_gasto(
     datos: GastoCreacion,
-    usuario: dict = Depends(requerir_permiso(PermissionCodes.REPORTE_VER)),
+    usuario: dict = Depends(requerir_permiso(PermissionCodes.GASTOS_CREAR)),
     servicio: ServicioGastos = Depends()
 ):
     return servicio.crear_gasto(datos, usuario)
@@ -29,7 +29,7 @@ def crear_gasto(
 @router.get("/{id}", response_model=GastoLectura)
 def obtener_gasto(
     id: UUID,
-    usuario: dict = Depends(requerir_permiso(PermissionCodes.REPORTE_VER)),
+    usuario: dict = Depends(requerir_permiso(PermissionCodes.GASTOS_VER)),
     servicio: ServicioGastos = Depends()
 ):
     return servicio.obtener_gasto(id, usuario)
@@ -38,7 +38,7 @@ def obtener_gasto(
 def actualizar_gasto(
     id: UUID,
     datos: GastoActualizacion,
-    usuario: dict = Depends(requerir_permiso(PermissionCodes.REPORTE_VER)),
+    usuario: dict = Depends(requerir_permiso(PermissionCodes.GASTOS_EDITAR)),
     servicio: ServicioGastos = Depends()
 ):
     return servicio.actualizar_gasto(id, datos, usuario)
@@ -46,7 +46,7 @@ def actualizar_gasto(
 @router.delete("/{id}")
 def eliminar_gasto(
     id: UUID,
-    usuario: dict = Depends(requerir_permiso(PermissionCodes.REPORTE_VER)),
+    usuario: dict = Depends(requerir_permiso(PermissionCodes.GASTOS_ELIMINAR)),
     servicio: ServicioGastos = Depends()
 ):
     servicio.eliminar_gasto(id, usuario)

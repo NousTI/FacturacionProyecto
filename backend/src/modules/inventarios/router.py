@@ -11,7 +11,7 @@ router = APIRouter()
 
 @router.get("/", response_model=List[MovimientoInventarioLectura])
 def listar_todos(
-    usuario: dict = Depends(requerir_permiso(PermissionCodes.PRODUCTO_EDITAR)),
+    usuario: dict = Depends(requerir_permiso(PermissionCodes.INVENTARIO_VER)),
     servicio: ServicioInventarios = Depends()
 ):
     return servicio.listar_todos(usuario)
@@ -19,15 +19,42 @@ def listar_todos(
 @router.get("/producto/{producto_id}", response_model=List[MovimientoInventarioLectura])
 def listar_por_producto(
     producto_id: UUID,
-    usuario: dict = Depends(requerir_permiso(PermissionCodes.PRODUCTO_EDITAR)),
+    usuario: dict = Depends(requerir_permiso(PermissionCodes.INVENTARIO_VER)),
     servicio: ServicioInventarios = Depends()
 ):
     return servicio.listar_por_producto(producto_id, usuario)
 
+@router.get("/{id}", response_model=MovimientoInventarioLectura)
+def obtener_movimiento(
+    id: UUID,
+    usuario: dict = Depends(requerir_permiso(PermissionCodes.INVENTARIO_VER)),
+    servicio: ServicioInventarios = Depends()
+):
+    return servicio.obtener_movimiento(id, usuario)
+
 @router.post("/", response_model=MovimientoInventarioLectura, status_code=status.HTTP_201_CREATED)
 def crear_movimiento(
     datos: MovimientoInventarioCreacion,
-    usuario: dict = Depends(requerir_permiso(PermissionCodes.PRODUCTO_EDITAR)),
+    usuario: dict = Depends(requerir_permiso(PermissionCodes.INVENTARIO_CREAR)),
     servicio: ServicioInventarios = Depends()
 ):
     return servicio.crear_movimiento(datos, usuario)
+
+@router.put("/{id}", response_model=MovimientoInventarioLectura)
+def actualizar_movimiento(
+    id: UUID,
+    datos: MovimientoInventarioCreacion,
+    usuario: dict = Depends(requerir_permiso(PermissionCodes.INVENTARIO_EDITAR)),
+    servicio: ServicioInventarios = Depends()
+):
+    return servicio.actualizar_movimiento(id, datos, usuario)
+
+@router.delete("/{id}")
+def eliminar_movimiento(
+    id: UUID,
+    usuario: dict = Depends(requerir_permiso(PermissionCodes.INVENTARIO_ELIMINAR)),
+    servicio: ServicioInventarios = Depends()
+):
+    servicio.eliminar_movimiento(id, usuario)
+    from ...utils.response import success_response
+    return success_response(None, "Movimiento de inventario eliminado correctamente")

@@ -3,7 +3,6 @@ export interface Permiso {
     codigo: string;
     nombre: string;
     modulo: string;
-    tipo: string;
     descripcion?: string;
     concedido: boolean;
 }

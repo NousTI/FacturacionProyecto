@@ -43,6 +43,18 @@ class RepositorioPagosGasto:
             cur.execute(query)
             return [dict(row) for row in cur.fetchall()]
 
+    def listar_por_empresa(self, empresa_id: UUID) -> List[dict]:
+        query = """
+            SELECT pg.* 
+            FROM pago_gasto pg
+            JOIN gasto g ON pg.gasto_id = g.id
+            WHERE g.empresa_id = %s
+            ORDER BY pg.created_at DESC
+        """
+        with self.db.cursor() as cur:
+            cur.execute(query, (str(empresa_id),))
+            return [dict(row) for row in cur.fetchall()]
+
     def actualizar_pago(self, id: UUID, data: dict) -> Optional[dict]:
         if not data: return None
         

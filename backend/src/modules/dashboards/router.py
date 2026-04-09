@@ -7,13 +7,14 @@ from .schemas import (
     DashboardAlertas, 
     DashboardOverview
 )
-from ..autenticacion.routes import obtener_usuario_actual
+from ..autenticacion.routes import obtener_usuario_actual, requerir_permiso
+from ...constants.permissions import PermissionCodes
 
 router = APIRouter()
 
 @router.get("/summary", response_model=ResumenDashboard)
 def obtener_resumen(
-    usuario: dict = Depends(obtener_usuario_actual),
+    usuario: dict = Depends(requerir_permiso(PermissionCodes.DASHBOARD_VER)),
     servicio: ServicioDashboards = Depends()
 ):
     return servicio.obtener_resumen(usuario)
@@ -21,7 +22,7 @@ def obtener_resumen(
 @router.get("/charts", response_model=DashboardGraficos)
 def obtener_graficos(
     periodo: str = 'month',
-    usuario: dict = Depends(obtener_usuario_actual),
+    usuario: dict = Depends(requerir_permiso(PermissionCodes.DASHBOARD_VER)),
     servicio: ServicioDashboards = Depends()
 ):
     return servicio.obtener_graficos(usuario, periodo=periodo)
@@ -29,7 +30,7 @@ def obtener_graficos(
 @router.get("/kpis", response_model=DashboardKPIs)
 def obtener_kpis(
     periodo: str = 'month',
-    usuario: dict = Depends(obtener_usuario_actual),
+    usuario: dict = Depends(requerir_permiso(PermissionCodes.DASHBOARD_VER)),
     servicio: ServicioDashboards = Depends()
 ):
     """Retorna KPIs principales del dashboard adaptados al rol."""
@@ -37,7 +38,7 @@ def obtener_kpis(
 
 @router.get("/alertas", response_model=DashboardAlertas)
 def obtener_alertas(
-    usuario: dict = Depends(obtener_usuario_actual),
+    usuario: dict = Depends(requerir_permiso(PermissionCodes.DASHBOARD_VER)),
     servicio: ServicioDashboards = Depends()
 ):
     """Retorna alertas del sistema categorizadas por rol."""
@@ -46,7 +47,7 @@ def obtener_alertas(
 @router.get("/overview", response_model=DashboardOverview)
 def obtener_overview(
     periodo: str = 'month',
-    usuario: dict = Depends(obtener_usuario_actual),
+    usuario: dict = Depends(requerir_permiso(PermissionCodes.DASHBOARD_VER)),
     servicio: ServicioDashboards = Depends()
 ):
     """Objeto agregado para carga inicial adaptado al rol."""

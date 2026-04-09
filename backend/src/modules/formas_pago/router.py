@@ -18,7 +18,7 @@ router = APIRouter()
 def agregar_pago(
     factura_id: UUID,
     datos: FormaPagoCreacion,
-    usuario: dict = Depends(requerir_permiso(PermissionCodes.FACTURA_EDITAR)),
+    usuario: dict = Depends(requerir_permiso(PermissionCodes.FORMA_PAGO_EDITAR)),
     servicio: ServicioFormasPago = Depends(),
     factura_repo: RepositorioFacturas = Depends()
 ):
@@ -28,7 +28,7 @@ def agregar_pago(
 @router.get("/facturas/{factura_id}/pagos", response_model=List[FormaPagoLectura])
 def listar_pagos(
     factura_id: UUID,
-    usuario: dict = Depends(requerir_permiso(PermissionCodes.FACTURA_VER)),
+    usuario: dict = Depends(requerir_permiso(PermissionCodes.FORMA_PAGO_VER)),
     servicio: ServicioFormasPago = Depends(),
     factura_repo: RepositorioFacturas = Depends()
 ):
@@ -38,7 +38,7 @@ def listar_pagos(
 def actualizar_pago(
     id: UUID,
     datos: FormaPagoActualizacion,
-    usuario: dict = Depends(requerir_permiso(PermissionCodes.FACTURA_EDITAR)),
+    usuario: dict = Depends(requerir_permiso(PermissionCodes.FORMA_PAGO_EDITAR)),
     servicio: ServicioFormasPago = Depends(),
     factura_repo: RepositorioFacturas = Depends()
 ):
@@ -47,7 +47,7 @@ def actualizar_pago(
 @router.delete("/pagos/{id}")
 def eliminar_pago(
     id: UUID,
-    usuario: dict = Depends(requerir_permiso(PermissionCodes.FACTURA_EDITAR)),
+    usuario: dict = Depends(requerir_permiso(PermissionCodes.FORMA_PAGO_EDITAR)),
     servicio: ServicioFormasPago = Depends(),
     factura_repo: RepositorioFacturas = Depends()
 ):

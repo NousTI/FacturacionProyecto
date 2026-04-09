@@ -14,7 +14,7 @@ class GastoBase(BaseModel):
     subtotal: Decimal = Field(..., ge=0)
     iva: Decimal = Field(default=Decimal('0.00'), ge=0)
     total: Decimal = Field(..., ge=0)
-    estado_pago: str = "pendiente" # pendiente | pagado | vencido
+    estado_pago: str = "pendiente" # pendiente | pagado | vencido | cancelado | reembolsado
     comprobante_url: Optional[str] = None
     observaciones: Optional[str] = None
 

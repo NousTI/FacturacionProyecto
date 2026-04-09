@@ -88,7 +88,7 @@ import { SidebarService } from './sidebar.service';
               
               <ng-container *ngIf="isEmpresaActiva$ | async">
                 <ng-container *ngIf="isSuscripcionActiva$ | async">
-                  <a routerLink="/usuario/dashboard" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" class="menu-item px-3 mb-1" title="Dashboard">
+                  <a *appHasPermission="'DASHBOARD_VER'" routerLink="/usuario/dashboard" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" class="menu-item px-3 mb-1" title="Dashboard">
                     <i class="bi bi-grid-fill"></i> <span class="menu-text ms-3">Dashboard</span>
                   </a>
                   <a *appHasPermission="'CONFIG_USUARIOS'" routerLink="/usuario/usuarios" routerLinkActive="active" class="menu-item px-3 mb-1" title="Usuarios">
@@ -103,6 +103,18 @@ import { SidebarService } from './sidebar.service';
                   <a *appHasPermission="'PROVEEDOR_VER'" routerLink="/usuario/proveedores" routerLinkActive="active" class="menu-item px-3 mb-1" title="Proveedores">
                     <i class="bi bi-truck"></i> <span class="menu-text ms-3">Proveedores</span>
                   </a>
+                  <a *appHasPermission="'GASTOS_VER'" routerLink="/usuario/gastos" routerLinkActive="active" class="menu-item px-3 mb-1" title="Gastos">
+                    <i class="bi bi-cash-stack"></i> <span class="menu-text ms-3">Gastos</span>
+                  </a>
+                  <a *appHasPermission="'CATEGORIA_GASTO_VER'" routerLink="/usuario/categorias-gasto" routerLinkActive="active" class="menu-item px-3 mb-1" title="Categorías de Gasto">
+                    <i class="bi bi-tags"></i> <span class="menu-text ms-3">Categorías de Gasto</span>
+                  </a>
+                  <a *appHasPermission="'PAGO_GASTO_VER'" routerLink="/usuario/pagos-gasto" routerLinkActive="active" class="menu-item px-3 mb-1" title="Pagos de Gastos">
+                    <i class="bi bi-credit-card-2-front"></i> <span class="menu-text ms-3">Pagos de Gastos</span>
+                  </a>
+                  <a *appHasPermission="'INVENTARIO_VER'" routerLink="/usuario/inventarios" routerLinkActive="active" class="menu-item px-3 mb-1" title="Inventarios">
+                    <i class="bi bi-archive"></i> <span class="menu-text ms-3">Inventarios</span>
+                  </a>
                   <a *appHasPermission="'PRODUCTOS_VER'" routerLink="/usuario/productos" routerLinkActive="active" class="menu-item px-3 mb-1" title="Productos">
                     <i class="bi bi-box-seam"></i> <span class="menu-text ms-3">Productos</span>
                   </a>
@@ -112,16 +124,16 @@ import { SidebarService } from './sidebar.service';
                   <a *appHasPermission="'CUENTA_COBRAR_VER'" routerLink="/usuario/cuentas-cobrar" routerLinkActive="active" class="menu-item px-3 mb-1" title="Cuentas por Cobrar">
                     <i class="bi bi-wallet2"></i> <span class="menu-text ms-3">Cuentas por Cobrar</span>
                   </a>
-                  <a *appHasPermission="'FACTURA_PROGRAMADA_VER'" routerLink="/usuario/facturacion-recurrente" routerLinkActive="active" class="menu-item px-3 mb-1" title="Fac. Recurrente">
+                  <a *appHasPermission="['FACTURA_PROGRAMADA_VER', 'FACTURAS_VER_TODAS']" routerLink="/usuario/facturacion-recurrente" routerLinkActive="active" class="menu-item px-3 mb-1" title="Fac. Recurrente">
                     <i class="bi bi-arrow-repeat"></i> <span class="menu-text ms-3">Fac. Recurrente</span>
                   </a>
                   <a *appHasPermission="['REPORTES_VER', 'REPORTES_EXPORTAR']" routerLink="/usuario/reportes" routerLinkActive="active" class="menu-item px-3 mb-1" title="Reportes">
                     <i class="bi bi-bar-chart"></i> <span class="menu-text ms-3">Reportes</span>
                   </a>
-                  <a *appHasPermission="'CONFIG_ESTABLECIMIENTOS'" routerLink="/usuario/establecimientos" routerLinkActive="active" class="menu-item px-3 mb-1" title="Establecimientos">
+                  <a *appHasPermission="['ESTABLECIMIENTO_VER', 'CONFIG_ESTABLECIMIENTOS']" routerLink="/usuario/establecimientos" routerLinkActive="active" class="menu-item px-3 mb-1" title="Establecimientos">
                     <i class="bi bi-shop"></i> <span class="menu-text ms-3">Establecimientos</span>
                   </a>
-                  <a *appHasPermission="'CONFIG_ESTABLECIMIENTOS'" routerLink="/usuario/puntos-emision" routerLinkActive="active" class="menu-item px-3 mb-1" title="Puntos Emisión">
+                  <a *appHasPermission="['PUNTO_EMISION_VER', 'CONFIG_ESTABLECIMIENTOS']" routerLink="/usuario/puntos-emision" routerLinkActive="active" class="menu-item px-3 mb-1" title="Puntos Emisión">
                     <i class="bi bi-printer"></i> <span class="menu-text ms-3">Puntos Emisión</span>
                   </a>
                   <a *appHasPermission="'CONFIG_SRI'" routerLink="/usuario/certificado-sri" routerLinkActive="active" class="menu-item px-3 mb-1" title="Certificado SRI">

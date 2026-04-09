@@ -11,6 +11,7 @@ from .schemas import (
 from ..autenticacion.routes import obtener_usuario_actual, requerir_permiso
 from ..autenticacion.dependencies import requerir_superadmin
 from ..permisos.constants import PermisosVendedor
+from ...constants.permissions import PermissionCodes
 
 router = APIRouter()
 
@@ -18,7 +19,7 @@ router = APIRouter()
 
 @router.get("/", response_model=List[ReporteLectura])
 def listar_reportes_usuario(
-    usuario: dict = Depends(requerir_permiso("REPORTES_VER")),
+    usuario: dict = Depends(requerir_permiso(PermissionCodes.REPORTES_VER)),
     servicio: ServicioReportes = Depends()
 ):
     """Lista todos los reportes generados por la empresa"""
@@ -27,7 +28,7 @@ def listar_reportes_usuario(
 @router.post("/", response_model=ReporteLectura, status_code=status.HTTP_201_CREATED)
 def generar_reporte_usuario(
     datos: ReporteCreacion,
-    usuario: dict = Depends(requerir_permiso("REPORTES_EXPORTAR")),
+    usuario: dict = Depends(requerir_permiso(PermissionCodes.REPORTES_EXPORTAR)),
     servicio: ServicioReportes = Depends()
 ):
     """Genera un nuevo reporte (Exportación)"""
@@ -45,7 +46,7 @@ def exportar_reporte_ventas(
     punto_emision_id: Optional[UUID] = None,
     usuario_id: Optional[UUID] = None,
     estado: Optional[str] = None,
-    usuario_actual: dict = Depends(requerir_permiso([PermisosVendedor.VER_REPORTES, "REPORTES_EXPORTAR"])),
+    usuario_actual: dict = Depends(requerir_permiso([PermisosVendedor.VER_REPORTES, PermissionCodes.REPORTES_EXPORTAR])),
     servicio: ServicioReportes = Depends()
 ):
     """Genera y descarga un reporte en formato PDF o Excel."""
@@ -81,7 +82,7 @@ def exportar_reporte_ventas(
 @router.get("/{id}", response_model=ReporteLectura)
 def obtener_reporte_usuario(
     id: UUID,
-    usuario: dict = Depends(requerir_permiso("REPORTES_VER")),
+    usuario: dict = Depends(requerir_permiso(PermissionCodes.REPORTES_VER)),
     servicio: ServicioReportes = Depends()
 ):
     """Obtiene el detalle de un reporte específico"""
@@ -90,7 +91,7 @@ def obtener_reporte_usuario(
 @router.delete("/{id}")
 def eliminar_reporte_usuario(
     id: UUID,
-    usuario: dict = Depends(requerir_permiso("REPORTES_EXPORTAR")),
+    usuario: dict = Depends(requerir_permiso(PermissionCodes.REPORTES_EXPORTAR)),
     servicio: ServicioReportes = Depends()
 ):
     """Elimina un reporte generado"""
@@ -100,7 +101,7 @@ def eliminar_reporte_usuario(
 # --- RUTAS DE VENDEDOR --- (Mantenidas para compatibilidad)
 @router.get("/vendedor/metricas", response_model=MetricasVendedorLectura)
 def obtener_metricas_vendedor(
-    usuario: dict = Depends(requerir_permiso([PermisosVendedor.VER_REPORTES, "REPORTES_VER"])),
+    usuario: dict = Depends(requerir_permiso([PermisosVendedor.VER_REPORTES, PermissionCodes.REPORTES_VER])),
     servicio: ServicioReportes = Depends()
 ):
     """Devuelve las métricas esenciales para el dashboard del vendedor"""
@@ -108,7 +109,7 @@ def obtener_metricas_vendedor(
 
 @router.get("/vendedor", response_model=List[ReporteLectura])
 def listar_reportes_vendedor(
-    usuario: dict = Depends(requerir_permiso([PermisosVendedor.VER_REPORTES, "REPORTES_VER"])),
+    usuario: dict = Depends(requerir_permiso([PermisosVendedor.VER_REPORTES, PermissionCodes.REPORTES_VER])),
     servicio: ServicioReportes = Depends()
 ):
     return servicio.listar_reportes(usuario)
@@ -116,7 +117,7 @@ def listar_reportes_vendedor(
 @router.post("/vendedor", response_model=ReporteLectura, status_code=status.HTTP_201_CREATED)
 def generar_reporte_vendedor(
     datos: ReporteCreacion,
-    usuario: dict = Depends(requerir_permiso([PermisosVendedor.VER_REPORTES, "REPORTES_EXPORTAR"])),
+    usuario: dict = Depends(requerir_permiso([PermisosVendedor.VER_REPORTES, PermissionCodes.REPORTES_EXPORTAR])),
     servicio: ServicioReportes = Depends()
 ):
     return servicio.crear_reporte(datos, usuario)
@@ -124,7 +125,7 @@ def generar_reporte_vendedor(
 @router.delete("/vendedor/{id}")
 def eliminar_reporte_vendedor(
     id: UUID,
-    usuario: dict = Depends(requerir_permiso([PermisosVendedor.VER_REPORTES, "REPORTES_EXPORTAR"])),
+    usuario: dict = Depends(requerir_permiso([PermisosVendedor.VER_REPORTES, PermissionCodes.REPORTES_EXPORTAR])),
     servicio: ServicioReportes = Depends()
 ):
     servicio.eliminar_reporte(id, usuario)
@@ -158,7 +159,7 @@ def eliminar_reporte_superadmin(
 @router.post("/preview")
 def preview_reporte(
     datos: ReporteCreacion,
-    usuario: dict = Depends(requerir_permiso([PermisosVendedor.VER_REPORTES, "REPORTES_VER"])),
+    usuario: dict = Depends(requerir_permiso([PermisosVendedor.VER_REPORTES, PermissionCodes.REPORTES_VER])),
     servicio: ServicioReportes = Depends()
 ):
     return servicio.obtener_datos_preview(datos, usuario)
@@ -173,7 +174,7 @@ def obtener_reporte_ventas_general(
     punto_emision_id: Optional[UUID] = None,
     usuario_id: Optional[UUID] = None,
     estado: Optional[str] = None,
-    usuario_actual: dict = Depends(requerir_permiso("REPORTES_VER")),
+    usuario_actual: dict = Depends(requerir_permiso([PermissionCodes.REPORTE_VENTAS_VER, PermissionCodes.REPORTES_VER])),
     servicio: ServicioReportes = Depends()
 ):
     """R-001: Reporte de Ventas General."""
@@ -191,7 +192,7 @@ def obtener_reporte_ventas_general(
 @router.get("/ventas/mensuales")
 def obtener_reporte_ventas_mensuales(
     anio: int,
-    usuario_actual: dict = Depends(requerir_permiso("REPORTES_VER")),
+    usuario_actual: dict = Depends(requerir_permiso([PermissionCodes.REPORTE_VENTAS_VER, PermissionCodes.REPORTES_VER])),
     servicio: ServicioReportes = Depends()
 ):
     """R-002: Ventas por Mes/Año."""
@@ -203,7 +204,7 @@ def obtener_reporte_ventas_usuarios(
     fecha_inicio: str,
     fecha_fin: str,
     usuario_id: Optional[UUID] = None,
-    usuario_actual: dict = Depends(requerir_permiso("REPORTES_VER")),
+    usuario_actual: dict = Depends(requerir_permiso([PermissionCodes.REPORTE_VENTAS_VER, PermissionCodes.REPORTES_VER])),
     servicio: ServicioReportes = Depends()
 ):
     """R-003: Ventas por Usuario."""
@@ -220,7 +221,7 @@ def obtener_reporte_facturas_anuladas(
     fecha_inicio: str,
     fecha_fin: str,
     usuario_id: Optional[UUID] = None,
-    usuario_actual: dict = Depends(requerir_permiso("REPORTES_VER")),
+    usuario_actual: dict = Depends(requerir_permiso([PermissionCodes.REPORTE_VENTAS_VER, PermissionCodes.REPORTES_VER])),
     servicio: ServicioReportes = Depends()
 ):
     """R-004: Facturas Anuladas."""
@@ -237,7 +238,7 @@ def obtener_reporte_facturas_rechazadas_sri(
     fecha_inicio: str,
     fecha_fin: str,
     estado: Optional[str] = None,
-    usuario_actual: dict = Depends(requerir_permiso("REPORTES_VER")),
+    usuario_actual: dict = Depends(requerir_permiso([PermissionCodes.REPORTE_VENTAS_VER, PermissionCodes.REPORTES_VER])),
     servicio: ServicioReportes = Depends()
 ):
     """R-005: Facturas Rechazadas por SRI."""
@@ -255,7 +256,7 @@ def obtener_reporte_facturas_rechazadas_sri(
 def obtener_reporte_pyg(
     fecha_inicio: str,
     fecha_fin: str,
-    usuario_actual: dict = Depends(requerir_permiso("REPORTES_VER")),
+    usuario_actual: dict = Depends(requerir_permiso([PermissionCodes.REPORTE_FINANCIERO_VER, PermissionCodes.REPORTES_VER])),
     servicio: ServicioReportes = Depends()
 ):
     """R-026: Estado de Resultados (PyG)."""
@@ -266,7 +267,7 @@ def obtener_reporte_pyg(
 def obtener_reporte_iva_ventas(
     fecha_inicio: str,
     fecha_fin: str,
-    usuario_actual: dict = Depends(requerir_permiso("REPORTES_VER")),
+    usuario_actual: dict = Depends(requerir_permiso([PermissionCodes.REPORTE_FINANCIERO_VER, PermissionCodes.REPORTES_VER])),
     servicio: ServicioReportes = Depends()
 ):
     """R-027: Reporte de IVA (Ventas)."""
@@ -277,7 +278,7 @@ def obtener_reporte_iva_ventas(
 def obtener_resumen_ejecutivo(
     fecha_inicio: str,
     fecha_fin: str,
-    usuario_actual: dict = Depends(requerir_permiso("REPORTES_VER")),
+    usuario_actual: dict = Depends(requerir_permiso([PermissionCodes.REPORTE_FINANCIERO_VER, PermissionCodes.REPORTES_VER])),
     servicio: ServicioReportes = Depends()
 ):
     """R-028: Resumen Ejecutivo (KPIs)."""
