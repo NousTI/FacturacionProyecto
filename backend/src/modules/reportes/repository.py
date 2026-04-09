@@ -425,24 +425,24 @@ class RepositorioReportes:
                 (SELECT COUNT(DISTINCT e.id)
                  FROM sistema_facturacion.empresas e
                  JOIN sistema_facturacion.suscripciones s ON s.empresa_id = e.id
-                 WHERE s.estado = 'ACTIVA' AND s.fecha_fin >= CURRENT_DATE) as empresas_activas,
+                 WHERE s.estado = 'ACTIVA' AND s.fecha_inicio <= %s::date AND s.fecha_fin >= %s::date) as empresas_activas,
 
                 -- Nuevas empresas en el período
                 (SELECT COUNT(id)
                  FROM sistema_facturacion.empresas
                  WHERE created_at BETWEEN %s AND %s::timestamp + interval '1 day' - interval '1 second') as empresas_nuevas_mes,
 
-                -- Ingresos del año (pagos confirmados)
+                -- Ingresos del año de la fecha seleccionada (pagos confirmados)
                 (SELECT COALESCE(SUM(monto), 0)
                  FROM sistema_facturacion.pagos_suscripciones
                  WHERE estado = 'PAGADO'
-                   AND EXTRACT(YEAR FROM fecha_pago) = EXTRACT(YEAR FROM NOW())) as ingresos_anio,
+                   AND EXTRACT(YEAR FROM fecha_pago) = EXTRACT(YEAR FROM %s::date)) as ingresos_anio,
 
                 -- Ingresos del año anterior para comparativa
                 (SELECT COALESCE(SUM(monto), 0)
                  FROM sistema_facturacion.pagos_suscripciones
                  WHERE estado = 'PAGADO'
-                   AND EXTRACT(YEAR FROM fecha_pago) = EXTRACT(YEAR FROM NOW()) - 1) as ingresos_anio_anterior,
+                   AND EXTRACT(YEAR FROM fecha_pago) = EXTRACT(YEAR FROM %s::date) - 1) as ingresos_anio_anterior,
 
                 -- Ingresos en el período seleccionado
                 (SELECT COALESCE(SUM(monto), 0)
@@ -461,11 +461,12 @@ class RepositorioReportes:
                  FROM sistema_facturacion.usuarios
                  WHERE created_at BETWEEN %s AND %s::timestamp + interval '1 day' - interval '1 second') as usuarios_nuevos_mes,
 
-                -- Tasa de crecimiento: empresas activas mes actual vs mes anterior
+                -- Tasa de crecimiento: empresas activas comparadas con el mes anterior a la fecha inicio
                 (SELECT COUNT(DISTINCT s.empresa_id)
                  FROM sistema_facturacion.suscripciones s
                  WHERE s.estado = 'ACTIVA'
-                   AND DATE_TRUNC('month', s.fecha_inicio) = DATE_TRUNC('month', NOW() - INTERVAL '1 month')) as empresas_activas_mes_anterior,
+                   AND s.fecha_inicio <= (%s::date - INTERVAL '1 month') 
+                   AND s.fecha_fin >= (%s::date - INTERVAL '1 month')) as empresas_activas_mes_anterior,
 
                 -- Zona upgrade: empresas que usaron >=80%% de facturas del plan en el período
                 (SELECT COUNT(DISTINCT f.empresa_id)
@@ -484,7 +485,8 @@ class RepositorioReportes:
                 (SELECT COUNT(DISTINCT e.id)
                  FROM sistema_facturacion.empresas e
                  JOIN sistema_facturacion.suscripciones s ON s.empresa_id = e.id
-                 WHERE s.estado IN ('VENCIDA', 'SUSPENDIDA') AND e.activo = FALSE) as zona_rescate
+                 WHERE s.estado IN ('VENCIDA', 'SUSPENDIDA') AND e.activo = FALSE
+                   AND s.fecha_fin BETWEEN %s AND %s::timestamp + interval '1 day' - interval '1 second') as zona_rescate
         """
 
         from datetime import date, timedelta
@@ -504,11 +506,16 @@ class RepositorioReportes:
         ff_anterior = (fi_date - timedelta(days=1)).isoformat()
 
         params = (
-            fi_use, ff_use,          # empresas_nuevas_mes
-            fi_use, ff_use,          # ingresos_mes
+            ff_use, ff_use,           # empresas_activas (al final del periodo)
+            fi_use, ff_use,           # empresas_nuevas_mes
+            ff_use,                   # ingresos_anio (año de ff_use)
+            ff_use,                   # ingresos_anio_anterior (año de ff_use - 1)
+            fi_use, ff_use,           # ingresos_mes
             fi_anterior, ff_anterior, # ingresos_mes_anterior
-            fi_use, ff_use,          # usuarios_nuevos_mes
-            fi_use, ff_use,          # zona_upgrade
+            fi_use, ff_use,           # usuarios_nuevos_mes
+            fi_use, fi_use,           # empresas_activas_mes_anterior (mes previo a fi_use)
+            fi_use, ff_use,           # zona_upgrade
+            fi_use, ff_use            # zona_rescate
         )
 
         with self.db.cursor() as cur:
@@ -537,7 +544,7 @@ class RepositorioReportes:
             )
             return data
 
-    def obtener_zona_rescate(self) -> list:
+    def obtener_zona_rescate(self, fecha_inicio: Optional[str] = None, fecha_fin: Optional[str] = None) -> list:
         """Empresas bloqueadas con deadline de 9 días desde el vencimiento."""
         query = """
             SELECT
@@ -564,13 +571,21 @@ class RepositorioReportes:
             LEFT JOIN sistema_facturacion.vendedores v ON v.id = e.vendedor_id
             WHERE s.estado IN ('VENCIDA', 'SUSPENDIDA')
               AND e.activo = FALSE
-            ORDER BY deadline ASC
         """
+        params = []
+        if fecha_inicio:
+            query += " AND s.fecha_fin >= %s"
+            params.append(fecha_inicio)
+        if fecha_fin:
+            query += " AND s.fecha_fin <= %s::timestamp + interval '1 day' - interval '1 second'"
+            params.append(fecha_fin)
+            
+        query += " ORDER BY deadline ASC"
         with self.db.cursor() as cur:
-            cur.execute(query)
+            cur.execute(query, tuple(params))
             return [dict(row) for row in cur.fetchall()]
 
-    def obtener_zona_upgrade(self) -> list:
+    def obtener_zona_upgrade(self, fecha_inicio: Optional[str] = None, fecha_fin: Optional[str] = None) -> list:
         """Empresas con >=80% de uso de facturas del plan en el mes actual."""
         query = """
             SELECT
@@ -584,17 +599,20 @@ class RepositorioReportes:
             JOIN sistema_facturacion.suscripciones s ON s.empresa_id = e.id AND s.estado = 'ACTIVA'
             JOIN sistema_facturacion.planes p ON p.id = s.plan_id
             LEFT JOIN sistema_facturacion.facturas f ON f.empresa_id = e.id
-                AND DATE_TRUNC('month', f.fecha_emision) = DATE_TRUNC('month', NOW())
+                AND f.fecha_emision BETWEEN %s AND %s::timestamp + interval '1 day' - interval '1 second'
                 AND f.estado != 'ANULADA'
             GROUP BY e.id, e.nombre_comercial, e.razon_social, p.nombre, p.max_facturas_mes
             HAVING COUNT(f.id) >= (p.max_facturas_mes * 0.8)
             ORDER BY porcentaje_uso DESC
         """
+        from datetime import date
+        fi = fecha_inicio or date(date.today().year, date.today().month, 1).isoformat()
+        ff = fecha_fin or date.today().isoformat()
         with self.db.cursor() as cur:
-            cur.execute(query)
+            cur.execute(query, (fi, ff))
             return [dict(row) for row in cur.fetchall()]
 
-    def obtener_planes_mas_vendidos(self, fecha_inicio: Optional[str] = None, fecha_fin: Optional[str] = None) -> list:
+    def obtener_planes_mas_vendidos(self, fecha_inicio: Optional[str] = None, fecha_fin: Optional[str] = None, vendedor_id: Optional[str] = None) -> list:
         from datetime import date
         fi = fecha_inicio or date(date.today().year, 1, 1).isoformat()
         ff = fecha_fin or date.today().isoformat()
@@ -602,16 +620,21 @@ class RepositorioReportes:
             SELECT p.nombre as plan, COUNT(ps.id) as ventas, COALESCE(SUM(ps.monto), 0) as ingresos
             FROM sistema_facturacion.pagos_suscripciones ps
             JOIN sistema_facturacion.planes p ON p.id = ps.plan_id
+            LEFT JOIN sistema_facturacion.empresas e ON e.id = ps.empresa_id
             WHERE ps.estado = 'PAGADO'
               AND ps.fecha_pago BETWEEN %s AND %s::timestamp + interval '1 day' - interval '1 second'
-            GROUP BY p.id, p.nombre
-            ORDER BY ventas DESC
         """
+        params = [fi, ff]
+        if vendedor_id:
+            query += " AND e.vendedor_id = %s"
+            params.append(vendedor_id)
+            
+        query += " GROUP BY p.id, p.nombre ORDER BY ventas DESC LIMIT 5"
         with self.db.cursor() as cur:
-            cur.execute(query, (fi, ff))
+            cur.execute(query, tuple(params))
             return [dict(row) for row in cur.fetchall()]
 
-    def obtener_top_vendedores(self, fecha_inicio: Optional[str] = None, fecha_fin: Optional[str] = None) -> list:
+    def obtener_top_vendedores(self, fecha_inicio: Optional[str] = None, fecha_fin: Optional[str] = None, vendedor_id: Optional[str] = None) -> list:
         from datetime import date
         fi = fecha_inicio or date(date.today().year, 1, 1).isoformat()
         ff = fecha_fin or date.today().isoformat()
@@ -624,43 +647,66 @@ class RepositorioReportes:
             JOIN sistema_facturacion.empresas e ON e.vendedor_id = v.id
             LEFT JOIN sistema_facturacion.pagos_suscripciones ps ON ps.empresa_id = e.id AND ps.estado = 'PAGADO'
                 AND ps.fecha_pago BETWEEN %s AND %s::timestamp + interval '1 day' - interval '1 second'
+            WHERE 1=1
+        """
+        params = [fi, ff]
+        if vendedor_id:
+            query += " AND v.id = %s"
+            params.append(vendedor_id)
+            
+        query += """
             GROUP BY v.id, v.nombres, v.apellidos
+            HAVING COALESCE(SUM(ps.monto), 0) > 0
             ORDER BY ingresos_generados DESC
             LIMIT 10
         """
         with self.db.cursor() as cur:
-            cur.execute(query, (fi, ff))
+            cur.execute(query, tuple(params))
             return [dict(row) for row in cur.fetchall()]
 
     # =========================================================
     # R-032: COMISIONES POR VENDEDOR (SUPERADMIN)
     # =========================================================
 
-    def obtener_kpis_comisiones_superadmin(self) -> dict:
+    def obtener_kpis_comisiones_superadmin(
+        self,
+        fecha_inicio: Optional[str] = None,
+        fecha_fin: Optional[str] = None,
+        vendedor_id: Optional[str] = None,
+        estado: Optional[str] = None
+    ) -> dict:
         query = """
             SELECT
-                -- Comisiones pendientes de aprobación
-                (SELECT COALESCE(SUM(monto), 0)
-                 FROM sistema_facturacion.comisiones
-                 WHERE estado = 'PENDIENTE') as comisiones_pendientes,
+                -- Comisiones pendientes acumuladas hasta la fecha seleccionada
+                (SELECT COALESCE(SUM(c1.monto), 0)
+                 FROM sistema_facturacion.comisiones c1
+                 WHERE c1.estado = 'PENDIENTE'
+                   AND c1.fecha_generacion <= {f_fin}
+                   {v_filter_c1}) as comisiones_pendientes,
 
-                -- Comisiones pagadas este mes
-                (SELECT COALESCE(SUM(monto), 0)
-                 FROM sistema_facturacion.comisiones
-                 WHERE estado = 'PAGADA'
-                   AND DATE_TRUNC('month', fecha_pago) = DATE_TRUNC('month', NOW())) as pagadas_mes,
+                -- Comisiones pagadas en el período
+                (SELECT COALESCE(SUM(c2.monto), 0)
+                 FROM sistema_facturacion.comisiones c2
+                 WHERE c2.estado = 'PAGADA'
+                   AND c2.fecha_pago BETWEEN {f_inicio} AND {f_fin}
+                   {v_filter_c2}) as pagadas_mes,
 
-                -- Vendedores activos
-                (SELECT COUNT(id) FROM sistema_facturacion.vendedores WHERE activo = TRUE) as vendedores_activos,
+                -- Vendedores activos en el periodo
+                (SELECT COUNT(v3.id) FROM sistema_facturacion.vendedores v3 
+                 WHERE v3.activo = TRUE 
+                   AND v3.created_at <= {f_fin}
+                   {v_filter_v3}) as vendedores_activos,
 
-                -- Upgrades concretados: pagos donde la empresa cambió a plan de mayor precio
-                -- Aproximado: pagos donde existe un pago anterior de la misma empresa con plan distinto
+                -- Upgrades concretados
                 (SELECT ROUND(
                     COUNT(DISTINCT ps.empresa_id)::numeric /
-                    NULLIF((SELECT COUNT(DISTINCT empresa_id) FROM sistema_facturacion.pagos_suscripciones WHERE estado='PAGADO'), 0) * 100, 1
+                    NULLIF((SELECT COUNT(DISTINCT ps3.empresa_id) FROM sistema_facturacion.pagos_suscripciones ps3 JOIN sistema_facturacion.empresas emp3 ON emp3.id = ps3.empresa_id WHERE ps3.estado='PAGADO' AND ps3.fecha_pago <= {f_fin} {v_filter_ps3}), 0) * 100, 1
                  )
                  FROM sistema_facturacion.pagos_suscripciones ps
+                 JOIN sistema_facturacion.empresas emp_up ON emp_up.id = ps.empresa_id
                  WHERE ps.estado = 'PAGADO'
+                   AND ps.fecha_pago BETWEEN {f_inicio} AND {f_fin}
+                   {v_filter_ps}
                    AND EXISTS (
                        SELECT 1 FROM sistema_facturacion.pagos_suscripciones ps2
                        WHERE ps2.empresa_id = ps.empresa_id
@@ -668,17 +714,65 @@ class RepositorioReportes:
                          AND ps2.fecha_pago < ps.fecha_pago
                    )) as porcentaje_upgrades,
 
-                -- Clientes perdidos: empresas en zona rescate / total empresas
+                -- Clientes perdidos
                 (SELECT ROUND(
                     (SELECT COUNT(DISTINCT e.id)
                      FROM sistema_facturacion.empresas e
                      JOIN sistema_facturacion.suscripciones s ON s.empresa_id = e.id
-                     WHERE s.estado IN ('VENCIDA','SUSPENDIDA') AND e.activo = FALSE)::numeric /
-                    NULLIF((SELECT COUNT(id) FROM sistema_facturacion.empresas), 0) * 100, 1
+                     WHERE s.estado IN ('VENCIDA','SUSPENDIDA') AND e.activo = FALSE
+                     {v_filter_e})::numeric /
+                    NULLIF((SELECT COUNT(id) FROM sistema_facturacion.empresas e2 WHERE 1=1 AND e2.created_at <= {f_fin} {v_filter_e2}), 0) * 100, 1
                 )) as porcentaje_clientes_perdidos
         """
+        from datetime import date
+        fi = fecha_inicio or date(date.today().year, date.today().month, 1).isoformat()
+        ff = fecha_fin or date.today().isoformat()
+        
+        # Filtros básicos
+        f_inicio = "%s"
+        f_fin = "%s::timestamp + interval '1 day' - interval '1 second'"
+        v_filter_c1 = ""
+        v_filter_c2 = ""
+        v_filter_v3 = ""
+        v_filter_ps = ""
+        v_filter_ps3 = ""
+        v_filter_e = ""
+        v_filter_e2 = ""
+        
+        params = [ff, fi, ff, ff, ff, fi, ff, ff] # f_fin (c1), f_inicio, f_fin (c2), f_fin (v3), f_fin (ps3), f_inicio, f_fin (ps), f_fin (e2)
+        # Sequence check: 
+        # 1. {f_fin} (c1)
+        # 2. {f_inicio} (c2)
+        # 3. {f_fin} (c2)
+        # 4. {f_fin} (v3)
+        # 5. {f_fin} (ps3)
+        # 6. {f_inicio} (ps)
+        # 7. {f_fin} (ps)
+        # 8. {f_fin} (e2)
+
+        if vendedor_id:
+            v_filter_c1 = f" AND c1.vendedor_id = '{vendedor_id}'"
+            v_filter_c2 = f" AND c2.vendedor_id = '{vendedor_id}'"
+            v_filter_v3 = f" AND v3.id = '{vendedor_id}'"
+            v_filter_ps = f" AND emp_up.vendedor_id = '{vendedor_id}'"
+            v_filter_ps3 = f" AND emp3.vendedor_id = '{vendedor_id}'"
+            v_filter_e = f" AND e.vendedor_id = '{vendedor_id}'"
+            v_filter_e2 = f" AND e2.vendedor_id = '{vendedor_id}'"
+        
+        query = query.format(
+            f_inicio=f_inicio,
+            f_fin=f_fin,
+            v_filter_c1=v_filter_c1,
+            v_filter_c2=v_filter_c2,
+            v_filter_v3=v_filter_v3,
+            v_filter_ps=v_filter_ps,
+            v_filter_ps3=v_filter_ps3,
+            v_filter_e=v_filter_e,
+            v_filter_e2=v_filter_e2
+        )
+
         with self.db.cursor() as cur:
-            cur.execute(query)
+            cur.execute(query, tuple(params))
             row = cur.fetchone()
             return dict(row) if row else {}
 
@@ -819,33 +913,41 @@ class RepositorioReportes:
                 SELECT 'Facturación' as modulo, empresa_id FROM sistema_facturacion.facturas
                     WHERE fecha_emision BETWEEN %s AND %s::timestamp + interval '1 day' - interval '1 second'
                 UNION ALL SELECT 'Clientes', empresa_id FROM sistema_facturacion.clientes
+                    WHERE created_at BETWEEN %s AND %s::timestamp + interval '1 day' - interval '1 second'
                 UNION ALL SELECT 'Productos', empresa_id FROM sistema_facturacion.productos
+                    WHERE created_at BETWEEN %s AND %s::timestamp + interval '1 day' - interval '1 second'
                 UNION ALL SELECT 'Proveedores', empresa_id FROM sistema_facturacion.proveedores
+                    WHERE created_at BETWEEN %s AND %s::timestamp + interval '1 day' - interval '1 second'
                 UNION ALL SELECT 'Establecimientos', empresa_id FROM sistema_facturacion.establecimientos
+                    WHERE created_at BETWEEN %s AND %s::timestamp + interval '1 day' - interval '1 second'
             ) datos
             GROUP BY modulo
             ORDER BY empresas_usando DESC
         """
         with self.db.cursor() as cur:
-            cur.execute(query, (fi, ff))
+            cur.execute(query, (fi, ff, fi, ff, fi, ff, fi, ff, fi, ff))
             return [dict(row) for row in cur.fetchall()]
 
-    def obtener_promedio_usuarios_por_empresa(self) -> dict:
+    def obtener_promedio_usuarios_por_empresa(self, fecha_inicio: Optional[str] = None, fecha_fin: Optional[str] = None) -> dict:
         query = """
             SELECT
                 ROUND(AVG(cnt), 1) as promedio_usuarios,
                 MAX(cnt) as max_usuarios,
                 MIN(cnt) as min_usuarios
             FROM (
+                -- Usuarios registrados hasta la fecha fin del periodo
                 SELECT e.id, COUNT(u.id) as cnt
                 FROM sistema_facturacion.empresas e
                 LEFT JOIN sistema_facturacion.usuarios u ON u.empresa_id = e.id
+                    AND u.created_at <= %s::timestamp + interval '1 day'
                 WHERE e.activo = TRUE
                 GROUP BY e.id
             ) sub
         """
+        from datetime import date
+        ff = fecha_fin or date.today().isoformat()
         with self.db.cursor() as cur:
-            cur.execute(query)
+            cur.execute(query, (ff,))
             row = cur.fetchone()
             return dict(row) if row else {}
 
