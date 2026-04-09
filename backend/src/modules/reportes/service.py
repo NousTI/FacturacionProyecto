@@ -10,6 +10,9 @@ from .repository import RepositorioReportes
 from .superadmin.R_031.repository import RepositorioR031
 from .superadmin.R_032.repository import RepositorioR032
 from .superadmin.R_033.repository import RepositorioR033
+from .usuarios.R_026.service import ServicioR026
+from .usuarios.R_027.service import ServicioR027
+from .usuarios.R_028.service import ServicioR028
 from .schemas import ReporteCreacion
 from ...constants.enums import AuthKeys
 from ...errors.app_error import AppError
@@ -22,12 +25,18 @@ class ServicioReportes:
         repo: RepositorioReportes = Depends(),
         repo_r031: RepositorioR031 = Depends(),
         repo_r032: RepositorioR032 = Depends(),
-        repo_r033: RepositorioR033 = Depends()
+        repo_r033: RepositorioR033 = Depends(),
+        svc_r026: ServicioR026 = Depends(),
+        svc_r027: ServicioR027 = Depends(),
+        svc_r028: ServicioR028 = Depends()
     ):
         self.repo = repo
         self.repo_r031 = repo_r031
         self.repo_r032 = repo_r032
         self.repo_r033 = repo_r033
+        self.svc_r026 = svc_r026
+        self.svc_r027 = svc_r027
+        self.svc_r028 = svc_r028
 
     def crear_reporte(self, datos: ReporteCreacion, usuario_actual: dict):
         is_superadmin = usuario_actual.get(AuthKeys.IS_SUPERADMIN)
@@ -388,6 +397,22 @@ class ServicioReportes:
             "modulos_mas_usados": modulos,
             **promedio,
         }
+
+    # =========================================================
+    # NUEVOS REPORTES FINANCIEROS (R-026 a R-028)
+    # =========================================================
+
+    def obtener_pyg_usuario(self, empresa_id: UUID, fecha_inicio: str, fecha_fin: str):
+        """R-026: Estado de Resultados (PyG)."""
+        return self.svc_r026.generar_estado_resultados(empresa_id, fecha_inicio, fecha_fin)
+
+    def obtener_iva_ventas_usuario(self, empresa_id: UUID, fecha_inicio: str, fecha_fin: str):
+        """R-027: Reporte de IVA (Ventas)."""
+        return self.svc_r027.generar_reporte_iva(empresa_id, fecha_inicio, fecha_fin)
+
+    def obtener_resumen_ejecutivo_usuario(self, empresa_id: UUID, fecha_inicio: str, fecha_fin: str):
+        """R-028: Resumen Ejecutivo (KPIs)."""
+        return self.svc_r028.generar_resumen_ejecutivo(empresa_id, fecha_inicio, fecha_fin)
 
     def exportar_reporte(self, empresa_id: UUID, tipo: str, formato: str, params: dict):
         """

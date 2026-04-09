@@ -204,6 +204,41 @@ def obtener_reporte_facturas_rechazadas_sri(
     }
     return servicio.obtener_facturas_rechazadas_sri(empresa_id, params)
 
+# --- RUTAS DE REPORTES FINANCIEROS (R-026 a R-028) ---
+
+@router.get("/financiero/pyg")
+def obtener_reporte_pyg(
+    fecha_inicio: str,
+    fecha_fin: str,
+    usuario_actual: dict = Depends(requerir_permiso("REPORTES_VER")),
+    servicio: ServicioReportes = Depends()
+):
+    """R-026: Estado de Resultados (PyG)."""
+    empresa_id = usuario_actual.get("empresa_id")
+    return servicio.obtener_pyg_usuario(empresa_id, fecha_inicio, fecha_fin)
+
+@router.get("/financiero/iva")
+def obtener_reporte_iva_ventas(
+    fecha_inicio: str,
+    fecha_fin: str,
+    usuario_actual: dict = Depends(requerir_permiso("REPORTES_VER")),
+    servicio: ServicioReportes = Depends()
+):
+    """R-027: Reporte de IVA (Ventas)."""
+    empresa_id = usuario_actual.get("empresa_id")
+    return servicio.obtener_iva_ventas_usuario(empresa_id, fecha_inicio, fecha_fin)
+
+@router.get("/financiero/resumen")
+def obtener_resumen_ejecutivo(
+    fecha_inicio: str,
+    fecha_fin: str,
+    usuario_actual: dict = Depends(requerir_permiso("REPORTES_VER")),
+    servicio: ServicioReportes = Depends()
+):
+    """R-028: Resumen Ejecutivo (KPIs)."""
+    empresa_id = usuario_actual.get("empresa_id")
+    return servicio.obtener_resumen_ejecutivo_usuario(empresa_id, fecha_inicio, fecha_fin)
+
 # =========================================================
 # R-031: REPORTE GLOBAL SUPERADMIN
 # =========================================================
