@@ -133,7 +133,7 @@ class AuthServices:
 
         # 3. Invalidar Sesiones Previas (Sesión Única)
         # En lugar de rechazar, invalidamos las sesiones previas para permitir re-login
-        self.auth_repo.invalidar_todas_sesiones(user_id, reason='NEW_LOGIN')
+        self.auth_repo.invalidar_todas_sesiones(user_id, reason='SEGURIDAD')
         logger.info(f"[VALIDACIÓN] Sesiones previas invalidadas para usuario: {user_id}")
 
         # 4. Crear Nueva Sesión
@@ -213,7 +213,9 @@ class AuthServices:
         
         elif primary_role == RolCodigo.USUARIO.value:
             # Business users get their company-defined permissions
-            user_safe["permisos"] = self.user_repo.obtener_permisos_por_user_id(user_id)
+            permisos = self.user_repo.obtener_permisos_por_user_id(user_id)
+            logger.info(f"[PERMISOS] Obtenidos para usuario {user_id}: {permisos}")
+            user_safe["permisos"] = permisos
 
         return success_response(
             data={

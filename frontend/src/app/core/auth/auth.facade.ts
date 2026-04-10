@@ -58,6 +58,7 @@ export class AuthFacade {
                     observer.next(response);
                     observer.complete();
 
+                    // Navegar DESPUÉS de que el observer se complete
                     this.navigateBasedOnRole(role);
                 },
                 error: (err) => {
@@ -156,12 +157,16 @@ export class AuthFacade {
 
     private navigateBasedOnRole(role: string | null): void {
         // Lógica de redirección dinámica basada en el rol inyectado
+        console.log(`[navigateBasedOnRole] Rol recibido: ${role}`);
         if (role === UserRole.SUPERADMIN) {
+            console.log('[navigateBasedOnRole] Navegando a /');
             this.router.navigate(['/']); // Superadmin va a raíz que es su dashboard
         } else if (role === UserRole.VENDEDOR) {
+            console.log('[navigateBasedOnRole] Navegando a /vendedor');
             this.router.navigate(['/vendedor']);
         } else {
             // Usuario regular
+            console.log('[navigateBasedOnRole] Navegando a /usuario');
             this.router.navigate(['/usuario']);
         }
     }
