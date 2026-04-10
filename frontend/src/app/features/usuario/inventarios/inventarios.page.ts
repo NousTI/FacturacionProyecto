@@ -72,7 +72,6 @@ import { InventoryManagementComponent } from './components/inventory-management.
       <app-inventario-form
         *ngIf="showMovimientoModal"
         #inventarioForm
-        [show]="showMovimientoModal"
         [isSaving]="isSaving"
         [productos]="productos$ | async"
         (onClose)="closeMovimientoModal()"

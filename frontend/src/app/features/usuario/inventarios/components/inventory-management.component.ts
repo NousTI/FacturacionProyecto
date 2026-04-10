@@ -51,7 +51,6 @@ import { FormsModule } from '@angular/forms';
       <!-- FORM MODAL -->
       <app-inventory-stock-form
         *ngIf="showCreateModal"
-        [show]="showCreateModal"
         [isSaving]="isSaving"
         [editingId]="editingId"
         [productos]="productos$ | async"
