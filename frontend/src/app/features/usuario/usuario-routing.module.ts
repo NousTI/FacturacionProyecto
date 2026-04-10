@@ -84,7 +84,7 @@ const routes: Routes = [
         path: 'facturacion',
         component: FacturacionPage,
         canActivate: [RoleGuard, CompanyActiveGuard, permissionGuard],
-        data: { title: 'Facturación', roles: [UserRole.USUARIO], permission: ['FACTURAS_VER_TODAS', 'FACTURAS_VER_PROPIAS', 'FACTURAS_CREAR'] }
+        data: { title: 'Facturación', roles: [UserRole.USUARIO], permission: ['FACTURAS_VER_TODAS', 'FACTURAS_VER_PROPIAS'] }
     },
     {
         path: 'cuentas-cobrar',
@@ -108,13 +108,13 @@ const routes: Routes = [
         path: 'reportes',
         component: ReportesPage,
         canActivate: [RoleGuard, CompanyActiveGuard, permissionGuard],
-        data: { title: 'Reportes', roles: [UserRole.USUARIO], permission: ['REPORTES_VER', 'REPORTES_EXPORTAR'] }
+        data: { title: 'Reportes', roles: [UserRole.USUARIO], permission: 'REPORTES_VER' }
     },
     {
         path: 'establecimientos',
         component: EstablecimientosPage,
         canActivate: [RoleGuard, CompanyActiveGuard, permissionGuard],
-        data: { title: 'Establecimientos', roles: [UserRole.USUARIO], permission: ['ESTABLECIMIENTO_VER', 'ESTABLECIMIENTO_CREAR', 'ESTABLECIMIENTO_EDITAR', 'ESTABLECIMIENTO_ELIMINAR'] }
+        data: { title: 'Establecimientos', roles: [UserRole.USUARIO], permission: ['ESTABLECIMIENTO_GESTIONAR', 'ESTABLECIMIENTO_VER'] }
     },
     {
         path: 'puntos-emision',
@@ -138,7 +138,7 @@ const routes: Routes = [
         path: 'gastos',
         component: GastosPage,
         canActivate: [RoleGuard, CompanyActiveGuard, permissionGuard],
-        data: { title: 'Gastos y Egresos', roles: [UserRole.USUARIO], permission: ['GASTOS_VER', 'CATEGORIA_GASTO_VER', 'PAGO_GASTO_VER'] }
+        data: { title: 'Gastos y Egresos', roles: [UserRole.USUARIO], permission: 'GASTOS_VER' }
     },
     {
         path: 'inventarios',

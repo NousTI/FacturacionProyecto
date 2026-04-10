@@ -112,7 +112,7 @@ import { SidebarService } from './sidebar.service';
                   <a *hasPermission="'PRODUCTOS_VER'" routerLink="/usuario/productos" routerLinkActive="active" class="menu-item px-3 mb-1" title="Productos">
                     <i class="bi bi-box-seam"></i> <span class="menu-text ms-3">Productos</span>
                   </a>
-                  <a *hasPermission="['FACTURAS_VER_TODAS', 'FACTURAS_VER_PROPIAS', 'FACTURAS_CREAR']" routerLink="/usuario/facturacion" routerLinkActive="active" class="menu-item px-3 mb-1" title="Facturación">
+                  <a *hasPermission="['FACTURAS_VER_TODAS', 'FACTURAS_VER_PROPIAS']" routerLink="/usuario/facturacion" routerLinkActive="active" class="menu-item px-3 mb-1" title="Facturación">
                     <i class="bi bi-receipt"></i> <span class="menu-text ms-3">Facturación</span>
                   </a>
                   <a *hasPermission="'CUENTA_COBRAR_VER'" routerLink="/usuario/cuentas-cobrar" routerLinkActive="active" class="menu-item px-3 mb-1" title="Cuentas por Cobrar">
@@ -121,10 +121,10 @@ import { SidebarService } from './sidebar.service';
                   <a *hasPermission="'FACTURA_PROGRAMADA_VER'" routerLink="/usuario/facturacion-recurrente" routerLinkActive="active" class="menu-item px-3 mb-1" title="Fac. Recurrente">
                     <i class="bi bi-arrow-repeat"></i> <span class="menu-text ms-3">Fac. Recurrente</span>
                   </a>
-                  <a *hasPermission="['REPORTES_VER', 'REPORTES_EXPORTAR']" routerLink="/usuario/reportes" routerLinkActive="active" class="menu-item px-3 mb-1" title="Reportes">
+                  <a *hasPermission="'REPORTES_VER'" routerLink="/usuario/reportes" routerLinkActive="active" class="menu-item px-3 mb-1" title="Reportes">
                     <i class="bi bi-bar-chart"></i> <span class="menu-text ms-3">Reportes</span>
                   </a>
-                  <a *hasPermission="'ESTABLECIMIENTO_GESTIONAR'" routerLink="/usuario/establecimientos" routerLinkActive="active" class="menu-item px-3 mb-1" title="Establecimientos">
+                  <a *hasPermission="['ESTABLECIMIENTO_GESTIONAR', 'ESTABLECIMIENTO_VER']" routerLink="/usuario/establecimientos" routerLinkActive="active" class="menu-item px-3 mb-1" title="Establecimientos">
                     <i class="bi bi-shop"></i> <span class="menu-text ms-3">Establecimientos</span>
                   </a>
                   <a *hasPermission="['PUNTO_EMISION_VER', 'PUNTO_EMISION_GESTIONAR']" routerLink="/usuario/puntos-emision" routerLinkActive="active" class="menu-item px-3 mb-1" title="Puntos Emisión">
