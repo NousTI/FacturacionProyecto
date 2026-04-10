@@ -2,11 +2,13 @@ import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import { User } from '../../../../../domain/models/user.model';
 import { AuthService } from '../../../../../core/auth/auth.service';
+import { HasPermissionDirective } from '../../../../../core/directives/has-permission.directive';
+import { USUARIOS_PERMISSIONS } from '../../../../../constants/permission-codes';
 
 @Component({
     selector: 'app-usuario-table',
     standalone: true,
-    imports: [CommonModule, DatePipe],
+    imports: [CommonModule, DatePipe, HasPermissionDirective],
     template: `
     <section class="module-table">
       <div class="table-container border-0 shadow-premium">
@@ -80,26 +82,26 @@ import { AuthService } from '../../../../../core/auth/auth.service';
                           <span class="ms-2">Ver Perfil</span>
                         </a>
                       </li>
-                      <li>
+                      <li *appHasPermission="'USUARIOS_EMPRESA_EDITAR'">
                         <a class="dropdown-item rounded-3 py-2" href="javascript:void(0)" (click)="onAction.emit({type: 'edit', usuario})">
                           <i class="bi bi-pencil-square text-corporate"></i>
                           <span class="ms-2">Editar Datos</span>
                         </a>
                       </li>
-                      <li *ngIf="canManageUsers(usuario)">
-                        <a class="dropdown-item rounded-3 py-2" 
+                      <li *appHasPermission="'USUARIOS_EMPRESA_EDITAR'">
+                        <a class="dropdown-item rounded-3 py-2"
                            [class.disabled]="isCurrentUser(usuario)"
-                           href="javascript:void(0)" 
+                           href="javascript:void(0)"
                            (click)="!isCurrentUser(usuario) && onAction.emit({type: 'role', usuario})">
                           <i class="bi bi-person-badge text-corporate"></i>
                           <span class="ms-2">Cambiar Rol</span>
                         </a>
                       </li>
                       <li><hr class="dropdown-divider mx-2"></li>
-                      <li *ngIf="canManageUsers(usuario)">
-                        <a class="dropdown-item rounded-3 py-2 text-danger" 
+                      <li *appHasPermission="'USUARIOS_EMPRESA_ELIMINAR'">
+                        <a class="dropdown-item rounded-3 py-2 text-danger"
                            [class.disabled]="isCurrentUser(usuario)"
-                           href="javascript:void(0)" 
+                           href="javascript:void(0)"
                            (click)="!isCurrentUser(usuario) && onAction.emit({type: 'delete', usuario})">
                           <i class="bi bi-trash"></i>
                           <span class="ms-2">Eliminar</span>
@@ -213,17 +215,6 @@ export class UsuarioTableComponent {
         // Comparar el ID de usuario de negocio (usuarios.id)
         const sessionUsuarioId = (currentUser as any).usuario_id;
         return usuario.id === sessionUsuarioId;
-    }
-
-    canManageUsers(usuario: User): boolean {
-        const currentUser = this.authService.getUser();
-        if (!currentUser) return false;
-        
-        // Only admins or users with CONFIG_USUARIOS can manage
-        const hasPermission = currentUser.permisos?.some((p: any) => p.codigo === 'CONFIG_USUARIOS');
-        const isAdmin = currentUser.rol_codigo === 'ADMIN' || currentUser.role === 'ADMIN';
-        
-        return isAdmin || hasPermission || false;
     }
 
     getRolBadgeBg(code: string | undefined): string {

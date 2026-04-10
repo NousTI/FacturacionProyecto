@@ -1,12 +1,12 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { PermissionsService } from '../../../../../core/auth/permissions.service';
+import { HasPermissionDirective } from '../../../../../core/directives/has-permission.directive';
 
 @Component({
   selector: 'app-producto-actions',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, HasPermissionDirective],
   template: `
     <div class="actions-box-lux">
       <div class="row align-items-center g-3">
@@ -54,8 +54,8 @@ import { PermissionsService } from '../../../../../core/auth/permissions.service
               </ul>
             </div>
 
-            <button 
-              *ngIf="canCreate"
+            <button
+              *appHasPermission="'PRODUCTOS_CREAR'"
               (click)="onCreate.emit()"
               class="btn-create-lux"
             >
@@ -182,13 +182,6 @@ export class ProductoActionsComponent {
     tipo: 'ALL',
     estado: 'ALL'
   };
-
-  canCreate: boolean;
-
-  constructor(private permissionsService: PermissionsService) {
-    this.canCreate = this.permissionsService.hasPermission('PRODUCTOS_CREAR') ||
-      this.permissionsService.hasPermission('PRODUCTO_CREAR');
-  }
 
   onSearchChange() {
     this.searchQueryChange.emit(this.searchQuery);

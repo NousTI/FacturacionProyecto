@@ -1,12 +1,12 @@
 import { Component, Input, Output, EventEmitter, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Producto } from '../../../../../domain/models/producto.model';
-import { PermissionsService } from '../../../../../core/auth/permissions.service';
+import { HasPermissionDirective } from '../../../../../core/directives/has-permission.directive';
 
 @Component({
   selector: 'app-producto-table',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, HasPermissionDirective],
   template: `
     <div class="table-container-lux">
       <table class="table mb-0 align-middle">
@@ -16,7 +16,7 @@ import { PermissionsService } from '../../../../../core/auth/permissions.service
             <th style="width: 140px">Referencia</th>
             <th style="width: 130px">Estado</th>
             <th style="width: 140px">Venta (USD)</th>
-            <th *ngIf="canViewCosts" style="width: 130px">Costo (USD)</th>
+            <th *appHasPermission="'PRODUCTOS_VER_COSTOS'" style="width: 130px">Costo (USD)</th>
             <th style="width: 160px">Disponibilidad</th>
             <th class="text-end pe-4" style="width: 80px">Gesti&oacute;n</th>
           </tr>
@@ -46,7 +46,7 @@ import { PermissionsService } from '../../../../../core/auth/permissions.service
             <td>
               <span class="price-lux">{{ producto.precio | currency:'USD' }}</span>
             </td>
-            <td *ngIf="canViewCosts">
+            <td *appHasPermission="'PRODUCTOS_VER_COSTOS'">
               <span class="cost-lux">{{ producto.costo !== null ? (producto.costo | currency:'USD') : '---' }}</span>
             </td>
             <td>
@@ -83,14 +83,14 @@ import { PermissionsService } from '../../../../../core/auth/permissions.service
                       <span class="ms-2">Detalles</span>
                     </a>
                   </li>
-                  <li *ngIf="canEdit">
+                  <li *appHasPermission="'PRODUCTOS_EDITAR'">
                     <a class="dropdown-item py-2" href="javascript:void(0)" (click)="onAction.emit({type: 'edit', producto})">
                       <div class="icon-item bg-soft-primary"><i class="bi bi-pencil-fill"></i></div>
                       <span class="ms-2">Editar</span>
                     </a>
                   </li>
-                  <li *ngIf="canDelete"><hr class="dropdown-divider mx-2 opacity-10"></li>
-                  <li *ngIf="canDelete">
+                  <li *appHasPermission="'PRODUCTOS_ELIMINAR'"><hr class="dropdown-divider mx-2 opacity-10"></li>
+                  <li *appHasPermission="'PRODUCTOS_ELIMINAR'">
                     <a class="dropdown-item py-2 text-danger" href="javascript:void(0)" (click)="onAction.emit({type: 'delete', producto})">
                       <div class="icon-item bg-soft-danger"><i class="bi bi-trash3-fill"></i></div>
                       <span class="ms-2">Eliminar</span>
@@ -220,28 +220,10 @@ export class ProductoTableComponent implements OnInit {
   @Input() productos: Producto[] = [];
   @Output() onAction = new EventEmitter<{ type: string, producto: Producto }>();
 
-  constructor(private permissionsService: PermissionsService) {
-    console.log('ProductoTableComponent initialized');
-  }
+  constructor() {}
 
-  ngOnInit() {
-    // No longer needed as permissions are handled by getters
-  }
+  ngOnInit() {}
 
-  get canViewCosts(): boolean {
-    return this.permissionsService.hasPermission('PRODUCTOS_VER_COSTOS') ||
-      this.permissionsService.hasPermission('PRODUCTO_VER_COSTOS');
-  }
-
-  get canEdit(): boolean {
-    return this.permissionsService.hasPermission('PRODUCTOS_EDITAR') ||
-      this.permissionsService.hasPermission('PRODUCTO_EDITAR');
-  }
-
-  get canDelete(): boolean {
-    return this.permissionsService.hasPermission('PRODUCTOS_ELIMINAR') ||
-      this.permissionsService.hasPermission('PRODUCTO_ELIMINAR');
-  }
 
   getStockClass(p: Producto, isBg = false): string {
     const prefix = isBg ? 'bg-stock-' : 'stock-';

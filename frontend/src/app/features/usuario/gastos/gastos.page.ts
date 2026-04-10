@@ -14,6 +14,7 @@ import { Proveedor } from '../../../domain/models/proveedor.model';
 // Shared Components
 import { ConfirmModalComponent } from '../../../shared/components/confirm-modal/confirm-modal.component';
 import { ToastComponent } from '../../../shared/components/toast/toast.component';
+import { HasPermissionDirective } from '../../../core/directives/has-permission.directive';
 
 // Modular Components
 import { EgresosStatsComponent } from './components/egresos-stats.component';
@@ -25,9 +26,10 @@ import { CategoriaFormComponent } from './components/categoria-form.component';
   selector: 'app-gastos',
   standalone: true,
   imports: [
-    CommonModule, 
-    FormsModule, 
-    ConfirmModalComponent, 
+    CommonModule,
+    FormsModule,
+    HasPermissionDirective,
+    ConfirmModalComponent,
     ToastComponent,
     EgresosStatsComponent,
     GastoFormComponent,
@@ -75,7 +77,7 @@ import { CategoriaFormComponent } from './components/categoria-form.component';
                 </select>
               </div>
               <div class="col-md-3 d-flex gap-2">
-                <button class="btn btn-primary w-100" (click)="openCreateGastoModal()">
+                <button *appHasPermission="'GASTOS_CREAR'" class="btn btn-primary w-100" (click)="openCreateGastoModal()">
                   <i class="bi bi-plus-lg me-2"></i> Nuevo Gasto
                 </button>
                 <button class="btn btn-light" (click)="refresh()" [disabled]="isLoading">
@@ -120,11 +122,11 @@ import { CategoriaFormComponent } from './components/categoria-form.component';
                         <button class="btn-action view" (click)="handleViewGasto(gasto)" title="Ver Detalles"><i class="bi bi-eye"></i></button>
                       </ng-container>
                       <ng-template #editGastoBtn>
-                        <button class="btn-action edit" (click)="handleEditGasto(gasto)" title="Editar"><i class="bi bi-pencil"></i></button>
+                        <button *appHasPermission="'GASTOS_EDITAR'" class="btn-action edit" (click)="handleEditGasto(gasto)" title="Editar"><i class="bi bi-pencil"></i></button>
                       </ng-template>
-                      
-                      <button class="btn-action pay" *ngIf="gasto.estado_pago !== 'pagado'" (click)="handleQuickPay(gasto)" title="Registrar Pago"><i class="bi bi-cash"></i></button>
-                      <button class="btn-action delete" (click)="handleDeleteGasto(gasto)" title="Eliminar"><i class="bi bi-trash"></i></button>
+
+                      <button *appHasPermission="'PAGO_GASTO_CREAR'" class="btn-action pay" *ngIf="gasto.estado_pago !== 'pagado'" (click)="handleQuickPay(gasto)" title="Registrar Pago"><i class="bi bi-cash"></i></button>
+                      <button *appHasPermission="'GASTOS_ELIMINAR'" class="btn-action delete" (click)="handleDeleteGasto(gasto)" title="Eliminar"><i class="bi bi-trash"></i></button>
                     </div>
                   </td>
                 </tr>
@@ -144,7 +146,7 @@ import { CategoriaFormComponent } from './components/categoria-form.component';
         <!-- SECCIÓN 2: PAGOS -->
         <div *ngSwitchCase="'pagos'" class="fade-in">
           <div class="toolbar-minimal mb-3">
-             <button class="btn btn-primary" (click)="openCreatePagoModal()">
+             <button *appHasPermission="'PAGO_GASTO_CREAR'" class="btn btn-primary" (click)="openCreatePagoModal()">
                 <i class="bi bi-plus-lg me-1"></i> Registrar Pago
               </button>
           </div>
@@ -177,10 +179,10 @@ import { CategoriaFormComponent } from './components/categoria-form.component';
                         <button class="btn-action view" (click)="handleViewPago(pago)" title="Ver Detalles"><i class="bi bi-eye"></i></button>
                       </ng-container>
                       <ng-template #editPagoBtn>
-                        <button class="btn-action edit" (click)="handleEditPago(pago)" title="Editar"><i class="bi bi-pencil"></i></button>
+                        <button *appHasPermission="'PAGO_GASTO_EDITAR'" class="btn-action edit" (click)="handleEditPago(pago)" title="Editar"><i class="bi bi-pencil"></i></button>
                       </ng-template>
-                      
-                      <button class="btn-action delete" (click)="handleDeletePago(pago)" title="Eliminar"><i class="bi bi-trash"></i></button>
+
+                      <button *appHasPermission="'PAGO_GASTO_ELIMINAR'" class="btn-action delete" (click)="handleDeletePago(pago)" title="Eliminar"><i class="bi bi-trash"></i></button>
                     </div>
                   </td>
                 </tr>
@@ -195,7 +197,7 @@ import { CategoriaFormComponent } from './components/categoria-form.component';
         <!-- SECCIÓN 3: CATEGORÍAS -->
         <div *ngSwitchCase="'categorias'" class="fade-in">
           <div class="toolbar-minimal mb-3">
-             <button class="btn btn-primary" (click)="openCreateCategoriaModal()">
+             <button *appHasPermission="'CATEGORIA_GASTO_CREAR'" class="btn btn-primary" (click)="openCreateCategoriaModal()">
                 <i class="bi bi-plus-lg me-1"></i> Nueva Categoría
               </button>
           </div>
@@ -222,8 +224,8 @@ import { CategoriaFormComponent } from './components/categoria-form.component';
                   </td>
                   <td class="text-end pe-4">
                     <div class="action-buttons justify-content-end">
-                      <button class="btn-action edit" (click)="handleEditCategoria(cat)"><i class="bi bi-pencil"></i></button>
-                      <button class="btn-action delete" (click)="handleDeleteCategoria(cat)"><i class="bi bi-trash"></i></button>
+                      <button *appHasPermission="'CATEGORIA_GASTO_EDITAR'" class="btn-action edit" (click)="handleEditCategoria(cat)"><i class="bi bi-pencil"></i></button>
+                      <button *appHasPermission="'CATEGORIA_GASTO_ELIMINAR'" class="btn-action delete" (click)="handleDeleteCategoria(cat)"><i class="bi bi-trash"></i></button>
                     </div>
                   </td>
                 </tr>

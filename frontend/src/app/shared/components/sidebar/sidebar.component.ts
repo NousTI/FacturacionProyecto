@@ -69,7 +69,7 @@ import { SidebarService } from './sidebar.service';
                <a routerLink="/vendedor/planes" routerLinkActive="active" class="menu-item px-3 mb-1" title="Planes">
                  <i class="bi bi-tags"></i> <span class="menu-text ms-3">Planes</span>
                </a>
-               <a *appHasPermission="'ver_reportes'" routerLink="/vendedor/reportes" routerLinkActive="active" class="menu-item px-3 mb-1" title="Reportes">
+               <a *appHasPermission="'REPORTES_VER'" routerLink="/vendedor/reportes" routerLinkActive="active" class="menu-item px-3 mb-1" title="Reportes">
                  <i class="bi bi-bar-chart"></i> <span class="menu-text ms-3">Reportes</span>
                </a>
                <a routerLink="/vendedor/renovaciones" routerLinkActive="active" class="menu-item px-3 mb-1" title="Renovaciones">
@@ -127,7 +127,7 @@ import { SidebarService } from './sidebar.service';
                   <a *appHasPermission="['ESTABLECIMIENTO_VER', 'CONFIG_ESTABLECIMIENTOS']" routerLink="/usuario/establecimientos" routerLinkActive="active" class="menu-item px-3 mb-1" title="Establecimientos">
                     <i class="bi bi-shop"></i> <span class="menu-text ms-3">Establecimientos</span>
                   </a>
-                  <a *appHasPermission="['PUNTO_EMISION_VER', 'CONFIG_ESTABLECIMIENTOS']" routerLink="/usuario/puntos-emision" routerLinkActive="active" class="menu-item px-3 mb-1" title="Puntos Emisión">
+                  <a *appHasPermission="['PUNTO_EMISION_VER', 'PUNTO_EMISION_GESTIONAR']" routerLink="/usuario/puntos-emision" routerLinkActive="active" class="menu-item px-3 mb-1" title="Puntos Emisión">
                     <i class="bi bi-printer"></i> <span class="menu-text ms-3">Puntos Emisión</span>
                   </a>
                   <a *appHasPermission="'CONFIG_SRI'" routerLink="/usuario/certificado-sri" routerLinkActive="active" class="menu-item px-3 mb-1" title="Certificado SRI">
