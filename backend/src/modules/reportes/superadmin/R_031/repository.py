@@ -120,7 +120,7 @@ class RepositorioR031:
             row = cur.fetchone()
             data = dict(row) if row else {}
 
-            # Calcular tasas
+            # Calcular tasas y métricas adicionales
             emp_act = int(data.get('empresas_activas', 0))
             emp_ant = int(data.get('empresas_activas_mes_anterior', 0))
             data['tasa_crecimiento'] = round(
@@ -139,6 +139,10 @@ class RepositorioR031:
             data['variacion_ingresos_mes'] = round(
                 ((ing_mes - ing_mes_ant) / ing_mes_ant * 100) if ing_mes_ant > 0 else (100.0 if ing_mes > 0 else 0.0), 2
             )
+
+            # Crecimiento Neto (Empresas nuevas - Empresas que entraron en rescate en el periodo)
+            data['crecimiento_neto'] = data['empresas_nuevas_mes'] - data['zona_rescate']
+
             return data
 
     def obtener_zona_rescate(self, fecha_inicio: Optional[str] = None, fecha_fin: Optional[str] = None) -> list:
@@ -161,7 +165,13 @@ class RepositorioR031:
                 -- Tooltip data
                 COALESCE(v.nombres || ' ' || v.apellidos, 'Sin vendedor') as vendedor_nombre,
                 e.created_at as fecha_registro,
-                NULL::text as representante
+                -- Obtener representante (primer administrador encontrado)
+                (SELECT u3.nombres || ' ' || u3.apellidos
+                 FROM sistema_facturacion.usuarios u3
+                 JOIN sistema_facturacion.empresa_roles er3 ON u3.empresa_rol_id = er3.id
+                 WHERE u3.empresa_id = e.id 
+                 ORDER BY (er3.codigo = 'ADMIN') DESC, u3.created_at ASC
+                 LIMIT 1) as representante
             FROM sistema_facturacion.empresas e
             JOIN sistema_facturacion.suscripciones s ON s.empresa_id = e.id
             JOIN sistema_facturacion.planes p ON p.id = s.plan_id

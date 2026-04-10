@@ -29,6 +29,9 @@ export interface EmpresaZonaRescate {
   vendedor_nombre: string | null;
   fecha_registro: string | null;
   representante: string | null;
+  ultimo_acceso_fmt?: string;
+  deadline_fmt?: string;
+  antiguedad?: string;
 }
 
 export interface EmpresaZonaUpgrade {
@@ -52,6 +55,7 @@ export interface ReporteGlobal {
   tasa_abandono: number;
   zona_upgrade: number;
   zona_rescate: number;
+  crecimiento_neto: number;
   empresas_rescate: EmpresaZonaRescate[];
   empresas_upgrade: EmpresaZonaUpgrade[];
   planes_mas_vendidos: { plan: string; ventas: number; ingresos: number }[];

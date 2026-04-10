@@ -1,0 +1,466 @@
+Sistema de Facturación
+Ejemplos de Reportes por Tipo de Usuario
+Guía de referencia para implementación del módulo de reportes
+Superadmin
+Acceso total
+Vendedor
+Sus empresas
+Admin empresa
+Vista complete (su empresa)
+Empleado
+Solo los suyos
+
+ 
+1. Superadmin
+Acceso total al sistema — ve todas las empresas, vendedores y métricas globales
+R-031 — Reporte global
+Vista consolidada de todas las empresas registradas en el sistema, sin importar el vendedor asignado.
+ 
+Empresas activas
+148
++12 este mes
+Ingresos del año
+$842K
++10% vs anterior
+Ingresos del mes
+$2000
++18% vs anterior
+Usarios nuevos
+7
+Crecimiento neto
+Tasa de crecimiento
+30%
+mensual
+Tasa de abandono
+1%
+de usuarios
+Zona upgrade
+5
+empresas
+Zona de rescate
+6
+empresas
+
+Zona de rescate
+Empresa
+Plan Vencido
+Ult. Intento acceso
+Venció
+Correo empresa
+Telefono empresa
+Dead line
+Acción
+Comercial Torres (i)
+Pro
+Hoy, 10:30
+Hace 5 días
+empresa@gmail.com
+099999999
+6 días
+[boton] reactivar/eliminar
+Ferretería Andes (i)
+Básico
+Ayer, 23:00
+2026-04-08
+empresa@gmail.com
+          	099999999
+2 días
+[boton] reactivar/eliminar
+Textiles del Sur (i)
+Enterprise
+2026-03-23
+Hace 8 días
+empresa@gmail.com
+099999999
+<de 24hrs
+[boton] reactivar/eliminar
+Consultora Nova (i)
+Pro
+Hoy 11:00
+2026-03-30
+empresa@gmail.com
+099999999
+<de 8hrs
+[boton] reactivar/eliminar
+Distribuidora RG (i)
+Básico
+Hoy 22:00
+2026-03-23
+empresa@gmail.com
+099999999
+<de 1h
+[boton] reactivar/eliminar
+
+Notas – en el último acceso podemos colocar la fecha cuando el tiempo supere los 30 días y lo contrario en la columna de proximos vencimientos colocar el tiempo en días cuando quedan menos de 31 días, en el kpi “zona upgrade” son las empresas que llegaron al 80% de uso de su plan y la zona de rescate son las empresas que pasaron a gestión del superamin (cuando ya se le bloqueó el sistema) en (i) [tooltip] mostrar el nombre del vendedor, la antigüedad del cliente y el nombre del representante / dueño de la empresa al pasar el cursor.. el dead line inicia en 9 días.. en este reporte global se debe mostrar una grafic que indique un porcentaje de rescate y upgrade.. adicional otra grafica que indique los planes más vendidos y el top de vendedores, en función a sus ventas / ingresos.
+R-032 — Comisiones por vendedor
+Control de comisiones generadas por cada vendedor, con estado de aprobación y pago.
+ 
+Comisiones pendientes
+$3,840
+de aprobación
+Pagadas este mes
+$6,200
+ya procesadas
+Vendedores activos
+8
+en el sistema
+Upgrades concretados
+80%
+De éxito
+Clientes perdidos
+8%
+en zona de rescate
+
+Detalle de comisiones
+Vendedor
+Empresa
+Tipo de venta
+Plan
+Comisión
+Estado
+Luis Mora 🔺
+Comercial Torres
+Renovación
+Pro
+$18.00
+Pendiente (i)
+Luis Mora
+Consultora Nova
+Nueva
+Pro
+$18.00
+Aprobada
+Ana Paz
+Ferretería Andes
+Upgrade
+Básico
+$5.88
+Pagada
+Ana Paz
+Distribuidora RG
+Nueva
+Básico
+$5.88
+Pendiente (i)
+
+Notas – grafica del top de vendedores, en función a sus ventas / ingresos. Grafica de planes más  vendidos, (i) tooltip en el estado pendiente con información “en espera de ciclo de pago”
+R-033 — Uso del sistema por empresa
+Métricas de uso para detectar empresas que se acercan al límite de su plan y podrían necesitar upgrade.
+ 
+Empresa
+Usuarios
+Fact. mes
+% de uso
+Módulos
+Último acceso
+Comercial Torres
+6
+245
+49%
+5 / 6
+Hoy
+Ferretería Andes
+2
+88
+18%
+3 / 6
+Hoy
+Textiles del Sur
+18
+610
+81%
+6 / 6
+Hoy
+Consultora Nova
+3
+52
+10%
+4 / 6
+Hace 8 días
+
+Notas – grafica pastel de los modulos más usados – grafica de empresas con más usuarios / promedio de usuarios por empresa
+
+2. Vendedor — Luis Mora
+Solo ve las empresas que él registró y sus propias comisiones
+R-031 (reducido) — Mis empresas
+Vista filtrada automáticamente: solo las empresas asignadas a este vendedor.
+ 
+Mis empresas activas
+12
++2 este mes
+Comisión pendiente
+$284
+pend. aprobación
+Vencen pronto
+2
+< de 30 días
+Planes nuevos
+29
++10% que el mes anterior
+Upgrades
+9
++10% que el mes anterior
+Renovaciones
+19
++10% que el mes anterior
+
+ 
+Empresa
+Plan
+% de uso
+Oportunidad de Upgrate
+Próx. venc.
+Estado
+Comercial Torres (i)
+Pro
+49%
+Si / No
+2026-04-30
+Activa
+Consultora Nova (i)
+Pro
+18%
+Si / No
+en menos de 1mes
+Vencida
+Ferretería Andes (i)
+Básico
+81%
+Si / No
+en menos de 5 días
+Vence pronto
+
+Notas – tooltip junto al nombre de la empresa que muestre la antigüedad del cliente, grafica pastel de los planes más vendidos por el vendedor y grafica de ventas por meses, el criterio para definir si es o no una oportunidad de upgrade es cuando el % de uso del plan es =>80%, en las fechas de proximo vencimiento usar el mismo criterio de los reportes anteriores
+R-032 (reducido) — Mis comisiones
+El vendedor solo ve sus propias comisiones. No puede ver las de otros vendedores.
+ 
+Por cobrar
+$342
+ya depositado
+Pendiente aprobación
+$284
+en revisión
+Total histórico
+$4,180
+acumulado
+Futuras comisiones en riesgo
+$587
+por planes que vencen en <30 días
+
+ 
+Empresa
+Fecha de la venta
+Plan
+Mi comisión
+Estado
+Comercial Torres
+2026-04-30
+Pro
+$18.00
+Pendiente
+Consultora Nova
+hace 5 días
+Pro
+$18.00
+Aprobada
+Ferretería Andes
+hoy
+Básico
+$5.88
+Pagada
+
+Notas – (i) tooltip en el estado pendiente con información “en espera de ciclo de pago” .. gráfica pastel ventas de este mes vs el mes anterior
+
+Reportes bloqueados para Vendedor
+ 
+Reporte
+Motivo del bloqueo
+R-026 Estado de resultados
+Datos financieros internos de cada empresa
+R-027 Reporte de IVA
+Información fiscal confidencial
+R-028 Resumen ejecutivo / KPIs
+Datos de rentabilidad privados
+R-029/030 Auditoría de usuarios
+Gestión interna de cada empresa
+R-032 Comisiones otros vendedores
+Información privada de terceros
+
+
+ 
+3. Administrador de empresa — Comercial Torres
+Acceso completo a todos los módulos y reportes de su propia empresa
+R-028 — Resumen ejecutivo (dashboard KPIs)
+Vista consolidada mensual. Es el reporte más importante para el administrador: combina ventas, cobros, gastos y utilidad en una sola pantalla.
+ 
+Total facturado
+$48,200
++15% vs mes anterior
+Ingreso en efectivo
+$38,400
++79.7% vs el mes anterior
+Ingreso con tarjeta
+$8,400
++9.7% vs el mes anterior
+Ingreso con otras formas de pago (i)
+$38,400
++79.7% vs el mes anterior
+Por cobrar
+$9,800
+$2,100 en mora >30 días
+Clientes nuevos
+60
++23% que el mes anterior
+Clientes vip
+34
+Este año
+Utilidad neta
+$11,240
+Margen 23.3%
+
+Radar de gestión inmediata
+Origen
+Detalle de movimiento
+Monto
+Estado
+Responsable
+Venta
+Factura #205 – Juan Perez
+$1.500
+Mora 5 días
+Cajero/vendedor 2
+Inventario
+Aceite giradol 1L (quedan 3)
+--
+Stock Critico
+Cajero/vendedor 2
+Caja
+Cierre de caja principal
+$450
+Cuadrado
+Cajero/vendedor 2
+
+Monitor de rentabilidad y  Rotación
+Productos
+Vendidos (mes)
+Existencias
+Utilidad Neta (total)
+Estado
+Aceite Girasol 1L
+450 und.
+12
+ 
+Stock en alerta
+Arroz Súper 2kg
+320 und.
+85
+ 
+Stock saludable
+Atún Real 140g2
+210 und.
+5
+ 
+Stock Critico
+
+ 
+Notas – (i) tooltip en Total ingreso otras formas de pago que indique las demás formas de pago disponibles dentro del sistema – el criterio de clientes vip es por frecuencia de compa (representan el 20% del promedio de ventas totales al mes, al menos 4 veces al mes y acumula 0 días de mora desde su primer compra) – grafica anillos facturación que va sumando este año vs el año anterior – grafica de gastos vs utilidad neta (mes) – criterio para denir el estado de los inventarios: en alerta <de 20 unidades, saludable >20 unidades, critico <10 unidades – el valor mostrado en la columna de utludad neta se calcula utilidad de producto unitario por los vendidos al mes – en la tabla monitor de rentabilidad y rotación deben ir los 5 productos más vendidos y los que generan más utilidad
+R-001 — Ventas generales
+Detalle de ventas del período con desglose por usuario, cantidades, IVA y comparación con período anterior.
+ 
+Facturas emitidas
+245
++8% vs anterior
+Subtotal sin IVA
+$41,913
+base imponible
+IVA cobrado (15%)
+$6,287
+a declarar al SRI
+IVA cobrado (8%)
+$6,287
+a declarar al SRI
+IVA cobrado (5%)
+$6,287
+a declarar al SRI
+IVA cobrado (0%)
+$6,287
+a declarar al SRI
+Ticket promedio
+$196.74
++6% vs anterior
+
+Ventas por usuario
+Usuario
+Facturas
+Total ventas
+Ticket prom.
+Anuladas
+Devoluciones
+Juan Pérez
+112
+$22,150
+$197.77
+2
+10
+María Soto
+88
+$16,800
+$190.91
+1
+3
+Carlos Ruiz
+45
+$9,250
+$205.56
+0
+9
+
+Notas – grafica tipo pastel con datos de los 5 mejores usuarios / vendedores, en función al total de ventas -
+R-008 — Cuentas por cobrar
+Análisis de cartera pendiente con antigüedad de saldos. Visible solo para administrador (bloqueado para empleados).
+ 
+Total por cobrar
+$6,100
+saldo pendiente
+Vencido <30 días
+$2,100
+requiere gestión
+Cartera crítica >30 días
+$4.000
+en riesgo de pérdida
+Índice de morosidad
+65.57%
+de riesgo total
+
+Top clientes con saldo pendiente
+Cliente
+Saldo total
+Días vencido
+# Fact. pend.
+Responsable
+Estado
+Bodega El Sol (i)
+$1,850
+68
+001-001-000000022
+Cajero/vendedor 1
+Crítico
+Importadora KL (i)
+$1,200
+22
+001-001-000000123
+Cajero/vendedor 2
+Vencido
+Servicios Plus (i)
+$980
+18
+001-001-000000034
+Cajero/vendedor 3
+Vencido
+
+Notas - Formula para calculo de porcentaje de morosidad: (cartera crítica / total por cobrar) x100; además colocar una gráfica puede (pastel o anillo) para reforzar la información de los KPI de la parte superior (vencido <30 días vs cartera crítica >30 días) si se usa el estilo anillo en el centro se puede colocar el % de morosidad - toolkit junto al nombre del cliente donde muestre el nombre del vendedor responsable - criterio para facturas en estado crítico = a días de vencimiento >30 días , vencido <30 días
+
+ 
+
+
+

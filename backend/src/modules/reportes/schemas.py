@@ -53,6 +53,9 @@ class EmpresaZonaRescate(BaseModel):
     vendedor_nombre: Optional[str] = None
     fecha_registro: Optional[datetime] = None
     representante: Optional[str] = None
+    ultimo_acceso_fmt: Optional[str] = None
+    deadline_fmt: Optional[str] = None
+    antiguedad: Optional[str] = None
 
 class EmpresaZonaUpgrade(BaseModel):
     id: UUID
@@ -75,6 +78,7 @@ class ReporteGlobalSuperadmin(BaseModel):
     tasa_abandono: float = 0.0
     zona_upgrade: int = 0
     zona_rescate: int = 0
+    crecimiento_neto: int = 0
     # Tablas
     empresas_rescate: List[EmpresaZonaRescate] = []
     empresas_upgrade: List[EmpresaZonaUpgrade] = []

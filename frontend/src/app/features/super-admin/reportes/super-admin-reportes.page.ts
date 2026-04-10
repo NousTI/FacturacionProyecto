@@ -127,7 +127,14 @@ type RangoTipo = 'mes_actual' | 'mes_anterior' | 'anio_actual' | 'mes_especifico
         <div class="kpi-card">
           <span class="kpi-label">Usuarios nuevos</span>
           <span class="kpi-value">{{ datosGlobal.usuarios_nuevos_mes }}</span>
-          <span class="kpi-sub text-muted">Crecimiento neto</span>
+          <span class="kpi-sub text-muted">este mes</span>
+        </div>
+        <div class="kpi-card">
+          <span class="kpi-label">Crecimiento Neto</span>
+          <span class="kpi-value" [class.text-success]="datosGlobal.crecimiento_neto >= 0" [class.text-danger]="datosGlobal.crecimiento_neto < 0">
+            {{ datosGlobal.crecimiento_neto > 0 ? '+' : '' }}{{ datosGlobal.crecimiento_neto }}
+          </span>
+          <span class="kpi-sub text-muted">empresas (Neto)</span>
         </div>
         <div class="kpi-card">
           <span class="kpi-label">Tasa de crecimiento</span>
@@ -214,6 +221,7 @@ type RangoTipo = 'mes_actual' | 'mes_anterior' | 'anio_actual' | 'mes_especifico
                 <th>Correo</th>
                 <th>Teléfono</th>
                 <th>Deadline</th>
+                <th class="text-center">Acción</th>
               </tr>
             </thead>
             <tbody>
@@ -224,14 +232,24 @@ type RangoTipo = 'mes_actual' | 'mes_anterior' | 'anio_actual' | 'mes_especifico
                   </span>
                 </td>
                 <td><span class="badge-plan">{{ e.plan_nombre }}</span></td>
-                <td class="text-muted small">{{ formatAcceso(e.ultimo_acceso) }}</td>
+                <td class="text-muted small">{{ e.ultimo_acceso_fmt || formatAcceso(e.ultimo_acceso) }}</td>
                 <td class="text-muted small">{{ formatFecha(e.fecha_vencimiento) }}</td>
                 <td class="small">{{ e.email || '—' }}</td>
                 <td class="small">{{ e.telefono || '—' }}</td>
                 <td>
                   <span class="badge-deadline" [ngClass]="deadlineClass(e.deadline)">
-                    {{ formatDeadline(e.deadline) }}
+                    {{ e.deadline_fmt || formatDeadline(e.deadline) }}
                   </span>
+                </td>
+                <td class="text-center">
+                  <div class="d-flex justify-content-center gap-1">
+                    <button class="btn-accion btn-reactivar" (click)="reactivarEmpresa(e)" title="Reactivar Empresa">
+                      <i class="bi bi-arrow-repeat"></i>
+                    </button>
+                    <button class="btn-accion btn-eliminar" (click)="eliminarEmpresa(e)" title="Eliminar Empresa">
+                      <i class="bi bi-trash"></i>
+                    </button>
+                  </div>
                 </td>
               </tr>
               <tr *ngIf="datosGlobal.empresas_rescate.length === 0">
@@ -807,6 +825,16 @@ type RangoTipo = 'mes_actual' | 'mes_anterior' | 'anio_actual' | 'mes_especifico
     .estado-pendiente { background: #fef9c3; color: #854d0e; }
     .estado-aprobada  { background: #e0f2fe; color: #0369a1; }
     .estado-pagada    { background: #dcfce7; color: #166534; }
+    
+    .btn-accion {
+      width: 28px; height: 28px; border-radius: 6px; border: none;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.9rem; transition: all 0.2s; cursor: pointer;
+    }
+    .btn-reactivar { background: #dcfce7; color: #166534; }
+    .btn-reactivar:hover { background: #bbf7d0; transform: scale(1.1); }
+    .btn-eliminar  { background: #fee2e2; color: #991b1b; }
+    .btn-eliminar:hover  { background: #fecaca; transform: scale(1.1); }
 
     /* Progress */
     .progress-wrap { display: flex; align-items: center; gap: 0.5rem; }
@@ -1122,10 +1150,17 @@ export class SuperAdminReportesPage implements OnInit, OnDestroy {
   }
 
   tooltipRescate(e: EmpresaZonaRescate): string {
-    const antiguedad = e.fecha_registro
-      ? Math.floor((Date.now() - new Date(e.fecha_registro).getTime()) / 86400000) + ' días'
-      : 'N/A';
-    return `Vendedor: ${e.vendedor_nombre || 'N/A'}\nAntigüedad: ${antiguedad}\nRepresentante: ${e.representante || 'N/A'}`;
+    return `Vendedor: ${e.vendedor_nombre || 'N/A'}\nAntigüedad: ${e.antiguedad || 'N/A'}\nRepresentante: ${e.representante || 'N/A'}`;
+  }
+
+  reactivarEmpresa(e: EmpresaZonaRescate) {
+    this.uiService.showToast('Funcionalidad de Reactivación', 'info', `Iniciando proceso para ${e.nombre_empresa}`);
+    // Aquí iría la lógica para llamar al servicio de suscripciones
+  }
+
+  eliminarEmpresa(e: EmpresaZonaRescate) {
+    this.uiService.showToast('Funcionalidad de Eliminación', 'warning', `Confirmación pendiente para borrar ${e.nombre_empresa}`);
+    // Aquí iría la lógica para llamar al servicio de empresas
   }
 
   tipoVentaClass(tipo: string): string {
