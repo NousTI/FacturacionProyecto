@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { finalize } from 'rxjs/operators';
@@ -6,6 +6,8 @@ import { finalize } from 'rxjs/operators';
 // Services
 import { CuentasPagarService } from './services/cuentas-pagar.service';
 import { UiService } from '../../../shared/services/ui.service';
+import { PermissionsService } from '../../../core/auth/permissions.service';
+import { OTROS_PERMISSIONS } from '../../../constants/permission-codes';
 
 // Models
 import { 
@@ -32,68 +34,87 @@ import { FlujoCajaComponent } from './components/flujo-caja.component';
   ],
   template: `
     <div class="page-container p-3">
-      <!-- FILTROS -->
-      <div class="d-flex flex-wrap justify-content-end align-items-center gap-2 mb-3 bg-light p-2 rounded-3 shadow-sm border border-white">
-        <!-- Rango de Fechas -->
-        <div class="d-flex align-items-center bg-white px-2 rounded-2 border">
-            <i class="bi bi-calendar-range text-muted small me-1"></i>
-            <input type="date" class="form-control form-control-sm border-0 shadow-none ps-1" 
-                   [(ngModel)]="filtros.fecha_inicio" (change)="cargarDatosModuloActivo()" 
-                   style="font-size: 0.8rem; height: 31px; width: 120px;">
-            <span class="text-muted px-1">-</span>
-            <input type="date" class="form-control form-control-sm border-0 shadow-none ps-1" 
-                   [(ngModel)]="filtros.fecha_fin" (change)="cargarDatosModuloActivo()" 
-                   style="font-size: 0.8rem; height: 31px; width: 120px;">
+      <ng-container *ngIf="canView; else noPermission">
+        <!-- FILTROS -->
+        <div class="d-flex flex-wrap justify-content-end align-items-center gap-2 mb-3 bg-light p-2 rounded-3 shadow-sm border border-white">
+          <!-- Rango de Fechas -->
+          <div class="d-flex align-items-center bg-white px-2 rounded-2 border">
+              <i class="bi bi-calendar-range text-muted small me-1"></i>
+              <input type="date" class="form-control form-control-sm border-0 shadow-none ps-1" 
+                     [(ngModel)]="filtros.fecha_inicio" (change)="cargarDatosModuloActivo()" 
+                     style="font-size: 0.8rem; height: 31px; width: 120px;">
+              <span class="text-muted px-1">-</span>
+              <input type="date" class="form-control form-control-sm border-0 shadow-none ps-1" 
+                     [(ngModel)]="filtros.fecha_fin" (change)="cargarDatosModuloActivo()" 
+                     style="font-size: 0.8rem; height: 31px; width: 120px;">
+          </div>
+
+          <button class="btn btn-primary btn-sm rounded-2 px-3 shadow-none border-0" 
+                  (click)="cargarDatosModuloActivo()" [disabled]="loading" style="height: 31px;">
+            <i class="bi bi-arrow-clockwise" [class.spin]="loading"></i>
+          </button>
         </div>
 
-        <button class="btn btn-primary btn-sm rounded-2 px-3 shadow-none border-0" 
-                (click)="cargarDatosModuloActivo()" [disabled]="loading" style="height: 31px;">
-          <i class="bi bi-arrow-clockwise" [class.spin]="loading"></i>
-        </button>
-      </div>
-
-      <!-- TABS -->
-      <div class="tabs-slider d-flex gap-3 mb-4 overflow-auto pb-2 border-bottom">
-        <button *ngFor="let tab of tabs" 
-                (click)="!tab.disabled && cambiarTab(tab.id)"
-                class="tab-btn btn border-0 rounded-pill px-4 py-2 fw-medium text-nowrap"
-                [class.active]="activeTab === tab.id"
-                [class.disabled]="tab.disabled"
-                [style.opacity]="tab.disabled ? '0.5' : '1'"
-                [style.cursor]="tab.disabled ? 'not-allowed' : 'pointer'">
-          <i [class]="tab.icon + ' me-2'"></i>{{ tab.label }}
-          <span *ngIf="tab.disabled" class="badge bg-secondary ms-2 small" style="font-size: 0.6rem;">Próximamente</span>
-        </button>
-      </div>
-
-      <!-- STATES -->
-      <div *ngIf="loading" class="d-flex flex-column align-items-center justify-content-center py-5">
-        <div class="spinner-grow text-corporate" role="status" style="width: 3rem; height: 3rem;"></div>
-        <span class="text-muted mt-3 small fw-medium">Procesando información financiera...</span>
-      </div>
-
-      <div *ngIf="error && !loading" class="alert alert-danger border-0 rounded-4 shadow-sm p-4 text-center">
-         <i class="bi bi-exclamation-octagon fs-1 d-block mb-3"></i>
-         <h6 class="fw-bold">Error al cargar el módulo</h6>
-         <p class="small mb-3 text-break">{{ error }}</p>
-         <button class="btn btn-outline-danger rounded-pill px-4" (click)="cargarDatosModuloActivo()">Intentar de Nuevo</button>
-      </div>
-
-      <!-- CONTENT -->
-      <div class="tab-content" *ngIf="!loading && !error">
-        <div *ngIf="activeTab === 'resumen'">
-          <app-cuentas-pagar-resumen [overview]="overviewData"></app-cuentas-pagar-resumen>
+        <!-- TABS -->
+        <div class="tabs-slider d-flex gap-3 mb-4 overflow-auto pb-2 border-bottom">
+          <button *ngFor="let tab of tabs" 
+                  (click)="!tab.disabled && cambiarTab(tab.id)"
+                  class="tab-btn btn border-0 rounded-pill px-4 py-2 fw-medium text-nowrap"
+                  [class.active]="activeTab === tab.id"
+                  [class.disabled]="tab.disabled"
+                  [style.opacity]="tab.disabled ? '0.5' : '1'"
+                  [style.cursor]="tab.disabled ? 'not-allowed' : 'pointer'">
+            <i [class]="tab.icon + ' me-2'"></i>{{ tab.label }}
+            <span *ngIf="tab.disabled" class="badge bg-secondary ms-2 small" style="font-size: 0.6rem;">Próximamente</span>
+          </button>
         </div>
-        <div *ngIf="activeTab === 'categoria'">
-          <app-gastos-categoria [data]="categoriaData"></app-gastos-categoria>
+
+        <!-- STATES -->
+        <div *ngIf="loading" class="d-flex flex-column align-items-center justify-content-center py-5">
+          <div class="spinner-grow text-corporate" role="status" style="width: 3rem; height: 3rem;"></div>
+          <span class="text-muted mt-3 small fw-medium">Procesando información financiera...</span>
         </div>
-        <div *ngIf="activeTab === 'proveedor'">
-          <app-gastos-proveedor [data]="proveedorData"></app-gastos-proveedor>
+
+        <div *ngIf="error && !loading" class="alert alert-danger border-0 rounded-4 shadow-sm p-4 text-center">
+           <i class="bi bi-exclamation-octagon fs-1 d-block mb-3"></i>
+           <h6 class="fw-bold">Error al cargar el módulo</h6>
+           <p class="small mb-3 text-break">{{ error }}</p>
+           <button class="btn btn-outline-danger rounded-pill px-4" (click)="cargarDatosModuloActivo()">Intentar de Nuevo</button>
         </div>
-        <div *ngIf="activeTab === 'flujo'">
-          <app-flujo-caja [data]="flujoData" (agrupacionChange)="onAgrupacionChange($event)"></app-flujo-caja>
+
+        <!-- CONTENT -->
+        <div class="tab-content" *ngIf="!loading && !error">
+          <div *ngIf="activeTab === 'resumen'">
+            <app-cuentas-pagar-resumen [overview]="overviewData"></app-cuentas-pagar-resumen>
+          </div>
+          <div *ngIf="activeTab === 'categoria'">
+            <app-gastos-categoria [data]="categoriaData"></app-gastos-categoria>
+          </div>
+          <div *ngIf="activeTab === 'proveedor'">
+            <app-gastos-proveedor [data]="proveedorData"></app-gastos-proveedor>
+          </div>
+          <div *ngIf="activeTab === 'flujo'">
+            <app-flujo-caja [data]="flujoData" (agrupacionChange)="onAgrupacionChange($event)"></app-flujo-caja>
+          </div>
         </div>
-      </div>
+      </ng-container>
+
+      <!-- TEMPLATE SIN PERMISO -->
+      <ng-template #noPermission>
+        <div class="no-permission-container d-flex flex-column align-items-center justify-content-center text-center p-5 animate-in" style="min-height: 70vh;">
+          <div class="icon-lock-wrapper mb-4">
+            <i class="bi bi-shield-lock-fill" style="font-size: 3.5rem; color: #6366f1;"></i>
+          </div>
+          <h2 class="fw-bold text-dark mb-2">Acceso Restringido</h2>
+          <p class="text-muted mb-4 mx-auto" style="max-width: 400px;">
+            No tienes los permisos necesarios para visualizar la gestión de Cuentas por Pagar. 
+            Solicita el acceso <strong>CUENTA_PAGAR_VER</strong> a tu administrador.
+          </p>
+          <button class="btn btn-dark rounded-pill px-5 py-3 fw-bold shadow-sm" (click)="cargarDatosModuloActivo()">
+            <i class="bi bi-arrow-clockwise me-2"></i> Reintentar sincronización
+          </button>
+        </div>
+      </ng-template>
     </div>
   `,
   styles: [`
@@ -110,9 +131,27 @@ import { FlujoCajaComponent } from './components/flujo-caja.component';
     }
     .spin { animation: spin 1s linear infinite; }
     @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+    .icon-lock-wrapper {
+      width: 90px; height: 90px; background: #eef2ff; border: 1px solid #e0e7ff;
+      border-radius: 24px; display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 10px 25px -5px rgba(99, 102, 241, 0.2);
+    }
+
+    .animate-in {
+      animation: fadeIn 0.4s ease-out;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
   `]
 })
 export class CuentasPagarPage implements OnInit {
+  get canView(): boolean {
+    return this.permissionsService.hasPermission(OTROS_PERMISSIONS.CUENTA_PAGAR_VER);
+  }
+
   loading = false;
   error: string | null = null;
   activeTab = 'resumen';
@@ -134,6 +173,8 @@ export class CuentasPagarPage implements OnInit {
     { id: 'proveedor', label: 'Por Proveedor', icon: 'bi bi-truck', disabled: true },
     { id: 'flujo', label: 'Flujo de Caja', icon: 'bi bi-graph-up-arrow' }
   ];
+
+  private permissionsService = inject(PermissionsService);
 
   constructor(
     private service: CuentasPagarService,

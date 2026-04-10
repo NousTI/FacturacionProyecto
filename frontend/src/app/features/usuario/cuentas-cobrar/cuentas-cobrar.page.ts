@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Observable, forkJoin, BehaviorSubject } from 'rxjs';
@@ -7,6 +7,8 @@ import { finalize, map, switchMap } from 'rxjs/operators';
 // Services
 import { CuentasCobrarService } from './services/cuentas-cobrar.service';
 import { UiService } from '../../../shared/services/ui.service';
+import { PermissionsService } from '../../../core/auth/permissions.service';
+import { OTROS_PERMISSIONS } from '../../../constants/permission-codes';
 
 // Models
 import { 
@@ -36,96 +38,110 @@ import { CuentasCobrarProyeccionComponent } from './components/cuentas-cobrar-pr
   ],
   template: `
     <div class="page-container p-3">
-      <!-- CABECERA CON TABS Y FILTROS -->
-      <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4 border-bottom pb-2">
-        <!-- TABS NAVIGATION -->
-        <div *ngIf="tabs.length > 1" class="tabs-slider d-flex gap-2">
-          <button *ngFor="let tab of tabs" 
-                  (click)="activeTab = tab.id"
-                  class="tab-btn btn border-0 rounded-pill px-3 py-2 fw-medium text-nowrap"
-                  [class.active]="activeTab === tab.id"
-                  style="font-size: 0.85rem;">
-            <i [class]="tab.icon + ' me-2'"></i>{{ tab.label }}
-          </button>
-        </div>
-
-        <!-- FILTRO GLOBAL (FECHA DE CORTE Y RECARGA) -->
-        <div class="d-flex align-items-center gap-2" *ngIf="activeTab !== 'pagos'">
-          <div class="d-flex align-items-center bg-white px-2 rounded-2 border shadow-sm">
-            <i class="bi bi-calendar3 text-muted small me-1"></i>
-            <input type="date" class="form-control form-control-sm border-0 shadow-none ps-1" 
-                   [(ngModel)]="filtros.fecha_corte" (change)="cargarDatos()" 
-                   style="font-size: 0.8rem; height: 31px;">
+      <ng-container *ngIf="canView; else noPermission">
+        <!-- CABECERA CON TABS Y FILTROS -->
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4 border-bottom pb-2">
+          <!-- TABS NAVIGATION -->
+          <div *ngIf="tabs.length > 1" class="tabs-slider d-flex gap-2">
+            <button *ngFor="let tab of tabs" 
+                    (click)="activeTab = tab.id"
+                    class="tab-btn btn border-0 rounded-pill px-3 py-2 fw-medium text-nowrap"
+                    [class.active]="activeTab === tab.id"
+                    style="font-size: 0.85rem;">
+              <i [class]="tab.icon + ' me-2'"></i>{{ tab.label }}
+            </button>
           </div>
-          <button class="btn btn-primary btn-sm rounded-pill px-3 shadow-sm border-0" 
-                  (click)="cargarDatos()" [disabled]="loading" style="height: 31px;" title="Actualizar">
-            <i class="bi bi-arrow-clockwise" [class.spin]="loading"></i>
-          </button>
-        </div>
 
-        <!-- FILTROS POR RANGO DE FECHAS (EXCLUSIVO HISTORIAL) -->
-        <div class="d-flex align-items-center gap-2" *ngIf="activeTab === 'pagos'">
-          <div class="d-flex align-items-center bg-white px-2 rounded-2 border shadow-sm">
-            <span class="text-muted small me-1 fw-medium" style="font-size: 0.75rem;">Desde:</span>
-            <input type="date" class="form-control form-control-sm border-0 shadow-none px-1" 
-                   [(ngModel)]="filtros.fecha_inicio" (change)="cargarDatosSecundarios()" 
-                   style="font-size: 0.8rem; height: 31px;">
-            <div class="vr bg-secondary opacity-25 mx-1" style="height: 20px;"></div>
-            <span class="text-muted small ms-1 me-1 fw-medium" style="font-size: 0.75rem;">Hasta:</span>
-            <input type="date" class="form-control form-control-sm border-0 shadow-none px-1" 
-                   [(ngModel)]="filtros.fecha_fin" (change)="cargarDatosSecundarios()" 
-                   style="font-size: 0.8rem; height: 31px;">
+          <!-- FILTRO GLOBAL (FECHA DE CORTE Y RECARGA) -->
+          <div class="d-flex align-items-center gap-2" *ngIf="activeTab !== 'pagos'">
+            <div class="d-flex align-items-center bg-white px-2 rounded-2 border shadow-sm">
+              <i class="bi bi-calendar3 text-muted small me-1"></i>
+              <input type="date" class="form-control form-control-sm border-0 shadow-none ps-1" 
+                     [(ngModel)]="filtros.fecha_corte" (change)="cargarDatos()" 
+                     style="font-size: 0.8rem; height: 31px;">
+            </div>
+            <button class="btn btn-primary btn-sm rounded-pill px-3 shadow-sm border-0" 
+                    (click)="cargarDatos()" [disabled]="loading" style="height: 31px;" title="Actualizar">
+              <i class="bi bi-arrow-clockwise" [class.spin]="loading"></i>
+            </button>
           </div>
-          <button class="btn btn-primary btn-sm rounded-pill px-3 shadow-sm border-0" 
-                  (click)="cargarDatosSecundarios()" [disabled]="loading" style="height: 31px;" title="Actualizar">
-            <i class="bi bi-arrow-clockwise" [class.spin]="loading"></i>
+
+          <!-- FILTROS POR RANGO DE FECHAS (EXCLUSIVO HISTORIAL) -->
+          <div class="d-flex align-items-center gap-2" *ngIf="activeTab === 'pagos'">
+            <div class="d-flex align-items-center bg-white px-2 rounded-2 border shadow-sm">
+              <span class="text-muted small me-1 fw-medium" style="font-size: 0.75rem;">Desde:</span>
+              <input type="date" class="form-control form-control-sm border-0 shadow-none px-1" 
+                     [(ngModel)]="filtros.fecha_inicio" (change)="cargarDatosSecundarios()" 
+                     style="font-size: 0.8rem; height: 31px;">
+              <div class="vr bg-secondary opacity-25 mx-1" style="height: 20px;"></div>
+              <span class="text-muted small ms-1 me-1 fw-medium" style="font-size: 0.75rem;">Hasta:</span>
+              <input type="date" class="form-control form-control-sm border-0 shadow-none px-1" 
+                     [(ngModel)]="filtros.fecha_fin" (change)="cargarDatosSecundarios()" 
+                     style="font-size: 0.8rem; height: 31px;">
+            </div>
+            <button class="btn btn-primary btn-sm rounded-pill px-3 shadow-sm border-0" 
+                    (click)="cargarDatosSecundarios()" [disabled]="loading" style="height: 31px;" title="Actualizar">
+              <i class="bi bi-arrow-clockwise" [class.spin]="loading"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- LOADING STATE -->
+        <div *ngIf="loading" class="d-flex flex-column align-items-center justify-content-center py-5">
+          <div class="spinner-grow text-primary" role="status"></div>
+          <span class="text-muted mt-3 small fw-medium">Sincronizando cartera...</span>
+        </div>
+
+        <!-- ERROR STATE -->
+        <div *ngIf="error && !loading" class="alert alert-danger border-0 rounded-4 shadow-sm p-4 text-center">
+           <i class="bi bi-exclamation-triangle fs-1 d-block mb-3"></i>
+           <h6 class="fw-bold">No se pudieron cargar los datos</h6>
+           <p class="small mb-3">Error: {{ error }}</p>
+           <button class="btn btn-outline-danger rounded-pill" (click)="cargarDatos()">Reintentar</button>
+        </div>
+
+        <!-- TABS CONTENT -->
+        <div class="tab-content animate-in" *ngIf="!loading && !error">
+          
+          <!-- Tab 1: Resumen -->
+          <div *ngIf="activeTab === 'resumen'">
+            <app-cuentas-cobrar-resumen [overview]="overviewData"></app-cuentas-cobrar-resumen>
+          </div>
+
+          <!-- Tab 2: Antigüedad -->
+          <div *ngIf="activeTab === 'antiguedad'">
+            <app-cuentas-cobrar-antiguedad [data]="antiguedadData"></app-cuentas-cobrar-antiguedad>
+          </div>
+
+          <!-- Tab 3: Morosos -->
+          <div *ngIf="activeTab === 'morosos'">
+            <app-cuentas-cobrar-morosos [data]="morososData"></app-cuentas-cobrar-morosos>
+          </div>
+
+          <!-- Tab 4: Historial de Pagos -->
+          <div *ngIf="activeTab === 'pagos'">
+            <app-cuentas-cobrar-pagos [data]="pagosData"></app-cuentas-cobrar-pagos>
+          </div>
+
+        </div>
+      </ng-container>
+
+      <!-- TEMPLATE SIN PERMISO -->
+      <ng-template #noPermission>
+        <div class="no-permission-container d-flex flex-column align-items-center justify-content-center text-center p-5 animate-in" style="min-height: 70vh;">
+          <div class="icon-lock-wrapper mb-4">
+            <i class="bi bi-shield-lock-fill" style="font-size: 3.5rem; color: #f59e0b;"></i>
+          </div>
+          <h2 class="fw-bold text-dark mb-2">Acceso Restringido</h2>
+          <p class="text-muted mb-4 mx-auto" style="max-width: 400px;">
+            No tienes los permisos necesarios para visualizar la gestión de Cuentas por Cobrar. 
+            Solicita el acceso <strong>CUENTA_COBRAR_VER</strong> a tu administrador.
+          </p>
+          <button class="btn btn-dark rounded-pill px-5 py-3 fw-bold shadow-sm" (click)="cargarDatos()">
+            <i class="bi bi-arrow-clockwise me-2"></i> Reintentar sincronización
           </button>
         </div>
-      </div>
-
-      <!-- LOADING STATE -->
-      <div *ngIf="loading" class="d-flex flex-column align-items-center justify-content-center py-5">
-        <div class="spinner-grow text-primary" role="status"></div>
-        <span class="text-muted mt-3 small fw-medium">Sincronizando cartera...</span>
-      </div>
-
-      <!-- ERROR STATE -->
-      <div *ngIf="error && !loading" class="alert alert-danger border-0 rounded-4 shadow-sm p-4 text-center">
-         <i class="bi bi-exclamation-triangle fs-1 d-block mb-3"></i>
-         <h6 class="fw-bold">No se pudieron cargar los datos</h6>
-         <p class="small mb-3">Error: {{ error }}</p>
-         <button class="btn btn-outline-danger rounded-pill" (click)="cargarDatos()">Reintentar</button>
-      </div>
-
-      <!-- TABS CONTENT -->
-      <div class="tab-content animate-in" *ngIf="!loading && !error">
-        
-        <!-- Tab 1: Resumen -->
-        <div *ngIf="activeTab === 'resumen'">
-          <app-cuentas-cobrar-resumen [overview]="overviewData"></app-cuentas-cobrar-resumen>
-        </div>
-
-        <!-- Tab 2: Antigüedad -->
-        <div *ngIf="activeTab === 'antiguedad'">
-          <app-cuentas-cobrar-antiguedad [data]="antiguedadData"></app-cuentas-cobrar-antiguedad>
-        </div>
-
-        <!-- Tab 3: Morosos -->
-        <div *ngIf="activeTab === 'morosos'">
-          <app-cuentas-cobrar-morosos [data]="morososData"></app-cuentas-cobrar-morosos>
-        </div>
-
-        <!-- Tab 4: Historial de Pagos -->
-        <div *ngIf="activeTab === 'pagos'">
-          <app-cuentas-cobrar-pagos [data]="pagosData"></app-cuentas-cobrar-pagos>
-        </div>
-
-        <!-- Tab 5: Proyección (Oculto temporalmente) -->
-        <!-- <div *ngIf="activeTab === 'proyeccion'">
-          <app-cuentas-cobrar-proyeccion [data]="proyeccionData"></app-cuentas-cobrar-proyeccion>
-        </div> -->
-
-      </div>
+      </ng-template>
     </div>
   `,
   styles: [`
@@ -158,9 +174,19 @@ import { CuentasCobrarProyeccionComponent } from './components/cuentas-cobrar-pr
       from { opacity: 0; transform: translateY(10px); }
       to { opacity: 1; transform: translateY(0); }
     }
+
+    .icon-lock-wrapper {
+      width: 90px; height: 90px; background: #fffbeb; border: 1px solid #fde68a;
+      border-radius: 24px; display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 10px 25px -5px rgba(245, 158, 11, 0.2);
+    }
   `]
 })
 export class CuentasCobrarPage implements OnInit {
+  get canView(): boolean {
+    return this.permissionsService.hasPermission(OTROS_PERMISSIONS.CUENTA_COBRAR_VER);
+  }
+
   loading: boolean = false;
   error: string | null = null;
   activeTab: string = 'resumen';
@@ -184,6 +210,9 @@ export class CuentasCobrarPage implements OnInit {
     { id: 'pagos', label: 'Historial', icon: 'bi bi-receipt-cutoff' }
     // { id: 'proyeccion', label: 'Proyección', icon: 'bi bi-graph-up-arrow' }
   ];
+
+
+  private permissionsService = inject(PermissionsService);
 
   constructor(
     private service: CuentasCobrarService,
