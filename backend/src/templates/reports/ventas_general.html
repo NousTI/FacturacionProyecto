@@ -152,23 +152,27 @@
             </div>
         </div>
 
-        <h3>Distribución por Establecimiento</h3>
+        <h3>Ventas por Usuario</h3>
         <table>
             <thead>
                 <tr>
-                    <th>Establecimiento</th>
-                    <th>Subtotal</th>
-                    <th>IVA</th>
-                    <th>Total</th>
+                    <th>Usuario</th>
+                    <th>Facturas</th>
+                    <th>Total Ventas</th>
+                    <th>Ticket Promedio</th>
+                    <th>Anuladas</th>
+                    <th>Devoluciones</th>
                 </tr>
             </thead>
             <tbody>
-                {% for item in data.graficos.por_establecimiento %}
+                {% for item in data.usuarios %}
                 <tr>
-                    <td>{{ item.label }}</td>
-                    <td>-</td>
-                    <td>-</td>
-                    <td>${{ "{:,.2f}".format(item.value) }}</td>
+                    <td>{{ item.usuario }}</td>
+                    <td>{{ item.cantidad_facturas }}</td>
+                    <td>${{ "{:,.2f}".format(item.total_ventas) }}</td>
+                    <td>${{ "{:,.2f}".format(item.ticket_promedio) }}</td>
+                    <td>{{ item.facturas_anuladas }}</td>
+                    <td>{{ item.devoluciones }}</td>
                 </tr>
                 {% endfor %}
             </tbody>

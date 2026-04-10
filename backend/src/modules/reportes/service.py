@@ -270,9 +270,17 @@ class ServicioReportes:
             "por_forma_pago": self.repo.obtener_ventas_por_pago(empresa_id, fecha_inicio, fecha_fin)
         }
 
+        # 4. Datos de usuarios
+        usuarios = self.repo.obtener_ventas_por_usuario(empresa_id, fecha_inicio, fecha_fin)
+        # Renombrar campos para consistencia con template
+        for user in usuarios:
+            user['cantidad_facturas'] = user.pop('facturas', 0)
+            user['facturas_anuladas'] = user.pop('anuladas', 0)
+
         return {
             "resumen": resumen,
-            "graficos": graficos
+            "graficos": graficos,
+            "usuarios": usuarios
         }
 
     def obtener_ventas_mensuales(self, empresa_id: UUID, anio: int):
