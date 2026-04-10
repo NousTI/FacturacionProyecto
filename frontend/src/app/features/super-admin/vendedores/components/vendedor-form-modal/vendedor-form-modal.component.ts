@@ -49,7 +49,7 @@ import { SriValidators } from '../../../../../shared/utils/sri-validators';
                   <i class="bi bi-person input-icon"></i>
                   <input type="text" formControlName="nombres" class="form-control-premium" 
                     [class.is-invalid]="vendedorForm.get('nombres')?.invalid && vendedorForm.get('nombres')?.touched"
-                    placeholder="Ej: Juan" [disabled]="saving">
+                    placeholder="Ej: Juan">
                 </div>
                 <div class="error-feedback" *ngIf="vendedorForm.get('nombres')?.invalid && vendedorForm.get('nombres')?.touched">
                   El nombre es obligatorio (mín. 3 caracteres)
@@ -63,7 +63,7 @@ import { SriValidators } from '../../../../../shared/utils/sri-validators';
                   <i class="bi bi-person-badge input-icon"></i>
                   <input type="text" formControlName="apellidos" class="form-control-premium" 
                     [class.is-invalid]="vendedorForm.get('apellidos')?.invalid && vendedorForm.get('apellidos')?.touched"
-                    placeholder="Ej: Pérez" [disabled]="saving">
+                    placeholder="Ej: Pérez">
                 </div>
                 <div class="error-feedback" *ngIf="vendedorForm.get('apellidos')?.invalid && vendedorForm.get('apellidos')?.touched">
                   El apellido es obligatorio (mín. 3 caracteres)
@@ -73,7 +73,7 @@ import { SriValidators } from '../../../../../shared/utils/sri-validators';
                 <label class="form-label-premium">Tipo de Identificación *</label>
                 <div class="input-premium-group mb-2">
                   <i class="bi bi-tag input-icon"></i>
-                  <select formControlName="tipoIdentificacion" class="form-select-premium" (change)="onTipoIdChange()" [disabled]="saving">
+                  <select formControlName="tipoIdentificacion" class="form-select-premium" (change)="onTipoIdChange()">
                     <option value="CEDULA">Cédula</option>
                     <option value="RUC">RUC</option>
                     <option value="PASAPORTE">Pasaporte Internac.</option>
@@ -86,7 +86,7 @@ import { SriValidators } from '../../../../../shared/utils/sri-validators';
                   <input type="text" formControlName="documentoIdentidad" class="form-control-premium"
                     [class.is-invalid]="vendedorForm.get('documentoIdentidad')?.invalid && vendedorForm.get('documentoIdentidad')?.touched"
                     [placeholder]="getIdPlaceholder()"
-                    [disabled]="saving" [maxlength]="getIdMaxLength()"
+                    [maxlength]="getIdMaxLength()"
                     (keypress)="vendedorForm.get('tipoIdentificacion')?.value === 'PASAPORTE' ? null : onlyNumbers($event)">
                 </div>
                 <div class="error-feedback" *ngIf="vendedorForm.get('documentoIdentidad')?.invalid && vendedorForm.get('documentoIdentidad')?.touched">
@@ -113,11 +113,11 @@ import { SriValidators } from '../../../../../shared/utils/sri-validators';
                   <i class="bi bi-phone input-icon"></i>
                   <input type="text" formControlName="telefono" class="form-control-premium" 
                     [class.is-invalid]="vendedorForm.get('telefono')?.invalid && vendedorForm.get('telefono')?.touched"
-                    placeholder="0999999999" [disabled]="saving" maxlength="10"
+                    placeholder="0999999999" maxlength="10"
                     (keypress)="onlyNumbers($event)">
                 </div>
                 <div class="error-feedback" *ngIf="vendedorForm.get('telefono')?.invalid && vendedorForm.get('telefono')?.touched">
-                  Teléfono debe tener 10 dígitos
+                  Teléfono debe empezar con 09 y tener 10 dígitos
                 </div>
               </div>
             </div>
@@ -135,7 +135,7 @@ import { SriValidators } from '../../../../../shared/utils/sri-validators';
                 <label class="form-label-premium">Tipo de Comisión</label>
                 <div class="input-premium-group">
                   <i class="bi bi-gear input-icon"></i>
-                  <select formControlName="tipoComision" class="form-select-premium" [disabled]="saving">
+                  <select formControlName="tipoComision" class="form-select-premium">
                     <option value="PORCENTAJE">Porcentaje (%)</option>
                     <option value="FIJA">Monto Fijo ($)</option>
                   </select>
@@ -147,7 +147,7 @@ import { SriValidators } from '../../../../../shared/utils/sri-validators';
                 <div class="input-premium-group">
                   <i class="bi bi-star input-icon"></i>
                   <input type="number" formControlName="porcentajeComisionInicial" class="form-control-premium"
-                    placeholder="0" [disabled]="saving">
+                    placeholder="0">
                   <span class="input-suffix-premium">{{ vendedorForm.get('tipoComision')?.value === 'PORCENTAJE' ? '%' : '$' }}</span>
                 </div>
               </div>
@@ -158,7 +158,7 @@ import { SriValidators } from '../../../../../shared/utils/sri-validators';
                   <i class="bi bi-arrow-repeat input-icon"></i>
                   <input type="number" formControlName="porcentajeComisionRecurrente" class="form-control-premium"
                     [class.is-invalid]="vendedorForm.get('porcentajeComisionRecurrente')?.invalid && vendedorForm.get('porcentajeComisionRecurrente')?.touched"
-                    placeholder="0" [disabled]="saving">
+                    placeholder="0">
                   <span class="input-suffix-premium">{{ vendedorForm.get('tipoComision')?.value === 'PORCENTAJE' ? '%' : '$' }}</span>
                 </div>
                 <div class="error-feedback" *ngIf="vendedorForm.get('porcentajeComisionRecurrente')?.invalid && vendedorForm.get('porcentajeComisionRecurrente')?.touched">
@@ -412,15 +412,43 @@ import { SriValidators } from '../../../../../shared/utils/sri-validators';
 })
 export class VendedorFormModalComponent {
   @Input() editing: boolean = false;
-  @Input() saving: boolean = false;
+  private _saving: boolean = false;
   private originalData: any = null;
+
+  @Input() set saving(value: boolean) {
+    this._saving = value;
+    if (this.vendedorForm) {
+      if (value) {
+        this.vendedorForm.disable({ emitEvent: false });
+      } else {
+        this.vendedorForm.enable({ emitEvent: false });
+      }
+    }
+  }
+
+  get saving(): boolean {
+    return this._saving;
+  }
 
   @Input() set vendedorData(data: any) {
     if (data) {
-      this.originalData = JSON.parse(JSON.stringify(data));
-      // Usar setTimeout para asegurar que el formulario esté listo
+      // Normalización de datos para asegurar consistencia mínima
+      const normalizedData = { ...data };
+      
+      // Solo inferir el tipo de identificación si NO viene definido en la data original
+      // Esto permite que el usuario pueda cambiarlo manualmente después sin que el setter lo sobreescriba
+      if (!normalizedData.tipoIdentificacion && normalizedData.documentoIdentidad) {
+        const doc = normalizedData.documentoIdentidad.toString();
+        if (doc.length === 13) normalizedData.tipoIdentificacion = 'RUC';
+        else if (doc.length === 10) normalizedData.tipoIdentificacion = 'CEDULA';
+        else normalizedData.tipoIdentificacion = 'CEDULA'; // Default
+      }
+
+      this.originalData = JSON.parse(JSON.stringify(normalizedData));
+      
       setTimeout(() => {
-        this.vendedorForm.patchValue(data);
+        this.vendedorForm.patchValue(normalizedData);
+        this.onTipoIdChange(); // Ajustar validadores al tipo inicial
         this.vendedorForm.markAsPristine();
         this.vendedorForm.markAsUntouched();
       }, 0);
@@ -440,7 +468,7 @@ export class VendedorFormModalComponent {
       tipoIdentificacion: ['CEDULA', Validators.required],
       documentoIdentidad: ['', [Validators.required, SriValidators.identificacionEcuador()]],
       email: [''],
-      telefono: ['', [Validators.required, Validators.pattern(/^[0-9]{10}$/)]],
+      telefono: ['', [Validators.required, Validators.pattern(/^09[0-9]{8}$/)]],
       // Comisiones
       tipoComision: ['PORCENTAJE', Validators.required],
       porcentajeComisionInicial: [0, [Validators.required, Validators.min(0), Validators.max(100)]],
@@ -564,26 +592,28 @@ export class VendedorFormModalComponent {
     }
   }
 
+
+
   isDirty(): boolean {
     if (!this.editing || !this.originalData) return true;
 
-    const currentValues = this.vendedorForm.value;
+    const currentValues = this.vendedorForm.getRawValue();
+    const keys = Object.keys(this.vendedorForm.controls);
 
-    // Comparar cada campo relevante
-    for (const key of Object.keys(currentValues)) {
-      const originalValue = this.originalData[key];
-      const currentValue = currentValues[key];
+    return keys.some(key => {
+      let v1 = this.originalData[key];
+      let v2 = currentValues[key];
 
-      // Convertir a strings para comparación consistente
-      const origStr = JSON.stringify(originalValue);
-      const currStr = JSON.stringify(currentValue);
+      // Normalización para booleanos/números del backend (1/0 -> true/false)
+      if (typeof v1 === 'number' && typeof v2 === 'boolean') v1 = !!v1;
+      if (typeof v2 === 'number' && typeof v1 === 'boolean') v2 = !!v2;
 
-      if (origStr !== currStr) {
-        return true; // Hay cambios
-      }
-    }
+      // Normalización general (null/undefined -> '')
+      const s1 = JSON.stringify(v1 ?? '');
+      const s2 = JSON.stringify(v2 ?? '');
 
-    return false; // No hay cambios
+      return s1 !== s2;
+    });
   }
 
   submit() {
@@ -593,7 +623,7 @@ export class VendedorFormModalComponent {
       return;
     }
 
-    // Si estamos editando, validar que hay cambios
+    // Si estamos editando, validar que el formulario tenga cambios reales
     if (this.editing && !this.isDirty()) {
       return;
     }

@@ -9,6 +9,7 @@ class VendedorBase(BaseModel):
     apellidos: str
     telefono: Optional[str] = Field(None, pattern=r"^([0-9]{10})?$")
     documento_identidad: str
+    tipo_identificacion: Optional[str] = "CEDULA"
     porcentaje_comision: Optional[float] = Field(default=0.0, ge=0, le=100)
     porcentaje_comision_inicial: Optional[float] = None
     porcentaje_comision_recurrente: Optional[float] = None
@@ -36,6 +37,7 @@ class VendedorActualizacion(BaseModel):
     apellidos: Optional[str] = None
     telefono: Optional[str] = Field(None, pattern=r"^([0-9]{10})?$")
     documento_identidad: Optional[str] = Field(None)
+    tipo_identificacion: Optional[str] = None
     porcentaje_comision: Optional[float] = None
     porcentaje_comision_inicial: Optional[float] = None
     porcentaje_comision_recurrente: Optional[float] = None

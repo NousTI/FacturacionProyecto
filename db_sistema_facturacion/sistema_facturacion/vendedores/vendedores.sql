@@ -15,6 +15,7 @@ CREATE TABLE IF NOT EXISTS sistema_facturacion.vendedores (
 
     telefono TEXT,
     documento_identidad TEXT,
+    tipo_identificacion TEXT DEFAULT 'CEDULA',
 
     porcentaje_comision NUMERIC(5,2),
     porcentaje_comision_inicial NUMERIC(5,2),

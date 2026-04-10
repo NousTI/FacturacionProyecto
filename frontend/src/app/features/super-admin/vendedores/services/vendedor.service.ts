@@ -98,11 +98,35 @@ export class VendedorService {
     }
 
     crearVendedor(data: any): Observable<any> {
-        return this.http.post(this.apiUrl, data);
+        const mappedData = this.toSnakeCase(data);
+        return this.http.post(this.apiUrl, mappedData);
     }
 
     actualizarVendedor(id: string, data: any): Observable<any> {
-        return this.http.patch(`${this.apiUrl}/${id}`, data);
+        const mappedData = this.toSnakeCase(data);
+        return this.http.patch(`${this.apiUrl}/${id}`, mappedData);
+    }
+
+    private toSnakeCase(data: any): any {
+        const mapped: any = {};
+        const mapping: any = {
+            'tipoIdentificacion': 'tipo_identificacion',
+            'documentoIdentidad': 'documento_identidad',
+            'tipoComision': 'tipo_comision',
+            'porcentajeComisionInicial': 'porcentaje_comision_inicial',
+            'porcentajeComisionRecurrente': 'porcentaje_comision_recurrente',
+            'puedeCrearEmpresas': 'puede_crear_empresas',
+            'puedeGestionarPlanes': 'puede_gestionar_planes',
+            'puedeAccederEmpresas': 'puede_acceder_empresas',
+            'puedeVerReportes': 'puede_ver_reportes'
+        };
+
+        Object.keys(data).forEach(key => {
+            const mappedKey = mapping[key] || key;
+            mapped[mappedKey] = data[key];
+        });
+
+        return mapped;
     }
 
     reassignCompanies(fromId: string, toId: string, empresaIds?: string[]): Observable<any> {
