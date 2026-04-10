@@ -2,111 +2,506 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Resumen Ejecutivo Financiero</title>
+    <title>Resumen Ejecutivo - R-028</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
     <style>
-        body { font-family: 'Helvetica', sans-serif; color: #333; margin: 0; padding: 20px; line-height: 1.4; }
-        .header { text-align: center; border-bottom: 2px solid #10b981; padding-bottom: 10px; margin-bottom: 30px; }
-        .header h1 { margin: 0; color: #065f46; font-size: 24px; }
-        .header p { margin: 5px 0; color: #64748b; font-size: 14px; }
-        
-        .grid { display: block; width: 100%; margin-bottom: 30px; }
-        .kpi-row { width: 100%; display: table; border-spacing: 15px; margin-left: -15px; }
-        .kpi-card { display: table-cell; width: 25%; background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 12px; padding: 15px; text-align: center; }
-        .kpi-label { font-size: 10px; font-weight: bold; color: #64748b; text-transform: uppercase; margin-bottom: 8px; }
-        .kpi-value { font-size: 18px; font-weight: bold; color: #1e293b; }
-        .kpi-trend { font-size: 11px; margin-top: 5px; font-weight: bold; }
-        .up { color: #10b981; }
-        .down { color: #ef4444; }
-        
-        .section-box { background: #fff; border: 1px solid #f1f5f9; border-radius: 12px; padding: 20px; margin-bottom: 25px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
-        .section-title { font-size: 15px; font-weight: bold; color: #1e293b; margin-bottom: 15px; border-bottom: 1px solid #f1f5f9; padding-bottom: 8px; }
-        
-        .progress-container { width: 100%; background: #f1f5f9; border-radius: 10px; height: 15px; margin: 10px 0; overflow: hidden; }
-        .progress-bar { height: 100%; background: #3b82f6; border-radius: 10px; }
-        
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Helvetica', Arial, sans-serif; color: #333; line-height: 1.5; page-break-after: always; }
+
+        .container { width: 100%; max-width: 900px; margin: 0 auto; padding: 20px; }
+
+        /* Header */
+        .header { text-align: center; border-bottom: 3px solid #065f46; padding-bottom: 15px; margin-bottom: 30px; }
+        .header h1 { font-size: 26px; color: #065f46; margin-bottom: 5px; font-weight: bold; }
+        .header .periodo { font-size: 12px; color: #64748b; margin: 5px 0; }
+        .header .empresa { font-size: 12px; color: #475569; font-weight: 600; }
+
+        /* Filtro DESDE-HASTA */
+        .filtro-rango { background: #f3f4f6; border-left: 4px solid #10b981; padding: 12px 15px; margin-bottom: 25px; border-radius: 4px; }
+        .filtro-rango p { font-size: 12px; color: #475569; margin: 3px 0; }
+        .filtro-rango strong { color: #1e293b; }
+
+        /* KPI Grid */
+        .kpis-section { margin-bottom: 30px; }
+        .kpis-grid { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 12px; margin-bottom: 20px; }
+
+        .kpi-card {
+            background: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 14px;
+            text-align: center;
+            page-break-inside: avoid;
+        }
+
+        .kpi-label { font-size: 10px; font-weight: bold; color: #64748b; text-transform: uppercase; margin-bottom: 6px; letter-spacing: 0.5px; }
+        .kpi-value { font-size: 20px; font-weight: bold; color: #1e293b; margin-bottom: 5px; }
+        .kpi-trend { font-size: 10px; font-weight: bold; }
+        .kpi-trend.up { color: #10b981; }
+        .kpi-trend.down { color: #ef4444; }
+        .kpi-secundario { font-size: 11px; color: #64748b; margin-top: 3px; }
+
+        /* Section Box */
+        .section-box {
+            background: #ffffff;
+            border: 1px solid #f1f5f9;
+            border-radius: 8px;
+            padding: 18px;
+            margin-bottom: 20px;
+            page-break-inside: avoid;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+
+        .section-title {
+            font-size: 13px;
+            font-weight: bold;
+            color: #1e293b;
+            border-bottom: 2px solid #f1f5f9;
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* Radar de Gestión */
+        .radar-table { width: 100%; border-collapse: collapse; font-size: 11px; }
+        .radar-table th {
+            background: #f3f4f6;
+            border: 1px solid #e5e7eb;
+            padding: 8px;
+            text-align: left;
+            font-weight: bold;
+            color: #475569;
+        }
+        .radar-table td {
+            border: 1px solid #e5e7eb;
+            padding: 8px;
+            color: #333;
+        }
+        .radar-table tr:nth-child(even) { background: #f9fafb; }
+        .estado-mora { color: #ef4444; font-weight: bold; }
+        .estado-critico { color: #f59e0b; font-weight: bold; }
+        .estado-cuadrado { color: #10b981; font-weight: bold; }
+
+        /* Monitor de Rentabilidad */
+        .monitor-title { font-size: 12px; font-weight: bold; color: #1e293b; margin-top: 15px; margin-bottom: 10px; }
+        .monitor-table { width: 100%; border-collapse: collapse; font-size: 11px; margin-bottom: 15px; }
+        .monitor-table th {
+            background: #f3f4f6;
+            border: 1px solid #e5e7eb;
+            padding: 8px;
+            text-align: left;
+            font-weight: bold;
+            color: #475569;
+        }
+        .monitor-table td {
+            border: 1px solid #e5e7eb;
+            padding: 8px;
+            color: #333;
+        }
+        .monitor-table tr:nth-child(even) { background: #f9fafb; }
+        .stock-alerta { color: #f59e0b; font-weight: bold; }
+        .stock-critico { color: #ef4444; font-weight: bold; }
+        .stock-saludable { color: #10b981; font-weight: bold; }
+
+        /* Gráficas */
+        .graficas-container { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; page-break-inside: avoid; }
+        .grafica-box {
+            background: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+        }
+        .grafica-titulo { font-size: 11px; font-weight: bold; color: #1e293b; margin-bottom: 10px; text-transform: uppercase; }
+        canvas { max-height: 200px; }
+
+        /* Notas */
+        .notas-section {
+            background: #f0f9ff;
+            border-left: 4px solid #3b82f6;
+            border-radius: 4px;
+            padding: 12px 15px;
+            font-size: 10px;
+            color: #475569;
+            line-height: 1.6;
+        }
+        .notas-section ul { margin-left: 20px; margin-top: 5px; }
+        .notas-section li { margin-bottom: 4px; }
+
+        /* Tooltip simulado */
+        .tooltip-marker { color: #3b82f6; font-weight: bold; cursor: help; position: relative; }
+        .tooltip-text { font-size: 10px; color: #64748b; margin-top: 5px; padding: 8px; background: #f0f9ff; border-radius: 4px; }
+
+        /* Footer - NO EDITAR */
         #footer {
             position: fixed;
-            bottom: 0px;
+            bottom: 0;
             left: 0;
             width: 100%;
             text-align: center;
             font-size: 10px;
             color: #6b7280;
+            padding: 10px 0;
+            border-top: 1px solid #e5e7eb;
+            background: white;
+        }
+
+        body { padding-bottom: 50px; }
+
+        /* Page break */
+        .page-break { page-break-after: always; }
+
+        /* Responsive adjustments for print */
+        @media print {
+            body { margin: 0; padding: 10px; }
+            .container { max-width: 100%; padding: 10px; }
+            .kpis-grid { grid-template-columns: 1fr 1fr 1fr 1fr; gap: 8px; }
+            .graficas-container { grid-template-columns: 1fr 1fr; gap: 15px; }
+            .section-box { page-break-inside: avoid; }
         }
     </style>
 </head>
 <body>
-    <div class="header">
-        <h1>Resumen Ejecutivo de Gestión</h1>
-        <p>Periodo: {{ params.fecha_inicio }} al {{ params.fecha_fin }}</p>
-        <p>Empresa: {{ empresa.nombre_comercial or empresa.razon_social }}</p>
-    </div>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>Resumen Ejecutivo de Gestión</h1>
+            <p class="periodo">Periodo: <strong>{{ params.fecha_inicio }}</strong> al <strong>{{ params.fecha_fin }}</strong></p>
+            <p class="empresa">Empresa: {{ empresa.nombre_comercial or empresa.razon_social }}</p>
+        </div>
 
-    <div class="grid">
-        <div class="kpi-row">
-            <div class="kpi-card">
-                <div class="kpi-label">Ventas Totales</div>
-                <div class="kpi-value">${{ "{:,.2f}".format(data.ventas.total_facturado) }}</div>
-                <div class="kpi-trend {{ 'up' if data.ventas.variacion_porcentual >= 0 else 'down' }}">
-                    {{ '+' if data.ventas.variacion_porcentual >= 0 }}{{ data.ventas.variacion_porcentual }}% vs prev.
+        <!-- Filtro DESDE - HASTA (obligatorio) -->
+        <div class="filtro-rango">
+            <p><strong>FILTRO DE BÚSQUEDA:</strong> Desde <strong>{{ params.fecha_inicio }}</strong> hasta <strong>{{ params.fecha_fin }}</strong></p>
+        </div>
+
+        <!-- SECCIÓN 1: KPIs PRINCIPALES -->
+        <div class="section-box">
+            <div class="section-title">KPIs Principales</div>
+
+            <!-- Total Facturado, Ingresos, Por Cobrar -->
+            <div class="kpis-grid">
+                <!-- Total Facturado -->
+                <div class="kpi-card">
+                    <div class="kpi-label">Total Facturado</div>
+                    <div class="kpi-value">${{ "{:,.2f}".format(data.total_facturado.valor) }}</div>
+                    <div class="kpi-trend {% if data.total_facturado.variacion >= 0 %}up{% else %}down{% endif %}">
+                        {% if data.total_facturado.variacion >= 0 %}+{% endif %}{{ data.total_facturado.variacion }}% vs mes anterior
+                    </div>
+                </div>
+
+                <!-- Ingreso en Efectivo -->
+                <div class="kpi-card">
+                    <div class="kpi-label">Ingreso en Efectivo</div>
+                    <div class="kpi-value">${{ "{:,.2f}".format(data.ingreso_efectivo.valor) }}</div>
+                    <div class="kpi-trend {% if data.ingreso_efectivo.variacion >= 0 %}up{% else %}down{% endif %}">
+                        {% if data.ingreso_efectivo.variacion >= 0 %}+{% endif %}{{ data.ingreso_efectivo.variacion }}% vs el mes anterior
+                    </div>
+                </div>
+
+                <!-- Ingreso con Tarjeta -->
+                <div class="kpi-card">
+                    <div class="kpi-label">Ingreso con Tarjeta</div>
+                    <div class="kpi-value">${{ "{:,.2f}".format(data.ingreso_tarjeta.valor) }}</div>
+                    <div class="kpi-trend {% if data.ingreso_tarjeta.variacion >= 0 %}up{% else %}down{% endif %}">
+                        {% if data.ingreso_tarjeta.variacion >= 0 %}+{% endif %}{{ data.ingreso_tarjeta.variacion }}% vs el mes anterior
+                    </div>
+                </div>
+
+                <!-- Ingreso Otras Formas -->
+                <div class="kpi-card">
+                    <div class="kpi-label">Ingreso Otras Formas de Pago <span class="tooltip-marker">(i)</span></div>
+                    <div class="kpi-value">${{ "{:,.2f}".format(data.ingreso_otras.valor) }}</div>
+                    <div class="kpi-trend {% if data.ingreso_otras.variacion >= 0 %}up{% else %}down{% endif %}">
+                        {% if data.ingreso_otras.variacion >= 0 %}+{% endif %}{{ data.ingreso_otras.variacion }}% vs el mes anterior
+                    </div>
                 </div>
             </div>
-            <div class="kpi-card">
-                <div class="kpi-label">Documentos Emitidos</div>
-                <div class="kpi-value">{{ data.ventas.facturas_emitidas }}</div>
-                <div style="font-size: 10px; color: #94a3b8;">{{ data.ventas.clientes_activos }} Clientes</div>
+
+            <!-- Tooltip para "Otras Formas de Pago" -->
+            {% if data.ingreso_otras.formas_pago_detalle %}
+            <div class="tooltip-text">
+                <strong>Detalle de formas de pago:</strong><br>
+                {% for forma in data.ingreso_otras.formas_pago_detalle %}
+                    • {{ forma.forma_pago }}: ${{ "{:,.2f}".format(forma.total) }}<br>
+                {% endfor %}
             </div>
-            <div class="kpi-card">
-                <div class="kpi-label">Total Recaudado</div>
-                <div class="kpi-value">${{ "{:,.2f}".format(data.cobros.total_cobrado) }}</div>
-                <div class="kpi-trend up">
-                    {{ data.cobros.porcentaje_recuperacion }}% Eficiencia
+            {% endif %}
+
+            <!-- Por Cobrar, Clientes Nuevos, Clientes VIP, Utilidad Neta -->
+            <div class="kpis-grid" style="margin-top: 15px;">
+                <!-- Por Cobrar -->
+                <div class="kpi-card">
+                    <div class="kpi-label">Por Cobrar</div>
+                    <div class="kpi-value">${{ "{:,.2f}".format(data.por_cobrar.total) }}</div>
+                    <div class="kpi-secundario">${{ "{:,.2f}".format(data.por_cobrar.en_mora) }} en mora >30 días</div>
+                </div>
+
+                <!-- Clientes Nuevos -->
+                <div class="kpi-card">
+                    <div class="kpi-label">Clientes Nuevos</div>
+                    <div class="kpi-value">{{ data.clientes_nuevos.valor }}</div>
+                    <div class="kpi-trend {% if data.clientes_nuevos.variacion >= 0 %}up{% else %}down{% endif %}">
+                        {% if data.clientes_nuevos.variacion >= 0 %}+{% endif %}{{ data.clientes_nuevos.variacion }}% que el mes anterior
+                    </div>
+                </div>
+
+                <!-- Clientes VIP -->
+                <div class="kpi-card">
+                    <div class="kpi-label">Clientes VIP</div>
+                    <div class="kpi-value">{{ data.clientes_vip.valor }}</div>
+                    <div class="kpi-secundario">{{ data.clientes_vip.periodo }}</div>
+                </div>
+
+                <!-- Utilidad Neta -->
+                <div class="kpi-card">
+                    <div class="kpi-label">Utilidad Neta</div>
+                    <div class="kpi-value">${{ "{:,.2f}".format(data.utilidad_neta.valor) }}</div>
+                    <div class="kpi-secundario">Margen {{ data.utilidad_neta.margen }}%</div>
                 </div>
             </div>
-            <div class="kpi-card">
-                <div class="kpi-label">Cartera Pendiente</div>
-                <div class="kpi-value" style="color: #ef4444;">${{ "{:,.2f}".format(data.cobros.pendiente_cobro) }}</div>
-                <div style="font-size: 10px; color: #94a3b8;">Saldos por cobrar</div>
+        </div>
+
+        <!-- SECCIÓN 2: RADAR DE GESTIÓN INMEDIATA -->
+        <div class="section-box">
+            <div class="section-title">Radar de Gestión Inmediata</div>
+            <table class="radar-table">
+                <thead>
+                    <tr>
+                        <th>Origen</th>
+                        <th>Detalle de Movimiento</th>
+                        <th>Monto</th>
+                        <th>Estado</th>
+                        <th>Responsable</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in data.radar_gestion %}
+                    <tr>
+                        <td>{{ item.origen }}</td>
+                        <td>{{ item.detalle }}</td>
+                        <td>
+                            {% if item.monto != 0 %}
+                                ${{ "{:,.2f}".format(item.monto) }}
+                            {% else %}
+                                --
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if 'Mora' in item.estado %}
+                                <span class="estado-mora">{{ item.estado }}</span>
+                            {% elif 'Crítico' in item.estado %}
+                                <span class="estado-critico">{{ item.estado }}</span>
+                            {% elif 'Cuadrado' in item.estado %}
+                                <span class="estado-cuadrado">{{ item.estado }}</span>
+                            {% else %}
+                                {{ item.estado }}
+                            {% endif %}
+                        </td>
+                        <td>{{ item.responsable }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- SECCIÓN 3: MONITOR DE RENTABILIDAD Y ROTACIÓN -->
+        <div class="section-box">
+            <div class="section-title">Monitor de Rentabilidad y Rotación</div>
+
+            <!-- Top 5 por Cantidad Vendida -->
+            <div class="monitor-title">Top 5 Productos Más Vendidos</div>
+            <table class="monitor-table">
+                <thead>
+                    <tr>
+                        <th>Productos</th>
+                        <th style="text-align: right;">Vendidos (mes)</th>
+                        <th style="text-align: right;">Existencias</th>
+                        <th style="text-align: right;">Utilidad Neta (total)</th>
+                        <th>Estado</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for prod in data.monitor_rentabilidad %}
+                    <tr>
+                        <td>{{ prod.productos }}</td>
+                        <td style="text-align: right;">{{ prod.vendidos }} und.</td>
+                        <td style="text-align: right;">{{ prod.existencias }}</td>
+                        <td style="text-align: right;">${{ "{:,.2f}".format(prod.utilidad_neta) }}</td>
+                        <td>
+                            {% if prod.estado == 'Stock Crítico' %}
+                                <span class="stock-critico">{{ prod.estado }}</span>
+                            {% elif prod.estado == 'Stock en alerta' %}
+                                <span class="stock-alerta">{{ prod.estado }}</span>
+                            {% else %}
+                                <span class="stock-saludable">{{ prod.estado }}</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+            <!-- Top 5 por Utilidad Generada -->
+            <div class="monitor-title">Top 5 Productos por Mayor Utilidad</div>
+            <table class="monitor-table">
+                <thead>
+                    <tr>
+                        <th>Productos</th>
+                        <th style="text-align: right;">Vendidos (mes)</th>
+                        <th style="text-align: right;">Existencias</th>
+                        <th style="text-align: right;">Utilidad Neta (total)</th>
+                        <th>Estado</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for prod in data.monitor_rentabilidad_por_utilidad %}
+                    <tr>
+                        <td>{{ prod.productos }}</td>
+                        <td style="text-align: right;">{{ prod.vendidos }} und.</td>
+                        <td style="text-align: right;">{{ prod.existencias }}</td>
+                        <td style="text-align: right;">${{ "{:,.2f}".format(prod.utilidad_neta) }}</td>
+                        <td>
+                            {% if prod.estado == 'Stock Crítico' %}
+                                <span class="stock-critico">{{ prod.estado }}</span>
+                            {% elif prod.estado == 'Stock en alerta' %}
+                                <span class="stock-alerta">{{ prod.estado }}</span>
+                            {% else %}
+                                <span class="stock-saludable">{{ prod.estado }}</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- SECCIÓN 4: GRÁFICAS -->
+        <div class="section-box">
+            <div class="section-title">Análisis Gráfico</div>
+
+            <div class="graficas-container">
+                <!-- Gráfica 1: Anillo Ventas Año Actual vs Anterior -->
+                <div class="grafica-box">
+                    <div class="grafica-titulo">Ventas Año Actual vs Año Anterior</div>
+                    <canvas id="chartAnilloVentas"></canvas>
+                </div>
+
+                <!-- Gráfica 2: Gastos vs Utilidad Neta -->
+                <div class="grafica-box">
+                    <div class="grafica-titulo">Gastos vs Utilidad Neta (Mes)</div>
+                    <canvas id="chartGastosUtilidad"></canvas>
+                </div>
             </div>
         </div>
-    </div>
 
-    <div class="section-box">
-        <div class="section-title">INDICADORES DE EFICIENCIA</div>
-        <p style="font-size: 13px;"><strong>Tasa de Recuperación de Cartera:</strong></p>
-        <div class="progress-container">
-            <div class="progress-bar" style="{{ 'width: ' ~ (data.cobros.porcentaje_recuperacion or 0) ~ '%;' }}"></div>
+        <!-- SECCIÓN 5: NOTAS -->
+        <div class="section-box">
+            <div class="section-title">Notas</div>
+            <div class="notas-section">
+                <ul>
+                    <li><strong>(i) Tooltip en "Ingreso Otras Formas de Pago":</strong> Detalla las demás formas de pago disponibles dentro del sistema</li>
+                    <li><strong>Criterio de Clientes VIP:</strong> Representan el 20% del promedio de ventas totales al mes, al menos 4 veces al mes y acumulan 0 días de mora desde su primer compra</li>
+                    <li><strong>Gráfica Anillos:</strong> Facturación año actual vs año anterior</li>
+                    <li><strong>Gráfica de Gastos vs Utilidad:</strong> Comparativa mensual de egresos e ingresos netos</li>
+                    <li><strong>Criterio Estados de Inventarios:</strong> En alerta &lt;20 unidades, Saludable ≥20 unidades, Crítico &lt;10 unidades</li>
+                    <li><strong>Utilidad Neta en Tabla:</strong> Se calcula como (utilidad de producto unitario) × (vendidos al mes)</li>
+                    <li><strong>Monitor de Rentabilidad:</strong> Incluye Top 5 productos más vendidos y Top 5 por mayor utilidad generada</li>
+                </ul>
+            </div>
         </div>
-        <p style="font-size: 11px; color: #64748b;">
-            Representa el porcentaje de las ventas del periodo que ya han sido efectivamente cobradas. Una tasa superior al 80% indica una gestión de cobranza saludable.
-        </p>
 
-        <p style="font-size: 13px; margin-top: 20px;"><strong>Ticket Promedio de Venta:</strong></p>
-        <div style="font-size: 22px; font-weight: bold; color: #3b82f6;">
-            ${{ "{:,.2f}".format(data.ventas.ticket_promedio) }}
-            <span style="font-size: 12px; color: #64748b; font-weight: normal; margin-left: 10px;">
-                (Variación: {{ '+' if data.ventas.variacion_ticket >= 0 }}{{ data.ventas.variacion_ticket }}%)
-            </span>
-        </div>
     </div>
 
-    <div class="section-box">
-        <div class="section-title">NOTAS FINANCIERAS</div>
-        <ul style="font-size: 12px; color: #475569;">
-            <li>Los datos de gastos y utilidad neta están limitados a costos directos de venta por falta de módulo de egresos.</li>
-            <li>El reporte incluye todas las facturas autorizadas en estado 'AUTORIZADO' o 'PENDIENTE' de la empresa.</li>
-            <li>Métricas de comparación basadas en el periodo inmediato anterior de igual duración.</li>
-        </ul>
-    </div>
-
+    <!-- Footer - NO EDITAR -->
     <div id="footer">
-        Generado por 
+        Generado por
         {% if footer_b64 %}
-        <img src="{{ footer_b64 }}" style="vertical-align: middle; height: 16px; margin: 0 4px;" alt="NOUS"> 
+        <img src="{{ footer_b64 }}" style="vertical-align: middle; height: 16px; margin: 0 4px;" alt="NOUS">
         {% else %}
         NOUS
         {% endif %}
         www.nous.ec
     </div>
+
+    <script>
+        // Gráfica 1: Anillo Ventas Año Actual vs Anterior
+        const ctxAnillo = document.getElementById('chartAnilloVentas').getContext('2d');
+        new Chart(ctxAnillo, {
+            type: 'doughnut',
+            data: {
+                labels: ['Año Actual', 'Año Anterior'],
+                datasets: [{
+                    data: [
+                        {{ data.graficas.anillo_ventas.año_actual }},
+                        {{ data.graficas.anillo_ventas.año_anterior }}
+                    ],
+                    backgroundColor: ['#10b981', '#94a3b8'],
+                    borderColor: ['#065f46', '#64748b'],
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            font: { size: 10 },
+                            padding: 10,
+                            color: '#475569'
+                        }
+                    }
+                }
+            }
+        });
+
+        // Gráfica 2: Gastos vs Utilidad Neta
+        const ctxGastos = document.getElementById('chartGastosUtilidad').getContext('2d');
+        new Chart(ctxGastos, {
+            type: 'bar',
+            data: {
+                labels: ['Gastos', 'Utilidad Neta'],
+                datasets: [{
+                    label: 'Monto ($)',
+                    data: [
+                        {{ data.graficas.gastos_vs_utilidad.gastos }},
+                        {{ data.graficas.gastos_vs_utilidad.utilidad_neta }}
+                    ],
+                    backgroundColor: ['#ef4444', '#10b981'],
+                    borderColor: ['#991b1b', '#065f46'],
+                    borderWidth: 1.5
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                indexAxis: 'x',
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            font: { size: 9 },
+                            color: '#64748b'
+                        }
+                    },
+                    x: {
+                        ticks: {
+                            font: { size: 9 },
+                            color: '#64748b'
+                        }
+                    }
+                }
+            }
+        });
+    </script>
+
 </body>
 </html>
