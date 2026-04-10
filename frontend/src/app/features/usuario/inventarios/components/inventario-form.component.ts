@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, EventEmitter, Input, Output, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormGroup, FormBuilder, Validators } from '@angular/forms';
 import { Producto } from '../../../../domain/models/producto.model';
@@ -9,12 +9,12 @@ import { TIPOS_MOVIMIENTO } from '../constants/inventario.constants';
   standalone: true,
   imports: [CommonModule, FormsModule, ReactiveFormsModule],
   template: `
-    <div class="modal-backdrop" *ngIf="show" (click)="onClose.emit()">
+    <div class="modal-backdrop" (click)="closeModal()">
       <div class="modal-dialog" (click)="$event.stopPropagation()">
         <div class="modal-content-glass">
           <div class="modal-header">
             <h3><i class="bi bi-plus-circle me-2"></i>Registrar Movimiento</h3>
-            <button class="btn-close" (click)="onClose.emit()"></button>
+            <button class="btn-close" (click)="closeModal()" [disabled]="isSaving"></button>
           </div>
           <div class="modal-body">
             <form [formGroup]="movimientoForm" class="grid-form">
@@ -63,7 +63,7 @@ import { TIPOS_MOVIMIENTO } from '../constants/inventario.constants';
             </form>
           </div>
           <div class="modal-footer">
-            <button class="btn-ghost" (click)="onClose.emit()">Cancelar</button>
+            <button class="btn-ghost" (click)="closeModal()" [disabled]="isSaving">Cancelar</button>
             <button class="btn-gradient" (click)="submit()" [disabled]="isSaving || movimientoForm.invalid">
               <i class="bi bi-check2-circle me-1" *ngIf="!isSaving"></i>
               {{ isSaving ? 'Procesando...' : 'Registrar Movimiento' }}
@@ -269,8 +269,7 @@ import { TIPOS_MOVIMIENTO } from '../constants/inventario.constants';
     }
   `]
 })
-export class InventarioFormComponent {
-  @Input() show = false;
+export class InventarioFormComponent implements OnInit, OnDestroy {
   @Input() isSaving = false;
   @Input() productos: Producto[] | null = [];
   @Output() onClose = new EventEmitter<void>();
@@ -290,6 +289,14 @@ export class InventarioFormComponent {
     });
   }
 
+  ngOnInit() {
+    document.body.style.overflow = 'hidden';
+  }
+
+  ngOnDestroy() {
+    document.body.style.overflow = 'auto';
+  }
+
   submit() {
     if (this.movimientoForm.valid) {
       this.onSave.emit(this.movimientoForm.value);
@@ -302,5 +309,11 @@ export class InventarioFormComponent {
       cantidad: 1,
       costo_unitario: 0
     });
+  }
+
+  closeModal() {
+    if (!this.isSaving) {
+      this.onClose.emit();
+    }
   }
 }

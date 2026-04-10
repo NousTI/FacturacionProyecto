@@ -70,6 +70,7 @@ import { InventoryManagementComponent } from './components/inventory-management.
 
       <!-- MODAL: NUEVO MOVIMIENTO -->
       <app-inventario-form
+        *ngIf="showMovimientoModal"
         #inventarioForm
         [show]="showMovimientoModal"
         [isSaving]="isSaving"

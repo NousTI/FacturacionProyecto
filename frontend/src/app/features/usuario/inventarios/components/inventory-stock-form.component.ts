@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnInit, OnDestroy, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormGroup, FormBuilder, Validators } from '@angular/forms';
 import { Producto } from '../../../../domain/models/producto.model';
@@ -9,15 +9,15 @@ import { UNIDADES_MEDIDA, ESTADOS_INVENTARIO } from '../constants/inventario.con
   standalone: true,
   imports: [CommonModule, FormsModule, ReactiveFormsModule],
   template: `
-    <div class="modal-backdrop" *ngIf="show">
-      <div class="modal-dialog">
+    <div class="modal-backdrop" (click)="closeModal()">
+      <div class="modal-dialog" (click)="$event.stopPropagation()">
         <div class="modal-content-glass">
           <div class="modal-header">
             <h3>
               <i class="bi me-2" [ngClass]="editingId ? 'bi-pencil-square' : 'bi-plus-circle'"></i>
               {{ editingId ? 'Editar' : 'Nuevo' }} Registro de Inventario
             </h3>
-            <button class="btn-close" (click)="onClose.emit()"></button>
+            <button class="btn-close" (click)="closeModal()" [disabled]="isSaving"></button>
           </div>
 
           <div class="modal-body">
@@ -83,7 +83,7 @@ import { UNIDADES_MEDIDA, ESTADOS_INVENTARIO } from '../constants/inventario.con
           </div>
 
           <div class="modal-footer">
-            <button class="btn-ghost" (click)="onClose.emit()">Cancelar</button>
+            <button class="btn-ghost" (click)="closeModal()" [disabled]="isSaving">Cancelar</button>
             <button class="btn-gradient" (click)="submit()" [disabled]="isSaving || form.invalid">
               <i class="bi me-1" [ngClass]="isSaving ? 'bi-hourglass' : 'bi-check2-circle'"></i>
               {{ isSaving ? 'Procesando...' : (editingId ? 'Actualizar' : 'Crear') }}
@@ -115,8 +115,7 @@ import { UNIDADES_MEDIDA, ESTADOS_INVENTARIO } from '../constants/inventario.con
     .btn-gradient:disabled { opacity: 0.6; cursor: not-allowed; }
   `]
 })
-export class InventoryStockFormComponent implements OnChanges {
-  @Input() show = false;
+export class InventoryStockFormComponent implements OnInit, OnDestroy, OnChanges {
   @Input() isSaving = false;
   @Input() editingId: string | null = null;
   @Input() productos: Producto[] | null = [];
@@ -140,17 +139,35 @@ export class InventoryStockFormComponent implements OnChanges {
     });
   }
 
-  ngOnChanges(changes: SimpleChanges) {
-    if (changes['show'] && changes['show'].currentValue && !this.editingId) {
+  ngOnInit() {
+    document.body.style.overflow = 'hidden';
+    // Reset form when opening in create mode
+    if (!this.editingId) {
       this.form.reset({
         fecha: new Date().toISOString().split('T')[0]
       });
     }
   }
 
+  ngOnDestroy() {
+    document.body.style.overflow = 'auto';
+  }
+
+  ngOnChanges(changes: SimpleChanges) {
+    if (changes['editingId'] && changes['editingId'].currentValue) {
+      // Form data is loaded by the parent component if needed
+    }
+  }
+
   submit() {
     if (this.form.valid) {
       this.onSave.emit(this.form.value);
+    }
+  }
+
+  closeModal() {
+    if (!this.isSaving) {
+      this.onClose.emit();
     }
   }
 }
