@@ -122,6 +122,13 @@ export class VendedorBloqueadoComponent {
   constructor(private authFacade: AuthFacade) {}
 
   cerrarSesion(): void {
-    this.authFacade.logout();
+    this.authFacade.logout().subscribe({
+      next: () => {
+        // Navigation handled in facade
+      },
+      error: () => {
+        // Even on error, the facade handles clearing state and navigation
+      }
+    });
   }
 }

@@ -23,12 +23,22 @@ class AuthRepository:
 
     def invalidar_sesion(self, sid: str, reason: str = 'LOGOUT'):
         query = """
-            UPDATE sistema_facturacion.user_sessions 
-            SET is_valid = FALSE, revoked_at = NOW(), revoked_reason = %s 
+            UPDATE sistema_facturacion.user_sessions
+            SET is_valid = FALSE, revoked_at = NOW(), revoked_reason = %s
             WHERE id = %s
         """
         with db_transaction(self.db) as cur:
             cur.execute(query, (reason, sid))
+
+    def invalidar_todas_sesiones(self, user_id: str, reason: str = 'LOGOUT'):
+        """Invalida todas las sesiones activas del usuario"""
+        query = """
+            UPDATE sistema_facturacion.user_sessions
+            SET is_valid = FALSE, revoked_at = NOW(), revoked_reason = %s
+            WHERE user_id = %s AND is_valid = TRUE
+        """
+        with db_transaction(self.db) as cur:
+            cur.execute(query, (reason, str(user_id)))
 
     def tiene_sesion_activa(self, user_id: UUID) -> bool:
         query = """

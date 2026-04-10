@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable } from 'rxjs';
+import { BehaviorSubject, Observable, finalize } from 'rxjs';
 import { AuthService } from './auth.service';
+import { tap } from 'rxjs/operators';
 import { User } from '../../domain/models/user.model';
 import { UserRole } from '../../domain/enums/role.enum';
 import { Router } from '@angular/router';
@@ -66,12 +67,25 @@ export class AuthFacade {
         });
     }
 
-    logout(): void {
-        this.authService.logout();
-        this.userSubject.next(null);
-        this.isAuthenticatedSubject.next(false);
-        this.uiService.showToast('Has cerrado sesión correctamente', 'info');
-        this.router.navigate(['/auth/login']);
+    logout(): Observable<void> {
+        return this.authService.logout().pipe(
+            tap(() => {
+                this.userSubject.next(null);
+                this.isAuthenticatedSubject.next(false);
+                this.uiService.showToast('Has cerrado sesión correctamente', 'info');
+            }),
+            tap({
+                error: () => {
+                    // Even on error, clear local state
+                    this.userSubject.next(null);
+                    this.isAuthenticatedSubject.next(false);
+                }
+            }),
+            finalize(() => {
+                // Navigate after everything is cleared
+                this.router.navigate(['/auth/login']);
+            })
+        );
     }
 
     getUserRole(): UserRole | null {

@@ -284,7 +284,14 @@ export class NavbarComponent implements OnInit, OnDestroy {
   }
 
   logout() {
-    this.authFacade.logout();
+    this.authFacade.logout().subscribe({
+      next: () => {
+        // Navigation handled in facade
+      },
+      error: () => {
+        // Even on error, the facade handles clearing state and navigation
+      }
+    });
   }
 
   getNotifIcon(tipo: string): string {

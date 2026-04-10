@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Observable, from, map, tap } from 'rxjs';
+import { Observable, from, map, tap, catchError } from 'rxjs';
 import { AuthResponse } from '../../domain/models/auth.model';
 import { User } from '../../domain/models/user.model';
 import { UserRole } from '../../domain/enums/role.enum';
@@ -21,7 +21,7 @@ export class AuthService {
         );
     }
 
-    logout(): void {
+    logout(): Observable<void> {
         const cleanup = () => {
             localStorage.removeItem(this.TOKEN_KEY);
             localStorage.removeItem(this.USER_KEY);
@@ -29,10 +29,15 @@ export class AuthService {
         };
 
         // Note: The interceptor handles 401/403, but manual logout still calls the endpoint
-        from(http.post(API_ENDPOINTS.AUTH.LOGOUT, {})).subscribe({
-            next: () => cleanup(),
-            error: () => cleanup() // Cleanup anyway on error
-        });
+        return from(http.post(API_ENDPOINTS.AUTH.LOGOUT, {})).pipe(
+            tap(() => cleanup()),
+            map(() => undefined),
+            // Cleanup anyway on error, but still propagate
+            catchError(() => {
+                cleanup();
+                return from([undefined]);
+            })
+        );
     }
 
     getPerfil(): Observable<any> {

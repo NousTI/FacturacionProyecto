@@ -131,14 +131,10 @@ class AuthServices:
         user_id = user['id']
         primary_role = str(user.get("role") or RolCodigo.USUARIO.value).strip().upper()
 
-        # 3. Validar Sesión Única
-        if self.auth_repo.tiene_sesion_activa(user_id):
-             logger.warning(f"[VALIDACIÓN] Sesión activa para usuario: {user_id}")
-             raise AppError(
-                message=AppMessages.AUTH_SESSION_ALREADY_ACTIVE, 
-                status_code=403, 
-                code=ErrorCodes.AUTH_SESSION_ALREADY_ACTIVE
-            )
+        # 3. Invalidar Sesiones Previas (Sesión Única)
+        # En lugar de rechazar, invalidamos las sesiones previas para permitir re-login
+        self.auth_repo.invalidar_todas_sesiones(user_id, reason='NEW_LOGIN')
+        logger.info(f"[VALIDACIÓN] Sesiones previas invalidadas para usuario: {user_id}")
 
         # 4. Crear Nueva Sesión
         session_id = uuid4().hex

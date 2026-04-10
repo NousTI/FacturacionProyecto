@@ -35,7 +35,13 @@ export class AuthInterceptor implements HttpInterceptor {
         return next.handle(request).pipe(
             catchError((error: HttpErrorResponse) => {
                 if (error.status === 401) {
-                    this.authService.logout();
+                    // Clear auth state immediately
+                    const TOKEN_KEY = 'auth_token';
+                    const USER_KEY = 'auth_user';
+                    localStorage.removeItem(TOKEN_KEY);
+                    localStorage.removeItem(USER_KEY);
+                    localStorage.clear();
+
                     this.router.navigate(['/auth/login']);
                 } else if (error.status === 403) {
                     // Solo manejamos 403 genéricos. Si es un bloqueo de empresa, el LockInterceptor se encarga.
