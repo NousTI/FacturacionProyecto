@@ -62,48 +62,60 @@ import { FACTURACION_PROGRAMADA_PERMISSIONS } from '../../../../../constants/per
                 </span>
               </td>
               <td class="text-end">
-                <div class="btn-group dropdown-minimal">
-                  <button *hasPermission="['FACTURA_PROGRAMADA_VER', 'FACTURA_PROGRAMADA_VER_PROPIAS']" class="btn btn-icon-premium" (click)="onAction.emit({type: 'history', data: prog})" title="Ver Historial">
-                    <i class="bi bi-clock-history"></i>
+                <div class="dropdown dropdown-premium">
+                  <button class="btn btn-icon-premium dropdown-trigger shadow-sm" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="bi bi-three-dots-vertical"></i>
                   </button>
-                  
-                  <button *hasPermission="['FACTURA_PROGRAMADA_VER', 'FACTURA_PROGRAMADA_VER_PROPIAS']" class="btn btn-icon-premium" (click)="onAction.emit({type: 'view', data: prog})" title="Ver Detalles">
-                    <i class="bi bi-eye"></i>
-                  </button>
+                  <ul class="dropdown-menu dropdown-menu-end shadow-premium border-0 animate__animated animate__fadeIn animate__faster">
+                    <li>
+                      <h6 class="dropdown-header">Gestión de Regla</h6>
+                    </li>
+                    <li *hasPermission="['FACTURA_PROGRAMADA_VER', 'FACTURA_PROGRAMADA_VER_PROPIAS']">
+                      <button class="dropdown-item" (click)="onAction.emit({type: 'view', data: prog})">
+                        <i class="bi bi-eye me-2 text-primary"></i>Ver Plantilla
+                      </button>
+                    </li>
+                    <li *hasPermission="['FACTURA_PROGRAMADA_VER', 'FACTURA_PROGRAMADA_VER_PROPIAS']">
+                      <button class="dropdown-item" (click)="onAction.emit({type: 'history', data: prog})">
+                        <i class="bi bi-clock-history me-2 text-info"></i>Ver Historial
+                      </button>
+                    </li>
+                    
+                    <ng-container *ngIf="canExecuteManual(prog) && hasPermissionEditar">
+                      <li><hr class="dropdown-divider"></li>
+                      <li>
+                        <button class="dropdown-item fw-bold text-primary" (click)="onAction.emit({type: 'execute', data: prog})">
+                          <i class="bi bi-lightning-fill me-2 anim-pulse"></i>Ejecutar Ahora
+                        </button>
+                      </li>
+                    </ng-container>
 
-                  <button 
-                    *hasPermission="'FACTURA_PROGRAMADA_EDITAR'" 
-                    class="btn btn-icon-premium text-primary" 
-                    [class.opacity-50]="!prog.activo"
-                    [disabled]="!prog.activo"
-                    (click)="onAction.emit({type: 'execute', data: prog})" 
-                    title="Ejecutar ahora">
-                    <i class="bi bi-lightning-fill"></i>
-                  </button>
-
-                  <button *hasPermission="'FACTURA_PROGRAMADA_EDITAR'" class="btn btn-icon-premium" (click)="onAction.emit({type: 'edit', data: prog})" title="Editar">
-                    <i class="bi bi-pencil-square"></i>
-                  </button>
-
-                  <button
-                    *hasPermission="'FACTURA_PROGRAMADA_EDITAR'"
-                    class="btn btn-icon-premium"
-                    [class.text-warning]="prog.activo"
-                    [class.text-success]="!prog.activo"
-                    (click)="onAction.emit({type: 'toggle', data: prog})"
-                    [title]="prog.activo ? 'Pausar programación' : 'Reanudar programación'">
-                    <i [class]="prog.activo ? 'bi bi-pause-circle' : 'bi bi-play-circle'"></i>
-                  </button>
-
-                  <ng-container *ngIf="prog.total_emisiones === 0">
-                    <button
-                      *hasPermission="'FACTURA_PROGRAMADA_ELIMINAR'"
-                      class="btn btn-icon-premium text-danger"
-                      (click)="onAction.emit({type: 'delete', data: prog})"
-                      title="Eliminar">
-                      <i class="bi bi-trash3"></i>
-                    </button>
-                  </ng-container>
+                    <li><hr class="dropdown-divider"></li>
+                    <li *hasPermission="'FACTURA_PROGRAMADA_EDITAR'">
+                      <button class="dropdown-item" (click)="onAction.emit({type: 'edit', data: prog})">
+                        <i class="bi bi-pencil-square me-2 text-secondary"></i>Editar Factura Base
+                      </button>
+                    </li>
+                    <li *hasPermission="'FACTURA_PROGRAMADA_EDITAR'">
+                      <button 
+                        class="dropdown-item" 
+                        [class.text-warning]="prog.activo"
+                        [class.text-success]="!prog.activo"
+                        (click)="onAction.emit({type: 'toggle', data: prog})">
+                        <i [class]="prog.activo ? 'bi bi-pause-circle' : 'bi bi-play-circle'" class="me-2"></i>
+                        {{ prog.activo ? 'Pausar Automatización' : 'Activar Automatización' }}
+                      </button>
+                    </li>
+                    
+                    <ng-container *ngIf="prog.total_emisiones === 0">
+                      <li><hr class="dropdown-divider"></li>
+                      <li *hasPermission="'FACTURA_PROGRAMADA_ELIMINAR'">
+                        <button class="dropdown-item text-danger" (click)="onAction.emit({type: 'delete', data: prog})">
+                          <i class="bi bi-trash3 me-2"></i>Eliminar Definitivamente
+                        </button>
+                      </li>
+                    </ng-container>
+                  </ul>
                 </div>
               </td>
             </tr>
@@ -127,8 +139,12 @@ import { FACTURACION_PROGRAMADA_PERMISSIONS } from '../../../../../constants/per
       border-radius: 20px;
       box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04);
       border: 1px solid #f1f5f9;
-      overflow: hidden;
       margin-bottom: 2rem;
+      position: relative;
+      z-index: 1;
+    }
+    .table-responsive {
+      overflow: visible !important;
     }
     .custom-table thead th {
       background: #f8fafc;
@@ -168,7 +184,7 @@ import { FACTURACION_PROGRAMADA_PERMISSIONS } from '../../../../../constants/per
     .badge-frecuencia.mensual { background: #e0e7ff; color: #4338ca; }
     .badge-frecuencia.trimestral { background: #fef3c7; color: #b45309; }
     .badge-frecuencia.anual { background: #dcfce7; color: #15803d; }
-
+ 
     .status-badge {
       display: inline-block;
       padding: 0.4rem 0.9rem;
@@ -178,7 +194,7 @@ import { FACTURACION_PROGRAMADA_PERMISSIONS } from '../../../../../constants/per
     }
     .status-badge.active { background: rgba(16, 185, 129, 0.1); color: #10b981; }
     .status-badge.inactive { background: #f1f5f9; color: #94a3b8; }
-
+ 
     .btn-icon-premium {
       width: 34px;
       height: 34px;
@@ -205,9 +221,92 @@ import { FACTURACION_PROGRAMADA_PERMISSIONS } from '../../../../../constants/per
         font-weight: 700;
         font-size: 0.85rem;
     }
+
+    /* PREMIUM DROPDOWN STYLES */
+    .dropdown-premium .dropdown-trigger {
+      border: 1px solid #e2e8f0;
+      background: #f8fafc;
+      color: #64748b;
+      transition: all 0.2s;
+    }
+    .dropdown-premium .dropdown-trigger:hover {
+      background: white;
+      color: #1e293b;
+      border-color: #cbd5e1;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+    }
+    .dropdown-premium .dropdown-menu {
+      min-width: 240px;
+      padding: 0.75rem;
+      border-radius: 18px;
+      box-shadow: 0 15px 50px -12px rgba(22, 29, 53, 0.2) !important;
+      border: 1px solid rgba(226, 232, 240, 0.8);
+      backdrop-filter: blur(10px);
+      background: rgba(255, 255, 255, 0.95);
+      z-index: 9999;
+    }
+    .dropdown-premium .dropdown-item {
+      padding: 0.7rem 1rem;
+      border-radius: 12px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #475569;
+      display: flex;
+      align-items: center;
+      transition: all 0.2s;
+      margin-bottom: 2px;
+    }
+    .dropdown-premium .dropdown-item:hover {
+      background: #f1f5f9;
+      color: #0f172a;
+      transform: translateX(4px);
+    }
+    .dropdown-premium .dropdown-header {
+      font-size: 0.65rem;
+      text-transform: uppercase;
+      letter-spacing: 1.2px;
+      font-weight: 800;
+      color: #94a3b8;
+      padding: 0.5rem 1rem;
+    }
+    .dropdown-premium .dropdown-divider {
+      border-top: 1px solid #f1f5f9;
+      margin: 0.5rem 0.5rem;
+    }
+    .anim-pulse {
+      animation: lightning-pulse 1.5s infinite;
+    }
+    @keyframes lightning-pulse {
+      0% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.6; transform: scale(1.1); }
+      100% { opacity: 1; transform: scale(1); }
+    }
   `]
 })
 export class RecurrenteTableComponent {
   @Input() programaciones: FacturaProgramada[] = [];
   @Output() onAction = new EventEmitter<{type: string, data: FacturaProgramada}>();
+
+  get hasPermissionEditar(): boolean {
+    return true; // Simplificado ya que el componente padre controla la visibilidad técnica, pero usaremos el directive si es posible o una prop
+  }
+
+  canExecuteManual(prog: FacturaProgramada): boolean {
+    if (!prog.activo) return false;
+    if (!prog.proxima_emision) return true;
+
+    try {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      
+      // Proxima emision viene como string YYYY-MM-DD
+      const [year, month, day] = prog.proxima_emision.split('-').map(Number);
+      const nextDate = new Date(year, month - 1, day);
+      
+      return nextDate <= today;
+    } catch (e) {
+      return true; // Fallback seguro
+    }
+  }
 }

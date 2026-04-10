@@ -55,10 +55,12 @@ import { FacturaProgramada } from '../../../domain/models/facturacion-programada
                   <button class="btn-refresh-premium" (click)="refreshData()" [class.spinning]="isRefreshing" title="Refrescar">
                     <i class="bi bi-arrow-clockwise"></i>
                   </button>
+                  <!-- 
                   <button *hasPermission="'FACTURA_PROGRAMADA_EDITAR'" class="btn-bulk-premium" (click)="runBulkExecution()" [disabled]="isProcessing" title="Ejecutar Facturaciones Pendientes">
                     <i class="bi bi-play-circle-fill me-2"></i>
                     Ejecutar Pendientes
                   </button>
+                  -->
                   <button *hasPermission="'FACTURA_PROGRAMADA_CREAR'" class="btn-create-premium" (click)="openCreateModal()">
                     <i class="bi bi-plus-lg me-2"></i>
                     Nueva Programación
@@ -373,6 +375,7 @@ export class FacturacionRecurrentePage implements OnInit, OnDestroy {
     this.selectedProgramacion = null;
     this.isViewOnly = false;
     this.showCreateModal = true;
+    this.cdr.detectChanges();
   }
 
   handleCreateClose(saved: boolean) {
@@ -399,7 +402,6 @@ export class FacturacionRecurrentePage implements OnInit, OnDestroy {
 
     if (event.type === 'view' || event.type === 'edit') {
       this.isViewOnly = event.type === 'view';
-      // Abrir modal inmediatamente — mostrará su spinner mientras resolvemos la plantilla
       this.selectedFacturaId = undefined;
       
       if (this.isViewOnly) {
@@ -409,32 +411,42 @@ export class FacturacionRecurrentePage implements OnInit, OnDestroy {
       }
       
       this.isLoadingEdit = true;
-      // Resolver el ID de la plantilla en paralelo y pasárselo al modal cuando llegue
+      this.cdr.detectChanges();
+
+      // Resolver el ID de la plantilla en paralelo
       this.service.obtenerIdPlantilla(event.data.id).subscribe({
         next: (res: any) => {
           this.isLoadingEdit = false;
           const facturaId = typeof res === 'string' ? res : (res?.data ?? null);
+          
           if (!facturaId) {
             this.showCreateModal = false;
             this.showViewTemplateModal = false;
             this.uiService.showToast('No se encontró la factura plantilla para esta programación', 'warning');
+            this.cdr.detectChanges();
             return;
           }
+          
           this.selectedFacturaId = facturaId;
+          this.cdr.detectChanges();
         },
         error: (err) => {
           this.isLoadingEdit = false;
           this.showCreateModal = false;
           this.showViewTemplateModal = false;
           this.uiService.showError(err, 'Error al obtener factura plantilla');
+          this.cdr.detectChanges();
         }
       });
     } else if (event.type === 'history') {
       this.showHistoryModal = true;
+      this.cdr.detectChanges();
     } else if (event.type === 'delete') {
       this.showConfirmModal = true;
+      this.cdr.detectChanges();
     } else if (event.type === 'toggle') {
       this.showToggleConfirmModal = true;
+      this.cdr.detectChanges();
     }
   }
 

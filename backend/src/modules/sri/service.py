@@ -374,6 +374,7 @@ class ServicioSRI:
             duration = int((time.time() - start_time) * 1000)
             self.factura_repo.crear_log_emision({
                 "factura_id": factura_id,
+                "facturacion_programada_id": factura.get('facturacion_programada_id'),
                 "usuario_id": usuario_actual.get('id'),
                 "ambiente": int(SRIAmbiente.PRUEBAS),
                 "clave_acceso": clave if 'clave' in locals() else None,
@@ -451,6 +452,7 @@ class ServicioSRI:
 
             self.factura_repo.crear_log_emision({
                 "factura_id": factura_id,
+                "facturacion_programada_id": factura.get('facturacion_programada_id'),
                 "usuario_id": usuario_actual.get('id'),
                 "ambiente": int(SRIAmbiente.PRUEBAS),
                 "clave_acceso": clave,
