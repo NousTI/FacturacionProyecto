@@ -16,6 +16,8 @@ CREATE TABLE IF NOT EXISTS sistema_facturacion.pagos_suscripciones (
     fecha_inicio_periodo TIMESTAMPTZ NOT NULL,
     fecha_fin_periodo TIMESTAMPTZ NOT NULL,
 
+    tipo_pago TEXT NOT NULL, 
+
     metodo_pago TEXT NOT NULL,
     estado TEXT NOT NULL DEFAULT 'PENDIENTE'
     CHECK (estado IN ('PENDIENTE', 'PAGADO', 'ANULADO', 'REEMBOLSADO')),
