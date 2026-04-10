@@ -417,8 +417,11 @@ export class VendedorFormModalComponent {
 
   @Input() set vendedorData(data: any) {
     if (data) {
-      this.originalData = { ...data };
+      this.originalData = JSON.parse(JSON.stringify(data));
       this.vendedorForm.patchValue(data);
+      // Marcar el formulario como pristine después de cargar los datos iniciales
+      this.vendedorForm.markAsPristine();
+      this.vendedorForm.markAsUntouched();
     }
   }
 
@@ -561,44 +564,63 @@ export class VendedorFormModalComponent {
 
   isDirty(): boolean {
     if (!this.editing || !this.originalData) return true;
+
     const currentValues = this.vendedorForm.value;
 
     // Comparar cada campo relevante
-    return Object.keys(currentValues).some(key => {
+    for (const key of Object.keys(currentValues)) {
       const originalValue = this.originalData[key];
       const currentValue = currentValues[key];
 
-      // Manejar valores nulos o indefinidos como iguales
-      if ((originalValue === null || originalValue === undefined) &&
-        (currentValue === null || currentValue === undefined)) return false;
+      // Convertir a strings para comparación consistente
+      const origStr = JSON.stringify(originalValue);
+      const currStr = JSON.stringify(currentValue);
 
-      return originalValue !== currentValue;
-    });
+      if (origStr !== currStr) {
+        return true; // Hay cambios
+      }
+    }
+
+    return false; // No hay cambios
   }
 
   submit() {
-    if (this.vendedorForm.valid && this.hasAtLeastOnePermission) {
-      if (this.editing) {
-        // Enviar solo los campos que cambiaron (PATCH style)
-        const changedFields: any = {};
-        const currentValues = this.vendedorForm.value;
+    // Validar que el formulario sea válido y tenga permisos
+    if (!this.vendedorForm.valid || !this.hasAtLeastOnePermission) {
+      this.vendedorForm.markAllAsTouched();
+      return;
+    }
 
-        Object.keys(currentValues).forEach(key => {
-          if (currentValues[key] !== this.originalData[key]) {
-            changedFields[key] = currentValues[key];
-          }
-        });
+    // Si estamos editando, validar que hay cambios
+    if (this.editing && !this.isDirty()) {
+      return;
+    }
 
-        this.onSave.emit(changedFields);
-      } else {
-        const formValue = { ...this.vendedorForm.value };
-        if (!formValue.email) {
-          delete formValue.email;
+    if (this.editing) {
+      // Enviar solo los campos que cambiaron (PATCH style)
+      const changedFields: any = {};
+      const currentValues = this.vendedorForm.value;
+
+      Object.keys(currentValues).forEach(key => {
+        const originalValue = this.originalData[key];
+        const currentValue = currentValues[key];
+        const origStr = JSON.stringify(originalValue);
+        const currStr = JSON.stringify(currentValue);
+
+        if (origStr !== currStr) {
+          changedFields[key] = currentValue;
         }
-        this.onSave.emit(formValue);
+      });
+
+      if (Object.keys(changedFields).length > 0) {
+        this.onSave.emit(changedFields);
       }
     } else {
-      this.vendedorForm.markAllAsTouched();
+      const formValue = { ...this.vendedorForm.value };
+      if (!formValue.email) {
+        delete formValue.email;
+      }
+      this.onSave.emit(formValue);
     }
   }
 }

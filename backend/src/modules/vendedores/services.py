@@ -211,7 +211,7 @@ class ServicioVendedores:
             raise AppError(
                 message="No hay cambios para actualizar",
                 status_code=400,
-                code=ErrorCodes.VALIDATION_ERROR,
+                code=ErrorCodes.VAL_INVALID_INPUT,
                 description="Debe realizar al menos un cambio para actualizar.",
                 level="INFO"
             )
@@ -259,7 +259,7 @@ class ServicioVendedores:
             raise AppError(
                 message="No hay cambios para actualizar",
                 status_code=400,
-                code=ErrorCodes.VALIDATION_ERROR,
+                code=ErrorCodes.VAL_INVALID_INPUT,
                 description="Debe realizar al menos un cambio para actualizar.",
                 level="INFO"
             )
