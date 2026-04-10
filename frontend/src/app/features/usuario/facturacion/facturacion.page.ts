@@ -19,6 +19,7 @@ import { FacturasService } from './services/facturas.service';
 import { UiService } from '../../../shared/services/ui.service';
 import { PermissionsService } from '../../../core/auth/permissions.service';
 import { Factura, FacturaListadoFiltros } from '../../../domain/models/factura.model';
+import { FACTURAS_PERMISSIONS } from '../../../constants/permission-codes';
 
 import { SriConfigService } from '../certificado-sri/services/sri-config.service';
 
@@ -42,105 +43,126 @@ import { SriConfigService } from '../certificado-sri/services/sri-config.service
   ],
   template: `
     <div class="facturas-page-container">
-      <div class="container-fluid p-0">
+      <ng-container *ngIf="canView; else noPermission">
+        <div class="container-fluid p-0">
 
-        <!-- TABS NAVIGATION -->
-        <div class="tabs-container px-4 mt-4">
-          <div class="tabs-wrapper">
-            <button 
-              class="tab-btn" 
-              [class.active]="activeTab === 'gestion'"
-              (click)="activeTab = 'gestion'"
-            >
-              <i class="bi bi-receipt"></i>
-              Gestión de Comprobantes
-            </button>
-            <button 
-              class="tab-btn" 
-              [class.active]="activeTab === 'ventas'"
-              (click)="activeTab = 'ventas'"
-            >
-              <i class="bi bi-bar-chart-line-fill"></i>
-              Ventas y Reportes
-            </button>
+          <!-- TABS NAVIGATION -->
+          <div class="tabs-container px-4 mt-4">
+            <div class="tabs-wrapper">
+              <button
+                class="tab-btn"
+                [class.active]="activeTab === 'gestion'"
+                (click)="activeTab = 'gestion'"
+              >
+                <i class="bi bi-receipt"></i>
+                Gestión de Comprobantes
+              </button>
+              <button
+                class="tab-btn"
+                [class.active]="activeTab === 'ventas'"
+                (click)="activeTab = 'ventas'"
+              >
+                <i class="bi bi-bar-chart-line-fill"></i>
+                Ventas y Reportes
+              </button>
+            </div>
           </div>
+
+          <div *ngIf="activeTab === 'gestion'" class="animate__animated animate__fadeIn">
+            <!-- STATS -->
+            <app-factura-stats
+              [totalCount]="stats.totalCount"
+              [totalAmount]="stats.totalAmount"
+              [pendingAmount]="stats.pendingAmount"
+            ></app-factura-stats>
+
+            <!-- ACTIONS -->
+            <app-factura-actions
+              [(searchQuery)]="searchQuery"
+              (searchQueryChange)="applyFilters()"
+              [sriError]="sriError"
+              (onFilterChangeEmit)="handleFilters($event)"
+              (onCreate)="openCreateModal()"
+            ></app-factura-actions>
+
+            <!-- TABLE -->
+            <app-factura-table
+              [facturas]="filteredFacturas"
+              [consultingId]="consultingId"
+              [processingAction]="processingAction"
+              (onAction)="handleAction($event)"
+            ></app-factura-table>
+          </div>
+
+          <div *ngIf="activeTab === 'ventas'" class="animate__animated animate__fadeIn">
+            <app-reportes-ventas></app-reportes-ventas>
+          </div>
+
+           <!-- MODALS -->
+           <app-create-factura-modal
+              *ngIf="showCreateModal"
+              [facturaId]="selectedFactura?.id"
+              (onClose)="closeCreateModal($event)"
+           ></app-create-factura-modal>
+
+           <app-confirm-modal
+              *ngIf="showConfirmModal"
+              [title]="confirmModalConfig.title"
+              [message]="confirmModalConfig.message"
+              [confirmText]="confirmModalConfig.confirmText"
+              [type]="confirmModalConfig.type"
+              [icon]="confirmModalConfig.icon"
+              [loading]="isProcessing"
+              (onConfirm)="handleModalConfirm()"
+              (onCancel)="showConfirmModal = false"
+           ></app-confirm-modal>
+
+           <app-view-factura-modal
+              *ngIf="showViewModal && selectedFactura"
+              [facturaId]="selectedFactura.id"
+              (onClose)="closeViewModal()"
+           ></app-view-factura-modal>
+
+           <app-email-factura-modal
+              *ngIf="showEmailModal && selectedFactura"
+              [factura]="selectedFactura"
+              (close)="closeEmailModal($event)"
+           ></app-email-factura-modal>
+
+           <app-pagos-factura-modal
+              *ngIf="showPagosModal && selectedFactura"
+              [factura]="selectedFactura"
+              (close)="closePagosModal($event)"
+           ></app-pagos-factura-modal>
+
+           <app-anular-factura-modal
+              *ngIf="showAnularModal && selectedFactura"
+              [factura]="selectedFactura"
+              (close)="showAnularModal = false"
+           ></app-anular-factura-modal>
+
+           <app-toast></app-toast>
         </div>
+      </ng-container>
 
-        <div *ngIf="activeTab === 'gestion'" class="animate__animated animate__fadeIn">
-          <!-- STATS -->
-          <app-factura-stats
-            [totalCount]="stats.totalCount"
-            [totalAmount]="stats.totalAmount"
-            [pendingAmount]="stats.pendingAmount"
-          ></app-factura-stats>
-  
-          <!-- ACTIONS -->
-          <app-factura-actions
-            [(searchQuery)]="searchQuery"
-            (searchQueryChange)="applyFilters()"
-            [sriError]="sriError"
-            (onFilterChangeEmit)="handleFilters($event)"
-            (onCreate)="openCreateModal()"
-          ></app-factura-actions>
-  
-          <!-- TABLE -->
-          <app-factura-table
-            [facturas]="filteredFacturas"
-            [consultingId]="consultingId"
-            [processingAction]="processingAction"
-            (onAction)="handleAction($event)"
-          ></app-factura-table>
+      <!-- TEMPLATE SIN PERMISO -->
+      <ng-template #noPermission>
+        <div class="no-permission-container d-flex flex-column align-items-center justify-content-center h-100 text-center p-5 animate-fade-in">
+          <div class="icon-lock-wrapper mb-4">
+            <i class="bi bi-shield-lock-fill"></i>
+          </div>
+          <h2 class="fw-bold text-dark mb-2">Acceso Restringido</h2>
+          <p class="text-muted mb-4 max-w-400">
+            No tienes permisos suficientes para gestionar la facturación de esta empresa.
+            Si crees que esto es un error, contacta a su administrador.
+          </p>
+          <button class="btn btn-dark rounded-pill px-5 py-3 fw-bold shadow-sm" (click)="refreshData()">
+            <i class="bi bi-arrow-clockwise me-2"></i> Reintentar sincronización
+          </button>
         </div>
+      </ng-template>
 
-        <div *ngIf="activeTab === 'ventas'" class="animate__animated animate__fadeIn">
-          <app-reportes-ventas></app-reportes-ventas>
-        </div>
-
-         <!-- MODALS -->
-         <app-create-factura-modal
-            *ngIf="showCreateModal"
-            [facturaId]="selectedFactura?.id"
-            (onClose)="closeCreateModal($event)"
-         ></app-create-factura-modal>
-
-         <app-confirm-modal
-            *ngIf="showConfirmModal"
-            [title]="confirmModalConfig.title"
-            [message]="confirmModalConfig.message"
-            [confirmText]="confirmModalConfig.confirmText"
-            [type]="confirmModalConfig.type"
-            [icon]="confirmModalConfig.icon"
-            [loading]="isProcessing"
-            (onConfirm)="handleModalConfirm()"
-            (onCancel)="showConfirmModal = false"
-         ></app-confirm-modal>
-
-         <app-view-factura-modal
-            *ngIf="showViewModal && selectedFactura"
-            [facturaId]="selectedFactura.id"
-            (onClose)="closeViewModal()"
-         ></app-view-factura-modal>
-
-         <app-email-factura-modal
-            *ngIf="showEmailModal && selectedFactura"
-            [factura]="selectedFactura"
-            (close)="closeEmailModal($event)"
-         ></app-email-factura-modal>
-
-         <app-pagos-factura-modal
-            *ngIf="showPagosModal && selectedFactura"
-            [factura]="selectedFactura"
-            (close)="closePagosModal($event)"
-         ></app-pagos-factura-modal>
-
-         <app-anular-factura-modal
-            *ngIf="showAnularModal && selectedFactura"
-            [factura]="selectedFactura"
-            (close)="showAnularModal = false"
-         ></app-anular-factura-modal>
-        
-         <app-toast></app-toast>
-      </div>
+      <app-toast></app-toast>
     </div>
   `,
   styles: [`
@@ -221,9 +243,24 @@ import { SriConfigService } from '../certificado-sri/services/sri-config.service
       color: #4f46e5;
       box-shadow: 0 4px 12px rgba(79, 70, 229, 0.12);
     }
+
+    .no-permission-container { min-height: 70vh; }
+    .icon-lock-wrapper {
+      width: 100px; height: 100px; background: #fee2e2; color: #ef4444; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center; font-size: 3rem;
+      box-shadow: 0 10px 25px -5px rgba(239, 68, 68, 0.3);
+    }
+    .max-w-400 { max-width: 400px; }
+    .animate-fade-in { animation: fadeIn 0.4s ease-out; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
   `]
 })
 export class FacturacionPage implements OnInit {
+  get canView(): boolean {
+    return this.permissionsService.hasPermission(FACTURAS_PERMISSIONS.VER_TODAS) ||
+           this.permissionsService.hasPermission(FACTURAS_PERMISSIONS.VER_PROPIAS);
+  }
+
   activeTab: 'gestion' | 'ventas' = 'gestion';
   facturas: Factura[] = [];
   filteredFacturas: Factura[] = [];
@@ -649,5 +686,12 @@ export class FacturacionPage implements OnInit {
     });
   }
 
-
+  refreshData() {
+    this.isLoading = true;
+    this.loadData();
+    setTimeout(() => {
+      this.isLoading = false;
+      this.cd.detectChanges();
+    }, 800);
+  }
 }

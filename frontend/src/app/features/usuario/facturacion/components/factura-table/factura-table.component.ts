@@ -155,7 +155,7 @@ import { HasPermissionDirective } from '../../../../../shared/directives/has-per
                     </li>
                   </ng-container>
 
-                  <ng-container *hasPermission="'FACTURAS_EDITAR'">
+                  <ng-container *hasPermission="['PAGO_FACTURA_VER', 'PAGO_FACTURA_CREAR']">
                     <li *ngIf="factura.estado === 'AUTORIZADA'">
                       <a class="dropdown-item py-2" href="javascript:void(0)" (click)="onAction.emit({type: 'abono', factura})">
                         <div class="icon-item bg-soft-primary">
@@ -164,7 +164,9 @@ import { HasPermissionDirective } from '../../../../../shared/directives/has-per
                         <span class="ms-2 fw-bold text-primary">Detalle de Pagos / Abonos</span>
                       </a>
                     </li>
+                  </ng-container>
 
+                  <ng-container *hasPermission="'FACTURAS_EDITAR'">
                     <li *ngIf="factura.estado === 'BORRADOR'">
                       <a class="dropdown-item py-2 text-danger" href="javascript:void(0)" (click)="onAction.emit({type: 'delete', factura})">
                         <div class="icon-item bg-soft-danger"><i class="bi bi-trash3-fill"></i></div>
