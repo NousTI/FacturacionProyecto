@@ -10,39 +10,41 @@ class RepositorioR028:
     def obtener_kpis_ventas(self, empresa_id: UUID, fecha_inicio: str, fecha_fin: str) -> Dict[str, Any]:
         """Obtiene indicadores clave de ventas (Total Facturado)."""
         query = """
-            SELECT 
+            SELECT
                 COALESCE(SUM(total), 0) as total_facturado,
                 COUNT(*) as facturas_emitidas
             FROM sistema_facturacion.facturas
-            WHERE empresa_id = %s 
+            WHERE empresa_id = %s
               AND fecha_emision BETWEEN %s AND %s
               AND estado != 'ANULADA'
         """
         with self.db.cursor() as cur:
-            cur.execute(query, (str(empresa_id), fecha_inicio, fecha_fin + " 23:59:59"))
-            return dict(cur.fetchone())
+            cur.execute(query, (str(empresa_id), fecha_inicio, fecha_fin))
+            result = cur.fetchone()
+            return dict(result) if result else {"total_facturado": 0, "facturas_emitidas": 0}
 
     def obtener_desglose_pagos(self, empresa_id: UUID, fecha_inicio: str, fecha_fin: str) -> Dict[str, Any]:
         """Desglose por forma de pago (Efectivo, Tarjeta, Otros)."""
         query = """
-            SELECT 
+            SELECT
                 COALESCE(SUM(fp.valor) FILTER (WHERE fp.forma_pago_sri = '01'), 0) as efectivo,
                 COALESCE(SUM(fp.valor) FILTER (WHERE fp.forma_pago_sri IN ('16','19','20')), 0) as tarjeta,
                 COALESCE(SUM(fp.valor) FILTER (WHERE fp.forma_pago_sri NOT IN ('01','16','19','20')), 0) as otros
             FROM sistema_facturacion.formas_pago fp
             JOIN sistema_facturacion.facturas f ON fp.factura_id = f.id
-            WHERE f.empresa_id = %s 
+            WHERE f.empresa_id = %s
               AND f.fecha_emision BETWEEN %s AND %s
               AND f.estado != 'ANULADA'
         """
         with self.db.cursor() as cur:
-            cur.execute(query, (str(empresa_id), fecha_inicio, fecha_fin + " 23:59:59"))
-            return dict(cur.fetchone())
+            cur.execute(query, (str(empresa_id), fecha_inicio, fecha_fin))
+            result = cur.fetchone()
+            return dict(result) if result else {"efectivo": 0, "tarjeta": 0, "otros": 0}
 
     def obtener_datos_cartera(self, empresa_id: UUID) -> Dict[str, Any]:
         """Datos de cuentas por cobrar para dashboard."""
         query = """
-            SELECT 
+            SELECT
                 COALESCE(SUM(saldo_pendiente), 0) as por_cobrar_total,
                 COALESCE(SUM(saldo_pendiente) FILTER (WHERE CURRENT_DATE - fecha_vencimiento >= 30), 0) as en_mora_30
             FROM sistema_facturacion.cuentas_cobrar
@@ -50,17 +52,22 @@ class RepositorioR028:
         """
         with self.db.cursor() as cur:
             cur.execute(query, (str(empresa_id),))
-            return dict(cur.fetchone())
+            result = cur.fetchone()
+            return dict(result) if result else {"por_cobrar_total": 0, "en_mora_30": 0}
 
     def obtener_clientes_metricas(self, empresa_id: UUID, fecha_inicio: str, fecha_fin: str) -> Dict[str, Any]:
         """Clientes nuevos y VIP."""
         # 1. Clientes nuevos
-        query_nuevos = "SELECT COUNT(*) FROM sistema_facturacion.clientes WHERE empresa_id = %s AND created_at BETWEEN %s AND %s"
-        
+        query_nuevos = """
+            SELECT COUNT(*) as count
+            FROM sistema_facturacion.clientes
+            WHERE empresa_id = %s AND created_at BETWEEN %s AND %s
+        """
+
         # 2. Clientes VIP (Criterio: 20% promedio ventas, >= 4 veces/mes, 0 días mora)
         query_vip = """
             WITH stats_clientes AS (
-                SELECT 
+                SELECT
                     cliente_id,
                     COUNT(*) as frecuencia,
                     SUM(total) as total_gastado
@@ -71,7 +78,7 @@ class RepositorioR028:
                 HAVING COUNT(*) >= 4
             ),
             ventas_totales AS (
-                SELECT COALESCE(SUM(total), 1) as total_empresa FROM sistema_facturacion.facturas 
+                SELECT COALESCE(SUM(total), 1) as total_empresa FROM sistema_facturacion.facturas
                 WHERE empresa_id = %s AND estado != 'ANULADA' AND fecha_emision BETWEEN %s AND %s
             ),
             mora_clientes AS (
@@ -85,16 +92,16 @@ class RepositorioR028:
             WHERE sc.total_gastado >= (vt.total_empresa * 0.2)
               AND sc.cliente_id NOT IN (SELECT cliente_id FROM mora_clientes)
         """
-        
+
         with self.db.cursor() as cur:
-            cur.execute(query_nuevos, (str(empresa_id), fecha_inicio, fecha_fin + " 23:59:59"))
+            cur.execute(query_nuevos, (str(empresa_id), fecha_inicio, fecha_fin))
             row_nuevos = cur.fetchone()
             nuevos = row_nuevos['count'] if row_nuevos else 0
-            
-            cur.execute(query_vip, (str(empresa_id), fecha_inicio, fecha_fin + " 23:59:59", str(empresa_id), fecha_inicio, fecha_fin + " 23:59:59", str(empresa_id)))
+
+            cur.execute(query_vip, (str(empresa_id), fecha_inicio, fecha_fin, str(empresa_id), fecha_inicio, fecha_fin, str(empresa_id)))
             row_vips = cur.fetchone()
             vips = row_vips['vip_count'] if row_vips else 0
-            
+
         return {"clientes_nuevos": nuevos, "clientes_vip": vips}
 
     def obtener_radar_gestion(self, empresa_id: UUID) -> List[Dict[str, Any]]:
@@ -143,48 +150,17 @@ class RepositorioR028:
             if stock_result:
                 radar.append(dict(stock_result))
 
-            # 3. Cierre de caja (intentar obtener, si no existe tabla, usar dummy)
-            try:
-                query_caja = """
-                    SELECT
-                        'Caja' as origen,
-                        'Cierre de caja principal' as detalle,
-                        COALESCE(diferencia, 0) as monto,
-                        CASE
-                            WHEN COALESCE(diferencia, 0) = 0 THEN 'Cuadrado'
-                            WHEN COALESCE(diferencia, 0) > 0 THEN 'Sobrante'
-                            ELSE 'Faltante'
-                        END as estado,
-                        COALESCE(usuario_cierre, 'Admin') as responsable
-                    FROM sistema_facturacion.cierres_caja
-                    WHERE empresa_id = %s
-                    ORDER BY fecha_cierre DESC LIMIT 1
-                """
-                cur.execute(query_caja, (str(empresa_id),))
-                caja_result = cur.fetchone()
-                if caja_result:
-                    radar.append(dict(caja_result))
-                else:
-                    # Sin cierre reciente, agregar dummy
-                    radar.append({
-                        "origen": "Caja",
-                        "detalle": "Cierre de caja principal",
-                        "monto": 0.0,
-                        "estado": "Pendiente",
-                        "responsable": "Admin"
-                    })
-            except Exception:
-                # Tabla no existe o error, agregar dummy
-                radar.append({
-                    "origen": "Caja",
-                    "detalle": "Cierre de caja principal",
-                    "monto": 0.0,
-                    "estado": "Pendiente",
-                    "responsable": "Admin"
-                })
+        # 3. Cierre de caja (dummy - no existe tabla en BD actual)
+        radar.append({
+            "origen": "Caja",
+            "detalle": "Cierre de caja principal",
+            "monto": 0.0,
+            "estado": "Pendiente",
+            "responsable": "Admin"
+        })
 
-        # Si no hay datos, agregar defaults para que el radar no esté vacío
-        if not radar:
+        # Si no hay datos reales, usar valores por defecto
+        if len(radar) == 1:  # Solo caja
             radar = [
                 {
                     "origen": "Venta",
@@ -216,25 +192,25 @@ class RepositorioR028:
         query = """
             SELECT
                 p.nombre as productos,
-                SUM(fd.cantidad) as vendidos,
+                COALESCE(SUM(fd.cantidad), 0)::INTEGER as vendidos,
                 p.stock_actual as existencias,
-                SUM(fd.cantidad * (fd.precio_unitario - COALESCE(p.costo, 0))) as utilidad_neta,
+                COALESCE(SUM(fd.cantidad * (fd.precio_unitario - COALESCE(p.costo, 0))), 0) as utilidad_neta,
                 CASE
                     WHEN p.stock_actual < 10 THEN 'Stock Crítico'
                     WHEN p.stock_actual < 20 THEN 'Stock en alerta'
                     ELSE 'Stock saludable'
                 END as estado
-            FROM sistema_facturacion.facturas_detalle fd
-            JOIN sistema_facturacion.facturas f ON fd.factura_id = f.id
-            JOIN sistema_facturacion.productos p ON fd.producto_id = p.id
-            WHERE f.empresa_id = %s AND f.estado != 'ANULADA'
-              AND f.fecha_emision BETWEEN %s AND %s
+            FROM sistema_facturacion.productos p
+            LEFT JOIN sistema_facturacion.facturas_detalle fd ON fd.producto_id = p.id
+            LEFT JOIN sistema_facturacion.facturas f ON fd.factura_id = f.id
+            WHERE p.empresa_id = %s
+              AND (f.id IS NULL OR (f.estado != 'ANULADA' AND f.fecha_emision BETWEEN %s AND %s))
             GROUP BY p.id, p.nombre, p.stock_actual, p.costo
             ORDER BY vendidos DESC
             LIMIT 5
         """
         with self.db.cursor() as cur:
-            cur.execute(query, (str(empresa_id), fecha_inicio, fecha_fin + " 23:59:59"))
+            cur.execute(query, (str(empresa_id), fecha_inicio, fecha_fin))
             return [dict(row) for row in cur.fetchall()]
 
     def obtener_monitor_productos_por_utilidad(self, empresa_id: UUID, fecha_inicio: str, fecha_fin: str) -> List[Dict[str, Any]]:
@@ -242,25 +218,25 @@ class RepositorioR028:
         query = """
             SELECT
                 p.nombre as productos,
-                SUM(fd.cantidad) as vendidos,
+                COALESCE(SUM(fd.cantidad), 0)::INTEGER as vendidos,
                 p.stock_actual as existencias,
-                SUM(fd.cantidad * (fd.precio_unitario - COALESCE(p.costo, 0))) as utilidad_neta,
+                COALESCE(SUM(fd.cantidad * (fd.precio_unitario - COALESCE(p.costo, 0))), 0) as utilidad_neta,
                 CASE
                     WHEN p.stock_actual < 10 THEN 'Stock Crítico'
                     WHEN p.stock_actual < 20 THEN 'Stock en alerta'
                     ELSE 'Stock saludable'
                 END as estado
-            FROM sistema_facturacion.facturas_detalle fd
-            JOIN sistema_facturacion.facturas f ON fd.factura_id = f.id
-            JOIN sistema_facturacion.productos p ON fd.producto_id = p.id
-            WHERE f.empresa_id = %s AND f.estado != 'ANULADA'
-              AND f.fecha_emision BETWEEN %s AND %s
+            FROM sistema_facturacion.productos p
+            LEFT JOIN sistema_facturacion.facturas_detalle fd ON fd.producto_id = p.id
+            LEFT JOIN sistema_facturacion.facturas f ON fd.factura_id = f.id
+            WHERE p.empresa_id = %s
+              AND (f.id IS NULL OR (f.estado != 'ANULADA' AND f.fecha_emision BETWEEN %s AND %s))
             GROUP BY p.id, p.nombre, p.stock_actual, p.costo
             ORDER BY utilidad_neta DESC
             LIMIT 5
         """
         with self.db.cursor() as cur:
-            cur.execute(query, (str(empresa_id), fecha_inicio, fecha_fin + " 23:59:59"))
+            cur.execute(query, (str(empresa_id), fecha_inicio, fecha_fin))
             return [dict(row) for row in cur.fetchall()]
 
     def obtener_gastos_detalle(self, empresa_id: UUID, fecha_inicio: str, fecha_fin: str) -> Dict[str, Any]:
@@ -268,19 +244,29 @@ class RepositorioR028:
         query = """
             SELECT
                 COALESCE(SUM(total), 0) as total_gastos
-            FROM gastos
-            WHERE empresa_id = %s AND fecha_emision BETWEEN %s AND %s
+            FROM sistema_facturacion.gastos
+            WHERE empresa_id = %s AND fecha_emision BETWEEN %s AND %s AND deleted_at IS NULL
         """
         with self.db.cursor() as cur:
-            cur.execute(query, (str(empresa_id), fecha_inicio, fecha_fin + " 23:59:59"))
-            row = cur.fetchone()
-            return dict(row) if row else {"total_gastos": 0}
+            cur.execute(query, (str(empresa_id), fecha_inicio, fecha_fin))
+            result = cur.fetchone()
+            return dict(result) if result else {"total_gastos": 0}
 
     def obtener_formas_pago_detalle(self, empresa_id: UUID, fecha_inicio: str, fecha_fin: str) -> List[Dict[str, Any]]:
         """Obtiene detalle de formas de pago para tooltip."""
         query = """
             SELECT
-                COALESCE(fp.descripcion_forma_pago, 'Otra forma') as forma_pago,
+                CASE
+                    WHEN fp.forma_pago_sri = '01' THEN 'Efectivo'
+                    WHEN fp.forma_pago_sri = '16' THEN 'Tarjeta de Débito'
+                    WHEN fp.forma_pago_sri = '17' THEN 'Dinero Electrónico'
+                    WHEN fp.forma_pago_sri = '18' THEN 'Tarjeta Prepago'
+                    WHEN fp.forma_pago_sri = '19' THEN 'Tarjeta de Crédito'
+                    WHEN fp.forma_pago_sri = '20' THEN 'Sistema Financiero'
+                    WHEN fp.forma_pago_sri = '15' THEN 'Compensación'
+                    WHEN fp.forma_pago_sri = '21' THEN 'Endoso'
+                    ELSE 'Otra forma'
+                END as forma_pago,
                 fp.forma_pago_sri,
                 COUNT(*) as cantidad,
                 COALESCE(SUM(fp.valor), 0) as total
@@ -289,11 +275,11 @@ class RepositorioR028:
             WHERE f.empresa_id = %s
               AND f.fecha_emision BETWEEN %s AND %s
               AND f.estado != 'ANULADA'
-            GROUP BY fp.forma_pago_sri, fp.descripcion_forma_pago
+            GROUP BY fp.forma_pago_sri
             ORDER BY total DESC
         """
         with self.db.cursor() as cur:
-            cur.execute(query, (str(empresa_id), fecha_inicio, fecha_fin + " 23:59:59"))
+            cur.execute(query, (str(empresa_id), fecha_inicio, fecha_fin))
             return [dict(row) for row in cur.fetchall()]
 
     def obtener_ventas_anio_anterior(self, empresa_id: UUID, fecha_inicio: str, fecha_fin: str) -> Dict[str, Any]:
@@ -315,6 +301,6 @@ class RepositorioR028:
               AND estado != 'ANULADA'
         """
         with self.db.cursor() as cur:
-            cur.execute(query, (str(empresa_id), prev_inicio, prev_fin + " 23:59:59"))
-            row = cur.fetchone()
-            return dict(row) if row else {"total_anio_anterior": 0}
+            cur.execute(query, (str(empresa_id), prev_inicio, prev_fin))
+            result = cur.fetchone()
+            return dict(result) if result else {"total_anio_anterior": 0}
