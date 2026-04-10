@@ -44,7 +44,7 @@ export const USUARIO_MODULES: ModuleConfig[] = [
   {
     path: '/usuario/gastos',
     name: 'Gastos y Egresos',
-    requiredPermissions: ['GASTOS_VER'],
+    requiredPermissions: ['GASTOS_VER', 'CATEGORIA_GASTO_VER', 'PAGO_GASTO_VER'],
     icon: 'money'
   },
   {

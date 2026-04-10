@@ -1,7 +1,7 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { HasPermissionDirective } from '../../../../shared/directives/has-permission.directive';
+import { HasPermissionDirective } from '../../../../core/directives/has-permission.directive';
 
 export type RangoTipo = 'mes_actual' | 'mes_anterior' | 'anio_actual' | 'personalizado';
 

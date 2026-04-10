@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Subject, takeUntil, finalize, Observable, BehaviorSubject, combineLatest } from 'rxjs';
@@ -6,6 +6,8 @@ import { map, startWith, tap } from 'rxjs/operators';
 
 import { GastosService } from './services/gastos.service';
 import { UiService } from '../../../shared/services/ui.service';
+import { PermissionsService } from '../../../core/auth/permissions.service';
+import { GASTOS_PERMISSIONS } from '../../../constants/permission-codes';
 import { Gasto, GastoStats } from '../../../domain/models/gasto.model';
 import { CategoriaGasto } from '../../../domain/models/categoria-gasto.model';
 import { PagoGasto } from '../../../domain/models/pago-gasto.model';
@@ -39,204 +41,242 @@ import { CategoriaFormComponent } from './components/categoria-form.component';
   template: `
     <div class="page-container">
       
-      <!-- Stats (Consolidated Component) -->
-      <app-egresos-stats [stats]="stats$ | async"></app-egresos-stats>
+      <ng-container *ngIf="canViewModule; else noPermission">
+        <!-- Stats (Consolidated Component) -->
+        <app-egresos-stats *ngIf="canViewGeneral" [stats]="stats$ | async"></app-egresos-stats>
 
-      <!-- Tabs Navigation -->
-      <div class="tabs-minimal mb-4">
-        <button class="tab-btn" [class.active]="activeTab === 'general'" (click)="setTab('general')">
-          <i class="bi bi-list-task"></i> Movimientos
-        </button>
-        <button class="tab-btn" [class.active]="activeTab === 'pagos'" (click)="setTab('pagos')">
-          <i class="bi bi-cash-stack"></i> Historial de Pagos
-        </button>
-        <button class="tab-btn" [class.active]="activeTab === 'categorias'" (click)="setTab('categorias')">
-          <i class="bi bi-tags"></i> Categorías
-        </button>
-      </div>
+        <!-- Tabs Navigation -->
+        <div class="tabs-minimal mb-4">
+          <button *ngIf="canViewGeneral" class="tab-btn" [class.active]="activeTab === 'general'" (click)="setTab('general')">
+            <i class="bi bi-list-task"></i> Movimientos
+          </button>
+          <button *ngIf="canViewPagos" class="tab-btn" [class.active]="activeTab === 'pagos'" (click)="setTab('pagos')">
+            <i class="bi bi-cash-stack"></i> Historial de Pagos
+          </button>
+          <button *ngIf="canViewCategorias" class="tab-btn" [class.active]="activeTab === 'categorias'" (click)="setTab('categorias')">
+            <i class="bi bi-tags"></i> Categorías
+          </button>
+        </div>
 
-      <div [ngSwitch]="activeTab" class="tab-content">
-        
-        <!-- SECCIÓN 1: GASTOS GENERALES -->
-        <div *ngSwitchCase="'general'" class="fade-in">
-          <!-- Filtros -->
-          <div class="filters-card mb-4">
-            <div class="row g-3">
-              <div class="col-md-6">
-                <div class="search-box">
-                  <i class="bi bi-search"></i>
-                  <input type="text" class="form-control" placeholder="Buscar concepto, factura o proveedor..." [(ngModel)]="searchTerm" (input)="applyFilters()">
+        <div [ngSwitch]="activeTab" class="tab-content">
+          
+          <!-- SECCIÓN 1: GASTOS GENERALES -->
+          <div *ngSwitchCase="'general'" class="fade-in">
+            <ng-container *ngIf="canViewGeneral">
+              <!-- Filtros -->
+              <div class="filters-card mb-4">
+                <div class="row g-3">
+                  <div class="col-md-6">
+                    <div class="search-box">
+                      <i class="bi bi-search"></i>
+                      <input type="text" class="form-control" placeholder="Buscar concepto, factura o proveedor..." [(ngModel)]="searchTerm" (input)="applyFilters()">
+                    </div>
+                  </div>
+                  <div class="col-md-3">
+                    <select class="form-select" [(ngModel)]="filterEstado" (change)="applyFilters()">
+                      <option value="">Todos los estados</option>
+                      <option value="pendiente" class="text-warning">Pendiente</option>
+                      <option value="pagado" class="text-success">Pagado</option>
+                      <option value="vencido" class="text-danger">Vencido</option>
+                    </select>
+                  </div>
+                  <div class="col-md-3 d-flex gap-2">
+                    <button *hasPermission="'GASTOS_CREAR'" class="btn btn-primary w-100" (click)="openCreateGastoModal()">
+                      <i class="bi bi-plus-lg me-2"></i> Nuevo Gasto
+                    </button>
+                    <button class="btn btn-light" (click)="refresh()" [disabled]="isLoading">
+                      <i class="bi bi-arrow-clockwise" [class.spinning]="isLoading"></i>
+                    </button>
+                  </div>
                 </div>
               </div>
-              <div class="col-md-3">
-                <select class="form-select" [(ngModel)]="filterEstado" (change)="applyFilters()">
-                  <option value="">Todos los estados</option>
-                  <option value="pendiente" class="text-warning">Pendiente</option>
-                  <option value="pagado" class="text-success">Pagado</option>
-                  <option value="vencido" class="text-danger">Vencido</option>
-                </select>
+
+              <!-- Tabla de Gastos -->
+              <div class="table-responsive soft-card">
+                <table class="table table-hover align-middle mb-0">
+                  <thead class="bg-light">
+                    <tr>
+                      <th class="ps-4">Factura</th>
+                      <th>Concepto</th>
+                      <th>Categoría</th>
+                      <th>Total</th>
+                      <th>Estado</th>
+                      <th>Fecha</th>
+                      <th class="text-end pe-4">Acciones</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr *ngFor="let gasto of filteredGastos$ | async">
+                      <td class="ps-4">
+                        <span class="fw-bold">{{ gasto.numero_factura || 'S/N' }}</span>
+                      </td>
+                      <td>
+                        <div class="d-flex flex-column">
+                          <span class="fw-bold">{{ gasto.concepto }}</span>
+                          <small class="text-muted">{{ getProveedorName(gasto.proveedor_id) }}</small>
+                        </div>
+                      </td>
+                      <td><span class="badge badge-soft-info">{{ getCategoriaName(gasto.categoria_gasto_id) }}</span></td>
+                      <td><span class="fw-bold text-dark">\${{ gasto.total | number:'1.2-2' }}</span></td>
+                      <td><span class="badge" [ngClass]="'badge-' + gasto.estado_pago">{{ gasto.estado_pago }}</span></td>
+                      <td>{{ gasto.fecha_emision | date:'shortDate' }}</td>
+                      <td class="text-end pe-4">
+                        <div class="action-buttons justify-content-end">
+                          <button *hasPermission="'GASTOS_VER'" class="btn-action view" (click)="handleViewGasto(gasto)" title="Ver Detalles">
+                            <i class="bi bi-eye"></i>
+                          </button>
+                          
+                          <ng-container *ngIf="gasto.estado_pago !== 'pagado' || !isGastoComplete(gasto)">
+                            <button *hasPermission="'GASTOS_EDITAR'" class="btn-action edit" (click)="handleEditGasto(gasto)" title="Editar">
+                              <i class="bi bi-pencil"></i>
+                            </button>
+                          </ng-container>
+
+                          <ng-container *hasPermission="'PAGO_GASTO_CREAR'">
+                            <button class="btn-action pay" *ngIf="gasto.estado_pago !== 'pagado'" (click)="handleQuickPay(gasto)" title="Registrar Pago">
+                              <i class="bi bi-cash"></i>
+                            </button>
+                          </ng-container>
+                          
+                          <button *hasPermission="'GASTOS_ELIMINAR'" class="btn-action delete" (click)="handleDeleteGasto(gasto)" title="Eliminar">
+                            <i class="bi bi-trash"></i>
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                    <tr *ngIf="!(filteredGastos$ | async)?.length">
+                      <td colspan="7" class="text-center py-5">
+                        <div class="empty-state">
+                          <i class="bi bi-search text-muted" style="font-size: 2rem;"></i>
+                          <p class="mt-2 text-muted">No se encontraron egresos con los filtros aplicados</p>
+                        </div>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
               </div>
-              <div class="col-md-3 d-flex gap-2">
-                <button *hasPermission="'GASTOS_CREAR'" class="btn btn-primary w-100" (click)="openCreateGastoModal()">
-                  <i class="bi bi-plus-lg me-2"></i> Nuevo Gasto
-                </button>
-                <button class="btn btn-light" (click)="refresh()" [disabled]="isLoading">
-                  <i class="bi bi-arrow-clockwise" [class.spinning]="isLoading"></i>
-                </button>
+            </ng-container>
+          </div>
+
+          <!-- SECCIÓN 2: PAGOS -->
+          <div *ngSwitchCase="'pagos'" class="fade-in">
+            <ng-container *ngIf="canViewPagos">
+              <div class="toolbar-minimal mb-3">
+                 <button *hasPermission="'PAGO_GASTO_CREAR'" class="btn btn-primary" (click)="openCreatePagoModal()">
+                    <i class="bi bi-plus-lg me-1"></i> Registrar Pago
+                  </button>
               </div>
-            </div>
+              <div class="table-responsive soft-card">
+                <table class="table table-hover align-middle mb-0">
+                  <thead class="bg-light">
+                    <tr>
+                      <th class="ps-4">Gasto / Factura</th>
+                      <th>Monto</th>
+                      <th>Fecha</th>
+                      <th>Método</th>
+                      <th>Referencia</th>
+                      <th class="text-end pe-4">Acciones</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr *ngFor="let pago of pagos$ | async">
+                      <td class="ps-4">
+                        <div class="d-flex flex-column">
+                          <span>{{ getGastoInfo(pago.gasto_id) }}</span>
+                        </div>
+                      </td>
+                      <td><span class="fw-bold text-success">\${{ pago.monto | number:'1.2-2' }}</span></td>
+                      <td>{{ pago.fecha_pago | date:'mediumDate' }}</td>
+                      <td><span class="text-capitalize">{{ pago.metodo_pago }}</span></td>
+                      <td><code class="text-muted">{{ pago.numero_referencia || '-' }}</code></td>
+                      <td class="text-end pe-4">
+                        <div class="action-buttons justify-content-end">
+                          <button *hasPermission="'PAGO_GASTO_VER'" class="btn-action view" (click)="handleViewPago(pago)" title="Ver Detalles">
+                            <i class="bi bi-eye"></i>
+                          </button>
+
+                          <ng-container *ngIf="getGastoStatus(pago.gasto_id) !== 'pagado' || !isPagoComplete(pago)">
+                            <button *hasPermission="'PAGO_GASTO_EDITAR'" class="btn-action edit" (click)="handleEditPago(pago)" title="Editar">
+                              <i class="bi bi-pencil"></i>
+                            </button>
+                          </ng-container>
+
+                          <button *hasPermission="'PAGO_GASTO_ELIMINAR'" class="btn-action delete" (click)="handleDeletePago(pago)" title="Eliminar">
+                            <i class="bi bi-trash"></i>
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                    <tr *ngIf="!(pagos$ | async)?.length">
+                      <td colspan="6" class="text-center py-5 text-muted small">No hay pagos registrados aún</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </ng-container>
           </div>
 
-          <!-- Tabla de Gastos -->
-          <div class="table-responsive soft-card">
-            <table class="table table-hover align-middle mb-0">
-              <thead class="bg-light">
-                <tr>
-                  <th class="ps-4">Factura</th>
-                  <th>Concepto</th>
-                  <th>Categoría</th>
-                  <th>Total</th>
-                  <th>Estado</th>
-                  <th>Fecha</th>
-                  <th class="text-end pe-4">Acciones</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr *ngFor="let gasto of filteredGastos$ | async">
-                  <td class="ps-4">
-                    <span class="fw-bold">{{ gasto.numero_factura || 'S/N' }}</span>
-                  </td>
-                  <td>
-                    <div class="d-flex flex-column">
-                      <span class="fw-bold">{{ gasto.concepto }}</span>
-                      <small class="text-muted">{{ getProveedorName(gasto.proveedor_id) }}</small>
-                    </div>
-                  </td>
-                  <td><span class="badge badge-soft-info">{{ getCategoriaName(gasto.categoria_gasto_id) }}</span></td>
-                  <td><span class="fw-bold text-dark">\${{ gasto.total | number:'1.2-2' }}</span></td>
-                  <td><span class="badge" [ngClass]="'badge-' + gasto.estado_pago">{{ gasto.estado_pago }}</span></td>
-                  <td>{{ gasto.fecha_emision | date:'shortDate' }}</td>
-                  <td class="text-end pe-4">
-                    <div class="action-buttons justify-content-end">
-                      <ng-container *ngIf="gasto.estado_pago === 'pagado' && isGastoComplete(gasto); else editGastoBtn">
-                        <button class="btn-action view" (click)="handleViewGasto(gasto)" title="Ver Detalles"><i class="bi bi-eye"></i></button>
-                      </ng-container>
-                      <ng-template #editGastoBtn>
-                        <button *hasPermission="'GASTOS_EDITAR'" class="btn-action edit" (click)="handleEditGasto(gasto)" title="Editar"><i class="bi bi-pencil"></i></button>
-                      </ng-template>
-
-                      <ng-container *hasPermission="'PAGO_GASTO_CREAR'">
-                        <button class="btn-action pay" *ngIf="gasto.estado_pago !== 'pagado'" (click)="handleQuickPay(gasto)" title="Registrar Pago"><i class="bi bi-cash"></i></button>
-                      </ng-container>
-                      <button *hasPermission="'GASTOS_ELIMINAR'" class="btn-action delete" (click)="handleDeleteGasto(gasto)" title="Eliminar"><i class="bi bi-trash"></i></button>
-                    </div>
-                  </td>
-                </tr>
-                <tr *ngIf="!(filteredGastos$ | async)?.length">
-                  <td colspan="7" class="text-center py-5">
-                    <div class="empty-state">
-                      <i class="bi bi-search text-muted" style="font-size: 2rem;"></i>
-                      <p class="mt-2 text-muted">No se encontraron egresos con los filtros aplicados</p>
-                    </div>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
+          <!-- SECCIÓN 3: CATEGORÍAS -->
+          <div *ngSwitchCase="'categorias'" class="fade-in">
+            <ng-container *ngIf="canViewCategorias">
+              <div class="toolbar-minimal mb-3">
+                 <button *hasPermission="'CATEGORIA_GASTO_CREAR'" class="btn btn-primary" (click)="openCreateCategoriaModal()">
+                    <i class="bi bi-plus-lg me-1"></i> Nueva Categoría
+                  </button>
+              </div>
+              <div class="table-responsive soft-card">
+                <table class="table table-hover align-middle mb-0">
+                  <thead class="bg-light">
+                    <tr>
+                      <th class="ps-4">Código</th>
+                      <th>Nombre</th>
+                      <th>Tipo</th>
+                      <th>Estado</th>
+                      <th class="text-end pe-4">Acciones</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr *ngFor="let cat of categorias$ | async">
+                      <td class="ps-4"><code>{{ cat.codigo }}</code></td>
+                      <td><span class="fw-bold">{{ cat.nombre }}</span></td>
+                      <td><span class="text-muted text-capitalize">{{ cat.tipo }}</span></td>
+                      <td>
+                        <span class="badge" [ngClass]="cat.activo ? 'badge-success' : 'badge-danger'">
+                          {{ cat.activo ? 'Activa' : 'Inactiva' }}
+                        </span>
+                      </td>
+                      <td class="text-end pe-4">
+                        <div class="action-buttons justify-content-end">
+                          <button *hasPermission="'CATEGORIA_GASTO_EDITAR'" class="btn-action edit" (click)="handleEditCategoria(cat)"><i class="bi bi-pencil"></i></button>
+                          <button *hasPermission="'CATEGORIA_GASTO_ELIMINAR'" class="btn-action delete" (click)="handleDeleteCategoria(cat)"><i class="bi bi-trash"></i></button>
+                        </div>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </ng-container>
           </div>
+
         </div>
+      </ng-container>
 
-        <!-- SECCIÓN 2: PAGOS -->
-        <div *ngSwitchCase="'pagos'" class="fade-in">
-          <div class="toolbar-minimal mb-3">
-             <button *hasPermission="'PAGO_GASTO_CREAR'" class="btn btn-primary" (click)="openCreatePagoModal()">
-                <i class="bi bi-plus-lg me-1"></i> Registrar Pago
-              </button>
+      <!-- TEMPLATE SIN PERMISO -->
+      <ng-template #noPermission>
+        <div class="no-permission-container d-flex flex-column align-items-center justify-content-center text-center p-5 animate-in" style="min-height: 70vh;">
+          <div class="icon-lock-wrapper mb-4">
+            <i class="bi bi-shield-lock-fill" style="font-size: 3.5rem; color: #6366f1;"></i>
           </div>
-          <div class="table-responsive soft-card">
-            <table class="table table-hover align-middle mb-0">
-              <thead class="bg-light">
-                <tr>
-                  <th class="ps-4">Gasto / Factura</th>
-                  <th>Monto</th>
-                  <th>Fecha</th>
-                  <th>Método</th>
-                  <th>Referencia</th>
-                  <th class="text-end pe-4">Acciones</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr *ngFor="let pago of pagos$ | async">
-                  <td class="ps-4">
-                    <div class="d-flex flex-column">
-                      <span>{{ getGastoInfo(pago.gasto_id) }}</span>
-                    </div>
-                  </td>
-                  <td><span class="fw-bold text-success">\${{ pago.monto | number:'1.2-2' }}</span></td>
-                  <td>{{ pago.fecha_pago | date:'mediumDate' }}</td>
-                  <td><span class="text-capitalize">{{ pago.metodo_pago }}</span></td>
-                  <td><code class="text-muted">{{ pago.numero_referencia || '-' }}</code></td>
-                  <td class="text-end pe-4">
-                    <div class="action-buttons justify-content-end">
-                      <ng-container *ngIf="getGastoStatus(pago.gasto_id) === 'pagado' && isPagoComplete(pago); else editPagoBtn">
-                        <button class="btn-action view" (click)="handleViewPago(pago)" title="Ver Detalles"><i class="bi bi-eye"></i></button>
-                      </ng-container>
-                      <ng-template #editPagoBtn>
-                        <button *hasPermission="'PAGO_GASTO_EDITAR'" class="btn-action edit" (click)="handleEditPago(pago)" title="Editar"><i class="bi bi-pencil"></i></button>
-                      </ng-template>
-
-                      <button *hasPermission="'PAGO_GASTO_ELIMINAR'" class="btn-action delete" (click)="handleDeletePago(pago)" title="Eliminar"><i class="bi bi-trash"></i></button>
-                    </div>
-                  </td>
-                </tr>
-                <tr *ngIf="!(pagos$ | async)?.length">
-                  <td colspan="6" class="text-center py-5 text-muted small">No hay pagos registrados aún</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
+          <h2 class="fw-bold text-dark mb-2">Acceso Restringido</h2>
+          <p class="text-muted mb-4 mx-auto" style="max-width: 450px;">
+            No dispones de los permisos de visualización necesarios para este módulo de egresos. 
+            Contacta a tu administrador para solicitar acceso a GASTOS, PAGOS o CATEGORÍAS.
+          </p>
+          <button class="btn btn-primary rounded-pill px-5 py-3 fw-bold shadow-sm" (click)="refresh()">
+            <i class="bi bi-arrow-clockwise me-2"></i> Reintentar sincronización
+          </button>
         </div>
-
-        <!-- SECCIÓN 3: CATEGORÍAS -->
-        <div *ngSwitchCase="'categorias'" class="fade-in">
-          <div class="toolbar-minimal mb-3">
-             <button *hasPermission="'CATEGORIA_GASTO_CREAR'" class="btn btn-primary" (click)="openCreateCategoriaModal()">
-                <i class="bi bi-plus-lg me-1"></i> Nueva Categoría
-              </button>
-          </div>
-          <div class="table-responsive soft-card">
-            <table class="table table-hover align-middle mb-0">
-              <thead class="bg-light">
-                <tr>
-                  <th class="ps-4">Código</th>
-                  <th>Nombre</th>
-                  <th>Tipo</th>
-                  <th>Estado</th>
-                  <th class="text-end pe-4">Acciones</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr *ngFor="let cat of categorias$ | async">
-                  <td class="ps-4"><code>{{ cat.codigo }}</code></td>
-                  <td><span class="fw-bold">{{ cat.nombre }}</span></td>
-                  <td><span class="text-muted text-capitalize">{{ cat.tipo }}</span></td>
-                  <td>
-                    <span class="badge" [ngClass]="cat.activo ? 'badge-success' : 'badge-danger'">
-                      {{ cat.activo ? 'Activa' : 'Inactiva' }}
-                    </span>
-                  </td>
-                  <td class="text-end pe-4">
-                    <div class="action-buttons justify-content-end">
-                      <button *hasPermission="'CATEGORIA_GASTO_EDITAR'" class="btn-action edit" (click)="handleEditCategoria(cat)"><i class="bi bi-pencil"></i></button>
-                      <button *hasPermission="'CATEGORIA_GASTO_ELIMINAR'" class="btn-action delete" (click)="handleDeleteCategoria(cat)"><i class="bi bi-trash"></i></button>
-                    </div>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-      </div>
+      </ng-template>
 
       <!-- MODALES UNIFICADOS (Using Modular Components) -->
       
@@ -353,12 +393,35 @@ import { CategoriaFormComponent } from './components/categoria-form.component';
     .modal-overlay { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.4); display: flex; align-items: center; justify-content: center; z-index: 1050; animation: fadeIn 0.2s; }
     .modal-content-container { display: block; background: white; border-radius: 20px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); max-height: 90vh; overflow-y: auto; width: 95%; max-width: 700px; position: relative; }
     
-    .spinning { animation: spin 1s linear infinite; display: inline-block; }
     @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
     @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+    .icon-lock-wrapper {
+      width: 90px; height: 90px; background: #eef2ff; border: 1px solid #e0e7ff;
+      border-radius: 24px; display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 10px 25px -5px rgba(99, 102, 241, 0.2);
+    }
+
+    .animate-in {
+      animation: fadeIn 0.4s ease-out;
+    }
   `]
 })
 export class GastosPage implements OnInit, OnDestroy {
+  // Permission Getters
+  get canViewGeneral(): boolean {
+    return this.permissionsService.hasPermission(GASTOS_PERMISSIONS.VER);
+  }
+  get canViewPagos(): boolean {
+    return this.permissionsService.hasPermission(GASTOS_PERMISSIONS.PAGO_VER);
+  }
+  get canViewCategorias(): boolean {
+    return this.permissionsService.hasPermission(GASTOS_PERMISSIONS.CATEGORIA_VER);
+  }
+  get canViewModule(): boolean {
+    return this.canViewGeneral || this.canViewPagos || this.canViewCategorias;
+  }
+
   activeTab: 'general' | 'pagos' | 'categorias' = 'general';
 
   // Observables
@@ -403,6 +466,7 @@ export class GastosPage implements OnInit, OnDestroy {
   deleteTarget: 'gasto' | 'pago' | 'categoria' = 'gasto';
   
   private destroy$ = new Subject<void>();
+  private permissionsService = inject(PermissionsService);
 
   constructor(
     private service: GastosService,
@@ -418,6 +482,13 @@ export class GastosPage implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.uiService.setPageHeader('Administración de Egresos', 'Visión integral de gastos y flujo de caja');
+    
+    // Set initial tab based on permissions
+    if (!this.canViewGeneral) {
+      if (this.canViewPagos) this.activeTab = 'pagos';
+      else if (this.canViewCategorias) this.activeTab = 'categorias';
+    }
+
     this.service.loadInitialData();
     
     // Subscripciones para data local (dropdowns, etc)
