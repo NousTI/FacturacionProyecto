@@ -43,7 +43,11 @@ import { PermissionsService } from '../../../../../core/auth/permissions.service
                   </div>
                   <div class="info-item">
                     <span class="info-label">Tipo de Item</span>
-                    <span class="info-value">{{ producto.tipo }}</span>
+                    <span class="info-value text-uppercase">{{ producto.tipo }}</span>
+                  </div>
+                  <div class="info-item">
+                    <span class="info-label">Unidad de Medida</span>
+                    <span class="info-value">{{ producto.unidad_medida || 'No definida' }}</span>
                   </div>
                   <div class="info-item col-12" *ngIf="producto.descripcion">
                     <span class="info-label">Descripción</span>

@@ -50,6 +50,7 @@ class ProductoMasVendido(BaseModel):
     id: UUID
     codigo: str
     nombre: str
+    unidad_medida: Optional[str] = None
     cantidad_vendida: float
     total_vendido: float
     utilidad: Optional[float] = None
@@ -59,6 +60,7 @@ class ProductoSinMovimiento(BaseModel):
     id: UUID
     codigo: str
     nombre: str
+    unidad_medida: Optional[str] = None
     ultima_venta: Optional[date] = None
     dias_sin_movimiento: Optional[int] = None
     stock_actual: float
@@ -68,6 +70,7 @@ class ProductoRentabilidad(BaseModel):
     id: UUID
     codigo: str
     nombre: str
+    unidad_medida: Optional[str] = None
     precio: float
     costo: float
     utilidad_unitaria: float
@@ -79,6 +82,7 @@ class ProductoReporteInventario(BaseModel):
     id: UUID
     codigo: str
     nombre: str
+    unidad_medida: Optional[str] = None
     stock_actual: float
     stock_minimo: float
     estado_alerta: str

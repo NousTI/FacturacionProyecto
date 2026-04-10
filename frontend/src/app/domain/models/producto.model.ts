@@ -29,6 +29,7 @@ export interface ProductoMasVendido {
     id: string;
     codigo: string;
     nombre: string;
+    unidad_medida?: string;
     cantidad_vendida: number;
     total_vendido: number;
     utilidad: number | null;
@@ -39,6 +40,7 @@ export interface ProductoSinMovimiento {
     id: string;
     codigo: string;
     nombre: string;
+    unidad_medida?: string;
     ultima_venta: string | null;
     dias_sin_movimiento: number | null;
     stock_actual: number;
@@ -49,6 +51,7 @@ export interface ProductoRentabilidad {
     id: string;
     codigo: string;
     nombre: string;
+    unidad_medida?: string;
     precio: number;
     costo: number;
     utilidad_unitaria: number;
@@ -61,6 +64,7 @@ export interface ProductoReporteInventario {
     id: string;
     codigo: string;
     nombre: string;
+    unidad_medida?: string;
     stock_actual: number;
     stock_minimo: number;
     estado_alerta: string;

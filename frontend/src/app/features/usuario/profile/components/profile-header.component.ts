@@ -114,14 +114,26 @@ import { PerfilUsuario } from '../../../../domain/models/perfil.model';
                      <label class="form-label" style="font-size: 0.8rem; font-weight: 700;">Apellidos</label>
                      <input type="text" class="form-control" [(ngModel)]="editData.apellidos" name="apellidos" required>
                    </div>
-                   <div class="col-12">
-                     <label class="form-label" style="font-size: 0.8rem; font-weight: 700;">Teléfono</label>
-                     <input type="text" class="form-control" [(ngModel)]="editData.telefono" name="telefono" pattern="^([0-9]{10})?$">
-                   </div>
+                    <div class="col-12">
+                      <label class="form-label" style="font-size: 0.8rem; font-weight: 700;">Teléfono (Móvil)</label>
+                      <input type="text" 
+                             class="form-control" 
+                             [(ngModel)]="editData.telefono" 
+                             name="telefono" 
+                             pattern="^09[0-9]{8}$" 
+                             maxlength="10" 
+                             placeholder="Ej: 0987654321"
+                             (keypress)="onlyNumbers($event)"
+                             #telInput="ngModel"
+                             [class.is-invalid]="telInput.invalid && telInput.touched">
+                      <div *ngIf="telInput.invalid && telInput.touched" class="text-danger mt-1" style="font-size: 0.7rem; font-weight: 700;">
+                        Debe iniciar con 09 y tener 10 dígitos.
+                      </div>
+                    </div>
                  </div>
 
                  <div class="mt-3 d-flex gap-2">
-                   <button type="submit" class="btn btn-primary px-4 py-2" style="border-radius: 12px; font-weight: 700; font-size: 0.85rem;" [disabled]="!editForm.form.valid || isSaving">
+                   <button type="submit" class="btn btn-primary px-4 py-2" style="border-radius: 12px; font-weight: 700; font-size: 0.85rem;" [disabled]="!editForm.form.valid || isSaving || !hasChanges">
                      <span *ngIf="isSaving" class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
                      {{ isSaving ? 'Guardando...' : 'Guardar' }}
                    </button>
@@ -233,8 +245,22 @@ export class ProfileHeaderComponent implements OnChanges {
         }
     }
 
+    onlyNumbers(event: KeyboardEvent) {
+        const charCode = event.which ? event.which : event.keyCode;
+        if (charCode > 31 && (charCode < 48 || charCode > 57)) {
+            event.preventDefault();
+        }
+    }
+
     getInitials(perfil: PerfilUsuario): string {
         return (perfil.nombres?.charAt(0) || '') + (perfil.apellidos?.charAt(0) || '');
+    }
+
+    get hasChanges(): boolean {
+        if (!this.perfil) return false;
+        return this.editData.nombres !== (this.perfil.nombres || '') ||
+               this.editData.apellidos !== (this.perfil.apellidos || '') ||
+               this.editData.telefono !== (this.perfil.telefono || '');
     }
 
     startEdit() {
