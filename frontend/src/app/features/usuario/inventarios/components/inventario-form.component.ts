@@ -9,8 +9,8 @@ import { TIPOS_MOVIMIENTO } from '../constants/inventario.constants';
   standalone: true,
   imports: [CommonModule, FormsModule, ReactiveFormsModule],
   template: `
-    <div class="modal-backdrop" (click)="closeModal()">
-      <div class="modal-dialog" (click)="$event.stopPropagation()">
+    <div class="modal-backdrop" (mousedown)="$event.target === $event.currentTarget && closeModal()">
+      <div class="modal-dialog">
         <div class="modal-content-glass">
           <div class="modal-header">
             <h3><i class="bi bi-plus-circle me-2"></i>Registrar Movimiento</h3>

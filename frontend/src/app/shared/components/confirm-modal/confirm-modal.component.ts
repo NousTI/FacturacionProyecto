@@ -4,8 +4,8 @@ import { CommonModule } from '@angular/common';
 @Component({
   selector: 'app-confirm-modal',
   template: `
-    <div class="modal-overlay animate__animated animate__fadeIn animate__faster" (click)="!loading && onCancel.emit()">
-      <div class="modal-container-confirm shadow-premium" (click)="$event.stopPropagation()">
+    <div class="modal-overlay animate__animated animate__fadeIn animate__faster" (mousedown)="$event.target === $event.currentTarget && !loading && onCancel.emit()">
+      <div class="modal-container-confirm shadow-premium">
         
         <div class="modal-body-confirm text-center">
           <!-- Icon Context -->

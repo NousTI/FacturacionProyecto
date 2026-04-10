@@ -9,8 +9,8 @@ import { UNIDADES_MEDIDA, ESTADOS_INVENTARIO } from '../constants/inventario.con
   standalone: true,
   imports: [CommonModule, FormsModule, ReactiveFormsModule],
   template: `
-    <div class="modal-backdrop" (click)="closeModal()">
-      <div class="modal-dialog" (click)="$event.stopPropagation()">
+    <div class="modal-backdrop" (mousedown)="$event.target === $event.currentTarget && closeModal()">
+      <div class="modal-dialog">
         <div class="modal-content-glass">
           <div class="modal-header">
             <h3>

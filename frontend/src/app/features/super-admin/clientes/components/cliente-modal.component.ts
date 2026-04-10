@@ -65,11 +65,12 @@ import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } 
                   formControlName="telefono"
                   placeholder="0999999999"
                   maxlength="10"
+                  inputmode="numeric"
                   (keypress)="onlyNumbers($event)"
                   [class.is-invalid]="clienteForm.get('telefono')?.invalid && clienteForm.get('telefono')?.touched"
                 >
                 <div class="invalid-feedback" *ngIf="clienteForm.get('telefono')?.invalid && clienteForm.get('telefono')?.touched">
-                  El teléfono debe tener exactamente 10 dígitos numéricos
+                  El teléfono debe empezar con 09 y tener exactamente 10 dígitos.
                 </div>
               </div>
               
@@ -79,12 +80,16 @@ import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } 
                 <select 
                   class="form-select-premium"
                   formControlName="empresa_id"
+                  [class.is-invalid]="clienteForm.get('empresa_id')?.invalid && clienteForm.get('empresa_id')?.touched"
                 >
                   <option [value]="null">Seleccione una empresa...</option>
                   <option *ngFor="let e of empresas" [value]="e.id">
                     {{ e.nombre_comercial }}
                   </option>
                 </select>
+                <div class="invalid-feedback" *ngIf="clienteForm.get('empresa_id')?.invalid && clienteForm.get('empresa_id')?.touched">
+                  Debe seleccionar una empresa
+                </div>
               </div>
 
               <!-- Info Card -->
@@ -120,7 +125,7 @@ import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } 
           </button>
           <button 
             class="btn-primary-premium" 
-            [disabled]="clienteForm.invalid || loading"
+            [disabled]="loading"
             (click)="onSubmit()"
           >
             <i class="bi" [class]="loading ? 'bi-hourglass-split' : 'bi-plus-lg'"></i>
@@ -224,10 +229,17 @@ import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } 
     }
     .form-control-premium:focus,
     .form-select-premium:focus {
-      background: #ffffff;
-      border-color: #161d35;
       box-shadow: 0 0 0 4px rgba(22, 29, 53, 0.05);
       outline: none;
+    }
+    .form-control-premium.is-invalid,
+    .form-select-premium.is-invalid {
+      border-color: #dc2626 !important;
+      background-color: #fef2f2 !important;
+    }
+    .form-control-premium.is-invalid:focus,
+    .form-select-premium.is-invalid:focus {
+      box-shadow: 0 0 0 4px rgba(220, 38, 38, 0.1) !important;
     }
 
     .invalid-feedback {
@@ -357,7 +369,7 @@ export class ClienteModalComponent implements OnInit {
     this.clienteForm = this.fb.group({
       nombres: ['', [Validators.required, Validators.minLength(3)]],
       apellidos: ['', [Validators.required, Validators.minLength(3)]],
-      telefono: ['', [Validators.required, Validators.pattern(/^[0-9]{10}$/)]],
+      telefono: ['', [Validators.required, Validators.pattern(/^09[0-9]{8}$/)]],
       empresa_id: [null, Validators.required],
       avatar_url: [null],
       activo: [true]
@@ -378,6 +390,8 @@ export class ClienteModalComponent implements OnInit {
   onSubmit() {
     if (this.clienteForm.valid) {
       this.onSave.emit(this.clienteForm.value);
+    } else {
+      this.clienteForm.markAllAsTouched();
     }
   }
 }

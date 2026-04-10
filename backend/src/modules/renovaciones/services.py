@@ -81,6 +81,28 @@ class ServicioRenovaciones:
                 metadata={"solicitud_id": str(nueva_solicitud['id'])}
             ))
 
+        # 6. Notificar a Administradores de la Empresa
+        empresa_admins = self.repo.listar_user_ids_admins_empresa(empresa_id)
+        for emp_admin_id in empresa_admins:
+            self.notif_service.crear_notificacion(NotificacionCreate(
+                user_id=emp_admin_id,
+                titulo="Solicitud de Renovación Iniciada",
+                mensaje=f"Se ha iniciado una solicitud de renovación para tu empresa. Estamos procesando tu pedido.",
+                tipo="RENOVACION",
+                prioridad="MEDIA",
+                metadata={"solicitud_id": str(nueva_solicitud['id'])}
+            ))
+
+        # 7. Notificar al Vendedor (Autonotificación)
+        self.notif_service.crear_notificacion(NotificacionCreate(
+            user_id=vendor_user_id,
+            titulo="Solicitud Enviada",
+            mensaje=f"Has enviado correctamente una solicitud de renovación para la empresa '{nueva_solicitud['empresa_nombre']}'.",
+            tipo="RENOVACION",
+            prioridad="BAJA",
+            metadata={"solicitud_id": str(nueva_solicitud['id'])}
+        ))
+
         return nueva_solicitud
 
     def procesar_solicitud(self, solicitud_id: UUID, superadmin_id: UUID, data: SolicitudRenovacionProcess) -> Optional[dict]:
@@ -182,6 +204,18 @@ class ServicioRenovaciones:
                         prioridad="MEDIA",
                         metadata={"solicitud_id": str(solicitud_id)}
                     ))
+
+            # Notificar a Superadmins (Visibilidad para todos)
+            superadmin_ids = self.repo.listar_user_ids_superadmins()
+            for sa_id in superadmin_ids:
+                self.notif_service.crear_notificacion(NotificacionCreate(
+                    user_id=sa_id,
+                    titulo="Renovación Procesada",
+                    mensaje=f"Se ha aprobado la renovación de la empresa '{solicitud['empresa_nombre']}'.",
+                    tipo="RENOVACION",
+                    prioridad="BAJA",
+                    metadata={"solicitud_id": str(solicitud_id)}
+                ))
         
         else:
             # Si es RECHAZADA, notificar a los administradores de la empresa
@@ -208,6 +242,18 @@ class ServicioRenovaciones:
                         prioridad="ALTA",
                         metadata={"solicitud_id": str(solicitud_id)}
                     ))
+
+            # Notificar a Superadmins (Visibilidad para todos)
+            superadmin_ids = self.repo.listar_user_ids_superadmins()
+            for sa_id in superadmin_ids:
+                self.notif_service.crear_notificacion(NotificacionCreate(
+                    user_id=sa_id,
+                    titulo="Renovación Rechazada",
+                    mensaje=f"Se ha rechazado la solicitud de renovación de '{solicitud['empresa_nombre']}'.",
+                    tipo="RENOVACION",
+                    prioridad="BAJA",
+                    metadata={"solicitud_id": str(solicitud_id)}
+                ))
 
         return self.repo.actualizar_estado(solicitud_id, update_data)
 

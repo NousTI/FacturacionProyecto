@@ -27,15 +27,20 @@ import { SriValidators } from '../../../../../shared/utils/sri-validators';
               <div class="row g-3">
                 <div class="col-12">
                   <label class="label-final">Razón Social *</label>
-                  <input type="text" formControlName="razon_social" class="input-final" placeholder="Ej: EMPRESA XYZ S.A.">
+                  <input type="text" formControlName="razon_social" class="input-final" 
+                    [class.is-invalid]="empresaForm.get('razon_social')?.invalid && empresaForm.get('razon_social')?.touched"
+                    placeholder="Ej: EMPRESA XYZ S.A.">
+                  <div class="error-feedback" *ngIf="empresaForm.get('razon_social')?.invalid && empresaForm.get('razon_social')?.touched">
+                    La razón social es obligatoria (mín. 3 caracteres)
+                  </div>
                 </div>
                 <div class="col-md-6">
-                  <label class="label-final">Nombre Comercial</label>
+                  <label class="label-final">Nombre Comercial *</label>
                   <input type="text" formControlName="nombre_comercial" class="input-final" 
                     [class.is-invalid]="empresaForm.get('nombre_comercial')?.invalid && empresaForm.get('nombre_comercial')?.touched"
                     placeholder="Ej: XYZ Store">
                   <div class="error-feedback" *ngIf="empresaForm.get('nombre_comercial')?.invalid && empresaForm.get('nombre_comercial')?.touched">
-                    Nombre comercial requerido (mín. 3)
+                    Nombre comercial obligatorio (mín. 3)
                   </div>
                 </div>
                 <div class="col-md-6">
@@ -44,29 +49,38 @@ import { SriValidators } from '../../../../../shared/utils/sri-validators';
                     type="text" 
                     formControlName="ruc" 
                     class="input-final" 
-                    [class.is-invalid]="empresaForm.get('ruc')?.invalid && empresaForm.get('ruc')?.touched && empresaForm.get('ruc')?.value"
+                    [class.is-invalid]="empresaForm.get('ruc')?.invalid && empresaForm.get('ruc')?.touched"
                     placeholder="1234567890001"
                     maxlength="13"
                     (keypress)="onlyNumbers($event)"
                   >
-                  <div class="error-feedback" *ngIf="empresaForm.get('ruc')?.invalid && empresaForm.get('ruc')?.touched && empresaForm.get('ruc')?.value">
-                    {{ empresaForm.get('ruc')?.errors?.['message'] || 'RUC inválido' }}
+                  <div class="error-feedback" *ngIf="empresaForm.get('ruc')?.invalid && empresaForm.get('ruc')?.touched">
+                    {{ empresaForm.get('ruc')?.hasError('required') ? 'El RUC es obligatorio' : (empresaForm.get('ruc')?.errors?.['message'] || 'RUC inválido') }}
                   </div>
                   <span class="hint-final" *ngIf="!empresaForm.get('ruc')?.touched">13 dígitos</span>
                 </div>
                 <div class="col-md-12">
                   <label class="label-final">Tipo de Contribuyente *</label>
-                  <select formControlName="tipo_contribuyente" class="select-final">
+                  <select formControlName="tipo_contribuyente" class="select-final"
+                    [class.is-invalid]="empresaForm.get('tipo_contribuyente')?.invalid && empresaForm.get('tipo_contribuyente')?.touched">
                     <option value="">Seleccionar...</option>
                     <option value="PERSONA_NATURAL">Persona Natural</option>
                     <option value="PERSONA_JURIDICA">Persona Juridica</option>
                     <option value="RIMPE_NEGOCIO_POPULAR">RIMPE - Negocio Popular</option>
                     <option value="RIMPE_EMPRENDEDOR">RIMPE - Emprendedor</option>
                   </select>
+                  <div class="error-feedback" *ngIf="empresaForm.get('tipo_contribuyente')?.invalid && empresaForm.get('tipo_contribuyente')?.touched">
+                    Debe seleccionar un tipo de contribuyente
+                  </div>
                 </div>
                 <div class="col-12">
                   <label class="label-final">Dirección Principal *</label>
-                  <input type="text" formControlName="direccion" class="input-final" placeholder="Av. Principal N24-123 y Calle B">
+                  <input type="text" formControlName="direccion" class="input-final" 
+                    [class.is-invalid]="empresaForm.get('direccion')?.invalid && empresaForm.get('direccion')?.touched"
+                    placeholder="Av. Principal N24-123 y Calle B">
+                  <div class="error-feedback" *ngIf="empresaForm.get('direccion')?.invalid && empresaForm.get('direccion')?.touched">
+                    Dirección obligatoria (mín. 5 caracteres)
+                  </div>
                 </div>
               </div>
             </div>
@@ -78,27 +92,31 @@ import { SriValidators } from '../../../../../shared/utils/sri-validators';
                 <div class="col-md-7">
                   <label class="label-final">Correo Electrónico *</label>
                   <input type="email" formControlName="email" class="input-final" 
-                    [class.is-invalid]="empresaForm.get('email')?.invalid && empresaForm.get('email')?.touched && empresaForm.get('email')?.value"
+                    [class.is-invalid]="empresaForm.get('email')?.invalid && empresaForm.get('email')?.touched"
                     placeholder="ejemplo@empresa.com">
-                  <div class="error-feedback" *ngIf="empresaForm.get('email')?.invalid && empresaForm.get('email')?.touched && empresaForm.get('email')?.value">
-                    Ingrese un correo electrónico válido
+                  <div class="error-feedback" *ngIf="empresaForm.get('email')?.invalid && empresaForm.get('email')?.touched">
+                    {{ empresaForm.get('email')?.hasError('required') ? 'El correo es obligatorio' : 'Ingrese un correo electrónico válido' }}
                   </div>
                 </div>
                 <div class="col-md-5">
-                  <label class="label-final">Teléfono</label>
+                  <label class="label-final">Teléfono *</label>
                   <input 
                     type="text" 
                     formControlName="telefono" 
                     class="input-final" 
-                    [class.is-invalid]="empresaForm.get('telefono')?.invalid && empresaForm.get('telefono')?.touched && empresaForm.get('telefono')?.value"
+                    [class.is-invalid]="empresaForm.get('telefono')?.invalid && empresaForm.get('telefono')?.touched"
                     placeholder="0999999999"
                     maxlength="10"
+                    inputmode="numeric"
                     (keypress)="onlyNumbers($event)"
                   >
-                  <div class="error-feedback" *ngIf="empresaForm.get('telefono')?.invalid && empresaForm.get('telefono')?.touched && empresaForm.get('telefono')?.value">
-                    El teléfono debe tener 10 dígitos
+                  <div class="error-feedback" *ngIf="empresaForm.get('telefono')?.hasError('required') && empresaForm.get('telefono')?.touched">
+                    El teléfono es obligatorio
                   </div>
-                  <span class="hint-final" *ngIf="!empresaForm.get('telefono')?.touched">10 dígitos</span>
+                  <div class="error-feedback" *ngIf="empresaForm.get('telefono')?.hasError('pattern') && empresaForm.get('telefono')?.touched">
+                    Debe empezar con 09 y tener 10 dígitos
+                  </div>
+                  <span class="hint-final" *ngIf="!empresaForm.get('telefono')?.touched">Ej: 0912345678</span>
                 </div>
               </div>
             </div>
@@ -122,12 +140,16 @@ import { SriValidators } from '../../../../../shared/utils/sri-validators';
               <div class="row g-3">
                 <div class="col-md-6">
                   <label class="label-final">Plan de Suscripción *</label>
-                  <select formControlName="plan_id" class="select-final" (change)="onPlanChange()">
+                  <select formControlName="plan_id" class="select-final" (change)="onPlanChange()"
+                    [class.is-invalid]="empresaForm.get('plan_id')?.invalid && empresaForm.get('plan_id')?.touched">
                     <option value="">Seleccionar plan...</option>
                     <option *ngFor="let plan of planes" [value]="plan.id">
                       {{ plan.nombre }} - {{ plan.precio_anual | currency }} / año
                     </option>
                   </select>
+                  <div class="error-feedback" *ngIf="empresaForm.get('plan_id')?.invalid && empresaForm.get('plan_id')?.touched">
+                    Debe seleccionar un plan
+                  </div>
                 </div>
                  <div class="col-md-6">
                   <label class="label-final">Monto Pago Inicial</label>
@@ -151,7 +173,7 @@ import { SriValidators } from '../../../../../shared/utils/sri-validators';
         <!-- Footer -->
         <div class="modal-footer-final">
           <button (click)="close()" class="btn-cancel-final">Cancelar</button>
-          <button (click)="submit()" [disabled]="empresaForm.invalid" class="btn-submit-final">
+          <button (click)="submit()" [disabled]="(empresa && empresaForm.pristine)" class="btn-submit-final">
             {{ empresa ? 'Guardar Cambios' : 'Crear Empresa' }}
           </button>
         </div>
@@ -244,9 +266,15 @@ import { SriValidators } from '../../../../../shared/utils/sri-validators';
       font-weight: 600;
     }
     .input-final:focus, .select-final:focus {
-      border-color: #161d35;
       outline: none;
       box-shadow: 0 0 0 4px rgba(22, 29, 53, 0.05);
+    }
+    .input-final.is-invalid, .select-final.is-invalid {
+      border-color: #ef4444 !important;
+      background-color: #fef2f2 !important;
+    }
+    .input-final.is-invalid:focus, .select-final.is-invalid:focus {
+      box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.1) !important;
     }
     .hint-final {
       display: block;
@@ -336,7 +364,7 @@ export class VendedorCreateEmpresaModalComponent implements OnInit, OnDestroy {
             razon_social: ['', [Validators.required, Validators.minLength(3)]],
             nombre_comercial: ['', [Validators.required, Validators.minLength(3)]],
             email: ['', [Validators.required, Validators.email]],
-            telefono: ['', [Validators.required, Validators.pattern(/^[0-9]{10}$/)]],
+            telefono: ['', [Validators.required, Validators.pattern(/^09[0-9]{8}$/)]],
             direccion: ['', [Validators.required, Validators.minLength(5)]],
             tipo_contribuyente: ['', Validators.required],
             obligado_contabilidad: [false],
@@ -396,6 +424,8 @@ export class VendedorCreateEmpresaModalComponent implements OnInit, OnDestroy {
                 id: this.empresa?.id,
                 ...this.empresaForm.value
             });
+        } else {
+            this.empresaForm.markAllAsTouched();
         }
     }
 

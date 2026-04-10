@@ -17,7 +17,9 @@ class RepositorioRenovaciones:
         with db_transaction(self.db) as cur:
             cur.execute(query, tuple(values))
             row = cur.fetchone()
-            return dict(row) if row else None
+            if not row:
+                return None
+            return self.obtener_solicitud_por_id(row['id'])
 
     def obtener_solicitud_por_id(self, id: UUID) -> Optional[dict]:
         query = """

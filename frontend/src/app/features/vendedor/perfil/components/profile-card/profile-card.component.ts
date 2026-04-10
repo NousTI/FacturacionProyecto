@@ -121,29 +121,52 @@ import { FormsModule } from '@angular/forms';
               <div class="row g-4">
                 <div class="col-sm-6">
                   <label class="form-label text-muted small fw-semibold">Nombres</label>
-                  <input type="text" class="form-control form-control-premium shadow-none" [(ngModel)]="editData.nombres" name="nombres" #nombresInput="ngModel" required minlength="3">
-                  <div class="invalid-feedback fw-semibold mt-1" [class.d-block]="nombresInput.invalid && nombresInput.touched">
-                    Mínimo 3 caracteres.
+                  <input type="text" 
+                         class="form-control form-control-premium shadow-none" 
+                         [(ngModel)]="editData.nombres" 
+                         name="nombres" 
+                         #nombresInput="ngModel" 
+                         required 
+                         minlength="3"
+                         [class.is-invalid]="nombresInput.invalid && (nombresInput.touched || editForm.submitted)">
+                  <div class="invalid-feedback fw-semibold mt-1" [class.d-block]="nombresInput.invalid && (nombresInput.touched || editForm.submitted)">
+                    {{ nombresInput.hasError('required') ? 'El nombre es obligatorio' : 'Mínimo 3 caracteres.' }}
                   </div>
                 </div>
                 <div class="col-sm-6">
                   <label class="form-label text-muted small fw-semibold">Apellidos</label>
-                  <input type="text" class="form-control form-control-premium shadow-none" [(ngModel)]="editData.apellidos" name="apellidos" #apellidosInput="ngModel" required minlength="3">
-                  <div class="invalid-feedback fw-semibold mt-1" [class.d-block]="apellidosInput.invalid && apellidosInput.touched">
-                    Mínimo 3 caracteres.
+                  <input type="text" 
+                         class="form-control form-control-premium shadow-none" 
+                         [(ngModel)]="editData.apellidos" 
+                         name="apellidos" 
+                         #apellidosInput="ngModel" 
+                         required 
+                         minlength="3"
+                         [class.is-invalid]="apellidosInput.invalid && (apellidosInput.touched || editForm.submitted)">
+                  <div class="invalid-feedback fw-semibold mt-1" [class.d-block]="apellidosInput.invalid && (apellidosInput.touched || editForm.submitted)">
+                    {{ apellidosInput.hasError('required') ? 'El apellido es obligatorio' : 'Mínimo 3 caracteres.' }}
                   </div>
                 </div>
                 <div class="col-12">
                   <label class="form-label text-muted small fw-semibold">Teléfono</label>
-                  <input type="text" class="form-control form-control-premium shadow-none" [(ngModel)]="editData.telefono" name="telefono" #telefonoInput="ngModel" required pattern="^[0-9]{10}$" maxlength="10">
+                  <input type="text" 
+                         class="form-control form-control-premium shadow-none" 
+                         [(ngModel)]="editData.telefono" 
+                         name="telefono" 
+                         #telefonoInput="ngModel" 
+                         required 
+                         pattern="^09[0-9]{8}$" 
+                         maxlength="10"
+                         inputmode="numeric"
+                         [class.is-invalid]="telefonoInput.invalid && (telefonoInput.touched || editForm.submitted)">
                   <div class="invalid-feedback fw-semibold mt-1" [class.d-block]="telefonoInput.invalid && (telefonoInput.touched || editForm.submitted)">
-                    Debe contener 10 dígitos numéricos.
+                    {{ telefonoInput.hasError('required') ? 'El teléfono es obligatorio' : 'Debe empezar con 09 y tener 10 dígitos.' }}
                   </div>
                 </div>
               </div>
 
               <div class="mt-4 pt-2">
-                <button type="submit" class="btn-premium-primary w-100 justify-content-center" style="height: 44px;" [disabled]="!editForm.form.valid || isSaving">
+                <button type="submit" class="btn-premium-primary w-100 justify-content-center" style="height: 44px;" [disabled]="!editForm.form.valid || isSaving || !hasChanges()">
                   <span *ngIf="isSaving" class="spinner-border spinner-border-sm me-2"></span>
                   {{ isSaving ? 'Guardando...' : 'Guardar Cambios' }}
                 </button>
@@ -223,10 +246,15 @@ import { FormsModule } from '@angular/forms';
       width: 100%;
     }
     .form-control-premium:focus {
-      background: #ffffff;
-      border-color: #161d35;
       box-shadow: 0 0 0 4px rgba(22, 29, 53, 0.05);
       outline: none;
+    }
+    .form-control-premium.is-invalid {
+      border-color: #ef4444;
+      background-color: #fef2f2;
+    }
+    .form-control-premium.is-invalid:focus {
+      box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.1);
     }
 
     .info-box {
@@ -318,6 +346,12 @@ export class ProfileCardComponent implements OnChanges {
     };
     this.isEditing = true;
     this.isChangingPassword = false;
+  }
+
+  hasChanges(): boolean {
+    return this.editData.nombres !== this.nombres ||
+           this.editData.apellidos !== this.apellidos ||
+           this.editData.telefono !== this.telefono;
   }
 
   cancelEdit() {
