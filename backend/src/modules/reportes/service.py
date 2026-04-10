@@ -534,9 +534,9 @@ class ServicioReportes:
                 keys = ["numero_factura", "cliente", "fecha_intento", "mensaje_sri", "estado_actual"]
                 return generate_excel_report("Rechazos SRI", headers, data, keys)
 
-        # --- EXPORTACIÓN DE REPORTES FINANCIEROS (R-026 a R-028) ---
-        
-        elif tipo in ['FINANCIERO_PYG', 'FINANCIERO_IVA', 'FINANCIERO_RESUMEN']:
+        # --- EXPORTACIÓN DE REPORTES FINANCIEROS (R-026 a R-028, R-008) ---
+
+        elif tipo in ['FINANCIERO_PYG', 'FINANCIERO_IVA', 'FINANCIERO_RESUMEN', 'FINANCIERO_CARTERA']:
             empresa = self.repo_empresas.obtener_por_id(empresa_id)
             fecha_inicio = params.get('fecha_inicio')
             fecha_fin = params.get('fecha_fin')
