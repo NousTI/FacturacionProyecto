@@ -10,6 +10,7 @@ from .empresa_permisos.catalog_usuarios import USUARIOS_PERMS
 from .empresa_permisos.catalog_roles import ROLES_PERMS
 from .empresa_permisos.catalog_establecimientos import ESTABLECIMIENTO_PERMS
 from .empresa_permisos.catalog_reportes import REPORTES_PERMS
+from .empresa_permisos.catalog_proveedores import PROVEEDOR_PERMS
 from .empresa_permisos.catalog_otros import OTROS_PERMS
 
 # Catálogo de Permisos Base (Agregado de fragmentos)
@@ -24,6 +25,7 @@ PERMISOS_BASE = {
     **ROLES_PERMS,
     **ESTABLECIMIENTO_PERMS,
     **REPORTES_PERMS,
+    **PROVEEDOR_PERMS,
     **OTROS_PERMS
 }
 

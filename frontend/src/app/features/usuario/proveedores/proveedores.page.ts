@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Subject, takeUntil, finalize } from 'rxjs';
@@ -15,6 +15,8 @@ import { ToastComponent } from '../../../shared/components/toast/toast.component
 import { ProveedoresService } from './services/proveedores.service';
 import { UiService } from '../../../shared/services/ui.service';
 import { Proveedor } from '../../../domain/models/proveedor.model';
+import { PermissionsService } from '../../../core/auth/permissions.service';
+import { PROVEEDORES_PERMISSIONS } from '../../../constants/permission-codes';
 
 @Component({
     selector: 'app-usuario-proveedores',
@@ -33,64 +35,79 @@ import { Proveedor } from '../../../domain/models/proveedor.model';
     ],
     template: `
     <div class="proveedores-page-container">
+      <ng-container *ngIf="canView; else noPermission">
+        <!-- STATS -->
+        <app-proveedor-stats
+          [total]="totalProveedores"
+          [activos]="activosCount"
+          [conCredito]="conCreditoCount"
+        ></app-proveedor-stats>
 
-      <!-- STATS -->
-      <app-proveedor-stats
-        [total]="totalProveedores"
-        [activos]="activosCount"
-        [conCredito]="conCreditoCount"
-      ></app-proveedor-stats>
+        <!-- ACCIONES Y FILTROS -->
+        <app-proveedor-actions
+          [(searchQuery)]="searchQuery"
+          (onFilterChangeEmit)="handleFilters($event)"
+          (onCreate)="openCreateModal()"
+        ></app-proveedor-actions>
 
-      <!-- ACCIONES Y FILTROS -->
-      <app-proveedor-actions
-        [(searchQuery)]="searchQuery"
-        (onFilterChangeEmit)="handleFilters($event)"
-        (onCreate)="openCreateModal()"
-      ></app-proveedor-actions>
+        <!-- TABLA -->
+        <app-proveedor-table
+          [proveedores]="filteredProveedores"
+          (onAction)="handleAction($event)"
+        ></app-proveedor-table>
 
-      <!-- TABLA -->
-      <app-proveedor-table
-        [proveedores]="filteredProveedores"
-        (onAction)="handleAction($event)"
-      ></app-proveedor-table>
+        <!-- MODALES -->
+        <app-create-proveedor-modal
+          *ngIf="showCreateModal"
+          [proveedor]="selectedProveedor"
+          [loading]="isSaving"
+          (onSave)="saveProveedor($event)"
+          (onClose)="showCreateModal = false"
+        ></app-create-proveedor-modal>
 
-      <!-- MODAL CREAR / EDITAR -->
-      <app-create-proveedor-modal
-        *ngIf="showCreateModal"
-        [proveedor]="selectedProveedor"
-        [loading]="isSaving"
-        (onSave)="saveProveedor($event)"
-        (onClose)="showCreateModal = false"
-      ></app-create-proveedor-modal>
+        <app-proveedor-detail-modal
+          *ngIf="showDetailModal && selectedProveedor"
+          [proveedor]="selectedProveedor"
+          (onClose)="showDetailModal = false"
+        ></app-proveedor-detail-modal>
 
-      <!-- MODAL DETALLE -->
-      <app-proveedor-detail-modal
-        *ngIf="showDetailModal && selectedProveedor"
-        [proveedor]="selectedProveedor"
-        (onClose)="showDetailModal = false"
-      ></app-proveedor-detail-modal>
+        <app-toggle-proveedor-modal
+          *ngIf="showToggleModal && selectedProveedor"
+          [proveedor]="selectedProveedor"
+          [loading]="isToggling"
+          (onConfirm)="confirmToggle()"
+          (onClose)="showToggleModal = false"
+        ></app-toggle-proveedor-modal>
 
-      <!-- MODAL TOGGLE ACTIVO/INACTIVO -->
-      <app-toggle-proveedor-modal
-        *ngIf="showToggleModal && selectedProveedor"
-        [proveedor]="selectedProveedor"
-        [loading]="isToggling"
-        (onConfirm)="confirmToggle()"
-        (onClose)="showToggleModal = false"
-      ></app-toggle-proveedor-modal>
+        <app-confirm-modal
+          *ngIf="showConfirmModal"
+          title="¿Eliminar Proveedor?"
+          [message]="'¿Estás seguro de que deseas eliminar a ' + selectedProveedor?.razon_social + '? Esta acción no se puede deshacer.'"
+          confirmText="Eliminar Proveedor"
+          type="danger"
+          icon="bi-trash3-fill"
+          [loading]="isDeleting"
+          (onConfirm)="deleteProveedor()"
+          (onCancel)="showConfirmModal = false"
+        ></app-confirm-modal>
+      </ng-container>
 
-      <!-- MODAL CONFIRMACION ELIMINAR -->
-      <app-confirm-modal
-        *ngIf="showConfirmModal"
-        title="¿Eliminar Proveedor?"
-        [message]="'¿Estás seguro de que deseas eliminar a ' + selectedProveedor?.razon_social + '? Esta acción no se puede deshacer.'"
-        confirmText="Eliminar Proveedor"
-        type="danger"
-        icon="bi-trash3-fill"
-        [loading]="isDeleting"
-        (onConfirm)="deleteProveedor()"
-        (onCancel)="showConfirmModal = false"
-      ></app-confirm-modal>
+      <!-- TEMPLATE SIN PERMISO -->
+      <ng-template #noPermission>
+        <div class="no-permission-container d-flex flex-column align-items-center justify-content-center h-100 text-center p-5 animate-fade-in">
+          <div class="icon-lock-wrapper mb-4">
+            <i class="bi bi-shield-lock-fill"></i>
+          </div>
+          <h2 class="fw-bold text-dark mb-2">Acceso Restringido</h2>
+          <p class="text-muted mb-4 max-w-400">
+            No tienes permisos suficientes para gestionar el directorio de proveedores de esta empresa. 
+            Si crees que esto es un error, contacta a su administrador.
+          </p>
+          <button class="btn btn-dark rounded-pill px-5 py-3 fw-bold shadow-sm" (click)="refreshData()">
+            <i class="bi bi-arrow-clockwise me-2"></i> Reintentar sincronización
+          </button>
+        </div>
+      </ng-template>
 
       <app-toast></app-toast>
     </div>
@@ -102,9 +119,23 @@ import { Proveedor } from '../../../domain/models/proveedor.model';
       flex-direction: column;
       gap: 1.5rem;
     }
+
+    .no-permission-container { min-height: 70vh; }
+    .icon-lock-wrapper {
+      width: 100px; height: 100px; background: #fee2e2; color: #ef4444; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center; font-size: 3rem;
+      box-shadow: 0 10px 25px -5px rgba(239, 68, 68, 0.3);
+    }
+    .max-w-400 { max-width: 400px; }
+    .animate-fade-in { animation: fadeIn 0.4s ease-out; }
+
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
   `]
 })
 export class ProveedoresPage implements OnInit, OnDestroy {
+    get canView(): boolean {
+        return this.permissionsService.hasPermission(PROVEEDORES_PERMISSIONS.VER);
+    }
 
     // All proveedores from service
     private _allProveedores: Proveedor[] = [];
@@ -125,11 +156,14 @@ export class ProveedoresPage implements OnInit, OnDestroy {
     selectedProveedor: Proveedor | null = null;
 
     // Loading
+    isLoading = false;
     isSaving = false;
     isDeleting = false;
     isToggling = false;
 
     private destroy$ = new Subject<void>();
+
+    private permissionsService = inject(PermissionsService);
 
     constructor(
         private proveedoresService: ProveedoresService,
@@ -263,5 +297,14 @@ export class ProveedoresPage implements OnInit, OnDestroy {
                     this.uiService.showError(err, 'Error al cambiar estado');
                 }
             });
+    }
+
+    refreshData() {
+        this.isLoading = true;
+        this.proveedoresService.refresh();
+        setTimeout(() => {
+            this.isLoading = false;
+            this.cd.detectChanges();
+        }, 800);
     }
 }

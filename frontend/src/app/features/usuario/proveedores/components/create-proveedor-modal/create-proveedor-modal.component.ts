@@ -33,11 +33,14 @@ import { PROVINCIAS, CIUDADES, getCiudadesByProvincia, Provincia, Ciudad } from 
               <div class="row g-3">
                 <div class="col-md-6">
                   <label class="lux-label">Tipo de documento *</label>
-                  <select formControlName="tipo_identificacion" class="lux-select">
+                  <select formControlName="tipo_identificacion" class="lux-select" [class.is-invalid]="proveedorForm.get('tipo_identificacion')?.invalid && proveedorForm.get('tipo_identificacion')?.touched">
                     <option value="CEDULA">Cédula</option>
                     <option value="RUC">RUC</option>
                     <option value="PASAPORTE">Pasaporte</option>
                   </select>
+                  <div class="error-feedback" *ngIf="proveedorForm.get('tipo_identificacion')?.invalid && proveedorForm.get('tipo_identificacion')?.touched">
+                    <small>El tipo de documento es requerido</small>
+                  </div>
                 </div>
                 <div class="col-md-6">
                   <label class="lux-label">Número de identificación *</label>
@@ -51,12 +54,16 @@ import { PROVINCIAS, CIUDADES, getCiudadesByProvincia, Provincia, Ciudad } from 
                     [maxlength]="proveedorForm.get('tipo_identificacion')?.value === 'CEDULA' ? 10 : (proveedorForm.get('tipo_identificacion')?.value === 'RUC' ? 13 : 20)"
                   >
                   <div class="error-feedback" *ngIf="proveedorForm.get('identificacion')?.invalid && proveedorForm.get('identificacion')?.touched">
-                    <span *ngIf="proveedorForm.get('identificacion')?.errors?.['required']">La identificación es obligatoria</span>
-                    <span *ngIf="proveedorForm.get('identificacion')?.errors?.['identificacionInvalid'] ||
-                                 proveedorForm.get('identificacion')?.errors?.['rucInvalid'] ||
-                                 proveedorForm.get('identificacion')?.errors?.['passportInvalid']">
-                        {{ proveedorForm.get('identificacion')?.errors?.['message'] || 'Número de documento inválido' }}
-                    </span>
+                    <small *ngIf="proveedorForm.get('identificacion')?.hasError('required')">La identificación es obligatoria</small>
+                    <small *ngIf="proveedorForm.get('identificacion')?.hasError('identificacionInvalid') ||
+                                 proveedorForm.get('identificacion')?.hasError('rucInvalid') ||
+                                 proveedorForm.get('identificacion')?.hasError('cedulaInvalid') ||
+                                 proveedorForm.get('identificacion')?.hasError('passportInvalid')">
+                        {{ proveedorForm.get('identificacion')?.getError('rucInvalid')?.message || 
+                           proveedorForm.get('identificacion')?.getError('cedulaInvalid')?.message ||
+                           proveedorForm.get('identificacion')?.getError('passportInvalid')?.message ||
+                           'Número de documento inválido' }}
+                    </small>
                   </div>
                 </div>
               </div>
@@ -68,11 +75,18 @@ import { PROVINCIAS, CIUDADES, getCiudadesByProvincia, Provincia, Ciudad } from 
               <div class="row g-3">
                 <div class="col-12">
                   <label class="lux-label">Razón Social *</label>
-                  <input type="text" formControlName="razon_social" class="lux-input" placeholder="Ej: Distribuidora XYZ S.A.">
+                  <input type="text" formControlName="razon_social" class="lux-input" [class.is-invalid]="proveedorForm.get('razon_social')?.invalid && proveedorForm.get('razon_social')?.touched" placeholder="Ej: Distribuidora XYZ S.A.">
+                  <div class="error-feedback" *ngIf="proveedorForm.get('razon_social')?.invalid && proveedorForm.get('razon_social')?.touched">
+                    <small *ngIf="proveedorForm.get('razon_social')?.hasError('required')">La razón social es requerida</small>
+                    <small *ngIf="proveedorForm.get('razon_social')?.hasError('minlength')">Debe tener al menos 3 caracteres</small>
+                  </div>
                 </div>
                 <div class="col-12">
-                  <label class="lux-label">Nombre Comercial</label>
-                  <input type="text" formControlName="nombre_comercial" class="lux-input" placeholder="Ej: Distribuidora XYZ">
+                  <label class="lux-label">Nombre Comercial *</label>
+                  <input type="text" formControlName="nombre_comercial" class="lux-input" [class.is-invalid]="proveedorForm.get('nombre_comercial')?.invalid && proveedorForm.get('nombre_comercial')?.touched" placeholder="Ej: Distribuidora XYZ">
+                  <div class="error-feedback" *ngIf="proveedorForm.get('nombre_comercial')?.invalid && proveedorForm.get('nombre_comercial')?.touched">
+                    <small>El nombre comercial es requerido</small>
+                  </div>
                 </div>
               </div>
             </div>
@@ -82,8 +96,12 @@ import { PROVINCIAS, CIUDADES, getCiudadesByProvincia, Provincia, Ciudad } from 
               <h3 class="lux-section-header">Información de Contacto</h3>
               <div class="row g-3">
                 <div class="col-md-7">
-                  <label class="lux-label">Correo Electrónico</label>
-                  <input type="email" formControlName="email" class="lux-input" placeholder="proveedor@ejemplo.com">
+                  <label class="lux-label">Correo Electrónico *</label>
+                  <input type="email" formControlName="email" class="lux-input" [class.is-invalid]="proveedorForm.get('email')?.invalid && proveedorForm.get('email')?.touched" placeholder="proveedor@ejemplo.com">
+                  <div class="error-feedback" *ngIf="proveedorForm.get('email')?.invalid && proveedorForm.get('email')?.touched">
+                    <small *ngIf="proveedorForm.get('email')?.hasError('required')">El correo es requerido</small>
+                    <small *ngIf="proveedorForm.get('email')?.hasError('pattern')">Ingrese un correo válido (ej: usuario@dominio.com)</small>
+                  </div>
                 </div>
                 <div class="col-md-5">
                   <label class="lux-label">Teléfono</label>
@@ -97,26 +115,35 @@ import { PROVINCIAS, CIUDADES, getCiudadesByProvincia, Provincia, Ciudad } from 
                     maxlength="10"
                   >
                   <div class="error-feedback" *ngIf="proveedorForm.get('telefono')?.invalid && proveedorForm.get('telefono')?.touched">
-                    <span *ngIf="proveedorForm.get('telefono')?.errors?.['pattern']">Debe tener exactamente 10 números</span>
+                    <small *ngIf="proveedorForm.get('telefono')?.hasError('pattern')">Debe empezar con 09 y tener 10 dígitos</small>
                   </div>
                 </div>
                 <div class="col-12">
-                  <label class="lux-label">Dirección</label>
-                  <input type="text" formControlName="direccion" class="lux-input" placeholder="Av. Principal N23 y Calle B">
+                  <label class="lux-label">Dirección *</label>
+                  <input type="text" formControlName="direccion" class="lux-input" [class.is-invalid]="proveedorForm.get('direccion')?.invalid && proveedorForm.get('direccion')?.touched" placeholder="Av. Principal N23 y Calle B">
+                  <div class="error-feedback" *ngIf="proveedorForm.get('direccion')?.invalid && proveedorForm.get('direccion')?.touched">
+                    <small>La dirección es requerida</small>
+                  </div>
                 </div>
                 <div class="col-md-6">
-                  <label class="lux-label">Provincia</label>
-                  <select formControlName="provincia" class="lux-select" (change)="onProvinciaChange()">
+                  <label class="lux-label">Provincia *</label>
+                  <select formControlName="provincia" class="lux-select" (change)="onProvinciaChange()" [class.is-invalid]="proveedorForm.get('provincia')?.invalid && proveedorForm.get('provincia')?.touched">
                     <option value="">Selecciona una provincia</option>
                     <option *ngFor="let prov of provincias" [value]="prov.nombre">{{ prov.nombre }}</option>
                   </select>
+                  <div class="error-feedback" *ngIf="proveedorForm.get('provincia')?.invalid && proveedorForm.get('provincia')?.touched">
+                    <small>La provincia es requerida</small>
+                  </div>
                 </div>
                 <div class="col-md-6">
-                  <label class="lux-label">Ciudad</label>
-                  <select formControlName="ciudad" class="lux-select">
+                  <label class="lux-label">Ciudad *</label>
+                  <select formControlName="ciudad" class="lux-select" [class.is-invalid]="proveedorForm.get('ciudad')?.invalid && proveedorForm.get('ciudad')?.touched">
                     <option value="">Selecciona una ciudad</option>
                     <option *ngFor="let ciudad of ciudadesDisponibles" [value]="ciudad.nombre">{{ ciudad.nombre }}</option>
                   </select>
+                  <div class="error-feedback" *ngIf="proveedorForm.get('ciudad')?.invalid && proveedorForm.get('ciudad')?.touched">
+                    <small>La ciudad es requerida</small>
+                  </div>
                 </div>
               </div>
             </div>
@@ -129,8 +156,8 @@ import { PROVINCIAS, CIUDADES, getCiudadesByProvincia, Provincia, Ciudad } from 
                   <label class="lux-label">Días de Crédito Plazo</label>
                   <input type="text" formControlName="dias_credito" class="lux-input" placeholder="0" (keypress)="validateDiasCredito($event)" (input)="onDiasInput($event)" [class.is-invalid]="proveedorForm.get('dias_credito')?.invalid && proveedorForm.get('dias_credito')?.touched">
                   <div class="error-feedback" *ngIf="proveedorForm.get('dias_credito')?.invalid && proveedorForm.get('dias_credito')?.touched">
-                    <span *ngIf="proveedorForm.get('dias_credito')?.errors?.['min']">No puede ser negativo</span>
-                    <span *ngIf="proveedorForm.get('dias_credito')?.errors?.['pattern']">Máximo 3 números</span>
+                    <small *ngIf="proveedorForm.get('dias_credito')?.hasError('min')">No puede ser negativo</small>
+                    <small *ngIf="proveedorForm.get('dias_credito')?.hasError('max')">Máximo 999 días</small>
                   </div>
                 </div>
               </div>
@@ -204,7 +231,20 @@ import { PROVINCIAS, CIUDADES, getCiudadesByProvincia, Provincia, Ciudad } from 
     .lux-input.is-invalid { border-color: #ef4444 !important; background: #fef2f2; }
     .error-feedback { font-size: 0.75rem; color: #ef4444; font-weight: 700; margin-top: 0.4rem; display: block; text-transform: uppercase; }
     .modal-lux-footer { padding: 1.5rem 2.5rem; background: white; border-top: 1px solid #f1f5f9; }
-    .btn-lux-submit:hover:not(:disabled) { background: #232d4b; transform: translateY(-2px); box-shadow: 0 10px 20px -5px rgba(22, 29, 53, 0.3); }
+    .btn-lux-submit {
+      background: #2563eb;
+      color: white;
+      border: none;
+      padding: 0.85rem 2rem;
+      border-radius: 16px;
+      font-weight: 800;
+      font-size: 0.9rem;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .btn-lux-submit:hover:not(:disabled) { background: #1d4ed8; transform: translateY(-2px); box-shadow: 0 10px 20px -5px rgba(37, 99, 235, 0.3); }
     .btn-lux-submit:disabled { 
       background: #e2e8f0; 
       color: #94a3b8; 
@@ -241,13 +281,13 @@ export class CreateProveedorModalComponent implements OnInit, OnDestroy {
             identificacion: ['', [Validators.required, SriValidators.rucEcuador()]],
             tipo_identificacion: ['RUC', [Validators.required]],
             razon_social: ['', [Validators.required, Validators.minLength(3)]],
-            nombre_comercial: [''],
-            email: ['', [Validators.email]],
-            telefono: ['', [Validators.pattern(/^\d{10}$/)]],
-            direccion: [''],
-            ciudad: [''],
-            provincia: [''],
-            dias_credito: [0, [Validators.min(0)]],
+            nombre_comercial: ['', [Validators.required]],
+            email: ['', [Validators.required, Validators.pattern(/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/)]],
+            telefono: ['', [Validators.pattern(/^09\d{8}$/)]],
+            direccion: ['', [Validators.required]],
+            ciudad: ['', [Validators.required]],
+            provincia: ['', [Validators.required]],
+            dias_credito: [0, [Validators.min(0), Validators.max(999)]],
             activo: [true]
         });
 
