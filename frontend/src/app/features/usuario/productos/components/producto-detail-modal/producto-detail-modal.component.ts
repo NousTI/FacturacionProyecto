@@ -71,7 +71,7 @@ import { PermissionsService } from '../../../../../core/auth/permissions.service
                     <span class="info-label">Impuesto (IVA)</span>
                     <span class="info-value">{{ producto.tipo_iva }} ({{ producto.porcentaje_iva }}%)</span>
                   </div>
-                  <div class="info-item">
+                  <div class="info-item" *ngIf="canViewCosts">
                     <span class="info-label">Rentabilidad</span>
                     <span class="info-value" [ngClass]="getMargenClass()">{{ calculateMargen() }}% de margen</span>
                   </div>

@@ -39,8 +39,11 @@ import { PermissionsService } from '../../../../../core/auth/permissions.service
                   </div>
                 </div>
                 <div class="col-md-8">
-                  <label class="dashboard-label">Nombre Comercial</label>
-                  <input type="text" [(ngModel)]="formData.nombre" name="nombre" class="dashboard-input" required placeholder="Ej: Producto A">
+                  <label class="dashboard-label">Nombre Comercial *</label>
+                  <input type="text" [(ngModel)]="formData.nombre" name="nombre" #nombre="ngModel" class="dashboard-input" required placeholder="Ej: Producto A" [class.is-invalid-prod]="nombre.invalid && nombre.touched">
+                  <div *ngIf="nombre.invalid && nombre.touched" class="error-msg-prod">
+                    <span>El nombre comercial es obligatorio</span>
+                  </div>
                 </div>
                 <div class="col-12">
                   <label class="dashboard-label">Descripción (Opcional)</label>
@@ -95,7 +98,7 @@ import { PermissionsService } from '../../../../../core/auth/permissions.service
                     <option value="6">Exento de Impuesto</option>
                   </select>
                 </div>
-                <div class="col-md-6">
+                <div class="col-md-6" *ngIf="canViewCosts">
                   <label class="dashboard-label">Rendimiento Operativo</label>
                   <div class="margen-badge-simple" [ngClass]="getMargenClass()">
                     <i class="bi bi-graph-up-arrow me-2"></i>

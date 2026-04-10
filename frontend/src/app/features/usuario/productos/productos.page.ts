@@ -14,6 +14,9 @@ import { ProductoAnaliticaComponent } from './components/producto-analitica/prod
 
 import { ProductosService } from './services/productos.service';
 import { UiService } from '../../../shared/services/ui.service';
+import { inject } from '@angular/core';
+import { PermissionsService } from '../../../core/auth/permissions.service';
+import { PRODUCTOS_PERMISSIONS } from '../../../constants/permission-codes';
 import { Producto, ProductoStats } from '../../../domain/models/producto.model';
 
 @Component({
@@ -33,55 +36,76 @@ import { Producto, ProductoStats } from '../../../domain/models/producto.model';
   ],
   template: `
     <div class="productos-page-container">
-
-      <!-- TABS PRINCIPALES NAV -->
-      <div class="main-tabs-wrapper">
-        <div class="main-tabs">
-          <button class="main-tab-btn" 
-                  [class.active]="activeTab === 'catalogo'" 
-                  (click)="activeTab = 'catalogo'">
-            <i class="bi bi-box-seam"></i> Catálogo de Productos
-          </button>
-          <button class="main-tab-btn" 
-                  [class.active]="activeTab === 'analitica'" 
-                  (click)="activeTab = 'analitica'">
-            <i class="bi bi-bar-chart-fill"></i> Analítica e Inventarios
-          </button>
+      
+      <ng-container *ngIf="canView; else noPermission">
+        <!-- TABS PRINCIPALES NAV -->
+        <div class="main-tabs-wrapper">
+          <div class="main-tabs">
+            <button class="main-tab-btn" 
+                    [class.active]="activeTab === 'catalogo'" 
+                    (click)="activeTab = 'catalogo'">
+              <i class="bi bi-box-seam"></i> Catálogo de Productos
+            </button>
+            <button class="main-tab-btn" 
+                    [class.active]="activeTab === 'analitica'" 
+                    (click)="activeTab = 'analitica'">
+              <i class="bi bi-bar-chart-fill"></i> Analítica e Inventarios
+            </button>
+          </div>
         </div>
-      </div>
 
-      <div class="view-section" *ngIf="activeTab === 'catalogo'">
-        <!-- ESTADÍSTICAS (Sectional Cards) -->
-        <app-producto-stats
-          *ngIf="stats$ | async as st"
-          [total]="st.total"
-          [active]="st.activos"
-          [sinStock]="st.sin_stock"
-          [bajoStock]="st.bajo_stock"
-        ></app-producto-stats>
+        <div class="view-section" *ngIf="activeTab === 'catalogo'">
+          <!-- ESTADÍSTICAS (Sectional Cards) -->
+          <app-producto-stats
+            *ngIf="stats$ | async as st"
+            [total]="st.total"
+            [active]="st.activos"
+            [sinStock]="st.sin_stock"
+            [bajoStock]="st.bajo_stock"
+          ></app-producto-stats>
 
-        <!-- ACCIONES Y FILTROS -->
-        <app-producto-actions
-          [(searchQuery)]="searchQuery"
-          (onFilterChangeEmit)="handleFilters($event)"
-          (onCreate)="openCreateModal()"
-        ></app-producto-actions>
+          <!-- ACCIONES Y FILTROS -->
+          <app-producto-actions
+            [(searchQuery)]="searchQuery"
+            (onFilterChangeEmit)="handleFilters($event)"
+            (onCreate)="openCreateModal()"
+          ></app-producto-actions>
 
-        <!-- MAIN CONTENT TABLE -->
-        <div class="table-minimal">
-          <app-producto-table
-            [productos]="filteredProductos"
-            (onAction)="handleAction($event)"
-          ></app-producto-table>
+          <!-- MAIN CONTENT TABLE -->
+          <div class="table-minimal">
+            <app-producto-table
+              [productos]="filteredProductos"
+              (onAction)="handleAction($event)"
+            ></app-producto-table>
+          </div>
         </div>
-      </div>
 
-      <!-- TAB: ANALÍTICA -->
-      <div class="view-section" *ngIf="activeTab === 'analitica'">
-        <div class="analitica-section">
-          <app-producto-analitica></app-producto-analitica>
+        <!-- TAB: ANALÍTICA -->
+        <div class="view-section" *ngIf="activeTab === 'analitica'">
+          <div class="analitica-section">
+            <app-producto-analitica></app-producto-analitica>
+          </div>
         </div>
-      </div>
+      </ng-container>
+
+      <!-- TEMPLATE SIN PERMISO -->
+      <ng-template #noPermission>
+        <div class="no-permission-container d-flex flex-row align-items-center justify-content-center text-center p-5 animate__animated animate__fadeIn" style="min-height: 70vh;">
+          <div class="restricted-card-premium">
+            <div class="icon-lock-wrapper mb-4 mx-auto">
+              <i class="bi bi-shield-lock-fill"></i>
+            </div>
+            <h2 class="fw-bold text-dark mb-2">Acceso No Autorizado</h2>
+            <p class="text-muted mb-4 mx-auto" style="max-width: 450px;">
+              No posees los privilegios de seguridad necesarios para visualizar el catálogo de productos o realizar gestiones de inventario. 
+              Por favor, solicita el permiso <strong>PRODUCTOS_VER</strong> a tu supervisor.
+            </p>
+            <button class="btn btn-primary-lux rounded-pill px-5 py-3 fw-bold shadow-sm d-flex align-items-center gap-2 mx-auto" (click)="refreshData()">
+              <i class="bi bi-arrow-clockwise"></i> Reintentar sincronización
+            </button>
+          </div>
+        </div>
+      </ng-template>
 
     </div>
 
@@ -193,9 +217,32 @@ import { Producto, ProductoStats } from '../../../domain/models/producto.model';
       from { opacity: 0; transform: translateY(5px); }
       to { opacity: 1; transform: translateY(0); }
     }
+
+    .icon-lock-wrapper {
+      width: 90px; height: 90px; background: #eff6ff; border: 1px solid #dbeafe;
+      border-radius: 28px; display: flex; align-items: center; justify-content: center;
+      font-size: 3rem; color: #3b82f6;
+      box-shadow: 0 10px 25px -5px rgba(59, 130, 246, 0.2);
+    }
+
+    .btn-primary-lux {
+      background: #1e293b; color: white; border: none;
+      transition: all 0.2s;
+    }
+    .btn-primary-lux:hover { background: #0f172a; transform: translateY(-2px); }
+
+    .restricted-card-premium {
+      background: white; padding: 3rem; border-radius: 32px;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.05);
+      border: 1px solid #f1f5f9;
+    }
   `]
 })
 export class ProductosPage implements OnInit, OnDestroy {
+  get canView(): boolean {
+    return this.permissionsService.hasPermission(PRODUCTOS_PERMISSIONS.VER);
+  }
+
   // Navigation State
   activeTab: 'catalogo' | 'analitica' = 'catalogo';
 
@@ -218,6 +265,7 @@ export class ProductosPage implements OnInit, OnDestroy {
   isDeleting: boolean = false;
 
   private destroy$ = new Subject<void>();
+  private permissionsService = inject(PermissionsService);
 
   constructor(
     private productosService: ProductosService,
