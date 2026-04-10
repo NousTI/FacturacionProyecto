@@ -38,7 +38,7 @@ import { HasPermissionDirective } from '../../../../../core/directives/has-permi
           <!-- Botón de Acción -->
           <div class="col-lg-3 text-lg-end d-flex gap-2">
             <button 
-              *hasPermission="'CONFIG_USUARIOS'"
+              *hasPermission="'USUARIOS_EMPRESA_CREAR'"
               (click)="onCreate.emit()"
               class="btn-system-action flex-grow-1 shadow-sm"
             >

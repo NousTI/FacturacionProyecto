@@ -1,6 +1,8 @@
-import { Component, Input, Output, EventEmitter } from '@angular/core';
+import { Component, Input, Output, EventEmitter, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Empresa } from '../../../../../domain/models/empresa.model';
+import { PermissionsService } from '../../../../../core/auth/permissions.service';
+import { CONFIGURACION_PERMISSIONS } from '../../../../../constants/permission-codes';
 
 @Component({
   selector: 'app-empresa-info-card',
@@ -24,7 +26,7 @@ import { Empresa } from '../../../../../domain/models/empresa.model';
               <p class="nombre-comercial text-muted m-0">{{ empresa.nombre_comercial || 'Información Legal' }}</p>
             </div>
           </div>
-          <button class="btn-edit-lux" (click)="onEdit.emit()" title="Editar información">
+          <button *ngIf="canEdit" class="btn-edit-lux" (click)="onEdit.emit()" title="Editar información">
             <i class="bi bi-pencil-square"></i>
           </button>
         </div>
@@ -241,4 +243,10 @@ import { Empresa } from '../../../../../domain/models/empresa.model';
 export class EmpresaInfoCardComponent {
   @Input() empresa!: Empresa;
   @Output() onEdit = new EventEmitter<void>();
+
+  private permissionsService = inject(PermissionsService);
+
+  get canEdit(): boolean {
+    return this.permissionsService.hasPermission(CONFIGURACION_PERMISSIONS.EMPRESA);
+  }
 }

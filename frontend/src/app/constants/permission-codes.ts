@@ -1,7 +1,7 @@
 /**
  * PERMISSION CODES - Sistema de Facturación
  * Todos los códigos de permiso disponibles en el sistema
- * Sincronizados con backend/src/constants/empresa_permisos/
+ * Sincronizados con el archivo codigos_permisos.txt (Base de Datos)
  */
 
 // ============================================================================
@@ -143,6 +143,7 @@ export const USUARIOS_PERMISSIONS = {
 } as const;
 
 export const ROLES_PERMISSIONS = {
+  VER: 'ROLES_VER',
   CREAR: 'ROLES_CREAR',
   EDITAR: 'ROLES_EDITAR',
   ELIMINAR: 'ROLES_ELIMINAR',

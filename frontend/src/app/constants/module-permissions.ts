@@ -32,7 +32,7 @@ export const USUARIO_MODULES: ModuleConfig[] = [
   {
     path: '/usuario/facturacion',
     name: 'Facturación',
-    requiredPermissions: ['FACTURAS_VER_TODAS', 'FACTURAS_VER_PROPIAS', 'FACTURAS_CREAR'],
+    requiredPermissions: ['FACTURAS_VER_TODAS', 'FACTURAS_VER_PROPIAS'],
     icon: 'receipt'
   },
   {
@@ -44,7 +44,7 @@ export const USUARIO_MODULES: ModuleConfig[] = [
   {
     path: '/usuario/gastos',
     name: 'Gastos y Egresos',
-    requiredPermissions: ['GASTOS_VER', 'CATEGORIA_GASTO_VER', 'PAGO_GASTO_VER'],
+    requiredPermissions: ['GASTOS_VER'],
     icon: 'money'
   },
   {
@@ -68,7 +68,7 @@ export const USUARIO_MODULES: ModuleConfig[] = [
   {
     path: '/usuario/establecimientos',
     name: 'Establecimientos',
-    requiredPermissions: ['ESTABLECIMIENTO_VER'],
+    requiredPermissions: ['ESTABLECIMIENTO_GESTIONAR'],
     icon: 'store'
   },
   {

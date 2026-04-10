@@ -41,8 +41,8 @@ const routes: Routes = [
     {
         path: 'dashboard',
         component: DashboardPage,
-        canActivate: [RoleGuard, CompanyActiveGuard],
-        data: { title: 'Dashboard', roles: [UserRole.USUARIO] }
+        canActivate: [RoleGuard, CompanyActiveGuard, permissionGuard],
+        data: { title: 'Dashboard', roles: [UserRole.USUARIO], permission: 'DASHBOARD_VER' }
     },
     {
         path: 'roles',

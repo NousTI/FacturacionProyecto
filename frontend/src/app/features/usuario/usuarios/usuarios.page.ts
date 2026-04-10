@@ -16,6 +16,9 @@ import { UsuariosService, UsuariosStats } from './services/usuarios.service';
 import { UiService } from '../../../shared/services/ui.service';
 import { User } from '../../../domain/models/user.model';
 import { AuthService } from '../../../core/auth/auth.service';
+import { PermissionsService } from '../../../core/auth/permissions.service';
+import { USUARIOS_PERMISSIONS } from '../../../constants/permission-codes';
+import { inject } from '@angular/core';
 
 @Component({
   selector: 'app-usuario-usuarios',
@@ -34,30 +37,49 @@ import { AuthService } from '../../../core/auth/auth.service';
   ],
   template: `
     <div class="usuarios-page-container">
-      <!-- ESTADÍSTICAS -->
-      <app-usuario-stats
-        *ngIf="stats$ | async as st"
-        [total]="st.total"
-        [active]="st.activos"
-        [inactive]="st.inactivos"
-      ></app-usuario-stats>
+      <ng-container *ngIf="canView; else noPermission">
+        <!-- ESTADÍSTICAS -->
+        <app-usuario-stats
+          *ngIf="stats$ | async as st"
+          [total]="st.total"
+          [active]="st.activos"
+          [inactive]="st.inactivos"
+        ></app-usuario-stats>
 
-      <!-- ACCIONES Y FILTROS -->
-      <app-usuario-actions
-        [(searchQuery)]="searchQuery"
-        [isLoading]="isLoading"
-        (onFilterChangeEmit)="handleFilters($event)"
-        (onCreate)="openCreateModal()"
-        (onRefresh)="refreshData()"
-      ></app-usuario-actions>
+        <!-- ACCIONES Y FILTROS -->
+        <app-usuario-actions
+          [(searchQuery)]="searchQuery"
+          [isLoading]="isLoading"
+          (onFilterChangeEmit)="handleFilters($event)"
+          (onCreate)="openCreateModal()"
+          (onRefresh)="refreshData()"
+        ></app-usuario-actions>
 
-      <!-- TABLA DE USUARIOS -->
-      <div class="animate-fade-in" style="animation-delay: 0.1s">
-        <app-usuario-table
-          [usuarios]="filteredUsuarios"
-          (onAction)="handleAction($event)"
-        ></app-usuario-table>
-      </div>
+        <!-- TABLA DE USUARIOS -->
+        <div class="animate-fade-in" style="animation-delay: 0.1s">
+          <app-usuario-table
+            [usuarios]="filteredUsuarios"
+            (onAction)="handleAction($event)"
+          ></app-usuario-table>
+        </div>
+      </ng-container>
+
+      <!-- TEMPLATE SIN PERMISO -->
+      <ng-template #noPermission>
+        <div class="no-permission-container d-flex flex-column align-items-center justify-content-center p-5 text-center">
+          <div class="icon-lock-wrapper mb-4">
+            <i class="bi bi-shield-lock-fill"></i>
+          </div>
+          <h2 class="fw-bold text-dark mb-2">Acceso Restringido</h2>
+          <p class="text-muted mb-4 max-w-400">
+            No tienes permisos suficientes para listar o ver los usuarios de esta empresa. 
+            Si crees que esto es un error, contacta a tu administrador.
+          </p>
+          <button class="btn btn-dark rounded-pill px-4 py-2" (click)="refreshData()">
+            <i class="bi bi-arrow-clockwise me-2"></i> Reintentar
+          </button>
+        </div>
+      </ng-template>
 
       <!-- MODALS -->
       <app-usuario-form-modal
@@ -104,6 +126,23 @@ import { AuthService } from '../../../core/auth/auth.service';
     }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     .animate-fade-in { animation: fadeIn 0.4s ease-out forwards; }
+    
+    .no-permission-container {
+      min-height: 60vh;
+    }
+    .icon-lock-wrapper {
+      width: 80px;
+      height: 80px;
+      background: #fee2e2;
+      color: #ef4444;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2.5rem;
+      box-shadow: 0 10px 15px -3px rgba(239, 68, 68, 0.2);
+    }
+    .max-w-400 { max-width: 400px; }
   `]
 })
 export class UsuariosPage implements OnInit, OnDestroy {
@@ -128,6 +167,8 @@ export class UsuariosPage implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
   private _allUsuarios: User[] = [];
 
+  private permissionsService = inject(PermissionsService);
+
   constructor(
     private usuariosService: UsuariosService,
     private uiService: UiService,
@@ -136,6 +177,10 @@ export class UsuariosPage implements OnInit, OnDestroy {
   ) {
     this.usuarios$ = this.usuariosService.usuarios$;
     this.stats$ = this.usuariosService.stats$;
+  }
+
+  get canView(): boolean {
+    return this.permissionsService.hasPermission(USUARIOS_PERMISSIONS.EMPRESA_VER);
   }
 
   ngOnInit() {
