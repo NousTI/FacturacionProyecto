@@ -261,7 +261,7 @@ export class PlanesPage implements OnInit {
 
   savePlan(data: any) {
     this.saving = true;
-    const planData = this.selectedPlan ? { ...data, id: this.selectedPlan.id } : data;
+    const planData = this.selectedPlan ? { ...this.selectedPlan, ...data } : data;
 
     this.planService.savePlan(planData).subscribe({
       next: () => {
