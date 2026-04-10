@@ -68,13 +68,13 @@ export const USUARIO_MODULES: ModuleConfig[] = [
   {
     path: '/usuario/establecimientos',
     name: 'Establecimientos',
-    requiredPermissions: ['ESTABLECIMIENTO_GESTIONAR'],
+    requiredPermissions: ['ESTABLECIMIENTO_VER', 'ESTABLECIMIENTO_GESTIONAR'],
     icon: 'store'
   },
   {
     path: '/usuario/puntos-emision',
     name: 'Puntos de Emisión',
-    requiredPermissions: ['PUNTO_EMISION_VER'],
+    requiredPermissions: ['PUNTO_EMISION_VER', 'PUNTO_EMISION_GESTIONAR'],
     icon: 'print'
   },
   {
@@ -98,7 +98,7 @@ export const USUARIO_MODULES: ModuleConfig[] = [
   {
     path: '/usuario/usuarios',
     name: 'Usuarios',
-    requiredPermissions: ['USUARIOS_GESTIONAR'],
+    requiredPermissions: ['USUARIOS_EMPRESA_VER', 'USUARIOS_GESTIONAR'],
     icon: 'group'
   },
   {
