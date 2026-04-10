@@ -125,7 +125,7 @@ import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } 
           </button>
           <button 
             class="btn-primary-premium" 
-            [disabled]="loading"
+            [disabled]="clienteForm.invalid || loading"
             (click)="onSubmit()"
           >
             <i class="bi" [class]="loading ? 'bi-hourglass-split' : 'bi-plus-lg'"></i>

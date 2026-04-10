@@ -26,10 +26,13 @@ import { SriValidators } from '../../../../../shared/utils/sri-validators';
               <h3 class="section-header-final">Información Legal</h3>
               <div class="row g-3">
                 <div class="col-12">
-                  <label class="label-final">Razón Social *</label>
+                  <label class="label-final">Razón Social * <span *ngIf="empresa" class="text-muted small ms-1">(Solo lectura)</span></label>
                   <input type="text" formControlName="razon_social" class="input-final" 
                     [class.is-invalid]="empresaForm.get('razon_social')?.invalid && empresaForm.get('razon_social')?.touched"
-                    placeholder="Ej: EMPRESA XYZ S.A.">
+                    [class.bg-light]="empresa"
+                    [class.opacity-75]="empresa"
+                    placeholder="Ej: EMPRESA XYZ S.A."
+                    [readonly]="empresa">
                   <div class="error-feedback" *ngIf="empresaForm.get('razon_social')?.invalid && empresaForm.get('razon_social')?.touched">
                     La razón social es obligatoria
                   </div>
@@ -40,18 +43,17 @@ import { SriValidators } from '../../../../../shared/utils/sri-validators';
                   <span class="hint-final">Opcional</span>
                 </div>
                 <div class="col-md-6">
-                  <label class="label-final">RUC * {{ empresa ? '(No editable)' : '' }}</label>
+                  <label class="label-final">RUC <span class="text-muted small ms-1">(Solo lectura)</span></label>
                   <input 
                     type="text" 
                     formControlName="ruc" 
-                    class="input-final" 
+                    class="input-final bg-light opacity-75" 
                     [class.is-invalid]="empresaForm.get('ruc')?.invalid && empresaForm.get('ruc')?.touched"
-                    [class.opacity-50]="empresa"
                     placeholder="1234567890001"
                     maxlength="13"
                     (keypress)="onlyNumbers($event)"
-                    [readonly]="empresa"
-                    [title]="empresa ? 'El RUC no puede ser modificado después de la creación' : ''"
+                    readonly
+                    [title]="'El RUC no puede ser modificado manualmente'"
                   >
                   <div class="error-feedback" *ngIf="empresaForm.get('ruc')?.invalid && empresaForm.get('ruc')?.touched">
                     {{ empresaForm.get('ruc')?.hasError('required') ? 'El RUC es obligatorio' : (empresaForm.get('ruc')?.hasError('rucDuplicated') ? 'Este RUC ya se encuentra registrado' : (empresaForm.get('ruc')?.errors?.['message'] || 'RUC inválido')) }}
@@ -164,8 +166,8 @@ import { SriValidators } from '../../../../../shared/utils/sri-validators';
                   </div>
                 </div>
                  <div class="col-md-6">
-                  <label class="label-final">Monto Pago Inicial</label>
-                  <input type="number" formControlName="monto_pago" class="input-final" placeholder="0.00">
+                  <label class="label-final">Monto Pago Inicial (Solo lectura)</label>
+                  <input type="number" formControlName="monto_pago" class="input-final bg-light opacity-75" placeholder="0.00" readonly>
                 </div>
                  <div class="col-12">
                   <label class="label-final">Observación del Pago</label>
@@ -180,7 +182,7 @@ import { SriValidators } from '../../../../../shared/utils/sri-validators';
         <!-- Footer -->
         <div class="modal-footer-final">
           <button (click)="close()" class="btn-cancel-final">Cancelar</button>
-          <button (click)="submit()" [disabled]="(empresa && empresaForm.pristine)" class="btn-submit-final">
+          <button (click)="submit()" [disabled]="empresaForm.invalid || (empresa && empresaForm.pristine)" class="btn-submit-final">
             {{ empresa ? 'Guardar Cambios' : 'Crear Empresa' }}
           </button>
         </div>
@@ -360,7 +362,7 @@ export class CreateEmpresaModalComponent implements OnInit, OnDestroy {
     private empresaService: EmpresaService
   ) {
     this.empresaForm = this.fb.group({
-      ruc: ['', [Validators.required, SriValidators.rucEcuador(), this.rucDuplicateValidator()]],
+      ruc: ['', [SriValidators.rucEcuador(), this.rucDuplicateValidator()]],
       razon_social: ['', [Validators.required, Validators.minLength(3)]],
       nombre_comercial: [''],
       email: ['', [Validators.required, Validators.email]],

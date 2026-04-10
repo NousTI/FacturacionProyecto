@@ -6,7 +6,7 @@ from pydantic import BaseModel, EmailStr, Field, field_validator
 from ...utils.validators import validar_ruc
 
 class EmpresaBase(BaseModel):
-    ruc: str = Field(..., min_length=13, max_length=13, pattern=r"^[0-9]{13}$")
+    ruc: Optional[str] = Field(None, pattern=r"^([0-9]{13})?$")
     razon_social: str = Field(..., min_length=1)
     nombre_comercial: Optional[str] = None
     email: EmailStr
@@ -19,7 +19,9 @@ class EmpresaBase(BaseModel):
 
     @field_validator("ruc")
     @classmethod
-    def validar_ruc_ecuador(cls, v: str) -> str:
+    def validar_ruc_ecuador(cls, v: str) -> Optional[str]:
+        if not v:
+            return None
         if not validar_ruc(v):
             raise ValueError("El RUC ingresado no es válido según los algoritmos del SRI.")
         return v
