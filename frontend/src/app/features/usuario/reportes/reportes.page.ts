@@ -9,6 +9,9 @@ import {
   AccountsReceivableReport 
 } from './services/financial-reports.service';
 import { UiService } from '../../../shared/services/ui.service';
+import { inject } from '@angular/core';
+import { PermissionsService } from '../../../core/auth/permissions.service';
+import { REPORTES_PERMISSIONS } from '../../../constants/permission-codes';
 
 // Sub-componentes
 import { ReportesFiltersComponent, RangoTipo } from './components/filters.component';
@@ -36,78 +39,97 @@ type Tab = 'resumen' | 'ventas' | 'cartera' | 'pyg' | 'iva';
   template: `
 <div class="reportes-container animate__animated animate__fadeIn">
   
-  <!-- CABECERA -->
-  <div class="header-section mb-4">
-    <div class="title-group">
-      <h4 class="page-title text-gradient">Centro de Inteligencia</h4>
-      <p class="page-subtitle">Análisis financiero y administrativo de Comercial Torres.</p>
+  <ng-container *ngIf="canView; else noPermission">
+    <!-- CABECERA -->
+    <div class="header-section mb-4">
+      <div class="title-group">
+        <h4 class="page-title text-gradient">Centro de Inteligencia</h4>
+        <p class="page-subtitle">Análisis financiero y administrativo de Comercial Torres.</p>
+      </div>
     </div>
-  </div>
 
-  <!-- NAVEGACIÓN -->
-  <div class="tabs-navigation mb-4">
-    <button class="nav-btn" [class.active]="tabActivo === 'resumen'" (click)="setTab('resumen')">
-      <i class="bi bi-speedometer2 me-2"></i>Dashboard Ejecutivo
-    </button>
-    <button class="nav-btn" [class.active]="tabActivo === 'ventas'" (click)="setTab('ventas')">
-      <i class="bi bi-cart-check me-2"></i>Ventas Generales
-    </button>
-    <button class="nav-btn" [class.active]="tabActivo === 'cartera'" (click)="setTab('cartera')">
-      <i class="bi bi-person-lines-fill me-2"></i>Cartera y Morosidad
-    </button>
-    <button class="nav-btn" [class.active]="tabActivo === 'pyg'" (click)="setTab('pyg')">
-      <i class="bi bi-calculator me-2"></i>P & G
-    </button>
-    <button class="nav-btn" [class.active]="tabActivo === 'iva'" (click)="setTab('iva')">
-      <i class="bi bi-receipt me-2"></i>IVA
-    </button>
-  </div>
+    <!-- NAVEGACIÓN -->
+    <div class="tabs-navigation mb-4">
+      <button class="nav-btn" [class.active]="tabActivo === 'resumen'" (click)="setTab('resumen')">
+        <i class="bi bi-speedometer2 me-2"></i>Dashboard Ejecutivo
+      </button>
+      <button class="nav-btn" [class.active]="tabActivo === 'ventas'" (click)="setTab('ventas')">
+        <i class="bi bi-cart-check me-2"></i>Ventas Generales
+      </button>
+      <button class="nav-btn" [class.active]="tabActivo === 'cartera'" (click)="setTab('cartera')">
+        <i class="bi bi-person-lines-fill me-2"></i>Cartera y Morosidad
+      </button>
+      <button class="nav-btn" [class.active]="tabActivo === 'pyg'" (click)="setTab('pyg')">
+        <i class="bi bi-calculator me-2"></i>P & G
+      </button>
+      <button class="nav-btn" [class.active]="tabActivo === 'iva'" (click)="setTab('iva')">
+        <i class="bi bi-receipt me-2"></i>IVA
+      </button>
+    </div>
 
-  <!-- FILTROS -->
-  <app-reportes-filters
-    [loading]="loading"
-    [rangoTipo]="rangoTipo"
-    [fechaInicio]="fechaInicio"
-    [fechaFin]="fechaFin"
-    (rangoChange)="onRangoChange($event)"
-    (generate)="cargarDatos()"
-    (export)="exportarPDF()">
-  </app-reportes-filters>
+    <!-- FILTROS -->
+    <app-reportes-filters
+      [loading]="loading"
+      [rangoTipo]="rangoTipo"
+      [fechaInicio]="fechaInicio"
+      [fechaFin]="fechaFin"
+      (rangoChange)="onRangoChange($event)"
+      (generate)="cargarDatos()"
+      (export)="exportarPDF()">
+    </app-reportes-filters>
 
-  <!-- CONTENIDO CARGANDO -->
-  <div class="loading-overlay" *ngIf="loading">
-    <div class="premium-spinner"></div>
-    <p class="mt-3 text-muted tracking-wide animate__animated animate__pulse animate__infinite">Consolidando métricas financieras...</p>
-  </div>
+    <!-- CONTENIDO CARGANDO -->
+    <div class="loading-overlay" *ngIf="loading">
+      <div class="premium-spinner"></div>
+      <p class="mt-3 text-muted tracking-wide animate__animated animate__pulse animate__infinite">Consolidando métricas financieras...</p>
+    </div>
 
-  <!-- SECCIONES DE REPORTE -->
-  <ng-container *ngIf="!loading">
-    <app-executive-summary 
-      *ngIf="tabActivo === 'resumen' && resumenData" 
-      [data]="resumenData">
-    </app-executive-summary>
+    <!-- SECCIONES DE REPORTE -->
+    <ng-container *ngIf="!loading">
+      <app-executive-summary 
+        *ngIf="tabActivo === 'resumen' && resumenData" 
+        [data]="resumenData">
+      </app-executive-summary>
 
-    <app-sales-general
-      *ngIf="tabActivo === 'ventas' && ventasData"
-      [data]="ventasData"
-      [usersData]="usersData">
-    </app-sales-general>
+      <app-sales-general
+        *ngIf="tabActivo === 'ventas' && ventasData"
+        [data]="ventasData"
+        [usersData]="usersData">
+      </app-sales-general>
 
-    <app-accounts-receivable
-      *ngIf="tabActivo === 'cartera' && carteraData"
-      [data]="carteraData">
-    </app-accounts-receivable>
+      <app-accounts-receivable
+        *ngIf="tabActivo === 'cartera' && carteraData"
+        [data]="carteraData">
+      </app-accounts-receivable>
 
-    <app-pyg-report 
-      *ngIf="tabActivo === 'pyg' && pygData" 
-      [data]="pygData">
-    </app-pyg-report>
+      <app-pyg-report 
+        *ngIf="tabActivo === 'pyg' && pygData" 
+        [data]="pygData">
+      </app-pyg-report>
 
-    <app-iva-report 
-      *ngIf="tabActivo === 'iva' && ivaData" 
-      [data]="ivaData">
-    </app-iva-report>
+      <app-iva-report 
+        *ngIf="tabActivo === 'iva' && ivaData" 
+        [data]="ivaData">
+      </app-iva-report>
+    </ng-container>
   </ng-container>
+
+  <!-- TEMPLATE SIN PERMISO -->
+  <ng-template #noPermission>
+    <div class="no-permission-container d-flex flex-column align-items-center justify-content-center text-center p-5 animate__animated animate__fadeIn" style="min-height: 70vh;">
+      <div class="icon-lock-wrapper mb-4">
+        <i class="bi bi-shield-lock-fill" style="font-size: 3.5rem; color: #ef4444;"></i>
+      </div>
+      <h2 class="fw-bold text-dark mb-2" style="font-size: 2.25rem;">Acceso Restringido</h2>
+      <p class="text-muted mb-4 mx-auto" style="max-width: 450px; font-size: 1.1rem;">
+        No cuentas con los privilegios necesarios para visualizar el Centro de Inteligencia y sus reportes detallados. 
+        Solicita el permiso <strong>REPORTES_VER</strong> a tu administrador.
+      </p>
+      <button class="btn btn-dark rounded-pill px-5 py-3 fw-bold shadow-sm d-flex align-items-center gap-2" (click)="cargarDatos()">
+        <i class="bi bi-arrow-clockwise"></i> Reintentar sincronización
+      </button>
+    </div>
+  </ng-template>
 
 </div>
   `,
@@ -136,9 +158,19 @@ type Tab = 'resumen' | 'ventas' | 'cartera' | 'pyg' | 'iva';
     }
     @keyframes spin { to { transform: rotate(360deg); } }
     .tracking-wide { letter-spacing: 0.05em; font-weight: 600; font-size: 0.85rem; }
+
+    .icon-lock-wrapper {
+      width: 100px; height: 100px; background: #fff1f2; border: 1px solid #fecaca;
+      border-radius: 30px; display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 15px 35px -10px rgba(225, 29, 72, 0.15);
+    }
   `]
 })
 export class ReportesPage implements OnInit {
+  get canView(): boolean {
+    return this.permissionsService.hasPermission(REPORTES_PERMISSIONS.VER);
+  }
+
   tabActivo: Tab = 'resumen';
   loading = false;
   
@@ -154,6 +186,8 @@ export class ReportesPage implements OnInit {
   pygData?: PyGReport;
   ivaData?: IVAReport;
   usersData: any[] = [];
+
+  private permissionsService = inject(PermissionsService);
 
   constructor(
     private reportsSvc: FinancialReportsService,

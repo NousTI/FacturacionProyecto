@@ -1,13 +1,14 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { HasPermissionDirective } from '../../../../shared/directives/has-permission.directive';
 
 export type RangoTipo = 'mes_actual' | 'mes_anterior' | 'anio_actual' | 'personalizado';
 
 @Component({
   selector: 'app-reportes-filters',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, HasPermissionDirective],
   template: `
     <div class="filters-card mb-4">
       <div class="row g-3 align-items-end">
@@ -29,13 +30,13 @@ export type RangoTipo = 'mes_actual' | 'mes_anterior' | 'anio_actual' | 'persona
           <input type="date" class="form-control" [(ngModel)]="fechaFin" (change)="emitDates()">
         </div>
         <div class="col-auto">
-          <button class="btn-refresh" (click)="generate.emit()" [disabled]="loading">
+          <button *hasPermission="'REPORTES_GENERAR'" class="btn-refresh" (click)="generate.emit()" [disabled]="loading">
             <i class="bi bi-arrow-repeat me-2" [class.spin]="loading"></i>
             {{ loading ? 'Cargando...' : 'Generar Reporte' }}
           </button>
         </div>
         <div class="col-auto ms-auto">
-          <button class="btn-export" (click)="export.emit()">
+          <button *hasPermission="'REPORTES_EXPORTAR'" class="btn-export" (click)="export.emit()">
             <i class="bi bi-file-earmark-pdf me-2"></i>Exportar PDF
           </button>
         </div>
