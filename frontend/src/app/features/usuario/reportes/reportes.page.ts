@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { 
   FinancialReportsService, 
@@ -23,6 +23,7 @@ type Tab = 'resumen' | 'ventas' | 'cartera' | 'pyg' | 'iva';
 @Component({
   selector: 'app-usuario-reportes',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     CommonModule, 
     ReportesFiltersComponent, 
@@ -206,8 +207,10 @@ export class ReportesPage implements OnInit {
           next: (d) => {
             this.ventasData = d;
             this.reportsSvc.getSalesByUser(this.fechaInicio, this.fechaFin).subscribe({
-                next: (users) => {
-                  this.usersData = users;
+                next: (response) => {
+                  // El endpoint devuelve {detalles: [...], ranking: [...]}
+                  // Extraemos el array de detalles
+                  this.usersData = Array.isArray(response) ? response : (response?.detalles || []);
                   this.cdr.detectChanges();
                   this.finishLoading();
                 },
