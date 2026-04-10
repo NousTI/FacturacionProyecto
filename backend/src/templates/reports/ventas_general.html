@@ -40,9 +40,15 @@
         
         .grid-kpis {
             display: grid;
-            grid-template-columns: repeat(4, 1fr);
+            grid-template-columns: repeat(6, 1fr);
             gap: 15px;
             margin-bottom: 30px;
+        }
+
+        @media (max-width: 1200px) {
+            .grid-kpis {
+                grid-template-columns: repeat(3, 1fr);
+            }
         }
         
         .kpi-card {
@@ -132,19 +138,34 @@
     <div class="content">
         <div class="grid-kpis">
             <div class="kpi-card highlight">
-                <div class="label">Total General</div>
-                <div class="value">${{ "{:,.2f}".format(data.resumen.total_general) }}</div>
-                <div class="variation {{ 'up' if data.resumen.comparacion_anterior_porcentaje >= 0 else 'down' }}">
-                    {{ '+' if data.resumen.comparacion_anterior_porcentaje >= 0 }}{{ data.resumen.comparacion_anterior_porcentaje }}% vs anterior
-                </div>
-            </div>
-            <div class="kpi-card">
-                <div class="label">Facturas</div>
+                <div class="label">Facturas Emitidas</div>
                 <div class="value">{{ data.resumen.cantidad_facturas }}</div>
+                <div class="variation">base imponible</div>
             </div>
             <div class="kpi-card">
-                <div class="label">Total IVA (15%)</div>
-                <div class="value">${{ "{:,.2f}".format(data.resumen.total_iva) }}</div>
+                <div class="label">Subtotal sin IVA</div>
+                <div class="value">${{ "{:,.2f}".format(data.resumen.subtotal_total) }}</div>
+                <div class="variation">base imponible</div>
+            </div>
+            <div class="kpi-card">
+                <div class="label">IVA Cobrado (15%)</div>
+                <div class="value">${{ "{:,.2f}".format(data.resumen.iva_15) }}</div>
+                <div class="variation">a declarar al SRI</div>
+            </div>
+            <div class="kpi-card">
+                <div class="label">IVA Cobrado (8%)</div>
+                <div class="value">${{ "{:,.2f}".format(data.resumen.iva_8) }}</div>
+                <div class="variation">a declarar al SRI</div>
+            </div>
+            <div class="kpi-card">
+                <div class="label">IVA Cobrado (5%)</div>
+                <div class="value">${{ "{:,.2f}".format(data.resumen.iva_5) }}</div>
+                <div class="variation">a declarar al SRI</div>
+            </div>
+            <div class="kpi-card">
+                <div class="label">IVA Cobrado (0%)</div>
+                <div class="value">${{ "{:,.2f}".format(data.resumen.subtotal_0) }}</div>
+                <div class="variation">no gravado</div>
             </div>
             <div class="kpi-card">
                 <div class="label">Ticket Promedio</div>
