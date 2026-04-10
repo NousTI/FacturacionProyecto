@@ -139,13 +139,13 @@ const routes: Routes = [
         component: GastosPage,
         canActivate: [RoleGuard, CompanyActiveGuard, permissionGuard],
         data: { title: 'Gastos y Egresos', roles: [UserRole.USUARIO], permission: 'GASTOS_VER' }
-    },
-    {
-        path: 'inventarios',
-        component: InventariosPage,
-        canActivate: [RoleGuard, CompanyActiveGuard, permissionGuard],
-        data: { title: 'Inventarios', roles: [UserRole.USUARIO], permission: 'INVENTARIO_VER' }
     }
+    // {
+    //     path: 'inventarios',
+    //     component: InventariosPage,
+    //     canActivate: [RoleGuard, CompanyActiveGuard, permissionGuard],
+    //     data: { title: 'Inventarios', roles: [UserRole.USUARIO], permission: 'INVENTARIO_VER' }
+    // }
 ];
 
 @NgModule({

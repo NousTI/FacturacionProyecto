@@ -106,9 +106,9 @@ import { SidebarService } from './sidebar.service';
                   <a *hasPermission="'GASTOS_VER'" routerLink="/usuario/gastos" routerLinkActive="active" class="menu-item px-3 mb-1" title="Gastos">
                     <i class="bi bi-cash-stack"></i> <span class="menu-text ms-3">Gastos</span>
                   </a>
-                  <a *hasPermission="'INVENTARIO_VER'" routerLink="/usuario/inventarios" routerLinkActive="active" class="menu-item px-3 mb-1" title="Inventarios">
+                  <!-- <a *hasPermission="'INVENTARIO_VER'" routerLink="/usuario/inventarios" routerLinkActive="active" class="menu-item px-3 mb-1" title="Inventarios">
                     <i class="bi bi-archive"></i> <span class="menu-text ms-3">Inventarios</span>
-                  </a>
+                  </a> -->
                   <a *hasPermission="'PRODUCTOS_VER'" routerLink="/usuario/productos" routerLinkActive="active" class="menu-item px-3 mb-1" title="Productos">
                     <i class="bi bi-box-seam"></i> <span class="menu-text ms-3">Productos</span>
                   </a>
