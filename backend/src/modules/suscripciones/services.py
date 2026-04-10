@@ -150,6 +150,15 @@ class ServicioSuscripciones:
                 # 29 feb -> 28 feb del prox año
                 fecha_fin = (fecha_inicio + timedelta(days=1)).replace(year=fecha_inicio.year + 1) - timedelta(days=2)
         
+        # Clasificar tipo de pago
+        count_previos = self.repo.contar_pagos_previos_empresa(data.empresa_id)
+        if count_previos == 0:
+            tipo_pago = "NUEVO"
+        elif current_sub and str(current_sub['plan_id']) != str(data.plan_id):
+            tipo_pago = "UPGRADE"
+        else:
+            tipo_pago = "RENOVACION"
+
         pago_dict = {
             "empresa_id": data.empresa_id,
             "plan_id": data.plan_id,
@@ -160,7 +169,8 @@ class ServicioSuscripciones:
             "metodo_pago": data.metodo_pago,
             "estado": "PAGADO",
             "numero_comprobante": data.numero_comprobante,
-            "registrado_por": usuario_actual['id']
+            "registrado_por": usuario_actual['id'],
+            "tipo_pago": tipo_pago
         }
         
         empresa_data = {

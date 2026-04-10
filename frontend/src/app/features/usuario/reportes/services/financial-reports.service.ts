@@ -45,29 +45,72 @@ export interface IVAReport {
 }
 
 export interface ExecutiveSummary {
-  periodo: { inicio: string; fin: string };
-  ventas: {
-    total_facturado: number;
-    variacion_porcentual: number;
-    facturas_emitidas: number;
-    variacion_facturas: number;
-    ticket_promedio: number;
-    variacion_ticket: number;
-    clientes_activos: number;
-  };
-  cobros: {
-    total_cobrado: number;
-    pendiente_cobro: number;
-    porcentaje_recuperacion: number;
-  };
-  gastos: {
-    nota: string;
-    total_gastos: number;
-  };
-  utilidad: {
-    utilidad_bruta: number;
-    margen_bruto: number;
+  total_facturado: { valor: number; variacion: number };
+  ingreso_efectivo: { valor: number; variacion: number };
+  ingreso_tarjeta: { valor: number; variacion: number };
+  ingreso_otras: { valor: number; variacion: number };
+  por_cobrar: { total: number; en_mora: number };
+  clientes_nuevos: { valor: number; variacion: number };
+  clientes_vip: { valor: number; periodo: string };
+  utilidad_neta: { valor: number; margen: number };
+  radar_gestion: Array<{
+    origen: string;
+    detalle: string;
+    monto: number;
+    estado: string;
+    responsable: string;
+  }>;
+  monitor_rentabilidad: Array<{
+    productos: string;
+    vendidos: number;
+    existencias: number;
     utilidad_neta: number;
+    estado: string;
+  }>;
+}
+
+export interface SalesGeneralReport {
+  resumen: {
+    cantidad_facturas: number;
+    subtotal_total: number;
+    subtotal_15: number;
+    subtotal_8: number;
+    subtotal_5: number;
+    subtotal_0: number;
+    total_iva: number;
+    iva_15: number;
+    iva_8: number;
+    iva_5: number;
+    total_general: number;
+    ticket_promedio: number;
+    comparacion_anterior_porcentaje: number;
+  };
+  graficos: {
+    por_establecimiento: Array<{ label: string; value: number }>;
+    por_forma_pago: Array<{ cod: string; value: number }>;
+  };
+  ventas_usuario?: any; // Para R-003 si se requiere integrar
+}
+
+export interface AccountsReceivableReport {
+  kpis: {
+    total_por_cobrar: number;
+    vencido_menor_30: number;
+    cartera_critica: number;
+    indice_morosidad: number;
+  };
+  top_clientes: Array<{
+    cliente: string;
+    saldo_total: number;
+    dias_vencido: number;
+    facturas_pendientes: number;
+    responsable: string;
+    estado: string;
+  }>;
+  grafica_morosidad: {
+    vencido_30: number;
+    critico_30: number;
+    porcentaje_morosidad: number;
   };
 }
 
@@ -90,6 +133,20 @@ export class FinancialReportsService {
   getExecutiveSummary(fecha_inicio: string, fecha_fin: string): Observable<ExecutiveSummary> {
     const params = new HttpParams().set('fecha_inicio', fecha_inicio).set('fecha_fin', fecha_fin);
     return this.http.get<ExecutiveSummary>(`${this.base}/resumen`, { params });
+  }
+
+  getSalesGeneral(fecha_inicio: string, fecha_fin: string): Observable<SalesGeneralReport> {
+    const params = new HttpParams().set('fecha_inicio', fecha_inicio).set('fecha_fin', fecha_fin);
+    return this.http.get<SalesGeneralReport>(`${environment.apiUrl}/reportes/ventas/general`, { params });
+  }
+
+  getAccountsReceivable(): Observable<AccountsReceivableReport> {
+    return this.http.get<AccountsReceivableReport>(`${this.base}/cartera`);
+  }
+
+  getSalesByUser(fecha_inicio: string, fecha_fin: string): Observable<any> {
+    const params = new HttpParams().set('fecha_inicio', fecha_inicio).set('fecha_fin', fecha_fin);
+    return this.http.get<any>(`${environment.apiUrl}/reportes/ventas/usuarios`, { params });
   }
 
   exportarReportePDF(tipo: string, fecha_inicio: string, fecha_fin: string): Observable<Blob> {

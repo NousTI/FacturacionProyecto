@@ -82,6 +82,7 @@ class PagoSuscripcionBase(BaseModel):
     numero_comprobante: Optional[str] = None
     observaciones: Optional[str] = None
     registrado_por: Optional[UUID] = None
+    tipo_pago: Optional[str] = "NUEVO"
 
 class PagoSuscripcionCreacion(PagoSuscripcionBase):
     pass

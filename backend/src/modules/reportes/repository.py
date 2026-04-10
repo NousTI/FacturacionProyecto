@@ -115,37 +115,69 @@ class RepositorioReportes:
     def obtener_ventas_resumen(self, empresa_id: UUID, fecha_inicio: str, fecha_fin: str, establecimiento_id: Optional[UUID] = None, punto_emision_id: Optional[UUID] = None, usuario_id: Optional[UUID] = None, estado: Optional[str] = None) -> dict:
         """R-001: Agregaciones de ventas general."""
         query = """
+            WITH facturas_periodo AS (
+                SELECT id, subtotal_sin_iva, subtotal_con_iva, subtotal_no_objeto_iva, subtotal_exento_iva, iva, descuento, propina, total
+                FROM sistema_facturacion.facturas
+                WHERE empresa_id = %s
+                  AND fecha_emision BETWEEN %s AND %s
+                  AND estado != 'ANULADA'
+                  {filtros_extra}
+            ),
+            detalles_breakdown AS (
+                SELECT 
+                    factura_id,
+                    COALESCE(SUM(base_imponible) FILTER (WHERE tarifa_iva = '15'), 0) as sub_15,
+                    COALESCE(SUM(base_imponible) FILTER (WHERE tarifa_iva = '8'), 0) as sub_8,
+                    COALESCE(SUM(base_imponible) FILTER (WHERE tarifa_iva = '5'), 0) as sub_5,
+                    COALESCE(SUM(valor_iva) FILTER (WHERE tarifa_iva = '15'), 0) as iva_15,
+                    COALESCE(SUM(valor_iva) FILTER (WHERE tarifa_iva = '8'), 0) as iva_8,
+                    COALESCE(SUM(valor_iva) FILTER (WHERE tarifa_iva = '5'), 0) as iva_5
+                FROM sistema_facturacion.facturas_detalle
+                WHERE factura_id IN (SELECT id FROM facturas_periodo)
+                GROUP BY factura_id
+            )
             SELECT 
-                COUNT(*) as cantidad_facturas,
-                COALESCE(SUM(subtotal_sin_iva + subtotal_con_iva + subtotal_no_objeto_iva + subtotal_exento_iva), 0) as subtotal_total,
-                COALESCE(SUM(subtotal_con_iva), 0) as subtotal_15,
-                COALESCE(SUM(iva), 0) as total_iva,
-                COALESCE(SUM(descuento), 0) as total_descuento,
-                COALESCE(SUM(propina), 0) as total_propinas,
-                COALESCE(SUM(total), 0) as total_general,
-                CASE WHEN COUNT(*) > 0 THEN COALESCE(SUM(total), 0) / COUNT(*) ELSE 0 END as ticket_promedio
-            FROM sistema_facturacion.facturas
-            WHERE empresa_id = %s AND fecha_emision BETWEEN %s AND %s
+                COUNT(f.id) as cantidad_facturas,
+                COALESCE(SUM(f.subtotal_sin_iva + f.subtotal_con_iva + f.subtotal_no_objeto_iva + f.subtotal_exento_iva), 0) as subtotal_total,
+                COALESCE(SUM(d.sub_15), 0) as subtotal_15,
+                COALESCE(SUM(d.sub_8), 0) as subtotal_8,
+                COALESCE(SUM(d.sub_5), 0) as subtotal_5,
+                COALESCE(SUM(f.subtotal_sin_iva), 0) as subtotal_0,
+                COALESCE(SUM(f.iva), 0) as total_iva,
+                COALESCE(SUM(d.iva_15), 0) as iva_15,
+                COALESCE(SUM(d.iva_8), 0) as iva_8,
+                COALESCE(SUM(d.iva_5), 0) as iva_5,
+                COALESCE(SUM(f.descuento), 0) as total_descuento,
+                COALESCE(SUM(f.propina), 0) as total_propinas,
+                COALESCE(SUM(f.total), 0) as total_general,
+                CASE WHEN COUNT(f.id) > 0 THEN COALESCE(SUM(f.total), 0) / COUNT(f.id) ELSE 0 END as ticket_promedio
+            FROM facturas_periodo f
+            LEFT JOIN detalles_breakdown d ON f.id = d.factura_id
         """
+        
+        # Construir filtros extra
+        filtros_lista = []
         params = [str(empresa_id), fecha_inicio, fecha_fin + " 23:59:59"]
-
+        
         if establecimiento_id:
-            query += " AND establecimiento_id = %s"
+            filtros_lista.append("AND establecimiento_id = %s")
             params.append(str(establecimiento_id))
         if punto_emision_id:
-            query += " AND punto_emision_id = %s"
+            filtros_lista.append("AND punto_emision_id = %s")
             params.append(str(punto_emision_id))
         if usuario_id:
-            query += " AND usuario_id = %s"
+            filtros_lista.append("AND usuario_id = %s")
             params.append(str(usuario_id))
         if estado:
-            query += " AND estado = %s"
-            params.append(estado)
-        else:
-            query += " AND estado != 'ANULADA'"
+            # En el CTE ya filtramos por != ANULADA si no viene estado, 
+            # pero si viene estado específico lo sobreescribimos aquí si fuera necesario.
+            # Sin embargo, para este reporte usualmente queremos las activas.
+            pass
+
+        query_final = query.format(filtros_extra=" ".join(filtros_lista))
 
         with self.db.cursor() as cur:
-            cur.execute(query, tuple(params))
+            cur.execute(query_final, tuple(params))
             return dict(cur.fetchone())
 
     def obtener_ventas_por_establecimiento(self, empresa_id: UUID, fecha_inicio: str, fecha_fin: str) -> List[dict]:
@@ -196,12 +228,16 @@ class RepositorioReportes:
         query = """
             SELECT 
                 CONCAT(u.nombres, ' ', u.apellidos) as usuario,
-                COUNT(f.id) as facturas,
-                SUM(f.total) as total_ventas,
-                CASE WHEN COUNT(f.id) > 0 THEN SUM(f.total) / COUNT(f.id) ELSE 0 END as ticket_promedio
+                COUNT(f.id) FILTER (WHERE f.estado != 'ANULADA') as facturas,
+                SUM(f.total) FILTER (WHERE f.estado != 'ANULADA') as total_ventas,
+                CASE WHEN COUNT(f.id) FILTER (WHERE f.estado != 'ANULADA') > 0 
+                     THEN SUM(f.total) FILTER (WHERE f.estado != 'ANULADA') / COUNT(f.id) FILTER (WHERE f.estado != 'ANULADA') 
+                     ELSE 0 END as ticket_promedio,
+                COUNT(f.id) FILTER (WHERE f.estado = 'ANULADA') as anuladas,
+                0 as devoluciones -- TODO: Implementar cuando exista módulo de Notas de Crédito
             FROM sistema_facturacion.facturas f
             JOIN sistema_facturacion.usuarios u ON f.usuario_id = u.id
-            WHERE f.empresa_id = %s AND f.fecha_emision BETWEEN %s AND %s AND f.estado != 'ANULADA'
+            WHERE f.empresa_id = %s AND f.fecha_emision BETWEEN %s AND %s
             GROUP BY u.id, u.nombres, u.apellidos
             ORDER BY total_ventas DESC
         """

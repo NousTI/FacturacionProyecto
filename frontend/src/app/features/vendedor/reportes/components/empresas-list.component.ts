@@ -8,43 +8,62 @@ import { CommonModule } from '@angular/common';
   template: `
     <div class="table-container animate__animated animate__fadeIn">
       <div class="table-header-info">
-        <h5 class="mb-0">Directorio de Clientes</h5>
-        <span class="badge bg-primary-light text-primary">{{ data?.length || 0 }} Empresas Encontradas</span>
+        <h5 class="mb-0">Mis Empresas</h5>
+        <span class="badge bg-primary-light text-primary">{{ data?.length || 0 }} Clientes</span>
       </div>
       
       <div class="table-responsive">
         <table class="table custom-table">
           <thead>
             <tr>
-              <th>RUC</th>
-              <th>Razón Social</th>
-              <th>Nombre Comercial</th>
-              <th>Email</th>
+              <th>Empresa</th>
+              <th>Plan</th>
+              <th class="text-center">% de Uso</th>
+              <th class="text-center">Oportunidad</th>
+              <th>Próx. Venc.</th>
               <th>Estado</th>
-              <th>Registro</th>
-              <th class="text-center">Usuarios</th>
             </tr>
           </thead>
           <tbody>
             <tr *ngFor="let e of data">
-              <td class="fw-bold">{{ e.ruc }}</td>
-              <td>{{ e.razon_social }}</td>
-              <td class="text-muted small">{{ e.nombre_comercial }}</td>
-              <td>{{ e.email }}</td>
               <td>
-                <span class="badge-status" [class.active]="e.activo">
-                  {{ e.activo ? 'ACTIVA' : 'INACTIVA' }}
+                <div class="d-flex align-items-center">
+                  <span class="fw-bold me-2">{{ e.empresa }}</span>
+                  <i class="bi bi-info-circle text-primary cursor-pointer" 
+                     [title]="'Antigüedad: ' + e.antiguedad"></i>
+                </div>
+              </td>
+              <td>
+                <span class="plan-badge">{{ e.plan }}</span>
+              </td>
+              <td class="text-center">
+                <div class="usage-container">
+                  <div class="progress" style="height: 6px;">
+                    <div class="progress-bar" 
+                         [ngClass]="getUsageClass(e.porcentaje_uso)"
+                         [style.width.%]="e.porcentaje_uso"></div>
+                  </div>
+                  <small class="usage-text">{{ e.porcentaje_uso }}%</small>
+                </div>
+              </td>
+              <td class="text-center">
+                <span class="badge" [ngClass]="e.oportunidad_upgrade === 'Si' ? 'bg-success' : 'bg-light text-muted'">
+                  {{ e.oportunidad_upgrade }}
                 </span>
               </td>
-              <td class="small">{{ e.fecha_registro }}</td>
-              <td class="text-center">
-                <span class="user-count">{{ e.usuarios_registrados }}</span>
+              <td [ngClass]="getExpiracyClass(e.prox_venc_fmt)">
+                {{ e.prox_venc_fmt }}
+              </td>
+              <td>
+                <span class="badge-status" [class.active]="e.estado === 'ACTIVA'">
+                  {{ e.estado }}
+                </span>
               </td>
             </tr>
             <tr *ngIf="!data || data.length === 0">
-              <td colspan="7" class="text-center py-5">
-                <i class="bi bi-inbox fs-1 d-block mb-2 text-muted"></i>
-                <p class="text-muted">No se encontraron empresas en este rango de fechas.</p>
+              <td colspan="6" class="text-center py-5">
+                <i class="bi bi-buildings fs-1 d-block mb-2 text-muted"></i>
+                <p class="text-muted">No tienes empresas registradas en este periodo.</p>
               </td>
             </tr>
           </tbody>
@@ -63,6 +82,11 @@ import { CommonModule } from '@angular/common';
     }
     .custom-table tbody td { padding: 1rem; vertical-align: middle; border-bottom: 1px solid #f1f5f9; font-size: 0.85rem; }
     
+    .plan-badge { background: #f1f5f9; color: #475569; padding: 0.25rem 0.6rem; border-radius: 6px; font-weight: 700; font-size: 0.75rem; }
+    
+    .usage-container { display: flex; flex-direction: column; gap: 4px; min-width: 100px; }
+    .usage-text { font-weight: 700; font-size: 0.7rem; color: #64748b; }
+    
     .bg-primary-light { background: #eff6ff; }
     
     .badge-status {
@@ -71,11 +95,24 @@ import { CommonModule } from '@angular/common';
     }
     .badge-status.active { background: #dcfce7; color: #16a34a; }
     
-    .user-count {
-      background: #f1f5f9; padding: 0.25rem 0.6rem; border-radius: 6px; font-weight: 700; color: #475569;
-    }
+    .text-danger-strong { color: #dc2626; font-weight: 800; }
+    .text-warning-strong { color: #d97706; font-weight: 700; }
+    
+    .cursor-pointer { cursor: pointer; }
   `]
 })
 export class EmpresasListComponent {
   @Input() data: any[] = [];
+
+  getUsageClass(pct: number): string {
+    if (pct >= 80) return 'bg-danger';
+    if (pct >= 50) return 'bg-warning';
+    return 'bg-success';
+  }
+
+  getExpiracyClass(fmt: string): string {
+    if (fmt.includes('menos de 5 días')) return 'text-danger-strong';
+    if (fmt.includes('menos de 1 mes')) return 'text-warning-strong';
+    return '';
+  }
 }

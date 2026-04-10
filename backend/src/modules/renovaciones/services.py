@@ -149,7 +149,8 @@ class ServicioRenovaciones:
                 "fecha_fin_periodo": fecha_fin_nueva,
                 "comprobante_url": solicitud.get('comprobante_url'),
                 "registrado_por": str(superadmin_id),
-                "observaciones": f"Renovación aprobada desde solicitud: {solicitud_id}"
+                "observaciones": f"Renovación aprobada desde solicitud: {solicitud_id}",
+                "tipo_pago": "RENOVACION"
             }
 
             empresa_data = {

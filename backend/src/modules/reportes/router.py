@@ -6,10 +6,13 @@ from uuid import UUID
 from .service import ServicioReportes
 from .schemas import (
     ReporteLectura, ReporteCreacion, MetricasVendedorLectura,
-    ReporteGlobalSuperadmin, ReporteComisionesSuperadmin, ReporteUsoSistemaSuperadmin
+    ReporteGlobalSuperadmin, ReporteComisionesSuperadmin, ReporteUsoSistemaSuperadmin,
+    ReporteEmpresasVendedor, ReporteComisionesVendedor
 )
 from ..autenticacion.routes import obtener_usuario_actual, requerir_permiso, requerir_superadmin
 from ...constants.permissions import PermissionCodes
+from ...constants.enums import AuthKeys
+from ...errors.app_error import AppError
 
 router = APIRouter()
 
@@ -128,6 +131,26 @@ def eliminar_reporte_vendedor(
 ):
     servicio.eliminar_reporte(id, usuario)
     return {"message": "Reporte eliminado correctamente"}
+
+@router.get("/vendedor/mis-empresas", response_model=ReporteEmpresasVendedor)
+def obtener_reporte_vendedor_mis_empresas(
+    usuario: dict = Depends(obtener_usuario_actual),
+    servicio: ServicioReportes = Depends()
+):
+    """R-031 (reducido): Mis empresas."""
+    vendedor_id = usuario.get(AuthKeys.INTERNAL_VENDEDOR_ID)
+    if not vendedor_id: raise AppError("No autorizado como vendedor", 403)
+    return servicio.obtener_reporte_vendedor_mis_empresas(vendedor_id)
+
+@router.get("/vendedor/mis-comisiones", response_model=ReporteComisionesVendedor)
+def obtener_reporte_vendedor_mis_comisiones(
+    usuario: dict = Depends(obtener_usuario_actual),
+    servicio: ServicioReportes = Depends()
+):
+    """R-032 (reducido): Mis comisiones."""
+    vendedor_id = usuario.get(AuthKeys.INTERNAL_VENDEDOR_ID)
+    if not vendedor_id: raise AppError("No autorizado como vendedor", 403)
+    return servicio.obtener_reporte_vendedor_mis_comisiones(vendedor_id)
 
 # --- RUTAS DE SUPERADMIN ---
 @router.get("/superadmin", response_model=List[ReporteLectura])
@@ -258,6 +281,8 @@ def obtener_reporte_pyg(
     servicio: ServicioReportes = Depends()
 ):
     """R-026: Estado de Resultados (PyG)."""
+    if usuario_actual.get(AuthKeys.IS_VENDEDOR):
+        raise AppError("Este reporte está bloqueado para vendedores.", 403)
     empresa_id = usuario_actual.get("empresa_id")
     return servicio.obtener_pyg_usuario(empresa_id, fecha_inicio, fecha_fin)
 
@@ -269,6 +294,8 @@ def obtener_reporte_iva_ventas(
     servicio: ServicioReportes = Depends()
 ):
     """R-027: Reporte de IVA (Ventas)."""
+    if usuario_actual.get(AuthKeys.IS_VENDEDOR):
+        raise AppError("Este reporte está bloqueado para vendedores.", 403)
     empresa_id = usuario_actual.get("empresa_id")
     return servicio.obtener_iva_ventas_usuario(empresa_id, fecha_inicio, fecha_fin)
 
@@ -280,8 +307,21 @@ def obtener_resumen_ejecutivo(
     servicio: ServicioReportes = Depends()
 ):
     """R-028: Resumen Ejecutivo (KPIs)."""
+    if usuario_actual.get(AuthKeys.IS_VENDEDOR):
+        raise AppError("Este reporte está bloqueado para vendedores.", 403)
     empresa_id = usuario_actual.get("empresa_id")
     return servicio.obtener_resumen_ejecutivo_usuario(empresa_id, fecha_inicio, fecha_fin)
+
+@router.get("/financiero/cartera")
+def obtener_reporte_cartera(
+    usuario_actual: dict = Depends(requerir_permiso([PermissionCodes.REPORTES_VER])),
+    servicio: ServicioReportes = Depends()
+):
+    """R-008: Cuentas por Cobrar."""
+    if usuario_actual.get(AuthKeys.IS_VENDEDOR):
+        raise AppError("Este reporte está bloqueado para vendedores.", 403)
+    empresa_id = usuario_actual.get("empresa_id")
+    return servicio.obtener_cartera_usuario(empresa_id)
 
 # =========================================================
 # R-031: REPORTE GLOBAL SUPERADMIN

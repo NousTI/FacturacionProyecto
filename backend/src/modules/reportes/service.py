@@ -4,15 +4,18 @@ from typing import List, Optional
 import csv
 import os
 import uuid
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 
 from .repository import RepositorioReportes
 from .superadmin.R_031.repository import RepositorioR031
 from .superadmin.R_032.repository import RepositorioR032
 from .superadmin.R_033.repository import RepositorioR033
+from .vendedores.R_031.repository import RepositorioR031Vendedor
+from .vendedores.R_032.repository import RepositorioR032Vendedor
 from .usuarios.R_026.service import ServicioR026
 from .usuarios.R_027.service import ServicioR027
 from .usuarios.R_028.service import ServicioR028
+from .usuarios.R_008.service import ServicioR008
 from .vendedores.dashboard.service import ServicioDashboardVendedor
 from .vendedores.RV_001.service import ServicioRV001
 from .vendedores.RV_002.service import ServicioRV002
@@ -32,9 +35,12 @@ class ServicioReportes:
         repo_r031: RepositorioR031 = Depends(),
         repo_r032: RepositorioR032 = Depends(),
         repo_r033: RepositorioR033 = Depends(),
+        repo_v_r031: RepositorioR031Vendedor = Depends(),
+        repo_v_r032: RepositorioR032Vendedor = Depends(),
         svc_r026: ServicioR026 = Depends(),
         svc_r027: ServicioR027 = Depends(),
         svc_r028: ServicioR028 = Depends(),
+        svc_r008: ServicioR008 = Depends(),
         svc_dashboard_vendedor: ServicioDashboardVendedor = Depends(),
         svc_rv001: ServicioRV001 = Depends(),
         svc_rv002: ServicioRV002 = Depends(),
@@ -46,9 +52,12 @@ class ServicioReportes:
         self.repo_r031 = repo_r031
         self.repo_r032 = repo_r032
         self.repo_r033 = repo_r033
+        self.repo_v_r031 = repo_v_r031
+        self.repo_v_r032 = repo_v_r032
         self.svc_r026 = svc_r026
         self.svc_r027 = svc_r027
         self.svc_r028 = svc_r028
+        self.svc_r008 = svc_r008
         self.svc_dashboard_vendedor = svc_dashboard_vendedor
         self.svc_rv001 = svc_rv001
         self.svc_rv002 = svc_rv002
@@ -432,6 +441,10 @@ class ServicioReportes:
         """R-028: Resumen Ejecutivo (KPIs)."""
         return self.svc_r028.generar_resumen_ejecutivo(empresa_id, fecha_inicio, fecha_fin)
 
+    def obtener_cartera_usuario(self, empresa_id: UUID):
+        """R-008: Cuentas por Cobrar."""
+        return self.svc_r008.generar_reporte_cartera(empresa_id)
+
     def exportar_reporte(self, empresa_id: UUID, tipo: str, formato: str, params: dict):
         """
         Orquesta la generación de archivos PDF/Excel para los reportes de ventas.
@@ -584,3 +597,51 @@ class ServicioReportes:
         raise AppError("Tipo de reporte o formato no soportado para exportación", 400)
 
 
+
+    # =========================================================
+    # R-031: REPORTE MIS EMPRESAS (VENDEDOR)
+    # =========================================================
+
+    def obtener_reporte_vendedor_mis_empresas(self, vendedor_id: UUID):
+        kpis = self.repo_v_r031.obtener_kpis(vendedor_id)
+        empresas = self.repo_v_r031.obtener_detalle_empresas(vendedor_id)
+        
+        # Calcular antigüedad para cada empresa
+        now = date.today()
+        for e in empresas:
+            f_reg = e.get('fecha_registro')
+            if f_reg:
+                if isinstance(f_reg, datetime): f_reg = f_reg.date()
+                diff = now - f_reg
+                años = diff.days // 365
+                meses = (diff.days % 365) // 30
+                if años > 0:
+                    e['antiguedad'] = f"{años} año{'s' if años > 1 else ''}, {meses} mes{'es' if meses != 1 else ''}"
+                elif meses > 0:
+                    e['antiguedad'] = f"{meses} mes{'es' if meses > 1 else ''}"
+                else:
+                    e['antiguedad'] = f"{diff.days} día{'s' if diff.days != 1 else ''}"
+            else:
+                e['antiguedad'] = "N/A"
+
+        return {
+            **kpis,
+            "empresas": empresas,
+            "grafica_planes": self.repo_v_r031.obtener_grafica_planes(vendedor_id),
+            "grafica_ventas_mes": self.repo_v_r031.obtener_grafica_ventas_mes(vendedor_id)
+        }
+
+    # =========================================================
+    # R-032: REPORTE MIS COMISIONES (VENDEDOR)
+    # =========================================================
+
+    def obtener_reporte_vendedor_mis_comisiones(self, vendedor_id: UUID):
+        kpis = self.repo_v_r032.obtener_kpis(vendedor_id)
+        detalle = self.repo_v_r032.obtener_detalle_comisiones(vendedor_id)
+        comparativa = self.repo_v_r032.obtener_grafica_comparativa(vendedor_id)
+        
+        return {
+            **kpis,
+            "detalle": detalle,
+            "grafica_comparativa": comparativa
+        }

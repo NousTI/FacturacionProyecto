@@ -2,71 +2,86 @@ from uuid import UUID
 from typing import Dict, Any
 from datetime import datetime, timedelta
 from .repository import RepositorioR028
+from ....gastos.gasto_repository import RepositorioGastos
 from fastapi import Depends
 
 class ServicioR028:
-    def __init__(self, repo: RepositorioR028 = Depends()):
+    def __init__(
+        self, 
+        repo: RepositorioR028 = Depends(),
+        repo_gastos: RepositorioGastos = Depends()
+    ):
         self.repo = repo
+        self.repo_gastos = repo_gastos
 
     def generar_resumen_ejecutivo(self, empresa_id: UUID, fecha_inicio: str, fecha_fin: str) -> Dict[str, Any]:
-        """Consolida KPIs principales y calcula variaciones."""
+        """Consolida KPIs principales, Radar y Monitor según normas."""
         
-        # 1. KPIs Periodo Actual
-        ventas_actual = self.repo.obtener_kpis_ventas(empresa_id, fecha_inicio, fecha_fin)
-        cobros_actual = self.repo.obtener_kpis_cobros(empresa_id, fecha_inicio, fecha_fin)
-        
-        # 2. Calcular Periodo Anterior (para variaciones)
+        # 1. Calcular Periodo Anterior (para variaciones)
         d1 = datetime.strptime(fecha_inicio, '%Y-%m-%d')
         d2 = datetime.strptime(fecha_fin, '%Y-%m-%d')
         delta = (d2 - d1).days + 1
         prev_inicio = (d1 - timedelta(days=delta)).strftime('%Y-%m-%d')
         prev_fin = (d1 - timedelta(days=1)).strftime('%Y-%m-%d')
-        
+
+        # 2. Obtener Datos Actuales vs Anteriores para Variaciones
+        ventas_actual = self.repo.obtener_kpis_ventas(empresa_id, fecha_inicio, fecha_fin)
         ventas_prev = self.repo.obtener_kpis_ventas(empresa_id, prev_inicio, prev_fin)
         
-        # 3. Cálculos de Variación
-        def calcular_variacion(actual, anterior):
-            if anterior == 0: return 100.0 if actual > 0 else 0.0
-            return round(((actual - anterior) / anterior) * 100, 2)
+        pagos_actual = self.repo.obtener_desglose_pagos(empresa_id, fecha_inicio, fecha_fin)
+        pagos_prev = self.repo.obtener_desglose_pagos(empresa_id, prev_inicio, prev_fin)
+        
+        clientes_actual = self.repo.obtener_clientes_metricas(empresa_id, fecha_inicio, fecha_fin)
+        clientes_prev = self.repo.obtener_clientes_metricas(empresa_id, prev_inicio, prev_fin)
 
-        total_actual = float(ventas_actual['total_facturado'])
-        total_prev = float(ventas_prev['total_facturado'])
-        variacion_ventas = calcular_variacion(total_actual, total_prev)
-        
-        facturas_actual = int(ventas_actual['facturas_emitidas'])
-        facturas_prev = int(ventas_prev['facturas_emitidas'])
-        variacion_facturas = calcular_variacion(facturas_actual, facturas_prev)
-        
-        ticket_actual = total_actual / facturas_actual if facturas_actual > 0 else 0
-        ticket_prev = total_prev / facturas_prev if facturas_prev > 0 else 0
-        variacion_ticket = calcular_variacion(ticket_actual, ticket_prev)
-        
-        # 4. Formateo Final
+        cartera = self.repo.obtener_datos_cartera(empresa_id)
+        radar = self.repo.obtener_radar_gestion(empresa_id)
+        monitor = self.repo.obtener_monitor_productos(empresa_id, fecha_inicio, fecha_fin)
+
+        # 3. Datos de Gastos y Utilidad
+        gastos_val_actual = self.repo_gastos.obtener_total_gastos(empresa_id, fecha_inicio, fecha_fin)
+        utilidad_neta = float(ventas_actual['total_facturado']) - float(gastos_val_actual)
+        margen = (utilidad_neta / float(ventas_actual['total_facturado']) * 100) if float(ventas_actual['total_facturado']) > 0 else 0
+
+        # Función auxiliar para variaciones
+        def calc_var(act, ant):
+            act, ant = float(act), float(ant)
+            if ant == 0: return 100.0 if act > 0 else 0.0
+            return round(((act - ant) / ant) * 100, 1)
+
         return {
-            "periodo": {"inicio": fecha_inicio, "fin": fecha_fin},
-            "ventas": {
-                "total_facturado": total_actual,
-                "variacion_porcentual": variacion_ventas,
-                "facturas_emitidas": facturas_actual,
-                "variacion_facturas": variacion_facturas,
-                "ticket_promedio": round(ticket_actual, 2),
-                "variacion_ticket": variacion_ticket,
-                "clientes_activos": ventas_actual['clientes_activos']
+            "total_facturado": {
+                "valor": float(ventas_actual['total_facturado']),
+                "variacion": calc_var(ventas_actual['total_facturado'], ventas_prev['total_facturado'])
             },
-            "cobros": {
-                "total_cobrado": cobros_actual['total_cobrado'],
-                "pendiente_cobro": cobros_actual['total_pendiente'],
-                "porcentaje_recuperacion": round((cobros_actual['total_cobrado'] / total_actual * 100), 2) if total_actual > 0 else 0.0
+            "ingreso_efectivo": {
+                "valor": float(pagos_actual['efectivo']),
+                "variacion": calc_var(pagos_actual['efectivo'], pagos_prev['efectivo'])
             },
-            "gastos": {
-                "nota": "Módulo de Gastos no configurado",
-                "total_gastos": 0.0,
-                "nomina": 0.0,
-                "operativos": 0.0
+            "ingreso_tarjeta": {
+                "valor": float(pagos_actual['tarjeta']),
+                "variacion": calc_var(pagos_actual['tarjeta'], pagos_prev['tarjeta'])
             },
-            "utilidad": {
-                "utilidad_bruta": 0.0, # Se podría inyectar el servicio R-026 aquí si se desea
-                "margen_bruto": 0.0,
-                "utilidad_neta": 0.0
-            }
+            "ingreso_otras": {
+                "valor": float(pagos_actual['otros']),
+                "variacion": calc_var(pagos_actual['otros'], pagos_prev['otros'])
+            },
+            "por_cobrar": {
+                "total": float(cartera['por_cobrar_total']),
+                "en_mora": float(cartera['en_mora_30'])
+            },
+            "clientes_nuevos": {
+                "valor": clientes_actual['clientes_nuevos'],
+                "variacion": calc_var(clientes_actual['clientes_nuevos'], clientes_prev['clientes_nuevos'])
+            },
+            "clientes_vip": {
+                "valor": clientes_actual['clientes_vip'],
+                "periodo": "Este año"
+            },
+            "utilidad_neta": {
+                "valor": round(utilidad_neta, 2),
+                "margen": round(margen, 1)
+            },
+            "radar_gestion": radar,
+            "monitor_rentabilidad": monitor
         }

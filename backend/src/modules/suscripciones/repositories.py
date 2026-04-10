@@ -232,6 +232,13 @@ class RepositorioSuscripciones:
             cur.execute(query, tuple(params) if params else None)
             return [dict(row) for row in cur.fetchall()]
 
+    def contar_pagos_previos_empresa(self, empresa_id: UUID) -> int:
+        query = "SELECT COUNT(*) as total FROM sistema_facturacion.pagos_suscripciones WHERE empresa_id = %s AND estado = 'PAGADO'"
+        with self.db.cursor() as cur:
+            cur.execute(query, (str(empresa_id),))
+            row = cur.fetchone()
+            return row['total'] if row else 0
+
     def obtener_suscripcion_por_empresa(self, empresa_id: UUID) -> Optional[dict]:
         with self.db.cursor() as cur:
             cur.execute("SELECT * FROM sistema_facturacion.suscripciones WHERE empresa_id = %s", (str(empresa_id),))

@@ -56,4 +56,12 @@ export class VendedorReportesService {
         parametros
     });
   }
+
+  getR031Data(): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/vendedor/mis-empresas`);
+  }
+
+  getR032Data(): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/vendedor/mis-comisiones`);
+  }
 }

@@ -66,3 +66,14 @@ class RepositorioGastos:
         with db_transaction(self.db) as cur:
             cur.execute(query, (str(id),))
             return cur.rowcount > 0
+
+    def obtener_total_gastos(self, empresa_id: UUID, fecha_inicio: str, fecha_fin: str) -> float:
+        query = """
+            SELECT COALESCE(SUM(total), 0) as total
+            FROM gastos
+            WHERE empresa_id = %s AND fecha_emision BETWEEN %s AND %s
+        """
+        with self.db.cursor() as cur:
+            cur.execute(query, (str(empresa_id), fecha_inicio, fecha_fin))
+            row = cur.fetchone()
+            return float(row['total']) if row else 0.0

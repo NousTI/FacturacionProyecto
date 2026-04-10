@@ -5,12 +5,14 @@ import { Subject, takeUntil } from 'rxjs';
 import { VendedorReportesService, VendedorMetricas } from './services/vendedor-reportes.service';
 import { UiService } from '../../../shared/services/ui.service';
 import { ToastComponent } from '../../../shared/components/toast/toast.component';
-import { ReportesStatsComponent } from './components/reportes-stats.component';
-import { VendedorFiltersComponent, RangoTipo } from './components/vendedor-filters.component';
+import { R031StatsComponent } from './components/r031-stats.component';
+import { R032StatsComponent } from './components/r032-stats.component';
+import { VendorChartComponent } from './components/vendor-chart.component';
 import { EmpresasListComponent } from './components/empresas-list.component';
 import { VencidasListComponent } from './components/vencidas-list.component';
 import { ProximasListComponent } from './components/proximas-list.component';
 import { ComisionesListComponent } from './components/comisiones-list.component';
+import { VendedorFiltersComponent, RangoTipo } from './components/vendedor-filters.component';
 import { environment } from '../../../../environments/environment';
 
 export type ReportTab = 'empresas' | 'vencidas' | 'proximas' | 'comisiones';
@@ -22,7 +24,9 @@ export type ReportTab = 'empresas' | 'vencidas' | 'proximas' | 'comisiones';
     CommonModule, 
     FormsModule, 
     ToastComponent, 
-    ReportesStatsComponent, 
+    R031StatsComponent,
+    R032StatsComponent,
+    VendorChartComponent,
     VendedorFiltersComponent,
     EmpresasListComponent,
     VencidasListComponent,
@@ -48,29 +52,42 @@ export type ReportTab = 'empresas' | 'vencidas' | 'proximas' | 'comisiones';
         </div>
       </div>
 
-      <!-- DASHBOARD ESENCIAL (Always visible as proposed) -->
-      <app-reportes-stats [metricas]="metricas"></app-reportes-stats>
+      <!-- DASHBOARD DINÁMICO POR PESTAÑA -->
+      <div class="stats-container animate__animated animate__fadeIn">
+          <!-- R-031 Stats (Empresas) -->
+          <app-r031-stats *ngIf="tabActivo === 'empresas'" [data]="r031Data"></app-r031-stats>
+          
+          <!-- R-032 Stats (Comisiones) -->
+          <app-r032-stats *ngIf="tabActivo === 'comisiones'" [data]="r032Data"></app-r032-stats>
+          
+          <!-- Default Stats (Proximas/Vencidas) -->
+          <div *ngIf="tabActivo === 'proximas' || tabActivo === 'vencidas'" class="mb-4">
+              <div class="alert alert-info border-0 shadow-sm rounded-4">
+                  <i class="bi bi-info-circle-fill me-2"></i>
+                  Mostrando resumen de suscripciones en estado <strong>{{ tabActivo === 'proximas' ? 'Por Renovar' : 'Suspendidas' }}</strong>.
+              </div>
+          </div>
+      </div>
 
-      <!-- NAVEGACIÓN POR PESTAÑAS (Estilo Moderno) -->
+      <!-- NAVEGACIÓN POR PESTAÑAS -->
       <div class="tabs-navigation mb-4">
         <button class="nav-btn" [class.active]="tabActivo === 'empresas'" (click)="setTab('empresas')">
-          <i class="bi bi-buildings me-2"></i>Mis Empresas
+          <i class="bi bi-buildings me-2"></i>Mis Empresas (R-031)
+        </button>
+        <button class="nav-btn" [class.active]="tabActivo === 'comisiones'" (click)="setTab('comisiones')">
+          <i class="bi bi-cash-stack me-2"></i>Mis Comisiones (R-032)
         </button>
         <button class="nav-btn" [class.active]="tabActivo === 'proximas'" (click)="setTab('proximas')">
           <i class="bi bi-calendar-event me-2"></i>Por Renovar
-          <span class="notification-badge" *ngIf="metricas?.total_proximas > 0">{{ metricas?.total_proximas }}</span>
         </button>
-        <button class="nav-btn btn-tab-danger" [class.active]="tabActivo === 'vencidas'" (click)="setTab('vencidas')">
+        <button class="nav-btn" [class.active]="tabActivo === 'vencidas'" (click)="setTab('vencidas')">
           <i class="bi bi-exclamation-triangle me-2"></i>Suspendidas
-          <span class="notification-badge bg-danger" *ngIf="metricas?.total_vencidas > 0">{{ metricas?.total_vencidas }}</span>
-        </button>
-        <button class="nav-btn" [class.active]="tabActivo === 'comisiones'" (click)="setTab('comisiones')">
-          <i class="bi bi-cash-stack me-2"></i>Mis Comisiones
         </button>
       </div>
 
-      <!-- FILTROS UNIFICADOS -->
+      <!-- FILTROS (Solo para proximas/vencidas que requieren rangos personalizados) -->
       <app-vendedor-filters
+        *ngIf="tabActivo === 'proximas' || tabActivo === 'vencidas'"
         [loading]="isLoading"
         [rangoTipo]="rangoTipo"
         [fechaInicio]="fechaInicio"
@@ -82,6 +99,47 @@ export type ReportTab = 'empresas' | 'vencidas' | 'proximas' | 'comisiones';
         (export)="exportarPDF()">
       </app-vendedor-filters>
 
+      <!-- GRÁFICAS R-031 / R-032 -->
+      <div class="row mb-4 animate__animated animate__fadeIn" *ngIf="tabActivo === 'empresas'">
+          <div class="col-md-6 mb-3 mb-md-0">
+              <app-vendor-chart 
+                  title="Planes más vendidos" 
+                  subtitle="Distribución por tipo de plan"
+                  type="pie" 
+                  [data]="r031Data?.grafica_planes || []"
+                  labelKey="nombre"
+                  valueKey="cantidad">
+              </app-vendor-chart>
+          </div>
+          <div class="col-md-6">
+              <app-vendor-chart 
+                  title="Ventas por meses" 
+                  subtitle="Ingresos generados este año"
+                  type="line" 
+                  [data]="r031Data?.grafica_ventas_mes || []"
+                  labelKey="mes"
+                  valueKey="total">
+              </app-vendor-chart>
+          </div>
+      </div>
+
+      <div class="row mb-4 animate__animated animate__fadeIn" *ngIf="tabActivo === 'comisiones'">
+          <div class="col-md-6 offset-md-3">
+              <app-vendor-chart 
+                  title="Rendimiento del Mes" 
+                  subtitle="Ventas este mes vs mes anterior"
+                  type="doughnut" 
+                  [data]="[
+                      {label: 'Mes Actual', value: r032Data?.grafica_comparativa?.mes_actual},
+                      {label: 'Mes Anterior', value: r032Data?.grafica_comparativa?.mes_anterior}
+                  ]"
+                  labelKey="label"
+                  valueKey="value"
+                  [colors]="['#10b981', '#cbd5e1']">
+              </app-vendor-chart>
+          </div>
+      </div>
+
       <!-- SECCIONES DE REPORTE (Tablas de Datos) -->
       <div class="report-content-area">
           <div *ngIf="isLoading" class="loading-state py-5 text-center">
@@ -92,7 +150,7 @@ export type ReportTab = 'empresas' | 'vencidas' | 'proximas' | 'comisiones';
           <ng-container *ngIf="!isLoading">
               <app-empresas-list 
                 *ngIf="tabActivo === 'empresas'" 
-                [data]="previewData">
+                [data]="r031Data?.empresas || []">
               </app-empresas-list>
 
               <app-vencidas-list 
@@ -107,7 +165,7 @@ export type ReportTab = 'empresas' | 'vencidas' | 'proximas' | 'comisiones';
 
               <app-comisiones-list 
                 *ngIf="tabActivo === 'comisiones'" 
-                [data]="previewData">
+                [data]="r032Data?.detalle || []">
               </app-comisiones-list>
           </ng-container>
       </div>
@@ -151,6 +209,8 @@ export class VendedorReportesPage implements OnInit, OnDestroy {
   
   // Datos y carga
   metricas: any = null;
+  r031Data: any = null;
+  r032Data: any = null;
   previewData: any[] = [];
   isLoading = false;
   
@@ -170,8 +230,7 @@ export class VendedorReportesPage implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.initDefaultDates();
-    this.cargarMetricas();
-    this.cargarPreview();
+    this.cargarDatosConsolidados();
   }
 
   ngOnDestroy() {
@@ -197,7 +256,12 @@ export class VendedorReportesPage implements OnInit, OnDestroy {
     if (this.tabActivo === tab) return;
     this.tabActivo = tab;
     this.previewData = [];
-    this.cargarPreview();
+    
+    if (tab === 'empresas' || tab === 'comisiones') {
+      this.cargarDatosConsolidados();
+    } else {
+      this.cargarPreview();
+    }
   }
 
   onRangoChange(event: {tipo: RangoTipo, inicio: string, fin: string, dias?: number}) {
@@ -208,18 +272,37 @@ export class VendedorReportesPage implements OnInit, OnDestroy {
     this.cd.detectChanges();
   }
 
-  cargarMetricas() {
-    this.reportesService.getMetricas()
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: (data: any) => {
-          this.metricas = data;
-          this.cd.detectChanges();
-        },
-        error: (err) => {
-          this.uiService.showError(err, 'No se pudieron cargar las métricas');
-        }
-      });
+  cargarDatosConsolidados() {
+    this.isLoading = true;
+    if (this.tabActivo === 'empresas') {
+      this.reportesService.getR031Data()
+        .pipe(takeUntil(this.destroy$))
+        .subscribe({
+          next: (data) => {
+            this.r031Data = data;
+            this.isLoading = false;
+            this.cd.detectChanges();
+          },
+          error: (err) => {
+            this.isLoading = false;
+            this.uiService.showError(err, 'Error al cargar reporte de empresas');
+          }
+        });
+    } else if (this.tabActivo === 'comisiones') {
+      this.reportesService.getR032Data()
+        .pipe(takeUntil(this.destroy$))
+        .subscribe({
+          next: (data) => {
+            this.r032Data = data;
+            this.isLoading = false;
+            this.cd.detectChanges();
+          },
+          error: (err) => {
+            this.isLoading = false;
+            this.uiService.showError(err, 'Error al cargar reporte de comisiones');
+          }
+        });
+    }
   }
 
   cargarPreview() {
