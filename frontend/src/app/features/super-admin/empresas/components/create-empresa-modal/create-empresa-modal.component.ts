@@ -26,21 +26,22 @@ import { SriValidators } from '../../../../../shared/utils/sri-validators';
               <h3 class="section-header-final">Información Legal</h3>
               <div class="row g-3">
                 <div class="col-12">
-                  <label class="label-final">Razón Social * <span *ngIf="empresa" class="text-muted small ms-1">(Solo lectura)</span></label>
+                  <label class="label-final">Razón Social *</label>
                   <input type="text" formControlName="razon_social" class="input-final" 
                     [class.is-invalid]="empresaForm.get('razon_social')?.invalid && empresaForm.get('razon_social')?.touched"
-                    [class.bg-light]="empresa"
-                    [class.opacity-75]="empresa"
-                    placeholder="Ej: EMPRESA XYZ S.A."
-                    [readonly]="empresa">
+                    placeholder="Ej: EMPRESA XYZ S.A.">
                   <div class="error-feedback" *ngIf="empresaForm.get('razon_social')?.invalid && empresaForm.get('razon_social')?.touched">
                     La razón social es obligatoria
                   </div>
                 </div>
                 <div class="col-md-6">
-                  <label class="label-final">Nombre Comercial</label>
-                  <input type="text" formControlName="nombre_comercial" class="input-final" placeholder="Ej: XYZ Store">
-                  <span class="hint-final">Opcional</span>
+                  <label class="label-final">Nombre Comercial *</label>
+                  <input type="text" formControlName="nombre_comercial" class="input-final" 
+                    [class.is-invalid]="empresaForm.get('nombre_comercial')?.invalid && empresaForm.get('nombre_comercial')?.touched"
+                    placeholder="Ej: XYZ Store">
+                  <div class="error-feedback" *ngIf="empresaForm.get('nombre_comercial')?.invalid && empresaForm.get('nombre_comercial')?.touched">
+                    El nombre comercial es obligatorio
+                  </div>
                 </div>
                 <div class="col-md-6">
                   <label class="label-final">RUC <span class="text-muted small ms-1">(Solo lectura)</span></label>
@@ -364,7 +365,7 @@ export class CreateEmpresaModalComponent implements OnInit, OnDestroy {
     this.empresaForm = this.fb.group({
       ruc: ['', [SriValidators.rucEcuador(), this.rucDuplicateValidator()]],
       razon_social: ['', [Validators.required, Validators.minLength(3)]],
-      nombre_comercial: [''],
+      nombre_comercial: ['', [Validators.required, Validators.minLength(3)]],
       email: ['', [Validators.required, Validators.email]],
       telefono: ['', [Validators.required, Validators.pattern(/^09[0-9]{8}$/)]],
       direccion: ['', [Validators.required, Validators.minLength(5)]],
