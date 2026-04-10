@@ -314,14 +314,16 @@ def obtener_resumen_ejecutivo(
 
 @router.get("/financiero/cartera")
 def obtener_reporte_cartera(
+    fecha_inicio: Optional[str] = None,
+    fecha_fin: Optional[str] = None,
     usuario_actual: dict = Depends(requerir_permiso([PermissionCodes.REPORTES_VER])),
     servicio: ServicioReportes = Depends()
 ):
-    """R-008: Cuentas por Cobrar."""
+    """R-008: Cuentas por Cobrar con filtro de fechas."""
     if usuario_actual.get(AuthKeys.IS_VENDEDOR):
         raise AppError("Este reporte está bloqueado para vendedores.", 403)
     empresa_id = usuario_actual.get("empresa_id")
-    return servicio.obtener_cartera_usuario(empresa_id)
+    return servicio.obtener_cartera_usuario(empresa_id, fecha_inicio, fecha_fin)
 
 # =========================================================
 # R-031: REPORTE GLOBAL SUPERADMIN

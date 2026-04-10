@@ -449,9 +449,9 @@ class ServicioReportes:
         """R-028: Resumen Ejecutivo (KPIs)."""
         return self.svc_r028.generar_resumen_ejecutivo(empresa_id, fecha_inicio, fecha_fin)
 
-    def obtener_cartera_usuario(self, empresa_id: UUID):
-        """R-008: Cuentas por Cobrar."""
-        return self.svc_r008.generar_reporte_cartera(empresa_id)
+    def obtener_cartera_usuario(self, empresa_id: UUID, fecha_inicio: Optional[str] = None, fecha_fin: Optional[str] = None):
+        """R-008: Cuentas por Cobrar con filtro de fechas."""
+        return self.svc_r008.generar_reporte_cartera(empresa_id, fecha_inicio, fecha_fin)
 
     def exportar_reporte(self, empresa_id: UUID, tipo: str, formato: str, params: dict):
         """

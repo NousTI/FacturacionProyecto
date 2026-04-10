@@ -140,8 +140,9 @@ export class FinancialReportsService {
     return this.http.get<SalesGeneralReport>(`${environment.apiUrl}/reportes/ventas/general`, { params });
   }
 
-  getAccountsReceivable(): Observable<AccountsReceivableReport> {
-    return this.http.get<AccountsReceivableReport>(`${this.base}/cartera`);
+  getAccountsReceivable(fecha_inicio: string, fecha_fin: string): Observable<AccountsReceivableReport> {
+    const params = new HttpParams().set('fecha_inicio', fecha_inicio).set('fecha_fin', fecha_fin);
+    return this.http.get<AccountsReceivableReport>(`${this.base}/cartera`, { params });
   }
 
   getSalesByUser(fecha_inicio: string, fecha_fin: string): Observable<any> {

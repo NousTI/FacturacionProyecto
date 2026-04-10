@@ -223,7 +223,7 @@ export class ReportesPage implements OnInit {
 
       case 'cartera':
         this.carteraData = undefined;
-        this.reportsSvc.getAccountsReceivable().subscribe({
+        this.reportsSvc.getAccountsReceivable(this.fechaInicio, this.fechaFin).subscribe({
           next: (d) => { this.carteraData = d; this.finishLoading(); },
           error: () => this.handleError('Error al cargar reporte de cartera')
         });
