@@ -111,25 +111,27 @@ import { PermissionsService } from '../../../../../core/auth/permissions.service
               <div class="d-flex align-items-center mb-4 gap-3 bg-light-soft p-3 rounded-4">
                  <div class="form-check form-switch custom-switch">
                     <input class="form-check-input" type="checkbox" [(ngModel)]="formData.maneja_inventario" name="maneja_inventario" id="inventarioCheck">
-                    <label class="dashboard-label ms-1 mb-0" for="inventarioCheck">Meneja inventario</label>
+                    <label class="form-check-label dashboard-label ms-1 mb-0" for="inventarioCheck">Maneja inventario</label>
                  </div>
               </div>
               
               <div class="row g-3" *ngIf="formData.maneja_inventario">
                 <div class="col-md-4">
+                  <label class="dashboard-label">Stock Actual</label>
                   <input type="number" [(ngModel)]="formData.stock_actual" name="stock_actual" #stockActual="ngModel" class="dashboard-input" min="0" [class.is-invalid-prod]="stockActual.invalid && stockActual.touched" (keypress)="validateNoNegative($event)">
                   <div *ngIf="stockActual.invalid && stockActual.touched" class="error-msg-prod">
                     <span *ngIf="stockActual.errors?.['min']">No puede ser negativo</span>
                   </div>
                 </div>
                 <div class="col-md-4">
+                  <label class="dashboard-label">Stock Mínimo</label>
                   <input type="number" [(ngModel)]="formData.stock_minimo" name="stock_minimo" #stockMin="ngModel" class="dashboard-input" min="0" [class.is-invalid-prod]="stockMin.invalid && stockMin.touched" (keypress)="validateNoNegative($event)">
                   <div *ngIf="stockMin.invalid && stockMin.touched" class="error-msg-prod">
                     <span *ngIf="stockMin.errors?.['min']">No puede ser negativo</span>
                   </div>
                 </div>
                 <div class="col-md-4">
-                  <label class="dashboard-label">Presentación</label>
+                  <label class="dashboard-label">Unidad de Medida</label>
                   <select [(ngModel)]="formData.unidad_medida" name="unidad_medida" class="dashboard-select">
                     <option value="unidad">Unidades (u.)</option>
                     <option value="kg">Kilogramos (kg)</option>

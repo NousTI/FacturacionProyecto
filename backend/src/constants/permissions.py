@@ -6,6 +6,9 @@ from .empresa_permisos.catalog_facturas import FACTURAS_PERMS
 from .empresa_permisos.catalog_inventario import INVENTARIO_PERMS
 from .empresa_permisos.catalog_gastos import GASTOS_PERMS
 from .empresa_permisos.catalog_config import CONFIG_PERMS
+from .empresa_permisos.catalog_usuarios import USUARIOS_PERMS
+from .empresa_permisos.catalog_roles import ROLES_PERMS
+from .empresa_permisos.catalog_establecimientos import ESTABLECIMIENTO_PERMS
 from .empresa_permisos.catalog_reportes import REPORTES_PERMS
 from .empresa_permisos.catalog_otros import OTROS_PERMS
 
@@ -17,6 +20,9 @@ PERMISOS_BASE = {
     **INVENTARIO_PERMS,
     **GASTOS_PERMS,
     **CONFIG_PERMS,
+    **USUARIOS_PERMS,
+    **ROLES_PERMS,
+    **ESTABLECIMIENTO_PERMS,
     **REPORTES_PERMS,
     **OTROS_PERMS
 }
