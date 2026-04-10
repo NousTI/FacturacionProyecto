@@ -15,13 +15,21 @@ class ValidacionesFactura:
             raise AppError("No tiene permiso para esta factura", 403, "AUTH_FORBIDDEN")
 
         permisos = usuario_actual.get("permisos", [])
-        if PermissionCodes.FACTURAS_VER_TODAS in permisos:
+        if PermissionCodes.FACTURAS_VER_TODAS in permisos or PermissionCodes.FACTURA_PROGRAMADA_VER in permisos:
              return
              
-        if PermissionCodes.FACTURAS_VER_PROPIAS in permisos:
+        # Si tiene permisos de Facturas Propias O Facturación Programada Propia
+        has_facturas_propias = PermissionCodes.FACTURAS_VER_PROPIAS in permisos
+        has_programada_propias = PermissionCodes.FACTURA_PROGRAMADA_VER_PROPIAS in permisos
+
+        if has_facturas_propias or has_programada_propias:
              if str(factura.get('usuario_id')) == str(usuario_actual.get('usuario_facturacion_id')):
                   return
-             raise AppError("No tienes permiso para ver facturas de otros usuarios", 403, "AUTH_FORBIDDEN")
+             
+             msg = "No tienes permiso para ver facturas de otros usuarios"
+             if has_programada_propias and not has_facturas_propias:
+                  msg = "No tienes permiso para ver programaciones de otros usuarios"
+             raise AppError(msg, 403, "AUTH_FORBIDDEN")
 
         raise AppError("No tienes permisos suficientes para acceder a esta factura", 403, "AUTH_FORBIDDEN")
 

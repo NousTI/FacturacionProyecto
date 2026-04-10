@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { finalize, Subscription, combineLatest, map } from 'rxjs';
@@ -9,9 +9,12 @@ import { CreateFacturaModalComponent } from '../facturacion/components/create-fa
 import { RecurrenteHistoryModalComponent } from './components/recurrente-history-modal/recurrente-history-modal.component';
 import { ToastComponent } from '../../../shared/components/toast/toast.component';
 import { ConfirmModalComponent } from '../../../shared/components/confirm-modal/confirm-modal.component';
+import { HasPermissionDirective } from '../../../core/directives/has-permission.directive';
 
 import { FacturacionProgramadaService } from './services/facturacion-programada.service';
 import { UiService } from '../../../shared/services/ui.service';
+import { PermissionsService } from '../../../core/auth/permissions.service';
+import { FACTURACION_PROGRAMADA_PERMISSIONS } from '../../../constants/permission-codes';
 import { FacturaProgramada } from '../../../domain/models/facturacion-programada.model';
 
 @Component({
@@ -20,6 +23,7 @@ import { FacturaProgramada } from '../../../domain/models/facturacion-programada
   imports: [
     CommonModule,
     FormsModule,
+    HasPermissionDirective,
     RecurrenteStatsComponent,
     RecurrenteTableComponent,
     CreateFacturaModalComponent,
@@ -29,121 +33,142 @@ import { FacturaProgramada } from '../../../domain/models/facturacion-programada
   ],
   template: `
     <div class="recurrente-page-container">
-      <div class="container-fluid p-0 animate__animated animate__fadeIn">
-        
-        <!-- FILTERS & SEARCH + ACTIONS -->
-        <div class="px-4 mb-4">
-          <div class="d-flex justify-content-between align-items-center gap-3">
-             <div class="search-box-premium flex-grow-1">
-                <i class="bi bi-search"></i>
-                <input 
-                  type="text" 
-                  [(ngModel)]="searchQuery" 
-                  placeholder="Buscar por cliente o concepto..."
-                  class="form-control-premium"
-                >
-             </div>
-             <div class="d-flex gap-2">
-                <button class="btn-refresh-premium" (click)="refreshData()" [class.spinning]="isRefreshing" title="Refrescar">
-                  <i class="bi bi-arrow-clockwise"></i>
-                </button>
-                <button class="btn-bulk-premium" (click)="runBulkExecution()" [disabled]="isProcessing" title="Ejecutar Facturaciones Pendientes">
-                  <i class="bi bi-play-circle-fill me-2"></i>
-                  Ejecutar Pendientes
-                </button>
-                <button class="btn-create-premium" (click)="openCreateModal()">
-                  <i class="bi bi-plus-lg me-2"></i>
-                  Nueva Programación
-                </button>
-             </div>
+      
+      <ng-container *ngIf="canViewModule; else noPermission">
+        <div class="container-fluid p-0 animate__animated animate__fadeIn">
+          
+          <!-- FILTERS & SEARCH + ACTIONS -->
+          <div class="px-4 mb-4">
+            <div class="d-flex justify-content-between align-items-center gap-3">
+               <div class="search-box-premium flex-grow-1">
+                  <i class="bi bi-search"></i>
+                  <input 
+                    type="text" 
+                    [(ngModel)]="searchQuery" 
+                    placeholder="Buscar por cliente o concepto..."
+                    class="form-control-premium"
+                  >
+               </div>
+               <div class="d-flex gap-2">
+                  <button class="btn-refresh-premium" (click)="refreshData()" [class.spinning]="isRefreshing" title="Refrescar">
+                    <i class="bi bi-arrow-clockwise"></i>
+                  </button>
+                  <button *hasPermission="'FACTURA_PROGRAMADA_EDITAR'" class="btn-bulk-premium" (click)="runBulkExecution()" [disabled]="isProcessing" title="Ejecutar Facturaciones Pendientes">
+                    <i class="bi bi-play-circle-fill me-2"></i>
+                    Ejecutar Pendientes
+                  </button>
+                  <button *hasPermission="'FACTURA_PROGRAMADA_CREAR'" class="btn-create-premium" (click)="openCreateModal()">
+                    <i class="bi bi-plus-lg me-2"></i>
+                    Nueva Programación
+                  </button>
+               </div>
+            </div>
           </div>
+
+          <!-- STATS -->
+          <div class="px-4 mb-4">
+            <app-recurrente-stats
+              [activeCount]="stats.activeCount"
+              [successCount]="stats.successCount"
+              [failedCount]="stats.failedCount"
+            ></app-recurrente-stats>
+          </div>
+
+          <!-- LOADING STATE -->
+          <div *ngIf="isLoading" class="d-flex flex-column align-items-center justify-content-center py-5">
+             <div class="spinner-premium mb-3"></div>
+             <p class="text-muted fw-bold">Cargando programaciones...</p>
+          </div>
+
+          <!-- EDIT LOADING OVERLAY (no bloquea la tabla) -->
+          <div *ngIf="isLoadingEdit" class="edit-loading-bar">
+            <div class="edit-loading-bar-inner"></div>
+          </div>
+
+          <!-- TABLE -->
+          <div class="px-4" *ngIf="!isLoading">
+            <app-recurrente-table
+              [programaciones]="filteredProgramaciones"
+              (onAction)="handleAction($event)"
+            ></app-recurrente-table>
+          </div>
+
+          <!-- MODALS -->
+          <app-create-factura-modal
+            *ngIf="showCreateModal"
+            [mode]="'RECURRENTE'"
+            [facturaId]="selectedFacturaId"
+            [programacionId]="selectedProgramacion?.id"
+            [isViewOnly]="isViewOnly"
+            (onClose)="handleCreateClose($event)"
+          ></app-create-factura-modal>
+
+          <app-recurrente-history-modal
+            *ngIf="showHistoryModal && selectedProgramacion"
+            [programacionId]="selectedProgramacion.id"
+            [programacionNombre]="selectedProgramacion.cliente_nombre || ''"
+            (onClose)="showHistoryModal = false"
+          ></app-recurrente-history-modal>
+
+          <app-confirm-modal
+            *ngIf="showConfirmModal"
+            title="¿Eliminar Programación?"
+            message="¿Estás seguro de que deseas eliminar esta regla de facturación recurrente? Esta acción no se puede deshacer."
+            confirmText="Eliminar permanentemente"
+            type="danger"
+            icon="bi-trash3-fill"
+            [loading]="isProcessing"
+            (onConfirm)="deleteProgramacion()"
+            (onCancel)="showConfirmModal = false"
+          ></app-confirm-modal>
+
+          <app-confirm-modal
+            *ngIf="showToggleConfirmModal && selectedProgramacion"
+            [title]="selectedProgramacion.activo ? '¿Desactivar Programación?' : '¿Activar Programación?'"
+            [message]="selectedProgramacion.activo
+              ? 'La programación quedará pausada y no se emitirán nuevas facturas automáticamente.'
+              : 'La programación se reactivará y volverá a emitir facturas según su frecuencia.'"
+            [confirmText]="selectedProgramacion.activo ? 'Sí, desactivar' : 'Sí, activar'"
+            [type]="selectedProgramacion.activo ? 'warning' : 'primary'"
+            [icon]="selectedProgramacion.activo ? 'bi-pause-circle-fill' : 'bi-play-circle-fill'"
+            [loading]="isProcessing"
+            (onConfirm)="toggleProgramacion()"
+            (onCancel)="showToggleConfirmModal = false"
+          ></app-confirm-modal>
+
+          <app-confirm-modal
+            *ngIf="showBulkConfirmModal"
+            title="¿Ejecutar Facturaciones Pendientes?"
+            message="Se generarán automáticamente todas las facturas cuyas fechas de emisión hayan vencido. ¿Deseas continuar?"
+            confirmText="Sí, ejecutar ahora"
+            type="primary"
+            icon="bi-play-circle-fill"
+            [loading]="isProcessing"
+            (onConfirm)="processBulkExecution()"
+            (onCancel)="showBulkConfirmModal = false"
+          ></app-confirm-modal>
+
+          <app-toast></app-toast>
         </div>
+      </ng-container>
 
-        <!-- STATS -->
-        <div class="px-4 mb-4">
-          <app-recurrente-stats
-            [activeCount]="stats.activeCount"
-            [successCount]="stats.successCount"
-            [failedCount]="stats.failedCount"
-          ></app-recurrente-stats>
+      <!-- TEMPLATE SIN PERMISO -->
+      <ng-template #noPermission>
+        <div class="no-permission-container d-flex flex-column align-items-center justify-content-center text-center p-5 animate-in" style="min-height: 70vh;">
+          <div class="icon-lock-wrapper mb-4">
+            <i class="bi bi-shield-lock-fill" style="font-size: 3.5rem; color: #161d35;"></i>
+          </div>
+          <h2 class="fw-bold text-dark mb-2">Acceso Restringido</h2>
+          <p class="text-muted mb-4 mx-auto" style="max-width: 450px;">
+            No dispones de los permisos de visualización necesarios para el módulo de Facturación Recurrente. 
+            Contacta a tu administrador para solicitar acceso.
+          </p>
+          <button class="btn btn-primary rounded-pill px-5 py-3 fw-bold shadow-sm" (click)="refreshData()" style="background-color: #161d35; border: none;">
+            <i class="bi bi-arrow-clockwise me-2"></i> Reintentar sincronización
+          </button>
         </div>
+      </ng-template>
 
-        <!-- LOADING STATE -->
-        <div *ngIf="isLoading" class="d-flex flex-column align-items-center justify-content-center py-5">
-           <div class="spinner-premium mb-3"></div>
-           <p class="text-muted fw-bold">Cargando programaciones...</p>
-        </div>
-
-        <!-- EDIT LOADING OVERLAY (no bloquea la tabla) -->
-        <div *ngIf="isLoadingEdit" class="edit-loading-bar">
-          <div class="edit-loading-bar-inner"></div>
-        </div>
-
-        <!-- TABLE -->
-        <div class="px-4" *ngIf="!isLoading">
-          <app-recurrente-table
-            [programaciones]="filteredProgramaciones"
-            (onAction)="handleAction($event)"
-          ></app-recurrente-table>
-        </div>
-
-        <!-- MODALS -->
-        <app-create-factura-modal
-          *ngIf="showCreateModal"
-          [mode]="'RECURRENTE'"
-          [facturaId]="selectedFacturaId"
-          [programacionId]="selectedProgramacion?.id"
-          [isViewOnly]="isViewOnly"
-          (onClose)="handleCreateClose($event)"
-        ></app-create-factura-modal>
-
-        <app-recurrente-history-modal
-          *ngIf="showHistoryModal && selectedProgramacion"
-          [programacionId]="selectedProgramacion.id"
-          [programacionNombre]="selectedProgramacion.cliente_nombre || ''"
-          (onClose)="showHistoryModal = false"
-        ></app-recurrente-history-modal>
-
-        <app-confirm-modal
-          *ngIf="showConfirmModal"
-          title="¿Eliminar Programación?"
-          message="¿Estás seguro de que deseas eliminar esta regla de facturación recurrente? Esta acción no se puede deshacer."
-          confirmText="Eliminar permanentemente"
-          type="danger"
-          icon="bi-trash3-fill"
-          [loading]="isProcessing"
-          (onConfirm)="deleteProgramacion()"
-          (onCancel)="showConfirmModal = false"
-        ></app-confirm-modal>
-
-        <app-confirm-modal
-          *ngIf="showToggleConfirmModal && selectedProgramacion"
-          [title]="selectedProgramacion.activo ? '¿Desactivar Programación?' : '¿Activar Programación?'"
-          [message]="selectedProgramacion.activo
-            ? 'La programación quedará pausada y no se emitirán nuevas facturas automáticamente.'
-            : 'La programación se reactivará y volverá a emitir facturas según su frecuencia.'"
-          [confirmText]="selectedProgramacion.activo ? 'Sí, desactivar' : 'Sí, activar'"
-          [type]="selectedProgramacion.activo ? 'warning' : 'primary'"
-          [icon]="selectedProgramacion.activo ? 'bi-pause-circle-fill' : 'bi-play-circle-fill'"
-          [loading]="isProcessing"
-          (onConfirm)="toggleProgramacion()"
-          (onCancel)="showToggleConfirmModal = false"
-        ></app-confirm-modal>
-
-        <app-confirm-modal
-          *ngIf="showBulkConfirmModal"
-          title="¿Ejecutar Facturaciones Pendientes?"
-          message="Se generarán automáticamente todas las facturas cuyas fechas de emisión hayan vencido. ¿Deseas continuar?"
-          confirmText="Sí, ejecutar ahora"
-          type="primary"
-          icon="bi-play-circle-fill"
-          [loading]="isProcessing"
-          (onConfirm)="processBulkExecution()"
-          (onCancel)="showBulkConfirmModal = false"
-        ></app-confirm-modal>
-
-        <app-toast></app-toast>
-      </div>
     </div>
   `,
   styles: [`
@@ -236,11 +261,17 @@ export class FacturacionRecurrentePage implements OnInit, OnDestroy {
 
   private subscription: Subscription = new Subscription();
 
+  private permissionsService = inject(PermissionsService);
+
   constructor(
     private service: FacturacionProgramadaService,
     private uiService: UiService,
     private cdr: ChangeDetectorRef
   ) {}
+
+  get canViewModule(): boolean {
+    return this.permissionsService.hasPermission(FACTURACION_PROGRAMADA_PERMISSIONS.VER);
+  }
 
   ngOnInit() {
     this.uiService.setPageHeader('Facturación Recurrente', 'Automatización de emisiones periódicas');

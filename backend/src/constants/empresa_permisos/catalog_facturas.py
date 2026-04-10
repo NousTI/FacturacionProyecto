@@ -75,4 +75,35 @@ FACTURAS_PERMS = {
         "modulo": ModuloPermisos.FACTURAS,
         "descripcion": "Permite eliminar registros de cobros de facturas."
     },
+    # FACTURACIÓN PROGRAMADA (RECURRENTE)
+    "FACTURA_PROGRAMADA_VER": {
+        "codigo": "FACTURA_PROGRAMADA_VER",
+        "nombre": "Ver Facturación Programada",
+        "modulo": ModuloPermisos.FACTURAS,
+        "descripcion": "Permite visualizar las reglas de facturación automática y recurrente."
+    },
+    "FACTURA_PROGRAMADA_VER_PROPIAS": {
+        "codigo": "FACTURA_PROGRAMADA_VER_PROPIAS",
+        "nombre": "Ver Facturaciones Programadas Propias",
+        "modulo": ModuloPermisos.FACTURAS,
+        "descripcion": "Permite visualizar únicamente las reglas de facturación creadas por el usuario actual."
+    },
+    "FACTURA_PROGRAMADA_CREAR": {
+        "codigo": "FACTURA_PROGRAMADA_CREAR",
+        "nombre": "Crear Facturación Programada",
+        "modulo": ModuloPermisos.FACTURAS,
+        "descripcion": "Permite configurar nuevas reglas de facturación automática."
+    },
+    "FACTURA_PROGRAMADA_EDITAR": {
+        "codigo": "FACTURA_PROGRAMADA_EDITAR",
+        "nombre": "Editar/Ejecutar Facturación Programada",
+        "modulo": ModuloPermisos.FACTURAS,
+        "descripcion": "Permite modificar reglas existentes y ejecutar procesos de facturación pendiente manualmente."
+    },
+    "FACTURA_PROGRAMADA_ELIMINAR": {
+        "codigo": "FACTURA_PROGRAMADA_ELIMINAR",
+        "nombre": "Eliminar Facturación Programada",
+        "modulo": ModuloPermisos.FACTURAS,
+        "descripcion": "Permite eliminar configuraciones de facturación recurrente."
+    },
 }

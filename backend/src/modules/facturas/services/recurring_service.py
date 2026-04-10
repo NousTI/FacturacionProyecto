@@ -101,14 +101,39 @@ class ServicioRecurringBilling:
         if not prog:
             raise AppError("Programación no encontrada", 404)
         
-        if not usuario_actual.get(AuthKeys.IS_SUPERADMIN) and str(prog['empresa_id']) != str(usuario_actual.get("empresa_id")):
+        if usuario_actual.get(AuthKeys.IS_SUPERADMIN):
+            return prog
+
+        if str(prog['empresa_id']) != str(usuario_actual.get("empresa_id")):
             raise AppError("No tiene permiso", 403)
             
+        # Validación de "Propias"
+        permisos = usuario_actual.get("permisos", [])
+        from ....constants.permissions import PermissionCodes
+        if PermissionCodes.FACTURA_PROGRAMADA_VER_PROPIAS in permisos and PermissionCodes.FACTURA_PROGRAMADA_VER not in permisos:
+             auth_user_id = usuario_actual.get("id")
+             perfil = self.repo_usuarios.obtener_por_user_id(auth_user_id)
+             if not perfil or str(prog.get('usuario_id')) != str(perfil['id']):
+                  raise AppError("No tienes permiso para ver esta programación", 403, "AUTH_FORBIDDEN")
+
         return prog
 
     def listar_programaciones(self, usuario_actual: dict, activo: Optional[bool] = None) -> List[dict]:
         empresa_id = usuario_actual.get("empresa_id")
-        return self.repo_prog.listar(empresa_id=empresa_id, activo=activo)
+        permisos = usuario_actual.get("permisos", [])
+        from ....constants.permissions import PermissionCodes
+
+        perfil_id = None
+        # Si tiene VER_PROPIAS y NO tiene VER (todas), filtramos por su ID de perfil
+        if PermissionCodes.FACTURA_PROGRAMADA_VER_PROPIAS in permisos and PermissionCodes.FACTURA_PROGRAMADA_VER not in permisos:
+            auth_user_id = usuario_actual.get("id")
+            perfil = self.repo_usuarios.obtener_por_user_id(auth_user_id)
+            if perfil:
+                perfil_id = perfil['id']
+            else:
+                return [] # No tiene perfil de facturación, no ve nada propio
+                
+        return self.repo_prog.listar(empresa_id=empresa_id, activo=activo, usuario_id=perfil_id)
 
     def actualizar_programacion(self, id: UUID, datos: FacturacionProgramadaActualizacion, usuario_actual: dict) -> dict:
         self.obtener_programacion(id, usuario_actual)

@@ -19,7 +19,7 @@ router = APIRouter()
 @router.post("/", response_model=FacturacionProgramadaLectura, status_code=status.HTTP_201_CREATED)
 def crear_programacion(
     datos: FacturacionProgramadaCreacion,
-    usuario: dict = Depends(requerir_permiso(PermissionCodes.FACTURAS_CREAR)),
+    usuario: dict = Depends(requerir_permiso(PermissionCodes.FACTURA_PROGRAMADA_CREAR)),
     servicio: ServicioRecurrentes = Depends()
 ):
     """Crea una nueva regla de facturación recurrente."""
@@ -28,7 +28,7 @@ def crear_programacion(
 @router.post("/unificada", response_model=FacturacionProgramadaLectura)
 def crear_programacion_unificada(
     datos: FacturacionProgramadaUnificada,
-    usuario: dict = Depends(requerir_permiso(PermissionCodes.FACTURAS_CREAR)),
+    usuario: dict = Depends(requerir_permiso(PermissionCodes.FACTURA_PROGRAMADA_CREAR)),
     servicio: ServicioRecurrentes = Depends()
 ):
     """Crea una nueva regla de facturación recurrente unificada."""
@@ -37,7 +37,10 @@ def crear_programacion_unificada(
 @router.get("/", response_model=List[FacturacionProgramadaLectura])
 def listar_programaciones(
     activo: Optional[bool] = Query(None, description="Filtrar por estado activo/inactivo"),
-    usuario: dict = Depends(requerir_permiso(PermissionCodes.FACTURAS_VER_TODAS)),
+    usuario: dict = Depends(requerir_permiso([
+        PermissionCodes.FACTURA_PROGRAMADA_VER, 
+        PermissionCodes.FACTURA_PROGRAMADA_VER_PROPIAS
+    ])),
     servicio: ServicioRecurrentes = Depends()
 ):
     """Lista las reglas de facturación recurrente de la empresa."""
@@ -46,7 +49,10 @@ def listar_programaciones(
 @router.get("/{id}", response_model=FacturacionProgramadaLectura)
 def obtener_programacion(
     id: UUID,
-    usuario: dict = Depends(requerir_permiso(PermissionCodes.FACTURAS_VER_TODAS)),
+    usuario: dict = Depends(requerir_permiso([
+        PermissionCodes.FACTURA_PROGRAMADA_VER, 
+        PermissionCodes.FACTURA_PROGRAMADA_VER_PROPIAS
+    ])),
     servicio: ServicioRecurrentes = Depends()
 ):
     """Obtiene el detalle de una programación específica."""
@@ -56,7 +62,7 @@ def obtener_programacion(
 def actualizar_programacion(
     id: UUID,
     datos: FacturacionProgramadaActualizacion,
-    usuario: dict = Depends(requerir_permiso(PermissionCodes.FACTURAS_EDITAR)),
+    usuario: dict = Depends(requerir_permiso(PermissionCodes.FACTURA_PROGRAMADA_EDITAR)),
     servicio: ServicioRecurrentes = Depends()
 ):
     """Actualiza una regla de facturación recurrente."""
@@ -65,7 +71,7 @@ def actualizar_programacion(
 @router.delete("/{id}")
 def eliminar_programacion(
     id: UUID,
-    usuario: dict = Depends(requerir_permiso(PermissionCodes.FACTURAS_EDITAR)),
+    usuario: dict = Depends(requerir_permiso(PermissionCodes.FACTURA_PROGRAMADA_ELIMINAR)),
     servicio: ServicioRecurrentes = Depends()
 ):
     """Elimina una regla de facturación recurrente."""
@@ -74,7 +80,7 @@ def eliminar_programacion(
 
 @router.post("/ejecutar-masivo")
 def ejecutar_emisiones_masivas(
-    usuario: dict = Depends(requerir_permiso(PermissionCodes.FACTURAS_CREAR)),
+    usuario: dict = Depends(requerir_permiso(PermissionCodes.FACTURA_PROGRAMADA_EDITAR)),
     servicio: ServicioRecurrentes = Depends()
 ):
     """
@@ -89,7 +95,10 @@ def obtener_historial(
     id: UUID,
     limit: int = Query(50, ge=1, le=200, description="Registros por página"),
     offset: int = Query(0, ge=0, description="Desplazamiento"),
-    usuario: dict = Depends(requerir_permiso(PermissionCodes.FACTURAS_VER_TODAS)),
+    usuario: dict = Depends(requerir_permiso([
+        PermissionCodes.FACTURA_PROGRAMADA_VER, 
+        PermissionCodes.FACTURA_PROGRAMADA_VER_PROPIAS
+    ])),
     servicio: ServicioRecurrentes = Depends()
 ):
     """R-007: Obtiene el historial técnico de ejecuciones (logs) de una programación."""
@@ -98,7 +107,10 @@ def obtener_historial(
 @router.get("/{id}/plantilla")
 def obtener_id_plantilla(
     id: UUID,
-    usuario: dict = Depends(requerir_permiso(PermissionCodes.FACTURAS_VER_TODAS)),
+    usuario: dict = Depends(requerir_permiso([
+        PermissionCodes.FACTURA_PROGRAMADA_VER, 
+        PermissionCodes.FACTURA_PROGRAMADA_VER_PROPIAS
+    ])),
     servicio: ServicioRecurrentes = Depends()
 ):
     """Obtiene el ID de la plantilla asociada a una programación."""

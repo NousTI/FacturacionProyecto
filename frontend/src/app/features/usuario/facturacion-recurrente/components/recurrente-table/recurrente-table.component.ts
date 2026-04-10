@@ -1,11 +1,13 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FacturaProgramada } from '../../../../../domain/models/facturacion-programada.model';
+import { HasPermissionDirective } from '../../../../../core/directives/has-permission.directive';
+import { FACTURACION_PROGRAMADA_PERMISSIONS } from '../../../../../constants/permission-codes';
 
 @Component({
   selector: 'app-recurrente-table',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, HasPermissionDirective],
   template: `
     <div class="table-card animate__animated animate__fadeIn">
       <div class="table-responsive">
@@ -61,13 +63,20 @@ import { FacturaProgramada } from '../../../../../domain/models/facturacion-prog
               </td>
               <td class="text-end">
                 <div class="btn-group dropdown-minimal">
-                  <button class="btn btn-icon-premium" (click)="onAction.emit({type: 'history', data: prog})" title="Ver Historial">
+                  <button *hasPermission="'FACTURA_PROGRAMADA_VER'" class="btn btn-icon-premium" (click)="onAction.emit({type: 'history', data: prog})" title="Ver Historial">
                     <i class="bi bi-clock-history"></i>
                   </button>
-                  <button class="btn btn-icon-premium" (click)="onAction.emit({type: 'edit', data: prog})" title="Editar">
+                  
+                  <button *hasPermission="'FACTURA_PROGRAMADA_VER'" class="btn btn-icon-premium" (click)="onAction.emit({type: 'view', data: prog})" title="Ver Detalles">
+                    <i class="bi bi-eye"></i>
+                  </button>
+
+                  <button *hasPermission="'FACTURA_PROGRAMADA_EDITAR'" class="btn btn-icon-premium" (click)="onAction.emit({type: 'edit', data: prog})" title="Editar">
                     <i class="bi bi-pencil-square"></i>
                   </button>
+
                   <button
+                    *hasPermission="'FACTURA_PROGRAMADA_EDITAR'"
                     class="btn btn-icon-premium"
                     [class.text-warning]="prog.activo"
                     [class.text-success]="!prog.activo"
@@ -75,13 +84,16 @@ import { FacturaProgramada } from '../../../../../domain/models/facturacion-prog
                     [title]="prog.activo ? 'Pausar programación' : 'Reanudar programación'">
                     <i [class]="prog.activo ? 'bi bi-pause-circle' : 'bi bi-play-circle'"></i>
                   </button>
-                  <button
-                    *ngIf="prog.total_emisiones === 0"
-                    class="btn btn-icon-premium text-danger"
-                    (click)="onAction.emit({type: 'delete', data: prog})"
-                    title="Eliminar">
-                    <i class="bi bi-trash3"></i>
-                  </button>
+
+                  <ng-container *ngIf="prog.total_emisiones === 0">
+                    <button
+                      *hasPermission="'FACTURA_PROGRAMADA_ELIMINAR'"
+                      class="btn btn-icon-premium text-danger"
+                      (click)="onAction.emit({type: 'delete', data: prog})"
+                      title="Eliminar">
+                      <i class="bi bi-trash3"></i>
+                    </button>
+                  </ng-container>
                 </div>
               </td>
             </tr>

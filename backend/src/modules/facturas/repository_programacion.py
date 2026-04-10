@@ -48,7 +48,7 @@ class RepositorioProgramacion:
             row = cur.fetchone()
             return dict(row) if row else None
 
-    def listar(self, empresa_id: Optional[UUID] = None, activo: Optional[bool] = None) -> List[dict]:
+    def listar(self, empresa_id: Optional[UUID] = None, activo: Optional[bool] = None, usuario_id: Optional[UUID] = None) -> List[dict]:
         query = """
             SELECT fp.*, c.razon_social as cliente_nombre 
             FROM sistema_facturacion.facturacion_programada fp
@@ -62,6 +62,9 @@ class RepositorioProgramacion:
         if activo is not None:
             query += " AND fp.activo = %s"
             params.append(activo)
+        if usuario_id:
+            query += " AND fp.usuario_id = %s"
+            params.append(str(usuario_id))
             
         query += " ORDER BY fp.proxima_emision ASC"
         with self.db.cursor() as cur:
