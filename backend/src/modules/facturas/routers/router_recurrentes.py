@@ -90,6 +90,21 @@ def ejecutar_emisiones_masivas(
     resultado = servicio.recurrentes.procesar_emisiones_automaticas()
     return success_response(resultado, "Proceso de emisiones automáticas completado")
 
+@router.post("/{id}/ejecutar")
+def ejecutar_ahora_individual(
+    id: UUID,
+    usuario: dict = Depends(requerir_permiso(PermissionCodes.FACTURA_PROGRAMADA_EDITAR)),
+    servicio: ServicioRecurrentes = Depends()
+):
+    """
+    Ejecuta manualmente una regla de facturación específica.
+    Permite generar la factura inmediata sin esperar al proceso automático.
+    """
+    resultado = servicio.ejecutar_ahora(id, usuario)
+    if resultado.get("exitosa"):
+        return success_response(resultado, "Factura generada y emitida correctamente")
+    return success_response(resultado, "Hubo errores en el proceso de emisión. Revisa el historial.", status_code=400)
+
 @router.get("/{id}/historial", response_model=List[FacturacionProgramadaHistorial])
 def obtener_historial(
     id: UUID,

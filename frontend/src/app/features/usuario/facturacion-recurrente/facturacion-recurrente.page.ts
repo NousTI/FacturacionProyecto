@@ -119,6 +119,17 @@ import { FacturaProgramada } from '../../../domain/models/facturacion-programada
           ></app-recurrente-history-modal>
 
           <app-confirm-modal
+            *ngIf="showIndividualExecuteConfirm && selectedProgramacion"
+            [title]="'¿Ejecutar Facturación Ahora?'"
+            [message]="'Se generará y emitirá inmediatamente la factura para ' + selectedProgramacion.cliente_nombre + '. Esto actualizará la fecha de próxima emisión. ¿Deseas continuar?'"
+            [confirmText]="'Sí, ejecutar ahora'"
+            [type]="'primary'"
+            [icon]="'bi-lightning-charge-fill'"
+            (onConfirm)="executeIndividual()"
+            (onCancel)="showIndividualExecuteConfirm = false"
+          ></app-confirm-modal>
+
+          <app-confirm-modal
             *ngIf="showConfirmModal"
             title="¿Eliminar Programación?"
             message="¿Estás seguro de que deseas eliminar esta regla de facturación recurrente? Esta acción no se puede deshacer."
@@ -264,6 +275,11 @@ export class FacturacionRecurrentePage implements OnInit, OnDestroy {
   showHistoryModal: boolean = false;
   showConfirmModal: boolean = false;
   showBulkConfirmModal: boolean = false;
+  showIndividualExecuteConfirm: boolean = false;
+  
+  // Mensajes dinámicos para el modal de confirmación
+  confirmTitle: string = '';
+  confirmMessage: string = '';
   showToggleConfirmModal: boolean = false;
   selectedProgramacion: FacturaProgramada | null = null;
   selectedFacturaId: string | undefined = undefined;
@@ -375,6 +391,12 @@ export class FacturacionRecurrentePage implements OnInit, OnDestroy {
     // Pero espera, el modal necesita un facturaId. 
     // Necesitamos un método en el servicio para obtener el ID del borrador de una programación.
     
+    if (event.type === 'execute') {
+      this.selectedProgramacion = event.data;
+      this.showIndividualExecuteConfirm = true;
+      return;
+    }
+
     if (event.type === 'view' || event.type === 'edit') {
       this.isViewOnly = event.type === 'view';
       // Abrir modal inmediatamente — mostrará su spinner mientras resolvemos la plantilla
@@ -448,5 +470,26 @@ export class FacturacionRecurrentePage implements OnInit, OnDestroy {
         },
         error: (err) => this.uiService.showError(err, 'Error al eliminar')
       });
+  }
+
+  executeIndividual() {
+    if (!this.selectedProgramacion) return;
+    
+    this.showIndividualExecuteConfirm = false;
+    this.isProcessing = true;
+    this.uiService.showToast('Iniciando ejecución manual...', 'info');
+
+    this.service.ejecutarAhora(this.selectedProgramacion.id).subscribe({
+      next: (res) => {
+        this.isProcessing = false;
+        this.uiService.showToast('Factura generada y emitida exitosamente', 'success');
+        this.service.refresh(); // Recargar tabla para ver contadores actualizados
+      },
+      error: (err) => {
+        this.isProcessing = false;
+        this.uiService.showError(err, 'Error en la ejecución manual');
+        this.service.refresh(); // Refrescar por si hubo cambios parciales
+      }
+    });
   }
 }

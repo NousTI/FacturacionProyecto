@@ -38,3 +38,6 @@ class ServicioRecurrentes:
 
     def obtener_id_plantilla(self, id: UUID, usuario_actual: dict) -> Any:
         return self.recurrentes.obtener_id_plantilla(id, usuario_actual)
+
+    def ejecutar_ahora(self, id: UUID, usuario_actual: dict):
+        return self.recurrentes.ejecutar_ahora(id, usuario_actual)

@@ -119,4 +119,8 @@ export class FacturacionProgramadaService extends BaseApiService {
   ejecutarMasivo(): Observable<any> {
     return this.post(`${this.ENDPOINT}/ejecutar-masivo`, {});
   }
+
+  ejecutarAhora(id: string): Observable<any> {
+    return this.post(`${this.ENDPOINT}/${id}/ejecutar`, {});
+  }
 }

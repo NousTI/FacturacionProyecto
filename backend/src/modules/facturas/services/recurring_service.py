@@ -182,154 +182,157 @@ class ServicioRecurringBilling:
         
         for prog in pendientes:
             try:
-                # 1. Idempotencia: Verificar si ya se procesó hoy para esta programación
-                from ..repository import RepositorioFacturas
-                repo_factura = RepositorioFacturas(db=self.repo_prog.db)
-
-                # Buscamos si ya existe una factura (en cualquier estado excepto plantilla)
-                # generada HOY para esta programación — evita duplicados en reintentos
-                query_idempotencia = """
-                    SELECT id, estado FROM sistema_facturacion.facturas
-                    WHERE facturacion_programada_id = %s
-                    AND origen = 'API'
-                    AND DATE(fecha_emision) = CURRENT_DATE
-                    ORDER BY created_at DESC
-                    LIMIT 1
-                """
-                factura_hoy = None
-                with repo_factura.db.cursor() as cur:
-                    cur.execute(query_idempotencia, (str(prog['id']),))
-                    factura_hoy = cur.fetchone()
-
-                if factura_hoy:
-                    estado_hoy = factura_hoy[1] if isinstance(factura_hoy, (list, tuple)) else factura_hoy.get('estado')
-                    if estado_hoy in ('AUTORIZADA', 'EN_PROCESO'):
-                        print(f"[RECURRENTE] Saltando {prog['id']} - Ya autorizada hoy.")
-                        continue
-                    # Existe copia en BORRADOR/ERROR del intento anterior — reutilizarla
-                    factura_hoy_id = factura_hoy[0] if isinstance(factura_hoy, (list, tuple)) else factura_hoy.get('id')
-                    print(f"[RECURRENTE] Reutilizando factura {factura_hoy_id} (estado: {estado_hoy}) del intento anterior.")
-                    usuario_context = {
-                        "id": str(prog['usuario_id']),
-                        "empresa_id": str(prog['empresa_id']),
-                        AuthKeys.IS_SUPERADMIN: True,
-                        "permisos": [],
-                        "usuario_facturacion_id": str(prog['usuario_id'])
-                    }
-                    resultado_sri = self.service_autorizacion.emitir_sri(factura_hoy_id, usuario_context)
-                    logger.info(f"FACTURACION_RECURRENTE: Reintento factura {factura_hoy_id}. Estado: {resultado_sri.get('estado', 'N/A')}")
-                    self.registrar_ejecucion(prog['id'], exitosa=True, frecuencia=prog['tipo_frecuencia'], dia=prog['dia_emision'])
-                    result["exitosas"] += 1
-                    continue
-
-                # 2. Buscar la Factura Plantilla (BORRADOR amarrado a esta programación)
-                from ..repository import RepositorioFacturas
-                repo_factura = RepositorioFacturas(db=self.repo_prog.db)
+                res = self._ejecutar_ciclo_emision_unitario(prog)
+                if res: result["exitosas"] += 1
+                else: result["fallidas"] += 1
+            except Exception as e:
+                logger.error(f"Error procesando {prog['id']}: {str(e)}")
+                result["fallidas"] += 1
                 
-                # Buscamos la factura que es BORRADOR y origen=FACTURACION_PROGRAMADA
-                plantilla = None
-                plantilla_id = repo_factura.obtener_id_plantilla_por_programacion(prog['id'])
-                
-                if plantilla_id:
-                    plantilla = self.service_factura.obtener_detalle_completo(plantilla_id, {"empresa_id": prog['empresa_id'], AuthKeys.IS_SUPERADMIN: True})
-                
-                if not plantilla:
-                    raise Exception(f"No se encontró una factura plantilla (BORRADOR) para la programación {prog['id']}")
+        return result
 
-                # 2. Preparar Contexto Simulado
-                # IS_SUPERADMIN=True para que crear_factura use datos.usuario_id directamente
-                # en lugar de hacer obtener_por_user_id() con el ID de la tabla usuarios
-                # (que no es el mismo que el ID de la tabla users/auth)
+    def ejecutar_ahora(self, id: UUID, usuario_actual: dict) -> dict:
+        """Ejecuta inmediatamente una regla de facturación (manual)."""
+        prog = self.obtener_programacion(id, usuario_actual)
+        exitosa = self._ejecutar_ciclo_emision_unitario(prog)
+        return {"exitosa": exitosa}
+
+    def _ejecutar_ciclo_emision_unitario(self, prog: dict) -> bool:
+        """Lógica central para emitir una factura desde una regla de programación."""
+        try:
+            # 1. Idempotencia: Verificar si ya se procesó hoy para esta programación
+            from ..repository import RepositorioFacturas
+            repo_factura = RepositorioFacturas(db=self.repo_prog.db)
+
+            # Buscamos si ya existe una factura (en cualquier estado excepto plantilla)
+            # generada HOY para esta programación — evita duplicados en reintentos
+            query_idempotencia = """
+                SELECT id, estado FROM sistema_facturacion.facturas
+                WHERE facturacion_programada_id = %s
+                AND origen = 'API'
+                AND DATE(fecha_emision) = CURRENT_DATE
+                ORDER BY created_at DESC
+                LIMIT 1
+            """
+            factura_hoy = None
+            with repo_factura.db.cursor() as cur:
+                cur.execute(query_idempotencia, (str(prog['id']),))
+                factura_hoy = cur.fetchone()
+
+            if factura_hoy:
+                estado_hoy = factura_hoy[1] if isinstance(factura_hoy, (list, tuple)) else factura_hoy.get('estado')
+                if estado_hoy in ('AUTORIZADA', 'EN_PROCESO'):
+                    logger.info(f"[RECURRENTE] Saltando {prog['id']} - Ya autorizada hoy.")
+                    return True # Idempotente
+                
+                # Existe copia en BORRADOR/ERROR del intento anterior — reutilizarla
+                factura_hoy_id = factura_hoy[0] if isinstance(factura_hoy, (list, tuple)) else factura_hoy.get('id')
+                logger.info(f"[RECURRENTE] Reutilizando factura {factura_hoy_id} (estado: {estado_hoy}) del intento anterior.")
                 usuario_context = {
                     "id": str(prog['usuario_id']),
                     "empresa_id": str(prog['empresa_id']),
                     AuthKeys.IS_SUPERADMIN: True,
-                    "permisos": []
-                }
-
-                # 3. Preparar Datos de Nueva Factura (Clonando la plantilla)
-                # Convertimos la plantilla a formato de creación
-                detalles_clonados = []
-                for det in plantilla.get('detalles', []):
-                    detalles_clonados.append({
-                        "producto_id": det.get('producto_id'),
-                        "codigo_producto": det.get('codigo_producto'),
-                        "nombre": det.get('nombre'),
-                        "descripcion": det.get('descripcion'),
-                        "cantidad": det.get('cantidad'),
-                        "precio_unitario": det.get('precio_unitario'),
-                        "descuento": det.get('descuento'),
-                        "tipo_iva": det.get('tipo_iva'),
-                        "valor_iva": det.get('valor_iva'),
-                        "subtotal": det.get('subtotal')
-                    })
-
-                datos_factura = FacturaCreacion(
-                    establecimiento_id=plantilla['establecimiento_id'],
-                    punto_emision_id=plantilla['punto_emision_id'],
-                    cliente_id=plantilla['cliente_id'],
-                    usuario_id=prog['usuario_id'],
-                    empresa_id=prog['empresa_id'],
-                    facturacion_programada_id=prog['id'],
-                    fecha_emision=datetime.now(),
-                    subtotal_sin_iva=plantilla['subtotal_sin_iva'],
-                    subtotal_con_iva=plantilla['subtotal_con_iva'],
-                    subtotal_no_objeto_iva=plantilla['subtotal_no_objeto_iva'],
-                    subtotal_exento_iva=plantilla['subtotal_exento_iva'],
-                    iva=plantilla['iva'],
-                    ice=plantilla.get('ice', 0),
-                    descuento=plantilla['descuento'],
-                    propina=plantilla.get('propina', 0),
-                    total=plantilla['total'],
-                    detalles=detalles_clonados,
-                    origen="API",
-                    observaciones=f"Generada automáticamente desde plantilla. Programación ID: {prog['id']}",
-                    forma_pago_sri=plantilla.get('forma_pago_sri', '01'),
-                    plazo=plantilla.get('plazo', 0),
-                    unidad_tiempo=plantilla.get('unidad_tiempo', 'DIAS')
-                )
-
-                # 4. Crear factura (BORRADOR)
-                nueva_factura = self.service_factura.crear_factura(datos_factura, usuario_context)
-
-                # 5. Emitir al SRI — asigna secuencial, firma XML y autoriza
-                # El contexto necesita usuario_facturacion_id (ID en tabla usuarios, no en users)
-                usuario_context_sri = {
-                    **usuario_context,
+                    "permisos": [],
                     "usuario_facturacion_id": str(prog['usuario_id'])
                 }
-                resultado_sri = self.service_autorizacion.emitir_sri(nueva_factura['id'], usuario_context_sri)
-                logger.info(f"FACTURACION_RECURRENTE: Factura {nueva_factura['id']} emitida al SRI. Estado: {resultado_sri.get('estado', 'N/A')}")
+                resultado_sri = self.service_autorizacion.emitir_sri(factura_hoy_id, usuario_context)
+                self.registrar_ejecucion(prog['id'], exitosa=True, frecuencia=prog['tipo_frecuencia'], dia=prog['dia_emision'])
+                return True
 
-                # 6. Actualizar Programación (Cierre de Ciclo)
-                # Nota: el log de emisión ya lo registra internamente ServicioSRI al llamar emitir_sri
-                self.registrar_ejecucion(
-                    prog['id'], 
-                    exitosa=True, 
-                    frecuencia=prog['tipo_frecuencia'], 
-                    dia=prog['dia_emision']
-                )
-                result["exitosas"] += 1
-                
-            except Exception as e:
-                logger.error(f"FALLO en ejecución programada {prog['id']}: {str(e)}")
-                # Registrar el fallo en logs para que el usuario pueda auditarlo (R-007)
-                try:
-                    query_log_error = """
-                        INSERT INTO sistema_facturacion.log_emision_facturas 
-                        (facturacion_programada_id, ambiente, estado, tipo_intento, usuario_id, observaciones, mensajes)
-                        VALUES (%s, %s, %s, %s, %s, %s, %s)
-                    """
-                    with self.repo_prog.db.cursor() as cur:
-                        cur.execute(query_log_error, (
-                            str(prog['id']), 1, 'ERROR_SISTEMA', 'INICIAL', str(prog['usuario_id']), f"Error: {str(e)}", '[]'
-                        ))
-                except: pass
+            # 2. Buscar la Factura Plantilla (BORRADOR amarrado a esta programación)
+            plantilla_id = repo_factura.obtener_id_plantilla_por_programacion(prog['id'])
+            
+            if not plantilla_id:
+                raise Exception(f"No se encontró una factura plantilla (BORRADOR) para la programación {prog['id']}")
 
-                self.registrar_ejecucion(prog['id'], exitosa=False)
-                result["fallidas"] += 1
-                
-        return result
+            plantilla = self.service_factura.obtener_detalle_completo(plantilla_id, {"empresa_id": prog['empresa_id'], AuthKeys.IS_SUPERADMIN: True})
+            if not plantilla:
+                raise Exception(f"Error al cargar detalle de plantilla {plantilla_id}")
+
+            # 2. Preparar Contexto Simulado
+            usuario_context = {
+                "id": str(prog['usuario_id']),
+                "empresa_id": str(prog['empresa_id']),
+                AuthKeys.IS_SUPERADMIN: True,
+                "permisos": []
+            }
+
+            # 3. Preparar Datos de Nueva Factura (Clonando la plantilla)
+            detalles_clonados = []
+            for det in plantilla.get('detalles', []):
+                detalles_clonados.append({
+                    "producto_id": det.get('producto_id'),
+                    "codigo_producto": det.get('codigo_producto'),
+                    "nombre": det.get('nombre'),
+                    "descripcion": det.get('descripcion'),
+                    "cantidad": det.get('cantidad'),
+                    "precio_unitario": det.get('precio_unitario'),
+                    "descuento": det.get('descuento'),
+                    "tipo_iva": det.get('tipo_iva'),
+                    "valor_iva": det.get('valor_iva'),
+                    "subtotal": det.get('subtotal')
+                })
+
+            datos_factura = FacturaCreacion(
+                establecimiento_id=plantilla['establecimiento_id'],
+                punto_emision_id=plantilla['punto_emision_id'],
+                cliente_id=plantilla['cliente_id'],
+                usuario_id=prog['usuario_id'],
+                empresa_id=prog['empresa_id'],
+                facturacion_programada_id=prog['id'],
+                fecha_emision=datetime.now(),
+                subtotal_sin_iva=plantilla['subtotal_sin_iva'],
+                subtotal_con_iva=plantilla['subtotal_con_iva'],
+                subtotal_no_objeto_iva=plantilla['subtotal_no_objeto_iva'],
+                subtotal_exento_iva=plantilla['subtotal_exento_iva'],
+                iva=plantilla['iva'],
+                ice=plantilla.get('ice', 0),
+                descuento=plantilla['descuento'],
+                propina=plantilla.get('propina', 0),
+                total=plantilla['total'],
+                detalles=detalles_clonados,
+                origen="API",
+                observaciones=f"Generada automáticamente desde plantilla. Programación ID: {prog['id']}",
+                forma_pago_sri=plantilla.get('forma_pago_sri', '01'),
+                plazo=plantilla.get('plazo', 0),
+                unidad_tiempo=plantilla.get('unidad_tiempo', 'DIAS')
+            )
+
+            # 4. Crear factura (BORRADOR)
+            nueva_factura = self.service_factura.crear_factura(datos_factura, usuario_context)
+
+            # 5. Emitir al SRI — asigna secuencial, firma XML y autoriza
+            usuario_context_sri = {
+                **usuario_context,
+                "usuario_facturacion_id": str(prog['usuario_id'])
+            }
+            resultado_sri = self.service_autorizacion.emitir_sri(nueva_factura['id'], usuario_context_sri)
+            
+            # 6. Actualizar Programación (Cierre de Ciclo)
+            self.registrar_ejecucion(
+                prog['id'], 
+                exitosa=True, 
+                frecuencia=prog['tipo_frecuencia'], 
+                dia=prog['dia_emision']
+            )
+            return True
+
+        except Exception as e:
+            logger.error(f"FALLO en ejecución programada {prog['id']}: {str(e)}")
+            try:
+                query_log_error = """
+                    INSERT INTO sistema_facturacion.log_emision_facturas 
+                    (facturacion_programada_id, ambiente, estado, tipo_intento, usuario_id, observaciones, mensajes)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s)
+                """
+                with self.repo_prog.db.cursor() as cur:
+                    cur.execute(query_log_error, (
+                        str(prog['id']), 1, 'ERROR_SISTEMA', 'INICIAL', str(prog['usuario_id']), f"Error: {str(e)}", '[]'
+                    ))
+            except: pass
+
+            self.registrar_ejecucion(prog['id'], exitosa=False)
+            return False
 
     def registrar_ejecucion(self, id: UUID, exitosa: bool, frecuencia: str = None, dia: int = None):
         """Actualiza estadísticas y proxima fecha tras un intento de emision."""

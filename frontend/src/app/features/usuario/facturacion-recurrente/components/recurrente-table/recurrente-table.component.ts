@@ -71,6 +71,16 @@ import { FACTURACION_PROGRAMADA_PERMISSIONS } from '../../../../../constants/per
                     <i class="bi bi-eye"></i>
                   </button>
 
+                  <button 
+                    *hasPermission="'FACTURA_PROGRAMADA_EDITAR'" 
+                    class="btn btn-icon-premium text-primary" 
+                    [class.opacity-50]="!prog.activo"
+                    [disabled]="!prog.activo"
+                    (click)="onAction.emit({type: 'execute', data: prog})" 
+                    title="Ejecutar ahora">
+                    <i class="bi bi-lightning-fill"></i>
+                  </button>
+
                   <button *hasPermission="'FACTURA_PROGRAMADA_EDITAR'" class="btn btn-icon-premium" (click)="onAction.emit({type: 'edit', data: prog})" title="Editar">
                     <i class="bi bi-pencil-square"></i>
                   </button>
