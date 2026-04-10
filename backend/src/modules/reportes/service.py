@@ -587,7 +587,7 @@ class ServicioReportes:
                 vendedor_id = params.get('vendedor_id')
                 estado = params.get('estado')
                 data = self.obtener_reporte_comisiones_superadmin(vendedor_id, estado, fecha_inicio, fecha_fin)
-                template = "reports/superadmin/comisiones_report.html"
+                template = "reports/superadmin/comisiones_superadmin.html"
             elif tipo == 'SUPERADMIN_USO':
                 data = self.obtener_reporte_uso_sistema_superadmin(fecha_inicio, fecha_fin)
                 template = "reports/superadmin/uso_sistema_report.html"
