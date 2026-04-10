@@ -4,6 +4,7 @@ export interface Vendedor {
     apellidos: string;
     email?: string;
     telefono?: string;
+    tipo_identificacion?: string;
     documento_identidad?: string;
     porcentaje_comision?: number;
     porcentaje_comision_inicial?: number;
@@ -26,6 +27,7 @@ export interface VendedorCreate {
     apellidos: string;
     email: string;
     password: string;
+    tipo_identificacion?: string;
     telefono?: string;
     documento_identidad?: string;
     porcentaje_comision?: number;
@@ -43,6 +45,7 @@ export interface VendedorCreate {
 export interface VendedorUpdate {
     nombres?: string;
     apellidos?: string;
+    tipo_identificacion?: string;
     telefono?: string;
     documento_identidad?: string;
     porcentaje_comision?: number;

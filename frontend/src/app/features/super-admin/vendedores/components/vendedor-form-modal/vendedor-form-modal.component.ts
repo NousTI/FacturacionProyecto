@@ -418,10 +418,12 @@ export class VendedorFormModalComponent {
   @Input() set vendedorData(data: any) {
     if (data) {
       this.originalData = JSON.parse(JSON.stringify(data));
-      this.vendedorForm.patchValue(data);
-      // Marcar el formulario como pristine después de cargar los datos iniciales
-      this.vendedorForm.markAsPristine();
-      this.vendedorForm.markAsUntouched();
+      // Usar setTimeout para asegurar que el formulario esté listo
+      setTimeout(() => {
+        this.vendedorForm.patchValue(data);
+        this.vendedorForm.markAsPristine();
+        this.vendedorForm.markAsUntouched();
+      }, 0);
     }
   }
 
