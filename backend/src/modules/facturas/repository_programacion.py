@@ -116,6 +116,7 @@ class RepositorioProgramacion:
                 l.timestamp as fecha,
                 l.estado,
                 f.numero_factura,
+                f.id as factura_id,
                 l.observaciones as detalle,
                 l.mensajes as sri_mensajes
             FROM sistema_facturacion.log_emision_facturas l

@@ -6,6 +6,7 @@ import { finalize, Subscription, combineLatest, map } from 'rxjs';
 import { RecurrenteStatsComponent } from './components/recurrente-stats/recurrente-stats.component';
 import { RecurrenteTableComponent } from './components/recurrente-table/recurrente-table.component';
 import { CreateFacturaModalComponent } from '../facturacion/components/create-factura-modal/create-factura-modal.component';
+import { ViewFacturaModalComponent } from '../facturacion/components/view-factura-modal/view-factura-modal.component';
 import { RecurrenteHistoryModalComponent } from './components/recurrente-history-modal/recurrente-history-modal.component';
 import { ToastComponent } from '../../../shared/components/toast/toast.component';
 import { ConfirmModalComponent } from '../../../shared/components/confirm-modal/confirm-modal.component';
@@ -27,6 +28,7 @@ import { FacturaProgramada } from '../../../domain/models/facturacion-programada
     RecurrenteStatsComponent,
     RecurrenteTableComponent,
     CreateFacturaModalComponent,
+    ViewFacturaModalComponent,
     RecurrenteHistoryModalComponent,
     ToastComponent,
     ConfirmModalComponent
@@ -102,6 +104,12 @@ import { FacturaProgramada } from '../../../domain/models/facturacion-programada
             [isViewOnly]="isViewOnly"
             (onClose)="handleCreateClose($event)"
           ></app-create-factura-modal>
+
+          <app-view-factura-modal
+            *ngIf="showViewTemplateModal && selectedFacturaId"
+            [facturaId]="selectedFacturaId"
+            (onClose)="showViewTemplateModal = false"
+          ></app-view-factura-modal>
 
           <app-recurrente-history-modal
             *ngIf="showHistoryModal && selectedProgramacion"
@@ -251,7 +259,8 @@ export class FacturacionRecurrentePage implements OnInit, OnDestroy {
   isProcessing: boolean = false;
   
   showCreateModal: boolean = false;
-  isViewOnly: boolean = false; // Nueva bandera
+  showViewTemplateModal: boolean = false; // Nuevo estado
+  isViewOnly: boolean = false;
   showHistoryModal: boolean = false;
   showConfirmModal: boolean = false;
   showBulkConfirmModal: boolean = false;
@@ -270,7 +279,10 @@ export class FacturacionRecurrentePage implements OnInit, OnDestroy {
   ) {}
 
   get canViewModule(): boolean {
-    return this.permissionsService.hasPermission(FACTURACION_PROGRAMADA_PERMISSIONS.VER);
+    return this.permissionsService.hasPermission([
+      FACTURACION_PROGRAMADA_PERMISSIONS.VER,
+      FACTURACION_PROGRAMADA_PERMISSIONS.VER_PROPIAS
+    ]);
   }
 
   ngOnInit() {
@@ -367,7 +379,13 @@ export class FacturacionRecurrentePage implements OnInit, OnDestroy {
       this.isViewOnly = event.type === 'view';
       // Abrir modal inmediatamente — mostrará su spinner mientras resolvemos la plantilla
       this.selectedFacturaId = undefined;
-      this.showCreateModal = true;
+      
+      if (this.isViewOnly) {
+        this.showViewTemplateModal = true;
+      } else {
+        this.showCreateModal = true;
+      }
+      
       this.isLoadingEdit = true;
       // Resolver el ID de la plantilla en paralelo y pasárselo al modal cuando llegue
       this.service.obtenerIdPlantilla(event.data.id).subscribe({
@@ -376,6 +394,7 @@ export class FacturacionRecurrentePage implements OnInit, OnDestroy {
           const facturaId = typeof res === 'string' ? res : (res?.data ?? null);
           if (!facturaId) {
             this.showCreateModal = false;
+            this.showViewTemplateModal = false;
             this.uiService.showToast('No se encontró la factura plantilla para esta programación', 'warning');
             return;
           }
@@ -384,6 +403,7 @@ export class FacturacionRecurrentePage implements OnInit, OnDestroy {
         error: (err) => {
           this.isLoadingEdit = false;
           this.showCreateModal = false;
+          this.showViewTemplateModal = false;
           this.uiService.showError(err, 'Error al obtener factura plantilla');
         }
       });

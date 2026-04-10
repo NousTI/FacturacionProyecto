@@ -102,7 +102,7 @@ const routes: Routes = [
         path: 'facturacion-recurrente',
         component: FacturacionRecurrentePage,
         canActivate: [RoleGuard, CompanyActiveGuard, permissionGuard],
-        data: { title: 'Facturación Recurrente', roles: [UserRole.USUARIO], permission: 'FACTURA_PROGRAMADA_VER' }
+        data: { title: 'Facturación Recurrente', roles: [UserRole.USUARIO], permission: ['FACTURA_PROGRAMADA_VER', 'FACTURA_PROGRAMADA_VER_PROPIAS'] }
     },
     {
         path: 'reportes',

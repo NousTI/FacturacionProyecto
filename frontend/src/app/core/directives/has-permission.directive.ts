@@ -10,9 +10,9 @@ import { PermissionsService } from '../auth/permissions.service';
     standalone: true
 })
 export class HasPermissionDirective implements OnInit {
-    private permission: string = '';
+    private permission: string | string[] = '';
 
-    @Input() set hasPermission(val: string) {
+    @Input() set hasPermission(val: string | string[]) {
         this.permission = val;
         this.updateView();
     }

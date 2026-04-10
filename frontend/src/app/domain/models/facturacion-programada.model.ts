@@ -27,6 +27,7 @@ export interface FacturaProgramada {
 export interface HistorialProgramacion {
   fecha: string;
   numero_factura?: string;
+  factura_id?: string;
   estado: string;
   detalle?: string;
   sri_mensajes?: any;

@@ -1,13 +1,15 @@
-import { Component, Input, Output, EventEmitter, OnInit, ChangeDetectorRef, ChangeDetectionStrategy } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { ViewFacturaModalComponent } from '../../../facturacion/components/view-factura-modal/view-factura-modal.component';
 import { FacturacionProgramadaService } from '../../services/facturacion-programada.service';
 import { HistorialProgramacion } from '../../../../../domain/models/facturacion-programada.model';
 import { finalize, timeout, catchError, of } from 'rxjs';
+import { HasPermissionDirective } from '../../../../../core/directives/has-permission.directive';
 
 @Component({
   selector: 'app-recurrente-history-modal',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, ViewFacturaModalComponent, HasPermissionDirective],
   template: `
     <div class="modal-overlay animate__animated animate__fadeIn">
       <div class="modal-container animate__animated animate__zoomIn">
@@ -44,7 +46,7 @@ import { finalize, timeout, catchError, of } from 'rxjs';
                 <th>Fecha Intento</th>
                 <th>Número Factura</th>
                 <th>Estado</th>
-                <th class="text-end">Detalle Técnico</th>
+                <th class="text-end">Detalle técnico / Acciones</th>
               </tr>
             </thead>
             <tbody>
@@ -54,7 +56,15 @@ import { finalize, timeout, catchError, of } from 'rxjs';
                   <div class="text-muted small">{{ item.fecha | date:'HH:mm' }}</div>
                 </td>
                 <td>
-                  <span *ngIf="item.numero_factura" class="badge bg-light text-dark border">
+                  <span 
+                    *ngIf="item.numero_factura" 
+                    class="badge bg-light text-dark border"
+                    [class.cursor-pointer]="item.factura_id"
+                    [class.hover-shadow]="item.factura_id"
+                    (click)="item.factura_id ? verDetalleFactura(item.factura_id) : null"
+                    [title]="item.factura_id ? 'Ver detalles de la factura' : ''"
+                  >
+                    <i class="bi bi-eye me-1 text-primary" *ngIf="item.factura_id"></i>
                     {{ item.numero_factura }}
                   </span>
                   <span *ngIf="!item.numero_factura" class="text-muted small">N/A</span>
@@ -65,12 +75,29 @@ import { finalize, timeout, catchError, of } from 'rxjs';
                   </span>
                 </td>
                 <td class="text-end">
-                  <div class="text-dark small fw-500">{{ item.detalle }}</div>
-                  <div *ngIf="item.sri_mensajes && item.sri_mensajes.length > 0" class="mt-1">
-                    <button class="btn btn-link p-0 smallest text-primary" (click)="item.showJson = !item.showJson">
-                      {{ item.showJson ? 'Ocultar XML/JSON' : 'Ver respuesta SRI' }}
-                    </button>
-                    <pre *ngIf="item.showJson" class="json-preview text-start">{{ item.sri_mensajes | json }}</pre>
+                  <div class="d-flex flex-column align-items-end">
+                    <div class="text-dark small fw-500">{{ item.detalle }}</div>
+                    
+                    <div class="d-flex gap-2 mt-2">
+                      <ng-container *ngIf="item.factura_id">
+                        <button 
+                          *hasPermission="['FACTURA_PROGRAMADA_VER', 'FACTURA_PROGRAMADA_VER_PROPIAS']"
+                          class="btn btn-sm btn-outline-primary py-0 px-2 smallest" 
+                          (click)="verDetalleFactura(item.factura_id)"
+                          title="Ver factura"
+                        >
+                          <i class="bi bi-eye-fill"></i> Ver
+                        </button>
+                      </ng-container>
+
+                      <div *ngIf="item.sri_mensajes && item.sri_mensajes.length > 0">
+                        <button class="btn btn-link p-0 smallest text-primary" (click)="item.showJson = !item.showJson">
+                          {{ item.showJson ? 'Ocultar XML/JSON' : 'Ver respuesta SRI' }}
+                        </button>
+                      </div>
+                    </div>
+                    
+                    <pre *ngIf="item.showJson" class="json-preview text-start w-100">{{ item.sri_mensajes | json }}</pre>
                   </div>
                 </td>
               </tr>
@@ -93,6 +120,13 @@ import { finalize, timeout, catchError, of } from 'rxjs';
           <button class="btn btn-secondary-premium" (click)="onClose.emit()">Cerrar</button>
         </div>
       </div>
+
+      <!-- Modal de Detalle de Factura -->
+      <app-view-factura-modal
+        *ngIf="showViewModal && selectedFacturaId"
+        [facturaId]="selectedFacturaId"
+        (onClose)="showViewModal = false"
+      ></app-view-factura-modal>
     </div>
   `,
   styles: [`
@@ -201,6 +235,12 @@ import { finalize, timeout, catchError, of } from 'rxjs';
       border: 1px solid #e2e8f0;
       color: #475569;
     }
+    .cursor-pointer { cursor: pointer; }
+    .hover-shadow:hover { 
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+      border-color: #161d35 !important;
+      background: #f8fafc !important;
+    }
   `]
 })
 export class RecurrenteHistoryModalComponent implements OnInit {
@@ -212,6 +252,10 @@ export class RecurrenteHistoryModalComponent implements OnInit {
   isLoading: boolean = true;
   readonly limit = 50;
   offset = 0;
+
+  // Estado para el modal de detalle
+  showViewModal = false;
+  selectedFacturaId: string | null = null;
 
   constructor(private service: FacturacionProgramadaService, private cdr: ChangeDetectorRef) {}
 
@@ -261,5 +305,11 @@ export class RecurrenteHistoryModalComponent implements OnInit {
 
   getEstadoClass(estado: string): string {
     return estado?.toLowerCase().replace(/_/g, '_') ?? '';
+  }
+
+  verDetalleFactura(id: string) {
+    this.selectedFacturaId = id;
+    this.showViewModal = true;
+    this.cdr.detectChanges();
   }
 }

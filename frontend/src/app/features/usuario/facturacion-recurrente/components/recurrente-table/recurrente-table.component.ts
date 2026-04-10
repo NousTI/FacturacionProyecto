@@ -63,11 +63,11 @@ import { FACTURACION_PROGRAMADA_PERMISSIONS } from '../../../../../constants/per
               </td>
               <td class="text-end">
                 <div class="btn-group dropdown-minimal">
-                  <button *hasPermission="'FACTURA_PROGRAMADA_VER'" class="btn btn-icon-premium" (click)="onAction.emit({type: 'history', data: prog})" title="Ver Historial">
+                  <button *hasPermission="['FACTURA_PROGRAMADA_VER', 'FACTURA_PROGRAMADA_VER_PROPIAS']" class="btn btn-icon-premium" (click)="onAction.emit({type: 'history', data: prog})" title="Ver Historial">
                     <i class="bi bi-clock-history"></i>
                   </button>
                   
-                  <button *hasPermission="'FACTURA_PROGRAMADA_VER'" class="btn btn-icon-premium" (click)="onAction.emit({type: 'view', data: prog})" title="Ver Detalles">
+                  <button *hasPermission="['FACTURA_PROGRAMADA_VER', 'FACTURA_PROGRAMADA_VER_PROPIAS']" class="btn btn-icon-premium" (click)="onAction.emit({type: 'view', data: prog})" title="Ver Detalles">
                     <i class="bi bi-eye"></i>
                   </button>
 
