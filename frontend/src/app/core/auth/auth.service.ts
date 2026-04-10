@@ -37,7 +37,24 @@ export class AuthService {
 
     getPerfil(): Observable<any> {
         return from(http.get<ApiResponse<any>>(API_ENDPOINTS.AUTH.PERFIL)).pipe(
-            map(response => response.data.detalles)
+            map(response => response.data.detalles),
+            tap(perfilData => {
+                // Actualizar el usuario en localStorage con los datos del perfil
+                const currentUser = this.getUser();
+                if (currentUser) {
+                    const updatedUser = { ...currentUser, ...perfilData };
+                    localStorage.setItem(this.USER_KEY, JSON.stringify(updatedUser));
+                }
+            })
+        );
+    }
+
+    // Método para recargar permisos específicamente
+    recargarPermisos(): Observable<User | null> {
+        return this.getPerfil().pipe(
+            map(perfilData => {
+                return this.getUser();
+            })
         );
     }
 

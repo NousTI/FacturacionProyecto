@@ -125,7 +125,9 @@ import { CategoriaFormComponent } from './components/categoria-form.component';
                         <button *appHasPermission="'GASTOS_EDITAR'" class="btn-action edit" (click)="handleEditGasto(gasto)" title="Editar"><i class="bi bi-pencil"></i></button>
                       </ng-template>
 
-                      <button *appHasPermission="'PAGO_GASTO_CREAR'" class="btn-action pay" *ngIf="gasto.estado_pago !== 'pagado'" (click)="handleQuickPay(gasto)" title="Registrar Pago"><i class="bi bi-cash"></i></button>
+                      <ng-container *appHasPermission="'PAGO_GASTO_CREAR'">
+                        <button class="btn-action pay" *ngIf="gasto.estado_pago !== 'pagado'" (click)="handleQuickPay(gasto)" title="Registrar Pago"><i class="bi bi-cash"></i></button>
+                      </ng-container>
                       <button *appHasPermission="'GASTOS_ELIMINAR'" class="btn-action delete" (click)="handleDeleteGasto(gasto)" title="Eliminar"><i class="bi bi-trash"></i></button>
                     </div>
                   </td>

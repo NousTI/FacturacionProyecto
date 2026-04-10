@@ -91,7 +91,7 @@ import { SidebarService } from './sidebar.service';
                   <a *appHasPermission="'DASHBOARD_VER'" routerLink="/usuario/dashboard" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" class="menu-item px-3 mb-1" title="Dashboard">
                     <i class="bi bi-grid-fill"></i> <span class="menu-text ms-3">Dashboard</span>
                   </a>
-                  <a *appHasPermission="'CONFIG_USUARIOS'" routerLink="/usuario/usuarios" routerLinkActive="active" class="menu-item px-3 mb-1" title="Usuarios">
+                  <a *appHasPermission="'USUARIOS_GESTIONAR'" routerLink="/usuario/usuarios" routerLinkActive="active" class="menu-item px-3 mb-1" title="Usuarios">
                     <i class="bi bi-person"></i> <span class="menu-text ms-3">Usuarios</span>
                   </a>
                   <a *appHasPermission="'CONFIG_ROLES'" routerLink="/usuario/roles" routerLinkActive="active" class="menu-item px-3 mb-1" title="Roles">
@@ -118,13 +118,13 @@ import { SidebarService } from './sidebar.service';
                   <a *appHasPermission="'CUENTA_COBRAR_VER'" routerLink="/usuario/cuentas-cobrar" routerLinkActive="active" class="menu-item px-3 mb-1" title="Cuentas por Cobrar">
                     <i class="bi bi-wallet2"></i> <span class="menu-text ms-3">Cuentas por Cobrar</span>
                   </a>
-                  <a *appHasPermission="['FACTURA_PROGRAMADA_VER', 'FACTURAS_VER_TODAS']" routerLink="/usuario/facturacion-recurrente" routerLinkActive="active" class="menu-item px-3 mb-1" title="Fac. Recurrente">
+                  <a *appHasPermission="'FACTURA_PROGRAMADA_VER'" routerLink="/usuario/facturacion-recurrente" routerLinkActive="active" class="menu-item px-3 mb-1" title="Fac. Recurrente">
                     <i class="bi bi-arrow-repeat"></i> <span class="menu-text ms-3">Fac. Recurrente</span>
                   </a>
                   <a *appHasPermission="['REPORTES_VER', 'REPORTES_EXPORTAR']" routerLink="/usuario/reportes" routerLinkActive="active" class="menu-item px-3 mb-1" title="Reportes">
                     <i class="bi bi-bar-chart"></i> <span class="menu-text ms-3">Reportes</span>
                   </a>
-                  <a *appHasPermission="['ESTABLECIMIENTO_VER', 'CONFIG_ESTABLECIMIENTOS']" routerLink="/usuario/establecimientos" routerLinkActive="active" class="menu-item px-3 mb-1" title="Establecimientos">
+                  <a *appHasPermission="'ESTABLECIMIENTO_GESTIONAR'" routerLink="/usuario/establecimientos" routerLinkActive="active" class="menu-item px-3 mb-1" title="Establecimientos">
                     <i class="bi bi-shop"></i> <span class="menu-text ms-3">Establecimientos</span>
                   </a>
                   <a *appHasPermission="['PUNTO_EMISION_VER', 'PUNTO_EMISION_GESTIONAR']" routerLink="/usuario/puntos-emision" routerLinkActive="active" class="menu-item px-3 mb-1" title="Puntos Emisión">

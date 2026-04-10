@@ -49,10 +49,10 @@ export const FACTURAS_PERMISSIONS = {
 // MÓDULO: FACTURACIÓN PROGRAMADA / RECURRENTE
 // ============================================================================
 export const FACTURACION_PROGRAMADA_PERMISSIONS = {
-  VER: 'FACTURAS_VER_TODAS',
-  CREAR: 'FACTURAS_CREAR',
-  EDITAR: 'FACTURAS_EDITAR',
-  ELIMINAR: 'FACTURAS_ANULAR'
+  VER: 'FACTURA_PROGRAMADA_VER',
+  CREAR: 'FACTURA_PROGRAMADA_CREAR',
+  EDITAR: 'FACTURA_PROGRAMADA_EDITAR',
+  ELIMINAR: 'FACTURA_PROGRAMADA_ELIMINAR'
 } as const;
 
 // ============================================================================
@@ -143,10 +143,10 @@ export const USUARIOS_PERMISSIONS = {
 } as const;
 
 export const ROLES_PERMISSIONS = {
-  VER: 'ROLES_VER',
   CREAR: 'ROLES_CREAR',
   EDITAR: 'ROLES_EDITAR',
-  ELIMINAR: 'ROLES_ELIMINAR'
+  ELIMINAR: 'ROLES_ELIMINAR',
+  CONFIG: 'CONFIG_ROLES'
 } as const;
 
 // ============================================================================

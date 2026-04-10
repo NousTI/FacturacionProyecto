@@ -29,38 +29,6 @@ export class AuthFacade {
         this.user$ = this.userSubject.asObservable();
         this.isAuthenticatedSubject = new BehaviorSubject<boolean>(this.authService.isAuthenticated());
         this.isAuthenticated$ = this.isAuthenticatedSubject.asObservable();
-
-        // Validar sesión proactivamente al cargar
-        this.checkSessionStatus();
-    }
-
-    private checkSessionStatus(): void {
-        if (this.authService.isAuthenticated()) {
-            this.authService.getPerfil().subscribe({
-                next: (userData) => {
-                    const role = this.authService.getRole();
-                    const updatedUser = { ...userData, role: role || null };
-
-                    this.userSubject.next(updatedUser);
-                    this.authService.updateUser(updatedUser);
-
-                    // Bloqueo Proactivo si el perfil indica que la empresa está inactiva/vencida
-                    if (updatedUser.empresa_lock) {
-                        this.lockService.setLock(updatedUser.empresa_lock.type as any, {
-                            phone: updatedUser.empresa_lock.phone,
-                            message: updatedUser.empresa_lock.message
-                        });
-                    }
-                },
-                error: (err) => {
-                    // Solo si es 401 (Token invalido) o 404 (No existe usuario)
-                    // No cerramos sesión en 402 o 403 para que el modal de bloqueo persista
-                    if (err.status === 401 || err.status === 404) {
-                        this.logout();
-                    }
-                }
-            });
-        }
     }
 
     login(correo: string, clave: string): Observable<any> {
@@ -72,7 +40,11 @@ export class AuthFacade {
                     const userWithRole = response.usuario;
                     const role = (userWithRole.role || this.authService.getRole()) as UserRole;
 
-                    this.userSubject.next({ ...userWithRole, role });
+                    // Asegurar que los permisos esté disponibles con el usuario
+                    const userWithPermissions = { ...userWithRole, role };
+
+                    // Notificar primero (para que PermissionsService se suscriba)
+                    this.userSubject.next(userWithPermissions);
 
                     // Bloqueo Proactivo al iniciar sesión
                     if (userWithRole.empresa_lock) {
@@ -108,6 +80,25 @@ export class AuthFacade {
 
     getUser(): User | null {
         return this.authService.getUser();
+    }
+
+    // Recargar permisos desde el backend (útil cuando se asignan/desasignan permisos)
+    recargarPermisos(): Observable<User | null> {
+        return new Observable(observer => {
+            this.authService.recargarPermisos().subscribe({
+                next: (user) => {
+                    const currentUser = this.authService.getUser();
+                    if (currentUser) {
+                        this.userSubject.next(currentUser);
+                        observer.next(currentUser);
+                    }
+                    observer.complete();
+                },
+                error: (err) => {
+                    observer.error(err);
+                }
+            });
+        });
     }
 
     hasPermission(permission: string | string[]): boolean {

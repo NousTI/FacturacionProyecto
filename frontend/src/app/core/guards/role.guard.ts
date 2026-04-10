@@ -1,17 +1,21 @@
 import { Injectable } from '@angular/core';
 import { CanActivate, ActivatedRouteSnapshot, Router, UrlTree } from '@angular/router';
-import { Observable } from 'rxjs';
-import { AuthFacade } from '../auth/auth.facade';
+import { AuthService } from '../auth/auth.service';
+import { PermissionsService } from '../auth/permissions.service';
 import { UserRole } from '../../domain/enums/role.enum';
 
 @Injectable({
     providedIn: 'root'
 })
 export class RoleGuard implements CanActivate {
-    constructor(private authFacade: AuthFacade, private router: Router) { }
+    constructor(
+        private authService: AuthService,
+        private permissionsService: PermissionsService,
+        private router: Router
+    ) { }
 
     canActivate(route: ActivatedRouteSnapshot): boolean | UrlTree {
-        const userRole = this.authFacade.getUserRole();
+        const userRole = this.authService.getRole();
         const expectedRoles: UserRole[] = route.data['roles'];
 
         if (!userRole) {
@@ -36,7 +40,7 @@ export class RoleGuard implements CanActivate {
 
         // 2. Check Granular Permission
         const requiredPermission = route.data['permission'];
-        if (requiredPermission && !this.authFacade.hasPermission(requiredPermission)) {
+        if (requiredPermission && !this.permissionsService.hasPermission(requiredPermission)) {
             // Si tiene el rol pero no el permiso específico
             if (userRole === UserRole.USUARIO) {
                 return this.router.createUrlTree(['/usuario/dashboard']);
