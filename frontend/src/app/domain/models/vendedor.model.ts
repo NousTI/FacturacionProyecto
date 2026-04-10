@@ -4,22 +4,22 @@ export interface Vendedor {
     apellidos: string;
     email?: string;
     telefono?: string;
-    tipo_identificacion?: string;
-    documento_identidad?: string;
-    porcentaje_comision?: number;
-    porcentaje_comision_inicial?: number;
-    porcentaje_comision_recurrente?: number;
-    tipo_comision?: string;
-    puede_crear_empresas: boolean;
-    puede_gestionar_planes: boolean;
-    puede_acceder_empresas: boolean;
-    puede_ver_reportes: boolean;
+    tipoIdentificacion?: string;
+    documentoIdentidad?: string;
+    porcentajeComision?: number;
+    porcentajeComisionInicial?: number;
+    porcentajeComisionRecurrente?: number;
+    tipoComision?: string;
+    puedeCrearEmpresas: boolean;
+    puedeGestionarPlanes: boolean;
+    puedeAccederEmpresas: boolean;
+    puedeVerReportes: boolean;
     activo: boolean;
     configuracion?: any;
-    fecha_registro?: string;
-    created_at?: string;
-    updated_at?: string;
-    ultimo_acceso?: string;
+    fechaRegistro?: string;
+    createdAt?: string;
+    updatedAt?: string;
+    ultimoAcceso?: string;
 }
 
 export interface VendedorCreate {
@@ -27,17 +27,17 @@ export interface VendedorCreate {
     apellidos: string;
     email: string;
     password: string;
-    tipo_identificacion?: string;
+    tipoIdentificacion?: string;
     telefono?: string;
-    documento_identidad?: string;
-    porcentaje_comision?: number;
-    porcentaje_comision_inicial?: number;
-    porcentaje_comision_recurrente?: number;
-    tipo_comision?: string;
-    puede_crear_empresas?: boolean;
-    puede_gestionar_planes?: boolean;
-    puede_acceder_empresas?: boolean;
-    puede_ver_reportes?: boolean;
+    documentoIdentidad?: string;
+    porcentajeComision?: number;
+    porcentajeComisionInicial?: number;
+    porcentajeComisionRecurrente?: number;
+    tipoComision?: string;
+    puedeCrearEmpresas?: boolean;
+    puedeGestionarPlanes?: boolean;
+    puedeAccederEmpresas?: boolean;
+    puedeVerReportes?: boolean;
     activo?: boolean;
     configuracion?: any;
 }
@@ -45,17 +45,17 @@ export interface VendedorCreate {
 export interface VendedorUpdate {
     nombres?: string;
     apellidos?: string;
-    tipo_identificacion?: string;
+    tipoIdentificacion?: string;
     telefono?: string;
-    documento_identidad?: string;
-    porcentaje_comision?: number;
-    porcentaje_comision_inicial?: number;
-    porcentaje_comision_recurrente?: number;
-    tipo_comision?: string;
-    puede_crear_empresas?: boolean;
-    puede_gestionar_planes?: boolean;
-    puede_acceder_empresas?: boolean;
-    puede_ver_reportes?: boolean;
+    documentoIdentidad?: string;
+    porcentajeComision?: number;
+    porcentajeComisionInicial?: number;
+    porcentajeComisionRecurrente?: number;
+    tipoComision?: string;
+    puedeCrearEmpresas?: boolean;
+    puedeGestionarPlanes?: boolean;
+    puedeAccederEmpresas?: boolean;
+    puedeVerReportes?: boolean;
     activo?: boolean;
     configuracion?: any;
 }

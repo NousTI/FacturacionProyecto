@@ -263,7 +263,7 @@ export class VendedoresPage implements OnInit {
             temp = temp.filter(v =>
                 v.nombre.toLowerCase().includes(q) ||
                 v.email.toLowerCase().includes(q) ||
-                v.documento_identidad.includes(q)
+                v.documentoIdentidad.includes(q)
             );
         }
 
@@ -306,17 +306,17 @@ export class VendedoresPage implements OnInit {
             this.selectedVendedorData = {
                 nombres: event.vendedor.nombres,
                 apellidos: event.vendedor.apellidos,
-                tipo_identificacion: event.vendedor.tipo_identificacion,
-                documento_identidad: event.vendedor.documento_identidad,
+                tipoIdentificacion: event.vendedor.tipoIdentificacion,
+                documentoIdentidad: event.vendedor.documentoIdentidad,
                 email: event.vendedor.email,
                 telefono: event.vendedor.telefono,
-                tipo_comision: event.vendedor.tipo_comision || event.vendedor.tipoComision,
-                porcentaje_comision_inicial: event.vendedor.porcentaje_comision_inicial || event.vendedor.porcentajeComisionInicial,
-                porcentaje_comision_recurrente: event.vendedor.porcentaje_comision_recurrente || event.vendedor.porcentajeComisionRecurrente,
-                puede_crear_empresas: event.vendedor.puede_crear_empresas,
-                puede_gestionar_planes: event.vendedor.puede_gestionar_planes,
-                puede_acceder_empresas: event.vendedor.puede_acceder_empresas,
-                puede_ver_reportes: event.vendedor.puede_ver_reportes
+                tipoComision: event.vendedor.tipoComision,
+                porcentajeComisionInicial: event.vendedor.porcentajeComisionInicial,
+                porcentajeComisionRecurrente: event.vendedor.porcentajeComisionRecurrente,
+                puedeCrearEmpresas: event.vendedor.puedeCrearEmpresas,
+                puedeGestionarPlanes: event.vendedor.puedeGestionarPlanes,
+                puedeAccederEmpresas: event.vendedor.puedeAccederEmpresas,
+                puedeVerReportes: event.vendedor.puedeVerReportes
             };
             this.showFormModal = true;
         } else if (event.type === 'reassign') {
@@ -373,14 +373,14 @@ export class VendedoresPage implements OnInit {
         this.editing = false;
         this.saving = false;
         this.selectedVendedorData = {
-            nombres: '', apellidos: '', documento_identidad: '', email: '', telefono: '',
-            tipo_comision: 'PORCENTAJE',
-            porcentaje_comision_inicial: 0,
-            porcentaje_comision_recurrente: 0,
-            puede_crear_empresas: false,
-            puede_gestionar_planes: false,
-            puede_acceder_empresas: false,
-            puede_ver_reportes: false
+            nombres: '', apellidos: '', tipoIdentificacion: 'CEDULA', documentoIdentidad: '', email: '', telefono: '',
+            tipoComision: 'PORCENTAJE',
+            porcentajeComisionInicial: 0,
+            porcentajeComisionRecurrente: 0,
+            puedeCrearEmpresas: false,
+            puedeGestionarPlanes: false,
+            puedeAccederEmpresas: false,
+            puedeVerReportes: false
         };
         this.showFormModal = true;
     }

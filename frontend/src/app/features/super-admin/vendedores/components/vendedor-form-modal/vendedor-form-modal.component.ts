@@ -73,7 +73,7 @@ import { SriValidators } from '../../../../../shared/utils/sri-validators';
                 <label class="form-label-premium">Tipo de Identificación *</label>
                 <div class="input-premium-group mb-2">
                   <i class="bi bi-tag input-icon"></i>
-                  <select formControlName="tipo_identificacion" class="form-select-premium" (change)="onTipoIdChange()" [disabled]="saving">
+                  <select formControlName="tipoIdentificacion" class="form-select-premium" (change)="onTipoIdChange()" [disabled]="saving">
                     <option value="CEDULA">Cédula</option>
                     <option value="RUC">RUC</option>
                     <option value="PASAPORTE">Pasaporte Internac.</option>
@@ -83,14 +83,14 @@ import { SriValidators } from '../../../../../shared/utils/sri-validators';
                 <label class="form-label-premium">Número de Identificación *</label>
                 <div class="input-premium-group">
                   <i class="bi bi-card-text input-icon"></i>
-                  <input type="text" formControlName="documento_identidad" class="form-control-premium"
-                    [class.is-invalid]="vendedorForm.get('documento_identidad')?.invalid && vendedorForm.get('documento_identidad')?.touched"
+                  <input type="text" formControlName="documentoIdentidad" class="form-control-premium"
+                    [class.is-invalid]="vendedorForm.get('documentoIdentidad')?.invalid && vendedorForm.get('documentoIdentidad')?.touched"
                     [placeholder]="getIdPlaceholder()"
                     [disabled]="saving" [maxlength]="getIdMaxLength()"
-                    (keypress)="vendedorForm.get('tipo_identificacion')?.value === 'PASAPORTE' ? null : onlyNumbers($event)">
+                    (keypress)="vendedorForm.get('tipoIdentificacion')?.value === 'PASAPORTE' ? null : onlyNumbers($event)">
                 </div>
-                <div class="error-feedback" *ngIf="vendedorForm.get('documento_identidad')?.invalid && vendedorForm.get('documento_identidad')?.touched">
-                  {{ vendedorForm.get('documento_identidad')?.errors?.['message'] || 'Identificación inválida o incompleta' }}
+                <div class="error-feedback" *ngIf="vendedorForm.get('documentoIdentidad')?.invalid && vendedorForm.get('documentoIdentidad')?.touched">
+                  {{ vendedorForm.get('documentoIdentidad')?.errors?.['message'] || 'Identificación inválida o incompleta' }}
                 </div>
                 <small class="text-muted d-block mt-1">
                   {{ getIdHint() }}
@@ -135,7 +135,7 @@ import { SriValidators } from '../../../../../shared/utils/sri-validators';
                 <label class="form-label-premium">Tipo de Comisión</label>
                 <div class="input-premium-group">
                   <i class="bi bi-gear input-icon"></i>
-                  <select formControlName="tipo_comision" class="form-select-premium" [disabled]="saving">
+                  <select formControlName="tipoComision" class="form-select-premium" [disabled]="saving">
                     <option value="PORCENTAJE">Porcentaje (%)</option>
                     <option value="FIJA">Monto Fijo ($)</option>
                   </select>
@@ -146,9 +146,9 @@ import { SriValidators } from '../../../../../shared/utils/sri-validators';
                 <label class="form-label-premium">Comisión Inicial (Primer Pago)</label>
                 <div class="input-premium-group">
                   <i class="bi bi-star input-icon"></i>
-                  <input type="number" formControlName="porcentaje_comision_inicial" class="form-control-premium" 
+                  <input type="number" formControlName="porcentajeComisionInicial" class="form-control-premium"
                     placeholder="0" [disabled]="saving">
-                  <span class="input-suffix-premium">{{ vendedorForm.get('tipo_comision')?.value === 'PORCENTAJE' ? '%' : '$' }}</span>
+                  <span class="input-suffix-premium">{{ vendedorForm.get('tipoComision')?.value === 'PORCENTAJE' ? '%' : '$' }}</span>
                 </div>
               </div>
 
@@ -156,13 +156,13 @@ import { SriValidators } from '../../../../../shared/utils/sri-validators';
                 <label class="form-label-premium">Comisión Recurrente (Renovaciones)</label>
                 <div class="input-premium-group">
                   <i class="bi bi-arrow-repeat input-icon"></i>
-                  <input type="number" formControlName="porcentaje_comision_recurrente" class="form-control-premium" 
-                    [class.is-invalid]="vendedorForm.get('porcentaje_comision_recurrente')?.invalid && vendedorForm.get('porcentaje_comision_recurrente')?.touched"
+                  <input type="number" formControlName="porcentajeComisionRecurrente" class="form-control-premium"
+                    [class.is-invalid]="vendedorForm.get('porcentajeComisionRecurrente')?.invalid && vendedorForm.get('porcentajeComisionRecurrente')?.touched"
                     placeholder="0" [disabled]="saving">
-                  <span class="input-suffix-premium">{{ vendedorForm.get('tipo_comision')?.value === 'PORCENTAJE' ? '%' : '$' }}</span>
+                  <span class="input-suffix-premium">{{ vendedorForm.get('tipoComision')?.value === 'PORCENTAJE' ? '%' : '$' }}</span>
                 </div>
-                <div class="error-feedback" *ngIf="vendedorForm.get('porcentaje_comision_recurrente')?.invalid && vendedorForm.get('porcentaje_comision_recurrente')?.touched">
-                  {{ vendedorForm.get('tipo_comision')?.value === 'PORCENTAJE' ? 'Máximo 100%' : 'Monto inválido' }}
+                <div class="error-feedback" *ngIf="vendedorForm.get('porcentajeComisionRecurrente')?.invalid && vendedorForm.get('porcentajeComisionRecurrente')?.touched">
+                  {{ vendedorForm.get('tipoComision')?.value === 'PORCENTAJE' ? 'Máximo 100%' : 'Monto inválido' }}
                 </div>
               </div>
             </div>
@@ -174,9 +174,9 @@ import { SriValidators } from '../../../../../shared/utils/sri-validators';
                 
                 <div class="permission-stack">
                   <!-- Registrar Empresas -->
-                  <div class="permission-horizontal-card" 
-                       [class.active]="vendedorForm.get('puede_crear_empresas')?.value"
-                       (click)="togglePermission('puede_crear_empresas')">
+                  <div class="permission-horizontal-card"
+                       [class.active]="vendedorForm.get('puedeCrearEmpresas')?.value"
+                       (click)="togglePermission('puedeCrearEmpresas')">
                     <div class="d-flex align-items-center gap-3">
                       <div class="perm-icon-wrapper">
                         <i class="bi bi-building-add"></i>
@@ -187,14 +187,14 @@ import { SriValidators } from '../../../../../shared/utils/sri-validators';
                       </div>
                     </div>
                     <div class="plan-check">
-                      <i class="bi" [ngClass]="vendedorForm.get('puede_crear_empresas')?.value ? 'bi-check-circle-fill' : 'bi-circle'"></i>
+                      <i class="bi" [ngClass]="vendedorForm.get('puedeCrearEmpresas')?.value ? 'bi-check-circle-fill' : 'bi-circle'"></i>
                     </div>
                   </div>
 
                   <!-- Gestionar Planes -->
-                  <div class="permission-horizontal-card" 
-                       [class.active]="vendedorForm.get('puede_gestionar_planes')?.value"
-                       (click)="togglePermission('puede_gestionar_planes')">
+                  <div class="permission-horizontal-card"
+                       [class.active]="vendedorForm.get('puedeGestionarPlanes')?.value"
+                       (click)="togglePermission('puedeGestionarPlanes')">
                     <div class="d-flex align-items-center gap-3">
                       <div class="perm-icon-wrapper">
                         <i class="bi bi-arrow-left-right"></i>
@@ -205,14 +205,14 @@ import { SriValidators } from '../../../../../shared/utils/sri-validators';
                       </div>
                     </div>
                     <div class="plan-check">
-                      <i class="bi" [ngClass]="vendedorForm.get('puede_gestionar_planes')?.value ? 'bi-check-circle-fill' : 'bi-circle'"></i>
+                      <i class="bi" [ngClass]="vendedorForm.get('puedeGestionarPlanes')?.value ? 'bi-check-circle-fill' : 'bi-circle'"></i>
                     </div>
                   </div>
 
                   <!-- ACCEDER A EMPRESAS -->
-                  <div class="permission-horizontal-card" 
-                       [class.active]="vendedorForm.get('puede_acceder_empresas')?.value"
-                       (click)="togglePermission('puede_acceder_empresas')">
+                  <div class="permission-horizontal-card"
+                       [class.active]="vendedorForm.get('puedeAccederEmpresas')?.value"
+                       (click)="togglePermission('puedeAccederEmpresas')">
                     <div class="d-flex align-items-center gap-3">
                       <div class="perm-icon-wrapper">
                         <i class="bi bi-folder2-open"></i>
@@ -223,14 +223,14 @@ import { SriValidators } from '../../../../../shared/utils/sri-validators';
                       </div>
                     </div>
                     <div class="plan-check">
-                      <i class="bi" [ngClass]="vendedorForm.get('puede_acceder_empresas')?.value ? 'bi-check-circle-fill' : 'bi-circle'"></i>
+                      <i class="bi" [ngClass]="vendedorForm.get('puedeAccederEmpresas')?.value ? 'bi-check-circle-fill' : 'bi-circle'"></i>
                     </div>
                   </div>
 
                   <!-- Reportes -->
-                  <div class="permission-horizontal-card" 
-                       [class.active]="vendedorForm.get('puede_ver_reportes')?.value"
-                       (click)="togglePermission('puede_ver_reportes')">
+                  <div class="permission-horizontal-card"
+                       [class.active]="vendedorForm.get('puedeVerReportes')?.value"
+                       (click)="togglePermission('puedeVerReportes')">
                     <div class="d-flex align-items-center gap-3">
                       <div class="perm-icon-wrapper">
                         <i class="bi bi-bar-chart-line"></i>
@@ -241,7 +241,7 @@ import { SriValidators } from '../../../../../shared/utils/sri-validators';
                       </div>
                     </div>
                     <div class="plan-check">
-                      <i class="bi" [ngClass]="vendedorForm.get('puede_ver_reportes')?.value ? 'bi-check-circle-fill' : 'bi-circle'"></i>
+                      <i class="bi" [ngClass]="vendedorForm.get('puedeVerReportes')?.value ? 'bi-check-circle-fill' : 'bi-circle'"></i>
                     </div>
                   </div>
 
@@ -437,23 +437,23 @@ export class VendedorFormModalComponent {
     this.vendedorForm = this.fb.group({
       nombres: ['', [Validators.required, Validators.minLength(3)]],
       apellidos: ['', [Validators.required, Validators.minLength(3)]],
-      tipo_identificacion: ['CEDULA', Validators.required],
-      documento_identidad: ['', [Validators.required, SriValidators.identificacionEcuador()]],
+      tipoIdentificacion: ['CEDULA', Validators.required],
+      documentoIdentidad: ['', [Validators.required, SriValidators.identificacionEcuador()]],
       email: [''],
       telefono: ['', [Validators.required, Validators.pattern(/^[0-9]{10}$/)]],
       // Comisiones
-      tipo_comision: ['PORCENTAJE', Validators.required],
-      porcentaje_comision_inicial: [0, [Validators.required, Validators.min(0), Validators.max(100)]],
-      porcentaje_comision_recurrente: [0, [Validators.required, Validators.min(0), Validators.max(100)]],
+      tipoComision: ['PORCENTAJE', Validators.required],
+      porcentajeComisionInicial: [0, [Validators.required, Validators.min(0), Validators.max(100)]],
+      porcentajeComisionRecurrente: [0, [Validators.required, Validators.min(0), Validators.max(100)]],
       // Permisos
-      puede_crear_empresas: [false],
-      puede_gestionar_planes: [false],
-      puede_acceder_empresas: [false],
-      puede_ver_reportes: [false]
+      puedeCrearEmpresas: [false],
+      puedeGestionarPlanes: [false],
+      puedeAccederEmpresas: [false],
+      puedeVerReportes: [false]
     });
 
     // Suscripción reactiva para cambiar validadores automáticamente
-    this.vendedorForm.get('tipo_identificacion')?.valueChanges.subscribe(() => {
+    this.vendedorForm.get('tipoIdentificacion')?.valueChanges.subscribe(() => {
       this.onTipoIdChange();
     });
   }
@@ -461,10 +461,10 @@ export class VendedorFormModalComponent {
   get hasAtLeastOnePermission(): boolean {
     const controls = this.vendedorForm.controls;
     return (
-      controls['puede_crear_empresas'].value ||
-      controls['puede_gestionar_planes'].value ||
-      controls['puede_acceder_empresas'].value ||
-      controls['puede_ver_reportes'].value
+      controls['puedeCrearEmpresas'].value ||
+      controls['puedeGestionarPlanes'].value ||
+      controls['puedeAccederEmpresas'].value ||
+      controls['puedeVerReportes'].value
     );
   }
   togglePermission(controlName: string) {
@@ -476,8 +476,8 @@ export class VendedorFormModalComponent {
   }
 
   onTipoIdChange() {
-    const tipo = this.vendedorForm.get('tipo_identificacion')?.value;
-    const docControl = this.vendedorForm.get('documento_identidad');
+    const tipo = this.vendedorForm.get('tipoIdentificacion')?.value;
+    const docControl = this.vendedorForm.get('documentoIdentidad');
 
     if (docControl) {
       const validators = [Validators.required];
@@ -496,17 +496,17 @@ export class VendedorFormModalComponent {
   }
 
   ngOnInit() {
-    // Escuchar cambios en tipo_comision para ajustar validadores
-    this.vendedorForm.get('tipo_comision')?.valueChanges.subscribe(tipo => {
+    // Escuchar cambios en tipoComision para ajustar validadores
+    this.vendedorForm.get('tipoComision')?.valueChanges.subscribe(tipo => {
       this.updateCommissionValidators(tipo);
     });
 
     // Ejecutar inicialmente
-    this.updateCommissionValidators(this.vendedorForm.get('tipo_comision')?.value);
+    this.updateCommissionValidators(this.vendedorForm.get('tipoComision')?.value);
   }
 
   private updateCommissionValidators(tipo: string) {
-    const fields = ['porcentaje_comision_inicial', 'porcentaje_comision_recurrente'];
+    const fields = ['porcentajeComisionInicial', 'porcentajeComisionRecurrente'];
 
     fields.forEach(field => {
       const control = this.vendedorForm.get(field);
@@ -522,7 +522,7 @@ export class VendedorFormModalComponent {
   }
 
   getIdPlaceholder(): string {
-    const tipo = this.vendedorForm.get('tipo_identificacion')?.value;
+    const tipo = this.vendedorForm.get('tipoIdentificacion')?.value;
     switch (tipo) {
       case 'CEDULA':
         return 'Ej: 1234567890 (10 dígitos)';
@@ -536,14 +536,14 @@ export class VendedorFormModalComponent {
   }
 
   getIdMaxLength(): number {
-    const tipo = this.vendedorForm.get('tipo_identificacion')?.value;
+    const tipo = this.vendedorForm.get('tipoIdentificacion')?.value;
     if (tipo === 'PASAPORTE') return 20;
     if (tipo === 'RUC') return 13;
     return 10; // CEDULA
   }
 
   getIdHint(): string {
-    const tipo = this.vendedorForm.get('tipo_identificacion')?.value;
+    const tipo = this.vendedorForm.get('tipoIdentificacion')?.value;
     switch (tipo) {
       case 'CEDULA':
         return 'Ingresa 10 dígitos de la cédula ecuatoriana válida';

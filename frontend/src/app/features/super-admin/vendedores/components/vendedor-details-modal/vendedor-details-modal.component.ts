@@ -81,20 +81,20 @@ import { Vendedor, VendedorService } from '../../services/vendedor.service';
                 <div class="details-section h-100">
                     <h6 class="section-title mb-3"><i class="bi bi-shield-lock me-2"></i>Permisos</h6>
                     <div class="permissions-list">
-                        <div class="permission-pill" [class.enabled]="vendedor.puede_crear_empresas">
-                            <i class="bi" [class]="vendedor.puede_crear_empresas ? 'bi-check-circle-fill text-success' : 'bi-x-circle text-muted'"></i>
+                        <div class="permission-pill" [class.enabled]="vendedor.puedeCrearEmpresas">
+                            <i class="bi" [class]="vendedor.puedeCrearEmpresas ? 'bi-check-circle-fill text-success' : 'bi-x-circle text-muted'"></i>
                             <span>Crear Empresas</span>
                         </div>
-                        <div class="permission-pill" [class.enabled]="vendedor.puede_acceder_empresas">
-                            <i class="bi" [class]="vendedor.puede_acceder_empresas ? 'bi-check-circle-fill text-success' : 'bi-x-circle text-muted'"></i>
+                        <div class="permission-pill" [class.enabled]="vendedor.puedeAccederEmpresas">
+                            <i class="bi" [class]="vendedor.puedeAccederEmpresas ? 'bi-check-circle-fill text-success' : 'bi-x-circle text-muted'"></i>
                             <span>Acceder Datos</span>
                         </div>
-                        <div class="permission-pill" [class.enabled]="vendedor.puede_gestionar_planes">
-                            <i class="bi" [class]="vendedor.puede_gestionar_planes ? 'bi-check-circle-fill text-success' : 'bi-x-circle text-muted'"></i>
+                        <div class="permission-pill" [class.enabled]="vendedor.puedeGestionarPlanes">
+                            <i class="bi" [class]="vendedor.puedeGestionarPlanes ? 'bi-check-circle-fill text-success' : 'bi-x-circle text-muted'"></i>
                             <span>Gestionar Planes</span>
                         </div>
-                        <div class="permission-pill" [class.enabled]="vendedor.puede_ver_reportes">
-                            <i class="bi" [class]="vendedor.puede_ver_reportes ? 'bi-check-circle-fill text-success' : 'bi-x-circle text-muted'"></i>
+                        <div class="permission-pill" [class.enabled]="vendedor.puedeVerReportes">
+                            <i class="bi" [class]="vendedor.puedeVerReportes ? 'bi-check-circle-fill text-success' : 'bi-x-circle text-muted'"></i>
                             <span>Ver Reportes</span>
                         </div>
                     </div>

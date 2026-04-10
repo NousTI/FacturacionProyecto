@@ -18,7 +18,8 @@ export interface Vendedor {
     apellidos?: string;
     email: string;
     telefono: string;
-    documento_identidad: string;
+    tipoIdentificacion?: string;
+    documentoIdentidad: string;
     activo: boolean;
     empresasAsignadas: number;
     empresas_asignadas?: number;
@@ -31,10 +32,10 @@ export interface Vendedor {
     porcentajeComisionInicial: number;
     porcentajeComisionRecurrente: number;
     tipoComision: string;
-    puede_crear_empresas: boolean;
-    puede_gestionar_planes: boolean;
-    puede_acceder_empresas: boolean;
-    puede_ver_reportes: boolean;
+    puedeCrearEmpresas: boolean;
+    puedeGestionarPlanes: boolean;
+    puedeAccederEmpresas: boolean;
+    puedeVerReportes: boolean;
 }
 
 @Injectable({
@@ -74,7 +75,8 @@ export class VendedorService {
             apellidos: data.apellidos,
             email: data.email,
             telefono: data.telefono || '',
-            documento_identidad: data.documento_identidad || '',
+            tipoIdentificacion: data.tipo_identificacion || 'CEDULA',
+            documentoIdentidad: data.documento_identidad || '',
             activo: data.activo,
             empresasAsignadas: data.empresas_asignadas || 0,
             empresasActivas: data.empresas_activas || 0,
@@ -84,10 +86,10 @@ export class VendedorService {
             porcentajeComisionInicial: data.porcentaje_comision_inicial || 0,
             porcentajeComisionRecurrente: data.porcentaje_comision_recurrente || 0,
             tipoComision: data.tipo_comision || 'PORCENTAJE',
-            puede_crear_empresas: data.puede_crear_empresas || false,
-            puede_gestionar_planes: data.puede_gestionar_planes || false,
-            puede_acceder_empresas: data.puede_acceder_empresas || false,
-            puede_ver_reportes: data.puede_ver_reportes || false
+            puedeCrearEmpresas: data.puede_crear_empresas || false,
+            puedeGestionarPlanes: data.puede_gestionar_planes || false,
+            puedeAccederEmpresas: data.puede_acceder_empresas || false,
+            puedeVerReportes: data.puede_ver_reportes || false
         };
     }
 
