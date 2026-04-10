@@ -55,7 +55,7 @@ import { HasPermissionDirective } from '../../../../shared/directives/has-permis
             </td>
             <td class="text-center">
               <div class="action-buttons">
-                <button class="btn-icon btn-outline-danger" (click)="onDelete.emit(mov)" title="Eliminar" *appHasPermission="'INVENTARIO_ELIMINAR'">
+                <button class="btn-icon btn-outline-danger" (click)="onDelete.emit(mov)" title="Eliminar" *hasPermission="'INVENTARIO_ELIMINAR'">
                   <i class="bi bi-trash"></i>
                 </button>
               </div>

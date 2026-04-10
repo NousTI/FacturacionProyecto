@@ -7,6 +7,7 @@ import { UserRole } from '../../domain/enums/role.enum';
 import { Router } from '@angular/router';
 import { UiService } from '../../shared/services/ui.service';
 import { LockStatusService } from '../services/lock-status.service';
+import { getFirstAccessibleModule } from '../../constants/module-permissions';
 
 import { ROLES } from '../../../shared/constantes/app.constants';
 
@@ -160,14 +161,28 @@ export class AuthFacade {
         console.log(`[navigateBasedOnRole] Rol recibido: ${role}`);
         if (role === UserRole.SUPERADMIN) {
             console.log('[navigateBasedOnRole] Navegando a /');
-            this.router.navigate(['/']); // Superadmin va a raíz que es su dashboard
+            this.router.navigate(['/']);
         } else if (role === UserRole.VENDEDOR) {
             console.log('[navigateBasedOnRole] Navegando a /vendedor');
             this.router.navigate(['/vendedor']);
-        } else {
-            // Usuario regular
-            console.log('[navigateBasedOnRole] Navegando a /usuario');
-            this.router.navigate(['/usuario']);
+        } else if (role === UserRole.USUARIO) {
+            // Usuario regular: buscar el primer módulo al que tenga acceso
+            const user = this.authService.getUser();
+            const permisos = (user?.permisos || []) as any[];
+
+            // Normalizar permisos a strings
+            const permisoCodes = permisos.map(p =>
+              typeof p === 'string' ? p : p.codigo
+            );
+
+            const firstModule = getFirstAccessibleModule(permisoCodes);
+            if (firstModule) {
+                console.log(`[navigateBasedOnRole] Navegando a ${firstModule.path}`);
+                this.router.navigate([firstModule.path]);
+            } else {
+                console.log('[navigateBasedOnRole] Usuario sin permisos, navegando a /usuario/sin-permisos');
+                this.router.navigate(['/usuario/sin-permisos']);
+            }
         }
     }
 }

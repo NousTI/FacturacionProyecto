@@ -4,6 +4,7 @@ import { ProfilePage } from './profile/profile.page';
 import { RoleGuard } from '../../core/guards/role.guard';
 import { permissionGuard } from '../../core/guards/permission.guard';
 import { UserRole } from '../../domain/enums/role.enum';
+import { SinPermisosPage } from './sin-permisos/sin-permisos.page';
 
 // New Component Imports
 import { DashboardPage } from './dashboard/dashboard.page';
@@ -32,6 +33,10 @@ const routes: Routes = [
         path: '',
         redirectTo: 'dashboard',
         pathMatch: 'full'
+    },
+    {
+        path: 'sin-permisos',
+        component: SinPermisosPage
     },
     {
         path: 'dashboard',

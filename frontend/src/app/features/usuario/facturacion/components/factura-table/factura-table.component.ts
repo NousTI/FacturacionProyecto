@@ -103,61 +103,59 @@ import { HasPermissionDirective } from '../../../../../shared/directives/has-per
                     </a>
                   </li>
 
-                  <li *ngIf="factura.estado === 'BORRADOR'">
-                    <a 
-                      *appHasPermission="'FACTURAS_EDITAR'"
-                      class="dropdown-item py-2" href="javascript:void(0)" (click)="onAction.emit({type: 'edit', factura})">
-                      <div class="icon-item bg-soft-primary"><i class="bi bi-pencil-fill"></i></div>
-                      <span class="ms-2">Editar</span>
-                    </a>
-                  </li>
+                  <ng-container *hasPermission="'FACTURAS_EDITAR'">
+                    <li *ngIf="factura.estado === 'BORRADOR'">
+                      <a class="dropdown-item py-2" href="javascript:void(0)" (click)="onAction.emit({type: 'edit', factura})">
+                        <div class="icon-item bg-soft-primary"><i class="bi bi-pencil-fill"></i></div>
+                        <span class="ms-2">Editar</span>
+                      </a>
+                    </li>
+                  </ng-container>
 
-                   <li *ngIf="['BORRADOR', 'DEVUELTA', 'ERROR_TECNICO'].includes(factura.estado)">
-                    <a 
-                      *appHasPermission="'FACTURAS_ENVIAR_SRI'"
-                      class="dropdown-item py-2" href="javascript:void(0)" (click)="onAction.emit({type: 'sri', factura})">
-                      <div class="icon-item bg-soft-success"><i class="bi bi-cloud-arrow-up-fill"></i></div>
-                      <span class="ms-2 text-success">Enviar al SRI</span>
-                    </a>
-                  </li>
+                  <ng-container *hasPermission="'FACTURAS_ENVIAR_SRI'">
+                    <li *ngIf="['BORRADOR', 'DEVUELTA', 'ERROR_TECNICO'].includes(factura.estado)">
+                      <a class="dropdown-item py-2" href="javascript:void(0)" (click)="onAction.emit({type: 'sri', factura})">
+                        <div class="icon-item bg-soft-success"><i class="bi bi-cloud-arrow-up-fill"></i></div>
+                        <span class="ms-2 text-success">Enviar al SRI</span>
+                      </a>
+                    </li>
 
-                  <li *ngIf="factura.estado === 'EN_PROCESO'">
-                    <a 
-                      *appHasPermission="'FACTURAS_ENVIAR_SRI'"
-                      class="dropdown-item py-2" href="javascript:void(0)" (click)="onAction.emit({type: 'consultar', factura})">
-                      <div class="icon-item bg-soft-info"><i class="bi bi-arrow-clockwise"></i></div>
-                      <span class="ms-2 text-info">Consultar SRI</span>
-                    </a>
-                  </li>
-                  
-                   <li *ngIf="factura.estado === 'AUTORIZADA' || factura.estado === 'ANULADA'">
-                    <a 
-                      *appHasPermission="'FACTURAS_DESCARGAR_PDF'"
-                      class="dropdown-item py-2" href="javascript:void(0)" (click)="onAction.emit({type: 'pdf', factura})">
-                      <div class="icon-item bg-soft-danger"><i class="bi bi-file-earmark-pdf-fill"></i></div>
-                      <span class="ms-2">Descargar PDF</span>
-                    </a>
-                  </li>
+                    <li *ngIf="factura.estado === 'EN_PROCESO'">
+                      <a class="dropdown-item py-2" href="javascript:void(0)" (click)="onAction.emit({type: 'consultar', factura})">
+                        <div class="icon-item bg-soft-info"><i class="bi bi-arrow-clockwise"></i></div>
+                        <span class="ms-2 text-info">Consultar SRI</span>
+                      </a>
+                    </li>
+                  </ng-container>
 
-                  <li *ngIf="factura.estado === 'AUTORIZADA' || factura.estado === 'ANULADA'">
-                    <a 
-                      *appHasPermission="'FACTURAS_ENVIAR_EMAIL'"
-                      class="dropdown-item py-2" href="javascript:void(0)" (click)="onAction.emit({type: 'email', factura})">
-                      <div class="icon-item bg-soft-secondary"><i class="bi bi-envelope-fill"></i></div>
-                      <span class="ms-2">Enviar Email</span>
-                    </a>
-                  </li>
+                  <ng-container *hasPermission="'FACTURAS_DESCARGAR_PDF'">
+                    <li *ngIf="factura.estado === 'AUTORIZADA' || factura.estado === 'ANULADA'">
+                      <a class="dropdown-item py-2" href="javascript:void(0)" (click)="onAction.emit({type: 'pdf', factura})">
+                        <div class="icon-item bg-soft-danger"><i class="bi bi-file-earmark-pdf-fill"></i></div>
+                        <span class="ms-2">Descargar PDF</span>
+                      </a>
+                    </li>
+                  </ng-container>
 
-                  <li *ngIf="factura.estado === 'AUTORIZADA'">
-                    <a 
-                      *appHasPermission="'FACTURAS_ANULAR'"
-                      class="dropdown-item py-2 text-danger" href="javascript:void(0)" (click)="onAction.emit({type: 'anular', factura})">
-                      <div class="icon-item bg-soft-danger"><i class="bi bi-x-circle-fill"></i></div>
-                      <span class="ms-2">Anular Factura</span>
-                    </a>
-                  </li>
+                  <ng-container *hasPermission="'FACTURAS_ENVIAR_EMAIL'">
+                    <li *ngIf="factura.estado === 'AUTORIZADA' || factura.estado === 'ANULADA'">
+                      <a class="dropdown-item py-2" href="javascript:void(0)" (click)="onAction.emit({type: 'email', factura})">
+                        <div class="icon-item bg-soft-secondary"><i class="bi bi-envelope-fill"></i></div>
+                        <span class="ms-2">Enviar Email</span>
+                      </a>
+                    </li>
+                  </ng-container>
 
-                  <ng-container *appHasPermission="'FACTURAS_EDITAR'">
+                  <ng-container *hasPermission="'FACTURAS_ANULAR'">
+                    <li *ngIf="factura.estado === 'AUTORIZADA'">
+                      <a class="dropdown-item py-2 text-danger" href="javascript:void(0)" (click)="onAction.emit({type: 'anular', factura})">
+                        <div class="icon-item bg-soft-danger"><i class="bi bi-x-circle-fill"></i></div>
+                        <span class="ms-2">Anular Factura</span>
+                      </a>
+                    </li>
+                  </ng-container>
+
+                  <ng-container *hasPermission="'FACTURAS_EDITAR'">
                     <li *ngIf="factura.estado === 'AUTORIZADA'">
                       <a class="dropdown-item py-2" href="javascript:void(0)" (click)="onAction.emit({type: 'abono', factura})">
                         <div class="icon-item bg-soft-primary">
@@ -166,18 +164,14 @@ import { HasPermissionDirective } from '../../../../../shared/directives/has-per
                         <span class="ms-2 fw-bold text-primary">Detalle de Pagos / Abonos</span>
                       </a>
                     </li>
+
+                    <li *ngIf="factura.estado === 'BORRADOR'">
+                      <a class="dropdown-item py-2 text-danger" href="javascript:void(0)" (click)="onAction.emit({type: 'delete', factura})">
+                        <div class="icon-item bg-soft-danger"><i class="bi bi-trash3-fill"></i></div>
+                        <span class="ms-2">Eliminar</span>
+                      </a>
+                    </li>
                   </ng-container>
-
-
-
-                  <li *ngIf="factura.estado === 'BORRADOR'">
-                    <a 
-                      *appHasPermission="'FACTURAS_EDITAR'"
-                      class="dropdown-item py-2 text-danger" href="javascript:void(0)" (click)="onAction.emit({type: 'delete', factura})">
-                      <div class="icon-item bg-soft-danger"><i class="bi bi-trash3-fill"></i></div>
-                      <span class="ms-2">Eliminar</span>
-                    </a>
-                  </li>
                 </ul>
               </div>
             </td>

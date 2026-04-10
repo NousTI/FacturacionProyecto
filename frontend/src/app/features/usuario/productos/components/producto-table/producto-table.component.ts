@@ -16,7 +16,7 @@ import { HasPermissionDirective } from '../../../../../core/directives/has-permi
             <th style="width: 140px">Referencia</th>
             <th style="width: 130px">Estado</th>
             <th style="width: 140px">Venta (USD)</th>
-            <th *appHasPermission="'PRODUCTOS_VER_COSTOS'" style="width: 130px">Costo (USD)</th>
+            <th *hasPermission="'PRODUCTOS_VER_COSTOS'" style="width: 130px">Costo (USD)</th>
             <th style="width: 160px">Disponibilidad</th>
             <th class="text-end pe-4" style="width: 80px">Gesti&oacute;n</th>
           </tr>
@@ -46,7 +46,7 @@ import { HasPermissionDirective } from '../../../../../core/directives/has-permi
             <td>
               <span class="price-lux">{{ producto.precio | currency:'USD' }}</span>
             </td>
-            <td *appHasPermission="'PRODUCTOS_VER_COSTOS'">
+            <td *hasPermission="'PRODUCTOS_VER_COSTOS'">
               <span class="cost-lux">{{ producto.costo !== null ? (producto.costo | currency:'USD') : '---' }}</span>
             </td>
             <td>
@@ -83,14 +83,14 @@ import { HasPermissionDirective } from '../../../../../core/directives/has-permi
                       <span class="ms-2">Detalles</span>
                     </a>
                   </li>
-                  <li *appHasPermission="'PRODUCTOS_EDITAR'">
+                  <li *hasPermission="'PRODUCTOS_EDITAR'">
                     <a class="dropdown-item py-2" href="javascript:void(0)" (click)="onAction.emit({type: 'edit', producto})">
                       <div class="icon-item bg-soft-primary"><i class="bi bi-pencil-fill"></i></div>
                       <span class="ms-2">Editar</span>
                     </a>
                   </li>
-                  <li *appHasPermission="'PRODUCTOS_ELIMINAR'"><hr class="dropdown-divider mx-2 opacity-10"></li>
-                  <li *appHasPermission="'PRODUCTOS_ELIMINAR'">
+                  <li *hasPermission="'PRODUCTOS_ELIMINAR'"><hr class="dropdown-divider mx-2 opacity-10"></li>
+                  <li *hasPermission="'PRODUCTOS_ELIMINAR'">
                     <a class="dropdown-item py-2 text-danger" href="javascript:void(0)" (click)="onAction.emit({type: 'delete', producto})">
                       <div class="icon-item bg-soft-danger"><i class="bi bi-trash3-fill"></i></div>
                       <span class="ms-2">Eliminar</span>

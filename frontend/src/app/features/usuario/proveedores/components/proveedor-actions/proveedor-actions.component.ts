@@ -42,7 +42,7 @@ import { HasPermissionDirective } from '../../../../../shared/directives/has-per
             </div>
 
             <button
-              *appHasPermission="'PROVEEDOR_CREAR'"
+              *hasPermission="'PROVEEDOR_CREAR'"
               (click)="onCreate.emit()"
               class="btn-create-lux"
             >

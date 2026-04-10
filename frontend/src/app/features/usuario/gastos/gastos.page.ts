@@ -77,7 +77,7 @@ import { CategoriaFormComponent } from './components/categoria-form.component';
                 </select>
               </div>
               <div class="col-md-3 d-flex gap-2">
-                <button *appHasPermission="'GASTOS_CREAR'" class="btn btn-primary w-100" (click)="openCreateGastoModal()">
+                <button *hasPermission="'GASTOS_CREAR'" class="btn btn-primary w-100" (click)="openCreateGastoModal()">
                   <i class="bi bi-plus-lg me-2"></i> Nuevo Gasto
                 </button>
                 <button class="btn btn-light" (click)="refresh()" [disabled]="isLoading">
@@ -122,13 +122,13 @@ import { CategoriaFormComponent } from './components/categoria-form.component';
                         <button class="btn-action view" (click)="handleViewGasto(gasto)" title="Ver Detalles"><i class="bi bi-eye"></i></button>
                       </ng-container>
                       <ng-template #editGastoBtn>
-                        <button *appHasPermission="'GASTOS_EDITAR'" class="btn-action edit" (click)="handleEditGasto(gasto)" title="Editar"><i class="bi bi-pencil"></i></button>
+                        <button *hasPermission="'GASTOS_EDITAR'" class="btn-action edit" (click)="handleEditGasto(gasto)" title="Editar"><i class="bi bi-pencil"></i></button>
                       </ng-template>
 
-                      <ng-container *appHasPermission="'PAGO_GASTO_CREAR'">
+                      <ng-container *hasPermission="'PAGO_GASTO_CREAR'">
                         <button class="btn-action pay" *ngIf="gasto.estado_pago !== 'pagado'" (click)="handleQuickPay(gasto)" title="Registrar Pago"><i class="bi bi-cash"></i></button>
                       </ng-container>
-                      <button *appHasPermission="'GASTOS_ELIMINAR'" class="btn-action delete" (click)="handleDeleteGasto(gasto)" title="Eliminar"><i class="bi bi-trash"></i></button>
+                      <button *hasPermission="'GASTOS_ELIMINAR'" class="btn-action delete" (click)="handleDeleteGasto(gasto)" title="Eliminar"><i class="bi bi-trash"></i></button>
                     </div>
                   </td>
                 </tr>
@@ -148,7 +148,7 @@ import { CategoriaFormComponent } from './components/categoria-form.component';
         <!-- SECCIÓN 2: PAGOS -->
         <div *ngSwitchCase="'pagos'" class="fade-in">
           <div class="toolbar-minimal mb-3">
-             <button *appHasPermission="'PAGO_GASTO_CREAR'" class="btn btn-primary" (click)="openCreatePagoModal()">
+             <button *hasPermission="'PAGO_GASTO_CREAR'" class="btn btn-primary" (click)="openCreatePagoModal()">
                 <i class="bi bi-plus-lg me-1"></i> Registrar Pago
               </button>
           </div>
@@ -181,10 +181,10 @@ import { CategoriaFormComponent } from './components/categoria-form.component';
                         <button class="btn-action view" (click)="handleViewPago(pago)" title="Ver Detalles"><i class="bi bi-eye"></i></button>
                       </ng-container>
                       <ng-template #editPagoBtn>
-                        <button *appHasPermission="'PAGO_GASTO_EDITAR'" class="btn-action edit" (click)="handleEditPago(pago)" title="Editar"><i class="bi bi-pencil"></i></button>
+                        <button *hasPermission="'PAGO_GASTO_EDITAR'" class="btn-action edit" (click)="handleEditPago(pago)" title="Editar"><i class="bi bi-pencil"></i></button>
                       </ng-template>
 
-                      <button *appHasPermission="'PAGO_GASTO_ELIMINAR'" class="btn-action delete" (click)="handleDeletePago(pago)" title="Eliminar"><i class="bi bi-trash"></i></button>
+                      <button *hasPermission="'PAGO_GASTO_ELIMINAR'" class="btn-action delete" (click)="handleDeletePago(pago)" title="Eliminar"><i class="bi bi-trash"></i></button>
                     </div>
                   </td>
                 </tr>
@@ -199,7 +199,7 @@ import { CategoriaFormComponent } from './components/categoria-form.component';
         <!-- SECCIÓN 3: CATEGORÍAS -->
         <div *ngSwitchCase="'categorias'" class="fade-in">
           <div class="toolbar-minimal mb-3">
-             <button *appHasPermission="'CATEGORIA_GASTO_CREAR'" class="btn btn-primary" (click)="openCreateCategoriaModal()">
+             <button *hasPermission="'CATEGORIA_GASTO_CREAR'" class="btn btn-primary" (click)="openCreateCategoriaModal()">
                 <i class="bi bi-plus-lg me-1"></i> Nueva Categoría
               </button>
           </div>
@@ -226,8 +226,8 @@ import { CategoriaFormComponent } from './components/categoria-form.component';
                   </td>
                   <td class="text-end pe-4">
                     <div class="action-buttons justify-content-end">
-                      <button *appHasPermission="'CATEGORIA_GASTO_EDITAR'" class="btn-action edit" (click)="handleEditCategoria(cat)"><i class="bi bi-pencil"></i></button>
-                      <button *appHasPermission="'CATEGORIA_GASTO_ELIMINAR'" class="btn-action delete" (click)="handleDeleteCategoria(cat)"><i class="bi bi-trash"></i></button>
+                      <button *hasPermission="'CATEGORIA_GASTO_EDITAR'" class="btn-action edit" (click)="handleEditCategoria(cat)"><i class="bi bi-pencil"></i></button>
+                      <button *hasPermission="'CATEGORIA_GASTO_ELIMINAR'" class="btn-action delete" (click)="handleDeleteCategoria(cat)"><i class="bi bi-trash"></i></button>
                     </div>
                   </td>
                 </tr>

@@ -94,7 +94,7 @@ def crear_usuario(
 def actualizar_usuario(
     id: UUID,
     datos: UsuarioActualizacion,
-    usuario: dict = Depends(requerir_permiso(PermissionCodes.USUARIOS_EMPRESA_EDITAR)),
+    usuario: dict = Depends(obtener_usuario_actual),
     controller: UsuarioController = Depends()
 ):
     """Update user"""

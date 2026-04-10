@@ -82,13 +82,13 @@ import { USUARIOS_PERMISSIONS } from '../../../../../constants/permission-codes'
                           <span class="ms-2">Ver Perfil</span>
                         </a>
                       </li>
-                      <li *appHasPermission="'USUARIOS_EMPRESA_EDITAR'">
+                      <li *hasPermission="'USUARIOS_EMPRESA_EDITAR'">
                         <a class="dropdown-item rounded-3 py-2" href="javascript:void(0)" (click)="onAction.emit({type: 'edit', usuario})">
                           <i class="bi bi-pencil-square text-corporate"></i>
                           <span class="ms-2">Editar Datos</span>
                         </a>
                       </li>
-                      <li *appHasPermission="'USUARIOS_EMPRESA_EDITAR'">
+                      <li *hasPermission="'USUARIOS_EMPRESA_EDITAR'">
                         <a class="dropdown-item rounded-3 py-2"
                            [class.disabled]="isCurrentUser(usuario)"
                            href="javascript:void(0)"
@@ -98,7 +98,7 @@ import { USUARIOS_PERMISSIONS } from '../../../../../constants/permission-codes'
                         </a>
                       </li>
                       <li><hr class="dropdown-divider mx-2"></li>
-                      <li *appHasPermission="'USUARIOS_EMPRESA_ELIMINAR'">
+                      <li *hasPermission="'USUARIOS_EMPRESA_ELIMINAR'">
                         <a class="dropdown-item rounded-3 py-2 text-danger"
                            [class.disabled]="isCurrentUser(usuario)"
                            href="javascript:void(0)"

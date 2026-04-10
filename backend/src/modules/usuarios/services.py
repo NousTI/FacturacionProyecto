@@ -166,21 +166,27 @@ class ServicioUsuarios:
         return self.repo.crear_usuario(user_data, usuario_data, log_data)
     
     def actualizar_usuario(self, id: UUID, data: UsuarioActualizacion, usuario_actual: dict):
-        """Update user (verify empresa ownership)"""
-        usuario = self.obtener_usuario(id, usuario_actual)
-        
+        """Update user (allow self-update, require permission for others)"""
+        is_self_update = str(id) == str(usuario_actual.get('usuario_id')) or str(id) == str(usuario_actual.get('id'))
+
+        # Si no es autoupdate, validar permisos
+        if not is_self_update:
+            usuario = self.obtener_usuario(id, usuario_actual)
+        else:
+            usuario = self.repo.obtener_usuario(id)
+            if not usuario:
+                raise AppError("Usuario no encontrado", 404)
+
         update_data = data.model_dump(exclude_unset=True)
-        
-        # New Rule: Cannot change own role
-        if str(id) == str(usuario_actual.get('usuario_id')) or str(id) == str(usuario_actual.get('id')):
+
+        # Cannot change own role
+        if is_self_update:
             if 'empresa_rol_id' in update_data:
-                # Permitiendo actualizar otros campos pero no el rol a sí mismo
                 update_data.pop('empresa_rol_id')
                 logger.warning(f"[SEGURIDAD] Usuario {usuario_actual.get('email')} intentó cambiar su propio rol. Acción bloqueada.")
 
         res = self.repo.actualizar_usuario(id, update_data)
-        
-        # Note: No registramos en users_logs porque esa tabla es solo para eventos de autenticación
+
         return res
     
     def eliminar_usuario(self, id: UUID, usuario_actual: dict):

@@ -41,7 +41,7 @@ import { HasPermissionDirective } from '../../../../../shared/directives/has-per
           </div>
 
           <button 
-            *appHasPermission="'CLIENTES_EXPORTAR'"
+            *hasPermission="'CLIENTES_EXPORTAR'"
             (click)="onExport.emit()"
             class="btn btn-light"
           >
@@ -49,7 +49,7 @@ import { HasPermissionDirective } from '../../../../../shared/directives/has-per
           </button>
 
           <button 
-            *appHasPermission="'CLIENTES_CREAR'"
+            *hasPermission="'CLIENTES_CREAR'"
             (click)="onCreate.emit()"
             class="btn btn-primary"
           >

@@ -89,9 +89,9 @@ import { HasPermissionDirective } from '../../../../../shared/directives/has-per
               </div>
 
               <div class="ms-md-2">
-                <button 
-                  *appHasPermission="'FACTURAS_CREAR'"
-                  class="btn-create-lux" 
+                <button
+                  *hasPermission="'FACTURAS_CREAR'"
+                  class="btn-create-lux"
                   [disabled]="!!sriError"
                   (click)="!sriError && onCreate.emit()">
                   <i class="bi bi-plus-lg"></i>

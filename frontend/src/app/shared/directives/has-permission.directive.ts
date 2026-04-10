@@ -4,7 +4,7 @@ import { AuthFacade } from '../../core/auth/auth.facade';
 import { Subscription } from 'rxjs';
 
 @Directive({
-    selector: '[appHasPermission]',
+    selector: '[hasPermission]',
     standalone: true
 })
 export class HasPermissionDirective implements OnInit, OnDestroy {
@@ -19,7 +19,7 @@ export class HasPermissionDirective implements OnInit, OnDestroy {
     ) { }
 
     @Input()
-    set appHasPermission(val: string | string[]) {
+    set hasPermission(val: string | string[]) {
         this.permissions = val;
         this.updateView();
     }

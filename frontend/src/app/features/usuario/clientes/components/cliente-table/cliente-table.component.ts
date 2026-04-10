@@ -78,10 +78,10 @@ import { HasPermissionDirective } from '../../../../../shared/directives/has-per
                 <button class="btn-action view" (click)="onAction.emit({type: 'view', cliente})" title="Ver Detalles">
                   <i class="bi bi-eye"></i>
                 </button>
-                <button *appHasPermission="'CLIENTES_EDITAR'" class="btn-action edit" (click)="onAction.emit({type: 'edit', cliente})" title="Editar">
+                <button *hasPermission="'CLIENTES_EDITAR'" class="btn-action edit" (click)="onAction.emit({type: 'edit', cliente})" title="Editar">
                   <i class="bi bi-pencil"></i>
                 </button>
-                <button *appHasPermission="'CLIENTES_ELIMINAR'" class="btn-action delete" (click)="onAction.emit({type: 'delete', cliente})" title="Eliminar">
+                <button *hasPermission="'CLIENTES_ELIMINAR'" class="btn-action delete" (click)="onAction.emit({type: 'delete', cliente})" title="Eliminar">
                   <i class="bi bi-trash"></i>
                 </button>
               </div>

@@ -55,7 +55,7 @@ import { HasPermissionDirective } from '../../../../../core/directives/has-permi
             </div>
 
             <button
-              *appHasPermission="'PRODUCTOS_CREAR'"
+              *hasPermission="'PRODUCTOS_CREAR'"
               (click)="onCreate.emit()"
               class="btn-create-lux"
             >

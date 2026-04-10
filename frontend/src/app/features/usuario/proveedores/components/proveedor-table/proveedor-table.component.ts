@@ -92,20 +92,20 @@ import { HasPermissionDirective } from '../../../../../shared/directives/has-per
                         <span>Ver Detalle</span>
                       </button>
                     </li>
-                    <li *appHasPermission="'PROVEEDOR_EDITAR'">
+                    <li *hasPermission="'PROVEEDOR_EDITAR'">
                       <button class="dropdown-item" (click)="onAction.emit({type: 'edit', proveedor})">
                         <i class="bi bi-pencil-square"></i>
                         <span>Editar</span>
                       </button>
                     </li>
-                    <li *appHasPermission="'PROVEEDOR_EDITAR'">
+                    <li *hasPermission="'PROVEEDOR_EDITAR'">
                       <button class="dropdown-item" (click)="onAction.emit({type: 'toggle', proveedor})">
                         <i class="bi" [ngClass]="proveedor.activo ? 'bi-toggle-off' : 'bi-toggle-on'"></i>
                         <span>{{ proveedor.activo ? 'Desactivar' : 'Activar' }}</span>
                       </button>
                     </li>
-                    <li *appHasPermission="'PROVEEDOR_ELIMINAR'"><hr class="dropdown-divider"></li>
-                    <li *appHasPermission="'PROVEEDOR_ELIMINAR'">
+                    <li *hasPermission="'PROVEEDOR_ELIMINAR'"><hr class="dropdown-divider"></li>
+                    <li *hasPermission="'PROVEEDOR_ELIMINAR'">
                       <button class="dropdown-item text-danger" (click)="onAction.emit({type: 'delete', proveedor})">
                         <i class="bi bi-trash3"></i>
                         <span>Eliminar</span>

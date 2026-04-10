@@ -29,7 +29,7 @@ import { HasPermissionDirective } from '../../../../shared/directives/has-permis
           <input type="date" formControlName="fecha_fin" class="form-control-sm">
         </div>
         <div class="filter-actions">
-          <button type="button" class="btn-primary" (click)="onCreate.emit()" *appHasPermission="'INVENTARIO_CREAR'">
+          <button type="button" class="btn-primary" (click)="onCreate.emit()" *hasPermission="'INVENTARIO_CREAR'">
             <i class="bi bi-plus-lg"></i> Nuevo Movimiento
           </button>
           <button type="button" class="btn-refresh" (click)="onFilter.emit(filterForm.value)" [disabled]="isLoading">

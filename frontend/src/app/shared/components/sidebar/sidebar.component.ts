@@ -54,7 +54,7 @@ import { SidebarService } from './sidebar.service';
 
             <!-- Vendedor Menu -->
             <ng-container *ngIf="isVendedor$ | async">
-               <a *appHasPermission="['acceder_empresas', 'crear_empresas']" routerLink="/vendedor/empresas" routerLinkActive="active" class="menu-item px-3 mb-1" title="Empresas">
+               <a *hasPermission="['acceder_empresas', 'crear_empresas']" routerLink="/vendedor/empresas" routerLinkActive="active" class="menu-item px-3 mb-1" title="Empresas">
                  <i class="bi bi-building"></i> <span class="menu-text ms-3">Empresas</span>
                </a>
                 <a routerLink="/vendedor/pagos" routerLinkActive="active" class="menu-item px-3 mb-1" title="Pagos">
@@ -69,7 +69,7 @@ import { SidebarService } from './sidebar.service';
                <a routerLink="/vendedor/planes" routerLinkActive="active" class="menu-item px-3 mb-1" title="Planes">
                  <i class="bi bi-tags"></i> <span class="menu-text ms-3">Planes</span>
                </a>
-               <a *appHasPermission="'REPORTES_VER'" routerLink="/vendedor/reportes" routerLinkActive="active" class="menu-item px-3 mb-1" title="Reportes">
+               <a *hasPermission="'REPORTES_VER'" routerLink="/vendedor/reportes" routerLinkActive="active" class="menu-item px-3 mb-1" title="Reportes">
                  <i class="bi bi-bar-chart"></i> <span class="menu-text ms-3">Reportes</span>
                </a>
                <a routerLink="/vendedor/renovaciones" routerLinkActive="active" class="menu-item px-3 mb-1" title="Renovaciones">
@@ -82,55 +82,55 @@ import { SidebarService } from './sidebar.service';
 
             <!-- Usuario Menu -->
             <ng-container *ngIf="isUsuario$ | async">
-              <a *appHasPermission="'CONFIG_EMPRESA'" routerLink="/usuario/empresa" routerLinkActive="active" class="menu-item px-3 mb-1" title="Empresa">
+              <a *hasPermission="'CONFIG_EMPRESA'" routerLink="/usuario/empresa" routerLinkActive="active" class="menu-item px-3 mb-1" title="Empresa">
                  <i class="bi bi-building"></i> <span class="menu-text ms-3">Empresa</span>
               </a>
               
               <ng-container *ngIf="isEmpresaActiva$ | async">
                 <ng-container *ngIf="isSuscripcionActiva$ | async">
-                  <a *appHasPermission="'DASHBOARD_VER'" routerLink="/usuario/dashboard" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" class="menu-item px-3 mb-1" title="Dashboard">
+                  <a *hasPermission="'DASHBOARD_VER'" routerLink="/usuario/dashboard" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" class="menu-item px-3 mb-1" title="Dashboard">
                     <i class="bi bi-grid-fill"></i> <span class="menu-text ms-3">Dashboard</span>
                   </a>
-                  <a *appHasPermission="'USUARIOS_GESTIONAR'" routerLink="/usuario/usuarios" routerLinkActive="active" class="menu-item px-3 mb-1" title="Usuarios">
+                  <a *hasPermission="'USUARIOS_GESTIONAR'" routerLink="/usuario/usuarios" routerLinkActive="active" class="menu-item px-3 mb-1" title="Usuarios">
                     <i class="bi bi-person"></i> <span class="menu-text ms-3">Usuarios</span>
                   </a>
-                  <a *appHasPermission="'CONFIG_ROLES'" routerLink="/usuario/roles" routerLinkActive="active" class="menu-item px-3 mb-1" title="Roles">
+                  <a *hasPermission="'CONFIG_ROLES'" routerLink="/usuario/roles" routerLinkActive="active" class="menu-item px-3 mb-1" title="Roles">
                     <i class="bi bi-shield-check"></i> <span class="menu-text ms-3">Roles</span>
                   </a>
-                  <a *appHasPermission="'CLIENTES_VER'" routerLink="/usuario/clientes" routerLinkActive="active" class="menu-item px-3 mb-1" title="Clientes">
+                  <a *hasPermission="'CLIENTES_VER'" routerLink="/usuario/clientes" routerLinkActive="active" class="menu-item px-3 mb-1" title="Clientes">
                     <i class="bi bi-people"></i> <span class="menu-text ms-3">Clientes</span>
                   </a>
-                  <a *appHasPermission="'PROVEEDOR_VER'" routerLink="/usuario/proveedores" routerLinkActive="active" class="menu-item px-3 mb-1" title="Proveedores">
+                  <a *hasPermission="'PROVEEDOR_VER'" routerLink="/usuario/proveedores" routerLinkActive="active" class="menu-item px-3 mb-1" title="Proveedores">
                     <i class="bi bi-truck"></i> <span class="menu-text ms-3">Proveedores</span>
                   </a>
-                  <a *appHasPermission="'GASTOS_VER'" routerLink="/usuario/gastos" routerLinkActive="active" class="menu-item px-3 mb-1" title="Gastos">
+                  <a *hasPermission="'GASTOS_VER'" routerLink="/usuario/gastos" routerLinkActive="active" class="menu-item px-3 mb-1" title="Gastos">
                     <i class="bi bi-cash-stack"></i> <span class="menu-text ms-3">Gastos</span>
                   </a>
-                  <a *appHasPermission="'INVENTARIO_VER'" routerLink="/usuario/inventarios" routerLinkActive="active" class="menu-item px-3 mb-1" title="Inventarios">
+                  <a *hasPermission="'INVENTARIO_VER'" routerLink="/usuario/inventarios" routerLinkActive="active" class="menu-item px-3 mb-1" title="Inventarios">
                     <i class="bi bi-archive"></i> <span class="menu-text ms-3">Inventarios</span>
                   </a>
-                  <a *appHasPermission="'PRODUCTOS_VER'" routerLink="/usuario/productos" routerLinkActive="active" class="menu-item px-3 mb-1" title="Productos">
+                  <a *hasPermission="'PRODUCTOS_VER'" routerLink="/usuario/productos" routerLinkActive="active" class="menu-item px-3 mb-1" title="Productos">
                     <i class="bi bi-box-seam"></i> <span class="menu-text ms-3">Productos</span>
                   </a>
-                  <a *appHasPermission="['FACTURAS_VER_TODAS', 'FACTURAS_VER_PROPIAS', 'FACTURAS_CREAR']" routerLink="/usuario/facturacion" routerLinkActive="active" class="menu-item px-3 mb-1" title="Facturación">
+                  <a *hasPermission="['FACTURAS_VER_TODAS', 'FACTURAS_VER_PROPIAS', 'FACTURAS_CREAR']" routerLink="/usuario/facturacion" routerLinkActive="active" class="menu-item px-3 mb-1" title="Facturación">
                     <i class="bi bi-receipt"></i> <span class="menu-text ms-3">Facturación</span>
                   </a>
-                  <a *appHasPermission="'CUENTA_COBRAR_VER'" routerLink="/usuario/cuentas-cobrar" routerLinkActive="active" class="menu-item px-3 mb-1" title="Cuentas por Cobrar">
+                  <a *hasPermission="'CUENTA_COBRAR_VER'" routerLink="/usuario/cuentas-cobrar" routerLinkActive="active" class="menu-item px-3 mb-1" title="Cuentas por Cobrar">
                     <i class="bi bi-wallet2"></i> <span class="menu-text ms-3">Cuentas por Cobrar</span>
                   </a>
-                  <a *appHasPermission="'FACTURA_PROGRAMADA_VER'" routerLink="/usuario/facturacion-recurrente" routerLinkActive="active" class="menu-item px-3 mb-1" title="Fac. Recurrente">
+                  <a *hasPermission="'FACTURA_PROGRAMADA_VER'" routerLink="/usuario/facturacion-recurrente" routerLinkActive="active" class="menu-item px-3 mb-1" title="Fac. Recurrente">
                     <i class="bi bi-arrow-repeat"></i> <span class="menu-text ms-3">Fac. Recurrente</span>
                   </a>
-                  <a *appHasPermission="['REPORTES_VER', 'REPORTES_EXPORTAR']" routerLink="/usuario/reportes" routerLinkActive="active" class="menu-item px-3 mb-1" title="Reportes">
+                  <a *hasPermission="['REPORTES_VER', 'REPORTES_EXPORTAR']" routerLink="/usuario/reportes" routerLinkActive="active" class="menu-item px-3 mb-1" title="Reportes">
                     <i class="bi bi-bar-chart"></i> <span class="menu-text ms-3">Reportes</span>
                   </a>
-                  <a *appHasPermission="'ESTABLECIMIENTO_GESTIONAR'" routerLink="/usuario/establecimientos" routerLinkActive="active" class="menu-item px-3 mb-1" title="Establecimientos">
+                  <a *hasPermission="'ESTABLECIMIENTO_GESTIONAR'" routerLink="/usuario/establecimientos" routerLinkActive="active" class="menu-item px-3 mb-1" title="Establecimientos">
                     <i class="bi bi-shop"></i> <span class="menu-text ms-3">Establecimientos</span>
                   </a>
-                  <a *appHasPermission="['PUNTO_EMISION_VER', 'PUNTO_EMISION_GESTIONAR']" routerLink="/usuario/puntos-emision" routerLinkActive="active" class="menu-item px-3 mb-1" title="Puntos Emisión">
+                  <a *hasPermission="['PUNTO_EMISION_VER', 'PUNTO_EMISION_GESTIONAR']" routerLink="/usuario/puntos-emision" routerLinkActive="active" class="menu-item px-3 mb-1" title="Puntos Emisión">
                     <i class="bi bi-printer"></i> <span class="menu-text ms-3">Puntos Emisión</span>
                   </a>
-                  <a *appHasPermission="'CONFIG_SRI'" routerLink="/usuario/certificado-sri" routerLinkActive="active" class="menu-item px-3 mb-1" title="Certificado SRI">
+                  <a *hasPermission="'CONFIG_SRI'" routerLink="/usuario/certificado-sri" routerLinkActive="active" class="menu-item px-3 mb-1" title="Certificado SRI">
                     <i class="bi bi-shield-lock"></i> <span class="menu-text ms-3">Certificado SRI</span>
                   </a>
                 </ng-container>
@@ -152,7 +152,7 @@ import { SidebarService } from './sidebar.service';
             <a routerLink="/planes" routerLinkActive="active" class="menu-item px-3 mb-1" title="Planes">
               <i class="bi bi-tags"></i> <span class="menu-text ms-3">Planes</span>
             </a>
-            <a *appHasPermission="'CONFIG_SRI'" routerLink="/certificados-sri" routerLinkActive="active" class="menu-item px-3 mb-1" title="Certificados SRI">
+            <a *hasPermission="'CONFIG_SRI'" routerLink="/certificados-sri" routerLinkActive="active" class="menu-item px-3 mb-1" title="Certificados SRI">
               <i class="bi bi-shield-check"></i> <span class="menu-text ms-3">Certificados SRI</span>
             </a>
             <a routerLink="/reportes" routerLinkActive="active" class="menu-item px-3 mb-1" title="Reportes">

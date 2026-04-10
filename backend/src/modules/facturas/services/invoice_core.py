@@ -68,8 +68,8 @@ class ServicioFacturaCore:
         if not payload.get('fecha_vencimiento'):
             from dateutil.relativedelta import relativedelta
             fecha_venc = payload['fecha_emision']
-            plazo = int(pago_data.get('plazo', 0))
-            unidad = str(pago_data.get('unidad_tiempo', 'DIAS')).upper()
+            plazo = int(pago_data.get('plazo') or 0)
+            unidad = str(pago_data.get('unidad_tiempo') or 'DIAS').upper()
             
             if plazo > 0:
                 if unidad == 'DIAS':
