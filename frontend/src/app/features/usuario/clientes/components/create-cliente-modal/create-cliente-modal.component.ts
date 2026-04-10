@@ -75,8 +75,11 @@ import { PROVINCIAS, getCiudadesByProvincia, Provincia, Ciudad } from '../../../
                   </div>
                 </div>
                 <div class="col-md-12">
-                  <label class="form-label">Nombre Comercial</label>
-                  <input type="text" formControlName="nombre_comercial" class="form-control" placeholder="Ej: Tienda Virtual">
+                  <label class="form-label">Nombre Comercial *</label>
+                  <input type="text" formControlName="nombre_comercial" class="form-control" [class.is-invalid]="clienteForm.get('nombre_comercial')?.invalid && clienteForm.get('nombre_comercial')?.touched" placeholder="Ej: Tienda Virtual">
+                  <div class="invalid-feedback d-block" *ngIf="clienteForm.get('nombre_comercial')?.invalid && clienteForm.get('nombre_comercial')?.touched">
+                    <small>El nombre comercial es requerido</small>
+                  </div>
                 </div>
               </div>
             </div>
@@ -90,7 +93,7 @@ import { PROVINCIAS, getCiudadesByProvincia, Provincia, Ciudad } from '../../../
                   <input type="email" formControlName="email" class="form-control" [class.is-invalid]="clienteForm.get('email')?.invalid && clienteForm.get('email')?.touched" placeholder="cliente@ejemplo.com">
                   <div class="invalid-feedback d-block" *ngIf="clienteForm.get('email')?.invalid && clienteForm.get('email')?.touched">
                     <small *ngIf="clienteForm.get('email')?.hasError('required')">El correo es requerido</small>
-                    <small *ngIf="clienteForm.get('email')?.hasError('email')">Ingrese un correo válido</small>
+                    <small *ngIf="clienteForm.get('email')?.hasError('pattern')">Ingrese un correo válido (ej: usuario@dominio.com)</small>
                   </div>
                 </div>
                 <div class="col-md-5">
@@ -105,7 +108,7 @@ import { PROVINCIAS, getCiudadesByProvincia, Provincia, Ciudad } from '../../../
                     maxlength="10"
                   >
                   <div class="invalid-feedback d-block" *ngIf="clienteForm.get('telefono')?.invalid && clienteForm.get('telefono')?.touched">
-                    <small *ngIf="clienteForm.get('telefono')?.hasError('pattern')">El teléfono debe tener 10 dígitos</small>
+                    <small *ngIf="clienteForm.get('telefono')?.hasError('pattern')">Debe empezar con 09 y tener 10 dígitos</small>
                   </div>
                 </div>
                 <div class="col-md-6">
@@ -133,8 +136,11 @@ import { PROVINCIAS, getCiudadesByProvincia, Provincia, Ciudad } from '../../../
                   </div>
                 </div>
                 <div class="col-12">
-                  <label class="form-label">Dirección Fiscal / Residencia</label>
-                  <textarea formControlName="direccion" class="form-control" rows="2"></textarea>
+                  <label class="form-label">Dirección Fiscal / Residencia *</label>
+                  <textarea formControlName="direccion" class="form-control" [class.is-invalid]="clienteForm.get('direccion')?.invalid && clienteForm.get('direccion')?.touched" rows="2"></textarea>
+                  <div class="invalid-feedback d-block" *ngIf="clienteForm.get('direccion')?.invalid && clienteForm.get('direccion')?.touched">
+                    <small>La dirección es requerida</small>
+                  </div>
                 </div>
               </div>
             </div>
@@ -235,10 +241,10 @@ export class CreateClienteModalComponent implements OnInit, OnDestroy {
             identificacion: ['', [Validators.required, SriValidators.identificacionEcuador()]],
             tipo_identificacion: ['CEDULA', [Validators.required]],
             razon_social: ['', [Validators.required, Validators.minLength(3)]],
-            nombre_comercial: [''],
-            email: ['', [Validators.required, Validators.email]],
-            telefono: ['', [Validators.pattern(/^\d{10}$/)]],
-            direccion: [''],
+            nombre_comercial: ['', [Validators.required]],
+            email: ['', [Validators.required, Validators.pattern(/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/)]],
+            telefono: ['', [Validators.pattern(/^09\d{8}$/)]],
+            direccion: ['', [Validators.required]],
             ciudad: ['', [Validators.required]],
             provincia: ['', [Validators.required]],
             dias_credito: [0, [Validators.min(0), Validators.max(999999)]],

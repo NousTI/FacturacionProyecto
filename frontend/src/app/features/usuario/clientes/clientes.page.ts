@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Subject, takeUntil, finalize, map, Observable } from 'rxjs';
@@ -16,6 +16,8 @@ import { ClientesService } from './services/clientes.service';
 import { UiService } from '../../../shared/services/ui.service';
 import { Cliente, ClienteStats } from '../../../domain/models/cliente.model';
 import { ClienteAnaliticaComponent } from './components/cliente-analitica/cliente-analitica.component';
+import { PermissionsService } from '../../../core/auth/permissions.service';
+import { CLIENTES_PERMISSIONS } from '../../../constants/permission-codes';
 
 @Component({
   selector: 'app-usuario-clientes',
@@ -35,77 +37,95 @@ import { ClienteAnaliticaComponent } from './components/cliente-analitica/client
   ],
   template: `
     <div class="page-container">
-      
-      <!-- Tabs Navigation -->
-      <div class="tabs-minimal mb-4">
-        <button class="tab-btn" [class.active]="activeTab === 'directorio'" (click)="activeTab = 'directorio'">
-          <i class="bi bi-people-fill"></i> Directorio de Clientes
-        </button>
-        <button class="tab-btn" [class.active]="activeTab === 'analitica'" (click)="activeTab = 'analitica'">
-          <i class="bi bi-bar-chart-fill"></i> Analítica
-        </button>
-      </div>
+      <ng-container *ngIf="canView; else noPermission">
+        <!-- Tabs Navigation -->
+        <div class="tabs-minimal mb-4">
+          <button class="tab-btn" [class.active]="activeTab === 'directorio'" (click)="activeTab = 'directorio'">
+            <i class="bi bi-people-fill"></i> Directorio de Clientes
+          </button>
+          <button class="tab-btn" [class.active]="activeTab === 'analitica'" (click)="activeTab = 'analitica'">
+            <i class="bi bi-bar-chart-fill"></i> Analítica
+          </button>
+        </div>
 
-      <!-- TAB: DIRECTORIO -->
-      <div class="view-section" *ngIf="activeTab === 'directorio'">
-        <app-cliente-stats
-          *ngIf="stats$ | async as st"
-          [total]="st.total"
-          [active]="st.activos"
-          [credit]="st.con_credito"
-        ></app-cliente-stats>
+        <!-- TAB: DIRECTORIO -->
+        <div class="view-section" *ngIf="activeTab === 'directorio'">
+          <app-cliente-stats
+            *ngIf="stats$ | async as st"
+            [total]="st.total"
+            [active]="st.activos"
+            [credit]="st.con_credito"
+          ></app-cliente-stats>
 
-        <app-cliente-actions
-          [(searchQuery)]="searchQuery"
-          (onFilterChangeEmit)="handleFilters($event)"
-          (onCreate)="openCreateModal()"
-          (onExport)="showExportModal = true"
-        ></app-cliente-actions>
+          <app-cliente-actions
+            [(searchQuery)]="searchQuery"
+            (onFilterChangeEmit)="handleFilters($event)"
+            (onCreate)="openCreateModal()"
+            (onExport)="showExportModal = true"
+          ></app-cliente-actions>
 
-        <app-cliente-table
-          [clientes]="filteredClientes"
-          (onAction)="handleAction($event)"
-        ></app-cliente-table>
-      </div>
+          <app-cliente-table
+            [clientes]="filteredClientes"
+            (onAction)="handleAction($event)"
+          ></app-cliente-table>
+        </div>
 
-      <!-- TAB: ANALÍTICA -->
-      <div class="view-section" *ngIf="activeTab === 'analitica'">
-        <app-cliente-analitica></app-cliente-analitica>
-      </div>
+        <!-- TAB: ANALÍTICA -->
+        <div class="view-section" *ngIf="activeTab === 'analitica'">
+          <app-cliente-analitica></app-cliente-analitica>
+        </div>
 
-      <!-- MODALES -->
-      <app-create-cliente-modal
-        *ngIf="showCreateModal"
-        [cliente]="selectedCliente"
-        [loading]="isSaving"
-        (onSave)="saveCliente($event)"
-        (onClose)="showCreateModal = false"
-      ></app-create-cliente-modal>
+        <!-- MODALES -->
+        <app-create-cliente-modal
+          *ngIf="showCreateModal"
+          [cliente]="selectedCliente"
+          [loading]="isSaving"
+          (onSave)="saveCliente($event)"
+          (onClose)="showCreateModal = false"
+        ></app-create-cliente-modal>
 
-      <app-cliente-detail-modal
-        *ngIf="showDetailModal && selectedCliente"
-        [cliente]="selectedCliente"
-        (onClose)="showDetailModal = false"
-      ></app-cliente-detail-modal>
+        <app-cliente-detail-modal
+          *ngIf="showDetailModal && selectedCliente"
+          [cliente]="selectedCliente"
+          (onClose)="showDetailModal = false"
+        ></app-cliente-detail-modal>
 
-      <app-export-clientes-modal
-        *ngIf="showExportModal"
-        [loading]="isExporting"
-        (onExport)="handleExport($event)"
-        (onClose)="showExportModal = false"
-      ></app-export-clientes-modal>
+        <app-export-clientes-modal
+          *ngIf="showExportModal"
+          [loading]="isExporting"
+          (onExport)="handleExport($event)"
+          (onClose)="showExportModal = false"
+        ></app-export-clientes-modal>
 
-      <app-confirm-modal
-        *ngIf="showConfirmModal"
-        title="¿Eliminar Cliente?"
-        [message]="'¿Estás seguro de que deseas eliminar a ' + selectedCliente?.razon_social + '? Esta acción no se puede deshacer.'"
-        confirmText="Eliminar Cliente"
-        type="danger"
-        icon="bi-trash3-fill"
-        [loading]="isDeleting"
-        (onConfirm)="deleteCliente()"
-        (onCancel)="showConfirmModal = false"
-      ></app-confirm-modal>
+        <app-confirm-modal
+          *ngIf="showConfirmModal"
+          title="¿Eliminar Cliente?"
+          [message]="'¿Estás seguro de que deseas eliminar a ' + selectedCliente?.razon_social + '? Esta acción no se puede deshacer.'"
+          confirmText="Eliminar Cliente"
+          type="danger"
+          icon="bi-trash3-fill"
+          [loading]="isDeleting"
+          (onConfirm)="deleteCliente()"
+          (onCancel)="showConfirmModal = false"
+        ></app-confirm-modal>
+      </ng-container>
+
+      <!-- TEMPLATE SIN PERMISO -->
+      <ng-template #noPermission>
+        <div class="no-permission-container d-flex flex-column align-items-center justify-content-center h-100 text-center p-5 animate-fade-in">
+          <div class="icon-lock-wrapper mb-4">
+            <i class="bi bi-shield-lock-fill"></i>
+          </div>
+          <h2 class="fw-bold text-dark mb-2">Acceso Restringido</h2>
+          <p class="text-muted mb-4 max-w-400">
+            No tienes permisos suficientes para gestionar el directorio de clientes de esta empresa. 
+            Si crees que esto es un error, contacta a su administrador.
+          </p>
+          <button class="btn btn-dark rounded-pill px-5 py-3 fw-bold shadow-sm" (click)="refreshData()">
+            <i class="bi bi-arrow-clockwise me-2"></i> Reintentar sincronización
+          </button>
+        </div>
+      </ng-template>
 
       <app-toast></app-toast>
     </div>
@@ -122,10 +142,23 @@ import { ClienteAnaliticaComponent } from './components/cliente-analitica/client
     
     @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
 
+    .no-permission-container { min-height: 70vh; }
+    .icon-lock-wrapper {
+      width: 100px; height: 100px; background: #fee2e2; color: #ef4444; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center; font-size: 3rem;
+      box-shadow: 0 10px 25px -5px rgba(239, 68, 68, 0.3);
+    }
+    .max-w-400 { max-width: 400px; }
+    .animate-fade-in { animation: fadeIn 0.4s ease-out; }
+
     .fw-800 { font-weight: 800; }
   `]
 })
 export class ClientesPage implements OnInit, OnDestroy {
+  get canView(): boolean {
+    return this.permissionsService.hasPermission(CLIENTES_PERMISSIONS.VER);
+  }
+
   // Navigation State
   activeTab: 'directorio' | 'analitica' = 'directorio';
 
@@ -152,6 +185,8 @@ export class ClientesPage implements OnInit, OnDestroy {
   isExporting: boolean = false;
 
   private destroy$ = new Subject<void>();
+
+  private permissionsService = inject(PermissionsService);
 
   constructor(
     private clientesService: ClientesService,
