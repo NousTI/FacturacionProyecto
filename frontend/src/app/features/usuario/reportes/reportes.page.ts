@@ -201,13 +201,18 @@ export class ReportesPage implements OnInit {
 
       case 'ventas':
         this.ventasData = undefined;
+        this.usersData = [];
         this.reportsSvc.getSalesGeneral(this.fechaInicio, this.fechaFin).subscribe({
-          next: (d) => { 
-            this.ventasData = d; 
+          next: (d) => {
+            this.ventasData = d;
             this.reportsSvc.getSalesByUser(this.fechaInicio, this.fechaFin).subscribe({
-                next: (users) => { this.usersData = users; this.cdr.detectChanges(); }
+                next: (users) => {
+                  this.usersData = users;
+                  this.cdr.detectChanges();
+                  this.finishLoading();
+                },
+                error: () => this.handleError('Error al cargar detalle de usuarios')
             });
-            this.finishLoading(); 
           },
           error: () => this.handleError('Error al cargar ventas generales')
         });
