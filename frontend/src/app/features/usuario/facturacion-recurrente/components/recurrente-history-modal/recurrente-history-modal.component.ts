@@ -80,9 +80,9 @@ import { HasPermissionDirective } from '../../../../../core/directives/has-permi
                     
                     <div class="d-flex gap-2 mt-2">
                       <ng-container *ngIf="item.factura_id">
-                        <button 
+                        <button
                           *hasPermission="['FACTURA_PROGRAMADA_VER', 'FACTURA_PROGRAMADA_VER_PROPIAS']"
-                          class="btn btn-sm btn-outline-primary py-0 px-2 smallest" 
+                          class="btn btn-sm btn-outline-primary py-0 px-2 smallest"
                           (click)="verDetalleFactura(item.factura_id)"
                           title="Ver factura"
                         >
@@ -280,6 +280,8 @@ export class RecurrenteHistoryModalComponent implements OnInit {
       })
     ).subscribe({
       next: (data) => {
+        console.log('📋 Historial cargado:', data);
+        console.log('🔍 Factura IDs:', data.map((item: any) => ({ numero: item.numero_factura, facturaId: item.factura_id })));
         this.historial = data;
         this.isLoading = false;
         this.cdr.detectChanges();
@@ -308,6 +310,7 @@ export class RecurrenteHistoryModalComponent implements OnInit {
   }
 
   verDetalleFactura(id: string) {
+    console.log('👁️ Abriendo detalle de factura:', id);
     this.selectedFacturaId = id;
     this.showViewModal = true;
     this.cdr.detectChanges();
