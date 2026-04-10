@@ -4,6 +4,8 @@ import { FormsModule } from '@angular/forms';
 import { Factura } from '../../../../../domain/models/factura.model';
 import { FacturasService } from '../../services/facturas.service';
 import { UiService } from '../../../../../shared/services/ui.service';
+import { PermissionsService } from '../../../../../core/auth/permissions.service';
+import { FACTURAS_PERMISSIONS } from '../../../../../constants/permission-codes';
 import { finalize } from 'rxjs';
 
 @Component({
@@ -85,7 +87,7 @@ import { finalize } from 'rxjs';
                       <input type="text" class="form-control form-control-sm" name="obs" [(ngModel)]="nuevoPago.observaciones" placeholder="Ej. Depósito banco Pichincha...">
                     </div>
                     <div class="col-12 text-end mt-3">
-                      <button type="submit" class="btn btn-primary btn-sm px-4 rounded-3" [disabled]="form.invalid || isProcessing">
+                      <button type="submit" class="btn btn-primary btn-sm px-4 rounded-3" [disabled]="form.invalid || isProcessing || !canCreatePago" [title]="!canCreatePago ? 'No tienes permisos para crear pagos' : ''">
                         <i class="bi bi-save me-2"></i> {{ isProcessing ? 'Guardando...' : 'Guardar Abono' }}
                       </button>
                     </div>
@@ -182,11 +184,25 @@ export class PagosFacturaModalComponent implements OnInit {
   constructor(
     private facturasService: FacturasService,
     private uiService: UiService,
+    private permissionsService: PermissionsService,
     private cd: ChangeDetectorRef
   ) {}
 
   ngOnInit() {
+    // VALIDACIÓN 1: Guardia - Verificar permisos de lectura/creación de pagos
+    const canViewPayments = this.permissionsService.hasPermission(['PAGO_FACTURA_VER', 'PAGO_FACTURA_CREAR']);
+    if (!canViewPayments) {
+      this.uiService.showToast('No tienes permisos para gestionar pagos', 'warning');
+      this.close.emit(false);
+      return;
+    }
+
     this.cargarDatos();
+  }
+
+  // VALIDACIÓN 3: UX - Getter para habilitar creación de nuevos pagos
+  get canCreatePago(): boolean {
+    return this.permissionsService.hasPermission(['PAGO_FACTURA_CREAR', 'PAGO_FACTURA_EDITAR']);
   }
 
   getMetodoPagoLabel(code: string): string {
@@ -226,6 +242,12 @@ export class PagosFacturaModalComponent implements OnInit {
   registrarAbono() {
     if (!this.resumen || this.nuevoPago.monto <= 0 || this.nuevoPago.monto > this.resumen.saldo_pendiente) {
       this.uiService.showToast('El monto es inválido', 'warning');
+      return;
+    }
+
+    // VALIDACIÓN 2: Doble verificación de permisos antes de crear pago
+    if (!this.permissionsService.hasPermission(['PAGO_FACTURA_CREAR', 'PAGO_FACTURA_EDITAR'])) {
+      this.uiService.showError('Permiso denegado: No puedes crear pagos', 'error');
       return;
     }
 

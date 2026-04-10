@@ -1,8 +1,10 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, EventEmitter, Input, Output, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Factura } from '../../../../../domain/models/factura.model';
 import { UiService } from '../../../../../shared/services/ui.service';
+import { PermissionsService } from '../../../../../core/auth/permissions.service';
+import { FACTURAS_PERMISSIONS } from '../../../../../constants/permission-codes';
 
 @Component({
   selector: 'app-anular-factura-modal',
@@ -63,15 +65,16 @@ import { UiService } from '../../../../../shared/services/ui.service';
 
             <!-- Action Buttons -->
             <div class="d-flex gap-3">
-              <button 
-                class="btn btn-light-lux flex-grow-1" 
+              <button
+                class="btn btn-light-lux flex-grow-1"
                 (click)="close.emit(false)"
               >
                 Cancelar
               </button>
-              <button 
-                class="btn btn-danger-lux flex-grow-1" 
-                [disabled]="!razon.trim()"
+              <button
+                class="btn btn-danger-lux flex-grow-1"
+                [disabled]="!razon.trim() || !canAnular"
+                [title]="!canAnular ? 'No tienes permisos para anular facturas' : ''"
                 (click)="onAnular()"
               >
                 <i class="bi bi-x-circle me-1"></i>
@@ -193,22 +196,44 @@ import { UiService } from '../../../../../shared/services/ui.service';
     }
   `]
 })
-export class AnularFacturaModalComponent {
+export class AnularFacturaModalComponent implements OnInit {
   @Input() factura!: Factura;
   @Output() close = new EventEmitter<boolean>();
 
   razon: string = '';
 
-  constructor(private uiService: UiService) {}
+  constructor(
+    private uiService: UiService,
+    private permissionsService: PermissionsService
+  ) {}
+
+  ngOnInit() {
+    // VALIDACIÓN 1: Guardia - Verificar permiso de anular
+    if (!this.permissionsService.hasPermission(FACTURAS_PERMISSIONS.ANULAR)) {
+      this.uiService.showToast('No tienes permisos para anular facturas', 'warning');
+      this.close.emit(false);
+    }
+  }
+
+  // VALIDACIÓN 3: UX - Getter para deshabilitación de botón
+  get canAnular(): boolean {
+    return this.permissionsService.hasPermission(FACTURAS_PERMISSIONS.ANULAR);
+  }
 
   onAnular() {
+    // VALIDACIÓN 2: Doble verificación antes de procesar
+    if (!this.permissionsService.hasPermission(FACTURAS_PERMISSIONS.ANULAR)) {
+      this.uiService.showError('Permiso denegado: No puedes anular facturas', 'error');
+      return;
+    }
+
     this.uiService.showToast(
       'Estimado usuario, este proceso se encuentra actualmente en fase de implementación.',
       'info',
       'Estamos trabajando para habilitar la anulación directa en los próximos días.',
       6000
     );
-    // Para que el modal no se quede abierto eternamente si el usuario quiere, 
+    // Para que el modal no se quede abierto eternamente si el usuario quiere,
     // pero usualmente estos "moks" cierran el modal después de la notificación.
     setTimeout(() => {
       this.close.emit(false);

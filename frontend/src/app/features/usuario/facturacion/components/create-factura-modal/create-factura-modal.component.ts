@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, OnInit, OnChanges, SimpleChanges, Output, ChangeDetectorRef, ViewEncapsulation, NgZone } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, OnChanges, SimpleChanges, Output, ChangeDetectorRef, ViewEncapsulation, NgZone, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators, FormArray } from '@angular/forms';
 import { FacturasService } from '../../services/facturas.service';
@@ -9,6 +9,8 @@ import { PuntosEmisionService } from '../../../puntos-emision/services/puntos-em
 import { FacturacionProgramadaService } from '../../../facturacion-recurrente/services/facturacion-programada.service';
 import { SriConfigService } from '../../../certificado-sri/services/sri-config.service';
 import { UiService } from '../../../../../shared/services/ui.service';
+import { PermissionsService } from '../../../../../core/auth/permissions.service';
+import { FACTURAS_PERMISSIONS } from '../../../../../constants/permission-codes';
 import { Cliente } from '../../../../../domain/models/cliente.model';
 import { Producto } from '../../../../../domain/models/producto.model';
 import { Establecimiento } from '../../../../../domain/models/establecimiento.model';
@@ -129,9 +131,10 @@ import { FacturaTotalesPanelComponent } from './components/factura-totales-panel
           <!-- 3. FOOTER: BOTONES DE ACCION -->
           <div class="modal-footer border-0 p-4 bg-light-soft">
              <button type="button" class="btn-cancel-lux" (click)="close()">{{ isViewOnly ? 'Cerrar' : 'Cancelar' }}</button>
-             <button type="button" class="btn-save-lux ms-3" 
+             <button type="button" class="btn-save-lux ms-3"
                      *ngIf="!isViewOnly"
-                     [disabled]="facturaForm.invalid || isSaving || detalles.length === 0 || isLoadingData"
+                     [disabled]="facturaForm.invalid || isSaving || detalles.length === 0 || isLoadingData || !canSave"
+                     [title]="!canSave ? 'No tienes permisos para ' + (facturaId ? 'editar' : 'crear') + ' facturas' : ''"
                      (click)="save()">
                <span *ngIf="isSaving" class="spinner-border spinner-border-sm me-2"></span>
                <i *ngIf="!isSaving" class="bi bi-check-circle-fill me-2"></i>
@@ -467,6 +470,7 @@ export class CreateFacturaModalComponent implements OnInit, OnChanges {
     private programacionService: FacturacionProgramadaService,
     private sriConfigService: SriConfigService,
     private uiService: UiService,
+    private permissionsService: PermissionsService,
     private cd: ChangeDetectorRef,
     private ngZone: NgZone
   ) {
@@ -492,6 +496,23 @@ export class CreateFacturaModalComponent implements OnInit, OnChanges {
   }
 
   ngOnInit() {
+    // VALIDACIÓN 1: Guardia - Verificar permisos al abrir el modal
+    if (!this.isViewOnly) {
+      const isCreating = !this.facturaId;
+      const requiredPermission = isCreating ? FACTURAS_PERMISSIONS.CREAR : FACTURAS_PERMISSIONS.EDITAR;
+
+      if (!this.permissionsService.hasPermission(requiredPermission)) {
+        this.uiService.showToast(
+          isCreating
+            ? 'No tienes permisos para crear facturas'
+            : 'No tienes permisos para editar facturas',
+          'warning'
+        );
+        this.close();
+        return;
+      }
+    }
+
     this.loadData();
     this.setupListeners();
 
@@ -516,6 +537,16 @@ export class CreateFacturaModalComponent implements OnInit, OnChanges {
 
   get detalles() {
     return this.facturaForm.get('detalles') as FormArray;
+  }
+
+  // VALIDACIÓN 3: UX - Getter para deshabilitación de botón según permisos
+  get canSave(): boolean {
+    if (this.isViewOnly) return false;
+
+    const isCreating = !this.facturaId;
+    const requiredPermission = isCreating ? FACTURAS_PERMISSIONS.CREAR : FACTURAS_PERMISSIONS.EDITAR;
+
+    return this.permissionsService.hasPermission(requiredPermission);
   }
 
   loadData() {
@@ -881,6 +912,21 @@ export class CreateFacturaModalComponent implements OnInit, OnChanges {
 
   save() {
     if (this.facturaForm.invalid) return;
+
+    // VALIDACIÓN 2: Guardar - Doble verificación de permisos antes de POST
+    const isCreating = !this.facturaId;
+    const requiredPermission = isCreating ? FACTURAS_PERMISSIONS.CREAR : FACTURAS_PERMISSIONS.EDITAR;
+
+    if (!this.permissionsService.hasPermission(requiredPermission)) {
+      this.uiService.showError(
+        isCreating
+          ? 'Permiso denegado: No puedes crear facturas'
+          : 'Permiso denegado: No puedes editar facturas',
+        'error'
+      );
+      return;
+    }
+
     this.isSaving = true;
 
     const formVal = this.facturaForm.getRawValue();
