@@ -923,6 +923,10 @@ export class SuperAdminReportesPage implements OnInit, OnDestroy {
     this.onRangoChange('G');
     this.onRangoChange('C');
     this.onRangoChange('U');
+    // Generar automáticamente todos los reportes al entrar
+    this.generarGlobal();
+    this.generarComisiones();
+    this.generarUso();
   }
 
   ngOnDestroy() {
@@ -932,6 +936,18 @@ export class SuperAdminReportesPage implements OnInit, OnDestroy {
 
   setTab(tab: Tab) {
     this.tabActivo = tab;
+    // Generar automáticamente reporte al cambiar de sección
+    switch (tab) {
+      case 'global':
+        this.generarGlobal();
+        break;
+      case 'comisiones':
+        this.generarComisiones();
+        break;
+      case 'uso':
+        this.generarUso();
+        break;
+    }
   }
 
   // ---- R-031 ----
