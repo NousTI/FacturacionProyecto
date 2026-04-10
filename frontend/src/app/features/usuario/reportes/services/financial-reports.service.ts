@@ -88,6 +88,7 @@ export interface SalesGeneralReport {
   graficos: {
     por_establecimiento: Array<{ label: string; value: number }>;
     por_forma_pago: Array<{ cod: string; value: number }>;
+    top_usuarios?: Array<{ usuario: string; total_ventas: number }>;
   };
   ventas_usuario?: any; // Para R-003 si se requiere integrar
 }

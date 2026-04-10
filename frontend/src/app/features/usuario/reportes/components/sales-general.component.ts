@@ -1,6 +1,7 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, AfterViewInit, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule, CurrencyPipe } from '@angular/common';
 import { SalesGeneralReport } from '../services/financial-reports.service';
+import { Chart, ChartConfiguration } from 'chart.js';
 
 @Component({
   selector: 'app-sales-general',
@@ -111,15 +112,33 @@ import { SalesGeneralReport } from '../services/financial-reports.service';
         </div>
       </div>
 
-      <!-- USER SALES TABLE (UPCOMING FEATURE INTEGRATION) -->
-      <div class="section-card glass shadow-sm mb-4">
-        <div class="section-header d-flex justify-content-between align-items-center">
-          <div>
-            <h5>Ventas Detalladas por Usuario</h5>
-            <p>Rendimiento del equipo comercial y control de anulaciones</p>
+      <!-- TOP USUARIOS CHART -->
+      <div class="row g-4 mb-5">
+        <div class="col-lg-4">
+          <div class="section-card glass shadow-sm h-100">
+            <div class="section-header">
+              <h5>Top 5 Usuarios por Ventas</h5>
+              <p>Distribución de facturación</p>
+            </div>
+            <div *ngIf="(usersData && usersData.length > 0); else noData" class="chart-wrapper">
+              <canvas #pieChart class="chart-canvas"></canvas>
+            </div>
+            <ng-template #noData>
+              <p class="text-muted text-center py-4">No hay datos de usuarios</p>
+            </ng-template>
           </div>
-          <button class="btn-premium-sm"><i class="bi bi-download me-2"></i>Exportar Detalle</button>
         </div>
+
+        <!-- USER SALES TABLE -->
+        <div class="col-lg-8">
+          <div class="section-card glass shadow-sm h-100">
+            <div class="section-header d-flex justify-content-between align-items-center">
+              <div>
+                <h5>Ventas Detalladas por Usuario</h5>
+                <p>Rendimiento del equipo comercial y control de anulaciones</p>
+              </div>
+              <button class="btn-premium-sm"><i class="bi bi-download me-2"></i>Exportar Detalle</button>
+            </div>
         
         <div class="table-responsive">
           <table class="table modern-table">
@@ -153,10 +172,14 @@ import { SalesGeneralReport } from '../services/financial-reports.service';
             </tbody>
           </table>
         </div>
+        </div>
       </div>
     </div>
   `,
   styles: [`
+    .chart-wrapper { position: relative; height: 300px; }
+    .chart-canvas { max-height: 300px; }
+
     .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 1.5rem; }
     .glass {
       background: #ffffff; border: 1px solid #f1f5f9; border-radius: 24px; padding: 1.5rem;
@@ -213,11 +236,84 @@ import { SalesGeneralReport } from '../services/financial-reports.service';
     }
     .btn-premium-sm:hover { background: #334155; transform: scale(1.05); }
 
+    .usuarios-list { display: flex; flex-direction: column; gap: 1.25rem; }
+    .usuario-item { padding: 0.75rem; border-radius: 12px; background: #f8fafc; transition: all 0.2s; }
+    .usuario-item:hover { background: #eef2ff; box-shadow: 0 2px 4px rgba(99, 102, 241, 0.1); }
+
+    .item-header { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.5rem; }
+    .rank-badge { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; font-size: 0.75rem; flex-shrink: 0; }
+    .usuario-name { font-weight: 600; color: #334155; font-size: 0.9rem; }
+
+    .item-bar { height: 8px; background: #e2e8f0; border-radius: 4px; overflow: hidden; margin-bottom: 0.5rem; }
+    .progress-bar-custom { height: 100%; border-radius: 4px; transition: width 0.3s ease; }
+
+    .item-footer { display: flex; justify-content: space-between; font-size: 0.75rem; }
+    .item-footer .value { font-weight: 700; color: #1e293b; }
+    .item-footer .pct { color: #64748b; font-weight: 600; }
+
     .fade-in { animation: fadeIn 0.4s ease-out; }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
   `]
 })
-export class SalesGeneralComponent {
+export class SalesGeneralComponent implements AfterViewInit {
   @Input() data!: SalesGeneralReport;
   @Input() usersData: any[] = [];
+  @ViewChild('pieChart') pieChart?: ElementRef<HTMLCanvasElement>;
+
+  private chart?: Chart;
+  private colors = ['#6366f1', '#3b82f6', '#10b981', '#f59e0b', '#ef4444'];
+
+  ngAfterViewInit() {
+    if (this.usersData?.length > 0 && this.pieChart) {
+      this.renderPieChart();
+    }
+  }
+
+  private renderPieChart() {
+    if (!this.pieChart?.nativeElement) return;
+
+    const top5Users = this.usersData.slice(0, 5);
+    const labels = top5Users.map(u => u.usuario);
+    const values = top5Users.map(u => u.total_ventas);
+
+    const config: ChartConfiguration<'doughnut'> = {
+      type: 'doughnut',
+      data: {
+        labels,
+        datasets: [{
+          data: values,
+          backgroundColor: this.colors.slice(0, 5),
+          borderColor: '#ffffff',
+          borderWidth: 3,
+          hoverBorderWidth: 4
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: true,
+        plugins: {
+          legend: {
+            position: 'bottom',
+            labels: { font: { size: 12, weight: 600 }, padding: 15, usePointStyle: true } as any
+          },
+          tooltip: {
+            backgroundColor: 'rgba(0,0,0,0.8)',
+            padding: 12,
+            titleFont: { size: 13, weight: 'bold' },
+            bodyFont: { size: 12 },
+            callbacks: {
+              label: (ctx) => `$${(ctx.parsed as number).toLocaleString('es-ES', { maximumFractionDigits: 0 })}`
+            }
+          }
+        }
+      }
+    };
+
+    this.chart?.destroy();
+    this.chart = new Chart(this.pieChart.nativeElement, config);
+  }
+
+  getColorForIndex(index: number): string {
+    return this.colors[index % this.colors.length];
+  }
 }

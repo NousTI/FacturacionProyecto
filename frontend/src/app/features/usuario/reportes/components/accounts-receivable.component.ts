@@ -1,6 +1,7 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, AfterViewInit, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule, CurrencyPipe } from '@angular/common';
 import { AccountsReceivableReport } from '../services/financial-reports.service';
+import { Chart, ChartConfiguration } from 'chart.js';
 
 @Component({
   selector: 'app-accounts-receivable',
@@ -51,28 +52,13 @@ import { AccountsReceivableReport } from '../services/financial-reports.service'
       <!-- AGING CHART & SUMMARY -->
       <div class="row g-4 mb-5">
         <div class="col-lg-4">
-          <div class="section-card glass shadow-sm h-100 dark-sidebar">
+          <div class="section-card glass shadow-sm h-100">
             <div class="section-header">
-              <h5 class="text-white">Distribución de Cartera</h5>
-              <p class="text-white-50">Antigüedad de saldos acumulados</p>
+              <h5>Distribución de Cartera</h5>
+              <p>Antigüedad de saldos acumulados</p>
             </div>
-            
-            <div class="aging-summary-list">
-              <div class="aging-item">
-                <span>Vencido (< 30d)</span>
-                <span class="font-bold">{{ data.grafica_morosidad.vencido_30 | currency }}</span>
-              </div>
-              <div class="aging-item">
-                <span>Crítico (> 30d)</span>
-                <span class="font-bold text-warning">{{ data.grafica_morosidad.critico_30 | currency }}</span>
-              </div>
-            </div>
-
-            <div class="mt-4 pt-3 border-top border-secondary">
-              <small class="text-white-50 d-block mb-2">Meta de Morosidad: < 5%</small>
-              <div class="progress-track dark">
-                <div class="progress-fill indigo" [style.width.%]="data.kpis.indice_morosidad"></div>
-              </div>
+            <div class="chart-wrapper">
+              <canvas #donutChart class="chart-canvas"></canvas>
             </div>
           </div>
         </div>
@@ -176,10 +162,65 @@ import { AccountsReceivableReport } from '../services/financial-reports.service'
     .status-chip.danger { background: #fee2e2; color: #991b1b; }
     .status-chip.warning { background: #fef3c7; color: #92400e; }
 
+    .chart-wrapper { position: relative; height: 300px; }
+    .chart-canvas { max-height: 300px; }
+
     .fade-in { animation: fadeIn 0.4s ease-out; }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
   `]
 })
-export class AccountsReceivableComponent {
+export class AccountsReceivableComponent implements AfterViewInit {
   @Input() data!: AccountsReceivableReport;
+  @ViewChild('donutChart') donutChart?: ElementRef<HTMLCanvasElement>;
+
+  private chart?: Chart;
+
+  ngAfterViewInit() {
+    if (this.data && this.donutChart) {
+      this.renderDonutChart();
+    }
+  }
+
+  private renderDonutChart() {
+    if (!this.donutChart?.nativeElement) return;
+
+    const vencido = this.data.grafica_morosidad.vencido_30;
+    const critico = this.data.grafica_morosidad.critico_30;
+
+    const config: ChartConfiguration<'doughnut'> = {
+      type: 'doughnut',
+      data: {
+        labels: ['Vencido (< 30 días)', 'Crítico (> 30 días)'],
+        datasets: [{
+          data: [vencido, critico],
+          backgroundColor: ['#f59e0b', '#ef4444'],
+          borderColor: '#ffffff',
+          borderWidth: 3,
+          hoverBorderWidth: 4
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: true,
+        plugins: {
+          legend: {
+            position: 'bottom',
+            labels: { font: { size: 11, weight: 600 }, padding: 12, usePointStyle: true } as any
+          },
+          tooltip: {
+            backgroundColor: 'rgba(0,0,0,0.8)',
+            padding: 12,
+            titleFont: { size: 13, weight: 'bold' },
+            bodyFont: { size: 12 },
+            callbacks: {
+              label: (ctx) => `$${(ctx.parsed as number).toLocaleString('es-ES', { maximumFractionDigits: 0 })}`
+            }
+          }
+        }
+      }
+    };
+
+    this.chart?.destroy();
+    this.chart = new Chart(this.donutChart.nativeElement, config);
+  }
 }

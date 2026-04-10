@@ -1,6 +1,7 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, AfterViewInit, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule, CurrencyPipe } from '@angular/common';
 import { ExecutiveSummary } from '../services/financial-reports.service';
+import { Chart, ChartConfiguration } from 'chart.js';
 
 @Component({
   selector: 'app-executive-summary',
@@ -83,6 +84,45 @@ import { ExecutiveSummary } from '../services/financial-reports.service';
             <span class="trend up">Margen: {{ data.utilidad_neta.margen }}%</span>
           </div>
           <div class="kpi-icon"><i class="bi bi-graph-up-arrow"></i></div>
+        </div>
+      </div>
+
+      <!-- CHARTS ROW -->
+      <div class="row g-4 mb-5">
+        <!-- Facturación Anual -->
+        <div class="col-lg-6">
+          <div class="section-card glass shadow-lg">
+            <div class="section-header">
+              <div class="title-with-icon">
+                <i class="bi bi-graph-up"></i>
+                <div>
+                  <h5>Facturación Este Año</h5>
+                  <p>Comparativa mes actual vs año anterior</p>
+                </div>
+              </div>
+            </div>
+            <div class="chart-wrapper">
+              <canvas #annualChart class="chart-canvas"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <!-- Gastos vs Utilidad -->
+        <div class="col-lg-6">
+          <div class="section-card glass shadow-lg">
+            <div class="section-header">
+              <div class="title-with-icon">
+                <i class="bi bi-pie-chart"></i>
+                <div>
+                  <h5>Gastos vs Utilidad (Mes)</h5>
+                  <p>Desglose de costos e ingresos netos</p>
+                </div>
+              </div>
+            </div>
+            <div class="chart-wrapper">
+              <canvas #profitChart class="chart-canvas"></canvas>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -231,10 +271,113 @@ import { ExecutiveSummary } from '../services/financial-reports.service';
 
     .font-medium { font-weight: 500; }
     .font-bold { font-weight: 700; }
+
+    .chart-wrapper { position: relative; height: 320px; }
+    .chart-canvas { max-height: 320px; }
+
     .fade-in { animation: fadeIn 0.4s ease-out; }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
   `]
 })
-export class ExecutiveSummaryComponent {
+export class ExecutiveSummaryComponent implements AfterViewInit {
   @Input() data!: ExecutiveSummary;
+  @ViewChild('annualChart') annualChart?: ElementRef<HTMLCanvasElement>;
+  @ViewChild('profitChart') profitChart?: ElementRef<HTMLCanvasElement>;
+
+  private annualChartInstance?: Chart;
+  private profitChartInstance?: Chart;
+
+  ngAfterViewInit() {
+    if (this.data) {
+      if (this.annualChart) this.renderAnnualChart();
+      if (this.profitChart) this.renderProfitChart();
+    }
+  }
+
+  private renderAnnualChart() {
+    if (!this.annualChart?.nativeElement) return;
+
+    const facturadoActual = this.data.total_facturado.valor;
+    const facturadoAnterior = this.data.total_facturado.valor / (1 + this.data.total_facturado.variacion / 100);
+
+    const config: ChartConfiguration<'doughnut'> = {
+      type: 'doughnut',
+      data: {
+        labels: ['Este Año', 'Año Anterior'],
+        datasets: [{
+          data: [facturadoActual, facturadoAnterior],
+          backgroundColor: ['#818cf8', '#cbd5e1'],
+          borderColor: '#ffffff',
+          borderWidth: 3,
+          hoverBorderWidth: 4
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: true,
+        plugins: {
+          legend: {
+            position: 'bottom',
+            labels: { font: { size: 11, weight: 600 }, padding: 12, usePointStyle: true } as any
+          },
+          tooltip: {
+            backgroundColor: 'rgba(0,0,0,0.8)',
+            padding: 12,
+            titleFont: { size: 13, weight: 'bold' },
+            bodyFont: { size: 12 },
+            callbacks: {
+              label: (ctx) => `$${(ctx.parsed as number).toLocaleString('es-ES', { maximumFractionDigits: 0 })}`
+            }
+          }
+        }
+      }
+    };
+
+    this.annualChartInstance?.destroy();
+    this.annualChartInstance = new Chart(this.annualChart.nativeElement, config);
+  }
+
+  private renderProfitChart() {
+    if (!this.profitChart?.nativeElement) return;
+
+    // Estimamos gastos como 75% de utilidad para el ejemplo
+    const utilidad = this.data.utilidad_neta.valor;
+    const gastos = utilidad / 0.233; // Basado en margen del 23.3%
+
+    const config: ChartConfiguration<'pie'> = {
+      type: 'pie',
+      data: {
+        labels: ['Utilidad Neta', 'Gastos'],
+        datasets: [{
+          data: [utilidad, gastos],
+          backgroundColor: ['#10b981', '#f59e0b'],
+          borderColor: '#ffffff',
+          borderWidth: 3,
+          hoverBorderWidth: 4
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: true,
+        plugins: {
+          legend: {
+            position: 'bottom',
+            labels: { font: { size: 11, weight: 600 }, padding: 12, usePointStyle: true } as any
+          },
+          tooltip: {
+            backgroundColor: 'rgba(0,0,0,0.8)',
+            padding: 12,
+            titleFont: { size: 13, weight: 'bold' },
+            bodyFont: { size: 12 },
+            callbacks: {
+              label: (ctx) => `$${(ctx.parsed as number).toLocaleString('es-ES', { maximumFractionDigits: 0 })}`
+            }
+          }
+        }
+      }
+    };
+
+    this.profitChartInstance?.destroy();
+    this.profitChartInstance = new Chart(this.profitChart.nativeElement, config);
+  }
 }

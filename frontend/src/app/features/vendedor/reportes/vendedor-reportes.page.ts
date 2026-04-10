@@ -36,23 +36,6 @@ export type ReportTab = 'empresas' | 'vencidas' | 'proximas' | 'comisiones';
   ],
   template: `
     <div class="reportes-page-container animate__animated animate__fadeIn">
-      
-      <!-- CABECERA PERSONALIZADA -->
-      <div class="header-section mb-4">
-        <div class="d-flex justify-content-between align-items-center">
-            <div class="title-group">
-                <h2 class="page-title">Panel de Reportes</h2>
-                <p class="page-subtitle">Gestiona tu cartera, monitorea renovaciones y liquida tus comisiones.</p>
-            </div>
-            <div class="last-sync text-end" *ngIf="metricas">
-                <span class="badge bg-light text-dark shadow-sm">
-                    <i class="bi bi-clock-history me-1"></i>
-                    Actualizado hoy
-                </span>
-            </div>
-        </div>
-      </div>
-
       <!-- DASHBOARD DINÁMICO POR PESTAÑA -->
       <div class="stats-container animate__animated animate__fadeIn">
           <!-- R-031 Stats (Empresas) -->

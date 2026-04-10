@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Comisiones por Vendedor - R-032</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Helvetica', Arial, sans-serif; color: #333; line-height: 1.5; page-break-after: always; }
+
+        .container { width: 100%; max-width: 900px; margin: 0 auto; padding: 20px; }
+
+        /* Header */
+        .header { text-align: center; border-bottom: 3px solid #065f46; padding-bottom: 15px; margin-bottom: 30px; }
+        .header h1 { font-size: 26px; color: #065f46; margin-bottom: 5px; font-weight: bold; }
+        .header .periodo { font-size: 12px; color: #64748b; margin: 5px 0; }
+        .header .empresa { font-size: 12px; color: #475569; font-weight: 600; }
+
+        /* Filtro DESDE-HASTA */
+        .filtro-rango { background: #f3f4f6; border-left: 4px solid #10b981; padding: 12px 15px; margin-bottom: 25px; border-radius: 4px; }
+        .filtro-rango p { font-size: 12px; color: #475569; margin: 3px 0; }
+        .filtro-rango strong { color: #1e293b; }
+
+        /* KPI Grid */
+        .kpis-section { margin-bottom: 30px; }
+        .kpis-grid { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 12px; margin-bottom: 20px; }
+
+        .kpi-card {
+            background: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 14px;
+            text-align: center;
+            page-break-inside: avoid;
+        }
+
+        .kpi-label { font-size: 10px; font-weight: bold; color: #64748b; text-transform: uppercase; margin-bottom: 6px; letter-spacing: 0.5px; }
+        .kpi-value { font-size: 20px; font-weight: bold; color: #1e293b; margin-bottom: 5px; }
+        .kpi-trend { font-size: 10px; font-weight: bold; }
+        .kpi-trend.up { color: #10b981; }
+        .kpi-trend.down { color: #ef4444; }
+        .kpi-secundario { font-size: 11px; color: #64748b; margin-top: 3px; }
+
+        /* Section Box */
+        .section-box {
+            background: #ffffff;
+            border: 1px solid #f1f5f9;
+            border-radius: 8px;
+            padding: 18px;
+            margin-bottom: 20px;
+            page-break-inside: avoid;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+
+        .section-title {
+            font-size: 13px;
+            font-weight: bold;
+            color: #1e293b;
+            border-bottom: 2px solid #f1f5f9;
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* Tabla Comisiones */
+        .comisiones-table { width: 100%; border-collapse: collapse; font-size: 11px; }
+        .comisiones-table th {
+            background: #f3f4f6;
+            border: 1px solid #e5e7eb;
+            padding: 8px;
+            text-align: left;
+            font-weight: bold;
+            color: #475569;
+        }
+        .comisiones-table td {
+            border: 1px solid #e5e7eb;
+            padding: 8px;
+            color: #333;
+        }
+        .comisiones-table tr:nth-child(even) { background: #f9fafb; }
+        .estado-pendiente { color: #f59e0b; font-weight: bold; }
+        .estado-aprobada { color: #10b981; font-weight: bold; }
+        .estado-pagada { color: #06b6d4; font-weight: bold; }
+        .tipo-nueva { color: #3b82f6; }
+        .tipo-renovacion { color: #8b5cf6; }
+        .tipo-upgrade { color: #f59e0b; }
+        .plan-pro { color: #3b82f6; font-weight: bold; }
+        .plan-basico { color: #64748b; font-weight: bold; }
+        .plan-enterprise { color: #9333ea; font-weight: bold; }
+
+        /* Gráficas */
+        .graficas-container { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; page-break-inside: avoid; }
+        .grafica-box {
+            background: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+        }
+        .grafica-titulo { font-size: 11px; font-weight: bold; color: #1e293b; margin-bottom: 10px; text-transform: uppercase; }
+        canvas { max-height: 200px; }
+
+        /* Notas */
+        .notas-section {
+            background: #f0f9ff;
+            border-left: 4px solid #3b82f6;
+            border-radius: 4px;
+            padding: 12px 15px;
+            font-size: 10px;
+            color: #475569;
+            line-height: 1.6;
+        }
+        .notas-section ul { margin-left: 20px; margin-top: 5px; }
+        .notas-section li { margin-bottom: 4px; }
+
+        /* Tooltip simulado */
+        .tooltip-marker { color: #3b82f6; font-weight: bold; cursor: help; position: relative; }
+
+        /* Footer - NO EDITAR */
+        #footer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            text-align: center;
+            font-size: 10px;
+            color: #6b7280;
+            padding: 10px 0;
+            border-top: 1px solid #e5e7eb;
+            background: white;
+        }
+
+        body { padding-bottom: 50px; }
+
+        /* Page break */
+        .page-break { page-break-after: always; }
+
+        /* Responsive adjustments for print */
+        @media print {
+            body { margin: 0; padding: 10px; }
+            .container { max-width: 100%; padding: 10px; }
+            .kpis-grid { grid-template-columns: 1fr 1fr 1fr 1fr; gap: 8px; }
+            .graficas-container { grid-template-columns: 1fr 1fr; gap: 15px; }
+            .section-box { page-break-inside: avoid; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>Control de Comisiones por Vendedor</h1>
+            <p class="periodo">Periodo: <strong>{{ params.fecha_inicio }}</strong> al <strong>{{ params.fecha_fin }}</strong></p>
+            <p class="empresa">Superadmin - Comisiones Generadas y Estado de Pago</p>
+        </div>
+
+        <!-- Filtro DESDE - HASTA (obligatorio) -->
+        <div class="filtro-rango">
+            <p><strong>FILTRO DE BÚSQUEDA:</strong> Desde <strong>{{ params.fecha_inicio }}</strong> hasta <strong>{{ params.fecha_fin }}</strong></p>
+        </div>
+
+        <!-- SECCIÓN 1: KPIs PRINCIPALES -->
+        <div class="section-box">
+            <div class="section-title">KPIs de Comisiones</div>
+
+            <div class="kpis-grid">
+                <!-- Comisiones Pendientes -->
+                <div class="kpi-card">
+                    <div class="kpi-label">Comisiones Pendientes</div>
+                    <div class="kpi-value">${{ "{:,.0f}".format(data.comisiones_pendientes.valor) }}</div>
+                    <div class="kpi-secundario">de aprobación</div>
+                </div>
+
+                <!-- Pagadas Este Mes -->
+                <div class="kpi-card">
+                    <div class="kpi-label">Pagadas Este Mes</div>
+                    <div class="kpi-value">${{{ "{:,.0f}".format(data.comisiones_pagadas.valor) }}</div>
+                    <div class="kpi-secundario">ya procesadas</div>
+                </div>
+
+                <!-- Vendedores Activos -->
+                <div class="kpi-card">
+                    <div class="kpi-label">Vendedores Activos</div>
+                    <div class="kpi-value">{{ data.vendedores_activos }}</div>
+                    <div class="kpi-secundario">en el sistema</div>
+                </div>
+
+                <!-- Tasa Éxito Upgrades -->
+                <div class="kpi-card">
+                    <div class="kpi-label">Upgrades Concretados</div>
+                    <div class="kpi-value">{{ data.upgrades_exitosos }}%</div>
+                    <div class="kpi-secundario">de éxito</div>
+                </div>
+            </div>
+
+            <!-- Segunda fila de KPIs -->
+            <div class="kpis-grid" style="margin-top: 15px;">
+                <!-- Clientes Perdidos -->
+                <div class="kpi-card">
+                    <div class="kpi-label">Clientes Perdidos</div>
+                    <div class="kpi-value">{{ data.clientes_perdidos }}%</div>
+                    <div class="kpi-secundario">en zona de rescate</div>
+                </div>
+
+                <!-- Total Comisiones Generadas -->
+                <div class="kpi-card">
+                    <div class="kpi-label">Total Comisiones Generadas</div>
+                    <div class="kpi-value">${{{ "{:,.0f}".format(data.total_comisiones) }}</div>
+                    <div class="kpi-secundario">este período</div>
+                </div>
+
+                <!-- Comisión Promedio -->
+                <div class="kpi-card">
+                    <div class="kpi-label">Comisión Promedio</div>
+                    <div class="kpi-value">${{{ "{:,.2f}".format(data.comision_promedio) }}</div>
+                    <div class="kpi-secundario">por venta</div>
+                </div>
+
+                <div class="kpi-card">
+                    <div class="kpi-label">Tasa de Aprobación</div>
+                    <div class="kpi-value">{{ data.tasa_aprobacion }}%</div>
+                    <div class="kpi-secundario">de comisiones</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SECCIÓN 2: TABLA DE DETALLE DE COMISIONES -->
+        <div class="section-box">
+            <div class="section-title">Detalle de Comisiones</div>
+            <table class="comisiones-table">
+                <thead>
+                    <tr>
+                        <th>Vendedor</th>
+                        <th>Empresa</th>
+                        <th>Tipo de Venta</th>
+                        <th>Plan</th>
+                        <th>Comisión</th>
+                        <th>Estado</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for comision in data.detalle_comisiones %}
+                    <tr>
+                        <td><strong>{{ comision.vendedor }}</strong></td>
+                        <td>{{ comision.empresa }}</td>
+                        <td>
+                            {% if comision.tipo_venta == 'Nueva' %}
+                                <span class="tipo-nueva">{{ comision.tipo_venta }}</span>
+                            {% elif comision.tipo_venta == 'Renovación' %}
+                                <span class="tipo-renovacion">{{ comision.tipo_venta }}</span>
+                            {% elif comision.tipo_venta == 'Upgrade' %}
+                                <span class="tipo-upgrade">{{ comision.tipo_venta }}</span>
+                            {% else %}
+                                {{ comision.tipo_venta }}
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if comision.plan == 'Pro' %}
+                                <span class="plan-pro">{{ comision.plan }}</span>
+                            {% elif comision.plan == 'Enterprise' %}
+                                <span class="plan-enterprise">{{ comision.plan }}</span>
+                            {% else %}
+                                <span class="plan-basico">{{ comision.plan }}</span>
+                            {% endif %}
+                        </td>
+                        <td>${{ "{:,.2f}".format(comision.comision) }}</td>
+                        <td>
+                            {% if comision.estado == 'Pendiente' %}
+                                <span class="estado-pendiente">{{ comision.estado }} <span class="tooltip-marker">(i)</span></span>
+                            {% elif comision.estado == 'Aprobada' %}
+                                <span class="estado-aprobada">{{ comision.estado }}</span>
+                            {% elif comision.estado == 'Pagada' %}
+                                <span class="estado-pagada">{{ comision.estado }}</span>
+                            {% else %}
+                                {{ comision.estado }}
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- SECCIÓN 3: GRÁFICAS -->
+        <div class="section-box">
+            <div class="section-title">Análisis Gráfico de Comisiones</div>
+
+            <div class="graficas-container">
+                <!-- Gráfica 1: Distribución de Estados de Comisiones -->
+                <div class="grafica-box">
+                    <div class="grafica-titulo">Estado de Comisiones</div>
+                    <canvas id="chartEstadoComisiones"></canvas>
+                </div>
+
+                <!-- Gráfica 2: Distribución por Tipo de Venta -->
+                <div class="grafica-box">
+                    <div class="grafica-titulo">Distribución por Tipo de Venta</div>
+                    <canvas id="chartTipoVenta"></canvas>
+                </div>
+            </div>
+
+            <!-- Gráfica 3: Top Vendedores (ancho completo) -->
+            <div style="margin-top: 20px; page-break-inside: avoid;">
+                <div class="grafica-box" style="background: #ffffff; border: 1px solid #e5e7eb;">
+                    <div class="grafica-titulo">Top Vendedores por Ingresos Generados</div>
+                    <canvas id="chartTopVendedoresComisiones" style="max-height: 250px;"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- SECCIÓN 4: NOTAS -->
+        <div class="section-box">
+            <div class="section-title">Notas</div>
+            <div class="notas-section">
+                <ul>
+                    <li><strong>(i) Tooltip en "Pendiente":</strong> En espera de ciclo de pago</li>
+                    <li><strong>Tipos de Venta:</strong> Nueva (cliente nuevo), Renovación (plan renovado), Upgrade (cambio a plan superior)</li>
+                    <li><strong>Estado Pendiente:</strong> Comisión generada pero aún sin procesar en ciclo de pago</li>
+                    <li><strong>Estado Aprobada:</strong> Comisión revisada y autorizada para pago</li>
+                    <li><strong>Estado Pagada:</strong> Comisión procesada y depositada al vendedor</li>
+                    <li><strong>Gráfica Top Vendedores:</strong> Ranking de vendedores por total de ingresos generados (suma de comisiones)</li>
+                </ul>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Footer - NO EDITAR -->
+    <div id="footer">
+        Generado por
+        {% if footer_b64 %}
+        <img src="{{ footer_b64 }}" style="vertical-align: middle; height: 16px; margin: 0 4px;" alt="NOUS">
+        {% else %}
+        NOUS
+        {% endif %}
+        www.nous.ec
+    </div>
+
+    <script>
+        // Gráfica 1: Estado de Comisiones
+        const ctxEstado = document.getElementById('chartEstadoComisiones').getContext('2d');
+        new Chart(ctxEstado, {
+            type: 'doughnut',
+            data: {
+                labels: ['Pendiente', 'Aprobada', 'Pagada'],
+                datasets: [{
+                    data: [
+                        {{ data.graficas.estado_comisiones.pendiente }},
+                        {{ data.graficas.estado_comisiones.aprobada }},
+                        {{ data.graficas.estado_comisiones.pagada }}
+                    ],
+                    backgroundColor: ['#f59e0b', '#10b981', '#06b6d4'],
+                    borderColor: ['#b45309', '#065f46', '#0891b2'],
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            font: { size: 10 },
+                            padding: 10,
+                            color: '#475569'
+                        }
+                    }
+                }
+            }
+        });
+
+        // Gráfica 2: Tipo de Venta
+        const ctxTipo = document.getElementById('chartTipoVenta').getContext('2d');
+        new Chart(ctxTipo, {
+            type: 'doughnut',
+            data: {
+                labels: ['Nueva', 'Renovación', 'Upgrade'],
+                datasets: [{
+                    data: [
+                        {{ data.graficas.tipo_venta.nueva }},
+                        {{ data.graficas.tipo_venta.renovacion }},
+                        {{ data.graficas.tipo_venta.upgrade }}
+                    ],
+                    backgroundColor: ['#3b82f6', '#8b5cf6', '#f59e0b'],
+                    borderColor: ['#1e40af', '#6b21a8', '#b45309'],
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            font: { size: 10 },
+                            padding: 10,
+                            color: '#475569'
+                        }
+                    }
+                }
+            }
+        });
+
+        // Gráfica 3: Top Vendedores
+        const ctxVendedores = document.getElementById('chartTopVendedoresComisiones').getContext('2d');
+        new Chart(ctxVendedores, {
+            type: 'bar',
+            data: {
+                labels: {{ data.graficas.top_vendedores.labels | tojson }},
+                datasets: [{
+                    label: 'Ingresos Generados ($)',
+                    data: {{ data.graficas.top_vendedores.valores | tojson }},
+                    backgroundColor: '#8b5cf6',
+                    borderColor: '#6b21a8',
+                    borderWidth: 1.5
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                indexAxis: 'y',
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+                scales: {
+                    x: {
+                        beginAtZero: true,
+                        ticks: {
+                            font: { size: 9 },
+                            color: '#64748b'
+                        }
+                    },
+                    y: {
+                        ticks: {
+                            font: { size: 9 },
+                            color: '#64748b'
+                        }
+                    }
+                }
+            }
+        });
+    </script>
+
+</body>
+</html>

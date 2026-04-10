@@ -69,7 +69,7 @@ import { SidebarService } from './sidebar.service';
                <a routerLink="/vendedor/planes" routerLinkActive="active" class="menu-item px-3 mb-1" title="Planes">
                  <i class="bi bi-tags"></i> <span class="menu-text ms-3">Planes</span>
                </a>
-               <a *hasPermission="'REPORTES_VER'" routerLink="/vendedor/reportes" routerLinkActive="active" class="menu-item px-3 mb-1" title="Reportes">
+               <a *hasPermission="'puede_ver_reportes'" routerLink="/vendedor/reportes" routerLinkActive="active" class="menu-item px-3 mb-1" title="Reportes">
                  <i class="bi bi-bar-chart"></i> <span class="menu-text ms-3">Reportes</span>
                </a>
                <a routerLink="/vendedor/renovaciones" routerLinkActive="active" class="menu-item px-3 mb-1" title="Renovaciones">

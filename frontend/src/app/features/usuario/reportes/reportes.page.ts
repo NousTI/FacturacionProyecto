@@ -40,14 +40,6 @@ type Tab = 'resumen' | 'ventas' | 'cartera' | 'pyg' | 'iva';
 <div class="reportes-container animate__animated animate__fadeIn">
   
   <ng-container *ngIf="canView; else noPermission">
-    <!-- CABECERA -->
-    <div class="header-section mb-4">
-      <div class="title-group">
-        <h4 class="page-title text-gradient">Centro de Inteligencia</h4>
-        <p class="page-subtitle">Análisis financiero y administrativo de Comercial Torres.</p>
-      </div>
-    </div>
-
     <!-- NAVEGACIÓN -->
     <div class="tabs-navigation mb-4">
       <button class="nav-btn" [class.active]="tabActivo === 'resumen'" (click)="setTab('resumen')">
