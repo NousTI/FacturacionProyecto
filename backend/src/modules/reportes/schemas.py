@@ -189,4 +189,4 @@ class ReporteComisionesVendedor(BaseModel):
     # Tablas
     detalle: List[DetalleComisionVendedor] = []
     # Gráficas
-    grafica_comparativa: Dict[str, float] = {}
+    grafica_comparativa: Dict[str, Any] = {}

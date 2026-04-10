@@ -57,11 +57,19 @@ export class VendedorReportesService {
     });
   }
 
-  getR031Data(): Observable<any> {
-    return this.http.get<any>(`${this.apiUrl}/vendedor/mis-empresas`);
+  getR031Data(fechaInicio?: string, fechaFin?: string): Observable<any> {
+    let url = `${this.apiUrl}/vendedor/mis-empresas`;
+    if (fechaInicio && fechaFin) {
+      url += `?fecha_inicio=${fechaInicio}&fecha_fin=${fechaFin}`;
+    }
+    return this.http.get<any>(url);
   }
 
-  getR032Data(): Observable<any> {
-    return this.http.get<any>(`${this.apiUrl}/vendedor/mis-comisiones`);
+  getR032Data(fechaInicio?: string, fechaFin?: string): Observable<any> {
+    let url = `${this.apiUrl}/vendedor/mis-comisiones`;
+    if (fechaInicio && fechaFin) {
+      url += `?fecha_inicio=${fechaInicio}&fecha_fin=${fechaFin}`;
+    }
+    return this.http.get<any>(url);
   }
 }

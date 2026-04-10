@@ -2,10 +2,11 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Reporte Global Superadmin</title>
+    <title>Reporte Global Superadmin - R-031</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap');
-        
+
         #footer {
             position: fixed;
             bottom: 0px;
@@ -20,7 +21,7 @@
             font-family: 'Inter', sans-serif;
             font-size: 10px;
             color: #111827;
-            margin: 0; 
+            margin: 0;
             padding: 30px 35px 50px 35px;
             line-height: 1.3;
         }
@@ -29,21 +30,32 @@
         .header h1 { margin: 0; font-size: 18px; font-weight: 800; color: #161d35; }
         .header p { margin: 4px 0 0; color: #64748b; font-size: 10px; }
 
-        .kpi-grid { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 20px; }
-        .kpi-card { 
-            flex: 1; min-width: 120px; 
-            border: 1px solid #e2e8f0; border-radius: 6px; padding: 10px 12px; 
+        .filter-bar {
+            background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 6px; padding: 12px;
+            margin-bottom: 15px; display: flex; gap: 10px; align-items: center; font-size: 9px;
+        }
+        .filter-bar label { font-weight: 600; color: #374151; }
+        .filter-bar input { padding: 4px 8px; border: 1px solid #d1d5db; border-radius: 4px; font-size: 9px; }
+
+        .kpi-grid { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 18px; }
+        .kpi-card {
+            flex: 1; min-width: 100px;
+            border: 1px solid #e2e8f0; border-radius: 6px; padding: 10px;
             background: #f8fafc;
         }
-        .kpi-label { font-size: 8px; font-weight: 700; color: #64748b; text-transform: uppercase; display: block; margin-bottom: 3px; }
-        .kpi-value { font-size: 14px; font-weight: 800; color: #161d35; }
-        
-        h2 { font-size: 11px; font-weight: 700; color: #161d35; margin: 16px 0 6px; border-left: 3px solid #3b82f6; padding-left: 8px; }
-        
+        .kpi-label { font-size: 7px; font-weight: 700; color: #64748b; text-transform: uppercase; display: block; margin-bottom: 2px; }
+        .kpi-value { font-size: 13px; font-weight: 800; color: #161d35; }
+
+        h2 { font-size: 11px; font-weight: 700; color: #161d35; margin: 14px 0 6px; border-left: 3px solid #3b82f6; padding-left: 8px; }
+
+        .chart-container { position: relative; height: 180px; margin-bottom: 18px; }
+        .chart-row { display: flex; gap: 12px; margin-bottom: 18px; }
+        .chart-box { flex: 1; border: 1px solid #e2e8f0; border-radius: 6px; padding: 10px; background: #f8fafc; }
+
         table { width: 100%; border-collapse: collapse; margin-bottom: 12px; }
-        th { 
-            background: #f1f5f9; padding: 6px 8px; text-align: left; 
-            font-size: 8px; text-transform: uppercase; color: #475569; 
+        th {
+            background: #f1f5f9; padding: 6px 8px; text-align: left;
+            font-size: 8px; text-transform: uppercase; color: #475569;
             border-bottom: 1px solid #e2e8f0; font-weight: 700;
         }
         td { padding: 5px 8px; border-bottom: 1px solid #f1f5f9; font-size: 9px; vertical-align: middle; }
@@ -51,19 +63,30 @@
 
         .text-right { text-align: right; }
         .font-bold { font-weight: 700; }
-        
+
         .badge { padding: 2px 6px; border-radius: 8px; font-size: 8px; font-weight: 600; }
         .bg-red { background: #fee2e2; color: #991b1b; }
         .bg-amber { background: #fef3c7; color: #92400e; }
         .bg-blue { background: #dbeafe; color: #1e40af; }
+
+        .tooltip-icon { cursor: help; color: #3b82f6; font-weight: bold; }
     </style>
 </head>
 <body>
     <div class="header">
-        <h1>REPORTE GLOBAL SUPERADMIN</h1>
+        <h1>REPORTE GLOBAL SUPERADMIN - R-031</h1>
         <p>Generado el {{ now }} &nbsp;·&nbsp; Periodo: {{ params.fecha_inicio or 'Inicio' }} al {{ params.fecha_fin or 'Hoy' }}</p>
     </div>
 
+    <!-- FILTRO DESDE-HASTA -->
+    <div class="filter-bar">
+        <label>📅 FILTRO:</label>
+        <label>Desde:</label> <input type="date" id="fecha_inicio" value="{{ params.fecha_inicio or '' }}">
+        <label>Hasta:</label> <input type="date" id="fecha_fin" value="{{ params.fecha_fin or '' }}">
+        <button onclick="aplicarFiltro()" style="padding: 4px 12px; background: #3b82f6; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 9px; font-weight: 600;">Aplicar</button>
+    </div>
+
+    <!-- KPIs PRINCIPALES -->
     <div class="kpi-grid">
         <div class="kpi-card">
             <span class="kpi-label">Empresas Activas</span>
@@ -71,64 +94,92 @@
         </div>
         <div class="kpi-card">
             <span class="kpi-label">Ingresos Año</span>
-            <span class="kpi-value">${{ "{:,.2f}".format(data.ingresos_anio) }}</span>
+            <span class="kpi-value">${{ "{:,.0f}".format(data.ingresos_anio) }}</span>
         </div>
         <div class="kpi-card">
             <span class="kpi-label">Ingresos Mes</span>
-            <span class="kpi-value">${{ "{:,.2f}".format(data.ingresos_mes) }}</span>
-        </div>
-        <div class="kpi-card">
-            <span class="kpi-label">Tasa Crecimiento</span>
-            <span class="kpi-value">{{ "{:.1f}%".format(data.tasa_crecimiento) }}</span>
-        </div>
-        <div class="kpi-card">
-            <span class="kpi-label">Zona Rescate</span>
-            <span class="kpi-value" style="color: #dc2626;">{{ data.zona_rescate }}</span>
-        </div>
-        <div class="kpi-card">
-            <span class="kpi-label">Zona Upgrade</span>
-            <span class="kpi-value" style="color: #d97706;">{{ data.zona_upgrade }}</span>
+            <span class="kpi-value">${{ "{:,.0f}".format(data.ingresos_mes) }}</span>
         </div>
         <div class="kpi-card">
             <span class="kpi-label">Usuarios Nuevos</span>
             <span class="kpi-value" style="color: #16a34a;">{{ data.usuarios_nuevos_mes }}</span>
         </div>
         <div class="kpi-card">
+            <span class="kpi-label">Crecimiento Neto</span>
+            <span class="kpi-value" style="color: #0891b2;">{{ data.crecimiento_neto }}</span>
+        </div>
+        <div class="kpi-card">
+            <span class="kpi-label">Tasa Crecimiento</span>
+            <span class="kpi-value">{{ "{:.1f}%".format(data.tasa_crecimiento) }}<br><span style="font-size: 8px; color: #64748b;">mensual</span></span>
+        </div>
+        <div class="kpi-card">
             <span class="kpi-label">Tasa Abandono</span>
             <span class="kpi-value" style="color: #dc2626;">{{ "{:.1f}%".format(data.tasa_abandono) }}</span>
         </div>
+        <div class="kpi-card">
+            <span class="kpi-label">Zona Upgrade</span>
+            <span class="kpi-value" style="color: #d97706;">{{ data.zona_upgrade }}</span>
+        </div>
+        <div class="kpi-card">
+            <span class="kpi-label">Zona Rescate</span>
+            <span class="kpi-value" style="color: #dc2626;">{{ data.zona_rescate }}</span>
+        </div>
     </div>
 
+    <!-- GRÁFICAS -->
+    <div class="chart-row">
+        <div class="chart-box">
+            <h2>Rescate vs Upgrade (%)</h2>
+            <div class="chart-container">
+                <canvas id="chartRescateUpgrade"></canvas>
+            </div>
+        </div>
+        <div class="chart-box">
+            <h2>Planes Más Vendidos</h2>
+            <div class="chart-container">
+                <canvas id="chartPlanes"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <div class="chart-box" style="margin-bottom: 18px;">
+        <h2>Top 10 Vendedores (Ingresos)</h2>
+        <div class="chart-container" style="height: 200px;">
+            <canvas id="chartVendedores"></canvas>
+        </div>
+    </div>
+
+    <!-- ZONA DE RESCATE -->
     <h2>Zona de Rescate — Próximos Vencimientos ({{ data.empresas_rescate | length }})</h2>
     <table>
         <thead>
             <tr>
-                <th style="width:30%">Empresa</th>
-                <th style="width:18%">Plan</th>
-                <th style="width:14%">Vencimiento</th>
-                <th style="width:22%">Vendedor</th>
-                <th style="width:16%">Email</th>
+                <th style="width:25%">Empresa <span class="tooltip-icon" title="Hover para ver: Vendedor, Antigüedad, Representante">(i)</span></th>
+                <th style="width:15%">Plan</th>
+                <th style="width:15%">Ult. Acceso</th>
+                <th style="width:15%">Vencimiento</th>
+                <th style="width:15%">Email</th>
+                <th style="width:15%">Teléfono</th>
             </tr>
         </thead>
         <tbody>
             {% for e in data.empresas_rescate %}
-            <tr>
-                <td class="font-bold">{{ e.nombre_empresa if e.nombre_empresa is string else e['nombre_empresa'] }}</td>
-                <td>{{ e.plan_nombre if e.plan_nombre is defined else e.get('plan_nombre', '--') }}</td>
-                <td>
-                    {% set fv = e.fecha_vencimiento if e.fecha_vencimiento is defined else e.get('fecha_vencimiento') %}
-                    {{ fv.strftime('%d/%m/%Y') if fv and fv is not string else (fv[:10] if fv else '--') }}
-                </td>
-                <td>{{ e.vendedor_nombre or 'Sin asignar' }}</td>
+            <tr title="Vendedor: {{ e.vendedor_nombre }}, Antigüedad: {% if e.fecha_registro %}{{ (now_obj - e.fecha_registro).days }} días{% endif %}, Representante: {{ e.representante or '--' }}">
+                <td class="font-bold">{{ e.nombre_empresa }}</td>
+                <td>{{ e.plan_nombre or '--' }}</td>
+                <td>{{ e.ultimo_acceso if e.ultimo_acceso and e.ultimo_acceso is string else (e.ultimo_acceso.strftime('%Y-%m-%d') if e.ultimo_acceso else '--') }}</td>
+                <td>{{ e.fecha_vencimiento if e.fecha_vencimiento is string else (e.fecha_vencimiento.strftime('%d/%m/%Y') if e.fecha_vencimiento else '--') }}</td>
                 <td style="font-size:8px; color:#64748b;">{{ e.email or '--' }}</td>
+                <td style="font-size:8px;">{{ e.telefono or '--' }}</td>
             </tr>
             {% endfor %}
             {% if not data.empresas_rescate %}
-            <tr><td colspan="5" style="text-align:center; color:#9ca3af; padding: 12px;">Sin empresas en zona de rescate</td></tr>
+            <tr><td colspan="6" style="text-align:center; color:#9ca3af; padding: 12px;">Sin empresas en zona de rescate</td></tr>
             {% endif %}
         </tbody>
     </table>
 
+    <!-- ZONA DE UPGRADE -->
     <h2>Zona de Upgrade — Alto Uso del Plan ({{ data.empresas_upgrade | length }})</h2>
     <table>
         <thead>
@@ -154,60 +205,117 @@
         </tbody>
     </table>
 
-    <h2>Top Vendedores</h2>
-    <table>
-        <thead>
-            <tr>
-                <th style="width:50%">Vendedor</th>
-                <th style="width:20%">Empresas</th>
-                <th class="text-right" style="width:30%">Ingresos Generados</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for v in data.top_vendedores %}
-            <tr>
-                <td>{{ v.vendedor }}</td>
-                <td>{{ v.empresas }}</td>
-                <td class="text-right font-bold">${{ "{:,.2f}".format(v.ingresos_generados) }}</td>
-            </tr>
-            {% endfor %}
-            {% if not data.top_vendedores %}
-            <tr><td colspan="3" style="text-align:center; color:#9ca3af; padding: 12px;">Sin datos de vendedores</td></tr>
-            {% endif %}
-        </tbody>
-    </table>
-
-    <h2>Planes Más Vendidos</h2>
-    <table>
-        <thead>
-            <tr>
-                <th style="width:50%">Plan</th>
-                <th style="width:20%">Ventas</th>
-                <th class="text-right" style="width:30%">Ingresos</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for p in data.planes_mas_vendidos %}
-            <tr>
-                <td class="font-bold">{{ p.plan }}</td>
-                <td>{{ p.ventas }}</td>
-                <td class="text-right font-bold">${{ "{:,.2f}".format(p.ingresos) }}</td>
-            </tr>
-            {% endfor %}
-            {% if not data.planes_mas_vendidos %}
-            <tr><td colspan="3" style="text-align:center; color:#9ca3af; padding: 12px;">Sin datos de planes</td></tr>
-            {% endif %}
-        </tbody>
-    </table>
-
     <div id="footer">
-        Generado por 
+        Generado por
         {% if footer_b64 %}
-        <img src="{{ footer_b64 }}" style="vertical-align: middle; height: 16px; margin: 0 4px;" alt="NOUS"> 
+        <img src="{{ footer_b64 }}" style="vertical-align: middle; height: 16px; margin: 0 4px;" alt="NOUS">
         {% else %}
         NOUS
         {% endif %}
         www.nous.ec
     </div>
+
+    <script>
+        // Datos para gráficas
+        const chartDataRescateUpgrade = {
+            rescate: {{ data.zona_rescate }},
+            upgrade: {{ data.zona_upgrade }}
+        };
+
+        const chartDataPlanes = {
+            labels: [{% for p in data.planes_mas_vendidos %}'{{ p.plan }}'{{ "," if not loop.last }}{% endfor %}],
+            data: [{% for p in data.planes_mas_vendidos %}{{ p.ventas }}{{ "," if not loop.last }}{% endfor %}],
+            ingresos: [{% for p in data.planes_mas_vendidos %}{{ p.ingresos }}{{ "," if not loop.last }}{% endfor %}]
+        };
+
+        const chartDataVendedores = {
+            labels: [{% for v in data.top_vendedores %}'{{ v.vendedor }}'{{ "," if not loop.last }}{% endfor %}],
+            data: [{% for v in data.top_vendedores %}{{ v.ingresos_generados }}{{ "," if not loop.last }}{% endfor %}]
+        };
+
+        // Gráfica Rescate vs Upgrade
+        if (chartDataRescateUpgrade.rescate > 0 || chartDataRescateUpgrade.upgrade > 0) {
+            const ctx1 = document.getElementById('chartRescateUpgrade');
+            if (ctx1) {
+                new Chart(ctx1, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Zona Rescate', 'Zona Upgrade'],
+                        datasets: [{
+                            data: [chartDataRescateUpgrade.rescate, chartDataRescateUpgrade.upgrade],
+                            backgroundColor: ['#ef4444', '#f59e0b'],
+                            borderColor: ['#fff', '#fff'],
+                            borderWidth: 2
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { display: true, position: 'bottom' } }
+                    }
+                });
+            }
+        }
+
+        // Gráfica Planes Más Vendidos
+        if (chartDataPlanes.labels.length > 0) {
+            const ctx2 = document.getElementById('chartPlanes');
+            if (ctx2) {
+                new Chart(ctx2, {
+                    type: 'bar',
+                    data: {
+                        labels: chartDataPlanes.labels,
+                        datasets: [{
+                            label: 'Ventas',
+                            data: chartDataPlanes.data,
+                            backgroundColor: '#3b82f6',
+                            borderRadius: 4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        indexAxis: 'y',
+                        plugins: { legend: { display: false } }
+                    }
+                });
+            }
+        }
+
+        // Gráfica Top Vendedores
+        if (chartDataVendedores.labels.length > 0) {
+            const ctx3 = document.getElementById('chartVendedores');
+            if (ctx3) {
+                new Chart(ctx3, {
+                    type: 'bar',
+                    data: {
+                        labels: chartDataVendedores.labels,
+                        datasets: [{
+                            label: 'Ingresos',
+                            data: chartDataVendedores.data,
+                            backgroundColor: '#10b981',
+                            borderRadius: 4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        indexAxis: 'y',
+                        plugins: { legend: { display: false } }
+                    }
+                });
+            }
+        }
+
+        // Función para aplicar filtro (redirecciona con parámetros)
+        function aplicarFiltro() {
+            const inicio = document.getElementById('fecha_inicio').value;
+            const fin = document.getElementById('fecha_fin').value;
+            let url = '/reportes/superadmin/global?';
+            if (inicio) url += `fecha_inicio=${inicio}&`;
+            if (fin) url += `fecha_fin=${fin}`;
+            window.location.href = url;
+        }
+    </script>
 </body>
 </html>

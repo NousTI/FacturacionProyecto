@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { Subject, takeUntil } from 'rxjs';
 import { VendedorReportesService, VendedorMetricas } from './services/vendedor-reportes.service';
 import { UiService } from '../../../shared/services/ui.service';
+import { HttpClient } from '@angular/common/http';
 import { ToastComponent } from '../../../shared/components/toast/toast.component';
 import { R031StatsComponent } from './components/r031-stats.component';
 import { R032StatsComponent } from './components/r032-stats.component';
@@ -85,9 +86,9 @@ export type ReportTab = 'empresas' | 'vencidas' | 'proximas' | 'comisiones';
         </button>
       </div>
 
-      <!-- FILTROS (Solo para proximas/vencidas que requieren rangos personalizados) -->
+      <!-- FILTROS (Para todos los tabs con rango de fechas) -->
       <app-vendedor-filters
-        *ngIf="tabActivo === 'proximas' || tabActivo === 'vencidas'"
+        *ngIf="tabActivo === 'empresas' || tabActivo === 'comisiones' || tabActivo === 'proximas' || tabActivo === 'vencidas'"
         [loading]="isLoading"
         [rangoTipo]="rangoTipo"
         [fechaInicio]="fechaInicio"
@@ -95,7 +96,7 @@ export type ReportTab = 'empresas' | 'vencidas' | 'proximas' | 'comisiones';
         [diasRenovacion]="diasRenovacion"
         [showDiasRenovacion]="tabActivo === 'proximas'"
         (rangoChange)="onRangoChange($event)"
-        (generate)="cargarPreview()"
+        (generate)="handleGenerate()"
         (export)="exportarPDF()">
       </app-vendedor-filters>
 
@@ -125,13 +126,13 @@ export type ReportTab = 'empresas' | 'vencidas' | 'proximas' | 'comisiones';
 
       <div class="row mb-4 animate__animated animate__fadeIn" *ngIf="tabActivo === 'comisiones'">
           <div class="col-md-6 offset-md-3">
-              <app-vendor-chart 
-                  title="Rendimiento del Mes" 
-                  subtitle="Ventas este mes vs mes anterior"
-                  type="doughnut" 
+              <app-vendor-chart
+                  [title]="'Rendimiento: ' + (r032Data?.grafica_comparativa?.periodo_actual || 'Período Actual') + ' vs ' + (r032Data?.grafica_comparativa?.periodo_anterior || 'Período Anterior')"
+                  [subtitle]="'Comparativa de comisiones entre períodos'"
+                  type="doughnut"
                   [data]="[
-                      {label: 'Mes Actual', value: r032Data?.grafica_comparativa?.mes_actual},
-                      {label: 'Mes Anterior', value: r032Data?.grafica_comparativa?.mes_anterior}
+                      {label: r032Data?.grafica_comparativa?.periodo_actual, value: r032Data?.grafica_comparativa?.mes_actual},
+                      {label: r032Data?.grafica_comparativa?.periodo_anterior, value: r032Data?.grafica_comparativa?.mes_anterior}
                   ]"
                   labelKey="label"
                   valueKey="value"
@@ -225,6 +226,7 @@ export class VendedorReportesPage implements OnInit, OnDestroy {
   constructor(
     private reportesService: VendedorReportesService,
     private uiService: UiService,
+    private http: HttpClient,
     private cd: ChangeDetectorRef
   ) {}
 
@@ -275,7 +277,7 @@ export class VendedorReportesPage implements OnInit, OnDestroy {
   cargarDatosConsolidados() {
     this.isLoading = true;
     if (this.tabActivo === 'empresas') {
-      this.reportesService.getR031Data()
+      this.reportesService.getR031Data(this.fechaInicio, this.fechaFin)
         .pipe(takeUntil(this.destroy$))
         .subscribe({
           next: (data) => {
@@ -289,7 +291,7 @@ export class VendedorReportesPage implements OnInit, OnDestroy {
           }
         });
     } else if (this.tabActivo === 'comisiones') {
-      this.reportesService.getR032Data()
+      this.reportesService.getR032Data(this.fechaInicio, this.fechaFin)
         .pipe(takeUntil(this.destroy$))
         .subscribe({
           next: (data) => {
@@ -302,6 +304,14 @@ export class VendedorReportesPage implements OnInit, OnDestroy {
             this.uiService.showError(err, 'Error al cargar reporte de comisiones');
           }
         });
+    }
+  }
+
+  handleGenerate() {
+    if (this.tabActivo === 'empresas' || this.tabActivo === 'comisiones') {
+      this.cargarDatosConsolidados();
+    } else {
+      this.cargarPreview();
     }
   }
 
@@ -372,9 +382,27 @@ export class VendedorReportesPage implements OnInit, OnDestroy {
 
   private downloadLinkExtracted(url_descarga?: string) {
       if (url_descarga) {
-          const baseUrl = environment.apiUrl.replace(/\/api\/?$/, '');
-          const downloadLink = `${baseUrl}${url_descarga}`;
-          window.open(downloadLink, '_blank');
+          const filename = url_descarga.split('/').pop() || 'reporte.pdf';
+          const apiUrl = environment.apiUrl;
+          const downloadLink = `${apiUrl}/reportes/descargar/${filename}`;
+
+          // Descargar con HttpClient (que incluye el token automáticamente)
+          this.http.get(downloadLink, { responseType: 'blob' })
+              .subscribe({
+                  next: (blob) => {
+                      const link = document.createElement('a');
+                      link.href = URL.createObjectURL(blob);
+                      link.download = filename;
+                      link.style.display = 'none';
+                      document.body.appendChild(link);
+                      link.click();
+                      document.body.removeChild(link);
+                      URL.revokeObjectURL(link.href);
+                  },
+                  error: () => {
+                      this.uiService.showError('Error al descargar el archivo', 'Error');
+                  }
+              });
       }
   }
 }

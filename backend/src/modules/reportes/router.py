@@ -134,23 +134,47 @@ def eliminar_reporte_vendedor(
 
 @router.get("/vendedor/mis-empresas", response_model=ReporteEmpresasVendedor)
 def obtener_reporte_vendedor_mis_empresas(
+    fecha_inicio: Optional[str] = None,
+    fecha_fin: Optional[str] = None,
     usuario: dict = Depends(obtener_usuario_actual),
     servicio: ServicioReportes = Depends()
 ):
-    """R-031 (reducido): Mis empresas."""
+    """R-031 (reducido): Mis empresas con filtros de fecha."""
     vendedor_id = usuario.get(AuthKeys.INTERNAL_VENDEDOR_ID)
     if not vendedor_id: raise AppError("No autorizado como vendedor", 403)
-    return servicio.obtener_reporte_vendedor_mis_empresas(vendedor_id)
+    return servicio.obtener_reporte_vendedor_mis_empresas(vendedor_id, fecha_inicio, fecha_fin)
 
 @router.get("/vendedor/mis-comisiones", response_model=ReporteComisionesVendedor)
 def obtener_reporte_vendedor_mis_comisiones(
+    fecha_inicio: Optional[str] = None,
+    fecha_fin: Optional[str] = None,
     usuario: dict = Depends(obtener_usuario_actual),
     servicio: ServicioReportes = Depends()
 ):
-    """R-032 (reducido): Mis comisiones."""
+    """R-032 (reducido): Mis comisiones con filtros de fecha."""
     vendedor_id = usuario.get(AuthKeys.INTERNAL_VENDEDOR_ID)
     if not vendedor_id: raise AppError("No autorizado como vendedor", 403)
-    return servicio.obtener_reporte_vendedor_mis_comisiones(vendedor_id)
+    return servicio.obtener_reporte_vendedor_mis_comisiones(vendedor_id, fecha_inicio, fecha_fin)
+
+@router.get("/descargar/{filename}")
+def descargar_reporte(
+    filename: str,
+    usuario: dict = Depends(obtener_usuario_actual)
+):
+    """Descarga un reporte PDF con header de descarga"""
+    from fastapi.responses import FileResponse
+    import os
+
+    filepath = os.path.join("static", "reportes", filename)
+
+    if not os.path.exists(filepath):
+        raise AppError("Archivo no encontrado", 404)
+
+    return FileResponse(
+        path=filepath,
+        media_type="application/pdf",
+        headers={"Content-Disposition": f"attachment; filename={filename}"}
+    )
 
 # --- RUTAS DE SUPERADMIN ---
 @router.get("/superadmin", response_model=List[ReporteLectura])

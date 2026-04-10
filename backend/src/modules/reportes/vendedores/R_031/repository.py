@@ -8,18 +8,25 @@ class RepositorioR031Vendedor:
     def __init__(self, db=Depends(get_db)):
         self.db = db
 
-    def obtener_kpis(self, vendedor_id: UUID) -> dict:
+    def obtener_kpis(self, vendedor_id: UUID, fecha_inicio: Optional[str] = None, fecha_fin: Optional[str] = None) -> dict:
         today = date.today()
-        fi_mes = date(today.year, today.month, 1).isoformat()
-        
-        # Inicio del mes anterior para comparativas
-        if today.month == 1:
-            fi_mes_ant = date(today.year - 1, 12, 1).isoformat()
-            ff_mes_ant = date(today.year - 1, 12, 31).isoformat()
+
+        # Si se proporciona rango, usarlo; si no, usar mes actual
+        if fecha_inicio and fecha_fin:
+            fi_mes = fecha_inicio
+            ff_mes = fecha_fin
         else:
-            fi_mes_ant = date(today.year, today.month - 1, 1).isoformat()
-            # Último día del mes anterior
-            ff_mes_ant = (date(today.year, today.month, 1) - timedelta(days=1)).isoformat()
+            fi_mes = date(today.year, today.month, 1).isoformat()
+            ff_mes = today.isoformat()
+
+        # Calcular período anterior con la misma duración
+        from datetime import datetime
+        d1 = datetime.strptime(fi_mes, '%Y-%m-%d').date()
+        d2 = datetime.strptime(ff_mes, '%Y-%m-%d').date()
+        delta = (d2 - d1).days + 1
+
+        fi_mes_ant = (d1 - timedelta(days=delta)).isoformat()
+        ff_mes_ant = (d1 - timedelta(days=1)).isoformat()
 
         query = """
             SELECT
@@ -109,16 +116,22 @@ class RepositorioR031Vendedor:
             
             return data
 
-    def obtener_detalle_empresas(self, vendedor_id: UUID) -> List[dict]:
+    def obtener_detalle_empresas(self, vendedor_id: UUID, fecha_inicio: Optional[str] = None, fecha_fin: Optional[str] = None) -> List[dict]:
+        # Usar mes actual si no se provee rango
+        if not fecha_inicio or not fecha_fin:
+            today = date.today()
+            fecha_inicio = date(today.year, today.month, 1).isoformat()
+            fecha_fin = today.isoformat()
+
         query = """
             SELECT
                 e.id,
                 COALESCE(e.nombre_comercial, e.razon_social) as empresa,
                 p.nombre as plan,
                 p.max_facturas_mes,
-                (SELECT COUNT(f.id) FROM sistema_facturacion.facturas f 
-                 WHERE f.empresa_id = e.id AND f.estado != 'ANULADA' 
-                   AND f.fecha_emision >= DATE_TRUNC('month', NOW())) as facturas_mes,
+                (SELECT COUNT(f.id) FROM sistema_facturacion.facturas f
+                 WHERE f.empresa_id = e.id AND f.estado != 'ANULADA'
+                   AND f.fecha_emision >= %s AND f.fecha_emision <= %s) as facturas_mes,
                 s.fecha_fin as prox_vencimiento,
                 s.estado,
                 e.created_at as fecha_registro
@@ -129,7 +142,7 @@ class RepositorioR031Vendedor:
             ORDER BY s.fecha_fin ASC
         """
         with self.db.cursor() as cur:
-            cur.execute(query, (vendedor_id,))
+            cur.execute(query, (fecha_inicio, fecha_fin, vendedor_id))
             rows = [dict(row) for row in cur.fetchall()]
             
             now = date.today()
@@ -162,30 +175,61 @@ class RepositorioR031Vendedor:
 
             return rows
 
-    def obtener_grafica_planes(self, vendedor_id: UUID) -> List[dict]:
+    def obtener_grafica_planes(self, vendedor_id: UUID, fecha_inicio: Optional[str] = None, fecha_fin: Optional[str] = None) -> List[dict]:
+        if not fecha_inicio or not fecha_fin:
+            today = date.today()
+            fecha_inicio = date(today.year, today.month, 1).isoformat()
+            fecha_fin = today.isoformat()
+
         query = """
             SELECT p.nombre, COUNT(ps.id) as cantidad
             FROM sistema_facturacion.pagos_suscripciones ps
             JOIN sistema_facturacion.planes p ON ps.plan_id = p.id
             JOIN sistema_facturacion.empresas e ON ps.empresa_id = e.id
             WHERE e.vendedor_id = %s AND ps.estado = 'PAGADO'
+              AND ps.fecha_pago >= %s AND ps.fecha_pago <= %s
             GROUP BY p.nombre
             ORDER BY cantidad DESC
         """
         with self.db.cursor() as cur:
-            cur.execute(query, (vendedor_id,))
+            cur.execute(query, (vendedor_id, fecha_inicio, fecha_fin))
             return [dict(row) for row in cur.fetchall()]
 
-    def obtener_grafica_ventas_mes(self, vendedor_id: UUID) -> List[dict]:
-        query = """
-            SELECT TO_CHAR(ps.fecha_pago, 'MM') as mes, SUM(ps.monto) as total
-            FROM sistema_facturacion.pagos_suscripciones ps
-            JOIN sistema_facturacion.empresas e ON ps.empresa_id = e.id
-            WHERE e.vendedor_id = %s AND ps.estado = 'PAGADO'
-              AND ps.fecha_pago >= DATE_TRUNC('year', NOW())
-            GROUP BY 1
-            ORDER BY 1 ASC
-        """
+    def obtener_grafica_ventas_mes(self, vendedor_id: UUID, fecha_inicio: Optional[str] = None, fecha_fin: Optional[str] = None) -> List[dict]:
+        if not fecha_inicio or not fecha_fin:
+            today = date.today()
+            fecha_inicio = date(today.year, 1, 1).isoformat()  # Año completo
+            fecha_fin = today.isoformat()
+
+        # Determinar si mostrar por mes (rango > 60 días) o por día (rango <= 60 días)
+        from datetime import datetime
+        d1 = datetime.strptime(fecha_inicio, '%Y-%m-%d').date()
+        d2 = datetime.strptime(fecha_fin, '%Y-%m-%d').date()
+        dias_diff = (d2 - d1).days
+
+        if dias_diff > 60:
+            # Mostrar por mes (formato: Ene 2026, Feb 2026, etc.)
+            query = """
+                SELECT TO_CHAR(DATE_TRUNC('month', ps.fecha_pago), 'Mon YYYY') as mes, SUM(ps.monto) as total
+                FROM sistema_facturacion.pagos_suscripciones ps
+                JOIN sistema_facturacion.empresas e ON ps.empresa_id = e.id
+                WHERE e.vendedor_id = %s AND ps.estado = 'PAGADO'
+                  AND ps.fecha_pago >= %s AND ps.fecha_pago <= %s
+                GROUP BY DATE_TRUNC('month', ps.fecha_pago)
+                ORDER BY DATE_TRUNC('month', ps.fecha_pago) ASC
+            """
+        else:
+            # Mostrar por día (formato: 2026-04-01, 2026-04-02, etc.)
+            query = """
+                SELECT TO_CHAR(DATE(ps.fecha_pago), 'YYYY-MM-DD') as mes, SUM(ps.monto) as total
+                FROM sistema_facturacion.pagos_suscripciones ps
+                JOIN sistema_facturacion.empresas e ON ps.empresa_id = e.id
+                WHERE e.vendedor_id = %s AND ps.estado = 'PAGADO'
+                  AND ps.fecha_pago >= %s AND ps.fecha_pago <= %s
+                GROUP BY DATE(ps.fecha_pago)
+                ORDER BY DATE(ps.fecha_pago) ASC
+            """
+
         with self.db.cursor() as cur:
-            cur.execute(query, (vendedor_id,))
+            cur.execute(query, (vendedor_id, fecha_inicio, fecha_fin))
             return [dict(row) for row in cur.fetchall()]

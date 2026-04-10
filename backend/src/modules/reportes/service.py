@@ -613,10 +613,10 @@ class ServicioReportes:
     # R-031: REPORTE MIS EMPRESAS (VENDEDOR)
     # =========================================================
 
-    def obtener_reporte_vendedor_mis_empresas(self, vendedor_id: UUID):
-        kpis = self.repo_v_r031.obtener_kpis(vendedor_id)
-        empresas = self.repo_v_r031.obtener_detalle_empresas(vendedor_id)
-        
+    def obtener_reporte_vendedor_mis_empresas(self, vendedor_id: UUID, fecha_inicio: Optional[str] = None, fecha_fin: Optional[str] = None):
+        kpis = self.repo_v_r031.obtener_kpis(vendedor_id, fecha_inicio, fecha_fin)
+        empresas = self.repo_v_r031.obtener_detalle_empresas(vendedor_id, fecha_inicio, fecha_fin)
+
         # Calcular antigüedad para cada empresa
         now = date.today()
         for e in empresas:
@@ -638,19 +638,19 @@ class ServicioReportes:
         return {
             **kpis,
             "empresas": empresas,
-            "grafica_planes": self.repo_v_r031.obtener_grafica_planes(vendedor_id),
-            "grafica_ventas_mes": self.repo_v_r031.obtener_grafica_ventas_mes(vendedor_id)
+            "grafica_planes": self.repo_v_r031.obtener_grafica_planes(vendedor_id, fecha_inicio, fecha_fin),
+            "grafica_ventas_mes": self.repo_v_r031.obtener_grafica_ventas_mes(vendedor_id, fecha_inicio, fecha_fin)
         }
 
     # =========================================================
     # R-032: REPORTE MIS COMISIONES (VENDEDOR)
     # =========================================================
 
-    def obtener_reporte_vendedor_mis_comisiones(self, vendedor_id: UUID):
-        kpis = self.repo_v_r032.obtener_kpis(vendedor_id)
-        detalle = self.repo_v_r032.obtener_detalle_comisiones(vendedor_id)
-        comparativa = self.repo_v_r032.obtener_grafica_comparativa(vendedor_id)
-        
+    def obtener_reporte_vendedor_mis_comisiones(self, vendedor_id: UUID, fecha_inicio: Optional[str] = None, fecha_fin: Optional[str] = None):
+        kpis = self.repo_v_r032.obtener_kpis(vendedor_id, fecha_inicio, fecha_fin)
+        detalle = self.repo_v_r032.obtener_detalle_comisiones(vendedor_id, fecha_inicio, fecha_fin)
+        comparativa = self.repo_v_r032.obtener_grafica_comparativa(vendedor_id, fecha_inicio, fecha_fin)
+
         return {
             **kpis,
             "detalle": detalle,
