@@ -1,12 +1,13 @@
 import { Component, Input, Output, EventEmitter, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { PuntoEmision } from '../../../../../domain/models/punto-emision.model';
+import { HasPermissionDirective } from '../../../../../shared/directives/has-permission.directive';
 
 @Component({
   selector: 'app-puntos-emision-table',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule],
+  imports: [CommonModule, HasPermissionDirective],
   template: `
     <section class="module-table">
       <div class="table-container border-0 shadow-premium">
@@ -85,14 +86,14 @@ import { PuntoEmision } from '../../../../../domain/models/punto-emision.model';
                           <span class="ms-2">Ver Detalles</span>
                         </a>
                       </li>
-                      <li>
+                      <li *hasPermission="'PUNTO_EMISION_GESTIONAR'">
                         <a class="dropdown-item rounded-3 py-2" href="javascript:void(0)" (click)="onAction.emit({type: 'edit', puntoEmision: pe})">
                           <i class="bi bi-pencil-square"></i>
                           <span class="ms-2">Editar</span>
                         </a>
                       </li>
                       <li><hr class="dropdown-divider mx-2"></li>
-                      <li>
+                      <li *hasPermission="'PUNTO_EMISION_GESTIONAR'">
                         <a class="dropdown-item rounded-3 py-2 text-danger" href="javascript:void(0)" (click)="onAction.emit({type: 'delete', puntoEmision: pe})">
                           <i class="bi bi-trash"></i>
                           <span class="ms-2">Eliminar</span>

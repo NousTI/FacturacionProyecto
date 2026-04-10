@@ -1,12 +1,13 @@
 import { Component, EventEmitter, Input, Output, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { HasPermissionDirective } from '../../../../../shared/directives/has-permission.directive';
 
 @Component({
   selector: 'app-establecimiento-actions',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, HasPermissionDirective],
   template: `
     <div class="actions-container">
       <!-- Campo de Búsqueda -->
@@ -42,6 +43,7 @@ import { FormsModule } from '@angular/forms';
 
       <!-- Botón Crear -->
       <button
+        *hasPermission="'ESTABLECIMIENTO_GESTIONAR'"
         (click)="onCreate.emit()"
         class="btn-create-premium"
         type="button"
