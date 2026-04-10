@@ -99,6 +99,22 @@ export class SriValidators {
     }
 
     /**
+     * Validador de Cédula ecuatoriana individual (10 dígitos)
+     */
+    static validarCedulaEcuador(): ValidatorFn {
+        return (control: AbstractControl): ValidationErrors | null => {
+            const cedula = control.value;
+            if (!cedula) return null;
+
+            if (!SriValidators.validarCedula(cedula)) {
+                return { cedulaInvalid: true, message: 'Cédula ecuatoriana inválida' };
+            }
+
+            return null;
+        };
+    }
+
+    /**
      * Validador de Pasaporte (SRI permite alfanumérico, hasta 20 caracteres)
      */
     static pasaporte(): ValidatorFn {

@@ -83,15 +83,18 @@ import { SriValidators } from '../../../../../shared/utils/sri-validators';
                 <label class="form-label-premium">Número de Identificación *</label>
                 <div class="input-premium-group">
                   <i class="bi bi-card-text input-icon"></i>
-                  <input type="text" formControlName="documento_identidad" class="form-control-premium" 
+                  <input type="text" formControlName="documento_identidad" class="form-control-premium"
                     [class.is-invalid]="vendedorForm.get('documento_identidad')?.invalid && vendedorForm.get('documento_identidad')?.touched"
-                    [placeholder]="vendedorForm.get('tipo_identificacion')?.value === 'PASAPORTE' ? 'Alfanumérico' : '0000000000'" 
-                    [disabled]="saving" [maxlength]="vendedorForm.get('tipo_identificacion')?.value === 'PASAPORTE' ? 20 : 13"
+                    [placeholder]="getIdPlaceholder()"
+                    [disabled]="saving" [maxlength]="getIdMaxLength()"
                     (keypress)="vendedorForm.get('tipo_identificacion')?.value === 'PASAPORTE' ? null : onlyNumbers($event)">
                 </div>
                 <div class="error-feedback" *ngIf="vendedorForm.get('documento_identidad')?.invalid && vendedorForm.get('documento_identidad')?.touched">
                   {{ vendedorForm.get('documento_identidad')?.errors?.['message'] || 'Identificación inválida o incompleta' }}
                 </div>
+                <small class="text-muted d-block mt-1">
+                  {{ getIdHint() }}
+                </small>
 
               <!-- Email -->
               <div class="col-md-6" *ngIf="editing">
@@ -470,13 +473,17 @@ export class VendedorFormModalComponent {
   onTipoIdChange() {
     const tipo = this.vendedorForm.get('tipo_identificacion')?.value;
     const docControl = this.vendedorForm.get('documento_identidad');
-    
+
     if (docControl) {
       const validators = [Validators.required];
       if (tipo === 'PASAPORTE') {
         validators.push(SriValidators.pasaporte());
-      } else {
-        validators.push(SriValidators.identificacionEcuador());
+      } else if (tipo === 'CEDULA') {
+        validators.push(Validators.pattern(/^[0-9]{10}$/));
+        validators.push(SriValidators.validarCedulaEcuador());
+      } else if (tipo === 'RUC') {
+        validators.push(Validators.pattern(/^[0-9]{13}$/));
+        validators.push(SriValidators.rucEcuador());
       }
       docControl.setValidators(validators);
       docControl.updateValueAndValidity();
@@ -507,6 +514,41 @@ export class VendedorFormModalComponent {
         control.updateValueAndValidity();
       }
     });
+  }
+
+  getIdPlaceholder(): string {
+    const tipo = this.vendedorForm.get('tipo_identificacion')?.value;
+    switch (tipo) {
+      case 'CEDULA':
+        return 'Ej: 1234567890 (10 dígitos)';
+      case 'RUC':
+        return 'Ej: 1234567890001 (13 dígitos)';
+      case 'PASAPORTE':
+        return 'Ej: AB123456 (alfanumérico)';
+      default:
+        return '0000000000';
+    }
+  }
+
+  getIdMaxLength(): number {
+    const tipo = this.vendedorForm.get('tipo_identificacion')?.value;
+    if (tipo === 'PASAPORTE') return 20;
+    if (tipo === 'RUC') return 13;
+    return 10; // CEDULA
+  }
+
+  getIdHint(): string {
+    const tipo = this.vendedorForm.get('tipo_identificacion')?.value;
+    switch (tipo) {
+      case 'CEDULA':
+        return 'Ingresa 10 dígitos de la cédula ecuatoriana válida';
+      case 'RUC':
+        return 'Ingresa 13 dígitos del RUC ecuatoriano válido';
+      case 'PASAPORTE':
+        return 'Ingresa el número de pasaporte (máximo 20 caracteres alfanuméricos)';
+      default:
+        return '';
+    }
   }
 
   onlyNumbers(event: any) {

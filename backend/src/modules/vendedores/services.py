@@ -192,53 +192,86 @@ class ServicioVendedores:
     def actualizar_mi_perfil(self, datos: VendedorPerfilActualizacion, usuario_actual: dict):
         if not usuario_actual.get(AuthKeys.IS_VENDEDOR):
              raise AppError(
-                 message=AppMessages.PERM_FORBIDDEN, 
-                 status_code=403, 
+                 message=AppMessages.PERM_FORBIDDEN,
+                 status_code=403,
                  code=ErrorCodes.PERM_FORBIDDEN
              )
         vendedor = self.repo.obtener_por_user_id(usuario_actual.get('id'))
         if not vendedor:
              raise AppError(
-                 message=AppMessages.AUTH_USER_NOT_FOUND, 
-                 status_code=404, 
+                 message=AppMessages.AUTH_USER_NOT_FOUND,
+                 status_code=404,
                  code=ErrorCodes.AUTH_USER_NOT_FOUND
              )
+
         datos_dict = datos.model_dump(exclude_unset=True)
-        self.repo.actualizar(vendedor['id'], datos_dict)
+
+        # Validar que hay campos para actualizar
+        if not datos_dict:
+            raise AppError(
+                message="No hay cambios para actualizar",
+                status_code=400,
+                code=ErrorCodes.VALIDATION_ERROR,
+                description="Debe realizar al menos un cambio para actualizar.",
+                level="INFO"
+            )
+
+        res = self.repo.actualizar(vendedor['id'], datos_dict)
+        if not res:
+            raise AppError(
+                message="Error al actualizar perfil",
+                status_code=500,
+                code=ErrorCodes.SYS_INTERNAL_ERROR
+            )
+
         return self._sanitize(self.repo.obtener_por_id(vendedor['id']))
 
     def actualizar_vendedor(self, id: UUID, datos: VendedorActualizacion, usuario_actual: dict):
         vendedor = self.repo.obtener_por_id(id)
-        if not vendedor: 
+        if not vendedor:
              raise AppError(
-                 message=AppMessages.AUTH_USER_NOT_FOUND, 
-                 status_code=404, 
+                 message=AppMessages.AUTH_USER_NOT_FOUND,
+                 status_code=404,
                  code=ErrorCodes.AUTH_USER_NOT_FOUND
              )
 
         is_superadmin = usuario_actual.get(AuthKeys.IS_SUPERADMIN)
         is_owner = str(vendedor.get('user_id')) == str(usuario_actual.get('id'))
-        
+
         if not is_superadmin and not is_owner:
              raise AppError(
-                 message=AppMessages.PERM_FORBIDDEN, 
-                 status_code=403, 
+                 message=AppMessages.PERM_FORBIDDEN,
+                 status_code=403,
                  code=ErrorCodes.PERM_FORBIDDEN
              )
-        
+
         datos_dict = datos.model_dump(exclude_unset=True)
-        
+
         if is_owner and not is_superadmin:
             # Si es únicamente el vendedor, solo puede editar su nombre y teléfono
             allowed_fields = {'nombres', 'apellidos', 'telefono'}
             for k in list(datos_dict.keys()):
                 if k not in allowed_fields:
                     del datos_dict[k]
-            
-            if not datos_dict:
-                return self._sanitize(vendedor)
+
+        # Validar que hay campos para actualizar
+        if not datos_dict:
+            raise AppError(
+                message="No hay cambios para actualizar",
+                status_code=400,
+                code=ErrorCodes.VALIDATION_ERROR,
+                description="Debe realizar al menos un cambio para actualizar.",
+                level="INFO"
+            )
 
         res = self.repo.actualizar(id, datos_dict)
+        if not res:
+            raise AppError(
+                message="Error al actualizar vendedor",
+                status_code=500,
+                code=ErrorCodes.SYS_INTERNAL_ERROR
+            )
+
         return self._sanitize(res)
 
     def obtener_stats_vendedores(self, usuario_actual: dict):

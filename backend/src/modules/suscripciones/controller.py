@@ -13,8 +13,8 @@ class SuscripcionController:
         self.service = service
 
     # --- Planes ---
-    def listar_planes(self):
-        planes = self.service.listar_planes()
+    def listar_planes(self, usuario_actual: dict = None):
+        planes = self.service.listar_planes(usuario_actual)
         return success_response(planes)
     
     def obtener_plan(self, id: UUID):

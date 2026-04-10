@@ -12,15 +12,6 @@ from ...utils.response_schemas import RespuestaBase
 router = APIRouter()
 
 
-@router.get("/", response_model=RespuestaBase[List[InventarioLectura]])
-def listar_inventario(
-    usuario: dict = Depends(requerir_permiso(PermissionCodes.INVENTARIO_VER)),
-    servicio: ServicioInventarioStock = Depends()
-):
-    """Listar todo el inventario de la empresa"""
-    return success_response(servicio.listar_por_empresa(usuario))
-
-
 @router.get("/resumen", response_model=RespuestaBase[List[InventarioResumen]])
 def obtener_resumen_stock(
     usuario: dict = Depends(requerir_permiso(PermissionCodes.INVENTARIO_VER)),
@@ -28,6 +19,15 @@ def obtener_resumen_stock(
 ):
     """Obtener resumen de stock por estado para todos los productos"""
     return success_response(servicio.obtener_stock_resumen(usuario))
+
+
+@router.get("/", response_model=RespuestaBase[List[InventarioLectura]])
+def listar_inventario(
+    usuario: dict = Depends(requerir_permiso(PermissionCodes.INVENTARIO_VER)),
+    servicio: ServicioInventarioStock = Depends()
+):
+    """Listar todo el inventario de la empresa"""
+    return success_response(servicio.listar_por_empresa(usuario))
 
 
 @router.get("/{id}", response_model=RespuestaBase[InventarioLectura])

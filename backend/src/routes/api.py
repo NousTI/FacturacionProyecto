@@ -95,9 +95,7 @@ from ..modules.logs.router import router as logs_router
 api_router.include_router(logs_router, prefix="/logs", tags=["Logs de Emisión"], dependencies=operativo)
 
 from ..modules.inventarios.router import router as inventarios_router
-from ..modules.inventarios.inventario_router import router as inventario_stock_router
 api_router.include_router(inventarios_router, prefix="/inventarios", tags=["Inventarios"], dependencies=operativo)
-api_router.include_router(inventario_stock_router, prefix="/inventarios/stock", tags=["Gestión de Stock"], dependencies=operativo)
 
 from ..modules.facturas.routers.router_recurrentes import router as programaciones_router
 api_router.include_router(programaciones_router, prefix="/facturacion-programada", tags=["Facturación Programada"], dependencies=operativo)

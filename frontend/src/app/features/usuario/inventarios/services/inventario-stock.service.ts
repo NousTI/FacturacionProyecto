@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, BehaviorSubject, tap } from 'rxjs';
+import { Observable, BehaviorSubject, tap, map } from 'rxjs';
 import { BaseApiService } from '../../../../core/api/base-api.service';
 
 export interface InventarioStock {
@@ -26,14 +26,14 @@ export interface StockResumen {
   codigo: string;
   disponible: number;
   reservado: number;
-  dañado: number;
+  danado: number;
   en_transito: number;
   total: number;
 }
 
 @Injectable({ providedIn: 'root' })
 export class InventarioStockService extends BaseApiService {
-  private readonly ENDPOINT = 'inventarios/stock';
+  private readonly ENDPOINT = 'inventarios/stock/';
   private inventarios$ = new BehaviorSubject<InventarioStock[]>([]);
   private resumen$ = new BehaviorSubject<StockResumen[]>([]);
 
@@ -50,35 +50,41 @@ export class InventarioStockService extends BaseApiService {
   }
 
   listar(): Observable<InventarioStock[]> {
-    return this.get<InventarioStock[]>(this.ENDPOINT).pipe(
+    return this.get<any>(this.ENDPOINT).pipe(
+      map(response => response.detalles || []),
       tap(inventarios => this.inventarios$.next(inventarios))
     );
   }
 
   obtenerResumen(): Observable<StockResumen[]> {
-    return this.get<StockResumen[]>(`${this.ENDPOINT}/resumen`).pipe(
+    return this.get<any>(`${this.ENDPOINT}resumen`).pipe(
+      map(response => response.detalles || []),
       tap(resumen => this.resumen$.next(resumen))
     );
   }
 
   obtener(id: string): Observable<InventarioStock> {
-    return this.get<InventarioStock>(`${this.ENDPOINT}/${id}`);
+    return this.get<any>(`${this.ENDPOINT}${id}`).pipe(
+      map(response => response.detalles || response)
+    );
   }
 
   crear(datos: Omit<InventarioStock, 'id' | 'created_at' | 'updated_at' | 'empresa_id'>): Observable<InventarioStock> {
-    return this.post<InventarioStock>(this.ENDPOINT, datos).pipe(
+    return this.post<any>(this.ENDPOINT, datos).pipe(
+      map(response => response.detalles || response),
       tap(() => this.recargar())
     );
   }
 
   actualizar(id: string, datos: Partial<Omit<InventarioStock, 'id' | 'created_at' | 'updated_at' | 'empresa_id'>>): Observable<InventarioStock> {
-    return this.put<InventarioStock>(`${this.ENDPOINT}/${id}`, datos).pipe(
+    return this.put<any>(`${this.ENDPOINT}${id}`, datos).pipe(
+      map(response => response.detalles || response),
       tap(() => this.recargar())
     );
   }
 
   eliminar(id: string): Observable<any> {
-    return this.delete<any>(`${this.ENDPOINT}/${id}`).pipe(
+    return this.delete<any>(`${this.ENDPOINT}${id}`).pipe(
       tap(() => this.recargar())
     );
   }

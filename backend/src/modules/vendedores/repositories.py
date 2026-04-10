@@ -88,13 +88,20 @@ class RepositorioVendedores:
             return dict(row) if row else {"total": 0, "activos": 0, "inactivos": 0, "empresas_totales": 0, "ingresos_generados": 0.0}
 
     def actualizar(self, id: UUID, data: dict) -> Optional[dict]:
-        if data.get('configuracion') and isinstance(data['configuracion'], (dict, list)): 
+        if not data:
+            return None
+
+        if data.get('configuracion') and isinstance(data['configuracion'], (dict, list)):
             data['configuracion'] = json.dumps(data['configuracion'])
-        
+
         set_clauses = [f"{k} = %s" for k in data.keys()]
         values = [str(v) if isinstance(v, UUID) else v for v in data.values()]
         values.append(str(id))
-        query = f"UPDATE sistema_facturacion.vendedores SET {', '.join(set_clauses)}, updated_at = NOW() WHERE id = %s RETURNING *"
+
+        # Agregar updated_at al final de las clauses SET
+        set_clause = ', '.join(set_clauses) + ', updated_at = NOW()'
+        query = f"UPDATE sistema_facturacion.vendedores SET {set_clause} WHERE id = %s RETURNING *"
+
         with db_transaction(self.db) as cur:
             cur.execute(query, tuple(values))
             row = cur.fetchone()
@@ -162,7 +169,8 @@ class RepositorioVendedores:
 
         # 3. Alertas: Comisiones Recientes
         query_comisiones = """
-            SELECT c.id, e.razon_social, c.monto, TO_CHAR(c.fecha_generacion, 'YYYY-MM-DD') as fecha
+            SELECT c.id, e.razon_social, c.monto, c.estado, TO_CHAR(c.fecha_generacion, 'YYYY-MM-DD') as fecha,
+                   TO_CHAR(c.fecha_pago, 'YYYY-MM-DD') as fecha_pago
             FROM sistema_facturacion.comisiones c
             JOIN sistema_facturacion.pagos_suscripciones ps ON c.pago_suscripcion_id = ps.id
             JOIN sistema_facturacion.empresas e ON ps.empresa_id = e.id
@@ -209,12 +217,25 @@ class RepositorioVendedores:
             try:
                 cur.execute(query_comisiones, (str(vendedor_id),))
                 for row in cur.fetchall():
+                    estado = row.get('estado', 'PENDIENTE')
+                    estado_texto = {
+                        'PENDIENTE': 'Pendiente de aprobación',
+                        'APROBADA': 'Aprobada',
+                        'PAGADA': 'Ya fue pagada',
+                        'RECHAZADA': 'Rechazada'
+                    }.get(estado, estado)
+
+                    desc_adicional = ""
+                    if estado == 'PAGADA':
+                        desc_adicional = f" • Pagada el {row.get('fecha_pago', 'N/A')}"
+
                     alertas.append({
                         "id": str(row['id']),
                         "tipo": "COMISION_APROBADA",
-                        "titulo": f"Comisión Generada: ${row['monto']}",
-                        "descripcion": f"Venta registrada de {row['razon_social']}",
+                        "titulo": f"Comisión ${row['monto']} - {estado_texto}",
+                        "descripcion": f"Venta de {row['razon_social']}{desc_adicional}",
                         "fecha": row['fecha'],
+                        "estado": estado,
                         "accion_url": None
                     })
             except Exception:

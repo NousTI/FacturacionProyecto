@@ -24,9 +24,9 @@ import { StockResumen } from '../services/inventario-stock.service';
               <span class="label">Reservado</span>
               <span class="value">{{ item.reservado }}</span>
             </div>
-            <div class="estado-item dañado">
+            <div class="estado-item danado">
               <span class="label">Dañado</span>
-              <span class="value">{{ item.dañado }}</span>
+              <span class="value">{{ item.danado }}</span>
             </div>
             <div class="estado-item en-transito">
               <span class="label">En Tránsito</span>
@@ -55,7 +55,7 @@ import { StockResumen } from '../services/inventario-stock.service';
     .estado-item { display: flex; justify-content: space-between; align-items: center; padding: 0.5rem 0.75rem; border-radius: 8px; font-size: 0.875rem; }
     .estado-item.disponible { background: #dcfce7; }
     .estado-item.reservado { background: #fef3c7; }
-    .estado-item.dañado { background: #fee2e2; }
+    .estado-item.danado { background: #fee2e2; }
     .estado-item.en-transito { background: #dbeafe; }
     .label { font-weight: 600; color: #475569; }
     .value { font-weight: 700; color: #1e293b; font-size: 1.1rem; }

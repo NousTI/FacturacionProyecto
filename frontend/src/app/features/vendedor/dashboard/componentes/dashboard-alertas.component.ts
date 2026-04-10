@@ -46,7 +46,13 @@ import { InfoTooltipComponent } from '../../../../shared/components/info-tooltip
                style="color:#10b981"></i>
           </div>
           <div class="alert-body">
-            <span class="alert-title">{{ alerta.titulo }}</span>
+            <div class="d-flex align-items-center gap-2">
+              <span class="alert-title">{{ alerta.titulo }}</span>
+              <span *ngIf="alerta.estado"
+                    [ngClass]="'badge badge-' + getEstadoBadgeClass(alerta.estado)">
+                {{ getEstadoTexto(alerta.estado) }}
+              </span>
+            </div>
             <span class="alert-desc">{{ alerta.descripcion }}</span>
             <span class="alert-date"><i class="bi bi-clock me-1"></i>{{ alerta.fecha }}</span>
           </div>
@@ -119,6 +125,19 @@ import { InfoTooltipComponent } from '../../../../shared/components/info-tooltip
     }
     .empty-state h5 { margin-top: 1rem; font-weight: 700; color: #334155; }
     .empty-state p { color: #64748b; font-size: 0.875rem; margin: 0; }
+    .badge {
+      font-size: 0.65rem;
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+    .badge-warning { background: #fef3c7; color: #92400e; }
+    .badge-info { background: #dbeafe; color: #1e40af; }
+    .badge-success { background: #dcfce7; color: #166534; }
+    .badge-danger { background: #fee2e2; color: #991b1b; }
+    .d-flex { display: flex; }
+    .gap-2 { gap: 0.5rem; }
   `]
 })
 export class DashboardAlertasComponent {
@@ -127,5 +146,25 @@ export class DashboardAlertasComponent {
 
   get alertasRenovacion() {
     return this.alertas?.filter(a => a.tipo === 'RENOVACION_PROXIMA') || [];
+  }
+
+  getEstadoTexto(estado: string): string {
+    const textos: { [key: string]: string } = {
+      'PENDIENTE': 'Pendiente',
+      'APROBADA': 'Aprobada',
+      'PAGADA': 'Pagada',
+      'RECHAZADA': 'Rechazada'
+    };
+    return textos[estado] || estado;
+  }
+
+  getEstadoBadgeClass(estado: string): string {
+    const clases: { [key: string]: string } = {
+      'PENDIENTE': 'warning',
+      'APROBADA': 'info',
+      'PAGADA': 'success',
+      'RECHAZADA': 'danger'
+    };
+    return clases[estado] || 'secondary';
   }
 }

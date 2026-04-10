@@ -119,17 +119,18 @@ class ServicioUsuarios:
         # ... (rest of the creation logic remains the same)
         
         # Prepare usuario data (profile)
-        # Si no se provee un rol, asignar el rol de administrador de la empresa por defecto
+        # Determine the role for the new user
         final_rol_id = data.empresa_rol_id
         if not final_rol_id:
+            # Tanto superadmin como vendedores pueden usar el rol de administrador por defecto
             rol_admin = self.roles_repo.obtener_rol_admin_por_empresa(data.empresa_id)
             if rol_admin:
                 final_rol_id = rol_admin['id']
             else:
                 raise AppError(
-                    "No se pudo encontrar un rol de administrador para esta empresa", 
+                    "No se pudo encontrar un rol de administrador para esta empresa",
                     400,
-                    description="Debe existir al menos un rol de Administrador de Empresa para crear usuarios automáticamente."
+                    description="Debe existir al menos un rol de Administrador de Empresa para crear usuarios."
                 )
 
         usuario_data = {

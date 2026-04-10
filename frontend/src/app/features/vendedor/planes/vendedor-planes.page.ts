@@ -25,8 +25,8 @@ import { map } from 'rxjs/operators';
     ],
     template: `
     <div class="planes-page-container animate__animated animate__fadeIn">
-      
-      <!-- 1. ESTADÍSTICAS DE PLANES (Exactly the same as admin) -->
+
+      <!-- 1. ESTADÍSTICAS DE PLANES (Filtered to vendor's companies) -->
       <app-plan-stats
         [stats]="stats"
       ></app-plan-stats>

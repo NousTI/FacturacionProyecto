@@ -27,8 +27,27 @@ class ServicioSuscripciones:
         self.modulo_service = modulo_service
         self.empresa_repo = empresa_repo
 
-    def listar_planes(self):
-        return self.repo.listar_planes()
+    def listar_planes(self, usuario_actual: dict = None):
+        """List plans. If vendor, filter to show only their companies' plans"""
+        planes = self.repo.listar_planes()
+
+        # Si es vendedor, filtrar planes para mostrar solo count de sus empresas
+        if usuario_actual and usuario_actual.get(AuthKeys.IS_VENDEDOR):
+            vendedor_id = self._obtener_vendedor_id_actual(usuario_actual)
+            # Actualizar el conteo de empresas solo para las del vendedor
+            for plan in planes:
+                # Contar empresas del vendedor en este plan
+                query = """
+                    SELECT COUNT(*) as count FROM sistema_facturacion.empresas e
+                    JOIN sistema_facturacion.suscripciones s ON e.id = s.empresa_id
+                    WHERE s.plan_id = %s AND e.vendedor_id = %s
+                """
+                with self.repo.db.cursor() as cur:
+                    cur.execute(query, (str(plan['id']), str(vendedor_id)))
+                    row = cur.fetchone()
+                    plan['active_companies'] = row['count'] if row else 0
+
+        return planes
 
     def obtener_plan(self, id: UUID):
         return self.repo.obtener_plan_por_id(id)

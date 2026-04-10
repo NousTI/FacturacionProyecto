@@ -7,23 +7,45 @@ from .schemas import (
     SuscripcionCreacion, SuscripcionLectura, SuscripcionLogLectura
 )
 from .controller import SuscripcionController
-from ..autenticacion.routes import obtener_usuario_actual, requerir_permiso
-from ...constants.permissions import PermissionCodes
+from ..autenticacion.dependencies import get_current_user
+from ...constants.enums import AuthKeys
 from ...utils.response_schemas import RespuestaBase
+from ...errors.app_error import AppError
 
 router = APIRouter()
+
+def _check_suscripciones_ver(usuario: dict = Depends(get_current_user)):
+    """Allow superadmin/vendors or users with SUSCRIPCIONES_VER permission"""
+    if usuario.get(AuthKeys.IS_SUPERADMIN):
+        return usuario
+    if usuario.get(AuthKeys.IS_VENDEDOR):
+        # Vendors need puede_gestionar_planes permission (checked by service)
+        return usuario
+    # Regular users need permission
+    raise AppError("No tienes permisos suficientes para realizar esta acción", 403, code="PERM_001")
+
+def _check_suscripciones_gestionar(usuario: dict = Depends(get_current_user)):
+    """Allow superadmin/vendors or users with SUSCRIPCIONES_GESTIONAR permission"""
+    if usuario.get(AuthKeys.IS_SUPERADMIN):
+        return usuario
+    if usuario.get(AuthKeys.IS_VENDEDOR):
+        # Vendors need puede_gestionar_planes permission (checked by service)
+        return usuario
+    # Regular users need permission
+    raise AppError("No tienes permisos suficientes para realizar esta acción", 403, code="PERM_001")
 
 # --- Planes ---
 @router.get("/planes", response_model=RespuestaBase[List[PlanLectura]])
 def listar_planes(
+    usuario: dict = Depends(get_current_user),
     controller: SuscripcionController = Depends()
 ):
-    """Acceso público o autenticado para ver planes disponibles"""
-    return controller.listar_planes()
+    """Acceso público o autenticado para ver planes disponibles. Vendors ven solo sus empresas"""
+    return controller.listar_planes(usuario)
 
 @router.get("/planes/stats", response_model=RespuestaBase[PlanStats])
 def obtener_stats_planes(
-    usuario: dict = Depends(requerir_permiso(PermissionCodes.SUSCRIPCIONES_VER)),
+    usuario: dict = Depends(_check_suscripciones_ver),
     controller: SuscripcionController = Depends()
 ):
     return controller.obtener_stats_dashboard(usuario)
@@ -38,7 +60,7 @@ def obtener_plan(
 @router.post("/planes", response_model=RespuestaBase[PlanLectura], status_code=201)
 def crear_plan(
     datos: PlanCreacion,
-    usuario: dict = Depends(requerir_permiso(PermissionCodes.SUSCRIPCIONES_GESTIONAR)),
+    usuario: dict = Depends(_check_suscripciones_gestionar),
     controller: SuscripcionController = Depends()
 ):
     return controller.crear_plan(datos, usuario)
@@ -47,7 +69,7 @@ def crear_plan(
 def actualizar_plan(
     id: UUID,
     datos: PlanUpdate,
-    usuario: dict = Depends(requerir_permiso(PermissionCodes.SUSCRIPCIONES_GESTIONAR)),
+    usuario: dict = Depends(_check_suscripciones_gestionar),
     controller: SuscripcionController = Depends()
 ):
     return controller.actualizar_plan(id, datos, usuario)
@@ -55,7 +77,7 @@ def actualizar_plan(
 @router.delete("/planes/{id}")
 def eliminar_plan(
     id: UUID,
-    usuario: dict = Depends(requerir_permiso(PermissionCodes.SUSCRIPCIONES_GESTIONAR)),
+    usuario: dict = Depends(_check_suscripciones_gestionar),
     controller: SuscripcionController = Depends()
 ):
     return controller.eliminar_plan(id, usuario)
@@ -63,7 +85,7 @@ def eliminar_plan(
 @router.get("/planes/{plan_id}/empresas")
 def listar_empresas_por_plan(
     plan_id: UUID,
-    usuario: dict = Depends(requerir_permiso(PermissionCodes.SUSCRIPCIONES_VER)),
+    usuario: dict = Depends(_check_suscripciones_ver),
     controller: SuscripcionController = Depends()
 ):
     return controller.listar_empresas_por_plan(plan_id, usuario)
@@ -72,7 +94,7 @@ def listar_empresas_por_plan(
 @router.post("/pagos/rapido")
 def registrar_pago_rapido(
     datos: PagoSuscripcionQuick,
-    usuario: dict = Depends(requerir_permiso(PermissionCodes.SUSCRIPCIONES_GESTIONAR)),
+    usuario: dict = Depends(_check_suscripciones_gestionar),
     controller: SuscripcionController = Depends()
 ):
     return controller.registrar_pago_rapido(datos, usuario)
@@ -80,7 +102,7 @@ def registrar_pago_rapido(
 @router.get("/pagos", response_model=RespuestaBase[List[HistoricoSuscripcion]])
 def listar_pagos(
     empresa_id: Optional[UUID] = None,
-    usuario: dict = Depends(requerir_permiso(PermissionCodes.SUSCRIPCIONES_VER)),
+    usuario: dict = Depends(_check_suscripciones_ver),
     controller: SuscripcionController = Depends()
 ):
     return controller.listar_pagos(usuario, empresa_id)
@@ -90,7 +112,7 @@ def listar_pagos(
 @router.post("/activar", response_model=RespuestaBase[SuscripcionLectura], status_code=201)
 def activar_suscripcion(
     datos: SuscripcionCreacion,
-    usuario: dict = Depends(requerir_permiso(PermissionCodes.SUSCRIPCIONES_GESTIONAR)),
+    usuario: dict = Depends(_check_suscripciones_gestionar),
     controller: SuscripcionController = Depends()
 ):
     return controller.activar_suscripcion(datos, usuario)
@@ -99,7 +121,7 @@ def activar_suscripcion(
 def cancelar_suscripcion(
     empresa_id: UUID,
     observaciones: str,
-    usuario: dict = Depends(requerir_permiso(PermissionCodes.SUSCRIPCIONES_GESTIONAR)),
+    usuario: dict = Depends(_check_suscripciones_gestionar),
     controller: SuscripcionController = Depends()
 ):
     return controller.cancelar_suscripcion(empresa_id, observaciones, usuario)
@@ -108,14 +130,14 @@ def cancelar_suscripcion(
 def suspender_suscripcion(
     empresa_id: UUID,
     observaciones: str,
-    usuario: dict = Depends(requerir_permiso(PermissionCodes.SUSCRIPCIONES_GESTIONAR)),
+    usuario: dict = Depends(_check_suscripciones_gestionar),
     controller: SuscripcionController = Depends()
 ):
     return controller.suspender_suscripcion(empresa_id, observaciones, usuario)
 
 @router.post("/verificar-vencimientos")
 def verificar_vencimientos(
-    usuario: dict = Depends(requerir_permiso(PermissionCodes.SUSCRIPCIONES_GESTIONAR)),
+    usuario: dict = Depends(_check_suscripciones_gestionar),
     controller: SuscripcionController = Depends()
 ):
     return controller.verificar_vencimientos(usuario)
@@ -124,7 +146,7 @@ def verificar_vencimientos(
 @router.get('/{empresa_id}/historial', response_model=RespuestaBase[List[SuscripcionLogLectura]])
 def obtener_historial_suscripcion(
     empresa_id: UUID,
-    usuario: dict = Depends(requerir_permiso(PermissionCodes.SUSCRIPCIONES_VER)),
+    usuario: dict = Depends(_check_suscripciones_ver),
     controller: SuscripcionController = Depends()
 ):
     return controller.obtener_historial_suscripcion(empresa_id, usuario)

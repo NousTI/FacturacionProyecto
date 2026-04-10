@@ -77,6 +77,6 @@ class InventarioResumen(BaseModel):
     codigo: str
     disponible: int
     reservado: int
-    dañado: int
+    danado: int
     en_transito: int
     total: int

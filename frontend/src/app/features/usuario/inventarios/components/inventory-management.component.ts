@@ -10,6 +10,7 @@ import { ConfirmModalComponent } from '../../../../shared/components/confirm-mod
 import { InventoryStockTableComponent } from './inventory-stock-table.component';
 import { InventoryStockFormComponent } from './inventory-stock-form.component';
 import { StockResumenComponent } from './stock-resumen.component';
+import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-inventory-management',
@@ -17,6 +18,7 @@ import { StockResumenComponent } from './stock-resumen.component';
   imports: [
     CommonModule,
     ToastComponent,
+    FormsModule,
     ConfirmModalComponent,
     InventoryStockTableComponent,
     InventoryStockFormComponent,
@@ -24,9 +26,6 @@ import { StockResumenComponent } from './stock-resumen.component';
   ],
   template: `
     <div class="page-container">
-      <!-- RESUMEN CARDS -->
-      <app-stock-resumen [resumen]="resumen$ | async"></app-stock-resumen>
-
       <!-- FILTER AND CREATE -->
       <div class="controls-section">
         <div class="search-box">
@@ -45,6 +44,9 @@ import { StockResumenComponent } from './stock-resumen.component';
         (onEdit)="handleEditInventario($event)"
         (onDelete)="handleDeleteInventario($event)">
       </app-inventory-stock-table>
+
+      <!-- RESUMEN DE STOCK POR ESTADO -->
+      <app-stock-resumen [resumen]="resumen$ | async"></app-stock-resumen>
 
       <!-- FORM MODAL -->
       <app-inventory-stock-form

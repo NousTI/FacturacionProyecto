@@ -397,15 +397,22 @@ class ServicioEmpresas:
             permiso_ids = [p['id'] for p in permisos]
 
             # 2. Crear el rol de Administrador
+            # Usar un código único per empresa (en este caso el mismo para todas, pero garantiza unicidad con uq_rol_empresa_codigo)
             rol_data = {
-                "codigo": "ADMIN_SISTEMA",
+                "codigo": "ADMIN_EMPRESA",
                 "nombre": "Administrador de Empresa",
                 "descripcion": "Rol con todos los permisos del sistema",
                 "es_sistema": True
             }
 
             # Usamos el repositorio directamente para evitar chequeos de contexto
-            self.roles_service.repo.crear_rol(empresa_id, rol_data, permiso_ids)
-            
+            rol = self.roles_service.repo.crear_rol(empresa_id, rol_data, permiso_ids)
+            logger.info(f"[INICIALIZAR_ROLES] Rol de administrador creado para empresa {empresa_id}: {rol['id']}")
+
         except Exception as e:
-            print(f"Error al inicializar roles para la empresa {empresa_id}: {str(e)}")
+            logger.error(f"[ERROR_INICIALIZAR_ROLES] Fallo al inicializar roles para empresa {empresa_id}: {str(e)}", exc_info=True)
+            raise AppError(
+                "Error al inicializar roles de la empresa",
+                500,
+                description=f"No se pudo crear el rol de administrador: {str(e)}"
+            )

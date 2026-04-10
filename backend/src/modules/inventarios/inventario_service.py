@@ -3,6 +3,7 @@ from typing import List
 from uuid import UUID
 
 from .inventario_repository import RepositorioInventarioStock
+from .repository import RepositorioInventarios
 from .schemas import InventarioCreacion, InventarioActualizacion
 from ...constants.enums import AuthKeys
 from ...constants.inventario import ESTADOS_INVENTARIO, UNIDADES_MEDIDA
@@ -12,8 +13,9 @@ from ...errors.app_error import AppError
 class ServicioInventarioStock:
     """Servicio para gestionar el inventario (estado actual de stock)"""
 
-    def __init__(self, repo: RepositorioInventarioStock = Depends()):
+    def __init__(self, repo: RepositorioInventarioStock = Depends(), repo_inv: RepositorioInventarios = Depends()):
         self.repo = repo
+        self.repo_inv = repo_inv
 
     def listar_por_empresa(self, usuario_actual: dict) -> List[dict]:
         """Listar inventario de la empresa del usuario"""
@@ -50,10 +52,7 @@ class ServicioInventarioStock:
     def crear(self, datos: InventarioCreacion, usuario_actual: dict) -> dict:
         """Crear un nuevo registro de inventario"""
         # Validar que el producto pertenece a la empresa del usuario
-        from .repository import RepositorioInventarios
-        repo_inventarios = RepositorioInventarios()
-
-        producto = repo_inventarios.obtener_producto(datos.producto_id)
+        producto = self.repo_inv.obtener_producto(datos.producto_id)
         if not producto:
             raise AppError("Producto no encontrado", 404, "PRODUCTO_NOT_FOUND")
 

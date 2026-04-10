@@ -3,15 +3,14 @@ from typing import List
 from uuid import UUID
 from .services import ServicioNotificaciones
 from .schemas import NotificacionCreate, NotificacionLectura, NotificacionUpdate
-from ..autenticacion.routes import obtener_usuario_actual, requerir_permiso
-from ...constants.permissions import PermissionCodes
+from ..autenticacion.dependencies import get_current_user
 
 router = APIRouter()
 
 @router.get("/", response_model=List[NotificacionLectura])
 async def obtener_notificaciones(
     solo_no_leidas: bool = False,
-    current_user: dict = Depends(requerir_permiso(PermissionCodes.NOTIFICACION_LISTAR)),
+    current_user: dict = Depends(get_current_user),
     service: ServicioNotificaciones = Depends()
 ):
     """Obtiene las notificaciones del usuario actual."""
@@ -20,7 +19,7 @@ async def obtener_notificaciones(
 
 @router.get("/conteo-no-leidas")
 async def obtener_conteo_no_leidas(
-    current_user: dict = Depends(requerir_permiso(PermissionCodes.NOTIFICACION_LEER)),
+    current_user: dict = Depends(get_current_user),
     service: ServicioNotificaciones = Depends()
 ):
     """Devuelve el número de notificaciones no leídas."""
@@ -30,7 +29,7 @@ async def obtener_conteo_no_leidas(
 @router.patch("/{id}/leer", response_model=NotificacionLectura)
 async def marcar_como_leida(
     id: UUID,
-    current_user: dict = Depends(requerir_permiso(PermissionCodes.NOTIFICACION_LEER)),
+    current_user: dict = Depends(get_current_user),
     service: ServicioNotificaciones = Depends()
 ):
     """Marca una notificación específica como leída."""
@@ -42,7 +41,7 @@ async def marcar_como_leida(
 
 @router.post("/leer-todas")
 async def marcar_todas_como_leidas(
-    current_user: dict = Depends(requerir_permiso(PermissionCodes.NOTIFICACION_LEER)),
+    current_user: dict = Depends(get_current_user),
     service: ServicioNotificaciones = Depends()
 ):
     """Marca todas las notificaciones del usuario como leídas."""

@@ -2,11 +2,13 @@ from fastapi import Depends, HTTPException
 from typing import List, Optional
 from uuid import UUID
 from datetime import datetime, timedelta
+from psycopg2.extras import RealDictCursor
 from .repositories import RepositorioRenovaciones
 from .schemas import SolicitudRenovacionCreate, SolicitudRenovacionProcess
 from ..notificaciones.services import ServicioNotificaciones
 from ..notificaciones.schemas import NotificacionCreate
 from ..suscripciones.repositories import RepositorioSuscripciones
+# RealDictCursor se usa en los cursores dentro de los métodos
 
 class ServicioRenovaciones:
     def __init__(self, 
@@ -21,7 +23,7 @@ class ServicioRenovaciones:
         empresa_id = data.empresa_id
         
         # 1. Obtener ID del perfil de vendedor
-        with self.repo.db.cursor() as cur:
+        with self.repo.db.cursor(cursor_factory=RealDictCursor) as cur:
             cur.execute("SELECT id FROM sistema_facturacion.vendedores WHERE user_id = %s", (str(vendor_user_id),))
             v_row = cur.fetchone()
             if not v_row:
@@ -29,7 +31,7 @@ class ServicioRenovaciones:
             vendedor_id_actual = v_row['id']
 
         # 2. Verificar que el vendedor gestione esta empresa
-        with self.repo.db.cursor() as cur:
+        with self.repo.db.cursor(cursor_factory=RealDictCursor) as cur:
             cur.execute("SELECT id FROM sistema_facturacion.empresas WHERE id = %s AND vendedor_id = %s", (str(empresa_id), str(vendedor_id_actual)))
             e_row = cur.fetchone()
             if not e_row:
@@ -140,7 +142,7 @@ class ServicioRenovaciones:
                 # Obtener info del vendedor para calcular comision
                 vendedor_full = self.repo.obtener_vendedor_por_empresa(empresa_id) # Ya lo tenemos o lo re-buscamos
                 # Para simplificar, buscamos el porcentaje en la tabla vendedores
-                with self.repo.db.cursor() as cur:
+                with self.repo.db.cursor(cursor_factory=RealDictCursor) as cur:
                     cur.execute("SELECT porcentaje_comision_recurrente FROM sistema_facturacion.vendedores WHERE id = %s", (str(solicitud['vendedor_id']),))
                     v_row = cur.fetchone()
                     if v_row:
@@ -220,7 +222,7 @@ class ServicioRenovaciones:
         
         if is_vendedor:
             # Obtener ID de vendedor
-            with self.repo.db.cursor() as cur:
+            with self.repo.db.cursor(cursor_factory=RealDictCursor) as cur:
                 cur.execute("SELECT id FROM sistema_facturacion.vendedores WHERE user_id = %s", (str(usuario['id']),))
                 v_row = cur.fetchone()
                 if v_row:

@@ -10,6 +10,7 @@ export interface AlertaVendedor {
   titulo: string;
   descripcion: string;
   fecha: string;
+  estado?: 'PENDIENTE' | 'APROBADA' | 'PAGADA' | 'RECHAZADA';
   accion_url?: string;
 }
 

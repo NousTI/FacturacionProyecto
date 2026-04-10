@@ -160,7 +160,7 @@ import { FormsModule } from '@angular/forms';
               </div>
               <div class="col-6 text-center">
                   <h3 class="fw-bolder text-success mb-0">{{ ingresos_generados | currency }}</h3>
-                  <small class="text-muted fw-semibold">Total Generado</small>
+                  <small class="text-muted fw-semibold">Total Ganado</small>
               </div>
           </div>
         </ng-container>

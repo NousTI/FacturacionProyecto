@@ -1,4 +1,5 @@
 import uuid
+import traceback
 from fastapi import Request, Response
 from fastapi.responses import JSONResponse
 from starlette.middleware.base import BaseHTTPMiddleware
@@ -30,15 +31,15 @@ class ErrorMiddleware(BaseHTTPMiddleware):
             # BaseHTTPMiddleware atrapa todo. Debemos relanzar o manejar.
             # Para usar los handlers de FastAPI, lo mejor es NO atrapar aquí las excepciones controladas,
             # o atraparlas y devolver JSONResponse directos.
-            
+
             # Sin embargo, el código original hacía su propio handling.
             # Vamos a dejar pasar las excepciones para que los handlers globales ("exception_handlers=...") de FastAPI actúen,
             # PERO logueamos aquí si queremos.
-            
+
             # El código original atrapaba y devolvía JSONResponse.
             # Reproduciremos ese comportamiento para consistencia, pero usando nuestra estructura.
-            
-            logger.error(f"Error en request {ctx}: {str(e)}")
+
+            logger.error(f"Error en request {ctx}: {str(e)}\n{traceback.format_exc()}")
             
             if isinstance(e, AppError):
                  return JSONResponse(

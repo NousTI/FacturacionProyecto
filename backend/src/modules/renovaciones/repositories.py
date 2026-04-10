@@ -1,6 +1,7 @@
 from fastapi import Depends
 from typing import List, Optional
 from uuid import UUID
+from psycopg2.extras import RealDictCursor
 from ...database.session import get_db
 from ...database.transaction import db_transaction
 
@@ -28,7 +29,7 @@ class RepositorioRenovaciones:
             LEFT JOIN sistema_facturacion.vendedores v ON sr.vendedor_id = v.id
             WHERE sr.id = %s
         """
-        with self.db.cursor() as cur:
+        with self.db.cursor(cursor_factory=RealDictCursor) as cur:
             cur.execute(query, (str(id),))
             row = cur.fetchone()
             return dict(row) if row else None
@@ -59,7 +60,7 @@ class RepositorioRenovaciones:
 
         query += " ORDER BY sr.fecha_solicitud DESC"
 
-        with self.db.cursor() as cur:
+        with self.db.cursor(cursor_factory=RealDictCursor) as cur:
             cur.execute(query, tuple(params))
             return [dict(row) for row in cur.fetchall()]
 
@@ -67,11 +68,12 @@ class RepositorioRenovaciones:
         fields = [f"{k} = %s" for k in data.keys()]
         values = [str(v) if isinstance(v, UUID) else v for v in data.values()]
         values.append(str(id))
-        query = f"UPDATE sistema_facturacion.solicitudes_renovacion SET {', '.join(fields)}, updated_at = NOW() WHERE id = %s RETURNING *"
+        query = f"UPDATE sistema_facturacion.solicitudes_renovacion SET {', '.join(fields)}, updated_at = NOW() WHERE id = %s"
         with db_transaction(self.db) as cur:
             cur.execute(query, tuple(values))
-            row = cur.fetchone()
-            return dict(row) if row else None
+
+        # Retornar la solicitud completa con información relacionada
+        return self.obtener_solicitud_por_id(id)
 
     # --- Métodos de Ayuda para Notificaciones ---
     def obtener_vendedor_por_empresa(self, empresa_id: UUID) -> Optional[dict]:
@@ -81,26 +83,26 @@ class RepositorioRenovaciones:
             JOIN sistema_facturacion.empresas e ON v.id = e.vendedor_id
             WHERE e.id = %s AND v.activo = TRUE
         """
-        with self.db.cursor() as cur:
+        with self.db.cursor(cursor_factory=RealDictCursor) as cur:
             cur.execute(query, (str(empresa_id),))
             row = cur.fetchone()
             return dict(row) if row else None
 
     def listar_user_ids_superadmins(self) -> List[UUID]:
         query = "SELECT user_id FROM sistema_facturacion.superadmin WHERE activo = TRUE"
-        with self.db.cursor() as cur:
+        with self.db.cursor(cursor_factory=RealDictCursor) as cur:
             cur.execute(query)
             return [row['user_id'] for row in cur.fetchall()]
 
     def listar_user_ids_admins_empresa(self, empresa_id: UUID) -> List[UUID]:
         """Obtiene los IDs de usuario de quienes tienen rol administrativo en la empresa."""
         query = """
-            SELECT u.user_id 
+            SELECT u.user_id
             FROM sistema_facturacion.usuarios u
             JOIN sistema_facturacion.empresa_roles er ON u.empresa_rol_id = er.id
-            WHERE u.empresa_id = %s 
-            AND (er.es_sistema = TRUE OR er.codigo LIKE 'ADMIN_%' OR er.nombre = 'Administrador de Empresa')
+            WHERE u.empresa_id = %s
+            AND (er.es_sistema = TRUE OR er.codigo LIKE %s OR er.nombre = %s)
         """
-        with self.db.cursor() as cur:
-            cur.execute(query, (str(empresa_id),))
+        with self.db.cursor(cursor_factory=RealDictCursor) as cur:
+            cur.execute(query, (str(empresa_id), 'ADMIN_%', 'Administrador de Empresa'))
             return [row['user_id'] for row in cur.fetchall()]

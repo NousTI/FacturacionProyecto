@@ -11,18 +11,18 @@ class RepositorioModulos:
 
     def listar_todos(self) -> List[dict]:
         with self.db.cursor() as cur:
-            cur.execute("SELECT * FROM modulo ORDER BY orden ASC")
+            cur.execute("SELECT * FROM sistema_facturacion.modulo ORDER BY orden ASC")
             return [dict(row) for row in cur.fetchall()]
 
     def obtener_por_id(self, id: UUID) -> Optional[dict]:
         with self.db.cursor() as cur:
-            cur.execute("SELECT * FROM modulo WHERE id = %s", (str(id),))
+            cur.execute("SELECT * FROM sistema_facturacion.modulo WHERE id = %s", (str(id),))
             row = cur.fetchone()
             return dict(row) if row else None
 
     def obtener_por_codigo(self, codigo: str) -> Optional[dict]:
         with self.db.cursor() as cur:
-            cur.execute("SELECT * FROM modulo WHERE codigo = %s", (codigo,))
+            cur.execute("SELECT * FROM sistema_facturacion.modulo WHERE codigo = %s", (codigo,))
             row = cur.fetchone()
             return dict(row) if row else None
 
@@ -30,7 +30,7 @@ class RepositorioModulos:
         fields = list(data.keys())
         values = [str(v) if isinstance(v, UUID) else v for v in data.values()]
         placeholders = ["%s"] * len(fields)
-        query = f"INSERT INTO modulo ({', '.join(fields)}) VALUES ({', '.join(placeholders)}) RETURNING *"
+        query = f"INSERT INTO sistema_facturacion.modulo ({', '.join(fields)}) VALUES ({', '.join(placeholders)}) RETURNING *"
         with db_transaction(self.db) as cur:
             cur.execute(query, tuple(values))
             row = cur.fetchone()
@@ -40,7 +40,7 @@ class RepositorioModulos:
         set_clauses = [f"{k} = %s" for k in data.keys()]
         values = list(data.values())
         values.append(str(id))
-        query = f"UPDATE modulo SET {', '.join(set_clauses)}, updated_at = NOW() WHERE id = %s RETURNING *"
+        query = f"UPDATE sistema_facturacion.modulo SET {', '.join(set_clauses)}, updated_at = NOW() WHERE id = %s RETURNING *"
         with db_transaction(self.db) as cur:
             cur.execute(query, tuple(values))
             row = cur.fetchone()
@@ -49,7 +49,7 @@ class RepositorioModulos:
     # --- Modulo Plan ---
     def vincular_a_plan(self, plan_id: UUID, modulo_id: UUID, incluido: bool = True):
         query = """
-            INSERT INTO modulo_plan (plan_id, modulo_id, incluido, created_at)
+            INSERT INTO sistema_facturacion.modulo_plan (plan_id, modulo_id, incluido, created_at)
             VALUES (%s, %s, %s, NOW())
             ON CONFLICT (plan_id, modulo_id) DO UPDATE SET incluido = EXCLUDED.incluido, updated_at = NOW()
             RETURNING *
@@ -61,8 +61,8 @@ class RepositorioModulos:
     def listar_por_plan(self, plan_id: UUID) -> List[dict]:
         query = """
             SELECT mp.*, m.nombre as modulo_nombre, m.codigo as modulo_codigo
-            FROM modulo_plan mp
-            JOIN modulo m ON mp.modulo_id = m.id
+            FROM sistema_facturacion.modulo_plan mp
+            JOIN sistema_facturacion.modulo m ON mp.modulo_id = m.id
             WHERE mp.plan_id = %s
         """
         with self.db.cursor() as cur:
@@ -75,7 +75,7 @@ class RepositorioModulos:
         base.update(data)
         fields = list(base.keys())
         placeholders = ["%s"] * len(fields)
-        query = f"INSERT INTO modulo_empresa ({', '.join(fields)}) VALUES ({', '.join(placeholders)}) RETURNING *"
+        query = f"INSERT INTO sistema_facturacion.modulo_empresa ({', '.join(fields)}) VALUES ({', '.join(placeholders)}) RETURNING *"
         with db_transaction(self.db) as cur:
             cur.execute(query, tuple(base.values()))
             return cur.fetchone()
@@ -83,8 +83,8 @@ class RepositorioModulos:
     def listar_por_empresa(self, empresa_id: UUID) -> List[dict]:
         query = """
             SELECT me.*, m.nombre as modulo_nombre, m.codigo as modulo_codigo, m.icono as modulo_icono
-            FROM modulo_empresa me
-            JOIN modulo m ON me.modulo_id = m.id
+            FROM sistema_facturacion.modulo_empresa me
+            JOIN sistema_facturacion.modulo m ON me.modulo_id = m.id
             WHERE me.empresa_id = %s
         """
         with self.db.cursor() as cur:
@@ -98,7 +98,7 @@ class RepositorioModulos:
             for mod in modulos:
                 if mod['incluido']:
                     query = """
-                        INSERT INTO modulo_empresa (empresa_id, modulo_id, activo, fecha_activacion, fecha_vencimiento)
+                        INSERT INTO sistema_facturacion.modulo_empresa (empresa_id, modulo_id, activo, fecha_activacion, fecha_vencimiento)
                         VALUES (%s, %s, TRUE, CURRENT_DATE, %s)
                         ON CONFLICT (empresa_id, modulo_id) DO UPDATE 
                         SET activo = TRUE, fecha_vencimiento = EXCLUDED.fecha_vencimiento, updated_at = NOW()
