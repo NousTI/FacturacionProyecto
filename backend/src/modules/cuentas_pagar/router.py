@@ -8,24 +8,17 @@ from .schemas import (
     GastoProveedorDetalle, ReporteFlujoCaja
 )
 from .service import ServicioCuentasPagar
-from ..autenticacion.routes import get_current_user
+from ..autenticacion.routes import get_current_user, requerir_permiso
+from ...constants.permissions import PermissionCodes
 from ...constants.enums import AuthKeys
 from ...errors.app_error import AppError
 
 router = APIRouter()
 
-def requerir_admin_empresa(usuario: dict = Depends(get_current_user)):
-    """Restringe acceso a admin de empresa."""
-    if usuario.get(AuthKeys.IS_SUPERADMIN):
-        return usuario
-    rol = str(usuario.get("rol_codigo") or "").upper()
-    if rol.startswith("ADMIN"):
-        return usuario
-    raise AppError("Acceso denegado. Solo administradores.", 403, "FORBIDDEN")
 
 @router.get("/resumen", response_model=CuentasPagarOverview)
 def obtener_resumen(
-    usuario: dict = Depends(requerir_admin_empresa),
+    usuario: dict = Depends(requerir_permiso(PermissionCodes.CUENTA_PAGAR_VER)),
     servicio: ServicioCuentasPagar = Depends()
 ):
     """R-013: Resumen de Cuentas por Pagar."""
@@ -36,7 +29,7 @@ def obtener_resumen(
 def obtener_gastos_por_categoria(
     fecha_inicio: Optional[date] = Query(None),
     fecha_fin: Optional[date] = Query(None),
-    usuario: dict = Depends(requerir_admin_empresa),
+    usuario: dict = Depends(requerir_permiso(PermissionCodes.CUENTA_PAGAR_VER)),
     servicio: ServicioCuentasPagar = Depends()
 ):
     """R-014: Análisis de gastos por categoría."""
@@ -49,7 +42,7 @@ def obtener_gastos_por_categoria(
 def obtener_gastos_por_proveedor(
     fecha_inicio: Optional[date] = Query(None),
     fecha_fin: Optional[date] = Query(None),
-    usuario: dict = Depends(requerir_admin_empresa),
+    usuario: dict = Depends(requerir_permiso(PermissionCodes.CUENTA_PAGAR_VER)),
     servicio: ServicioCuentasPagar = Depends()
 ):
     """R-015: Top compras por proveedor."""
@@ -63,7 +56,7 @@ def obtener_flujo_caja(
     fecha_inicio: Optional[date] = Query(None),
     fecha_fin: Optional[date] = Query(None),
     agrupacion: str = 'week', # day, week, month
-    usuario: dict = Depends(requerir_admin_empresa),
+    usuario: dict = Depends(requerir_permiso(PermissionCodes.CUENTA_PAGAR_VER)),
     servicio: ServicioCuentasPagar = Depends()
 ):
     """R-016: Flujo de Caja (Cach Flow)."""

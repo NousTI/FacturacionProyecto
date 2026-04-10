@@ -335,9 +335,9 @@ export class UsuarioFormModalComponent implements OnInit, OnDestroy {
   fetchRoles() {
     this.usuariosService.listarRoles().subscribe({
       next: (roles) => {
-        // Filtramos roles de sistema que no sean para la empresa (opcional, seguridad extra)
+        // Filtramos roles de sistema que no sean para la empresa y solo activos
         this.availableRoles = roles.filter(r =>
-          r.codigo !== 'SUPERADMIN' && r.codigo !== 'VENDEDOR'
+          r.codigo !== 'SUPERADMIN' && r.codigo !== 'VENDEDOR' && r.activo !== false
         );
 
         // Si es creación y solo hay un rol, seleccionarlo por defecto
@@ -371,17 +371,21 @@ export class UsuarioFormModalComponent implements OnInit, OnDestroy {
         apellidos: raw.apellido,
         telefono: raw.telefono,
       };
-      
+
       if (!this.usuario) {
         // If creating, do not send email as backend generates it
         delete formValue.email;
       } else {
         formValue.email = raw.correo;
       }
-      
+
+      // Siempre incluir empresa_rol_id y activo para preservarlos en actualizaciones
       if (this.usuario) {
-        // Solo enviamos rol y activo si NO es uno mismo
         if (!this.isSelf()) {
+          formValue.empresa_rol_id = raw.empresa_rol_id;
+          formValue.activo = raw.activo;
+        } else {
+          // Incluso para self, incluir rol y activo para evitar que se pierdan
           formValue.empresa_rol_id = raw.empresa_rol_id;
           formValue.activo = raw.activo;
         }

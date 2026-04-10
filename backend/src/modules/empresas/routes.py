@@ -4,7 +4,6 @@ from uuid import UUID
 from .schemas import EmpresaCreacion, EmpresaActualizacion, EmpresaLectura, EmpresaAsignarVendedor
 from .controller import EmpresaController
 from ..autenticacion.routes import obtener_usuario_actual, requerir_permiso
-from ..permisos.constants import PermisosVendedor
 from ...constants.permissions import PermissionCodes
 from ...utils.response_schemas import RespuestaBase
 
@@ -20,7 +19,7 @@ def obtener_estadisticas(
 @router.post("", response_model=RespuestaBase[EmpresaLectura], status_code=201)
 def crear_empresa(
     datos: EmpresaCreacion,
-    permiso: dict = Depends(requerir_permiso(PermisosVendedor.CREAR_EMPRESAS)),
+    permiso: dict = Depends(obtener_usuario_actual),
     usuario: dict = Depends(obtener_usuario_actual),
     controller: EmpresaController = Depends()
 ):
@@ -37,7 +36,7 @@ def listar_empresas(
 @router.get("/{empresa_id}", response_model=RespuestaBase[EmpresaLectura])
 def obtener_empresa(
     empresa_id: UUID,
-    usuario: dict = Depends(requerir_permiso([PermissionCodes.CONFIG_EMPRESA, PermisosVendedor.ACCEDER_EMPRESAS])),
+    usuario: dict = Depends(requerir_permiso(PermissionCodes.CONFIG_EMPRESA)),
     controller: EmpresaController = Depends()
 ):
     return controller.obtener_empresa(empresa_id, usuario)
@@ -46,7 +45,7 @@ def obtener_empresa(
 def actualizar_empresa(
     empresa_id: UUID,
     datos: EmpresaActualizacion,
-    usuario: dict = Depends(requerir_permiso([PermissionCodes.CONFIG_EMPRESA, PermisosVendedor.ACCEDER_EMPRESAS])),
+    usuario: dict = Depends(requerir_permiso(PermissionCodes.CONFIG_EMPRESA)),
     controller: EmpresaController = Depends()
 ):
     return controller.actualizar_empresa(empresa_id, datos, usuario)
@@ -80,7 +79,7 @@ def assign_vendor(
 def cambiar_plan(
     empresa_id: UUID,
     datos: dict,
-    permiso: dict = Depends(requerir_permiso(PermisosVendedor.GESTIONAR_PLANES)),
+    permiso: dict = Depends(obtener_usuario_actual),
     usuario: dict = Depends(obtener_usuario_actual),
     controller: EmpresaController = Depends()
 ):
@@ -89,7 +88,7 @@ def cambiar_plan(
 @router.post("/{empresa_id}/access", response_model=RespuestaBase)
 def acceder_empresa(
     empresa_id: UUID,
-    permiso: dict = Depends(requerir_permiso(PermisosVendedor.ACCEDER_EMPRESAS)),
+    permiso: dict = Depends(obtener_usuario_actual),
     usuario: dict = Depends(obtener_usuario_actual),
     controller: EmpresaController = Depends()
 ):

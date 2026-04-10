@@ -51,30 +51,4 @@ INVENTARIO_PERMS = {
         "modulo": ModuloPermisos.PROVEEDORES,
         "descripcion": "Permite dar de baja o eliminar proveedores."
     },
-    # MÓDULO: UNIDADES DE MEDIDA
-    "UNIDAD_MEDIDA_VER": {
-        "codigo": "UNIDAD_MEDIDA_VER",
-        "nombre": "Ver Unidades de Medida",
-        "modulo": ModuloPermisos.INVENTARIOS,
-        "descripcion": "Permite visualizar las unidades de medida."
-    },
-    "UNIDAD_MEDIDA_GESTIONAR": {
-        "codigo": "UNIDAD_MEDIDA_GESTIONAR",
-        "nombre": "Gestionar Unidades de Medida",
-        "modulo": ModuloPermisos.INVENTARIOS,
-        "descripcion": "Permite crear, editar y eliminar unidades de medida."
-    },
-    # MÓDULO: TIPOS DE MOVIMIENTO
-    "TIPO_MOVIMIENTO_VER": {
-        "codigo": "TIPO_MOVIMIENTO_VER",
-        "nombre": "Ver Tipos de Movimiento",
-        "modulo": ModuloPermisos.INVENTARIOS,
-        "descripcion": "Permite visualizar los tipos de movimiento de inventario."
-    },
-    "TIPO_MOVIMIENTO_GESTIONAR": {
-        "codigo": "TIPO_MOVIMIENTO_GESTIONAR",
-        "nombre": "Gestionar Tipos de Movimiento",
-        "modulo": ModuloPermisos.INVENTARIOS,
-        "descripcion": "Permite crear, editar y eliminar tipos de movimiento."
-    },
 }

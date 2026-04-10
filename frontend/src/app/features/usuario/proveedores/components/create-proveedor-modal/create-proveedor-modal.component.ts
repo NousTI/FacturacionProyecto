@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Proveedor } from '../../../../../domain/models/proveedor.model';
 import { SriValidators } from '../../../../../shared/utils/sri-validators';
+import { PROVINCIAS, CIUDADES, getCiudadesByProvincia, Provincia, Ciudad } from '../../../../../shared/constants/provincias-ciudades.const';
 
 @Component({
     selector: 'app-create-proveedor-modal',
@@ -104,12 +105,18 @@ import { SriValidators } from '../../../../../shared/utils/sri-validators';
                   <input type="text" formControlName="direccion" class="lux-input" placeholder="Av. Principal N23 y Calle B">
                 </div>
                 <div class="col-md-6">
-                  <label class="lux-label">Ciudad</label>
-                  <input type="text" formControlName="ciudad" class="lux-input" placeholder="Quito">
+                  <label class="lux-label">Provincia</label>
+                  <select formControlName="provincia" class="lux-select" (change)="onProvinciaChange()">
+                    <option value="">Selecciona una provincia</option>
+                    <option *ngFor="let prov of provincias" [value]="prov.nombre">{{ prov.nombre }}</option>
+                  </select>
                 </div>
                 <div class="col-md-6">
-                  <label class="lux-label">Provincia</label>
-                  <input type="text" formControlName="provincia" class="lux-input" placeholder="Pichincha">
+                  <label class="lux-label">Ciudad</label>
+                  <select formControlName="ciudad" class="lux-select">
+                    <option value="">Selecciona una ciudad</option>
+                    <option *ngFor="let ciudad of ciudadesDisponibles" [value]="ciudad.nombre">{{ ciudad.nombre }}</option>
+                  </select>
                 </div>
               </div>
             </div>
@@ -120,9 +127,10 @@ import { SriValidators } from '../../../../../shared/utils/sri-validators';
               <div class="row g-3 align-items-center">
                 <div class="col-md-6">
                   <label class="lux-label">Días de Crédito Plazo</label>
-                  <input type="number" formControlName="dias_credito" class="lux-input" placeholder="0" (keypress)="validateNoNegative($event)" [class.is-invalid]="proveedorForm.get('dias_credito')?.invalid && proveedorForm.get('dias_credito')?.touched">
+                  <input type="text" formControlName="dias_credito" class="lux-input" placeholder="0" (keypress)="validateDiasCredito($event)" (input)="onDiasInput($event)" [class.is-invalid]="proveedorForm.get('dias_credito')?.invalid && proveedorForm.get('dias_credito')?.touched">
                   <div class="error-feedback" *ngIf="proveedorForm.get('dias_credito')?.invalid && proveedorForm.get('dias_credito')?.touched">
                     <span *ngIf="proveedorForm.get('dias_credito')?.errors?.['min']">No puede ser negativo</span>
+                    <span *ngIf="proveedorForm.get('dias_credito')?.errors?.['pattern']">Máximo 3 números</span>
                   </div>
                 </div>
               </div>
@@ -141,7 +149,7 @@ import { SriValidators } from '../../../../../shared/utils/sri-validators';
             <div class="ms-auto d-flex gap-3">
               <button (click)="close()" class="btn-lux-outline" [disabled]="loading">Cancelar</button>
               <button (click)="submit()"
-                      [disabled]="proveedorForm.invalid || (proveedor && !hasChanges) || loading"
+                      [disabled]="getSubmitButtonDisabled()"
                       class="btn-lux-submit">
                 <span *ngIf="loading" class="spinner-border spinner-border-sm me-2"></span>
                 {{ loading ? 'Guardando...' : (proveedor ? 'Guardar Cambios' : 'Crear Proveedor') }}
@@ -224,6 +232,9 @@ export class CreateProveedorModalComponent implements OnInit, OnDestroy {
     @Output() onClose = new EventEmitter<void>();
 
     proveedorForm: FormGroup;
+    provincias: Provincia[] = PROVINCIAS;
+    ciudadesDisponibles: Ciudad[] = [];
+    initialFormValue: any;
 
     constructor(private fb: FormBuilder) {
         this.proveedorForm = this.fb.group({
@@ -262,8 +273,37 @@ export class CreateProveedorModalComponent implements OnInit, OnDestroy {
     ngOnInit() {
         document.body.style.overflow = 'hidden';
         if (this.proveedor) {
-            this.proveedorForm.patchValue(this.proveedor);
-            this.applyValidators(this.proveedor.tipo_identificacion);
+            const proveedorData = this.proveedor;
+
+            // Load ciudades FIRST based on provincia
+            const provinciaNombre = proveedorData.provincia;
+            if (provinciaNombre) {
+                const provincia = this.provincias.find(p => p.nombre === provinciaNombre);
+                if (provincia) {
+                    this.ciudadesDisponibles = getCiudadesByProvincia(provincia.id);
+                }
+            }
+
+            // Load form data with setTimeout to ensure DOM updates
+            setTimeout(() => {
+                this.proveedorForm.get('provincia')?.setValue(proveedorData.provincia, { emitEvent: false });
+                this.proveedorForm.get('ciudad')?.setValue(proveedorData.ciudad, { emitEvent: false });
+                this.proveedorForm.patchValue({
+                    identificacion: proveedorData.identificacion,
+                    tipo_identificacion: proveedorData.tipo_identificacion,
+                    razon_social: proveedorData.razon_social,
+                    nombre_comercial: proveedorData.nombre_comercial,
+                    email: proveedorData.email,
+                    telefono: proveedorData.telefono,
+                    direccion: proveedorData.direccion,
+                    dias_credito: proveedorData.dias_credito,
+                    activo: proveedorData.activo
+                }, { emitEvent: false });
+                this.applyValidators(proveedorData.tipo_identificacion);
+                this.initialFormValue = JSON.parse(JSON.stringify(this.proveedorForm.value));
+            }, 50);
+        } else {
+            this.initialFormValue = JSON.parse(JSON.stringify(this.proveedorForm.value));
         }
     }
 
@@ -300,16 +340,48 @@ export class CreateProveedorModalComponent implements OnInit, OnDestroy {
         }
     }
 
+    onProvinciaChange() {
+        const provinciaControl = this.proveedorForm.get('provincia');
+        const provinciaNombre = provinciaControl?.value;
+
+        if (provinciaNombre) {
+            const provincia = this.provincias.find(p => p.nombre === provinciaNombre);
+            if (provincia) {
+                this.ciudadesDisponibles = getCiudadesByProvincia(provincia.id);
+                this.proveedorForm.get('ciudad')?.reset('', { emitEvent: false });
+            }
+        } else {
+            this.ciudadesDisponibles = [];
+            this.proveedorForm.get('ciudad')?.reset('', { emitEvent: false });
+        }
+    }
+
+    validateDiasCredito(event: KeyboardEvent) {
+        const charCode = event.which ? event.which : event.keyCode;
+        // Allow only numbers
+        if (charCode > 31 && (charCode < 48 || charCode > 57)) {
+            event.preventDefault();
+        }
+    }
+
+    onDiasInput(event: any) {
+        const input = event.target as HTMLInputElement;
+        // Limit to 3 digits
+        if (input.value.length > 3) {
+            input.value = input.value.slice(0, 3);
+            this.proveedorForm.get('dias_credito')?.setValue(input.value, { emitEvent: false });
+        }
+    }
+
     get hasChanges(): boolean {
-        if (!this.proveedor) return true;
         const formValue = this.proveedorForm.value;
         const fields = Object.keys(this.proveedorForm.controls);
-        
+
         for (const field of fields) {
-            const initialValue = (this.proveedor as any)[field];
+            const initialValue = this.initialFormValue[field];
             const currentValue = formValue[field];
 
-            // Normalize for comparison (treat null/undefined as empty string if they were initially so)
+            // Normalize for comparison
             const normInitial = (initialValue === null || initialValue === undefined) ? '' : initialValue;
             const normCurrent = (currentValue === null || currentValue === undefined) ? '' : currentValue;
 
@@ -318,6 +390,17 @@ export class CreateProveedorModalComponent implements OnInit, OnDestroy {
             }
         }
         return false;
+    }
+
+    getSubmitButtonDisabled(): boolean {
+        if (this.loading) return true;
+        if (!this.proveedor) {
+            // Create mode: require form validity
+            return this.proveedorForm.invalid;
+        } else {
+            // Edit mode: require changes to be made
+            return !this.hasChanges;
+        }
     }
 
     close() {

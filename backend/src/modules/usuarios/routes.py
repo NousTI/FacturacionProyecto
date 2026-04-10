@@ -4,9 +4,8 @@ from uuid import UUID
 from .schemas import UsuarioCreacion, UsuarioActualizacion, UsuarioLectura, PerfilUsuarioLectura, UsuarioAdminLectura, CambioPassword
 from .controller import UsuarioController
 from ..autenticacion.permissions import requerir_permiso
-from ..autenticacion.routes import obtener_usuario_actual
+from ..autenticacion.routes import obtener_usuario_actual, requerir_permiso
 from ...constants.permissions import PermissionCodes
-from ..permisos.constants import PermisosVendedor
 from ...utils.response_schemas import RespuestaBase
 
 router = APIRouter()
@@ -67,7 +66,7 @@ def cambiar_password(
 
 @router.get("/", response_model=RespuestaBase[List[UsuarioLectura]])
 def listar_usuarios(
-    usuario: dict = Depends(requerir_permiso([PermissionCodes.USUARIOS_VER, PermissionCodes.CONFIG_USUARIOS, PermisosVendedor.CREAR_EMPRESAS])),
+    usuario: dict = Depends(requerir_permiso(PermissionCodes.USUARIOS_EMPRESA_VER)),
     controller: UsuarioController = Depends()
 ):
     """List users in current empresa"""
@@ -76,7 +75,7 @@ def listar_usuarios(
 @router.get("/{id}", response_model=RespuestaBase[UsuarioLectura])
 def obtener_usuario(
     id: UUID,
-    usuario: dict = Depends(requerir_permiso([PermissionCodes.USUARIOS_VER, PermissionCodes.CONFIG_USUARIOS, PermisosVendedor.CREAR_EMPRESAS])),
+    usuario: dict = Depends(requerir_permiso(PermissionCodes.USUARIOS_EMPRESA_VER)),
     controller: UsuarioController = Depends()
 ):
     return controller.obtener_usuario(id, usuario)
@@ -85,7 +84,7 @@ def obtener_usuario(
 def crear_usuario(
     request: Request,
     datos: UsuarioCreacion,
-    usuario: dict = Depends(requerir_permiso([PermissionCodes.USUARIOS_GESTIONAR, PermissionCodes.CONFIG_USUARIOS, PermisosVendedor.CREAR_EMPRESAS])),
+    usuario: dict = Depends(requerir_permiso(PermissionCodes.USUARIOS_EMPRESA_CREAR)),
     controller: UsuarioController = Depends()
 ):
     """Create new user in empresa"""
@@ -95,7 +94,7 @@ def crear_usuario(
 def actualizar_usuario(
     id: UUID,
     datos: UsuarioActualizacion,
-    usuario: dict = Depends(requerir_permiso([PermissionCodes.USUARIOS_GESTIONAR, PermissionCodes.CONFIG_USUARIOS, PermisosVendedor.CREAR_EMPRESAS])),
+    usuario: dict = Depends(requerir_permiso(PermissionCodes.USUARIOS_EMPRESA_EDITAR)),
     controller: UsuarioController = Depends()
 ):
     """Update user"""
@@ -104,7 +103,7 @@ def actualizar_usuario(
 @router.delete("/{id}")
 def eliminar_usuario(
     id: UUID,
-    usuario: dict = Depends(requerir_permiso([PermissionCodes.USUARIOS_GESTIONAR, PermissionCodes.CONFIG_USUARIOS, PermisosVendedor.CREAR_EMPRESAS])),
+    usuario: dict = Depends(requerir_permiso(PermissionCodes.USUARIOS_EMPRESA_ELIMINAR)),
     controller: UsuarioController = Depends()
 ):
     """Delete user"""

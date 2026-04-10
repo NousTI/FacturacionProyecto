@@ -251,11 +251,18 @@ export class UsuariosPage implements OnInit, OnDestroy {
 
   saveUsuario(data: any) {
     this.isSaving = true;
+    const isUpdating = !!this.selectedUsuario;
+    const userId = this.selectedUsuario?.id;
+
     const observer = {
       next: (user: User) => {
         this.selectedUsuario = user;
-        this.uiService.showToast(this.selectedUsuario ? 'Usuario actualizado' : 'Usuario creado exitosamente', 'success');
         this.showFormModal = false;
+        this.applyFilters();
+        this.uiService.showToast(
+          isUpdating ? 'Usuario actualizado correctamente' : 'Usuario creado exitosamente',
+          'success'
+        );
       },
       error: (err: any) => this.uiService.showError(err, 'Error al procesar solicitud'),
       complete: () => {
@@ -264,8 +271,8 @@ export class UsuariosPage implements OnInit, OnDestroy {
       }
     };
 
-    if (this.selectedUsuario) {
-      this.usuariosService.updateUsuario(this.selectedUsuario.id, data).subscribe(observer);
+    if (isUpdating && userId) {
+      this.usuariosService.updateUsuario(userId, data).subscribe(observer);
     } else {
       this.usuariosService.createUsuario(data).subscribe(observer);
     }
@@ -283,8 +290,9 @@ export class UsuariosPage implements OnInit, OnDestroy {
       .subscribe({
         next: (updatedUser) => {
           this.selectedUsuario = updatedUser;
-          this.uiService.showToast('Rol actualizado correctamente', 'success');
           this.showRoleModal = false;
+          this.applyFilters();
+          this.uiService.showToast('Rol actualizado correctamente', 'success');
         },
         error: (err) => this.uiService.showError(err, 'Error al actualizar rol')
       });

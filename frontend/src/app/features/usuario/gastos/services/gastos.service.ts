@@ -135,9 +135,14 @@ export class GastosService extends BaseApiService {
   deleteGasto(id: string): Observable<ApiResponse<null>> {
     return this.delete<ApiResponse<null>>(`${this.ENDPOINT}/${id}`).pipe(
       tap(() => {
-        const current = this._gastos$.value || [];
-        this._gastos$.next(current.filter(g => g.id !== id));
+        // Eliminar gasto de la lista
+        const currentGastos = this._gastos$.value || [];
+        this._gastos$.next(currentGastos.filter(g => g.id !== id));
         this._calculateStatsLocally(this._gastos$.value || []);
+
+        // Eliminar pagos asociados al gasto de la lista de pagos
+        const currentPagos = this._pagos$.value || [];
+        this._pagos$.next(currentPagos.filter(p => p.gasto_id !== id));
       })
     );
   }

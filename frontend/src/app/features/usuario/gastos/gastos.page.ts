@@ -465,9 +465,8 @@ export class GastosPage implements OnInit, OnDestroy {
   }
 
   isPagoComplete(p: PagoGasto): boolean {
-    // For payments, if it exists, it's usually complete enough unless 
-    // the user wants to enforce a reference number.
-    return !!p.numero_referencia;
+    // A payment is complete when all optional fields are filled
+    return !!p.numero_referencia && !!p.numero_comprobante && !!p.observaciones;
   }
 
   getGastoStatus(id: string): string {

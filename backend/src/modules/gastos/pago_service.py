@@ -74,22 +74,60 @@ class ServicioPagosGasto:
         pago = self.repo.obtener_por_id(id)
         if not pago:
              raise AppError("Pago no encontrado", 404, "PAGO_NOT_FOUND")
-             
+
         is_superadmin = usuario_actual.get(AuthKeys.IS_SUPERADMIN, False)
         if not is_superadmin:
             gasto = self.gasto_repo.obtener_por_id(pago['gasto_id'])
             if not gasto or str(gasto['empresa_id']) != str(usuario_actual.get('empresa_id')):
                 raise AppError("No autorizado", 403, "AUTH_FORBIDDEN")
-             
-        actualizado = self.repo.actualizar_pago(id, datos.model_dump(exclude_unset=True))
-        
+        else:
+            gasto = self.gasto_repo.obtener_por_id(pago['gasto_id'])
+
+        # Si el gasto está pagado, solo permitir editar campos opcionales vacíos
+        update_data = datos.model_dump(exclude_unset=True)
+
+        CAMPOS_OPCIONALES = {'numero_referencia', 'observaciones', 'numero_comprobante'}
+        CAMPOS_BLOQUEADOS = {'monto', 'fecha_pago', 'metodo_pago', 'gasto_id'}
+
+        if gasto and gasto.get('estado_pago') == 'pagado':
+            # Filtrar solo campos que realmente cambian (donde el nuevo valor != valor actual)
+            update_data_cambios = {}
+            for k, v in update_data.items():
+                if pago.get(k) != v:  # Solo incluir si hay cambio real
+                    update_data_cambios[k] = v
+
+            # Rechazar si intenta modificar campos bloqueados (que sí cambian)
+            bloqueados_intentados = CAMPOS_BLOQUEADOS & set(update_data_cambios.keys())
+            if bloqueados_intentados:
+                raise AppError(
+                    f"No se puede modificar {', '.join(sorted(bloqueados_intentados))} en un pago completado",
+                    400, "PAGO_LOCKED"
+                )
+
+            # Solo permitir campos opcionales que actualmente estén vacíos en el pago
+            update_data_filtrado = {}
+            for k, v in update_data_cambios.items():
+                if k in CAMPOS_OPCIONALES and not pago.get(k):
+                    update_data_filtrado[k] = v
+
+            # Si no hay campos editables, rechazar la actualización
+            if not update_data_filtrado:
+                raise AppError("No hay campos editables disponibles. El pago está completo.", 400, "PAGO_COMPLETE")
+
+            update_data = update_data_filtrado
+        else:
+            # Si el gasto NO está pagado, permitir actualizar cualquier campo
+            update_data = update_data
+
+        actualizado = self.repo.actualizar_pago(id, update_data)
+
         # Sync Gasto state
         total_pagado = self.repo.obtener_total_pagado(pago['gasto_id'])
-        gasto = self.gasto_repo.obtener_por_id(pago['gasto_id'])
-        gasto_total = Decimal(str(gasto['total']))
+        gasto_final = self.gasto_repo.obtener_por_id(pago['gasto_id'])
+        gasto_total = Decimal(str(gasto_final['total']))
         new_status = "pagado" if total_pagado >= gasto_total else "parcial" if total_pagado > 0 else "pendiente"
         self.gasto_repo.actualizar_gasto(pago['gasto_id'], {"estado_pago": new_status})
-        
+
         return actualizado
 
     def eliminar_pago(self, id: UUID, usuario_actual: dict):

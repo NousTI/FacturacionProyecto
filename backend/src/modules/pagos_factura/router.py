@@ -13,7 +13,7 @@ router = APIRouter()
 @router.post("/", response_model=PagoFacturaLectura, status_code=status.HTTP_201_CREATED)
 def crear_pago(
     datos: PagoFacturaCreacion,
-    usuario: dict = Depends(requerir_permiso(PermissionCodes.PAGO_CREAR)),
+    usuario: dict = Depends(requerir_permiso(PermissionCodes.PAGO_FACTURA_CREAR)),
     servicio: ServicioPagosFactura = Depends()
 ):
     return servicio.crear_pago(datos, usuario)
@@ -23,7 +23,7 @@ def listar_pagos(
     cuenta_cobrar_id: Optional[UUID] = Query(None),
     limit: int = Query(100, ge=1),
     offset: int = Query(0, ge=0),
-    usuario: dict = Depends(requerir_permiso(PermissionCodes.PAGO_VER)),
+    usuario: dict = Depends(requerir_permiso(PermissionCodes.PAGO_FACTURA_VER)),
     servicio: ServicioPagosFactura = Depends()
 ):
     return servicio.listar_pagos(cuenta_cobrar_id, usuario, limit, offset)
@@ -31,7 +31,7 @@ def listar_pagos(
 @router.get("/{id}", response_model=PagoFacturaLectura)
 def obtener_pago(
     id: UUID,
-    usuario: dict = Depends(requerir_permiso(PermissionCodes.PAGO_VER)),
+    usuario: dict = Depends(requerir_permiso(PermissionCodes.PAGO_FACTURA_VER)),
     servicio: ServicioPagosFactura = Depends()
 ):
     return servicio.obtener_pago(id, usuario)

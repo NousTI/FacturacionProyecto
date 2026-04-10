@@ -4,8 +4,7 @@ from uuid import UUID
 
 from .service import ServicioLogs
 from .schemas import LogEmisionLectura, LogEmisionCreacion, LogAuditoriaLectura
-from ..autenticacion.routes import obtener_usuario_actual, requerir_permiso, requerir_superadmin
-from ...constants.permissions import PermissionCodes
+from ..autenticacion.routes import obtener_usuario_actual, requerir_superadmin
 
 router = APIRouter()
 
@@ -13,7 +12,7 @@ router = APIRouter()
 def listar_logs(
     limite: int = 100,
     desplazar: int = 0,
-    usuario: dict = Depends(requerir_permiso(PermissionCodes.LOG_EMISION_VER)),
+    usuario: dict = Depends(obtener_usuario_actual),
     servicio: ServicioLogs = Depends()
 ):
     return servicio.listar_logs(limite, desplazar)
@@ -21,7 +20,7 @@ def listar_logs(
 @router.get("/factura/{factura_id}", response_model=List[LogEmisionLectura])
 def obtener_logs_factura(
     factura_id: UUID,
-    usuario: dict = Depends(requerir_permiso(PermissionCodes.LOG_EMISION_VER)),
+    usuario: dict = Depends(obtener_usuario_actual),
     servicio: ServicioLogs = Depends()
 ):
     return servicio.obtener_por_factura(factura_id)
@@ -29,7 +28,7 @@ def obtener_logs_factura(
 @router.post("/", response_model=LogEmisionLectura, status_code=status.HTTP_201_CREATED)
 def crear_log(
     datos: LogEmisionCreacion,
-    usuario: dict = Depends(requerir_permiso(PermissionCodes.LOG_EMISION_VER)),
+    usuario: dict = Depends(obtener_usuario_actual),
     servicio: ServicioLogs = Depends()
 ):
     return servicio.crear_log(datos)

@@ -24,6 +24,11 @@ import { Gasto } from '../../../../domain/models/gasto.model';
         </div>
       </div>
 
+      <div class="alert alert-info alert-sm mb-3" *ngIf="editMode && gastoEsPagado">
+        <i class="bi bi-lock me-2"></i>
+        <span class="fw-500">Este pago está completo.</span> Solo puedes editar campos vacíos.
+      </div>
+
       <form [formGroup]="form" (ngSubmit)="submit()">
         <div class="form-grid">
           <!-- Gasto Selector (if not pre-selected) -->
@@ -85,8 +90,20 @@ import { Gasto } from '../../../../domain/models/gasto.model';
 
           <!-- Referencia -->
           <div class="form-group">
-            <label class="form-label">Nº Referencia / Comprobante</label>
+            <label class="form-label">Nº Referencia</label>
             <input type="text" class="form-control" formControlName="numero_referencia" placeholder="Ej: 982347239">
+          </div>
+
+          <!-- Comprobante -->
+          <div class="form-group">
+            <label class="form-label">Nº Comprobante</label>
+            <input type="text" class="form-control" formControlName="numero_comprobante" placeholder="Ej: 001-001-000012345">
+          </div>
+
+          <!-- Observaciones -->
+          <div class="form-group full-width">
+            <label class="form-label">Observaciones</label>
+            <textarea class="form-control" formControlName="observaciones" rows="3" placeholder="Detalles adicionales del pago..."></textarea>
           </div>
         </div>
 
@@ -113,22 +130,35 @@ import { Gasto } from '../../../../domain/models/gasto.model';
     .form-container { animation: fadeIn 0.3s ease; }
     .form-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; }
     .full-width { grid-column: span 2; }
-    
+
     .expense-quick-info {
       background: #f8fafc;
       padding: 1rem;
       border-radius: 12px;
       border: 1px dashed #cbd5e1;
     }
-    
+
+    .alert-sm {
+      padding: 0.6rem 0.8rem;
+      font-size: 0.85rem;
+      border-radius: 8px;
+    }
+
+    .alert-info {
+      background: #dbeafe;
+      color: #1e40af;
+      border: 1px solid #93c5fd;
+    }
+
     .form-label { font-size: 0.85rem; font-weight: 600; color: #4b5563; margin-bottom: 0.4rem; display: block; }
     .form-control, .form-select { padding: 0.6rem; border-radius: 10px; border: 1px solid #e2e8f0; }
-    
+
     .badge { padding: 0.25rem 0.5rem; border-radius: 6px; font-size: 0.7rem; }
     .badge-pendiente { background: #fff7ed; color: #9a3412; }
     .badge-pagado { background: #f0fdf4; color: #166534; }
-    
+
     .text-xs { font-size: 0.7rem; }
+    .fw-500 { font-weight: 500; }
   `]
 })
 export class PagoFormComponent implements OnInit {
@@ -151,7 +181,9 @@ export class PagoFormComponent implements OnInit {
       monto: [0, [Validators.required, Validators.min(0.01)]],
       fecha_pago: [new Date().toISOString().split('T')[0], Validators.required],
       metodo_pago: ['transferencia', Validators.required],
-      numero_referencia: ['']
+      numero_referencia: [''],
+      numero_comprobante: [''],
+      observaciones: ['']
     });
   }
 
@@ -170,14 +202,29 @@ export class PagoFormComponent implements OnInit {
         ...this.editData,
         fecha_pago: this.editData.fecha_pago?.split('T')[0]
       });
+    }
 
-      // Si el gasto ya está pagado, bloquear campos financieros pero permitir notas/referencia
-      if (this.selectedGasto?.estado_pago === 'pagado') {
-        this.form.get('gasto_id')?.disable();
-        this.form.get('monto')?.disable();
-        this.form.get('fecha_pago')?.disable();
-        this.form.get('metodo_pago')?.disable();
+    // Aplicar restricciones de bloqueo DESPUÉS de cargar datos
+    if (this.selectedGasto?.estado_pago === 'pagado' && !this.viewOnly) {
+      // Bloquear SIEMPRE estos campos
+      this.form.get('gasto_id')?.disable();
+      this.form.get('monto')?.disable();
+      this.form.get('fecha_pago')?.disable();
+      this.form.get('metodo_pago')?.disable();
+
+      // Campos opcionales: bloquear si tienen valor, permitir si están vacíos
+      if (this.editData?.numero_referencia) {
+        this.form.get('numero_referencia')?.disable();
       }
+      if (this.editData?.numero_comprobante) {
+        this.form.get('numero_comprobante')?.disable();
+      }
+      if (this.editData?.observaciones) {
+        this.form.get('observaciones')?.disable();
+      }
+    }
+
+    if (this.editMode && this.editData) {
       this.initialValue = this.form.getRawValue();
     }
 
@@ -190,6 +237,10 @@ export class PagoFormComponent implements OnInit {
     if (!this.editMode || !this.initialValue) return true;
     const current = this.form.getRawValue();
     return JSON.stringify(current) !== JSON.stringify(this.initialValue);
+  }
+
+  get gastoEsPagado(): boolean {
+    return this.selectedGasto?.estado_pago === 'pagado';
   }
 
   private setupGastoSubscription() {
@@ -251,7 +302,20 @@ export class PagoFormComponent implements OnInit {
 
   submit() {
     if (this.form.valid) {
-      this.onSubmit.emit(this.form.getRawValue());
+      if (this.editMode) {
+        // En modo edición, solo enviar campos que cambiaron (dirty)
+        const dirtyValues: any = {};
+        Object.keys(this.form.controls).forEach(key => {
+          const control = this.form.get(key);
+          if (control?.dirty || control?.touched) {
+            dirtyValues[key] = control?.value;
+          }
+        });
+        this.onSubmit.emit(dirtyValues);
+      } else {
+        // En modo creación, enviar todos los valores
+        this.onSubmit.emit(this.form.getRawValue());
+      }
     }
   }
 }

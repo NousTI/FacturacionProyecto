@@ -50,17 +50,29 @@ FACTURAS_PERMS = {
         "modulo": ModuloPermisos.FACTURAS,
         "descripcion": "Permite reenviar las facturas a los correos de los clientes."
     },
-    # MÓDULO: FORMAS DE PAGO Y COBROS
-    "FORMA_PAGO_VER": {
-        "codigo": "FORMA_PAGO_VER",
-        "nombre": "Ver Formas de Pago",
+    # PAGOS DE FACTURAS
+    "PAGO_FACTURA_VER": {
+        "codigo": "PAGO_FACTURA_VER",
+        "nombre": "Ver Pagos de Facturas",
         "modulo": ModuloPermisos.FACTURAS,
-        "descripcion": "Permite visualizar las formas de pago registradas."
+        "descripcion": "Permite visualizar los cobros y pagos de facturas de clientes."
     },
-    "FORMA_PAGO_GESTIONAR": {
-        "codigo": "FORMA_PAGO_GESTIONAR",
-        "nombre": "Gestionar Formas de Pago",
+    "PAGO_FACTURA_CREAR": {
+        "codigo": "PAGO_FACTURA_CREAR",
+        "nombre": "Registrar Pagos de Facturas",
         "modulo": ModuloPermisos.FACTURAS,
-        "descripcion": "Permite crear, editar y eliminar formas de pago."
+        "descripcion": "Permite registrar cobros de facturas (cuentas por cobrar)."
+    },
+    "PAGO_FACTURA_EDITAR": {
+        "codigo": "PAGO_FACTURA_EDITAR",
+        "nombre": "Editar Pagos de Facturas",
+        "modulo": ModuloPermisos.FACTURAS,
+        "descripcion": "Permite modificar cobros de facturas registrados."
+    },
+    "PAGO_FACTURA_ELIMINAR": {
+        "codigo": "PAGO_FACTURA_ELIMINAR",
+        "nombre": "Eliminar Pagos de Facturas",
+        "modulo": ModuloPermisos.FACTURAS,
+        "descripcion": "Permite eliminar registros de cobros de facturas."
     },
 }

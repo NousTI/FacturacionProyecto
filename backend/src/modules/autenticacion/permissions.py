@@ -1,14 +1,11 @@
 from fastapi import Depends
-from typing import Optional
+from typing import Optional, Union
 from .dependencies import get_current_user
 from ..permisos.constants import PermisosVendedor
-from ..vendedores.repositories import RepositorioVendedores
 from ...constants.enums import AuthKeys
 from ...constants.error_codes import ErrorCodes
 from ...constants.messages import AppMessages
 from ...errors.app_error import AppError
-
-from typing import Union
 
 class PermissionChecker:
     def __init__(self, required_permission: Union[str, PermisosVendedor, list]):
@@ -17,9 +14,9 @@ class PermissionChecker:
         else:
             self.required_permissions = [required_permission]
 
-    def __call__(self, usuario: dict = Depends(get_current_user), repo_vendedores: RepositorioVendedores = Depends()):
-        # 1. Superadmin bypass
-        if usuario.get(AuthKeys.IS_SUPERADMIN):
+    def __call__(self, usuario: dict = Depends(get_current_user)):
+        # 1. Superadmin and Vendor bypass (They don't use granular company permissions)
+        if usuario.get(AuthKeys.IS_SUPERADMIN) or usuario.get(AuthKeys.IS_VENDEDOR):
             return usuario
             
         # 2. Company Admin bypass (rol_codigo: ADMIN, ADMIN_TOTAL, etc)
@@ -30,16 +27,10 @@ class PermissionChecker:
         # Get permission string values
         req_perm_values = [p.value if hasattr(p, 'value') else p for p in self.required_permissions]
 
-        # 2. Check granular permissions (attached to usuario in services.py)
+        # 3. Check granular permissions (attached to usuario in services.py)
         granular_perms = usuario.get("permisos", [])
         if any(p in granular_perms for p in req_perm_values):
             return usuario
-
-        # 3. Check Vendedor flags (for backward compatibility or specific vendor routes)
-        if usuario.get(AuthKeys.IS_VENDEDOR):
-            vendedor = repo_vendedores.obtener_por_user_id(usuario["id"])
-            if vendedor and any(vendedor.get(p) for p in req_perm_values):
-                return usuario
         
         # 4. No permission found
         raise AppError(
@@ -61,7 +52,8 @@ def requerir_gestion_roles(usuario: dict = Depends(get_current_user)):
     
     # 1. Check granular permission
     granular_perms = usuario.get("permisos", [])
-    if "CONFIG_ROLES" in granular_perms:
+    from ...constants.permissions import PermissionCodes
+    if PermissionCodes.ROLES_GESTIONAR in granular_perms:
         return usuario
         
     # 2. Check if user has an ADMIN role code for their empresa

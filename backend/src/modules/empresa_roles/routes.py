@@ -30,7 +30,7 @@ def crear_permiso(
 @router.get("/", response_model=RespuestaBase[List[RolLectura]])
 def listar_roles(
     empresa_id: Optional[UUID] = None,
-    usuario: dict = Depends(requerir_gestion_roles),
+    usuario: dict = Depends(requerir_permiso(PermissionCodes.ROLES_VER)),
     controller: RolController = Depends()
 ):
     """List roles for an empresa"""
@@ -39,7 +39,7 @@ def listar_roles(
 @router.get("/{id}", response_model=RespuestaBase[RolLectura])
 def obtener_rol(
     id: UUID,
-    usuario: dict = Depends(requerir_gestion_roles),
+    usuario: dict = Depends(requerir_permiso(PermissionCodes.ROLES_VER)),
     controller: RolController = Depends()
 ):
     return controller.obtener_rol(id, usuario)
@@ -47,7 +47,7 @@ def obtener_rol(
 @router.post("/", response_model=RespuestaBase[RolLectura], status_code=201)
 def crear_rol(
     datos: RolCreacion,
-    usuario: dict = Depends(requerir_gestion_roles),
+    usuario: dict = Depends(requerir_permiso(PermissionCodes.ROLES_CREAR)),
     controller: RolController = Depends()
 ):
     """Create custom role for user's empresa"""
@@ -57,7 +57,7 @@ def crear_rol(
 def actualizar_rol(
     id: UUID,
     datos: RolActualizacion,
-    usuario: dict = Depends(requerir_gestion_roles),
+    usuario: dict = Depends(requerir_permiso(PermissionCodes.ROLES_EDITAR)),
     controller: RolController = Depends()
 ):
     """Update role (cannot modify es_sistema roles)"""
@@ -66,7 +66,7 @@ def actualizar_rol(
 @router.delete("/{id}")
 def eliminar_rol(
     id: UUID,
-    usuario: dict = Depends(requerir_gestion_roles),
+    usuario: dict = Depends(requerir_permiso(PermissionCodes.ROLES_ELIMINAR)),
     controller: RolController = Depends()
 ):
     """Delete role (only if not es_sistema)"""
@@ -77,7 +77,7 @@ def eliminar_rol(
 def asignar_permiso(
     rol_id: UUID,
     permiso_id: UUID,
-    usuario: dict = Depends(requerir_gestion_roles),
+    usuario: dict = Depends(requerir_permiso(PermissionCodes.ROLES_EDITAR)),
     controller: RolController = Depends()
 ):
     """Assign a single permission to a role"""
@@ -87,7 +87,7 @@ def asignar_permiso(
 def remover_permiso(
     rol_id: UUID,
     permiso_id: UUID,
-    usuario: dict = Depends(requerir_gestion_roles),
+    usuario: dict = Depends(requerir_permiso(PermissionCodes.ROLES_EDITAR)),
     controller: RolController = Depends()
 ):
     """Remove a single permission from a role"""

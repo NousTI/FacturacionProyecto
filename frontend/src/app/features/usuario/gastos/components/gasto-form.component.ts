@@ -95,13 +95,14 @@ import { Proveedor } from '../../../../domain/models/proveedor.model';
             </label>
             <div class="input-group">
               <span class="input-group-text">$</span>
-              <input 
-                type="number" 
-                class="form-control" 
-                formControlName="subtotal" 
+              <input
+                type="number"
+                class="form-control"
+                formControlName="subtotal"
                 step="0.01"
+                maxlength="12"
                 (keydown)="onlyPositiveNumbers($event)"
-                (input)="calculateTotal()"
+                (input)="limitDecimalInput($event); calculateTotal()"
                 [class.is-invalid]="isInvalid('subtotal')"
               >
               <div class="invalid-feedback" *ngIf="isInvalid('subtotal')">
@@ -117,13 +118,14 @@ import { Proveedor } from '../../../../domain/models/proveedor.model';
             </label>
             <div class="input-group">
               <span class="input-group-text">$</span>
-              <input 
-                type="number" 
-                class="form-control" 
-                formControlName="iva" 
+              <input
+                type="number"
+                class="form-control"
+                formControlName="iva"
                 step="0.01"
+                maxlength="12"
                 (keydown)="onlyPositiveNumbers($event)"
-                (input)="calculateTotal()"
+                (input)="limitDecimalInput($event); calculateTotal()"
                 [class.is-invalid]="isInvalid('iva')"
               >
               <div class="invalid-feedback" *ngIf="isInvalid('iva')">
@@ -291,6 +293,19 @@ export class GastoFormComponent implements OnInit {
   onlyPositiveNumbers(event: KeyboardEvent) {
     if (['-', 'e', 'E', '+'].includes(event.key)) {
       event.preventDefault();
+    }
+  }
+
+  limitDecimalInput(event: Event) {
+    const input = event.target as HTMLInputElement;
+    let value = input.value;
+
+    // Limitar a 10 dígitos enteros + 2 decimales (máximo 12 caracteres incluyendo el punto)
+    const regex = /^\d{0,10}(?:\.\d{0,2})?$/;
+
+    if (!regex.test(value) && value !== '') {
+      // Si no cumple, removemos el último carácter
+      input.value = value.slice(0, -1);
     }
   }
 

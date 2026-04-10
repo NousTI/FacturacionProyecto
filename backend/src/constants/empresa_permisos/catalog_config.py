@@ -14,17 +14,61 @@ CONFIG_PERMS = {
         "modulo": ModuloPermisos.CONFIGURACION,
         "descripcion": "Permite configurar firmas electrónicas y ambientes del SRI."
     },
-    "CONFIG_USUARIOS": {
-        "codigo": "CONFIG_USUARIOS",
-        "nombre": "Gestionar usuarios",
+    "CONFIG_MODULOS": {
+        "codigo": "CONFIG_MODULOS",
+        "nombre": "Configurar Módulos Operativos",
         "modulo": ModuloPermisos.CONFIGURACION,
-        "descripcion": "Permite crear, editar y desactivar usuarios de la empresa."
+        "descripcion": "Permite habilitar o deshabilitar módulos operativos de la empresa."
     },
-    "CONFIG_ROLES": {
-        "codigo": "CONFIG_ROLES",
-        "nombre": "Gestionar roles y permisos (Admin)",
-        "modulo": ModuloPermisos.CONFIGURACION,
-        "descripcion": "Permite definir roles y asignar permisos a los mismos."
+    # --- USUARIOS DE EMPRESA ---
+    "USUARIOS_EMPRESA_VER": {
+        "codigo": "USUARIOS_EMPRESA_VER",
+        "nombre": "Ver Usuarios de Empresa",
+        "modulo": ModuloPermisos.USUARIOS_EMPRESA,
+        "descripcion": "Permite visualizar el listado de usuarios de la empresa."
+    },
+    "USUARIOS_EMPRESA_CREAR": {
+        "codigo": "USUARIOS_EMPRESA_CREAR",
+        "nombre": "Crear Usuarios de Empresa",
+        "modulo": ModuloPermisos.USUARIOS_EMPRESA,
+        "descripcion": "Permite registrar nuevos usuarios para la empresa."
+    },
+    "USUARIOS_EMPRESA_EDITAR": {
+        "codigo": "USUARIOS_EMPRESA_EDITAR",
+        "nombre": "Editar Usuarios de Empresa",
+        "modulo": ModuloPermisos.USUARIOS_EMPRESA,
+        "descripcion": "Permite modificar datos de usuarios existentes."
+    },
+    "USUARIOS_EMPRESA_ELIMINAR": {
+        "codigo": "USUARIOS_EMPRESA_ELIMINAR",
+        "nombre": "Eliminar Usuarios de Empresa",
+        "modulo": ModuloPermisos.USUARIOS_EMPRESA,
+        "descripcion": "Permite desactivar o eliminar usuarios."
+    },
+    # --- ROLES ---
+    "ROLES_VER": {
+        "codigo": "ROLES_VER",
+        "nombre": "Ver Roles",
+        "modulo": ModuloPermisos.ROLES,
+        "descripcion": "Permite visualizar los roles configurados."
+    },
+    "ROLES_CREAR": {
+        "codigo": "ROLES_CREAR",
+        "nombre": "Crear Roles",
+        "modulo": ModuloPermisos.ROLES,
+        "descripcion": "Permite crear nuevos roles de usuario."
+    },
+    "ROLES_EDITAR": {
+        "codigo": "ROLES_EDITAR",
+        "nombre": "Editar Roles",
+        "modulo": ModuloPermisos.ROLES,
+        "descripcion": "Permite modificar permisos y nombres de roles existentes."
+    },
+    "ROLES_ELIMINAR": {
+        "codigo": "ROLES_ELIMINAR",
+        "nombre": "Eliminar Roles",
+        "modulo": ModuloPermisos.ROLES,
+        "descripcion": "Permite eliminar roles que no estén en uso."
     },
     "USUARIOS_VER": {
         "codigo": "USUARIOS_VER",
@@ -50,12 +94,6 @@ CONFIG_PERMS = {
         "modulo": ModuloPermisos.CONFIGURACION,
         "descripcion": "Permite habilitar o deshabilitar módulos operativos para la empresa."
     },
-    "CONFIG_ESTABLECIMIENTOS": {
-        "codigo": "CONFIG_ESTABLECIMIENTOS",
-        "nombre": "Gestionar establecimiento (Legacy)",
-        "modulo": ModuloPermisos.CONFIGURACION,
-        "descripcion": "Permite gestionar los puntos de emisión y establecimientos de la empresa."
-    },
     # MÓDULO: ESTABLECIMIENTOS Y PUNTOS DE EMISIÓN (Granulares)
     "ESTABLECIMIENTO_VER": {
         "codigo": "ESTABLECIMIENTO_VER",
@@ -63,7 +101,7 @@ CONFIG_PERMS = {
         "modulo": ModuloPermisos.ESTABLECIMIENTOS,
         "descripcion": "Permite visualizar los establecimientos de la empresa."
     },
-    "ESTABLECIMIENTO_GESTIONAR": {
+    "ESTABLECIMIENTO_CREAR": {
         "codigo": "ESTABLECIMIENTO_GESTIONAR",
         "nombre": "Gestionar Establecimientos",
         "modulo": ModuloPermisos.ESTABLECIMIENTOS,
@@ -75,7 +113,7 @@ CONFIG_PERMS = {
         "modulo": ModuloPermisos.ESTABLECIMIENTOS,
         "descripcion": "Permite visualizar los puntos de emisión."
     },
-    "PUNTO_EMISION_GESTIONAR": {
+    "PUNTO_EMISION_CREAR": {
         "codigo": "PUNTO_EMISION_GESTIONAR",
         "nombre": "Gestionar Puntos de Emisión",
         "modulo": ModuloPermisos.ESTABLECIMIENTOS,

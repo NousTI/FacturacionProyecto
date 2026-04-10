@@ -4,8 +4,7 @@ from uuid import UUID
 
 from .schemas import FormaPagoCreacion, FormaPagoLectura, FormaPagoActualizacion
 from .service import ServicioFormasPago
-from ..autenticacion.routes import obtener_usuario_actual, requerir_permiso
-from ...constants.permissions import PermissionCodes
+from ..autenticacion.dependencies import get_current_user
 from ...utils.response import success_response
 
 # Factura Repo for cross-module validation
@@ -18,7 +17,7 @@ router = APIRouter()
 def agregar_pago(
     factura_id: UUID,
     datos: FormaPagoCreacion,
-    usuario: dict = Depends(requerir_permiso(PermissionCodes.FORMA_PAGO_EDITAR)),
+    usuario: dict = Depends(get_current_user),
     servicio: ServicioFormasPago = Depends(),
     factura_repo: RepositorioFacturas = Depends()
 ):
@@ -28,7 +27,7 @@ def agregar_pago(
 @router.get("/facturas/{factura_id}/pagos", response_model=List[FormaPagoLectura])
 def listar_pagos(
     factura_id: UUID,
-    usuario: dict = Depends(requerir_permiso(PermissionCodes.FORMA_PAGO_VER)),
+    usuario: dict = Depends(get_current_user),
     servicio: ServicioFormasPago = Depends(),
     factura_repo: RepositorioFacturas = Depends()
 ):
@@ -38,7 +37,7 @@ def listar_pagos(
 def actualizar_pago(
     id: UUID,
     datos: FormaPagoActualizacion,
-    usuario: dict = Depends(requerir_permiso(PermissionCodes.FORMA_PAGO_EDITAR)),
+    usuario: dict = Depends(get_current_user),
     servicio: ServicioFormasPago = Depends(),
     factura_repo: RepositorioFacturas = Depends()
 ):
@@ -47,7 +46,7 @@ def actualizar_pago(
 @router.delete("/pagos/{id}")
 def eliminar_pago(
     id: UUID,
-    usuario: dict = Depends(requerir_permiso(PermissionCodes.FORMA_PAGO_EDITAR)),
+    usuario: dict = Depends(get_current_user),
     servicio: ServicioFormasPago = Depends(),
     factura_repo: RepositorioFacturas = Depends()
 ):

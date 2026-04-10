@@ -159,7 +159,7 @@ export class UsuarioRoleModalComponent implements OnInit {
         this.usuariosService.listarRoles().subscribe({
             next: (roles) => {
                 this.availableRoles = roles.filter(r =>
-                    r.codigo !== 'SUPERADMIN' && r.codigo !== 'VENDEDOR'
+                    r.codigo !== 'SUPERADMIN' && r.codigo !== 'VENDEDOR' && r.activo !== false
                 );
                 this.isInitialLoading = false;
                 this.cd.detectChanges();

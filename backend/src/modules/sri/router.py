@@ -48,7 +48,7 @@ def actualizar_parametros(
 def enviar_factura(
     id: UUID,
     request: Request,
-    usuario: dict = Depends(requerir_permiso(PermissionCodes.FACTURA_ENVIAR_SRI)),
+    usuario: dict = Depends(requerir_permiso(PermissionCodes.FACTURAS_ENVIAR_SRI)),
     servicio: ServicioSRI = Depends()
 ):
     # Enriquecer usuario con metadatos del request para auditoría técnica
@@ -71,7 +71,7 @@ def enviar_factura(
 def consultar_factura(
     id: UUID,
     request: Request,
-    usuario: dict = Depends(requerir_permiso(PermissionCodes.FACTURA_ENVIAR_SRI)),
+    usuario: dict = Depends(requerir_permiso(PermissionCodes.FACTURAS_ENVIAR_SRI)),
     servicio: ServicioSRI = Depends()
 ):
     """Consulta el estado de una factura ya enviada al SRI."""
@@ -91,7 +91,7 @@ def consultar_factura(
 
 @router.get("/configuracion", response_model=RespuestaBase[Optional[ConfigSRILectura]])
 def obtener_config_actual(
-    usuario: dict = Depends(requerir_permiso([PermissionCodes.CONFIG_SRI, PermissionCodes.FACTURAS_VER_TODAS, PermissionCodes.FACTURAS_VER_PROPIAS, PermissionCodes.FACTURAS_ENVIAR_SRI, PermissionCodes.FACTURA_ENVIAR_SRI])),
+    usuario: dict = Depends(requerir_permiso([PermissionCodes.CONFIG_SRI, PermissionCodes.FACTURAS_VER_TODAS, PermissionCodes.FACTURAS_VER_PROPIAS, PermissionCodes.FACTURAS_ENVIAR_SRI, PermissionCodes.FACTURAS_ENVIAR_SRI])),
     servicio: ServicioSRI = Depends()
 ):
     empresa_id = usuario.get('empresa_id')

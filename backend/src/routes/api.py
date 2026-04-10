@@ -30,7 +30,7 @@ api_router.include_router(vendedores_router, prefix="/vendedores", tags=["Vended
 from ..modules.superadmin.routes import router as superadmin_router
 api_router.include_router(superadmin_router, prefix="/superadmin", tags=["Súper Admin"])
 
-from ..modules.notificaciones.routes import router as notificaciones_router
+from ..modules.notificaciones.router import router as notificaciones_router
 api_router.include_router(notificaciones_router, prefix="/notificaciones", tags=["Notificaciones"])
 
 from ..modules.renovaciones.routes import router as renovaciones_router

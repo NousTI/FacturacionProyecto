@@ -4,15 +4,14 @@ from uuid import UUID
 from .schemas import VendedorCreacion, VendedorActualizacion, VendedorLectura, VendedorStats, ReasignacionEmpresas, VendedorPerfilActualizacion
 from ..usuarios.schemas import CambioPassword
 from .controller import VendedorController
-from ..autenticacion.routes import obtener_usuario_actual, requerir_permiso
-from ...constants.permissions import PermissionCodes
+from ..autenticacion.routes import obtener_usuario_actual, requerir_permiso, requerir_superadmin
 from ...utils.response_schemas import RespuestaBase
 
 router = APIRouter(redirect_slashes=False)
 
 @router.get("/stats", response_model=RespuestaBase[VendedorStats])
 def obtener_stats(
-    usuario: dict = Depends(requerir_permiso(PermissionCodes.VENDEDORES_VER)),
+    usuario: dict = Depends(requerir_superadmin),
     controller: VendedorController = Depends()
 ):
     return controller.obtener_stats(usuario)
@@ -21,14 +20,14 @@ def obtener_stats(
 def crear_vendedor(
     request: Request,
     datos: VendedorCreacion,
-    usuario: dict = Depends(requerir_permiso(PermissionCodes.VENDEDORES_GESTIONAR)),
+    usuario: dict = Depends(requerir_superadmin),
     controller: VendedorController = Depends()
 ):
     return controller.crear_vendedor(datos, usuario, request)
 
 @router.get("", response_model=RespuestaBase[List[VendedorLectura]])
 def listar_vendedores(
-    usuario: dict = Depends(requerir_permiso(PermissionCodes.VENDEDORES_VER)),
+    usuario: dict = Depends(requerir_superadmin),
     controller: VendedorController = Depends()
 ):
     return controller.listar_vendedores(usuario)
@@ -68,7 +67,7 @@ def actualizar_mi_perfil(
 @router.get("/{id}", response_model=RespuestaBase[VendedorLectura])
 def obtener_vendedor(
     id: UUID,
-    usuario: dict = Depends(requerir_permiso(PermissionCodes.VENDEDORES_VER)),
+    usuario: dict = Depends(requerir_superadmin),
     controller: VendedorController = Depends()
 ):
     return controller.obtener_vendedor(id, usuario)
@@ -77,7 +76,7 @@ def obtener_vendedor(
 def actualizar_vendedor(
     id: UUID,
     datos: VendedorActualizacion,
-    usuario: dict = Depends(requerir_permiso(PermissionCodes.VENDEDORES_GESTIONAR)),
+    usuario: dict = Depends(requerir_superadmin),
     controller: VendedorController = Depends()
 ):
     return controller.actualizar_vendedor(id, datos, usuario)
@@ -85,7 +84,7 @@ def actualizar_vendedor(
 @router.patch("/{id}/toggle-status", response_model=RespuestaBase[VendedorLectura])
 def toggle_status(
     id: UUID,
-    usuario: dict = Depends(requerir_permiso(PermissionCodes.VENDEDORES_GESTIONAR)),
+    usuario: dict = Depends(requerir_superadmin),
     controller: VendedorController = Depends()
 ):
     return controller.toggle_status(id, usuario)
@@ -94,7 +93,7 @@ def toggle_status(
 def reasignar_empresas(
     id: UUID,
     datos: ReasignacionEmpresas,
-    usuario: dict = Depends(requerir_permiso(PermissionCodes.VENDEDORES_GESTIONAR)),
+    usuario: dict = Depends(requerir_superadmin),
     controller: VendedorController = Depends()
 ):
     return controller.reasignar_empresas(id, datos, usuario)
@@ -102,7 +101,7 @@ def reasignar_empresas(
 @router.get("/{id}/empresas")
 def obtener_empresas(
     id: UUID,
-    usuario: dict = Depends(requerir_permiso(PermissionCodes.VENDEDORES_VER)),
+    usuario: dict = Depends(requerir_superadmin),
     controller: VendedorController = Depends()
 ):
     return controller.obtener_empresas(id, usuario)
@@ -110,7 +109,7 @@ def obtener_empresas(
 @router.delete("/{id}")
 def eliminar_vendedor(
     id: UUID,
-    usuario: dict = Depends(requerir_permiso(PermissionCodes.VENDEDORES_GESTIONAR)),
+    usuario: dict = Depends(requerir_superadmin),
     controller: VendedorController = Depends()
 ):
     return controller.eliminar_vendedor(id, usuario)

@@ -1,7 +1,7 @@
 from fastapi import Depends
 from typing import List, Optional
 from uuid import UUID
-from .repositories import RepositorioNotificaciones
+from .repository import RepositorioNotificaciones
 from .schemas import NotificacionCreate, NotificacionLectura, NotificacionUpdate
 
 class ServicioNotificaciones:
