@@ -255,7 +255,7 @@ class ServicioReportes:
         resumen_prev = self.repo.obtener_ventas_resumen(empresa_id, prev_inicio, prev_fin)
         total_actual = float(resumen['total_general'])
         total_prev = float(resumen_prev['total_general'])
-        
+
         variacion = 0.0
         if total_prev > 0:
             variacion = ((total_actual - total_prev) / total_prev) * 100
@@ -263,6 +263,26 @@ class ServicioReportes:
             variacion = 100.0
 
         resumen['comparacion_anterior_porcentaje'] = round(variacion, 2)
+
+        # Variación de facturas emitidas
+        cant_actual = int(resumen['cantidad_facturas'])
+        cant_prev = int(resumen_prev['cantidad_facturas'])
+        variacion_facturas = 0.0
+        if cant_prev > 0:
+            variacion_facturas = ((cant_actual - cant_prev) / cant_prev) * 100
+        elif cant_actual > 0:
+            variacion_facturas = 100.0
+        resumen['variacion_facturas'] = round(variacion_facturas, 1)
+
+        # Variación de ticket promedio
+        ticket_actual = float(resumen['ticket_promedio'])
+        ticket_prev = float(resumen_prev['ticket_promedio'])
+        variacion_ticket = 0.0
+        if ticket_prev > 0:
+            variacion_ticket = ((ticket_actual - ticket_prev) / ticket_prev) * 100
+        elif ticket_actual > 0:
+            variacion_ticket = 100.0
+        resumen['variacion_ticket'] = round(variacion_ticket, 1)
 
         # 3. Datos para gráficos
         graficos = {
