@@ -139,7 +139,11 @@ import { Chart, ChartConfiguration } from 'chart.js';
                 </div>
               </div>
             </div>
-            <div class="table-responsive">
+            <div *ngIf="!data.radar_gestion || data.radar_gestion.length === 0" class="empty-radar py-5 text-center">
+              <i class="bi bi-check-circle text-success mb-3" style="font-size: 2rem;"></i>
+              <p class="text-muted">Todo está bajo control, sin alertas pendientes</p>
+            </div>
+            <div *ngIf="data.radar_gestion && data.radar_gestion.length > 0" class="table-responsive">
               <table class="table modern-table">
                 <thead>
                   <tr>
@@ -152,10 +156,10 @@ import { Chart, ChartConfiguration } from 'chart.js';
                 </thead>
                 <tbody>
                   <tr *ngFor="let item of data.radar_gestion" class="hover-row">
-                    <td><span class="badge-dot" [class.venta]="item.origen === 'Venta'"></span> {{ item.origen }}</td>
+                    <td><span class="badge-dot" [class.venta]="item.origen === 'Venta'" [class.inventario]="item.origen === 'Inventario'" [class.caja]="item.origen === 'Caja'"></span> {{ item.origen }}</td>
                     <td class="font-medium">{{ item.detalle }}</td>
-                    <td class="font-bold">{{ item.monto | currency }}</td>
-                    <td><span class="status-chip" [class.danger]="item.estado.includes('Mora') || item.estado.includes('Crítico')">{{ item.estado }}</span></td>
+                    <td class="font-bold">{{ item.monto > 0 ? (item.monto | currency) : '—' }}</td>
+                    <td><span class="status-chip" [class.danger]="item.estado.includes('Mora') || item.estado.includes('Crítico')" [class.warning]="item.estado.includes('Pendiente')">{{ item.estado }}</span></td>
                     <td class="text-muted">{{ item.responsable }}</td>
                   </tr>
                 </tbody>
@@ -176,24 +180,28 @@ import { Chart, ChartConfiguration } from 'chart.js';
                 </div>
               </div>
             </div>
-            <div class="table-responsive">
+            <div *ngIf="!data.monitor_rentabilidad || data.monitor_rentabilidad.length === 0" class="empty-monitor py-5 text-center">
+              <i class="bi bi-inbox text-muted mb-3" style="font-size: 2rem;"></i>
+              <p class="text-muted">Sin datos de productos en este período</p>
+            </div>
+            <div *ngIf="data.monitor_rentabilidad && data.monitor_rentabilidad.length > 0" class="table-responsive">
               <table class="table modern-table">
                 <thead>
                   <tr>
                     <th>Producto</th>
-                    <th>Vendidos</th>
-                    <th>Stock</th>
-                    <th>Utilidad</th>
-                    <th>Status</th>
+                    <th class="text-center">Vendidos</th>
+                    <th class="text-center">Stock</th>
+                    <th class="text-end">Utilidad</th>
+                    <th class="text-center">Status</th>
                   </tr>
                 </thead>
                 <tbody>
                   <tr *ngFor="let prod of data.monitor_rentabilidad" class="hover-row">
                     <td class="font-medium">{{ prod.productos }}</td>
-                    <td>{{ prod.vendidos }}</td>
-                    <td>{{ prod.existencias }}</td>
-                    <td class="text-success font-bold">{{ prod.utilidad_neta | currency }}</td>
-                    <td><span class="status-chip" [class.warning]="prod.estado.includes('Alerta')" [class.danger]="prod.estado.includes('Crítico')">{{ prod.estado }}</span></td>
+                    <td class="text-center">{{ prod.vendidos }} und.</td>
+                    <td class="text-center"><strong>{{ prod.existencias }}</strong></td>
+                    <td class="text-end text-success font-bold">{{ prod.utilidad_neta | currency }}</td>
+                    <td class="text-center"><span class="status-chip" [class.warning]="prod.estado.includes('Alerta')" [class.danger]="prod.estado.includes('Crítico')" [class.success]="prod.estado.includes('saludable')">{{ prod.estado }}</span></td>
                   </tr>
                 </tbody>
               </table>
@@ -268,9 +276,19 @@ import { Chart, ChartConfiguration } from 'chart.js';
 
     .badge-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; background: #3b82f6; margin-right: 6px; }
     .badge-dot.venta { background: #818cf8; }
+    .badge-dot.inventario { background: #f59e0b; }
+    .badge-dot.caja { background: #06b6d4; }
+
+    .status-chip.success { background: #dcfce7; color: #166534; }
+
+    .empty-radar, .empty-monitor {
+      border-radius: 12px; background: rgba(248, 250, 252, 0.5);
+    }
 
     .font-medium { font-weight: 500; }
     .font-bold { font-weight: 700; }
+    .text-center { text-align: center; }
+    .text-end { text-align: right; }
 
     .chart-wrapper { position: relative; height: 320px; }
     .chart-canvas { max-height: 320px; }
@@ -379,5 +397,21 @@ export class ExecutiveSummaryComponent implements AfterViewInit {
 
     this.profitChartInstance?.destroy();
     this.profitChartInstance = new Chart(this.profitChart.nativeElement, config);
+  }
+
+  getRadarOriginBadgeClass(origen: string): string {
+    if (origen === 'Venta') return 'venta';
+    if (origen === 'Inventario') return 'inventario';
+    if (origen === 'Caja') return 'caja';
+    return '';
+  }
+
+  isRadarEmpty(): boolean {
+    return !this.data.radar_gestion || this.data.radar_gestion.length === 0 ||
+           (this.data.radar_gestion.length === 1 && this.data.radar_gestion[0].detalle.includes('Sin'));
+  }
+
+  isMonitorEmpty(): boolean {
+    return !this.data.monitor_rentabilidad || this.data.monitor_rentabilidad.length === 0;
   }
 }
