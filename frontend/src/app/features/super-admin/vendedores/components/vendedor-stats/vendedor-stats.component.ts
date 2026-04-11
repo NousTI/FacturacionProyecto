@@ -6,109 +6,70 @@ import { VendedorStats } from '../../services/vendedor.service';
   selector: 'app-vendedor-stats',
   template: `
     <div class="stats-compact-row mb-4">
-      <!-- Total Vendedores -->
       <div class="stat-item-mini">
-        <div class="icon-circle" style="background: rgba(22, 29, 53, 0.05); color: #161d35;">
-          <i class="bi bi-people-fill"></i>
-        </div>
-        <div class="stat-info">
-          <span class="stat-label">Total Vendedores</span>
-          <span class="stat-value">{{ stats.total }}</span>
-        </div>
+        <span class="stat-label">Total Vendedores</span>
+        <span class="stat-value">{{ stats.total }}</span>
       </div>
 
       <div class="stat-divider"></div>
 
-      <!-- Vendedores Activos -->
       <div class="stat-item-mini">
-        <div class="icon-circle" style="background: rgba(16, 185, 129, 0.1); color: #10b981;">
-          <i class="bi bi-person-check-fill"></i>
-        </div>
-        <div class="stat-info">
-          <span class="stat-label">Activos</span>
-          <div class="d-flex align-items-baseline gap-1">
-            <span class="stat-value text-success">{{ stats.activos }}</span>
-            <span class="text-muted small" style="font-size: 0.8rem; font-weight: 600;">/ {{ stats.total }}</span>
-          </div>
-        </div>
+        <span class="stat-label">Vendedores Activos</span>
+        <span class="stat-value text-success">{{ stats.activos }}</span>
       </div>
 
       <div class="stat-divider"></div>
 
-      <!-- Empresas Captadas -->
       <div class="stat-item-mini">
-        <div class="icon-circle" style="background: rgba(59, 130, 246, 0.1); color: #3b82f6;">
-          <i class="bi bi-building-up"></i>
-        </div>
-        <div class="stat-info">
-          <span class="stat-label">Empresas Captadas</span>
-          <span class="stat-value">{{ stats.empresasTotales }}</span>
-        </div>
+        <span class="stat-label">Empresas Captadas</span>
+        <span class="stat-value text-corporate">{{ stats.empresasTotales }}</span>
       </div>
 
       <div class="stat-divider"></div>
 
-      <!-- Ingresos Generados -->
       <div class="stat-item-mini">
-        <div class="icon-circle" style="background: rgba(245, 158, 11, 0.1); color: #f59e0b;">
-          <i class="bi bi-cash-stack"></i>
-        </div>
-        <div class="stat-info">
-          <span class="stat-label">Ingresos Generados</span>
-          <span class="stat-value text-warning">{{ stats.ingresosGenerados | currency:'USD' }}</span>
-        </div>
+        <span class="stat-label">Ingresos Generados</span>
+        <span class="stat-value">{{ stats.ingresosGenerados | currency:'USD' }}</span>
       </div>
     </div>
   `,
   styles: [`
     .stats-compact-row {
-      background: white;
-      border-radius: 20px;
-      padding: 1.25rem 2rem;
+      background: var(--bg-main, #ffffff);
+      border-radius: 16px;
+      padding: 1.5rem 2.5rem;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
-      border: 1px solid #f1f5f9;
+      border: 1px solid var(--border-color, #f1f5f9);
     }
     .stat-item-mini {
       display: flex;
-      align-items: center;
-      gap: 1.25rem;
+      flex-direction: column;
+      gap: 0.25rem;
       flex: 1;
     }
-    .icon-circle {
-      width: 44px;
-      height: 44px;
-      border-radius: 12px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1.25rem;
-    }
-    .stat-info {
-      display: flex;
-      flex-direction: column;
-    }
     .stat-label {
-      font-size: 0.7rem;
-      font-weight: 800;
-      color: #94a3b8;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
+      font-size: var(--text-sm);
+      font-weight: 500;
+      color: var(--text-muted, #64748b);
+      letter-spacing: 0;
     }
     .stat-value {
-      font-size: 1.5rem;
-      font-weight: 800;
-      color: #1e293b;
+      font-size: var(--text-xl);
+      font-weight: 700;
+      color: var(--text-main, #0f172a);
       line-height: 1.2;
     }
     .stat-divider {
       width: 1px;
-      height: 40px;
-      background: #f1f5f9;
-      margin: 0 2rem;
+      height: 48px;
+      background: var(--border-color, #f1f5f9);
+      margin: 0 2.5rem;
     }
+    .text-success { color: var(--status-success, #10b981) !important; }
+    .text-corporate { color: var(--primary-color, #161d35) !important; }
+
     @media (max-width: 992px) {
       .stats-compact-row {
         flex-wrap: wrap;
@@ -116,22 +77,21 @@ import { VendedorStats } from '../../services/vendedor.service';
         padding: 1.5rem;
       }
       .stat-item-mini {
-        flex: 1 1 40%; /* 2 per row on smaller screens */
+        flex: 1 1 40%;
         min-width: 150px;
       }
-      .stat-divider {
-        display: none;
-      }
+      .stat-divider { display: none; }
     }
     @media (max-width: 576px) {
       .stat-item-mini {
-        flex: 1 1 100%; /* 1 per row on mobile */
+        flex: 1 1 100%;
       }
     }
-  `],
+  `]
+,
   standalone: true,
   imports: [CommonModule]
 })
 export class VendedorStatsComponent {
-  @Input() stats: VendedorStats = { total: 0, activos: 0, inactivos: 0, empresasTotales: 0, ingresosGenerados: 0 };
+  @Input() stats: any = { total: 0, activos: 0, inactivos: 0, empresasTotales: 0, ingresosGenerados: 0 };
 }

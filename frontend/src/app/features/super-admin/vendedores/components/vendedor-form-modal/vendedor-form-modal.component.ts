@@ -124,13 +124,6 @@ import { SriValidators } from '../../../../../shared/utils/sri-validators';
 
             <!-- SECCIÓN: COMISIONES -->
             <div *ngIf="activeTab === 'comisiones'" class="row g-4 animate__animated animate__fadeIn animate__faster">
-              <div class="col-12">
-                <div class="alert-premium-info">
-                  <i class="bi bi-info-circle-fill me-2"></i>
-                  Define la regla de negocio para los incentivos del asesor.
-                </div>
-              </div>
-
               <div class="col-md-12">
                 <label class="form-label-premium">Tipo de Comisión</label>
                 <div class="input-premium-group">

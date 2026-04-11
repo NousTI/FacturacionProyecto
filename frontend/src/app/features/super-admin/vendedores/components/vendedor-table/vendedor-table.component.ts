@@ -5,185 +5,184 @@ import { Vendedor } from '../../services/vendedor.service';
 @Component({
   selector: 'app-vendedor-table',
   template: `
-    <div class="table-surface shadow-premium">
-      <div class="table-responsive-premium">
-        <table class="table mb-0 align-middle">
-          <thead>
-            <tr>
-              <th>Vendedor</th>
-              <th class="text-center">Estado</th>
-              <th class="text-center">Empresas (Activas/Total)</th>
-              <th class="text-end">Ingresos</th>
-              <th class="text-end" style="width: 80px">Acciones</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let v of vendedores">
-              <td>
-                <div class="d-flex align-items-center">
-                  <div class="vendedor-avatar me-3">
-                    {{ v.nombre.substring(0, 2).toUpperCase() }}
+    <section class="module-table">
+      <div class="table-container">
+        <div class="table-responsive-premium">
+          <table class="table mb-0 align-middle">
+            <thead>
+              <tr>
+                <th style="width: 250px">Vendedor</th>
+                <th style="width: 150px" class="text-center">Estado</th>
+                <th style="width: 180px" class="text-center">Empresas (Act/Tot)</th>
+                <th style="width: 180px" class="text-end">Ingresos</th>
+                <th class="text-end" style="width: 80px">Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let v of vendedores">
+                <td>
+                  <div class="d-flex align-items-center">
+                    <div class="avatar-soft-premium me-2">
+                      {{ (v.nombre || '??').substring(0, 2).toUpperCase() }}
+                    </div>
+                    <div class="d-flex flex-column text-truncate">
+                      <span class="fw-bold text-dark mb-0 text-truncate" [title]="v.nombre">{{ v.nombre }}</span>
+                      <small class="text-muted text-truncate">{{ v.email }}</small>
+                    </div>
                   </div>
-                  <div class="d-flex flex-column">
-                    <span class="vendedor-name">{{ v.nombre }}</span>
-                    <small class="vendedor-email text-muted">{{ v.email }}</small>
+                </td>
+                <td class="text-center">
+                  <span class="badge-status-premium" [ngClass]="v.activo ? 'activo' : 'inactivo'">
+                      {{ v.activo ? 'ACTIVO' : 'INACTIVO' }}
+                  </span>
+                </td>
+                <td class="text-center">
+                  <div class="d-flex flex-column align-items-center">
+                    <div class="fw-bold text-dark" style="font-size: 0.85rem;">
+                        {{ v.empresasActivas }} <span class="text-muted mx-1">/</span> {{ v.empresasAsignadas }}
+                    </div>
+                    <!-- Progress Mini -->
+                    <div class="progress-mini-track mt-1">
+                        <div class="progress-mini-fill" [style.width.%]="(v.empresasActivas / (v.empresasAsignadas || 1)) * 100"></div>
+                    </div>
                   </div>
-                </div>
-              </td>
-              <td class="text-center">
-                <span class="status-badge" [class.active]="v.activo" [class.inactive]="!v.activo">
-                   {{ v.activo ? 'ACTIVO' : 'INACTIVO' }}
-                </span>
-              </td>
-              <td class="text-center">
-                <div class="performance-metric">
-                    <span class="fw-bold text-dark">{{ v.empresasActivas }}</span>
-                    <span class="text-muted mx-1">/</span>
-                    <span class="text-muted">{{ v.empresasAsignadas }}</span>
-                </div>
-                <!-- Progress bar sutil -->
-                <div class="progress-premium mt-1">
-                    <div class="progress-bar-premium" [style.width.%]="(v.empresasActivas / v.empresasAsignadas) * 100"></div>
-                </div>
-              </td>
-              <td class="text-end">
-                <span class="revenue-value">{{ v.ingresosGenerados | currency }}</span>
-              </td>
-              <td class="text-end">
-                <div class="dropdown">
-                  <button class="btn-action-trigger" data-bs-toggle="dropdown" aria-expanded="false">
-                    <i class="bi bi-three-dots"></i>
-                  </button>
-                  <ul class="dropdown-menu dropdown-menu-end shadow-premium-lg border-0 p-2 rounded-4">
-                    <li>
-                      <a class="dropdown-item rounded-3 py-2" (click)="onAction.emit({type: 'view_details', vendedor: v})">
-                        <i class="bi bi-eye text-primary me-2"></i> Ver Desempeño
-                      </a>
-                    </li>
-                    <li>
-                      <a class="dropdown-item rounded-3 py-2" (click)="onAction.emit({type: 'edit', vendedor: v})">
-                        <i class="bi bi-pencil-square text-warning me-2"></i> Editar Vendedor
-                      </a>
-                    </li>
-                    <li>
-                      <a class="dropdown-item rounded-3 py-2" (click)="onAction.emit({type: 'reassign', vendedor: v})">
-                        <i class="bi bi-arrow-repeat text-secondary me-2"></i> Reasignar Empresas
-                      </a>
-                    </li>
-                    <li><hr class="dropdown-divider mx-2"></li>
-                    <li>
-                      <a class="dropdown-item rounded-3 py-2" [class.text-danger]="v.activo" (click)="onAction.emit({type: 'toggle_status', vendedor: v})">
-                        <i class="bi me-2" [class]="v.activo ? 'bi-lock text-danger' : 'bi-unlock text-success'"></i>
-                        {{ v.activo ? 'Bloquear Vendedor' : 'Activar Vendedor' }}
-                      </a>
-                    </li>
-                  </ul>
-                </div>
-              </td>
-            </tr>
-          </tbody>
-        </table>
+                </td>
+                <td class="text-end">
+                  <span class="fw-bold text-dark" style="font-size: 0.95rem;">{{ v.ingresosGenerados | currency:'USD' }}</span>
+                </td>
+                <td class="text-end">
+                  <div class="dropdown">
+                    <button class="btn-action-trigger" data-bs-toggle="dropdown" aria-expanded="false">
+                      <i class="bi bi-three-dots"></i>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end border-0 p-2 rounded-4">
+                      <li>
+                        <a class="dropdown-item rounded-3 py-2" (click)="onAction.emit({type: 'view_details', vendedor: v})">
+                          <i class="bi bi-eye text-corporate me-2"></i> Ver Desempeño
+                        </a>
+                      </li>
+                      <li>
+                        <a class="dropdown-item rounded-3 py-2" (click)="onAction.emit({type: 'edit', vendedor: v})">
+                          <i class="bi bi-pencil-square text-corporate me-2"></i> Editar Vendedor
+                        </a>
+                      </li>
+                      <li>
+                        <a class="dropdown-item rounded-3 py-2" (click)="onAction.emit({type: 'reassign', vendedor: v})">
+                          <i class="bi bi-arrow-repeat text-corporate me-2"></i> Reasignar Empresas
+                        </a>
+                      </li>
+                      <li><hr class="dropdown-divider mx-2"></li>
+                      <li>
+                        <a class="dropdown-item rounded-3 py-2" [class.text-danger]="v.activo" (click)="onAction.emit({type: 'toggle_status', vendedor: v})">
+                          <i class="bi me-2" [ngClass]="v.activo ? 'bi-toggle-off text-muted' : 'bi-toggle-on text-corporate'"></i>
+                          {{ v.activo ? 'Desactivar Acceso' : 'Activar Vendedor' }}
+                        </a>
+                      </li>
+                    </ul>
+                  </div>
+                </td>
+              </tr>
+              <tr *ngIf="vendedores.length === 0">
+                <td colspan="5" class="text-center p-5 text-muted">
+                  <i class="bi bi-inbox fs-1 d-block mb-3"></i>
+                  No se encontraron vendedores registrados.
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </div>
-    </div>
+    </section>
   `,
   styles: [`
-    .table-surface {
-      background: #ffffff;
-      border-radius: 24px;
+    .module-table { margin-top: 1rem; }
+    .table-container {
+      background: var(--bg-main, #ffffff);
+      border-radius: 12px;
+      border: 1px solid var(--border-color, #e2e8f0);
       overflow: visible !important;
-      border: 1px solid #f1f5f9;
-      position: relative;
-      z-index: 5;
+      margin-bottom: 2rem;
     }
-    .table-responsive-premium { 
-      overflow: visible !important; 
-    }
-    .table {
-      border-collapse: separate;
-    }
-    .table tbody tr {
-      position: relative;
-      transition: z-index 0.2s;
-    }
-    /* FIX: Elevate the row when dropdown is open */
-    .table tbody tr:focus-within,
-    .table tbody tr:hover {
-      z-index: 100;
-    }
-    .table tbody tr:has(.show),
-    .table tbody tr:has(.btn-action-trigger[aria-expanded="true"]) {
-      z-index: 10001 !important;
-    }
-
+    .table-responsive-premium { overflow: visible !important; position: relative; }
+    
     .table thead th {
-      background: #f8fafc;
-      padding: 1.25rem 1.5rem;
-      font-size: 0.7rem;
-      font-weight: 800;
-      color: #94a3b8;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      border-bottom: 2px solid #f1f5f9;
-      position: sticky;
-      top: 0;
-      z-index: 10;
+      background: var(--bg-main, #ffffff);
+      padding: 1rem 1.5rem;
+      font-size: var(--text-base);
+      color: var(--text-main, #1a1a1a);
+      font-weight: 600;
+      border-bottom: 1px solid var(--border-color, #e2e8f0);
+      vertical-align: middle;
     }
+    
     .table tbody td {
       padding: 1.25rem 1.5rem;
-      border-bottom: 1px solid #f8fafc;
-      background: transparent;
+      border-bottom: 1px solid var(--border-color, #e2e8f0);
+      color: var(--text-muted, #64748b);
+      font-size: var(--text-md);
     }
-    .vendedor-avatar {
-      width: 42px; height: 42px;
-      background: #161d35; color: white;
-      border-radius: 12px; display: flex;
-      align-items: center; justify-content: center;
-      font-weight: 800; font-size: 0.85rem;
-    }
-    .vendedor-name { font-weight: 700; color: #1e293b; font-size: 0.95rem; }
-    .vendedor-email { font-size: 0.8rem; }
-    
-    .status-badge {
-      padding: 0.4rem 0.85rem; border-radius: 100px;
-      font-size: 0.7rem; font-weight: 800;
-    }
-    .status-badge.active { background: #dcfce7; color: #15803d; }
-    .status-badge.inactive { background: #fee2e2; color: #b91c1c; }
 
-    .performance-metric { font-size: 0.9rem; }
-    .progress-premium {
-        height: 4px; background: #f1f5f9;
-        border-radius: 10px; width: 60px;
-        margin: 0 auto;
+    .avatar-soft-premium {
+      width: 38px; height: 38px;
+      border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 700; font-size: var(--text-base);
+      background: var(--primary-color, #161d35);
+      color: #ffffff;
     }
-    .progress-bar-premium {
+
+    .badge-status-premium {
+      padding: 0.25rem 0.75rem;
+      border-radius: 6px;
+      font-size: var(--text-sm);
+      font-weight: 600;
+      display: inline-block;
+      text-transform: uppercase;
+    }
+    .badge-status-premium.activo { 
+      background: var(--status-success-bg, #dcfce7); 
+      color: var(--status-success-text, #ffffff); 
+    }
+    .badge-status-premium.inactivo { 
+      background: var(--status-danger-bg, #fee2e2); 
+      color: var(--status-danger-text, #ffffff); 
+    }
+
+    .progress-mini-track {
+        height: 6px; background: var(--border-color, #f1f5f9);
+        border-radius: 10px; width: 60px; overflow: hidden;
+    }
+    .progress-mini-fill {
         height: 100%; border-radius: 10px;
-        background: #161d35;
+        background: var(--primary-color, #161d35);
     }
-    .revenue-value { font-weight: 800; color: #1e293b; }
 
     .btn-action-trigger {
-      background: #f8fafc; border: none;
+      background: transparent; border: none;
       width: 32px; height: 32px;
-      border-radius: 8px; color: #94a3b8;
+      border-radius: 8px; color: var(--status-neutral, #94a3b8);
       transition: all 0.2s;
     }
-    .btn-action-trigger:hover { background: #161d35; color: white; }
+    .btn-action-trigger:hover, .btn-action-trigger[aria-expanded="true"] {
+      background: var(--border-color, #f8fafc); color: var(--text-main, #0f172a);
+    }
 
     .dropdown-menu {
-      min-width: 220px;
-      border: 1px solid #e2e8f0 !important;
-      z-index: 10005 !important;
-      margin-top: 5px !important;
-      box-shadow: 0 15px 35px rgba(22, 29, 53, 0.15) !important;
+      border: 1px solid var(--border-color, #e2e8f0) !important;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.03) !important;
+      border-radius: 12px !important;
+      padding: 0.5rem !important;
     }
     .dropdown-item {
-      font-size: 0.85rem; font-weight: 600;
-      color: #475569; cursor: pointer;
+      border-radius: 8px !important;
+      font-size: var(--text-base);
+      font-weight: 500;
+      color: var(--text-muted, #475569); padding: 0.5rem 1rem;
+      display: flex; align-items: center;
+      cursor: pointer;
     }
-    .dropdown-item:hover { background: #f8fafc; color: #161d35; }
-    .shadow-premium { box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.04); }
-    .shadow-premium-lg { box-shadow: 0 20px 40px -15px rgba(0, 10, 30, 0.15); }
+    .dropdown-item:hover { background: var(--border-color, #f8fafc); color: var(--text-main, #0f172a); }
+    .text-corporate { color: var(--primary-color, #111827) !important; }
   `],
   standalone: true,
   imports: [CommonModule]

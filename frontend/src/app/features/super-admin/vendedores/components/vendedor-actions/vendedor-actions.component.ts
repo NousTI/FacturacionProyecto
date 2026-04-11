@@ -5,108 +5,159 @@ import { FormsModule } from '@angular/forms';
 @Component({
   selector: 'app-vendedor-actions',
   template: `
-    <div class="actions-surface shadow-premium">
-      <div class="row align-items-center g-3">
-        
-        <!-- Search Bar -->
-        <div class="col-md-8">
-          <div class="search-premium-group">
-            <i class="bi bi-search search-icon"></i>
-            <input 
-              type="text" 
-              class="form-control search-input-premium" 
-              placeholder="Buscar por nombre, email o DNI..."
-              [ngModel]="searchQuery"
-              (ngModelChange)="searchQueryChange.emit($event)"
+    <section class="module-actions mb-4">
+      <div class="actions-bar-container">
+        <div class="row align-items-center g-3">
+          <!-- Búsqueda Principal -->
+          <div class="col-lg-6">
+            <div class="search-box-premium">
+              <i class="bi bi-search"></i>
+              <input 
+                type="text" 
+                [(ngModel)]="searchQuery" 
+                (ngModelChange)="searchQueryChange.emit($event)"
+                placeholder="Q Buscar por Nombre, Email o Documento..." 
+                class="form-control-premium-search"
+              >
+            </div>
+          </div>
+
+          <!-- Filtros Rápidos -->
+          <div class="col-lg-3">
+            <div class="dropdown">
+              <button 
+                class="form-select-premium dropdown-toggle d-flex align-items-center justify-content-between" 
+                type="button" 
+                data-bs-toggle="dropdown" 
+                aria-expanded="false"
+              >
+                <span>Estado: {{ getStatusLabel() }}</span>
+              </button>
+              <ul class="dropdown-menu border-0 shadow-sm dropdown-menu-premium">
+                <li *ngFor="let tab of statusTabs">
+                  <a class="dropdown-item" (click)="onTabChange.emit(tab.id)">{{ tab.label }}</a>
+                </li>
+              </ul>
+            </div>
+          </div>
+
+          <!-- Botón de Acción -->
+          <div class="col-lg-3 text-lg-end">
+            <button 
+              (click)="onCreate.emit()"
+              class="btn-system-action w-100"
             >
-            <div class="search-badge" *ngIf="searchQuery">Vendedores</div>
+              <i class="bi bi-person-plus-fill me-2"></i>
+              <span>Nuevo Vendedor</span>
+            </button>
           </div>
         </div>
-
-        <!-- Main Action Button -->
-        <div class="col-md-4 text-end">
-          <button class="btn-premium-primary w-100" (click)="onCreate.emit()">
-            <i class="bi bi-person-plus-fill me-2"></i>
-            Registrar Vendedor
-          </button>
-        </div>
-
       </div>
-    </div>
+    </section>
   `,
   styles: [`
-    .actions-surface {
-      background: #ffffff;
-      padding: 0.75rem 1.5rem;
-      border-radius: 20px;
-      border: 1px solid rgba(0, 0, 0, 0.05);
+    .actions-bar-container {
+      background: transparent;
+      border: none;
     }
-    .search-premium-group {
+    .search-box-premium {
       position: relative;
-      display: flex;
-      align-items: center;
+      width: 100%;
     }
-    .search-icon {
+    .search-box-premium i {
       position: absolute;
-      left: 1.25rem;
-      color: #94a3b8;
-      font-size: 1.1rem;
+      left: 1rem;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--status-neutral, #94a3b8);
+      font-size: 1rem;
     }
-    .search-input-premium {
-      padding: 0 1rem 0 3.5rem;
-      height: 40px;
-      border-radius: 16px;
-      background: #f8fafc;
-      border: 1px solid rgba(0, 0, 0, 0.05);
-      font-size: 0.95rem;
-      font-weight: 500;
+    .form-control-premium-search {
+      background: var(--bg-main, #ffffff);
+      border: 1px solid var(--border-color, #e2e8f0);
+      border-radius: 12px;
+      padding: 0 1rem 0 2.75rem;
+      height: 42px;
+      font-size: var(--text-md, 0.95rem);
+      color: var(--text-main, #0f172a);
       transition: all 0.2s;
       width: 100%;
     }
-    .search-input-premium:focus {
-      background: #ffffff;
-      border-color: #161d35;
-      box-shadow: 0 0 0 4px rgba(22, 29, 53, 0.05);
+    .form-control-premium-search:focus {
+      border-color: var(--status-neutral, #cbd5e1);
+      outline: none;
+      box-shadow: none;
     }
-    .search-badge {
-      position: absolute;
-      right: 1rem;
-      background: #161d35;
-      color: white;
-      font-size: 0.65rem;
-      font-weight: 700;
-      padding: 4px 10px;
-      border-radius: 8px;
-      text-transform: uppercase;
+    .form-select-premium {
+      background: var(--bg-main, #ffffff);
+      border: 1px solid var(--border-color, #e2e8f0);
+      border-radius: 12px;
+      padding: 0 1rem;
+      height: 42px;
+      font-size: var(--text-base, 0.85rem);
+      color: var(--text-muted, #475569);
+      width: 100%;
+      cursor: pointer;
+      text-align: left;
+      font-weight: 600;
     }
-    .btn-premium-primary {
-      background: #161d35;
+    .form-select-premium:focus {
+      border-color: var(--status-neutral, #cbd5e1);
+      outline: none;
+    }
+    .dropdown-menu-premium {
+      border-radius: 12px !important;
+      padding: 0.5rem !important;
+      min-width: 100%;
+      margin-top: 0.5rem !important;
+    }
+    .dropdown-item {
+      border-radius: 8px !important;
+      padding: 0.6rem 1rem !important;
+      color: var(--text-muted, #475569) !important;
+      font-size: var(--text-base, 0.85rem) !important;
+      font-weight: 500 !important;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .dropdown-item:hover {
+      background-color: var(--primary-color, #161d35) !important;
+      color: #ffffff !important;
+    }
+    .btn-system-action {
+      background: var(--primary-color, #111827);
       color: #ffffff;
-      border: 1.5px solid transparent;
+      border: none;
       padding: 0 1.5rem;
-      height: 40px;
-      border-radius: 16px;
-      font-weight: 700;
-      font-size: 0.95rem;
-      display: flex;
+      height: 42px;
+      border-radius: 12px;
+      font-weight: 600;
+      display: inline-flex;
       align-items: center;
       justify-content: center;
       transition: all 0.2s;
+      font-size: var(--text-base, 0.85rem);
     }
-    .btn-premium-primary:hover {
-      background: #0f172a;
-      transform: translateY(-2px);
-      box-shadow: 0 10px 15px -3px rgba(22, 29, 53, 0.2);
+    .btn-system-action:hover {
+      background: var(--primary-hover, #1f2937);
+      transform: translateY(-1px);
     }
-    .shadow-premium {
-      box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.04);
-    }
-  `],
+  `]
+,
   standalone: true,
   imports: [CommonModule, FormsModule]
 })
 export class VendedorActionsComponent {
   @Input() searchQuery: string = '';
+  @Input() currentTab: string = 'ALL';
+  @Input() statusTabs: any[] = [];
+  
   @Output() searchQueryChange = new EventEmitter<string>();
+  @Output() onTabChange = new EventEmitter<string>();
   @Output() onCreate = new EventEmitter<void>();
+
+  getStatusLabel(): string {
+    const tab = this.statusTabs.find(t => t.id === this.currentTab);
+    return tab ? tab.label : 'Todos';
+  }
 }
