@@ -12,7 +12,7 @@ class SuperadminRepository:
         query = """
             SELECT u.id as user_id, u.email, u.estado, u.requiere_cambio_password,
                    u.ultimo_acceso, u.created_at,
-                   s.id as profile_id, s.nombres, s.apellidos, s.activo
+                   s.id as profile_id, s.nombres, s.apellidos, s.telefono, s.activo
             FROM sistema_facturacion.users u
             LEFT JOIN sistema_facturacion.superadmin s ON u.id = s.user_id
             WHERE u.id = %s

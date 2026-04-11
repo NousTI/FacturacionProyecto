@@ -9,7 +9,7 @@ CREATE TABLE IF NOT EXISTS sistema_facturacion.empresa_permisos (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
 
     -- Identificador único del permiso (uso técnico)
-    codigo TEXT NOT NULL UNIQUE,
+    codigo TEXT NOT NULL,
 
     -- Nombre legible para UI / administración
     nombre TEXT NOT NULL,

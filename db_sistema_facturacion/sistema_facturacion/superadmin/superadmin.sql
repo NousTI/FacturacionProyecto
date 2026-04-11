@@ -11,6 +11,7 @@ CREATE TABLE IF NOT EXISTS sistema_facturacion.superadmin (
 
     nombres TEXT NOT NULL,
     apellidos TEXT NOT NULL,
+    telefono TEXT,
 
     -- Estado del perfil (NO del login)
     activo BOOLEAN NOT NULL DEFAULT TRUE,

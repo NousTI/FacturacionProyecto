@@ -19,6 +19,7 @@ CREATE TABLE IF NOT EXISTS sistema_facturacion.users (
     estado TEXT NOT NULL DEFAULT 'ACTIVA'
         CHECK (estado IN ('ACTIVA', 'BLOQUEADA', 'DESHABILITADA')),
 
+    -- Control de cambio de contraseña
     requiere_cambio_password BOOLEAN NOT NULL DEFAULT FALSE,
 
     ultimo_acceso TIMESTAMPTZ,

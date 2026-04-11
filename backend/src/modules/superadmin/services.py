@@ -27,7 +27,7 @@ class SuperadminServices:
 
     def actualizar_perfil(self, user_id: UUID, datos: dict):
         # Filtrar solo campos permitidos para la tabla superadmin
-        campos_permitidos = {'nombres', 'apellidos', 'activo'}
+        campos_permitidos = {'nombres', 'apellidos', 'telefono', 'activo'}
         data_update = {k: v for k, v in datos.items() if k in campos_permitidos}
         
         if not data_update:

@@ -8,6 +8,7 @@
 CREATE TABLE IF NOT EXISTS sistema_facturacion.empresas (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
 
+    -- Relación con el vendedor
     vendedor_id UUID
         REFERENCES sistema_facturacion.vendedores(id)
         ON DELETE SET NULL,

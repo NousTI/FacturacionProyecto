@@ -14,6 +14,7 @@ CREATE TABLE IF NOT EXISTS sistema_facturacion.usuarios (
         REFERENCES sistema_facturacion.users(id)
         ON DELETE CASCADE,
 
+    -- Relación con la empresa
     empresa_id UUID NOT NULL
         REFERENCES sistema_facturacion.empresas(id)
         ON DELETE CASCADE,

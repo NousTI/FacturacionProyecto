@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { PerfilService } from './services/perfil.service';
 import { Observable, take } from 'rxjs';
 import { UiService } from '../../../shared/services/ui.service';
+import { SuperadminPerfil, SuperadminPerfilUpdate } from '../../../domain/models/superadmin-perfil.model';
 
 @Component({
   selector: 'app-perfil-page',
@@ -27,7 +28,7 @@ import { UiService } from '../../../shared/services/ui.service';
       <div class="row g-5">
         <!-- Columna Izquierda: Identidad y Estado -->
         <div class="col-lg-4">
-          <div class="identity-card p-4 text-center mb-4">
+          <div class="editorial-card px-4 py-5 text-center mb-4" style="max-width: none;">
             <div class="profile-avatar-large mx-auto mb-3">
               {{ (perfil$ | async)?.nombres?.charAt(0) }}{{ (perfil$ | async)?.apellidos?.charAt(0) }}
             </div>
@@ -52,16 +53,16 @@ import { UiService } from '../../../shared/services/ui.service';
           </div>
 
           <!-- Actividad -->
-          <div class="minimal-card p-4">
+          <div class="editorial-card p-4" style="max-width: none;">
             <div class="card-header-minimal mb-3 border-0 bg-transparent p-0">
               <i class="bi bi-clock-history me-2"></i> Actividad Reciente
             </div>
             <div class="info-row mb-3">
-              <label>Último Inicio de Sesión</label>
+              <label class="editorial-label">Último Inicio de Sesión</label>
               <div class="value-small">{{ (perfil$ | async)?.ultimo_acceso | date:'dd/MM/yyyy HH:mm' }}</div>
             </div>
             <div class="info-row mb-0">
-              <label>Miembro desde</label>
+              <label class="editorial-label">Miembro desde</label>
               <div class="value-small">{{ (perfil$ | async)?.created_at | date:'MMMM yyyy' }}</div>
             </div>
           </div>
@@ -69,7 +70,7 @@ import { UiService } from '../../../shared/services/ui.service';
 
         <!-- Columna Derecha: Detalles y Seguridad -->
         <div class="col-lg-8">
-          <div class="minimal-card mb-5">
+          <div class="editorial-card mb-5 p-0" style="max-width: none; overflow: hidden;">
             <div class="card-header-minimal px-4 d-flex justify-content-between align-items-center">
               <div><i class="bi bi-person-lines-fill me-2"></i> Datos Personales</div>
               <button *ngIf="!isEditing" class="btn btn-sm btn-outline-primary rounded-circle" 
@@ -86,20 +87,26 @@ import { UiService } from '../../../shared/services/ui.service';
                 <div class="row g-4">
                   <div class="col-md-6">
                     <div class="info-row">
-                      <label>Nombres Completos</label>
+                      <label class="editorial-label">Nombres Completos</label>
                       <div class="value">{{ (perfil$ | async)?.nombres }}</div>
                     </div>
                   </div>
                   <div class="col-md-6">
                     <div class="info-row">
-                      <label>Apellidos Completos</label>
+                      <label class="editorial-label">Apellidos Completos</label>
                       <div class="value">{{ (perfil$ | async)?.apellidos }}</div>
                     </div>
                   </div>
-                  <div class="col-12">
+                  <div class="col-md-6">
                     <div class="info-row">
-                      <label>Correo Electrónico de Acceso</label>
+                      <label class="editorial-label">Correo Electrónico de Acceso</label>
                       <div class="value text-corporate">{{ (perfil$ | async)?.email }}</div>
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <div class="info-row">
+                      <label class="editorial-label">Teléfono de Contacto</label>
+                      <div class="value">{{ (perfil$ | async)?.telefono || 'No registrado' }}</div>
                     </div>
                   </div>
                 </div>
@@ -111,28 +118,43 @@ import { UiService } from '../../../shared/services/ui.service';
                   <div class="row g-4">
                     <div class="col-md-6">
                       <div class="info-row">
-                        <label>Nombres Completos</label>
-                        <input type="text" class="form-control-minimal" [(ngModel)]="editData.nombres" name="nombres" required>
+                        <label class="editorial-label">Nombres Completos</label>
+                        <input type="text" class="editorial-input" [(ngModel)]="editData.nombres" name="nombres" required>
                       </div>
                     </div>
                     <div class="col-md-6">
                       <div class="info-row">
-                        <label>Apellidos Completos</label>
-                        <input type="text" class="form-control-minimal" [(ngModel)]="editData.apellidos" name="apellidos" required>
+                        <label class="editorial-label">Apellidos Completos</label>
+                        <input type="text" class="editorial-input" [(ngModel)]="editData.apellidos" name="apellidos" required>
                       </div>
                     </div>
-                    <div class="col-12">
+                    <div class="col-md-6">
                       <div class="info-row">
-                        <label>Correo Electrónico de Acceso</label>
+                        <label class="editorial-label">Teléfono de Contacto</label>
+                        <input type="text" 
+                               class="editorial-input" 
+                               [(ngModel)]="editData.telefono" 
+                               name="telefono"
+                               #telefonoInput="ngModel"
+                               pattern="^09[0-9]{8}$"
+                               maxlength="10">
+                        <div *ngIf="telefonoInput.invalid && (telefonoInput.dirty || telefonoInput.touched)" class="text-danger small mt-1 animate-fade-in">
+                          El teléfono debe empezar con 09 y tener 10 dígitos numéricos.
+                        </div>
+                      </div>
+                    </div>
+                    <div class="col-md-6">
+                      <div class="info-row">
+                        <label class="editorial-label">Correo Electrónico de Acceso</label>
                         <div class="value text-corporate">{{ (perfil$ | async)?.email }}</div>
-                        <small class="text-muted" style="font-size: 0.75rem;">El correo electrónico no se puede cambiar por seguridad.</small>
+                        <small class="text-muted" style="font-size: 0.75rem;">El correo electrónico no se puede cambiar.</small>
                       </div>
                     </div>
                   </div>
                   
                   <div class="d-flex justify-content-end gap-2 mt-4 pt-3 border-top">
                     <button type="button" class="btn btn-light rounded-3" (click)="cancelEdit()">Cancelar</button>
-                    <button type="submit" class="btn btn-primary rounded-3" [disabled]="!editForm.form.valid || isSaving">
+                    <button type="submit" class="btn-editorial" [disabled]="!editForm.form.valid || isSaving" style="padding: 0.5rem 2rem; border-radius: 12px;">
                       <span *ngIf="isSaving" class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
                       {{ isSaving ? 'Guardando...' : 'Guardar Cambios' }}
                     </button>
@@ -143,7 +165,7 @@ import { UiService } from '../../../shared/services/ui.service';
           </div>
 
           <!-- Seguridad / Password Section -->
-          <div class="minimal-card mt-4">
+          <div class="editorial-card mt-4 p-0" style="max-width: none; overflow: hidden;">
             <div class="card-header-minimal px-4 d-flex justify-content-between align-items-center">
                <div><i class="bi bi-shield-lock me-2"></i> Seguridad de la Cuenta</div>
                <button *ngIf="!isChangingPassword" class="btn btn-sm btn-link text-primary fw-bold text-decoration-none" (click)="startChangePassword()">
@@ -157,24 +179,25 @@ import { UiService } from '../../../shared/services/ui.service';
 
                 <div *ngIf="isChangingPassword">
                     <div class="info-row mb-3">
-                        <label>Ingresa tu nueva contraseña</label>
+                        <label class="editorial-label">Ingresa tu nueva contraseña</label>
                         <div class="input-group">
                             <input [type]="showPassword ? 'text' : 'password'" 
-                                   class="form-control-minimal" 
+                                   class="editorial-input" 
                                    [(ngModel)]="nuevaPassword" 
                                    placeholder="Mínimo 6 caracteres"
                                    style="border-top-right-radius: 0; border-bottom-right-radius: 0; flex: 1;">
                             <button class="btn btn-outline-secondary" type="button" 
                                     (click)="showPassword = !showPassword"
-                                    style="border: 1px solid #f1f5f9; border-left: 0; border-radius: 0 12px 12px 0; background: #f8fafc;">
+                                    style="border: 1px solid var(--border-color); border-left: 0; border-radius: 0 12px 12px 0; background: #f8fafc;">
                                 <i class="bi" [class.bi-eye]="!showPassword" [class.bi-eye-slash]="showPassword"></i>
                             </button>
                         </div>
                     </div>
                     <div class="d-flex gap-2">
-                        <button class="btn btn-primary rounded-3 btn-sm px-3" 
+                        <button class="btn-editorial btn-sm px-3" 
                                 [disabled]="nuevaPassword.length < 6 || isSaving"
-                                (click)="savePassword()">Confirmar</button>
+                                (click)="savePassword()"
+                                style="font-size: 0.75rem; border-radius: 8px; padding: 0.4rem 1.2rem;">Confirmar</button>
                         <button class="btn btn-light rounded-3 btn-sm px-3" (click)="cancelChangePassword()">Cancelar</button>
                     </div>
                 </div>
@@ -186,16 +209,12 @@ import { UiService } from '../../../shared/services/ui.service';
   `,
   styles: [`
     .perfil-container {
-    }
-    .identity-card {
-      background: white;
-      border: 1px solid #f1f5f9;
-      border-radius: 24px;
+      font-family: var(--font-main);
     }
     .profile-avatar-large {
       width: 100px;
       height: 100px;
-      background: #161d35;
+      background: var(--primary-color);
       color: white;
       border-radius: 30px;
       display: flex;
@@ -204,41 +223,29 @@ import { UiService } from '../../../shared/services/ui.service';
       font-size: 2.2rem;
       font-weight: 800;
     }
-    .minimal-card {
-      background: white;
-      border: 1px solid #f1f5f9;
-      border-radius: 24px;
-      overflow: hidden;
-    }
     .card-header-minimal {
       padding: 1.5rem;
-      border-bottom: 1px solid #f1f5f9;
+      border-bottom: 1px solid var(--border-color);
       font-weight: 800;
       font-size: 0.95rem;
-      color: #161d35;
+      color: var(--primary-color);
       background: #f8fafc;
     }
     .info-row label {
-      display: block;
-      font-size: 0.75rem;
-      font-weight: 800;
-      color: #94a3b8;
-      text-transform: uppercase;
-      margin-bottom: 0.35rem;
-      letter-spacing: 0.5px;
+      /* Ya manejado por .editorial-label */
     }
     .info-row .value {
       font-size: 1.1rem;
       font-weight: 700;
-      color: #161d35;
+      color: var(--primary-color);
     }
     .info-row .value-small {
       font-size: 0.9rem;
       font-weight: 600;
-      color: #475569;
+      color: var(--text-muted);
     }
     .badge-role {
-      background: #161d35;
+      background: var(--primary-color);
       color: white;
       padding: 0.25rem 0.75rem;
       border-radius: 100px;
@@ -250,44 +257,16 @@ import { UiService } from '../../../shared/services/ui.service';
       width: 10px;
       height: 10px;
       border-radius: 50%;
-      background: #ef4444;
+      background: var(--status-danger);
       margin-right: 0.5rem;
     }
     .status-indicator.active {
-      background: #10b981;
+      background: var(--status-success);
     }
-    .form-control-minimal {
-      width: 100%;
-      padding: 0.65rem 1rem;
-      border: 1px solid #f1f5f9;
-      border-radius: 12px;
-      font-size: 0.85rem;
-      font-weight: 500;
-      background: #f8fafc;
-      outline: none;
-      transition: all 0.2s;
-    }
-    .form-control-minimal:focus {
-      border-color: #161d35;
-      background: white;
-    }
-    .btn-minimal-action {
-      background: #161d35;
-      color: white;
-      border: none;
-      padding: 0.65rem 1rem;
-      border-radius: 12px;
-      font-size: 0.85rem;
-      font-weight: 700;
-      transition: all 0.2s;
-    }
-    .btn-minimal-action:hover {
-      background: #0f172a;
-    }
-
+    
     .alert-cambio-password {
       background: #fff9db;
-      border-left: 6px solid #fab005;
+      border-left: 6px solid var(--status-warning);
       padding: 1.25rem;
       border-radius: 18px;
     }
@@ -295,7 +274,7 @@ import { UiService } from '../../../shared/services/ui.service';
     .alert-icon {
       width: 44px; height: 44px;
       display: flex; align-items: center; justify-content: center;
-      background: #fab005; color: #fff;
+      background: var(--status-warning); color: #fff;
       border-radius: 12px; font-size: 1.1rem;
     }
 
@@ -309,7 +288,7 @@ import { UiService } from '../../../shared/services/ui.service';
   `]
 })
 export class PerfilPage implements OnInit {
-  perfil$: Observable<any>;
+  perfil$: Observable<SuperadminPerfil | null>;
   
   isEditing = false;
   isSaving = false;
@@ -317,9 +296,10 @@ export class PerfilPage implements OnInit {
   showPassword = false;
   nuevaPassword = '';
   
-  editData = {
+  editData: SuperadminPerfilUpdate = {
     nombres: '',
-    apellidos: ''
+    apellidos: '',
+    telefono: ''
   };
 
   constructor(
@@ -339,6 +319,7 @@ export class PerfilPage implements OnInit {
       if (perfil) {
         this.editData.nombres = perfil.nombres;
         this.editData.apellidos = perfil.apellidos;
+        this.editData.telefono = perfil.telefono || '';
         this.isEditing = true;
       }
     });
