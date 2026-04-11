@@ -14,6 +14,27 @@
   --text-main: #1a1a1a;
   --text-muted: #64748b;
   --border-color: #e2e8f0;
+
+  /* Semantic Status Colors */
+  --status-success: #10b981;
+  --status-success-bg: #166534;
+  --status-success-text: #ffffff;
+
+  --status-danger: #ef4444;
+  --status-danger-bg: #fef2f2;
+  --status-danger-text: #991b1b;
+
+  --status-warning: #f59e0b;
+  --status-warning-bg: #fffbeb;
+  --status-warning-text: #92400e;
+
+  --status-info: #3b82f6;
+  --status-info-bg: #eff6ff;
+  --status-info-text: #1e40af;
+
+  --status-neutral: #94a3b8;
+  --status-neutral-bg: #f8fafc;
+  --status-neutral-text: #475569;
 }
 
 body {

@@ -26,24 +26,58 @@ import { FormsModule } from '@angular/forms';
           <div class="col-lg-5">
             <div class="row g-2">
               <div class="col-md-4">
-                <select class="form-select-premium" [(ngModel)]="filters.estado" (change)="onFilterChange()">
-                  <option value="ALL">Todos los Estados</option>
-                  <option value="ACTIVO">Activos</option>
-                  <option value="INACTIVO">Inactivos</option>
-                </select>
+                <div class="dropdown">
+                  <button 
+                    class="form-select-premium dropdown-toggle d-flex align-items-center justify-content-between" 
+                    type="button" 
+                    data-bs-toggle="dropdown" 
+                    aria-expanded="false"
+                  >
+                    <span>{{ getEstadoLabel() }}</span>
+                  </button>
+                  <ul class="dropdown-menu border-0 shadow-sm dropdown-menu-premium">
+                    <li><a class="dropdown-item" (click)="setFilter('estado', 'ALL')">Todos los Estados</a></li>
+                    <li><a class="dropdown-item" (click)="setFilter('estado', 'ACTIVO')">Activos</a></li>
+                    <li><a class="dropdown-item" (click)="setFilter('estado', 'INACTIVO')">Inactivos</a></li>
+                  </ul>
+                </div>
               </div>
               <div class="col-md-4">
-                <select class="form-select-premium" [(ngModel)]="filters.plan" (change)="onFilterChange()">
-                  <option value="ALL">Todos los Planes</option>
-                  <option *ngFor="let plan of planes" [value]="plan.id">{{ plan.nombre }}</option>
-                </select>
+                <div class="dropdown">
+                  <button 
+                    class="form-select-premium dropdown-toggle d-flex align-items-center justify-content-between" 
+                    type="button" 
+                    data-bs-toggle="dropdown" 
+                    aria-expanded="false"
+                  >
+                    <span>{{ getPlanLabel() }}</span>
+                  </button>
+                  <ul class="dropdown-menu border-0 shadow-sm dropdown-menu-premium">
+                    <li><a class="dropdown-item" (click)="setFilter('plan', 'ALL')">Todos los Planes</a></li>
+                    <li *ngFor="let plan of planes">
+                      <a class="dropdown-item" (click)="setFilter('plan', plan.id)">{{ plan.nombre }}</a>
+                    </li>
+                  </ul>
+                </div>
               </div>
               <div class="col-md-4">
-                <select class="form-select-premium" [(ngModel)]="filters.vendedor" (change)="onFilterChange()">
-                  <option value="ALL">Cualquier Vendedor</option>
-                  <option *ngFor="let v of vendedores" [value]="v.id">{{ v.nombre }}</option>
-                  <option value="NONE">Sin Vendedor</option>
-                </select>
+                <div class="dropdown">
+                  <button 
+                    class="form-select-premium dropdown-toggle d-flex align-items-center justify-content-between" 
+                    type="button" 
+                    data-bs-toggle="dropdown" 
+                    aria-expanded="false"
+                  >
+                    <span>{{ getVendedorLabel() }}</span>
+                  </button>
+                  <ul class="dropdown-menu border-0 shadow-sm dropdown-menu-premium">
+                    <li><a class="dropdown-item" (click)="setFilter('vendedor', 'ALL')">Cualquier Vendedor</a></li>
+                    <li *ngFor="let v of vendedores">
+                      <a class="dropdown-item" (click)="setFilter('vendedor', v.id)">{{ v.nombre }}</a>
+                    </li>
+                    <li><a class="dropdown-item" (click)="setFilter('vendedor', 'NONE')">Sin Vendedor</a></li>
+                  </ul>
+                </div>
               </div>
             </div>
           </div>
@@ -105,10 +139,31 @@ import { FormsModule } from '@angular/forms';
       color: #475569;
       width: 100%;
       cursor: pointer;
+      text-align: left;
     }
     .form-select-premium:focus {
       border-color: #cbd5e1;
       outline: none;
+    }
+    /* Estilos dropdown personalizados */
+    .dropdown-menu-premium {
+      border-radius: 12px !important;
+      padding: 0.5rem !important;
+      min-width: 100%;
+      margin-top: 0.5rem !important;
+    }
+    .dropdown-item {
+      border-radius: 8px !important;
+      padding: 0.6rem 1rem !important;
+      color: #475569 !important;
+      font-size: 0.85rem !important;
+      font-weight: 500 !important;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .dropdown-item:hover {
+      background-color: var(--primary-color, #161d35) !important;
+      color: #ffffff !important;
     }
     .btn-system-action {
       background: #111827;
@@ -153,5 +208,32 @@ export class EmpresaActionsComponent {
 
   onFilterChange() {
     this.onFilterChangeEmit.emit(this.filters);
+  }
+
+  setFilter(key: string, value: any) {
+    (this.filters as any)[key] = value;
+    this.onFilterChange();
+  }
+
+  getEstadoLabel(): string {
+    const labels: any = {
+      'ALL': 'Todos los Estados',
+      'ACTIVO': 'Activos',
+      'INACTIVO': 'Inactivos'
+    };
+    return labels[this.filters.estado] || 'Estado';
+  }
+
+  getPlanLabel(): string {
+    if (this.filters.plan === 'ALL') return 'Todos los Planes';
+    const plan = this.planes.find(p => p.id == this.filters.plan);
+    return plan ? plan.nombre : 'Plan';
+  }
+
+  getVendedorLabel(): string {
+    if (this.filters.vendedor === 'ALL') return 'Cualquier Vendedor';
+    if (this.filters.vendedor === 'NONE') return 'Sin Vendedor';
+    const v = this.vendedores.find(vendor => vendor.id == this.filters.vendedor);
+    return v ? v.nombre : 'Vendedor';
   }
 }

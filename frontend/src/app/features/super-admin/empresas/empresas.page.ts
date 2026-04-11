@@ -218,13 +218,13 @@ export class EmpresasPage implements OnInit, OnDestroy {
         (e.email && e.email.toLowerCase().includes(this.searchQuery.toLowerCase()));
 
       const matchEstado = this.activeFilters.estado === 'ALL' || e.estado === this.activeFilters.estado;
-      const matchPlan = this.activeFilters.plan === 'ALL' || e.plan_id === this.activeFilters.plan || e.plan === this.activeFilters.plan;
+      const matchPlan = this.activeFilters.plan === 'ALL' || e.currentPlanId == this.activeFilters.plan;
 
       let matchVendedor = true;
       if (this.activeFilters.vendedor === 'NONE') {
         matchVendedor = !e.vendedor_id;
       } else if (this.activeFilters.vendedor !== 'ALL') {
-        matchVendedor = e.vendedor_id === this.activeFilters.vendedor;
+        matchVendedor = e.vendedor_id == this.activeFilters.vendedor;
       }
 
       return matchSearch && matchEstado && matchPlan && matchVendedor;

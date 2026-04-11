@@ -10,25 +10,26 @@ import { CommonModule } from '@angular/common';
           <table class="table mb-0 align-middle">
             <thead>
               <tr>
-                <th>Nombre <i class="bi bi-chevron-down ms-1" style="font-size: 0.7rem; color: #94a3b8;"></i></th>
-                <th style="width: 130px">Estado</th>
-                <th style="width: 180px">Plan Actual</th>
-                <th style="width: 140px">Código <i class="bi bi-chevron-down ms-1" style="font-size: 0.7rem; color: #94a3b8;"></i></th>
-                <th style="width: 160px">Usuarios <i class="bi bi-chevron-down ms-1" style="font-size: 0.7rem; color: #94a3b8;"></i></th>
-                <th style="width: 140px">Vencimiento</th>
+                <th style="width: 290px">Nombre</th>
+                <th style="width: 120px">Estado</th>
+                <th style="width: 160px">Plan Actual</th>
+                <th style="width: 140px">Vendedor</th>
+                <th style="width: 160px">Usuarios</th>
+                <th style="width: 130px">Inicio</th>
+                <th style="width: 130px">Vencimiento</th>
                 <th class="text-end" style="width: 80px">Acciones</th>
               </tr>
             </thead>
             <tbody>
               <tr *ngFor="let empresa of empresas">
                 <td>
-                  <div class="d-flex align-items-center">
-                    <div class="avatar-soft-premium me-3" [style.background]="getAvatarColor(empresa.razonSocial, 0.1)" [style.color]="getAvatarColor(empresa.razonSocial, 1)">
+                  <div class="d-flex align-items-center" style="max-width: 270px;">
+                    <div class="avatar-soft-premium me-2">
                       {{ getInitials(empresa.razonSocial) }}
                     </div>
-                    <div>
-                      <span class="fw-bold text-dark d-block mb-0">{{ empresa.razonSocial }}</span>
-                      <small class="text-muted font-mono" style="font-size: 0.7rem;">{{ empresa.ruc }}</small>
+                    <div class="text-truncate">
+                      <span class="fw-bold text-dark d-block mb-0 text-truncate" [title]="empresa.razonSocial">{{ empresa.razonSocial }}</span>
+                      <small class="text-muted font-mono" style="font-size: 0.65rem;">{{ empresa.ruc }}</small>
                     </div>
                   </div>
                 </td>
@@ -48,7 +49,6 @@ import { CommonModule } from '@angular/common';
                 </td>
                 <td>
                   <div class="d-flex align-items-center" *ngIf="empresa.vendedorName; else noVendedor">
-                    <div class="vendedor-dot me-2"></div>
                     <span class="text-dark fw-600" style="font-size: 0.8rem;">{{ empresa.vendedorName }}</span>
                   </div>
                   <ng-template #noVendedor>
@@ -177,10 +177,12 @@ import { CommonModule } from '@angular/common';
     }
     
     .avatar-soft-premium {
-      width: 32px; height: 32px;
-      border-radius: 50%;
+      width: 38px; height: 38px;
+      border-radius: 12px;
       display: flex; align-items: center; justify-content: center;
-      font-weight: 600; font-size: 0.75rem;
+      font-weight: 700; font-size: 0.85rem;
+      background: var(--primary-color, #161d35);
+      color: #ffffff;
     }
     
     .badge-status-premium {
@@ -191,15 +193,11 @@ import { CommonModule } from '@angular/common';
       display: inline-block;
       text-transform: capitalize;
     }
-    .badge-status-premium.activo { background: #f0fdf4; color: #166534; }
-    .badge-status-premium.inactivo { background: #fef2f2; color: #991b1b; }
-    .badge-status-premium.vencida { background: #fffbeb; color: #92400e; }
+    .badge-status-premium.activo { background: var(--status-success-bg); color: var(--status-success-text); }
+    .badge-status-premium.inactivo { background: var(--status-danger-bg); color: var(--status-danger-text); }
+    .badge-status-premium.vencida { background: var(--status-warning-bg); color: var(--status-warning-text); }
 
-    .vendedor-dot {
-      width: 6px; height: 6px;
-      border-radius: 50%;
-      background: #6366f1;
-    }
+
     
     .usage-container { width: 100%; max-width: 120px; }
     .progress-premium {
@@ -261,22 +259,6 @@ export class EmpresaTableComponent {
       .map(n => n[0])
       .join('')
       .toUpperCase();
-  }
-
-  getAvatarColor(name: string, opacity: number): string {
-    const colors = [
-      `rgba(99, 102, 241, ${opacity})`, // Indigo
-      `rgba(16, 185, 129, ${opacity})`, // Emerald
-      `rgba(245, 158, 11, ${opacity})`, // Amber
-      `rgba(239, 68, 68, ${opacity})`,  // Rose
-      `rgba(139, 92, 246, ${opacity})`, // Violet
-      `rgba(20, 184, 166, ${opacity})`  // Teal
-    ];
-    let hash = 0;
-    for (let i = 0; i < name.length; i++) {
-      hash = name.charCodeAt(i) + ((hash << 5) - hash);
-    }
-    return colors[Math.abs(hash) % colors.length];
   }
 
   getUsagePercent(current: number = 0, max: any = 0): number {
