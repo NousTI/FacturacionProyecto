@@ -95,29 +95,59 @@ import { Vendedor } from '../../services/vendedor.service';
     </section>
   `,
   styles: [`
-    .module-table { margin-top: 1rem; }
+    :host {
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      min-height: 0;
+      width: 100%;
+    }
+    .module-table { 
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+      margin-top: 0; 
+    }
     .table-container {
       background: var(--bg-main, #ffffff);
       border-radius: 12px;
-      border: 1px solid var(--border-color, #e2e8f0);
-      overflow: visible !important;
-      margin-bottom: 2rem;
+      border: 1px solid var(--border-color, #f1f5f9);
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+      height: auto;
+      max-height: 100%;
+      overflow: hidden;
+      margin-bottom: 0;
     }
-    .table-responsive-premium { overflow: visible !important; position: relative; }
-    
+    .table-responsive-premium { 
+      flex: 1;
+      overflow-y: auto; 
+      overflow-x: auto;
+      position: relative; 
+    }
+    .table {
+      border-collapse: separate;
+      border-spacing: 0;
+      width: 100%;
+    }
     .table thead th {
+      position: sticky;
+      top: 0;
+      z-index: 10;
       background: var(--bg-main, #ffffff);
       padding: 1rem 1.5rem;
       font-size: var(--text-base);
-      color: var(--text-main, #1a1a1a);
+      color: var(--text-main, #0f172a);
       font-weight: 600;
-      border-bottom: 1px solid var(--border-color, #e2e8f0);
+      border-bottom: 2px solid var(--border-color, #f1f5f9);
       vertical-align: middle;
     }
     
     .table tbody td {
       padding: 1.25rem 1.5rem;
-      border-bottom: 1px solid var(--border-color, #e2e8f0);
+      border-bottom: 1px solid var(--border-color, #f1f5f9);
       color: var(--text-muted, #64748b);
       font-size: var(--text-md);
     }
@@ -139,14 +169,8 @@ import { Vendedor } from '../../services/vendedor.service';
       display: inline-block;
       text-transform: uppercase;
     }
-    .badge-status-premium.activo { 
-      background: var(--status-success-bg, #dcfce7); 
-      color: var(--status-success-text, #ffffff); 
-    }
-    .badge-status-premium.inactivo { 
-      background: var(--status-danger-bg, #fee2e2); 
-      color: var(--status-danger-text, #ffffff); 
-    }
+    .badge-status-premium.activo { background: var(--status-success-bg, #dcfce7); color: var(--status-success-text, #15803d); }
+    .badge-status-premium.inactivo { background: var(--status-danger-bg, #fee2e2); color: var(--status-danger-text, #b91c1c); }
 
     .progress-mini-track {
         height: 6px; background: var(--border-color, #f1f5f9);
@@ -169,9 +193,10 @@ import { Vendedor } from '../../services/vendedor.service';
 
     .dropdown-menu {
       border: 1px solid var(--border-color, #e2e8f0) !important;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.03) !important;
+      box-shadow: none !important;
       border-radius: 12px !important;
       padding: 0.5rem !important;
+      z-index: 1050;
     }
     .dropdown-item {
       border-radius: 8px !important;

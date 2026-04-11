@@ -19,7 +19,6 @@ import { VendedorActionsComponent } from './components/vendedor-actions/vendedor
       <!-- 1. MÓDULO DE ESTADÍSTICAS -->
       <app-vendedor-stats 
         [stats]="stats"
-        class="d-block mb-4"
       ></app-vendedor-stats>
 
       <!-- 2. MÓDULO DE BÚSQUEDA Y ACCIONES -->
@@ -32,7 +31,7 @@ import { VendedorActionsComponent } from './components/vendedor-actions/vendedor
       ></app-vendedor-actions>
 
       <!-- 3. MÓDULO DE TABLA DE DATOS -->
-      <div class="table-container shadow-premium mt-4">
+      <div class="table-wrapper">
         <app-vendedor-table
           [vendedores]="filteringVendedores"
           (onAction)="handleAction($event)"
@@ -91,18 +90,29 @@ import { VendedorActionsComponent } from './components/vendedor-actions/vendedor
     </div>
   `,
     styles: [`
+    :host {
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      width: 100%;
+      overflow: hidden;
+      min-height: 0;
+    }
     .vendedores-page-container {
-      min-height: 100vh;
-      background: #ffffff;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
       padding: 0;
+      overflow: hidden;
+      min-height: 0;
     }
-    .table-container {
-        border-radius: 28px;
-        background: white;
-        position: relative;
-        z-index: 1;
+    .table-wrapper {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+      margin-top: 0;
     }
-    .shadow-premium { box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.04); }
   `],
     standalone: true,
     imports: [

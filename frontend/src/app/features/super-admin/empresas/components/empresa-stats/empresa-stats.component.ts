@@ -4,7 +4,7 @@ import { CommonModule } from '@angular/common';
 @Component({
   selector: 'app-empresa-stats',
   template: `
-    <div class="stats-compact-row mb-4">
+    <div class="stats-compact-row">
       <div class="stat-item-mini">
         <span class="stat-label">Total Empresas</span>
         <span class="stat-value">{{ total }}</span>
@@ -26,6 +26,10 @@ import { CommonModule } from '@angular/common';
     </div>
   `,
   styles: [`
+    :host {
+      display: block;
+      margin-bottom: 1.5rem;
+    }
     .stats-compact-row {
       background: #ffffff;
       border-radius: 16px;

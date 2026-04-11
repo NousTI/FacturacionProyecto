@@ -42,13 +42,7 @@ import { environment } from '../../../../environments/environment';
       ></app-clientes-actions>
 
       <!-- 3. MÓDULO DE TABLA DE DATOS -->
-      <div *ngIf="loading" class="text-center py-5">
-        <div class="spinner-border text-primary" role="status"></div>
-        <p class="mt-3 text-muted fw-bold">Cargando directorio...</p>
-      </div>
-
       <app-clientes-table
-        *ngIf="!loading"
         [usuarios]="filteredUsuarios"
         (onAction)="handleAction($event)"
       ></app-clientes-table>
@@ -99,10 +93,22 @@ import { environment } from '../../../../environments/environment';
     </div>
   `,
   styles: [`
+    :host {
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      width: 100%;
+      overflow: hidden;
+      min-height: 0;
+    }
     .clientes-page-container {
-      min-height: 100vh;
-      background: #ffffff;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      background: var(--bg-main, #ffffff);
       padding: 0;
+      overflow: hidden;
+      min-height: 0;
     }
 
     /* Confirmation Modal */

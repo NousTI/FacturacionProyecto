@@ -149,30 +149,61 @@ import { CommonModule } from '@angular/common';
     </section>
   `,
   styles: [`
-    .module-table { margin-top: 1rem; }
-    .table-container {
-      background: #ffffff;
-      border-radius: 12px;
-      border: 1px solid #f1f5f9;
-      overflow: visible !important;
-      margin-bottom: 2rem;
+    :host {
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      min-height: 0;
+      width: 100%;
     }
-    .table-responsive-premium { overflow: visible !important; position: relative; }
+    .module-table { 
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+      margin-top: 0; 
+    }
+    .table-container {
+      background: var(--bg-main, #ffffff);
+      border-radius: 12px;
+      border: 1px solid var(--border-color, #f1f5f9);
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+      height: auto;
+      max-height: 100%;
+      overflow: hidden;
+      margin-bottom: 0;
+    }
+    .table-responsive-premium { 
+      flex: 1;
+      overflow-y: auto; 
+      overflow-x: auto;
+      position: relative; 
+    }
+    .table {
+      border-collapse: separate;
+      border-spacing: 0;
+      width: 100%;
+    }
     .table thead th {
-      background: #ffffff;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      background: var(--bg-main, #ffffff);
       padding: 1rem 1.5rem;
       font-size: var(--text-base);
       text-transform: capitalize;
       letter-spacing: 0;
       color: #0f172a;
       font-weight: 600;
-      border-bottom: 1px solid #f1f5f9;
+      border-bottom: 2px solid var(--border-color, #f1f5f9);
       vertical-align: middle;
     }
     .table tbody td {
       padding: 1.25rem 1.5rem;
-      border-bottom: 1px solid #f1f5f9;
-      color: #475569;
+      border-bottom: 1px solid var(--border-color, #f1f5f9);
+      color: var(--text-muted, #475569);
       font-size: var(--text-md);
     }
     
@@ -224,7 +255,7 @@ import { CommonModule } from '@angular/common';
     }
     
     .dropdown-menu {
-      border: 1px solid #e2e8f0 !important;
+      border: 1px solid var(--border-color, #e2e8f0) !important;
       box-shadow: none !important;
       border-radius: 12px !important;
       padding: 0.5rem !important;
@@ -233,15 +264,16 @@ import { CommonModule } from '@angular/common';
       border-radius: 8px !important;
       font-size: var(--text-base);
       font-weight: 500;
-      color: #475569; padding: 0.5rem 1rem;
+      color: var(--text-muted, #475569); padding: 0.5rem 1rem;
       display: flex; align-items: center;
+      cursor: pointer;
     }
     .dropdown-item:hover { background: #f8fafc; color: #0f172a; }
     .dropdown-item i { font-size: 1.1rem; margin-right: 0.75rem; }
     
     .fw-800 { font-weight: 800; }
     .fw-600 { font-weight: 600; }
-    .text-corporate { color: #111827 !important; }
+    .text-corporate { color: var(--primary-color, #111827) !important; }
     .font-mono { font-family: 'DM Mono', monospace; font-size: 0.8rem; color: #94a3b8; }
   `],
   standalone: true,

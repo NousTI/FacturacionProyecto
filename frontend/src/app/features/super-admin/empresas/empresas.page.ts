@@ -96,10 +96,22 @@ import { Subject, takeUntil, finalize } from 'rxjs';
     </div>
   `,
   styles: [`
+    :host {
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      width: 100%;
+      overflow: hidden;
+      min-height: 0;
+    }
     .empresas-page-container {
-      min-height: 100vh;
-      background: #ffffff;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      background: var(--bg-main, #ffffff);
       padding: 0;
+      overflow: hidden;
+      min-height: 0;
     }
   `],
   standalone: true,

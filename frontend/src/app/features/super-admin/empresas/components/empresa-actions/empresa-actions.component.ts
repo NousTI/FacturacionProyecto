@@ -5,7 +5,7 @@ import { FormsModule } from '@angular/forms';
 @Component({
   selector: 'app-empresa-actions',
   template: `
-    <section class="module-actions mb-4">
+    <section class="module-actions">
       <div class="actions-bar-container">
         <div class="row align-items-center g-3">
           <!-- Búsqueda Principal -->
@@ -97,6 +97,10 @@ import { FormsModule } from '@angular/forms';
     </section>
   `,
   styles: [`
+    :host {
+      display: block;
+      margin-bottom: 1.5rem;
+    }
     .actions-bar-container {
       background: transparent;
       border: none;

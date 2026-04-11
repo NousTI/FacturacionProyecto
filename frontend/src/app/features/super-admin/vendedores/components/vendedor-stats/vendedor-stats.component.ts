@@ -5,7 +5,7 @@ import { VendedorStats } from '../../services/vendedor.service';
 @Component({
   selector: 'app-vendedor-stats',
   template: `
-    <div class="stats-compact-row mb-4">
+    <div class="stats-compact-row">
       <div class="stat-item-mini">
         <span class="stat-label">Total Vendedores</span>
         <span class="stat-value">{{ stats.total }}</span>
@@ -34,6 +34,10 @@ import { VendedorStats } from '../../services/vendedor.service';
     </div>
   `,
   styles: [`
+    :host {
+      display: block;
+      margin-bottom: 1.5rem;
+    }
     .stats-compact-row {
       background: var(--bg-main, #ffffff);
       border-radius: 16px;
