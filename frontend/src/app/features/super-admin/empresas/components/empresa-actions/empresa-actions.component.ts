@@ -6,7 +6,7 @@ import { FormsModule } from '@angular/forms';
   selector: 'app-empresa-actions',
   template: `
     <section class="module-actions mb-4">
-      <div class="actions-bar-container py-2 px-4 rounded-4">
+      <div class="actions-bar-container">
         <div class="row align-items-center g-3">
           <!-- Búsqueda Principal -->
           <div class="col-lg-5">
@@ -64,8 +64,8 @@ import { FormsModule } from '@angular/forms';
   `,
   styles: [`
     .actions-bar-container {
-      background: #ffffff;
-      border: 1px solid rgba(0, 0, 0, 0.05);
+      background: transparent;
+      border: none;
     }
     .search-box-premium {
       position: relative;
@@ -73,55 +73,51 @@ import { FormsModule } from '@angular/forms';
     }
     .search-box-premium i {
       position: absolute;
-      left: 1.25rem;
+      left: 1rem;
       top: 50%;
       transform: translateY(-50%);
       color: #94a3b8;
-      font-size: 1.1rem;
+      font-size: 1rem;
     }
     .form-control-premium-search {
-      background: #f8fafc;
-      border: 1.5px solid rgba(0, 0, 0, 0.05);
-      border-radius: 14px;
-      padding: 0 1.25rem 0 3.25rem;
-      height: 40px;
-      font-size: 0.9rem;
-      font-weight: 500;
-      color: #161d35;
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 0 1rem 0 2.75rem;
+      height: 42px;
+      font-size: 0.95rem;
+      color: #0f172a;
       transition: all 0.2s;
       width: 100%;
     }
     .form-control-premium-search:focus {
-      background: #ffffff;
-      border-color: #161d35;
-      box-shadow: 0 0 0 4px rgba(22, 29, 53, 0.05);
+      border-color: #cbd5e1;
       outline: none;
+      box-shadow: none;
     }
     .form-select-premium {
-      background: #f8fafc;
-      border: 1.5px solid rgba(0, 0, 0, 0.05);
-      border-radius: 14px;
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
       padding: 0 1rem;
-      height: 40px;
-      font-size: 0.85rem;
-      font-weight: 600;
+      height: 42px;
+      font-size: 0.9rem;
       color: #475569;
       width: 100%;
       cursor: pointer;
-      transition: all 0.2s;
     }
     .form-select-premium:focus {
-      border-color: #161d35;
+      border-color: #cbd5e1;
       outline: none;
     }
     .btn-system-action {
-      background: #161d35;
+      background: #111827;
       color: #ffffff;
-      border: 1.5px solid transparent;
+      border: none;
       padding: 0 1.5rem;
-      height: 40px;
-      border-radius: 14px;
-      font-weight: 700;
+      height: 42px;
+      border-radius: 12px;
+      font-weight: 600;
       display: inline-flex;
       align-items: center;
       justify-content: center;
@@ -129,9 +125,8 @@ import { FormsModule } from '@angular/forms';
       font-size: 0.9rem;
     }
     .btn-system-action:hover {
-      background: #232d4d;
+      background: #1f2937;
       transform: translateY(-1px);
-      box-shadow: 0 10px 15px -3px rgba(22, 29, 53, 0.2);
     }
   `],
   standalone: true,

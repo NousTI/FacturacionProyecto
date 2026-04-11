@@ -98,7 +98,8 @@ import { Subject, takeUntil, finalize } from 'rxjs';
   styles: [`
     .empresas-page-container {
       min-height: 100vh;
-      background: #f8fafc;
+      background: #ffffff;
+      padding: 0;
     }
   `],
   standalone: true,
@@ -350,4 +351,3 @@ export class EmpresasPage implements OnInit, OnDestroy {
     }
   }
 }
-

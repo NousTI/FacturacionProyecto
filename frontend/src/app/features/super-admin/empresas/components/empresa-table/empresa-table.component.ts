@@ -5,17 +5,16 @@ import { CommonModule } from '@angular/common';
   selector: 'app-empresa-table',
   template: `
     <section class="module-table">
-      <div class="table-container border-0">
+      <div class="table-container">
         <div class="table-responsive-premium">
           <table class="table mb-0 align-middle">
             <thead>
               <tr>
-                <th>Empresa</th>
+                <th>Nombre <i class="bi bi-chevron-down ms-1" style="font-size: 0.7rem; color: #94a3b8;"></i></th>
                 <th style="width: 130px">Estado</th>
                 <th style="width: 180px">Plan Actual</th>
-                <th style="width: 140px">Vendedor</th>
-                <th style="width: 160px">Uso de Recursos</th>
-                <th style="width: 140px">Inicio</th>
+                <th style="width: 140px">Código <i class="bi bi-chevron-down ms-1" style="font-size: 0.7rem; color: #94a3b8;"></i></th>
+                <th style="width: 160px">Usuarios <i class="bi bi-chevron-down ms-1" style="font-size: 0.7rem; color: #94a3b8;"></i></th>
                 <th style="width: 140px">Vencimiento</th>
                 <th class="text-end" style="width: 80px">Acciones</th>
               </tr>
@@ -153,94 +152,99 @@ import { CommonModule } from '@angular/common';
     .module-table { margin-top: 1rem; }
     .table-container {
       background: #ffffff;
-      border-radius: 24px;
+      border-radius: 12px;
       border: 1px solid #f1f5f9;
       overflow: visible !important;
+      margin-bottom: 2rem;
     }
-    .table-responsive-premium { overflow: overflow: visible !important; position: relative; }
+    .table-responsive-premium { overflow: visible !important; position: relative; }
     .table thead th {
-      background: #f8fafc;
-      padding: 1.15rem 1.5rem;
-      font-size: 0.7rem;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      color: #94a3b8;
-      font-weight: 800;
-      border-bottom: 2px solid #f1f5f9;
+      background: #ffffff;
+      padding: 1rem 1.5rem;
+      font-size: 0.85rem;
+      text-transform: capitalize;
+      letter-spacing: 0;
+      color: #0f172a;
+      font-weight: 600;
+      border-bottom: 1px solid #f1f5f9;
+      vertical-align: middle;
     }
     .table tbody td {
       padding: 1.25rem 1.5rem;
-      border-bottom: 1px solid #f8fafc;
+      border-bottom: 1px solid #f1f5f9;
+      color: #475569;
+      font-size: 0.95rem;
     }
     
     .avatar-soft-premium {
-      width: 40px; height: 40px;
-      border-radius: 12px;
+      width: 32px; height: 32px;
+      border-radius: 50%;
       display: flex; align-items: center; justify-content: center;
-      font-weight: 800; font-size: 0.85rem;
+      font-weight: 600; font-size: 0.75rem;
     }
     
     .badge-status-premium {
-      padding: 0.4rem 0.85rem; border-radius: 100px;
-      font-size: 0.7rem; font-weight: 800;
-      text-transform: uppercase;
+      padding: 0.25rem 0.75rem;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      display: inline-block;
+      text-transform: capitalize;
     }
-    .badge-status-premium.activo { background: #dcfce7; color: #15803d; }
-    .badge-status-premium.inactivo { background: #fee2e2; color: #b91c1c; }
-    .badge-status-premium.vencida { background: #fef9c3; color: #a16207; }
+    .badge-status-premium.activo { background: #f0fdf4; color: #166534; }
+    .badge-status-premium.inactivo { background: #fef2f2; color: #991b1b; }
+    .badge-status-premium.vencida { background: #fffbeb; color: #92400e; }
 
     .vendedor-dot {
-      width: 8px; height: 8px;
+      width: 6px; height: 6px;
       border-radius: 50%;
       background: #6366f1;
     }
     
     .usage-container { width: 100%; max-width: 120px; }
     .progress-premium {
-      height: 6px;
+      height: 4px;
       background: #f1f5f9;
       border-radius: 10px;
       overflow: hidden;
     }
     .progress-bar-premium {
       height: 100%;
-      background: #161d35;
+      background: #111827;
       border-radius: 10px;
       transition: width 0.3s ease;
     }
     
     .btn-action-trigger {
-      background: #f8fafc; border: none;
+      background: transparent; border: none;
       width: 32px; height: 32px;
       border-radius: 8px; color: #94a3b8;
       transition: all 0.2s;
     }
     .btn-action-trigger:hover, .btn-action-trigger[aria-expanded="true"] {
-      background: #161d35; color: #ffffff;
+      background: #f8fafc; color: #0f172a;
     }
     
     .dropdown-menu {
-      z-index: 100000 !important;
-      min-width: 220px;
       border: 1px solid #e2e8f0 !important;
-      box-shadow: 0 15px 35px rgba(22, 29, 53, 0.25) !important;
-      padding: 0.75rem !important;
-      position: fixed !important;
+      box-shadow: none !important;
+      border-radius: 12px !important;
+      padding: 0.5rem !important;
     }
     .dropdown-item {
-      font-size: 0.85rem; font-weight: 600;
-      color: #475569; padding: 0.65rem 1rem;
+      border-radius: 8px !important;
+      font-size: 0.9rem;
+      font-weight: 500;
+      color: #475569; padding: 0.5rem 1rem;
       display: flex; align-items: center;
-      border-radius: 10px !important;
     }
-    .dropdown-item:hover { background: #f8fafc; color: #161d35; }
-    .dropdown-item i { font-size: 1.1rem; }
+    .dropdown-item:hover { background: #f8fafc; color: #0f172a; }
+    .dropdown-item i { font-size: 1.1rem; margin-right: 0.75rem; }
     
     .fw-800 { font-weight: 800; }
     .fw-600 { font-weight: 600; }
-    .text-corporate { color: #161d35 !important; }
-    .font-mono { font-family: 'DM Mono', monospace; }
-    .shadow-premium { box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.04); }
+    .text-corporate { color: #111827 !important; }
+    .font-mono { font-family: 'DM Mono', monospace; font-size: 0.8rem; color: #94a3b8; }
   `],
   standalone: true,
   imports: [CommonModule]
