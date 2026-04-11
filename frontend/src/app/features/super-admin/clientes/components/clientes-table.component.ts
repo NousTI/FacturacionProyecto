@@ -7,228 +7,195 @@ import { ClienteUsuario } from '../services/clientes.service';
   standalone: true,
   imports: [CommonModule],
   template: `
-    <div class="table-surface shadow-premium">
-      <div class="table-responsive-premium">
-        <table class="table mb-0 align-middle">
-          <thead>
-            <tr>
-              <th>Cliente</th>
-              <th>Email / Teléfono</th>
-              <th>Empresa</th>
-              <th class="text-center">Origen</th>
-              <th>Rol</th>
-              <th class="text-center">Estado</th>
-              <th class="text-end" style="width: 80px">Acciones</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let cliente of usuarios">
-              <td>
-                <div class="d-flex align-items-center">
-                  <div class="cliente-avatar me-3">
-                    {{ cliente.nombres[0] }}{{ cliente.apellidos[0] }}
+    <section class="module-table">
+      <div class="table-container shadow-premium">
+        <div class="table-responsive-premium">
+          <table class="table mb-0 align-middle">
+            <thead>
+              <tr>
+                <th style="width: 250px">Cliente</th>
+                <th style="width: 200px">Contacto</th>
+                <th style="width: 180px">Empresa</th>
+                <th class="text-center" style="width: 130px">Origen</th>
+                <th style="width: 150px">Rol</th>
+                <th class="text-center" style="width: 120px">Estado</th>
+                <th class="text-end" style="width: 80px">Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let cliente of usuarios">
+                <td>
+                  <div class="d-flex align-items-center" style="max-width: 230px;">
+                    <div class="avatar-soft-premium me-2">
+                      {{ getInitials(cliente.nombres, cliente.apellidos) }}
+                    </div>
+                    <div class="text-truncate">
+                      <span class="fw-bold text-dark d-block mb-0 text-truncate" [title]="cliente.nombres + ' ' + cliente.apellidos">{{ cliente.nombres }} {{ cliente.apellidos }}</span>
+                    </div>
                   </div>
+                </td>
+                <td>
                   <div class="d-flex flex-column">
-                    <span class="cliente-name">{{ cliente.nombres }} {{ cliente.apellidos }}</span>
-                    <small class="text-muted" style="font-size: 0.7rem;">ID: {{ cliente.id.slice(0,8) }}</small>
+                    <span class="text-dark fw-600" style="font-size: 0.85rem;">{{ cliente.email }}</span>
+                    <small class="text-muted" style="font-size: 0.7rem;">{{ cliente.telefono }}</small>
                   </div>
-                </div>
-              </td>
-              <td>
-                <div class="fw-semibold">{{ cliente.email }}</div>
-                <small class="text-muted">{{ cliente.telefono }}</small>
-              </td>
-              <td>
-                <span class="badge bg-light text-dark border">{{ cliente.empresa_nombre }}</span>
-              </td>
-              <td class="text-center">
-                <div [ngClass]="getOrigenClass(cliente.origen_creacion)" class="badge-origen">
-                    <i class="bi" [ngClass]="getOrigenIcon(cliente.origen_creacion)"></i>
-                    {{ (cliente.origen_creacion || 'sistema') | uppercase }}
-                </div>
-              </td>
-              <td>
-                <span class="text-muted">{{ cliente.rol_nombre }}</span>
-              </td>
-              <td class="text-center">
-                <span class="status-badge" [class.active]="cliente.activo" [class.inactive]="!cliente.activo">
-                  {{ cliente.activo ? 'ACTIVO' : 'INACTIVO' }}
-                </span>
-              </td>
-              <td class="text-end">
-                <div class="dropdown">
-                  <button class="btn-action-trigger" data-bs-toggle="dropdown" aria-expanded="false">
-                    <i class="bi bi-three-dots"></i>
-                  </button>
-                  <ul class="dropdown-menu dropdown-menu-end shadow-premium-lg border-0 p-2 rounded-4">
-                    <li>
-                      <a class="dropdown-item rounded-3 py-2" (click)="onAction.emit({type: 'view', cliente: cliente})">
-                        <i class="bi bi-eye text-primary me-2"></i> Ver Detalles
-                      </a>
-                    </li>
-                    <li>
-                      <a class="dropdown-item rounded-3 py-2" (click)="onAction.emit({type: 'reassign', cliente: cliente})">
-                        <i class="bi bi-arrow-repeat text-secondary me-2"></i> Reasignar Empresa
-                      </a>
-                    </li>
-                    <li><hr class="dropdown-divider mx-2"></li>
-                    <li>
-                      <a class="dropdown-item rounded-3 py-2" [class.text-danger]="cliente.activo" (click)="onAction.emit({type: 'toggle', cliente: cliente})">
-                        <i class="bi me-2" [class]="cliente.activo ? 'bi-toggle-off text-danger' : 'bi-toggle-on text-success'"></i>
-                        {{ cliente.activo ? 'Desactivar' : 'Activar' }}
-                      </a>
-                    </li>
-                    <li>
-                      <a class="dropdown-item rounded-3 py-2 text-danger" (click)="onAction.emit({type: 'delete', cliente: cliente})">
-                        <i class="bi bi-trash text-danger me-2"></i> Eliminar
-                      </a>
-                    </li>
-                  </ul>
-                </div>
-              </td>
-            </tr>
-            <tr *ngIf="usuarios.length === 0">
-              <td colspan="6" class="text-center py-5 text-muted">
-                No se encontraron clientes registrados.
-              </td>
-            </tr>
-          </tbody>
-        </table>
+                </td>
+                <td>
+                  <span class="text-dark fw-600" style="font-size: 0.85rem;">{{ cliente.empresa_nombre }}</span>
+                </td>
+                <td class="text-center">
+                  <span class="text-muted fw-700" style="font-size: 0.7rem;">{{ (cliente.origen_creacion || 'sistema') | uppercase }}</span>
+                </td>
+                <td>
+                  <span class="text-muted fw-600" style="font-size: 0.85rem;">{{ cliente.rol_nombre }}</span>
+                </td>
+                <td class="text-center">
+                  <span class="badge-status-premium" [ngClass]="cliente.activo ? 'activo' : 'inactivo'">
+                    {{ cliente.activo ? 'ACTIVO' : 'INACTIVO' }}
+                  </span>
+                </td>
+                <td class="text-end">
+                  <div class="dropdown">
+                    <button 
+                      class="btn-action-trigger" 
+                      type="button" 
+                      [id]="'actions-' + cliente.id" 
+                      data-bs-toggle="dropdown" 
+                      aria-expanded="false"
+                    >
+                      <i class="bi bi-three-dots"></i>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end border-0 p-2 rounded-4" [attr.aria-labelledby]="'actions-' + cliente.id">
+                      <li>
+                        <a class="dropdown-item rounded-3 py-2" href="javascript:void(0)" (click)="onAction.emit({type: 'view', cliente})">
+                          <i class="bi bi-eye text-corporate"></i>
+                          <span class="ms-2">Ver Detalles</span>
+                        </a>
+                      </li>
+                      <li>
+                        <a class="dropdown-item rounded-3 py-2" href="javascript:void(0)" (click)="onAction.emit({type: 'reassign', cliente})">
+                          <i class="bi bi-arrow-repeat text-corporate"></i>
+                          <span class="ms-2">Reasignar Empresa</span>
+                        </a>
+                      </li>
+                      <li><hr class="dropdown-divider mx-2"></li>
+                      <li>
+                        <a class="dropdown-item rounded-3 py-2" href="javascript:void(0)" (click)="onAction.emit({type: 'toggle', cliente})">
+                          <i class="bi" [ngClass]="cliente.activo ? 'bi-toggle-off text-muted' : 'bi-toggle-on text-corporate'"></i>
+                          <span class="ms-2">{{ cliente.activo ? 'Desactivar Cliente' : 'Activar Cliente' }}</span>
+                        </a>
+                      </li>
+                      <li>
+                        <a class="dropdown-item rounded-3 py-2 text-danger" href="javascript:void(0)" (click)="onAction.emit({type: 'delete', cliente})">
+                          <i class="bi bi-trash"></i>
+                          <span class="ms-2">Eliminar Cliente</span>
+                        </a>
+                      </li>
+                    </ul>
+                  </div>
+                </td>
+              </tr>
+              <tr *ngIf="usuarios.length === 0">
+                <td colspan="7" class="text-center p-5 text-muted">
+                  <i class="bi bi-inbox fs-1 d-block mb-3"></i>
+                  No se encontraron clientes registrados.
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </div>
-    </div>
+    </section>
   `,
   styles: [`
-    .table-surface {
+    .module-table { margin-top: 1rem; }
+    .table-container {
       background: #ffffff;
-      border-radius: 24px;
-      overflow: visible !important;
+      border-radius: 12px;
       border: 1px solid #f1f5f9;
-      position: relative;
-      z-index: 5;
+      overflow: visible !important;
+      margin-bottom: 2rem;
     }
-    .table-responsive-premium { 
-      overflow: visible !important; 
-    }
-    .table {
-      border-collapse: separate;
-    }
-    .table tbody tr {
-      position: relative;
-      transition: z-index 0.2s;
-    }
-    .table tbody tr:focus-within,
-    .table tbody tr:hover {
-      z-index: 100;
-    }
-    .table tbody tr:has(.show),
-    .table tbody tr:has(.btn-action-trigger[aria-expanded="true"]) {
-      z-index: 10001 !important;
-    }
-
+    .table-responsive-premium { overflow: visible !important; position: relative; }
     .table thead th {
-      background: #f8fafc;
-      padding: 1.25rem 1.5rem;
-      font-size: 0.7rem;
-      font-weight: 800;
-      color: #94a3b8;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      border-bottom: 2px solid #f1f5f9;
-      position: sticky;
-      top: 0;
-      z-index: 10;
+      background: #ffffff;
+      padding: 1rem 1.5rem;
+      font-size: var(--text-base);
+      color: #0f172a;
+      font-weight: 600;
+      border-bottom: 1px solid #f1f5f9;
+      vertical-align: middle;
     }
     .table tbody td {
       padding: 1.25rem 1.5rem;
-      border-bottom: 1px solid #f8fafc;
-      background: transparent;
+      border-bottom: 1px solid #f1f5f9;
+      color: #475569;
+      font-size: var(--text-md);
     }
     
-    .cliente-avatar {
-      width: 42px; height: 42px;
-      background: #161d35; color: white;
-      border-radius: 12px; display: flex;
-      align-items: center; justify-content: center;
-      font-weight: 800; font-size: 0.85rem;
-    }
-    .cliente-name { 
-      font-weight: 700; 
-      color: #1e293b; 
-      font-size: 0.95rem; 
+    .avatar-soft-premium {
+      width: 38px; height: 38px;
+      border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 700; font-size: var(--text-base);
+      background: #161d35;
+      color: #ffffff;
     }
     
-    /* Origin Badge */
-    .badge-origen {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.4rem;
-        padding: 0.15rem 0.5rem;
-        border-radius: 6px;
-        font-size: 0.55rem;
-        font-weight: 800;
-        text-transform: uppercase;
+    .badge-status-premium {
+      padding: 0.25rem 0.75rem;
+      border-radius: 6px;
+      font-size: var(--text-sm);
+      font-weight: 600;
+      display: inline-block;
+      text-transform: capitalize;
     }
-    .badge-origen.superadmin { background: #eff6ff; color: #1e40af; border: 1px solid #bfdbfe; }
-    .badge-origen.vendedor { background: #fff7ed; color: #9a3412; border: 1px solid #fed7aa; }
-    .badge-origen.sistema { background: #f1f5f9; color: #475569; border: 1px solid #e2e8f0; }
-
-    .status-badge {
-      padding: 0.4rem 0.85rem; 
-      border-radius: 100px;
-      font-size: 0.7rem; 
-      font-weight: 800;
-    }
-    .status-badge.active { 
-      background: #dcfce7; 
-      color: #15803d; 
-    }
-    .status-badge.inactive { 
-      background: #fee2e2; 
-      color: #b91c1c; 
-    }
+    .badge-status-premium.activo { background: var(--status-success-bg, #dcfce7); color: var(--status-success-text, #15803d); }
+    .badge-status-premium.inactivo { background: var(--status-danger-bg, #fee2e2); color: var(--status-danger-text, #b91c1c); }
 
     .btn-action-trigger {
-      background: #f8fafc; 
-      border: none;
-      width: 32px; 
-      height: 32px;
-      border-radius: 8px; 
-      color: #94a3b8;
+      background: transparent; border: none;
+      width: 32px; height: 32px;
+      border-radius: 8px; color: #94a3b8;
       transition: all 0.2s;
     }
-    .btn-action-trigger:hover { 
-      background: #161d35; 
-      color: white; 
+    .btn-action-trigger:hover, .btn-action-trigger[aria-expanded="true"] {
+      background: #f8fafc; color: #0f172a;
     }
-
+    
     .dropdown-menu {
-      min-width: 200px;
       border: 1px solid #e2e8f0 !important;
-      z-index: 10005 !important;
-      margin-top: 5px !important;
-      box-shadow: 0 15px 35px rgba(22, 29, 53, 0.15) !important;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.05) !important;
+      border-radius: 12px !important;
+      padding: 0.5rem !important;
+      z-index: 1050 !important;
     }
     .dropdown-item {
-      font-size: 0.85rem; 
-      font-weight: 600;
-      color: #475569; 
+      border-radius: 8px !important;
+      font-size: var(--text-base);
+      font-weight: 500;
+      color: #475569; padding: 0.5rem 1rem;
+      display: flex; align-items: center;
       cursor: pointer;
     }
-    .dropdown-item:hover { 
-      background: #f8fafc; 
-      color: #161d35; 
-    }
-    .shadow-premium { 
-      box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.04); 
-    }
-    .shadow-premium-lg { 
-      box-shadow: 0 20px 40px -15px rgba(0, 10, 30, 0.15); 
-    }
+    .dropdown-item:hover { background: #f8fafc; color: #0f172a; }
+    .dropdown-item i { font-size: 1.1rem; margin-right: 0.75rem; }
+    
+    .fw-600 { font-weight: 600; }
+    .fw-700 { font-weight: 700; }
+    .text-corporate { color: #111827 !important; }
+    .font-mono { font-family: 'DM Mono', monospace; }
   `]
 })
 export class ClientesTableComponent {
   @Input() usuarios: ClienteUsuario[] = [];
   @Output() onAction = new EventEmitter<{ type: string, cliente: ClienteUsuario }>();
+
+  getInitials(nombres: string, apellidos: string): string {
+    const n = nombres?.[0] || '';
+    const a = apellidos?.[0] || '';
+    return (n + a).toUpperCase() || '??';
+  }
 
   getOrigenClass(origen?: string): string {
     if (!origen) return 'sistema';

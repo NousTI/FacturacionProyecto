@@ -15,77 +15,79 @@ interface Rol {
     imports: [CommonModule, FormsModule],
     template: `
     <div class="modal-overlay" (click)="onClose.emit()">
-      <div class="modal-container" (click)="$event.stopPropagation()">
-        <!-- HEADER -->
-        <div class="modal-header-premium">
+      <div class="modal-card" (click)="$event.stopPropagation()">
+        <!-- Header -->
+        <div class="modal-header">
           <div>
-            <h3 class="modal-title">Editar Perfil Administrativo</h3>
-            <p class="modal-subtitle">Actualiza la información de este usuario</p>
+            <span class="editorial-label mb-1 d-block" style="color: var(--primary-color);">Gestión de Usuarios</span>
+            <h2 class="modal-title">Editar Perfil</h2>
           </div>
-          <button class="btn-close-premium" (click)="onClose.emit()">
-            <i class="bi bi-x-lg"></i>
+          <button class="close-pill" (click)="onClose.emit()">
+            <i class="bi bi-x"></i>
           </button>
         </div>
         
-        <!-- BODY -->
-        <div class="modal-body-premium">
+        <!-- Body -->
+        <div class="modal-body">
           <form #form="ngForm">
-            <div class="row g-3">
+            <div class="row g-4">
               <!-- Nombres -->
               <div class="col-md-6">
-                <label class="form-label">Nombres *</label>
+                <label class="editorial-label">Nombres *</label>
                 <input 
                   type="text"
-                  class="form-control-premium"
+                  class="editorial-input"
                   [(ngModel)]="formData.nombres" 
                   name="nombres" 
                   required
                   minlength="3"
                   #nom="ngModel"
                   [class.is-invalid]="nom.invalid && nom.touched"
-                  placeholder="Ingrese nombres"
+                  placeholder="Ej. Juan Andrés"
                 >
               </div>
               
               <!-- Apellidos -->
               <div class="col-md-6">
-                <label class="form-label">Apellidos *</label>
+                <label class="editorial-label">Apellidos *</label>
                 <input 
                   type="text"
-                  class="form-control-premium"
+                  class="editorial-input"
                   [(ngModel)]="formData.apellidos" 
                   name="apellidos" 
                   required
                   minlength="3"
                   #ape="ngModel"
                   [class.is-invalid]="ape.invalid && ape.touched"
-                  placeholder="Ingrese apellidos"
+                  placeholder="Ej. Pérez García"
                 >
               </div>
               
               <!-- Email -->
               <div class="col-md-6">
-                <label class="form-label">Email de Acceso</label>
+                <label class="editorial-label">Email de Acceso</label>
                 <input 
                   type="email"
-                  class="form-control-premium bg-light"
+                  class="editorial-input bg-light-soft"
                   [(ngModel)]="formData.email" 
                   name="email" 
                   readonly
                   disabled
                 >
-                <small class="text-muted" style="font-size: 0.7rem;">El email no puede ser modificado.</small>
+                <small class="text-muted mt-2 d-block" style="font-size: 0.65rem; letter-spacing: 0.02em;">
+                  <i class="bi bi-lock-fill me-1"></i> El correo electrónico es el identificador único.
+                </small>
               </div>
               
               <!-- Teléfono -->
               <div class="col-md-6">
-                <label class="form-label">Teléfono *</label>
+                <label class="editorial-label">Teléfono de Contacto *</label>
                 <input 
                   type="text"
-                  class="form-control-premium"
+                  class="editorial-input"
                   [(ngModel)]="formData.telefono" 
                   name="telefono"
-                  placeholder="0999999999"
+                  placeholder="099 999 9999"
                   required
                   pattern="[0-9]{10}"
                   maxlength="10"
@@ -95,36 +97,40 @@ interface Rol {
                 >
               </div>
               
-              <!-- SECCION ROL (SI NO ES UNO MISMO) -->
-              <div class="col-12 mt-4 pt-3 border-top" *ngIf="!isSelf()">
-                <div class="admin-config-header mb-3">
-                    <i class="bi bi-gear-fill me-2"></i>
-                    CONFIGURACIÓN DE CUENTA
+              <!-- Config Sección (Si no es uno mismo) -->
+              <div class="col-12" *ngIf="!isSelf()">
+                <div class="divider-text">
+                  <span>Permisos Administrativos</span>
                 </div>
-                <label class="form-label">Rol Asignado *</label>
+                <label class="editorial-label">Rol del Usuario *</label>
                 <select 
-                  class="form-select-premium"
+                  class="editorial-input"
                   [(ngModel)]="formData.empresa_rol_id" 
                   name="rol"
                   required
                 >
-                  <option [value]="null" disabled>Seleccionar rol...</option>
+                  <option [value]="null" disabled>Seleccionar un rol...</option>
                   <option *ngFor="let rol of roles" [value]="rol.id">
                     {{ rol.nombre }}
                   </option>
                 </select>
               </div>
 
-              <!-- SECCION ROL (SI ES UNO MISMO - SOLO LECTURA) -->
-              <div class="col-12 mt-4 pt-3 border-top" *ngIf="isSelf()">
-                <div class="alert alert-info d-flex align-items-center mb-3 py-2 px-3 border-0" style="border-radius: 12px; font-size: 0.8rem; background: #f0f7ff;">
-                    <i class="bi bi-info-circle-fill me-2 text-primary"></i>
-                    <span>Por seguridad, no puedes cambiar tu propio rol administrativo.</span>
+              <!-- Info Sección (Si es uno mismo) -->
+              <div class="col-12" *ngIf="isSelf()">
+                <div class="divider-text">
+                  <span>Seguridad de Cuenta</span>
                 </div>
-                <label class="form-label opacity-75">Tu Rol Actual</label>
-                <div class="p-3 bg-light rounded-3 fw-bold border text-secondary d-flex align-items-center">
-                    <i class="bi bi-shield-lock me-2"></i>
-                    {{ cliente.rol_nombre || 'Rol Asignado' }}
+                <div class="self-info-card">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="icon-lock">
+                            <i class="bi bi-shield-lock"></i>
+                        </div>
+                        <div>
+                            <span class="editorial-label mb-0" style="color: #475569;">Nivel de Acceso</span>
+                            <p class="m-0 fw-bold text-dark">{{ cliente.rol_nombre || 'Administrador' }}</p>
+                        </div>
+                    </div>
                 </div>
               </div>
 
@@ -132,75 +138,72 @@ interface Rol {
           </form>
         </div>
         
-        <!-- FOOTER -->
-        <div class="modal-footer-premium">
-          <button class="btn-secondary-premium" (click)="onClose.emit()">
-            Cancelar
+        <!-- Footer -->
+        <div class="modal-footer">
+          <button class="btn-cancel" (click)="onClose.emit()">
+            Descartar
           </button>
           <button 
-            class="btn-primary-premium" 
+            class="btn-editorial py-2" 
+            style="min-width: 180px; font-size: 0.8rem;"
             [disabled]="!form.valid || saving"
             (click)="save()"
           >
-            <i class="bi" [class]="saving ? 'bi-hourglass-split' : 'bi-check-lg'"></i>
-            {{ saving ? 'Guardando...' : 'Guardar Cambios' }}
+            <span *ngIf="!saving">Actualizar Perfil</span>
+            <span *ngIf="saving" class="spinner-border spinner-border-sm me-2"></span>
+            <span *ngIf="saving">Procesando...</span>
           </button>
         </div>
       </div>
     </div>
   `,
-    styles: [`
+  styles: [`
     .modal-overlay {
       position: fixed;
       top: 0; left: 0; right: 0; bottom: 0;
       background: rgba(15, 23, 42, 0.4);
-      backdrop-filter: blur(8px);
+      backdrop-filter: blur(12px);
       display: flex;
       align-items: center;
       justify-content: center;
       z-index: 10000;
-      padding: 1rem;
+      padding: 1.5rem;
     }
 
-    .modal-container {
+    .modal-card {
       background: white;
-      border-radius: 28px;
+      border-radius: 32px;
       width: 100%;
-      max-width: 650px;
+      max-width: 600px;
       max-height: 90vh;
       overflow: hidden;
       display: flex;
       flex-direction: column;
-      box-shadow: 0 40px 100px -20px rgba(0, 0, 0, 0.25);
+      box-shadow: 0 40px 120px -20px rgba(0, 0, 0, 0.3);
+      border: 1px solid var(--border-color);
     }
 
-    .modal-header-premium {
-      padding: 2rem 2.5rem;
-      border-bottom: 1px solid #f1f5f9;
+    .modal-header {
+      padding: 2.5rem 3rem 1.5rem 3rem;
       display: flex;
       justify-content: space-between;
       align-items: flex-start;
     }
 
     .modal-title {
-      font-size: 1.4rem;
+      font-size: 1.75rem;
       font-weight: 800;
-      color: #161d35;
+      color: var(--text-main);
       margin: 0;
+      letter-spacing: -0.03em;
     }
 
-    .modal-subtitle {
-      color: #94a3b8;
-      font-size: 0.85rem;
-      margin: 0.35rem 0 0 0;
-    }
-
-    .btn-close-premium {
-      background: #f8fafc;
+    .close-pill {
+      background: #f1f5f9;
       border: none;
-      width: 40px;
-      height: 40px;
-      border-radius: 12px;
+      width: 36px;
+      height: 36px;
+      border-radius: 100px;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -208,105 +211,87 @@ interface Rol {
       transition: all 0.2s;
       cursor: pointer;
     }
-    .btn-close-premium:hover {
-      background: #161d35;
+    .close-pill:hover {
+      background: var(--primary-color);
       color: white;
+      transform: rotate(90deg);
     }
 
-    .modal-body-premium {
-      padding: 2.5rem;
+    .modal-body {
+      padding: 0.5rem 3rem 2rem 3rem;
       overflow-y: auto;
       flex: 1;
     }
 
-    .form-label {
-      font-size: 0.75rem;
-      font-weight: 800;
-      color: #64748b;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      margin-bottom: 0.6rem;
-      display: block;
+    .bg-light-soft {
+      background: #f8fafc !important;
+      border-style: dashed !important;
+      cursor: not-allowed;
     }
 
-    .admin-config-header {
-        font-size: 0.8rem;
-        font-weight: 900;
-        color: #161d35;
-        letter-spacing: 1px;
-    }
-
-    .form-control-premium,
-    .form-select-premium {
-      background: #ffffff;
-      border: 1.5px solid #e2e8f0;
-      border-radius: 14px;
-      padding: 0.85rem 1.25rem;
-      font-size: 0.95rem;
-      font-weight: 600;
-      color: #1e293b;
-      transition: all 0.2s;
-      width: 100%;
-    }
-    .form-control-premium:focus,
-    .form-select-premium:focus {
-      background: #ffffff;
-      border-color: #161d35;
-      box-shadow: 0 0 0 5px rgba(22, 29, 53, 0.05);
-      outline: none;
-    }
-    .form-control-premium.is-invalid {
-        border-color: #ef4444;
-    }
-
-    .modal-footer-premium {
-      padding: 1.5rem 2.5rem;
-      border-top: 1px solid #f1f5f9;
-      display: flex;
-      justify-content: flex-end;
-      gap: 1rem;
-    }
-
-    .btn-secondary-premium {
-      background: #ffffff;
-      color: #64748b;
-      border: 1.5px solid #e2e8f0;
-      padding: 0.85rem 1.75rem;
-      border-radius: 16px;
-      font-weight: 700;
-      font-size: 0.9rem;
-      transition: all 0.2s;
-      cursor: pointer;
-    }
-    .btn-secondary-premium:hover {
-      background: #f8fafc;
-      border-color: #cbd5e1;
-      color: #1e293b;
-    }
-
-    .btn-primary-premium {
-      background: #161d35;
-      color: #ffffff;
-      border: none;
-      padding: 0.85rem 2rem;
-      border-radius: 16px;
-      font-weight: 800;
-      font-size: 0.9rem;
+    .divider-text {
       display: flex;
       align-items: center;
-      gap: 0.75rem;
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-      box-shadow: 0 15px 30px -8px rgba(22, 29, 53, 0.3);
+      text-align: center;
+      margin: 1.5rem 0;
+      color: #cbd5e1;
+    }
+    .divider-text::before, .divider-text::after {
+      content: '';
+      flex: 1;
+      border-bottom: 1.5px solid #f1f5f9;
+    }
+    .divider-text span {
+      padding: 0 1rem;
+      font-size: 0.65rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+    }
+
+    .self-info-card {
+      background: #f8fafc;
+      padding: 1.25rem;
+      border-radius: 20px;
+      border: 1.5px solid #f1f5f9;
+    }
+
+    .icon-lock {
+      width: 44px;
+      height: 44px;
+      background: white;
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.25rem;
+      color: var(--primary-color);
+      box-shadow: 0 4px 10px rgba(0,0,0,0.03);
+    }
+
+    .modal-footer {
+      padding: 1.5rem 3rem 2.5rem 3rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: linear-gradient(to top, #ffffff 80%, rgba(255,255,255,0));
+    }
+
+    .btn-cancel {
+      background: transparent;
+      color: #94a3b8;
+      border: none;
+      font-weight: 700;
+      font-size: 0.85rem;
       cursor: pointer;
+      transition: color 0.2s;
     }
-    .btn-primary-premium:not(:disabled):hover {
-      transform: translateY(-2px);
-      box-shadow: 0 25px 40px -10px rgba(22, 29, 53, 0.4);
-      background: #232d4d;
+    .btn-cancel:hover {
+      color: var(--text-main);
     }
-    .btn-primary-premium:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
+
+    .is-invalid {
+      border-color: var(--status-danger) !important;
     }
   `]
 })

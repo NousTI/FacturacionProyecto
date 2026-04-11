@@ -12,7 +12,7 @@ import { UiService } from '../../../shared/services/ui.service';
 import { AuthFacade } from '../../../core/auth/auth.facade';
 import { PermissionsService } from '../../../core/auth/permissions.service';
 import { ToastComponent } from '../../../shared/components/toast/toast.component';
-import { ClienteModalComponent } from '../../super-admin/clientes/components/cliente-modal.component';
+import { ClienteCreateModalComponent } from '../../super-admin/clientes/components/cliente-create-modal.component';
 
 interface ClienteStats {
   total: number;
@@ -29,7 +29,7 @@ interface ClienteStats {
     VendedorClientesTableComponent,
     ClientesStatsComponent,
     ClienteDetailsModalComponent,
-    ClienteModalComponent,
+    ClienteCreateModalComponent,
     ToastComponent
   ],
   template: `
@@ -102,13 +102,13 @@ interface ClienteStats {
       ></app-cliente-details-modal>
 
       <!-- MODAL CREATE -->
-      <app-cliente-modal
+      <app-cliente-create-modal
         *ngIf="showModal"
         [empresas]="empresas"
         [allRoles]="roles"
         (onSave)="crearCliente($event)"
         (onClose)="showModal = false"
-      ></app-cliente-modal>
+      ></app-cliente-create-modal>
 
       <app-toast></app-toast>
     </div>

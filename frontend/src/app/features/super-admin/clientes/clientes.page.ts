@@ -4,8 +4,9 @@ import { FormsModule } from '@angular/forms';
 import { ClientesService, ClienteUsuario, ClienteConTrazabilidad } from './services/clientes.service';
 import { ClientesStatsComponent } from './components/clientes-stats.component';
 import { ClientesTableComponent } from './components/clientes-table.component';
+import { ClientesActionsComponent } from './components/clientes-actions.component';
 import { ClientesDetailsModalComponent } from './components/clientes-details-modal.component';
-import { ClienteModalComponent } from './components/cliente-modal.component';
+import { ClienteCreateModalComponent } from './components/cliente-create-modal.component';
 import { ClienteReassignModalComponent } from './components/cliente-reassign-modal.component';
 import { UiService } from '../../../shared/services/ui.service';
 import { ToastComponent } from '../../../shared/components/toast/toast.component';
@@ -20,51 +21,27 @@ import { environment } from '../../../../environments/environment';
     FormsModule,
     ClientesStatsComponent,
     ClientesTableComponent,
+    ClientesActionsComponent,
     ClientesDetailsModalComponent,
-    ClienteModalComponent,
+    ClienteCreateModalComponent,
     ClienteReassignModalComponent,
     ToastComponent
   ],
   template: `
-    <div class="clientes-page-container animate__animated animate__fadeIn">
-
-      <!-- Stats Section -->
+    <div class="clientes-page-container">
+      
+      <!-- 1. MÓDULO DE ESTADÍSTICAS -->
       <app-clientes-stats [stats]="stats"></app-clientes-stats>
 
-      <!-- Search & Filters Section -->
-      <div class="actions-container mb-4">
-        <div class="search-box">
-          <i class="bi bi-search search-icon"></i>
-          <input 
-            type="text" 
-            class="form-control search-input" 
-            placeholder="Buscar por nombre, correo o empresa..."
-            [(ngModel)]="searchQuery"
-            (ngModelChange)="filterUsuarios()"
-          >
-        </div>
-        
-        <div class="filters-group">
-          <select class="form-select filter-select" [(ngModel)]="filterEmpresa" (change)="filterUsuarios()">
-            <option value="ALL">Todas las Empresas</option>
-            <option *ngFor="let emp of empresas" [value]="emp">{{ emp }}</option>
-          </select>
+      <!-- 2. MÓDULO DE BÚSQUEDA Y ACCIONES -->
+      <app-clientes-actions
+        [(searchQuery)]="searchQuery"
+        [empresas]="empresas"
+        (onFilterChangeEmit)="handleFilters($event)"
+        (onCreate)="openCreateModal()"
+      ></app-clientes-actions>
 
-          <select class="form-select filter-select" [(ngModel)]="filterCreador" (change)="filterUsuarios()">
-            <option value="ALL">Todos los Orígenes</option>
-            <option value="SUPERADMIN">Superadmin</option>
-            <option value="VENDEDOR">Vendedores</option>
-            <option value="SISTEMA">Sistema (Auto-registro)</option>
-          </select>
-
-          <button class="btn-create-premium" (click)="showCreateModal = true">
-            <i class="bi bi-plus-lg"></i>
-            <span>Nuevo Cliente</span>
-          </button>
-        </div>
-      </div>
-
-      <!-- Table Section -->
+      <!-- 3. MÓDULO DE TABLA DE DATOS -->
       <div *ngIf="loading" class="text-center py-5">
         <div class="spinner-border text-primary" role="status"></div>
         <p class="mt-3 text-muted fw-bold">Cargando directorio...</p>
@@ -76,23 +53,23 @@ import { environment } from '../../../../environments/environment';
         (onAction)="handleAction($event)"
       ></app-clientes-table>
 
-      <!-- Details Modal -->
+      <!-- 4. MODALS (Detalles) -->
       <app-clientes-details-modal
         *ngIf="showDetailsModal && selectedUsuarioDetalle"
         [usuario]="selectedUsuarioDetalle"
         (close)="closeDetailsModal()"
       ></app-clientes-details-modal>
 
-      <!-- Create Modal -->
-      <app-cliente-modal
+      <!-- 5. MODALS (Creación) -->
+      <app-cliente-create-modal
         *ngIf="showCreateModal"
         [empresas]="allEmpresas"
         [allRoles]="[]"
         (onClose)="showCreateModal = false"
         (onSave)="createCliente($event)"
-      ></app-cliente-modal>
+      ></app-cliente-create-modal>
 
-      <!-- Reassign Modal -->
+      <!-- 6. MODALS (Reasignación) -->
       <app-cliente-reassign-modal
         *ngIf="showReassignModal && selectedUsuario"
         [cliente]="selectedUsuario"
@@ -101,7 +78,7 @@ import { environment } from '../../../../environments/environment';
         (onReasignar)="executeReassign($event)"
       ></app-cliente-reassign-modal>
 
-      <!-- Confirmation Modal -->
+      <!-- 7. MODALS (Confirmación) -->
       <div class="modal-overlay" *ngIf="showConfirmModal" (click)="showConfirmModal = false">
         <div class="confirm-modal" (click)="$event.stopPropagation()">
           <div class="confirm-header">
@@ -122,52 +99,10 @@ import { environment } from '../../../../environments/environment';
     </div>
   `,
   styles: [`
-    .clientes-page-container { padding: 0; }
-    .page-title { font-size: 1.5rem; font-weight: 800; color: #1e293b; margin-bottom: 0.25rem; }
-    .page-subtitle { color: #64748b; font-size: 0.9rem; }
-    
-    .btn-primary-premium {
-      background: #161d35; border: none; color: white;
-      padding: 0.75rem 1.75rem; border-radius: 14px; font-weight: 700;
-      transition: all 0.2s; box-shadow: 0 4px 12px rgba(22, 29, 53, 0.15);
-    }
-    .btn-primary-premium:hover { transform: translateY(-2px); box-shadow: 0 6px 15px rgba(22, 29, 53, 0.2); }
-    
-    .actions-container { display: flex; justify-content: space-between; gap: 1rem; align-items: center; }
-    .search-box { position: relative; flex: 1; max-width: 400px; }
-    .search-icon { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: #94a3b8; }
-    .search-input {
-      padding-left: 45px; height: 48px; border-radius: 14px; border: 1px solid #e2e8f0;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.02); font-size: 0.95rem;
-    }
-    
-    .filters-group { display: flex; gap: 1rem; }
-    .filter-select {
-      height: 48px; border-radius: 14px; border: 1px solid #e2e8f0;
-      background-color: white; color: #475569; font-weight: 600; font-size: 0.9rem;
-      padding: 0 1.5rem; min-width: 200px;
-    }
-
-    .btn-create-premium {
-      background: #161d35;
-      color: #ffffff;
-      border: none;
-      padding: 0 1.5rem;
-      height: 48px;
-      border-radius: 14px;
-      font-weight: 700;
-      font-size: 0.95rem;
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-      box-shadow: 0 10px 20px -5px rgba(22, 29, 53, 0.3);
-      cursor: pointer;
-    }
-    .btn-create-premium:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 20px 30px -8px rgba(22, 29, 53, 0.4);
-      background: #232d4d;
+    .clientes-page-container {
+      min-height: 100vh;
+      background: #ffffff;
+      padding: 0;
     }
 
     /* Confirmation Modal */
@@ -222,18 +157,18 @@ export class ClientesPage implements OnInit {
   apiUrl = environment.apiUrl;
 
   searchQuery = '';
-  filterEmpresa = 'ALL';
-  filterCreador = 'ALL';
+  activeFilters: any = {
+    empresa: 'ALL',
+    origen: 'ALL'
+  };
 
   showDetailsModal = false;
-  showEditModal = false;
   showCreateModal = false;
   showReassignModal = false;
   showConfirmModal = false;
   selectedUsuario: ClienteUsuario | null = null;
   selectedUsuarioDetalle: ClienteConTrazabilidad | null = null;
   confirmAction: 'toggle' | 'delete' | null = null;
-  selectedEmpresaId: string | null = null;
 
   constructor(
     private clientesService: ClientesService,
@@ -249,18 +184,20 @@ export class ClientesPage implements OnInit {
 
   loadData() {
     this.loading = true;
-    this.clientesService.getStats().subscribe(s => this.stats = s);
+    this.clientesService.getStats().subscribe(s => {
+      this.stats = s;
+      this.cdr.detectChanges();
+    });
     this.clientesService.getClientes().subscribe(users => {
       this.allUsuarios = users;
-      this.filteredUsuarios = users;
       this.empresas = Array.from(new Set(users.map(u => u.empresa_nombre).filter((name): name is string => !!name)));
+      this.filterUsuarios();
       this.loading = false;
       this.cdr.detectChanges();
     });
   }
 
   loadEmpresas() {
-    // Import EmpresaService if needed
     this.http.get<any>(`${this.apiUrl}/empresas`).subscribe({
       next: (res) => {
         this.allEmpresas = res.detalles || [];
@@ -269,6 +206,11 @@ export class ClientesPage implements OnInit {
         this.allEmpresas = [];
       }
     });
+  }
+
+  handleFilters(filters: any) {
+    this.activeFilters = { ...filters };
+    this.filterUsuarios();
   }
 
   filterUsuarios() {
@@ -284,16 +226,21 @@ export class ClientesPage implements OnInit {
       );
     }
 
-    if (this.filterEmpresa !== 'ALL') {
-      temp = temp.filter(u => u.empresa_nombre === this.filterEmpresa);
+    if (this.activeFilters.empresa !== 'ALL') {
+      temp = temp.filter(u => u.empresa_nombre === this.activeFilters.empresa);
     }
 
-    if (this.filterCreador !== 'ALL') {
-      const q = this.filterCreador.toLowerCase();
+    if (this.activeFilters.origen !== 'ALL') {
+      const q = this.activeFilters.origen.toLowerCase();
       temp = temp.filter(u => (u.origen_creacion || 'sistema') === q);
     }
 
     this.filteredUsuarios = temp;
+    this.cdr.detectChanges();
+  }
+
+  openCreateModal() {
+    this.showCreateModal = true;
     this.cdr.detectChanges();
   }
 
@@ -305,15 +252,18 @@ export class ClientesPage implements OnInit {
         this.openDetails(event.cliente);
         break;
       case 'reassign':
-        this.openReassignModal();
+        this.showReassignModal = true;
         break;
       case 'toggle':
-        this.confirmToggleStatus();
+        this.confirmAction = 'toggle';
+        this.showConfirmModal = true;
         break;
       case 'delete':
-        this.confirmDelete();
+        this.confirmAction = 'delete';
+        this.showConfirmModal = true;
         break;
     }
+    this.cdr.detectChanges();
   }
 
   openDetails(cliente: ClienteUsuario) {
@@ -332,15 +282,6 @@ export class ClientesPage implements OnInit {
     this.selectedUsuarioDetalle = null;
   }
 
-  openEditModal() {
-    this.showEditModal = true;
-  }
-
-  closeEditModal() {
-    this.showEditModal = false;
-    this.selectedUsuario = null;
-  }
-
   createCliente(datos: any) {
     this.clientesService.crearCliente(datos).subscribe({
       next: () => {
@@ -350,23 +291,6 @@ export class ClientesPage implements OnInit {
       },
       error: (err) => this.uiService.showError(err, 'Error al crear cliente')
     });
-  }
-
-  saveEdit(datos: any) {
-    if (!this.selectedUsuario) return;
-
-    this.clientesService.actualizarCliente(this.selectedUsuario.id, datos).subscribe({
-      next: () => {
-        this.uiService.showToast('Cliente actualizado exitosamente', 'success');
-        this.closeEditModal();
-        this.loadData();
-      },
-      error: (err) => this.uiService.showError(err, 'Error al actualizar cliente')
-    });
-  }
-
-  openReassignModal() {
-    this.showReassignModal = true;
   }
 
   closeReassignModal() {
@@ -385,16 +309,6 @@ export class ClientesPage implements OnInit {
       },
       error: (err) => this.uiService.showError(err, 'Error al reasignar empresa')
     });
-  }
-
-  confirmToggleStatus() {
-    this.confirmAction = 'toggle';
-    this.showConfirmModal = true;
-  }
-
-  confirmDelete() {
-    this.confirmAction = 'delete';
-    this.showConfirmModal = true;
   }
 
   executeAction() {
