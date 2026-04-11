@@ -62,7 +62,7 @@ declare var bootstrap: any;
                       </div>
                       <div>
                         <span class="fw-bold d-block">{{ s.empresa_nombre }}</span>
-                        <span class="smallest text-muted">ID Sub: #{{ (s.suscripcion_id?.substring(0,8) || '---') }}</span>
+                        <span class="smallest text-muted">ID Sub: #{{ (s.suscripcion_id.substring(0,8) || '---') }}</span>
                       </div>
                     </div>
                   </td>

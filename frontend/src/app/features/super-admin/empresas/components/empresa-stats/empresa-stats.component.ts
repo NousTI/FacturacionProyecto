@@ -42,13 +42,13 @@ import { CommonModule } from '@angular/common';
       flex: 1;
     }
     .stat-label {
-      font-size: 0.75rem;
+      font-size: var(--text-sm);
       font-weight: 500;
       color: #64748b;
       letter-spacing: 0;
     }
     .stat-value {
-      font-size: 1.5rem;
+      font-size: var(--text-xl);
       font-weight: 700;
       color: #0f172a;
       line-height: 1.2;

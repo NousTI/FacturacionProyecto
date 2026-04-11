@@ -9,7 +9,7 @@ import { CommonModule } from '@angular/common';
     <div class="table-container animate__animated animate__fadeIn">
       <div class="table-header-info mb-3">
         <h5 class="mb-0">Historial de Comisiones</h5>
-        <span class="badge bg-primary-light text-primary">{{ data?.length || 0 }} Registros</span>
+        <span class="badge bg-primary-light text-primary">{{ data.length || 0 }} Registros</span>
       </div>
       
       <div class="table-responsive">

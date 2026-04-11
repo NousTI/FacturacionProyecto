@@ -40,11 +40,11 @@ import { CommonModule } from '@angular/common';
                 </td>
                 <td>
                   <div class="d-flex flex-column">
-                    <span class="text-corporate fw-800" style="font-size: 0.85rem;" *ngIf="empresa.suscripcion_estado === 'ACTIVA' || empresa.suscripcion_estado === 'PRUEBA'">{{ empresa.plan || 'Sin Plan' }}</span>
-                    <span class="text-danger fw-800" style="font-size: 0.85rem;" *ngIf="empresa.suscripcion_estado && empresa.suscripcion_estado !== 'ACTIVA' && empresa.suscripcion_estado !== 'PRUEBA'">{{ empresa.suscripcion_estado }}</span>
-                    <span class="text-muted fw-800" style="font-size: 0.85rem;" *ngIf="!empresa.suscripcion_estado">Sin Suscripción</span>
+                    <span class="text-corporate fw-800" style="font-size: var(--text-base);" *ngIf="empresa.suscripcion_estado === 'ACTIVA' || empresa.suscripcion_estado === 'PRUEBA'">{{ empresa.plan || 'Sin Plan' }}</span>
+                    <span class="text-danger fw-800" style="font-size: var(--text-base);" *ngIf="empresa.suscripcion_estado && empresa.suscripcion_estado !== 'ACTIVA' && empresa.suscripcion_estado !== 'PRUEBA'">{{ empresa.suscripcion_estado }}</span>
+                    <span class="text-muted fw-800" style="font-size: var(--text-base);" *ngIf="!empresa.suscripcion_estado">Sin Suscripción</span>
                     
-                    <small class="text-muted" style="font-size: 0.7rem;">{{ empresa.tipo_contribuyente }}</small>
+                    <small class="text-muted" style="font-size: var(--text-xs);">{{ empresa.tipo_contribuyente }}</small>
                   </div>
                 </td>
                 <td>
@@ -161,7 +161,7 @@ import { CommonModule } from '@angular/common';
     .table thead th {
       background: #ffffff;
       padding: 1rem 1.5rem;
-      font-size: 0.85rem;
+      font-size: var(--text-base);
       text-transform: capitalize;
       letter-spacing: 0;
       color: #0f172a;
@@ -173,14 +173,14 @@ import { CommonModule } from '@angular/common';
       padding: 1.25rem 1.5rem;
       border-bottom: 1px solid #f1f5f9;
       color: #475569;
-      font-size: 0.95rem;
+      font-size: var(--text-md);
     }
     
     .avatar-soft-premium {
       width: 38px; height: 38px;
       border-radius: 12px;
       display: flex; align-items: center; justify-content: center;
-      font-weight: 700; font-size: 0.85rem;
+      font-weight: 700; font-size: var(--text-base);
       background: var(--primary-color, #161d35);
       color: #ffffff;
     }
@@ -188,7 +188,7 @@ import { CommonModule } from '@angular/common';
     .badge-status-premium {
       padding: 0.25rem 0.75rem;
       border-radius: 6px;
-      font-size: 0.75rem;
+      font-size: var(--text-sm);
       font-weight: 600;
       display: inline-block;
       text-transform: capitalize;
@@ -231,7 +231,7 @@ import { CommonModule } from '@angular/common';
     }
     .dropdown-item {
       border-radius: 8px !important;
-      font-size: 0.9rem;
+      font-size: var(--text-base);
       font-weight: 500;
       color: #475569; padding: 0.5rem 1rem;
       display: flex; align-items: center;

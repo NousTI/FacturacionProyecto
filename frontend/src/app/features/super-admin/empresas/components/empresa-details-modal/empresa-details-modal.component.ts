@@ -10,16 +10,19 @@ import { CommonModule } from '@angular/common';
         <!-- Header -->
         <div class="modal-header-premium">
           <div class="d-flex align-items-center gap-3">
-            <div class="avatar-details-premium" [style.background]="getAvatarColor(empresa?.razonSocial, 1)">
+            <div class="avatar-details-premium">
               {{ empresa?.razonSocial?.substring(0, 2).toUpperCase() }}
             </div>
             <div>
               <h2 class="modal-title-premium">{{ empresa?.razonSocial }}</h2>
               <div class="d-flex align-items-center gap-2 mt-1">
-                <span class="badge-status-details" [ngClass]="empresa?.activo ? 'active' : 'inactive'">
+                <span class="badge-status-details" [ngClass]="empresa?.activo ? 'status-success' : 'status-danger'">
                   {{ empresa?.activo ? 'ACTIVA' : 'INACTIVA' }}
                 </span>
-                <span class="badge-plan-details">{{ empresa?.plan || 'SIN PLAN' }}</span>
+                <span class="badge-plan-details">
+                  <i class="bi bi-star-fill me-1 text-warning"></i>
+                  {{ empresa?.plan || 'SIN PLAN' }}
+                </span>
               </div>
             </div>
           </div>
@@ -51,8 +54,8 @@ import { CommonModule } from '@angular/common';
               </div>
               <div class="info-card-premium">
                 <label>Nombre Comercial</label>
-                <div class="value text-muted" *ngIf="!empresa?.nombreComercial">S/D</div>
-                <div class="value">{{ empresa?.nombreComercial }}</div>
+                <div class="value text-muted" *ngIf="!empresa?.nombreComercial">Sin Datos</div>
+                <div class="value" *ngIf="empresa?.nombreComercial">{{ empresa?.nombreComercial }}</div>
               </div>
               <div class="info-card-premium">
                 <label>Contacto</label>
@@ -62,7 +65,7 @@ import { CommonModule } from '@angular/common';
               <div class="info-card-premium">
                 <label>Vendedor</label>
                 <div class="value">
-                   <i class="bi bi-person-badge-fill me-2 text-corporate"></i>
+                   <i class="bi bi-person-badge me-2 text-corporate"></i>
                    {{ empresa?.vendedorName || 'Gestión Directa' }}
                 </div>
               </div>
@@ -77,11 +80,15 @@ import { CommonModule } from '@angular/common';
           <div *ngIf="activeTab === 'suscripcion'" class="tab-content animate__animated animate__fadeIn animate__faster">
              <div class="row g-4 mt-2">
                 <div class="col-md-6">
-                   <div class="card border-0 bg-light p-4 rounded-4">
+                   <div class="card-details-section">
                       <h4 class="section-title-mini">Estado del Plan</h4>
                       <div class="d-flex justify-content-between align-items-center mb-3">
                          <span class="text-muted">Estado Actual</span>
-                         <span class="fw-800" [ngClass]="{'text-success': empresa?.suscripcion_estado === 'ACTIVA', 'text-warning': empresa?.suscripcion_estado === 'PRUEBA', 'text-danger': empresa?.suscripcion_estado === 'CANCELADA' || empresa?.suscripcion_estado === 'VENCIDA', 'text-muted': !empresa?.suscripcion_estado}">{{ empresa?.suscripcion_estado || 'SIN ESTADO' }}</span>
+                         <span class="fw-800" [ngClass]="{
+                           'status-text-success': empresa?.suscripcion_estado === 'ACTIVA', 
+                           'status-text-warning': empresa?.suscripcion_estado === 'PRUEBA', 
+                           'status-text-danger': empresa?.suscripcion_estado === 'CANCELADA' || empresa?.suscripcion_estado === 'VENCIDA', 
+                           'text-muted': !empresa?.suscripcion_estado}">{{ empresa?.suscripcion_estado || 'SIN ESTADO' }}</span>
                       </div>
                       <div class="d-flex justify-content-between align-items-center mb-3">
                          <span class="text-muted">Plan Base</span>
@@ -92,45 +99,45 @@ import { CommonModule } from '@angular/common';
                          <span class="fw-800" [class.text-danger]="isExpired(empresa?.fechaVencimiento)" *ngIf="empresa?.fechaVencimiento">
                             {{ empresa?.fechaVencimiento | date:'dd/MM/yyyy' }}
                          </span>
-                         <span class="fw-800 text-muted" *ngIf="!empresa?.fechaVencimiento">S/D</span>
+                         <span class="fw-800 text-muted" *ngIf="!empresa?.fechaVencimiento">Sin Datos</span>
                       </div>
                       <div class="d-flex justify-content-between align-items-center">
                          <span class="text-muted">Último Pago</span>
-                         <span class="fw-800 text-success" *ngIf="empresa?.ultimoPagoFecha; else noPago">
+                         <span class="fw-800 status-text-success" *ngIf="empresa?.ultimoPagoFecha; else noPago">
                             {{ empresa?.ultimoPagoMonto | currency:'USD' }} ({{ empresa?.ultimoPagoFecha | date:'dd/MM/yyyy' }})
                          </span>
                          <ng-template #noPago>
-                            <span class="badge bg-light text-muted border fw-normal" style="font-size: 0.7rem;">Ninguno</span>
+                            <span class="badge-status-neutral">Ninguno</span>
                          </ng-template>
                       </div>
                    </div>
                 </div>
-                <!-- ... usage progress bars ... -->
+                
                 <div class="col-md-6">
-                   <div class="card border-0 bg-light p-4 rounded-4">
+                   <div class="card-details-section">
                       <h4 class="section-title-mini">Uso Actual</h4>
                       <div class="mb-3">
-                         <div class="d-flex justify-content-between mb-1">
-                            <span class="text-muted small fw-bold">Usuarios</span>
-                            <span class="small fw-800">{{ empresa?.usage?.usuarios || 0 }}/{{ empresa?.limits?.max_usuarios || '-' }}</span>
+                         <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted fw-bold">Usuarios</span>
+                            <span class="fw-800">{{ empresa?.usage?.usuarios || 0 }}/{{ empresa?.limits?.max_usuarios || '-' }}</span>
                          </div>
                          <div class="progress-premium">
                             <div class="progress-bar-premium" [style.width]="getUsagePercent(empresa?.usage?.usuarios, empresa?.limits?.max_usuarios) + '%'"></div>
                          </div>
                       </div>
                       <div class="mb-3">
-                         <div class="d-flex justify-content-between mb-1">
-                            <span class="text-muted small fw-bold">Establecimientos</span>
-                            <span class="small fw-800">{{ empresa?.usage?.establecimientos || 0 }}/{{ empresa?.limits?.max_establecimientos || '-' }}</span>
+                         <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted fw-bold">Establecimientos</span>
+                            <span class="fw-800">{{ empresa?.usage?.establecimientos || 0 }}/{{ empresa?.limits?.max_establecimientos || '-' }}</span>
                          </div>
                          <div class="progress-premium">
                             <div class="progress-bar-premium" [style.width]="getUsagePercent(empresa?.usage?.establecimientos, empresa?.limits?.max_establecimientos) + '%'"></div>
                          </div>
                       </div>
                        <div class="mb-0">
-                         <div class="d-flex justify-content-between mb-1">
-                            <span class="text-muted small fw-bold">Facturas</span>
-                            <span class="small fw-800">{{ empresa?.usage?.facturas || 0 }}/{{ empresa?.limits?.max_facturas || '-' }}</span>
+                         <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted fw-bold">Facturas</span>
+                            <span class="fw-800">{{ empresa?.usage?.facturas || 0 }}/{{ empresa?.limits?.max_facturas || '-' }}</span>
                          </div>
                          <div class="progress-premium">
                             <div class="progress-bar-premium" [style.width]="getUsagePercent(empresa?.usage?.facturas, empresa?.limits?.max_facturas) + '%'"></div>
@@ -146,11 +153,11 @@ import { CommonModule } from '@angular/common';
              <div class="system-card-premium mt-2">
                 <div class="d-flex align-items-start gap-3 mb-4">
                    <div class="icon-sq bg-corporate text-white">
-                      <i class="bi bi-shield-check"></i>
+                      <i class="bi bi-shield-lock"></i>
                    </div>
                    <div>
                       <h4 class="m-0 fw-800 text-corporate">Firma Electrónica</h4>
-                      <p class="text-muted small">Estado de la facturación ante el SRI</p>
+                      <p class="text-muted" style="font-size: var(--text-base);">Estado de la facturación ante el SRI</p>
                    </div>
                 </div>
 
@@ -200,87 +207,108 @@ import { CommonModule } from '@angular/common';
       </div>
     </div>
   `,
-   styles: [`
+  styles: [`
     .modal-overlay {
       position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-      background: rgba(15, 23, 53, 0.4); backdrop-filter: blur(8px);
+      background: rgba(15, 23, 53, 0.4); backdrop-filter: blur(12px);
       display: flex; align-items: center; justify-content: center; z-index: 10005;
       padding: 1rem;
     }
     .modal-container-premium {
       background: #ffffff; width: 850px; height: 650px;
-      max-width: 95vw; max-height: 90vh; border-radius: 32px;
+      max-width: 95vw; max-height: 90vh; border-radius: 28px;
       display: flex; flex-direction: column; overflow: hidden;
-      /* box-shadow: 0 40px 80px -20px rgba(22, 29, 53, 0.25); */
+      box-shadow: 0 50px 100px -20px rgba(0, 0, 0, 0.15);
     }
-    .modal-header-premium { padding: 2rem 2.5rem; display: flex; justify-content: space-between; align-items: center; }
-    .modal-title-premium { font-size: 1.4rem; font-weight: 900; color: #161d35; margin: 0; }
-    .btn-close-premium { background: #f8fafc; border: none; width: 40px; height: 40px; border-radius: 12px; color: #94a3b8; cursor: pointer; }
+    .modal-header-premium { padding: 2.5rem; display: flex; justify-content: space-between; align-items: center; }
+    .modal-title-premium { font-size: 1.5rem; font-weight: 900; color: var(--primary-color); margin: 0; letter-spacing: -0.5px; }
+    .btn-close-premium { background: #f8fafc; border: none; width: 44px; height: 44px; border-radius: 14px; color: #94a3b8; cursor: pointer; transition: all 0.2s; }
+    .btn-close-premium:hover { background: #f1f5f9; color: #64748b; }
     
     .avatar-details-premium {
-      width: 54px; height: 54px; color: white;
+      width: 58px; height: 58px; color: white;
       border-radius: 16px; display: flex; align-items: center; justify-content: center;
-      font-weight: 800; font-size: 1.25rem;
+      font-weight: 800; font-size: var(--text-lg);
+      background: var(--primary-color);
     }
 
     .badge-status-details {
-      font-size: 0.65rem; font-weight: 800; padding: 0.2rem 0.75rem; border-radius: 100px;
+      font-size: var(--text-xs); font-weight: 800; padding: 0.25rem 0.85rem; border-radius: 100px;
       text-transform: uppercase;
     }
-    .badge-status-details.active { background: #dcfce7; color: #15803d; } 
-    .badge-status-details.inactive { background: #fee2e2; color: #b91c1c; }
-    .badge-plan-details { background: #161d35; color: white; font-size: 0.65rem; font-weight: 800; padding: 0.2rem 0.75rem; border-radius: 100px; text-transform: uppercase; }
+    /* El componente usa los colores de status definidos en styles.css */
+    .status-success { background-color: var(--status-success-bg); color: var(--status-success-text); }
+    .status-danger { background-color: var(--status-danger-bg); color: var(--status-danger-text); }
+    .status-text-success { color: var(--status-success-text); }
+    .status-text-warning { color: var(--status-warning-text); }
+    .status-text-danger { color: var(--status-danger-text); }
+    
+    .badge-status-neutral { 
+      background-color: var(--status-neutral-bg); 
+      color: var(--status-neutral-text); 
+      font-size: var(--text-xs); font-weight: 500; padding: 0.15rem 0.6rem; border-radius: 100px;
+    }
+
+    .badge-plan-details { 
+      background: #f1f5f9; color: #475569; 
+      font-size: var(--text-xs); font-weight: 800; padding: 0.25rem 0.85rem; 
+      border-radius: 100px; text-transform: uppercase; 
+      display: inline-flex; align-items: center;
+    }
 
     .modal-nav-tabs {
        display: flex; padding: 0 2.5rem; gap: 0.5rem; border-bottom: 1px solid #f1f5f9;
     }
     .nav-tab-btn {
-       background: transparent; border: none; padding: 1rem 1.5rem; font-size: 0.85rem;
-       font-weight: 700; color: #94a3b8; display: flex; align-items: center; gap: 0.5rem;
+       background: transparent; border: none; padding: 1rem 1.75rem; font-size: var(--text-base);
+       font-weight: 700; color: #94a3b8; display: flex; align-items: center; gap: 0.65rem;
        position: relative; transition: all 0.2s;
     }
-    .nav-tab-btn i { font-size: 1.1rem; }
-    .nav-tab-btn.active { color: #161d35; }
+    .nav-tab-btn i { font-size: 1.15rem; }
+    .nav-tab-btn.active { color: var(--primary-color); }
     .nav-tab-btn.active::after {
        content: ""; position: absolute; bottom: 0; left: 0; width: 100%;
-       height: 3px; background: #161d35; border-radius: 3px 3px 0 0;
+       height: 3px; background: var(--primary-color); border-radius: 3px 3px 0 0;
     }
 
-    .modal-body-premium { padding: 2rem 2.5rem; overflow-y: auto; flex: 1; }
+    .modal-body-premium { padding: 2.5rem; overflow-y: auto; flex: 1; }
     
-    .info-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.25rem; }
-    .info-card-premium { background: #f8fafc; padding: 1.25rem; border-radius: 18px; border: 1px solid #f1f5f9; }
-    .info-card-premium label { font-size: 0.65rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; display: block; margin-bottom: 0.5rem; }
-    .info-card-premium .value { font-size: 1rem; font-weight: 800; color: #1e293b; }
-    .info-card-premium .sub-value { font-size: 0.75rem; color: #64748b; margin-top: 0.25rem; }
+    .info-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem; }
+    .info-card-premium { background: #f8fafc; padding: 1.5rem; border-radius: 20px; border: 1px solid #f1f5f9; }
+    .info-card-premium label { font-size: var(--text-xs); font-weight: 800; color: #94a3b8; text-transform: uppercase; display: block; margin-bottom: 0.6rem; }
+    .info-card-premium .value { font-size: var(--text-md); font-weight: 800; color: #0f172a; }
+    .info-card-premium .sub-value { font-size: var(--text-base); color: #64748b; margin-top: 0.3rem; }
     .col-span-2 { grid-column: span 2; }
 
-    .section-title-mini { font-size: 0.8rem; font-weight: 800; text-transform: uppercase; color: #94a3b8; margin-bottom: 1.25rem; }
-    .progress-premium { height: 6px; background: #e2e8f0; border-radius: 10px; overflow: hidden; }
-    .progress-bar-premium { height: 100%; background: #161d35; border-radius: 10px; }
+    .card-details-section { background: #f8fafc; padding: 1.75rem; border-radius: 24px; border: 1px solid #f1f5f9; height: 100%; }
+    .section-title-mini { font-size: var(--text-sm); font-weight: 800; text-transform: uppercase; color: #94a3b8; margin-bottom: 1.5rem; letter-spacing: 0.5px; }
+    .progress-premium { height: 8px; background: #e2e8f0; border-radius: 10px; overflow: hidden; }
+    .progress-bar-premium { height: 100%; background: var(--primary-color); border-radius: 10px; }
 
-    .system-card-premium { background: #f8fafc; border-radius: 24px; padding: 2rem; border: 1px solid #f1f5f9; }
-    .icon-sq { width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.25rem; }
-    .bg-corporate { background: #161d35; }
-    .info-pill { background: white; padding: 1rem; border-radius: 14px; border: 1px solid #f1f5f9; }
-    .info-pill label { display: block; font-size: 0.65rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; margin-bottom: 0.35rem; }
+    .system-card-premium { background: #f8fafc; border-radius: 28px; padding: 2.5rem; border: 1px solid #f1f5f9; }
+    .icon-sq { width: 48px; height: 48px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 1.35rem; }
+    .bg-corporate { background: var(--primary-color); }
+    .info-pill { background: white; padding: 1.25rem; border-radius: 18px; border: 1px solid #f1f5f9; }
+    .info-pill label { display: block; font-size: var(--text-xs); font-weight: 800; color: #94a3b8; text-transform: uppercase; margin-bottom: 0.5rem; }
     
-    .status-indicator { width: 10px; height: 10px; border-radius: 50%; background: #ef4444; }
-    .status-indicator.success { background: #22c55e; }
-    .badge-ambient { font-size: 0.75rem; font-weight: 800; color: #f59e0b; }
+    .status-indicator { width: 12px; height: 12px; border-radius: 50%; background: var(--status-danger-text); }
+    .status-indicator.success { background: var(--status-success-text); }
+    .badge-ambient { font-size: var(--text-sm); font-weight: 800; color: var(--status-warning-text); }
     .badge-ambient.prod { color: #8b5cf6; }
 
-    .modal-footer-premium { padding: 1.5rem 2.5rem; background: #ffffff; display: flex; justify-content: flex-end; gap: 1rem; border-top: 1px solid #f1f5f9; }
-    .btn-submit-premium { background: #161d35; color: #ffffff; border: none; padding: 0.85rem 2.5rem; border-radius: 14px; font-weight: 700; transition: all 0.2s; }
-    .btn-cancel-premium { background: #ffffff; color: #64748b; border: 1px solid #e2e8f0; padding: 0.85rem 2rem; border-radius: 14px; font-weight: 700; }
+    .modal-footer-premium { padding: 1.75rem 2.5rem; background: #ffffff; display: flex; justify-content: flex-end; gap: 1rem; border-top: 1px solid #f1f5f9; }
+    .btn-submit-premium { background: var(--primary-color); color: #ffffff; border: none; padding: 0.85rem 3rem; border-radius: 16px; font-weight: 700; transition: all 0.2s; font-size: var(--text-md); }
+    .btn-submit-premium:hover { transform: translateY(-2px); box-shadow: 0 10px 20px -10px rgba(0, 0, 0, 0.2); }
+    .btn-cancel-premium { background: #ffffff; color: #64748b; border: 1px solid #e2e8f0; padding: 0.85rem 2rem; border-radius: 16px; font-weight: 700; font-size: var(--text-md); transition: all 0.2s; }
+    .btn-cancel-premium:hover { background: #f8fafc; }
     
-    .text-corporate { color: #161d35 !important; }
-    .font-mono { font-family: 'DM Mono', monospace; }
-    .scroll-custom::-webkit-scrollbar { width: 5px; }
-    .scroll-custom::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
+    .text-corporate { color: var(--primary-color) !important; }
+    .font-mono { font-family: 'DM Mono', monospace; font-size: var(--text-xs); }
+    .scroll-custom::-webkit-scrollbar { width: 6px; }
+    .scroll-custom::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
   `],
-   standalone: true,
-   imports: [CommonModule]
+  standalone: true,
+  imports: [CommonModule]
 })
 export class EmpresaDetailsModalComponent {
    @Input() empresa: any;

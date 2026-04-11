@@ -30,7 +30,7 @@ import { UiService } from '../../../shared/services/ui.service';
         <div *ngIf="perfil && !loading" class="animate-fade-in">
           
           <!-- CHANGE PASSWORD REQUIRED -->
-          <div *ngIf="perfil?.requiere_cambio_password" class="alert-cambio-password p-3 mb-4 d-flex align-items-start gap-3">
+          <div *ngIf="perfil.requiere_cambio_password" class="alert-cambio-password p-3 mb-4 d-flex align-items-start gap-3">
               <i class="bi bi-shield-exclamation fs-4 text-warning mt-1"></i>
               <div>
                 <p class="mb-1 fw-bold text-dark">Actualización de Seguridad Requerida</p>

@@ -166,7 +166,7 @@ import { Chart, ChartConfiguration } from 'chart.js';
                   </div>
                 </td>
               </tr>
-              <tr *ngIf="!usersData?.length">
+              <tr *ngIf="!usersData.length">
                 <td colspan="6" class="text-center py-4 text-muted">Cargando datos de usuarios...</td>
               </tr>
             </tbody>

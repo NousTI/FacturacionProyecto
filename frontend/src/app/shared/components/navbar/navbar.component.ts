@@ -105,32 +105,32 @@ import { Notificacion } from '../../../domain/models/notificacion.model';
       box-sizing: border-box !important;
     }
     .page-header-info h5 {
-      font-size: 1.1rem;
+      font-size: var(--text-lg);
       letter-spacing: -0.5px;
     }
     .search-container {
-      background: #f1f5f9;
+      background: #ffffff;
       border-radius: 12px;
       padding: 0 16px;
       width: 250px;
-      border: 1px solid rgba(0,0,0,0.02);
+      border: 1px solid var(--border-color);
       align-items: center;
     }
     .btn-icon {
       width: 40px;
       height: 40px;
       border-radius: 12px;
-      background: #f1f5f9;
+      background: var(--primary-color);
       border: none;
       display: flex;
       align-items: center;
       justify-content: center;
-      color: #64748b;
+      color: #ffffff;
     }
     .avatar-circle {
       width: 40px;
       height: 40px;
-      background: var(--primary-gradient, #4facfe);
+      background: var(--primary-color);
       color: white;
       border-radius: 50%;
       display: flex;
@@ -138,7 +138,7 @@ import { Notificacion } from '../../../domain/models/notificacion.model';
       justify-content: center;
       font-weight: 600;
       cursor: pointer;
-      font-size: 1.1rem;
+      font-size: var(--text-lg);
     }
     .user-profile {
       cursor: pointer;
@@ -159,7 +159,7 @@ import { Notificacion } from '../../../domain/models/notificacion.model';
     .user-role {
       display: block;
       color: #64748b;
-      font-size: 0.7rem;
+      font-size: var(--text-xs);
       font-weight: 500;
       line-height: 1.2;
       margin-top: 2px;

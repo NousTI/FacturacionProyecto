@@ -16,7 +16,7 @@ import { FormsModule } from '@angular/forms';
                 type="text" 
                 [(ngModel)]="searchQuery" 
                 (ngModelChange)="onSearchChange($event)"
-                placeholder="Buscar por razón social, RUC o email..." 
+                placeholder="Q Buscar por Nombre, Cédula o RUC" 
                 class="form-control-premium-search"
               >
             </div>
@@ -119,7 +119,7 @@ import { FormsModule } from '@angular/forms';
       border-radius: 12px;
       padding: 0 1rem 0 2.75rem;
       height: 42px;
-      font-size: 0.95rem;
+      font-size: var(--text-md);
       color: #0f172a;
       transition: all 0.2s;
       width: 100%;
@@ -135,7 +135,7 @@ import { FormsModule } from '@angular/forms';
       border-radius: 12px;
       padding: 0 1rem;
       height: 42px;
-      font-size: 0.9rem;
+      font-size: var(--text-base);
       color: #475569;
       width: 100%;
       cursor: pointer;
@@ -156,7 +156,7 @@ import { FormsModule } from '@angular/forms';
       border-radius: 8px !important;
       padding: 0.6rem 1rem !important;
       color: #475569 !important;
-      font-size: 0.85rem !important;
+      font-size: var(--text-base) !important;
       font-weight: 500 !important;
       cursor: pointer;
       transition: all 0.2s;
@@ -177,7 +177,7 @@ import { FormsModule } from '@angular/forms';
       align-items: center;
       justify-content: center;
       transition: all 0.2s;
-      font-size: 0.9rem;
+      font-size: var(--text-base);
     }
     .btn-system-action:hover {
       background: #1f2937;
