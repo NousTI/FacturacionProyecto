@@ -1,5 +1,5 @@
-from typing import Optional
-from pydantic import BaseModel, Field
+from typing import Optional, Literal
+from pydantic import BaseModel, Field, field_validator
 from uuid import UUID
 from datetime import datetime, date
 
@@ -12,12 +12,31 @@ class ProductoBase(BaseModel):
     costo: Optional[float] = Field(None, ge=0)
     stock_actual: float = Field(0, ge=0)
     stock_minimo: float = Field(0, ge=0)
-    tipo_iva: str
-    porcentaje_iva: float
+    # Códigos SRI:
+    # '0' = 0%
+    # '2' = 12%
+    # '3' = 14%
+    # '4' = 15% (Actual)
+    # '5' = 5%
+    # '6' = No Objeto
+    # '7' = Exento (0%)
+    # '8' = 8%
+    # '10' = 13%
+    tipo_iva: Literal['0', '2', '3', '4', '5', '6', '7', '8', '10']
+    porcentaje_iva: float = 0.0
     maneja_inventario: bool = True
     tipo: Optional[str] = None
     unidad_medida: Optional[str] = None
     activo: bool = True
+
+    @field_validator('porcentaje_iva', mode='before')
+    @classmethod
+    def set_porcentaje_iva(cls, v, info):
+        from ...constants.sri_constants import SRI_TARIFAS_IVA
+        tipo = info.data.get('tipo_iva')
+        if tipo in SRI_TARIFAS_IVA:
+            return float(SRI_TARIFAS_IVA[tipo])
+        return v
 
 class ProductoCreacion(ProductoBase):
     pass
@@ -30,8 +49,20 @@ class ProductoActualizacion(BaseModel):
     costo: Optional[float] = Field(None, ge=0)
     stock_actual: Optional[int] = Field(None, ge=0)
     stock_minimo: Optional[int] = Field(None, ge=0)
-    tipo_iva: Optional[str] = None
+    tipo_iva: Optional[Literal['0', '2', '3', '4', '5', '6', '7', '8', '10']] = None
     porcentaje_iva: Optional[float] = None
+
+    @field_validator('porcentaje_iva', mode='before')
+    @classmethod
+    def set_porcentaje_iva_update(cls, v, info):
+        # Intentamos obtener tipo_iva del payload de actualización, 
+        # si no está presente, Pydantic no podrá inferir el porcentaje automáticamente 
+        # sin consultar la base de datos (lo cual es responsabilidad del servicio).
+        from ...constants.sri_constants import SRI_TARIFAS_IVA
+        tipo = info.data.get('tipo_iva')
+        if tipo and tipo in SRI_TARIFAS_IVA:
+            return float(SRI_TARIFAS_IVA[tipo])
+        return v
     maneja_inventario: Optional[bool] = None
     tipo: Optional[str] = None
     unidad_medida: Optional[str] = None

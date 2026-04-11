@@ -17,6 +17,7 @@ CREATE TABLE IF NOT EXISTS sistema_facturacion.planes (
     max_establecimientos INT NOT NULL,
     max_programaciones INT NOT NULL,
 
+    -- Caracteristicas del plan - Solo lectura
     caracteristicas JSONB,
 
     visible_publico BOOLEAN NOT NULL DEFAULT TRUE,
