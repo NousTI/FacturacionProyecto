@@ -165,7 +165,7 @@ import { CommonModule } from '@angular/common';
     }
     .table-container {
       background: var(--bg-main, #ffffff);
-      border-radius: 12px;
+      border-radius: 20px;
       border: 1px solid var(--border-color, #f1f5f9);
       display: flex;
       flex-direction: column;
