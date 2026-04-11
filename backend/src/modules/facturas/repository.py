@@ -107,6 +107,7 @@ class RepositorioFacturas:
                    e.direccion as emisor_direccion,
                    e.email as emisor_email,
                    e.tipo_contribuyente as emisor_tipo,
+                   e.tipo_persona as emisor_tipo_persona,
                    e.obligado_contabilidad as emisor_obligado,
                    e.logo_url as emisor_logo,
                    es.codigo as establecimiento_codigo,
@@ -148,7 +149,8 @@ class RepositorioFacturas:
                     'ruc': data.get('emisor_ruc'),
                     'direccion': data.get('emisor_direccion'),
                     'email': data.get('emisor_email'),
-                    'tipo_contribuyente': data.get('emisor_tipo') or 'NATURAL',
+                    'tipo_persona': data.get('emisor_tipo_persona') or 'NATURAL',
+                    'tipo_contribuyente': data.get('emisor_tipo') or 'REGIMEN_GENERAL',
                     'obligado_contabilidad': data.get('emisor_obligado') or False,
                     'logo_url': data.get('emisor_logo')
                 }
@@ -220,6 +222,7 @@ class RepositorioFacturas:
                    e.direccion as emisor_direccion,
                    e.email as emisor_email,
                    e.tipo_contribuyente as emisor_tipo,
+                   e.tipo_persona as emisor_tipo_persona,
                    e.obligado_contabilidad as emisor_obligado,
                    e.logo_url as emisor_logo,
                    es.codigo as establecimiento_codigo,
@@ -307,7 +310,8 @@ class RepositorioFacturas:
                         'ruc': r.get('emisor_ruc'),
                         'direccion': r.get('emisor_direccion'),
                         'email': r.get('emisor_email'),
-                        'tipo_contribuyente': r.get('emisor_tipo') or 'NATURAL',
+                        'tipo_persona': r.get('emisor_tipo_persona') or 'NATURAL',
+                        'tipo_contribuyente': r.get('emisor_tipo') or 'REGIMEN_GENERAL',
                         'obligado_contabilidad': r.get('emisor_obligado') or False,
                         'logo_url': r.get('emisor_logo')
                     }
