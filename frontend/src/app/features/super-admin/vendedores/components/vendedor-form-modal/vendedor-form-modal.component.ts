@@ -2,6 +2,7 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { SriValidators } from '../../../../../shared/utils/sri-validators';
+import { SRI_TIPOS_IDENTIFICACION } from '../../../../../core/constants/sri-iva.constants';
 
 @Component({
   selector: 'app-vendedor-form-modal',
@@ -74,23 +75,21 @@ import { SriValidators } from '../../../../../shared/utils/sri-validators';
                 <div class="input-premium-group mb-2">
                   <i class="bi bi-tag input-icon"></i>
                   <select formControlName="tipoIdentificacion" class="form-select-premium" (change)="onTipoIdChange()">
-                    <option value="CEDULA">Cédula</option>
-                    <option value="RUC">RUC</option>
-                    <option value="PASAPORTE">Pasaporte Internac.</option>
+                    <option *ngFor="let tipo of sriTipos" [value]="tipo.code">{{ tipo.label }}</option>
                   </select>
                 </div>
 
                 <label class="form-label-premium">Número de Identificación *</label>
                 <div class="input-premium-group">
                   <i class="bi bi-card-text input-icon"></i>
-                  <input type="text" formControlName="documentoIdentidad" class="form-control-premium"
-                    [class.is-invalid]="vendedorForm.get('documentoIdentidad')?.invalid && vendedorForm.get('documentoIdentidad')?.touched"
+                  <input type="text" formControlName="identificacion" class="form-control-premium"
+                    [class.is-invalid]="vendedorForm.get('identificacion')?.invalid && vendedorForm.get('identificacion')?.touched"
                     [placeholder]="getIdPlaceholder()"
                     [maxlength]="getIdMaxLength()"
-                    (keypress)="vendedorForm.get('tipoIdentificacion')?.value === 'PASAPORTE' ? null : onlyNumbers($event)">
+                    (keypress)="vendedorForm.get('tipoIdentificacion')?.value === '06' ? null : onlyNumbers($event)">
                 </div>
-                <div class="error-feedback" *ngIf="vendedorForm.get('documentoIdentidad')?.invalid && vendedorForm.get('documentoIdentidad')?.touched">
-                  {{ vendedorForm.get('documentoIdentidad')?.errors?.['message'] || 'Identificación inválida o incompleta' }}
+                <div class="error-feedback" *ngIf="vendedorForm.get('identificacion')?.invalid && vendedorForm.get('identificacion')?.touched">
+                  {{ vendedorForm.get('identificacion')?.errors?.['message'] || 'Identificación inválida o incompleta' }}
                 </div>
                 <small class="text-muted d-block mt-1">
                   {{ getIdHint() }}
@@ -430,11 +429,11 @@ export class VendedorFormModalComponent {
       
       // Solo inferir el tipo de identificación si NO viene definido en la data original
       // Esto permite que el usuario pueda cambiarlo manualmente después sin que el setter lo sobreescriba
-      if (!normalizedData.tipoIdentificacion && normalizedData.documentoIdentidad) {
-        const doc = normalizedData.documentoIdentidad.toString();
-        if (doc.length === 13) normalizedData.tipoIdentificacion = 'RUC';
-        else if (doc.length === 10) normalizedData.tipoIdentificacion = 'CEDULA';
-        else normalizedData.tipoIdentificacion = 'CEDULA'; // Default
+      if (!normalizedData.tipoIdentificacion && normalizedData.identificacion) {
+        const doc = normalizedData.identificacion.toString();
+        if (doc.length === 13) normalizedData.tipoIdentificacion = '04';
+        else if (doc.length === 10) normalizedData.tipoIdentificacion = '05';
+        else normalizedData.tipoIdentificacion = '05'; // Default
       }
 
       this.originalData = JSON.parse(JSON.stringify(normalizedData));
@@ -453,13 +452,14 @@ export class VendedorFormModalComponent {
 
   vendedorForm!: FormGroup;
   activeTab: 'general' | 'comisiones' | 'permisos' = 'general';
+  sriTipos = SRI_TIPOS_IDENTIFICACION;
 
   constructor(private fb: FormBuilder) {
     this.vendedorForm = this.fb.group({
       nombres: ['', [Validators.required, Validators.minLength(3)]],
       apellidos: ['', [Validators.required, Validators.minLength(3)]],
-      tipoIdentificacion: ['CEDULA', Validators.required],
-      documentoIdentidad: ['', [Validators.required, SriValidators.identificacionEcuador()]],
+      tipoIdentificacion: ['05', Validators.required],
+      identificacion: ['', [Validators.required, SriValidators.identificacionEcuador()]],
       email: [''],
       telefono: ['', [Validators.required, Validators.pattern(/^09[0-9]{8}$/)]],
       // Comisiones
@@ -498,16 +498,16 @@ export class VendedorFormModalComponent {
 
   onTipoIdChange() {
     const tipo = this.vendedorForm.get('tipoIdentificacion')?.value;
-    const docControl = this.vendedorForm.get('documentoIdentidad');
+    const docControl = this.vendedorForm.get('identificacion');
 
     if (docControl) {
       const validators = [Validators.required];
-      if (tipo === 'PASAPORTE') {
+      if (tipo === '06') {
         validators.push(SriValidators.pasaporte());
-      } else if (tipo === 'CEDULA') {
+      } else if (tipo === '05') {
         validators.push(Validators.pattern(/^[0-9]{10}$/));
         validators.push(SriValidators.validarCedulaEcuador());
-      } else if (tipo === 'RUC') {
+      } else if (tipo === '04') {
         validators.push(Validators.pattern(/^[0-9]{13}$/));
         validators.push(SriValidators.rucEcuador());
       }
@@ -545,11 +545,11 @@ export class VendedorFormModalComponent {
   getIdPlaceholder(): string {
     const tipo = this.vendedorForm.get('tipoIdentificacion')?.value;
     switch (tipo) {
-      case 'CEDULA':
+      case '05':
         return 'Ej: 1234567890 (10 dígitos)';
-      case 'RUC':
+      case '04':
         return 'Ej: 1234567890001 (13 dígitos)';
-      case 'PASAPORTE':
+      case '06':
         return 'Ej: AB123456 (alfanumérico)';
       default:
         return '0000000000';
@@ -558,19 +558,19 @@ export class VendedorFormModalComponent {
 
   getIdMaxLength(): number {
     const tipo = this.vendedorForm.get('tipoIdentificacion')?.value;
-    if (tipo === 'PASAPORTE') return 20;
-    if (tipo === 'RUC') return 13;
-    return 10; // CEDULA
+    if (tipo === '06') return 20;
+    if (tipo === '04') return 13;
+    return 10; // 05 - CEDULA
   }
 
   getIdHint(): string {
     const tipo = this.vendedorForm.get('tipoIdentificacion')?.value;
     switch (tipo) {
-      case 'CEDULA':
+      case '05':
         return 'Ingresa 10 dígitos de la cédula ecuatoriana válida';
-      case 'RUC':
+      case '04':
         return 'Ingresa 13 dígitos del RUC ecuatoriano válido';
-      case 'PASAPORTE':
+      case '06':
         return 'Ingresa el número de pasaporte (máximo 20 caracteres alfanuméricos)';
       default:
         return '';

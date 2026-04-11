@@ -88,7 +88,6 @@ class SRITipoIdentificacion:
     PASAPORTE = '06'
     CONSUMIDOR_FINAL = '07'
     ID_EXTERIOR = '08'
-    PLACA = '09'
 
 SRI_TARIFAS_IVA = {
     '0': 0,

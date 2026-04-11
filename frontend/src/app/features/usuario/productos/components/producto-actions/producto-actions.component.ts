@@ -2,62 +2,84 @@ import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HasPermissionDirective } from '../../../../../core/directives/has-permission.directive';
+import { SRI_IVA_TARIFAS } from '../../../../../core/constants/sri-iva.constants';
 
 @Component({
   selector: 'app-producto-actions',
   standalone: true,
   imports: [CommonModule, FormsModule, HasPermissionDirective],
   template: `
-    <div class="actions-box-lux">
-      <div class="row align-items-center g-3">
-        <!-- BUSCADOR -->
-        <div class="col-12 col-lg-6">
-          <div class="search-input-wrapper">
-            <i class="bi bi-search search-icon"></i>
-            <input 
-              type="text" 
-              [(ngModel)]="searchQuery" 
-              (ngModelChange)="onSearchChange()"
-              placeholder="Buscar por código, nombre o descripción..." 
-              class="search-input-lux"
-            >
+    <section class="module-actions">
+      <div class="actions-bar-container">
+        <div class="row align-items-center g-3">
+          <!-- BUSCADOR -->
+          <div class="col-12 col-lg-3">
+            <div class="search-box-premium">
+              <i class="bi bi-search"></i>
+              <input 
+                type="text" 
+                [(ngModel)]="searchQuery" 
+                (ngModelChange)="onSearchChange()"
+                placeholder="Buscar producto..." 
+                class="form-control-premium-search"
+              >
+            </div>
           </div>
-        </div>
 
-        <!-- FILTROS Y ACCIÓN -->
-        <div class="col-12 col-lg-6">
-          <div class="d-flex gap-2 justify-content-lg-end align-items-center">
-            
-            <!-- FILTRO TIPO -->
-            <div class="dropdown">
-              <button class="btn-filter-lux" type="button" data-bs-toggle="dropdown">
-                <i class="bi bi-box-fill me-2"></i>
-                {{ filters.tipo === 'ALL' ? 'Todos los Tipos' : (filters.tipo === 'PRODUCTO' ? 'Productos' : 'Servicios') }}
-              </button>
-              <ul class="dropdown-menu dropdown-menu-end shadow-premium-lux border-0 p-2">
-                <li><a class="dropdown-item" (click)="setTipoFilter('ALL')">Todos los Tipos</a></li>
-                <li><a class="dropdown-item" (click)="setTipoFilter('PRODUCTO')">Productos</a></li>
-                <li><a class="dropdown-item" (click)="setTipoFilter('SERVICIO')">Servicios</a></li>
-              </ul>
+          <!-- FILTROS -->
+          <div class="col-12 col-lg-7">
+            <div class="row g-2">
+              <!-- TIPO -->
+              <div class="col-md-4">
+                <div class="dropdown">
+                  <button class="form-select-premium dropdown-toggle d-flex align-items-center justify-content-between" type="button" data-bs-toggle="dropdown">
+                    <span>{{ filters.tipo === 'ALL' ? 'Todos los Tipos' : (filters.tipo === 'PRODUCTO' ? 'Productos' : 'Servicios') }}</span>
+                  </button>
+                  <ul class="dropdown-menu dropdown-menu-premium border-0 shadow-sm">
+                    <li><a class="dropdown-item" (click)="setTipoFilter('ALL')">Todos los Tipos</a></li>
+                    <li><a class="dropdown-item" (click)="setTipoFilter('PRODUCTO')">Productos</a></li>
+                    <li><a class="dropdown-item" (click)="setTipoFilter('SERVICIO')">Servicios</a></li>
+                  </ul>
+                </div>
+              </div>
+
+              <!-- ESTADO -->
+              <div class="col-md-4">
+                <div class="dropdown">
+                  <button class="form-select-premium dropdown-toggle d-flex align-items-center justify-content-between" type="button" data-bs-toggle="dropdown">
+                    <span>{{ filters.estado === 'ALL' ? 'Todo Estado' : (filters.estado === 'ACTIVO' ? 'Activos' : 'Inactivos') }}</span>
+                  </button>
+                  <ul class="dropdown-menu dropdown-menu-premium border-0 shadow-sm">
+                    <li><a class="dropdown-item" (click)="setEstadoFilter('ALL')">Todo Estado</a></li>
+                    <li><a class="dropdown-item" (click)="setEstadoFilter('ACTIVO')">Activos</a></li>
+                    <li><a class="dropdown-item" (click)="setEstadoFilter('INACTIVO')">Inactivos</a></li>
+                  </ul>
+                </div>
+              </div>
+
+              <!-- IVA -->
+              <div class="col-md-4">
+                <div class="dropdown">
+                  <button class="form-select-premium dropdown-toggle d-flex align-items-center justify-content-between" type="button" data-bs-toggle="dropdown">
+                    <span>{{ getIvaLabel() }}</span>
+                  </button>
+                  <ul class="dropdown-menu dropdown-menu-premium border-0 shadow-sm">
+                    <li><a class="dropdown-item" (click)="setIvaFilter('ALL')">Todo IVA</a></li>
+                    <li *ngFor="let iva of ivaOptions">
+                      <a class="dropdown-item" (click)="setIvaFilter(iva.code)">{{ iva.label }}</a>
+                    </li>
+                  </ul>
+                </div>
+              </div>
             </div>
+          </div>
 
-            <!-- FILTRO ESTADO -->
-            <div class="dropdown">
-              <button class="btn-filter-lux" type="button" data-bs-toggle="dropdown">
-                <i class="bi bi-toggle-on me-2"></i>
-                {{ filters.estado === 'ALL' ? 'Todo Estado' : (filters.estado === 'ACTIVO' ? 'Activos' : 'Inactivos') }}
-              </button>
-              <ul class="dropdown-menu dropdown-menu-end shadow-premium-lux border-0 p-2">
-                <li><a class="dropdown-item" (click)="setEstadoFilter('ALL')">Todo Estado</a></li>
-                <li><a class="dropdown-item" (click)="setEstadoFilter('ACTIVO')">Activos</a></li>
-                <li><a class="dropdown-item" (click)="setEstadoFilter('INACTIVO')">Inactivos</a></li>
-              </ul>
-            </div>
-
+          <!-- ACCIÓN -->
+          <div class="col-12 col-lg-2 text-lg-end">
             <button
               *hasPermission="'PRODUCTOS_CREAR'"
               (click)="onCreate.emit()"
-              class="btn-create-lux"
+              class="btn-system-action w-100"
             >
               <i class="bi bi-plus-lg me-2"></i>
               <span>Nuevo Item</span>
@@ -65,110 +87,102 @@ import { HasPermissionDirective } from '../../../../../core/directives/has-permi
           </div>
         </div>
       </div>
-    </div>
+    </section>
   `,
   styles: [`
-    .actions-box-lux {
-      background: white;
-      border: 1px solid #f1f5f9;
-      border-radius: 20px;
-      padding: 1rem 1.5rem;
-      margin-bottom: 2rem;
+    :host {
+      display: block;
+      margin-bottom: 0;
+      font-family: var(--font-main);
     }
-
-    .search-input-wrapper {
+    .actions-bar-container {
+      background: transparent;
+      border: none;
+    }
+    .search-box-premium {
       position: relative;
-      display: flex;
-      align-items: center;
+      width: 100%;
     }
-
-    .search-icon {
+    .search-box-premium i {
       position: absolute;
-      left: 1.25rem;
+      left: 1rem;
+      top: 50%;
+      transform: translateY(-50%);
       color: #94a3b8;
       font-size: 1rem;
-      pointer-events: none;
     }
-
-    .search-input-lux {
+    .form-control-premium-search {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 0 1rem 0 2.75rem;
+      height: 42px;
+      font-size: var(--text-base);
+      color: #0f172a;
+      transition: all 0.2s;
       width: 100%;
-      background: #f8fafc;
-      border: 1px solid #f1f5f9;
-      border-radius: 14px;
-      padding: 0.7rem 1rem 0.7rem 3rem;
-      font-size: 0.9rem;
-      font-weight: 500;
-      color: #1e293b;
-      transition: all 0.2s;
     }
-
-    .search-input-lux:focus {
-      background: white;
-      border-color: #3b82f6;
-      box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.05);
+    .form-control-premium-search:focus {
+      border-color: var(--primary-color);
       outline: none;
+      box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.05);
     }
-
-    .btn-filter-lux {
-      background: white;
-      border: 1px solid #f1f5f9;
-      padding: 0.7rem 1.25rem;
-      border-radius: 14px;
-      font-size: 0.85rem;
-      font-weight: 700;
-      color: #64748b;
-      display: flex;
-      align-items: center;
-      transition: all 0.2s;
-    }
-
-    .btn-filter-lux:hover {
-      background: #f8fafc;
-      color: #161d35;
-      border-color: #cbd5e1;
-    }
-
-    .btn-create-lux {
-      background: #161d35;
-      color: white;
-      border: none;
-      padding: 0.7rem 1.5rem;
-      border-radius: 14px;
-      font-size: 0.85rem;
-      font-weight: 800;
-      display: flex;
-      align-items: center;
-      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-
-    .btn-create-lux:hover {
-      background: #232d4b;
-      transform: translateY(-2px);
-      box-shadow: 0 10px 20px -5px rgba(22, 29, 53, 0.3);
-    }
-
-    .dropdown-menu {
-      border-radius: 16px;
-      padding: 0.5rem;
-      min-width: 200px;
-    }
-
-    .dropdown-item {
-      padding: 0.7rem 1rem;
-      border-radius: 10px;
-      font-size: 0.85rem;
+    .form-select-premium {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 0 1rem;
+      height: 42px;
+      font-size: var(--text-sm);
       font-weight: 600;
       color: #475569;
+      width: 100%;
       cursor: pointer;
+      text-align: left;
     }
-
+    .form-select-premium:focus {
+      border-color: var(--primary-color);
+      outline: none;
+    }
+    .dropdown-menu-premium {
+      border-radius: 12px !important;
+      padding: 0.5rem !important;
+      min-width: 100%;
+      margin-top: 0.5rem !important;
+      max-height: 300px;
+      overflow-y: auto;
+      box-shadow: 0 15px 35px rgba(22, 29, 53, 0.15) !important;
+    }
+    .dropdown-item {
+      border-radius: 8px !important;
+      padding: 0.6rem 1rem !important;
+      color: #475569 !important;
+      font-size: var(--text-sm) !important;
+      font-weight: 600 !important;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
     .dropdown-item:hover {
-      background: #f8fafc;
-      color: #161d35;
+      background-color: var(--primary-color) !important;
+      color: #ffffff !important;
     }
-
-    .shadow-premium-lux {
-      box-shadow: 0 15px 35px rgba(22, 29, 53, 0.15);
+    .btn-system-action {
+      background: var(--primary-color);
+      color: #ffffff;
+      border: none;
+      padding: 0 1.5rem;
+      height: 42px;
+      border-radius: 12px;
+      font-weight: 700;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+      font-size: var(--text-base);
+    }
+    .btn-system-action:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 20px -5px rgba(22, 29, 53, 0.3);
     }
   `]
 })
@@ -180,8 +194,17 @@ export class ProductoActionsComponent {
 
   filters = {
     tipo: 'ALL',
-    estado: 'ALL'
+    estado: 'ALL',
+    tipo_iva: 'ALL'
   };
+
+  ivaOptions = SRI_IVA_TARIFAS;
+
+  getIvaLabel(): string {
+    if (this.filters.tipo_iva === 'ALL') return 'Todo IVA';
+    const match = this.ivaOptions.find(i => i.code === this.filters.tipo_iva);
+    return match ? match.label : 'IVA';
+  }
 
   onSearchChange() {
     this.searchQueryChange.emit(this.searchQuery);
@@ -194,6 +217,11 @@ export class ProductoActionsComponent {
 
   setEstadoFilter(estado: string) {
     this.filters.estado = estado;
+    this.emitFilterChange();
+  }
+
+  setIvaFilter(tipo_iva: string) {
+    this.filters.tipo_iva = tipo_iva;
     this.emitFilterChange();
   }
 

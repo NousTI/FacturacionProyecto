@@ -158,7 +158,7 @@ class RepositorioSuscripciones:
                 cur.execute("""
                     SELECT c.*, v.nombres || ' ' || v.apellidos as vendedor_nombre,
                            v.nombres as vendedor_nombres, v.apellidos as vendedor_apellidos,
-                           v.documento_identidad, uv.email as vendedor_email,
+                           v.identificacion, uv.email as vendedor_email,
                            e.nombre_comercial as empresa_nombre, p.monto as monto_pago
                     FROM sistema_facturacion.comisiones c
                     LEFT JOIN sistema_facturacion.vendedores v ON c.vendedor_id = v.id
@@ -186,7 +186,7 @@ class RepositorioSuscripciones:
                     "vendedor": {
                         "id": str(c_full['vendedor_id']),
                         "nombre": c_full['vendedor_nombre'],
-                        "identificacion": c_full['documento_identidad'],
+                        "identificacion": c_full['identificacion'],
                         "email": c_full['vendedor_email']
                     },
                     "empresa": {

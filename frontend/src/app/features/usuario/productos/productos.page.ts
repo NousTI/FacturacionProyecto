@@ -139,11 +139,44 @@ import { Producto, ProductoStats } from '../../../domain/models/producto.model';
     <app-toast></app-toast>
   `,
   styles: [`
-    .productos-page-container {
-      min-height: 100vh;
+    :host {
       display: flex;
       flex-direction: column;
-      gap: 1.5rem;
+      flex: 1;
+      width: 100%;
+      overflow: hidden;
+      min-height: 0;
+    }
+
+    .productos-page-container {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      background: var(--bg-main, #ffffff);
+      padding: 0;
+      overflow: hidden;
+      min-height: 0;
+      gap: 0;
+    }
+
+    .view-section {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+      min-height: 0;
+      overflow: hidden;
+      animation: fadeIn 0.3s ease;
+    }
+
+    .table-minimal {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+      background: transparent;
+      border: none;
+      border-radius: 0;
     }
 
     /* TABS STYLES - COPIED FROM CLIENTES */
@@ -253,7 +286,7 @@ export class ProductosPage implements OnInit, OnDestroy {
   private _allProductos: Producto[] = [];
 
   searchQuery: string = '';
-  filters = { tipo: 'ALL', estado: 'ALL' };
+  filters = { tipo: 'ALL', estado: 'ALL', tipo_iva: 'ALL' };
 
   showCreateModal: boolean = false;
   showDetailModal: boolean = false;
@@ -306,7 +339,9 @@ export class ProductosPage implements OnInit, OnDestroy {
         (this.filters.estado === 'ACTIVO' && p.activo) ||
         (this.filters.estado === 'INACTIVO' && !p.activo);
 
-      return matchSearch && matchTipo && matchEstado;
+      const matchIva = this.filters.tipo_iva === 'ALL' || p.tipo_iva === this.filters.tipo_iva;
+
+      return matchSearch && matchTipo && matchEstado && matchIva;
     });
     this.cd.detectChanges();
   }

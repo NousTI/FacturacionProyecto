@@ -8,7 +8,19 @@ export interface Producto {
     costo?: number;
     stock_actual: number;
     stock_minimo: number;
-    tipo_iva: string;
+    /**
+     * Códigos SRI:
+     * '0' = 0%
+     * '2' = 12% (Tarifa histórica / Notas de Crédito)
+     * '3' = 14% (Tarifa histórica)
+     * '4' = 15% (Tarifa General Vigente)
+     * '5' = 5% (Canasta básica / Otros)
+     * '6' = No objeto de impuesto
+     * '7' = Exento de IVA
+     * '8' = 8% (Tarifa reducida feriados turísticos)
+     * '10' = 13% (Materiales de construcción)
+     */
+    tipo_iva: '0' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '10';
     porcentaje_iva: number;
     maneja_inventario: boolean;
     tipo?: string;

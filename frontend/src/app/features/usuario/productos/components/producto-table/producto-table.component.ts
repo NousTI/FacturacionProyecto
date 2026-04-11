@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, OnInit } from '@angular/core';
+import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Producto } from '../../../../../domain/models/producto.model';
 import { HasPermissionDirective } from '../../../../../core/directives/has-permission.directive';
@@ -8,251 +8,217 @@ import { HasPermissionDirective } from '../../../../../core/directives/has-permi
   standalone: true,
   imports: [CommonModule, HasPermissionDirective],
   template: `
-    <div class="table-container-lux">
-      <table class="table mb-0 align-middle">
-        <thead>
-          <tr>
-            <th class="ps-4">Item / Tipo</th>
-            <th style="width: 140px">Referencia</th>
-            <th style="width: 130px">Estado</th>
-            <th style="width: 140px">Venta (USD)</th>
-            <th *hasPermission="'PRODUCTOS_VER_COSTOS'" style="width: 130px">Costo (USD)</th>
-            <th style="width: 160px">Disponibilidad</th>
-            <th class="text-end pe-4" style="width: 80px">Gesti&oacute;n</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let producto of productos" class="row-lux animate-fade-in">
-            <td class="ps-4">
-              <div class="d-flex align-items-center">
-                <div class="item-icon-wrapper me-3" [style.background]="getAvatarColor(producto.nombre, 0.1)" [style.color]="getAvatarColor(producto.nombre, 1)">
-                  <i class="bi" [ngClass]="producto.tipo === 'SERVICIO' ? 'bi-lightning-charge-fill' : 'bi-box-seam-fill'"></i>
-                </div>
-                <div>
-                  <span class="fw-bold text-dark d-block mb-0">{{ producto.nombre }}</span>
-                  <small class="text-muted text-uppercase fw-800" style="font-size: 0.65rem; letter-spacing: 0.5px;">{{ producto.tipo }}</small>
-                </div>
-              </div>
-            </td>
-            <td>
-              <div class="sku-badge">{{ producto.codigo }}</div>
-            </td>
-            <td>
-              <div class="badge-status-lux" [ngClass]="producto.activo ? 'activo' : 'inactivo'">
-                <div class="dot"></div>
-                {{ producto.activo ? 'ACTIVO' : 'INACTIVO' }}
-              </div>
-            </td>
-            <td>
-              <span class="price-lux">{{ producto.precio | currency:'USD' }}</span>
-            </td>
-            <td *hasPermission="'PRODUCTOS_VER_COSTOS'">
-              <span class="cost-lux">{{ producto.costo !== null ? (producto.costo | currency:'USD') : '---' }}</span>
-            </td>
-            <td>
-               <div *ngIf="producto.maneja_inventario; else noInv" class="stock-container">
-                  <div class="stock-info">
-                    <span class="stock-val" [ngClass]="getStockClass(producto)">
-                      {{ producto.stock_actual }}
+    <section class="module-table">
+      <div class="table-container">
+        <div class="table-responsive-premium">
+          <table class="table mb-0 align-middle">
+            <thead>
+              <tr>
+                <th style="width: 250px">Producto / Servicio</th>
+                <th style="width: 150px">Precio / Costo</th>
+                <th style="width: 150px">Inventario</th>
+                <th class="text-center" style="width: 100px">IVA</th>
+                <th class="text-center" style="width: 120px">Estado</th>
+                <th class="text-end" style="width: 80px">Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let producto of productos">
+                <td>
+                  <div class="d-flex align-items-center" style="max-width: 230px;">
+                    <div class="avatar-soft-premium me-2">
+                       {{ (producto.tipo === 'PRODUCTO' ? 'PR' : 'SR') }}
+                    </div>
+                    <div class="text-truncate">
+                      <span class="fw-bold text-dark d-block mb-0 text-truncate" [title]="producto.nombre">{{ producto.nombre }}</span>
+                      <small class="text-muted font-mono" style="font-size: 0.7rem;">{{ producto.codigo }}</small>
+                    </div>
+                  </div>
+                </td>
+                <td>
+                  <div class="d-flex flex-column">
+                    <span class="text-dark fw-600" style="font-size: 0.85rem;">$ {{ producto.precio | number:'1.2-2' }}</span>
+                    <small *ngIf="producto.costo !== null" class="text-muted" style="font-size: 0.7rem;">Costo: $ {{ producto.costo | number:'1.2-2' }}</small>
+                  </div>
+                </td>
+                <td>
+                  <div *ngIf="producto.maneja_inventario; else noInv" class="d-flex flex-column">
+                    <span class="text-dark fw-600" [ngClass]="producto.stock_actual <= producto.stock_minimo ? 'text-danger' : ''" style="font-size: 0.85rem;">
+                      {{ producto.stock_actual }} {{ producto.unidad_medida }}
                     </span>
-                    <span class="stock-unit text-muted small ms-1">{{ producto.unidad_medida }}</span>
+                    <small class="text-muted" style="font-size: 0.7rem;" *ngIf="producto.stock_actual <= producto.stock_minimo">Stock Bajo</small>
                   </div>
-                  <div class="stock-bar-bg" *ngIf="producto.stock_minimo > 0">
-                    <div class="stock-bar-fill" [style.width.%]="calculateStockPercent(producto)" [ngClass]="getStockClass(producto, true)"></div>
+                  <ng-template #noInv>
+                    <span class="text-muted fw-600" style="font-size: 0.85rem;">N/A</span>
+                  </ng-template>
+                </td>
+                <td class="text-center">
+                  <span class="text-muted fw-700" style="font-size: 0.7rem;">{{ producto.porcentaje_iva }}%</span>
+                </td>
+                <td class="text-center">
+                  <span class="badge-status-premium" [ngClass]="producto.activo ? 'activo' : 'inactivo'">
+                    {{ producto.activo ? 'ACTIVO' : 'INACTIVO' }}
+                  </span>
+                </td>
+                <td class="text-end">
+                  <div class="dropdown">
+                    <button 
+                      class="btn-action-trigger" 
+                      type="button" 
+                      [id]="'actions-' + producto.id" 
+                      data-bs-toggle="dropdown" 
+                      aria-expanded="false"
+                    >
+                      <i class="bi bi-three-dots"></i>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end border-0 p-2 rounded-4" [attr.aria-labelledby]="'actions-' + producto.id">
+                      <li>
+                        <a class="dropdown-item rounded-3 py-2" href="javascript:void(0)" (click)="onAction.emit({type: 'view', producto})">
+                          <i class="bi bi-eye text-corporate"></i>
+                          <span class="ms-2">Ver Detalles</span>
+                        </a>
+                      </li>
+                      <li>
+                        <a class="dropdown-item rounded-3 py-2" href="javascript:void(0)" (click)="onAction.emit({type: 'edit', producto})">
+                          <i class="bi bi-pencil-square text-corporate"></i>
+                          <span class="ms-2">Editar</span>
+                        </a>
+                      </li>
+                      <li><hr class="dropdown-divider mx-2"></li>
+                      <li>
+                        <a class="dropdown-item rounded-3 py-2 text-danger" href="javascript:void(0)" (click)="onAction.emit({type: 'delete', producto})">
+                          <i class="bi bi-trash"></i>
+                          <span class="ms-2">Eliminar Producto</span>
+                        </a>
+                      </li>
+                    </ul>
                   </div>
-               </div>
-               <ng-template #noInv>
-                  <div class="badge-flat-soft">No Inventariable</div>
-               </ng-template>
-            </td>
-            <td class="text-end pe-4">
-              <div class="dropdown">
-                <button 
-                  class="btn-trigger-lux" 
-                  type="button" 
-                  [id]="'actions-p-' + producto.id" 
-                  data-bs-toggle="dropdown" 
-                  aria-expanded="false"
-                >
-                  <i class="bi bi-three-dots-vertical"></i>
-                </button>
-                <ul class="dropdown-menu dropdown-menu-end border-0 p-2 rounded-4 animate-fade-in-scale" [attr.aria-labelledby]="'actions-p-' + producto.id">
-                  <li>
-                    <a class="dropdown-item py-2" href="javascript:void(0)" (click)="onAction.emit({type: 'view', producto})">
-                      <div class="icon-item bg-soft-info"><i class="bi bi-eye-fill"></i></div>
-                      <span class="ms-2">Detalles</span>
-                    </a>
-                  </li>
-                  <li *hasPermission="'PRODUCTOS_EDITAR'">
-                    <a class="dropdown-item py-2" href="javascript:void(0)" (click)="onAction.emit({type: 'edit', producto})">
-                      <div class="icon-item bg-soft-primary"><i class="bi bi-pencil-fill"></i></div>
-                      <span class="ms-2">Editar</span>
-                    </a>
-                  </li>
-                  <li *hasPermission="'PRODUCTOS_ELIMINAR'"><hr class="dropdown-divider mx-2 opacity-10"></li>
-                  <li *hasPermission="'PRODUCTOS_ELIMINAR'">
-                    <a class="dropdown-item py-2 text-danger" href="javascript:void(0)" (click)="onAction.emit({type: 'delete', producto})">
-                      <div class="icon-item bg-soft-danger"><i class="bi bi-trash3-fill"></i></div>
-                      <span class="ms-2">Eliminar</span>
-                    </a>
-                  </li>
-                </ul>
-              </div>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-
-      <div *ngIf="productos.length === 0" class="empty-state py-5 text-center">
-        <div class="empty-icon-bg mb-3 mx-auto">
-          <i class="bi bi-search"></i>
+                </td>
+              </tr>
+              <tr *ngIf="productos.length === 0">
+                <td colspan="6" class="text-center p-5 text-muted">
+                  <i class="bi bi-inbox fs-1 d-block mb-3"></i>
+                  No se encontraron productos o servicios registrados.
+                </td>
+              </tr>
+            </tbody>
+          </table>
         </div>
-        <h5 class="fw-bold text-dark">Sin coincidencias</h5>
-        <p class="text-muted small">No encontramos productos con esos filtros.</p>
       </div>
-    </div>
+    </section>
   `,
   styles: [`
-    .table-container-lux { background: #fff; position: relative; overflow: visible; }
-    
+    :host {
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      min-height: 0;
+      width: 100%;
+    }
+    .module-table { 
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+      margin-top: 0; 
+    }
+    .table-container {
+      background: var(--bg-main, #ffffff);
+      border-radius: 20px;
+      border: 1px solid var(--border-color, #f1f5f9);
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+      height: auto;
+      max-height: 100%;
+      overflow: hidden;
+      margin-bottom: 0;
+    }
+    .table-responsive-premium { 
+      flex: 1;
+      overflow-y: auto; 
+      overflow-x: auto;
+      position: relative; 
+    }
+    .table {
+      border-collapse: separate;
+      border-spacing: 0;
+      width: 100%;
+    }
     .table thead th {
-      background: #fcfdfe;
-      padding: 1.25rem 1rem;
-      font-size: 0.65rem;
-      text-transform: uppercase;
-      letter-spacing: 1.2px;
-      color: #94a3b8;
-      font-weight: 800;
-      border-bottom: 2px solid #f8fafc;
       position: sticky;
       top: 0;
-      z-index: 1;
+      z-index: 10;
+      background: var(--bg-main, #ffffff);
+      padding: 1rem 1.5rem;
+      font-size: var(--text-base);
+      color: #0f172a;
+      font-weight: 600;
+      border-bottom: 2px solid var(--border-color, #f1f5f9);
+      vertical-align: middle;
+    }
+    .table tbody td {
+      padding: 1.25rem 1.5rem;
+      border-bottom: 1px solid var(--border-color, #f1f5f9);
+      color: var(--text-muted, #475569);
+      font-size: var(--text-md);
     }
     
-    .row-lux { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); border-bottom: 1px solid #f8fafc; cursor: default; }
-    .row-lux:hover { background: #fcfcfe; }
-    
-    .row-lux td { padding: 1.25rem 1rem; }
-    
-    .item-icon-wrapper {
-      width: 44px; height: 44px;
-      border-radius: 14px;
+    .avatar-soft-premium {
+      width: 38px; height: 38px;
+      border-radius: 12px;
       display: flex; align-items: center; justify-content: center;
-      font-size: 1.1rem;
+      font-weight: 700; font-size: var(--text-base);
+      background: var(--primary-color, #161d35);
+      color: #ffffff;
     }
     
-    .sku-badge {
-      background: #f1f5f9; color: #475569;
-      padding: 0.35rem 0.75rem; border-radius: 8px;
-      font-size: 0.75rem; font-weight: 700; font-family: 'Monaco', monospace;
+    .badge-status-premium {
+      padding: 0.25rem 0.75rem;
+      border-radius: 6px;
+      font-size: var(--text-sm);
+      font-weight: 600;
+      display: inline-block;
+      text-transform: capitalize;
     }
-    
-    .badge-status-lux {
-      display: inline-flex; align-items: center;
-      padding: 0.45rem 1rem; border-radius: 12px;
-      font-size: 0.7rem; font-weight: 800;
-      letter-spacing: 0.5px;
-    }
-    .badge-status-lux.activo { background: #ecfdf5; color: #10b981; }
-    .badge-status-lux.inactivo { background: #fef2f2; color: #ef4444; }
-    .badge-status-lux .dot { width: 6px; height: 6px; border-radius: 50%; margin-right: 8px; background: currentColor; }
-
-    .price-lux { font-weight: 800; color: #161d35; font-size: 0.95rem; }
-    .cost-lux { font-weight: 600; color: #94a3b8; font-size: 0.85rem; }
-
-    .stock-container { width: 100%; max-width: 140px; }
-    .stock-val { font-weight: 800; font-size: 0.9rem; }
-    .stock-bar-bg { width: 100%; height: 6px; background: #f1f5f9; border-radius: 10px; margin-top: 6px; overflow: hidden; }
-    .stock-bar-fill { height: 100%; border-radius: 10px; transition: width 1s ease; }
-    
-    .stock-danger { color: #ef4444; }
-    .stock-warning { color: #f59e0b; }
-    .stock-success { color: #10b981; }
-    
-    .bg-stock-danger { background: #ef4444; }
-    .bg-stock-warning { background: #f59e0b; }
-    .bg-stock-success { background: #10b981; }
-
-    .badge-flat-soft { font-size: 0.7rem; color: #94a3b8; font-weight: 700; text-transform: uppercase; }
-
-    .btn-trigger-lux {
+    .badge-status-premium.activo { background: var(--status-success-bg, #dcfce7); color: var(--status-success-text, #15803d); }
+    .badge-status-premium.inactivo { background: var(--status-danger-bg, #fee2e2); color: var(--status-danger-text, #b91c1c); }
+ 
+    .btn-action-trigger {
       background: transparent; border: none;
-      width: 36px; height: 36px;
-      border-radius: 10px; color: #94a3b8;
+      width: 32px; height: 32px;
+      border-radius: 8px; color: #94a3b8;
       transition: all 0.2s;
-      cursor: pointer;
     }
-    .btn-trigger-lux:hover { background: #f1f5f9; color: #161d35; }
-
-    .dropdown-menu { 
-      z-index: 9999 !important; 
-      min-width: 200px; 
-      border: 1px solid #e2e8f0 !important;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.12) !important;
+    .btn-action-trigger:hover, .btn-action-trigger[aria-expanded="true"] {
+      background: #f8fafc; color: #0f172a;
+    }
+    
+    .dropdown-menu {
+      border: 1px solid var(--border-color, #e2e8f0) !important;
+      box-shadow: none !important;
+      border-radius: 12px !important;
+      padding: 0.5rem !important;
+      z-index: 1050 !important;
     }
     .dropdown-item {
-      display: flex; align-items: center; font-size: 0.825rem;
-      font-weight: 700; color: #475569; border-radius: 10px;
-      margin-bottom: 2px; transition: background 0.2s, color 0.2s;
+      border-radius: 8px !important;
+      font-size: var(--text-base);
+      font-weight: 500;
+      color: var(--text-muted, #475569); padding: 0.5rem 1rem;
+      display: flex; align-items: center;
       cursor: pointer;
     }
-    .dropdown-item:hover { background: #f8fafc; color: #161d35; }
+    .dropdown-item:hover { background: #f8fafc; color: #0f172a; }
+    .dropdown-item i { font-size: 1.1rem; margin-right: 0.75rem; }
     
-    .icon-item {
-      width: 28px; height: 28px; border-radius: 8px;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 0.85rem;
-    }
-    .bg-soft-info { background: #e0f2fe; color: #0ea5e9; }
-    .bg-soft-primary { background: #e0e7ff; color: #4f46e5; }
-    .bg-soft-danger { background: #fee2e2; color: #ef4444; }
-
-    .empty-icon-bg {
-      width: 80px; height: 80px; background: #f8fafc;
-      border-radius: 100%; display: flex; align-items: center; justify-content: center;
-      font-size: 2rem; color: #cbd5e1; border: 2px dashed #e2e8f0;
-    }
-
-    .fw-800 { font-weight: 800; }
+    .fw-600 { font-weight: 600; }
+    .fw-700 { font-weight: 700; }
+    .text-corporate { color: var(--primary-color, #111827) !important; }
+    .font-mono { font-family: 'DM Mono', monospace; }
   `]
 })
-export class ProductoTableComponent implements OnInit {
+export class ProductoTableComponent {
   @Input() productos: Producto[] = [];
   @Output() onAction = new EventEmitter<{ type: string, producto: Producto }>();
-
-  constructor() {}
-
-  ngOnInit() {}
-
-
-  getStockClass(p: Producto, isBg = false): string {
-    const prefix = isBg ? 'bg-stock-' : 'stock-';
-    if (p.stock_actual <= 0) return prefix + 'danger';
-    if (p.stock_actual <= p.stock_minimo) return prefix + 'warning';
-    return prefix + 'success';
-  }
-
-  calculateStockPercent(p: Producto): number {
-    if (!p.stock_actual) return 0;
-    const maxVisualValue = p.stock_minimo * 3 || 100;
-    const percent = (p.stock_actual / maxVisualValue) * 100;
-    return Math.min(percent, 100);
-  }
-
-  getAvatarColor(name: string, opacity: number): string {
-    if (!name) return `rgba(148, 163, 184, ${opacity})`;
-    const colors = [
-      `rgba(99, 102, 241, ${opacity})`,
-      `rgba(16, 185, 129, ${opacity})`,
-      `rgba(245, 158, 11, ${opacity})`,
-      `rgba(239, 68, 68, ${opacity})`,
-      `rgba(139, 92, 246, ${opacity})`,
-      `rgba(20, 184, 166, ${opacity})`
-    ];
-    let hash = 0;
-    for (let i = 0; i < name.length; i++) {
-      hash = name.charCodeAt(i) + ((hash << 5) - hash);
-    }
-    return colors[Math.abs(hash) % colors.length];
-  }
 }

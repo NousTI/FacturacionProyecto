@@ -79,8 +79,8 @@ import { FormsModule } from '@angular/forms';
             <div class="col-6">
               <div class="info-box p-3 h-100 rounded-4">
                 <div class="info-icon text-primary mb-2"><i class="bi bi-card-heading"></i></div>
-                <label class="d-block text-muted small fw-semibold mb-1">Documento</label>
-                <p class="mb-0 fw-bold text-dark">{{ documento_identidad || 'N/A' }}</p>
+                <label class="d-block text-muted small fw-semibold mb-1">Identificación</label>
+                <p class="mb-0 fw-bold text-dark">{{ identificacion || 'N/A' }}</p>
               </div>
             </div>
             <div class="col-6">
@@ -298,7 +298,7 @@ export class ProfileCardComponent implements OnChanges {
   @Input() apellidos: string = '';
   @Input() email: string = '';
   @Input() activo: boolean = false;
-  @Input() documento_identidad: string = '';
+  @Input() identificacion: string = '';
   @Input() telefono: string = '';
   @Input() tipo_comision: string = '';
   @Input() fecha_registro: string = '';

@@ -17,7 +17,7 @@ from datetime import date
 
 # Dependency Repos for validation
 from ..facturas.repository import RepositorioFacturas
-from ..clientes.repositories import RepositorioClientes
+from ..clientes.repository import RepositorioClientes
 
 router = APIRouter()
 

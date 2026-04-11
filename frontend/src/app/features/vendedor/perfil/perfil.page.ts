@@ -45,7 +45,7 @@ import { UiService } from '../../../shared/services/ui.service';
                 [apellidos]="perfil.apellidos"
                 [email]="perfil.email"
                 [activo]="perfil.activo"
-                [documento_identidad]="perfil.documento_identidad"
+                [identificacion]="perfil.identificacion"
                 [telefono]="perfil.telefono"
                 [tipo_comision]="perfil.tipo_comision"
                 [fecha_registro]="perfil.fecha_registro"

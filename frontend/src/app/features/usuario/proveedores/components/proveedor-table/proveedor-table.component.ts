@@ -2,6 +2,7 @@ import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Proveedor } from '../../../../../domain/models/proveedor.model';
 import { HasPermissionDirective } from '../../../../../shared/directives/has-permission.directive';
+import { GET_IDENTIFICACION_LABEL } from '../../../../../core/constants/sri-iva.constants';
 
 @Component({
     selector: 'app-proveedor-table',
@@ -40,7 +41,7 @@ import { HasPermissionDirective } from '../../../../../shared/directives/has-per
               <td>
                 <div class="d-flex flex-column">
                   <span class="id-value-lux">{{ proveedor.identificacion }}</span>
-                  <span class="id-type-lux">{{ proveedor.tipo_identificacion }}</span>
+                  <span class="id-type-lux">{{ getTipoIdLabel(proveedor.tipo_identificacion) }}</span>
                 </div>
               </td>
 
@@ -219,6 +220,10 @@ import { HasPermissionDirective } from '../../../../../shared/directives/has-per
 export class ProveedorTableComponent {
     @Input() proveedores: Proveedor[] = [];
     @Output() onAction = new EventEmitter<{ type: string, proveedor: Proveedor }>();
+
+    getTipoIdLabel(code: string): string {
+        return GET_IDENTIFICACION_LABEL(code);
+    }
 
     getInitials(name: string): string {
         if (!name) return '??';

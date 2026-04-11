@@ -12,7 +12,7 @@ export interface VendedorPerfil {
     apellidos: string;
     email: string;
     telefono: string;
-    documento_identidad: string;
+    identificacion: string;
     porcentaje_comision_inicial: number;
     porcentaje_comision_recurrente: number;
     tipo_comision: string;

@@ -5,7 +5,7 @@ from ..empresas.repositories import RepositorioEmpresas
 from ..facturas.services.service_factura import ServicioFactura
 from ..facturas.services.invoice_core import ServicioFacturaCore
 from ..facturas.repository import RepositorioFacturas
-from ..clientes.repositories import RepositorioClientes
+from ..clientes.repository import RepositorioClientes
 from ..usuarios.repositories import RepositorioUsuarios
 from ..puntos_emision.repository import RepositorioPuntosEmision
 from ..establecimientos.repository import RepositorioEstablecimientos

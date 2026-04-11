@@ -40,14 +40,14 @@ class SRIEstadoRespuesta(str, Enum):
 # Mapeo de porcentajes de IVA (Código SRI -> Porcentaje)
 SRI_TARIFAS_IVA = {
     "0": 0,    # 0%
-    "2": 12,   # 12%
-    "3": 14,   # 14%
-    "4": 15,   # 15% (Nueva tarifa)
-    "5": 5,    # 5%
+    "2": 12,   # 12% (Tarifa histórica / Notas de Crédito)
+    "3": 14,   # 14% (Tarifa histórica)
+    "4": 15,   # 15% (Tarifa General Vigente)
+    "5": 5,    # 5% (Canasta básica / Otros)
     "6": 0,    # No objeto de impuesto
     "7": 0,    # Exento de IVA
-    "8": 8,    # 8%
-    "10": 13   # 13% (Temporal)
+    "8": 8,    # 8% (Tarifa reducida feriados turísticos)
+    "10": 13   # 13% (Materiales de construcción)
 }
 
 SRI_URLS = {

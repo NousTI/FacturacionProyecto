@@ -52,7 +52,7 @@ class ServicioComisiones:
             "vendedor": {
                 "id": str(comision.get('vendedor_id')),
                 "nombre": f"{comision.get('vendedor_nombres', '')} {comision.get('vendedor_apellidos', '')}".strip() or comision.get('vendedor_nombre'),
-                "identificacion": comision.get('documento_identidad'),
+                "identificacion": comision.get('identificacion'),
                 "email": comision.get('vendedor_email')
             },
             "empresa": {

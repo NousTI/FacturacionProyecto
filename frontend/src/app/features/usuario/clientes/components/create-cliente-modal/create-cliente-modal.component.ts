@@ -4,6 +4,7 @@ import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angula
 import { Cliente } from '../../../../../domain/models/cliente.model';
 import { SriValidators } from '../../../../../shared/utils/sri-validators';
 import { PROVINCIAS, getCiudadesByProvincia, Provincia, Ciudad } from '../../../../../shared/constants/provincias-ciudades.const';
+import { SRI_TIPOS_IDENTIFICACION } from '../../../../../core/constants/sri-iva.constants';
 
 @Component({
     selector: 'app-create-cliente-modal',
@@ -32,9 +33,7 @@ import { PROVINCIAS, getCiudadesByProvincia, Provincia, Ciudad } from '../../../
                 <div class="col-md-6">
                   <label class="form-label">Tipo de documento *</label>
                   <select formControlName="tipo_identificacion" class="form-select" [class.is-invalid]="clienteForm.get('tipo_identificacion')?.invalid && clienteForm.get('tipo_identificacion')?.touched">
-                    <option value="CEDULA">Cédula</option>
-                    <option value="RUC">RUC</option>
-                    <option value="PASAPORTE">Pasaporte</option>
+                    <option *ngFor="let tipo of sriTipos" [value]="tipo.code">{{ tipo.label }}</option>
                   </select>
                   <div class="invalid-feedback d-block" *ngIf="clienteForm.get('tipo_identificacion')?.hasError('required') && clienteForm.get('tipo_identificacion')?.touched">
                     <small>El tipo de documento es requerido</small>
@@ -49,7 +48,7 @@ import { PROVINCIAS, getCiudadesByProvincia, Provincia, Ciudad } from '../../../
                     [class.is-invalid]="clienteForm.get('identificacion')?.invalid && clienteForm.get('identificacion')?.touched"
                     placeholder="Ej: 1712345678001"
                     (keypress)="validateIdentification($event)"
-                    [maxlength]="clienteForm.get('tipo_identificacion')?.value === 'CEDULA' ? 10 : (clienteForm.get('tipo_identificacion')?.value === 'RUC' ? 13 : 20)"
+                    [maxlength]="clienteForm.get('tipo_identificacion')?.value === '05' ? 10 : (clienteForm.get('tipo_identificacion')?.value === '04' ? 13 : 20)"
                   >
                   <div class="invalid-feedback d-block" *ngIf="clienteForm.get('identificacion')?.invalid && clienteForm.get('identificacion')?.touched">
                     <small *ngIf="clienteForm.get('identificacion')?.hasError('required')">El número de identificación es requerido</small>
@@ -235,11 +234,12 @@ export class CreateClienteModalComponent implements OnInit, OnDestroy {
     provincias: Provincia[] = PROVINCIAS;
     ciudadesDisponibles: Ciudad[] = [];
     initialFormValue: any = {};
+    sriTipos = SRI_TIPOS_IDENTIFICACION;
 
     constructor(private fb: FormBuilder) {
         this.clienteForm = this.fb.group({
             identificacion: ['', [Validators.required, SriValidators.identificacionEcuador()]],
-            tipo_identificacion: ['CEDULA', [Validators.required]],
+            tipo_identificacion: ['05', [Validators.required]],
             razon_social: ['', [Validators.required, Validators.minLength(3)]],
             nombre_comercial: ['', [Validators.required]],
             email: ['', [Validators.required, Validators.pattern(/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/)]],
@@ -255,11 +255,11 @@ export class CreateClienteModalComponent implements OnInit, OnDestroy {
         // Dynamic validation based on document type
         this.clienteForm.get('tipo_identificacion')?.valueChanges.subscribe(val => {
             const idCont = this.clienteForm.get('identificacion');
-            if (val === 'RUC') {
+            if (val === '04') {
                 idCont?.setValidators([Validators.required, SriValidators.rucEcuador()]);
-            } else if (val === 'CEDULA') {
+            } else if (val === '05') {
                 idCont?.setValidators([Validators.required, SriValidators.identificacionEcuador()]);
-            } else if (val === 'PASAPORTE') {
+            } else if (val === '06') {
                 idCont?.setValidators([Validators.required, SriValidators.pasaporte()]);
             } else {
                 idCont?.setValidators([Validators.required]);
@@ -353,7 +353,7 @@ export class CreateClienteModalComponent implements OnInit, OnDestroy {
 
     validateIdentification(event: KeyboardEvent) {
         const tipoId = this.clienteForm.get('tipo_identificacion')?.value;
-        if (tipoId === 'PASAPORTE') return; // Passports can have letters
+        if (tipoId === '06') return; // Passports can have letters
 
         const charCode = event.which ? event.which : event.keyCode;
         if (charCode > 31 && (charCode < 48 || charCode > 57)) {
@@ -377,9 +377,9 @@ export class CreateClienteModalComponent implements OnInit, OnDestroy {
         }
 
         const tipoId = this.clienteForm.get('tipo_identificacion')?.value;
-        if (tipoId === 'CEDULA') {
+        if (tipoId === '05') {
             return 'La cédula no es válida';
-        } else if (tipoId === 'RUC') {
+        } else if (tipoId === '04') {
             return 'El RUC no es válido';
         }
 

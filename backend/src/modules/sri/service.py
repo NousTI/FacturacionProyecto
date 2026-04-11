@@ -28,7 +28,7 @@ logger = logging.getLogger("facturacion_api")
 # Other modules repos
 from ..facturas.repository import RepositorioFacturas
 from ..empresas.repositories import RepositorioEmpresas
-from ..clientes.repositories import RepositorioClientes
+from ..clientes.repository import RepositorioClientes
 from ..logs.repository import RepositorioLogs
 from ..formas_pago.repository import RepositorioFormasPago
 

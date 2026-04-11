@@ -14,14 +14,14 @@ class ProductoBase(BaseModel):
     stock_minimo: float = Field(0, ge=0)
     # Códigos SRI:
     # '0' = 0%
-    # '2' = 12%
-    # '3' = 14%
-    # '4' = 15% (Actual)
-    # '5' = 5%
-    # '6' = No Objeto
-    # '7' = Exento (0%)
-    # '8' = 8%
-    # '10' = 13%
+    # '2' = 12% (Tarifa histórica / Notas de Crédito)
+    # '3' = 14% (Tarifa histórica)
+    # '4' = 15% (Tarifa General Vigente)
+    # '5' = 5% (Canasta básica / Otros)
+    # '6' = No objeto de impuesto
+    # '7' = Exento de IVA
+    # '8' = 8% (Tarifa reducida feriados turísticos)
+    # '10' = 13% (Materiales de construcción)
     tipo_iva: Literal['0', '2', '3', '4', '5', '6', '7', '8', '10']
     porcentaje_iva: float = 0.0
     maneja_inventario: bool = True

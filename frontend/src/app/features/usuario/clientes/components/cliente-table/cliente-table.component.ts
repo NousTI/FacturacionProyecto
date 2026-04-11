@@ -2,6 +2,7 @@ import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Cliente } from '../../../../../domain/models/cliente.model';
 import { HasPermissionDirective } from '../../../../../shared/directives/has-permission.directive';
+import { GET_IDENTIFICACION_LABEL } from '../../../../../core/constants/sri-iva.constants';
 
 @Component({
     selector: 'app-cliente-table',
@@ -39,7 +40,7 @@ import { HasPermissionDirective } from '../../../../../shared/directives/has-per
             <td>
               <div class="d-flex flex-column">
                 <span class="fw-semibold">{{ cliente.identificacion }}</span>
-                <small class="text-muted text-uppercase" style="font-size: 0.7rem;">{{ cliente.tipo_identificacion }}</small>
+                <small class="text-muted text-uppercase" style="font-size: 0.7rem;">{{ getTipoIdLabel(cliente.tipo_identificacion) }}</small>
               </div>
             </td>
 
@@ -127,6 +128,10 @@ import { HasPermissionDirective } from '../../../../../shared/directives/has-per
 export class ClienteTableComponent {
     @Input() clientes: Cliente[] = [];
     @Output() onAction = new EventEmitter<{ type: string, cliente: Cliente }>();
+
+    getTipoIdLabel(code: string): string {
+        return GET_IDENTIFICACION_LABEL(code);
+    }
 
     getInitials(name: string): string {
         if (!name) return '??';

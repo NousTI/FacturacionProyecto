@@ -53,7 +53,7 @@ class SnapshotCliente(BaseModel):
     """Snapshot del cliente receptor al momento de crear la factura."""
     
     identificacion: str = Field(..., description="Cédula, RUC o pasaporte")
-    tipo_identificacion: str = Field(..., description="CEDULA | RUC | PASAPORTE")
+    tipo_identificacion: str = Field(..., description="Código SRI: 04=RUC, 05=CEDULA, 06=PASAPORTE, 07=CF, 08=EXTERIOR")
     razon_social: str = Field(..., description="Nombre o razón social del cliente")
     nombre_comercial: Optional[str] = Field(None, description="Nombre comercial si aplica")
     direccion: Optional[str] = Field(None, description="Dirección del cliente")
@@ -72,7 +72,7 @@ class SnapshotCliente(BaseModel):
         json_schema_extra = {
             "example": {
                 "identificacion": "1712345678",
-                "tipo_identificacion": "CEDULA",
+                "tipo_identificacion": "05",
                 "razon_social": "JUAN PÉREZ",
                 "direccion": "Calle 10 de Agosto, Guayaquil",
                 "email": "juan@email.com",

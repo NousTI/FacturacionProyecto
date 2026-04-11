@@ -3,11 +3,13 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Producto } from '../../../../../domain/models/producto.model';
 import { PermissionsService } from '../../../../../core/auth/permissions.service';
+import { SRI_IVA_TARIFAS, GET_IVA_PERCENTAGE } from '../../../../../core/constants/sri-iva.constants';
+import { InfoTooltipComponent } from '../../../../../shared/components/info-tooltip/info-tooltip.component';
 
 @Component({
   selector: 'app-create-producto-modal',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, InfoTooltipComponent],
   template: `
     <div class="modal-overlay" (click)="onClose.emit()">
       <div class="dashboard-modal-container" (click)="$event.stopPropagation()">
@@ -31,7 +33,7 @@ import { PermissionsService } from '../../../../../core/auth/permissions.service
               <span class="section-tag">Identificación General</span>
               <div class="row g-3">
                 <div class="col-md-4">
-                  <label class="dashboard-label">Código / Referencia *</label>
+                  <label class="dashboard-label">Código *</label>
                   <input type="text" [(ngModel)]="formData.codigo" name="codigo" #codigo="ngModel" class="dashboard-input" required minlength="3" placeholder="Ej: SKU-100" [class.is-invalid-prod]="codigo.invalid && codigo.touched">
                   <div *ngIf="codigo.invalid && codigo.touched" class="error-msg-prod">
                     <span *ngIf="codigo.errors?.['required']">El código es requerido</span>
@@ -39,10 +41,10 @@ import { PermissionsService } from '../../../../../core/auth/permissions.service
                   </div>
                 </div>
                 <div class="col-md-8">
-                  <label class="dashboard-label">Nombre Comercial *</label>
+                  <label class="dashboard-label">Nombre *</label>
                   <input type="text" [(ngModel)]="formData.nombre" name="nombre" #nombre="ngModel" class="dashboard-input" required placeholder="Ej: Producto A" [class.is-invalid-prod]="nombre.invalid && nombre.touched">
                   <div *ngIf="nombre.invalid && nombre.touched" class="error-msg-prod">
-                    <span>El nombre comercial es obligatorio</span>
+                    <span>El nombre es obligatorio</span>
                   </div>
                 </div>
                 <div class="col-12">
@@ -91,11 +93,14 @@ import { PermissionsService } from '../../../../../core/auth/permissions.service
                   </div>
                 </div>
                 <div class="col-md-6">
-                  <label class="dashboard-label">Esquema IVA</label>
+                  <label class="dashboard-label">
+                    Tipo de IVA
+                    <app-info-tooltip [message]="getIvaDescription()"></app-info-tooltip>
+                  </label>
                   <select [(ngModel)]="formData.tipo_iva" name="tipo_iva" class="dashboard-select" (change)="onIvaChange()">
-                    <option value="4">Tarifa 15% (Ecuador)</option>
-                    <option value="0">Tarifa 0%</option>
-                    <option value="6">Exento de Impuesto</option>
+                    <option *ngFor="let option of ivaOptions" [value]="option.code">
+                      {{ option.label }}
+                    </option>
                   </select>
                 </div>
                 <div class="col-md-6" *ngIf="canViewCosts">
@@ -409,6 +414,7 @@ export class CreateProductoModalComponent implements OnInit, OnDestroy {
   };
 
   canViewCosts: boolean = false;
+  ivaOptions = SRI_IVA_TARIFAS;
 
   constructor(private permissionsService: PermissionsService) { }
 
@@ -444,11 +450,12 @@ export class CreateProductoModalComponent implements OnInit, OnDestroy {
   }
 
   onIvaChange() {
-    if (this.formData.tipo_iva === '4') {
-      this.formData.porcentaje_iva = 15;
-    } else {
-      this.formData.porcentaje_iva = 0;
-    }
+    this.formData.porcentaje_iva = GET_IVA_PERCENTAGE(this.formData.tipo_iva);
+  }
+
+  getIvaDescription(): string {
+    const tarifa = SRI_IVA_TARIFAS.find(t => t.code === this.formData.tipo_iva);
+    return tarifa ? tarifa.description : 'Seleccione un tipo de IVA para ver su detalle.';
   }
 
   calculateMargen(): number {

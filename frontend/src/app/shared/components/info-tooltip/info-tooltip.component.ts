@@ -28,6 +28,7 @@ import { CommonModule } from '@angular/common';
       margin-left: 4px;
       vertical-align: middle;
       z-index: 9999;
+      font-family: var(--font-main);
     }
 
     .info-tooltip-box {
@@ -35,12 +36,12 @@ import { CommonModule } from '@angular/common';
       bottom: 100%;
       left: 50%;
       transform: translateX(-50%) translateY(10px);
-      width: 200px;
+      width: 220px;
       margin-bottom: 10px;
       pointer-events: none;
       opacity: 0;
       visibility: hidden;
-      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
       z-index: 10000;
     }
 
@@ -51,15 +52,15 @@ import { CommonModule } from '@angular/common';
     }
 
     .info-tooltip-content {
-      background: #1e293b;
-      color: #f8fafc;
-      padding: 8px 12px;
-      border-radius: 8px;
-      font-size: 0.75rem;
+      background: var(--primary-color);
+      color: #ffffff;
+      padding: 10px 14px;
+      border-radius: 12px;
+      font-size: var(--text-sm);
       font-weight: 500;
-      line-height: 1.4;
+      line-height: 1.5;
       text-align: center;
-      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2);
       border: 1px solid rgba(255, 255, 255, 0.1);
     }
 
@@ -68,19 +69,21 @@ import { CommonModule } from '@angular/common';
       top: 100%;
       left: 50%;
       transform: translateX(-50%);
-      border-left: 6px solid transparent;
-      border-right: 6px solid transparent;
-      border-top: 6px solid #1e293b;
+      border-left: 7px solid transparent;
+      border-right: 7px solid transparent;
+      border-top: 7px solid var(--primary-color);
     }
 
     .cursor-help {
       cursor: help;
-      font-size: 0.9rem;
-      transition: color 0.2s;
+      font-size: 0.95rem;
+      color: var(--text-muted);
+      transition: all 0.2s;
     }
     
     .info-tooltip-container:hover .cursor-help {
-      color: #6366f1 !important;
+      color: var(--primary-color) !important;
+      transform: scale(1.1);
     }
   `]
 })

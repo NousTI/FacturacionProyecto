@@ -14,8 +14,9 @@ CREATE TABLE IF NOT EXISTS sistema_facturacion.clientes (
         ON DELETE CASCADE,
 
     identificacion TEXT NOT NULL,
+    -- 04: RUC, 05: Cédula, 06: Pasaporte, 07: Consumidor Final, 08: Identificación del Exterior
     tipo_identificacion TEXT NOT NULL
-        CHECK (tipo_identificacion IN ('CEDULA', 'RUC', 'PASAPORTE')),
+        CHECK (tipo_identificacion IN ('04', '05', '06', '07', '08')),
 
     razon_social TEXT NOT NULL,
     nombre_comercial TEXT,
@@ -26,7 +27,6 @@ CREATE TABLE IF NOT EXISTS sistema_facturacion.clientes (
     direccion TEXT,
     ciudad TEXT,
     provincia TEXT,
-    pais TEXT DEFAULT 'Ecuador',
 
     -- Crédito
     dias_credito INT NOT NULL DEFAULT 0,

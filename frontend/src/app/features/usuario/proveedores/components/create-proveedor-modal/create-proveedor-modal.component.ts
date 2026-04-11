@@ -4,6 +4,7 @@ import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angula
 import { Proveedor } from '../../../../../domain/models/proveedor.model';
 import { SriValidators } from '../../../../../shared/utils/sri-validators';
 import { PROVINCIAS, CIUDADES, getCiudadesByProvincia, Provincia, Ciudad } from '../../../../../shared/constants/provincias-ciudades.const';
+import { SRI_TIPOS_IDENTIFICACION } from '../../../../../core/constants/sri-iva.constants';
 
 @Component({
     selector: 'app-create-proveedor-modal',
@@ -34,9 +35,7 @@ import { PROVINCIAS, CIUDADES, getCiudadesByProvincia, Provincia, Ciudad } from 
                 <div class="col-md-6">
                   <label class="lux-label">Tipo de documento *</label>
                   <select formControlName="tipo_identificacion" class="lux-select" [class.is-invalid]="proveedorForm.get('tipo_identificacion')?.invalid && proveedorForm.get('tipo_identificacion')?.touched">
-                    <option value="CEDULA">Cédula</option>
-                    <option value="RUC">RUC</option>
-                    <option value="PASAPORTE">Pasaporte</option>
+                    <option *ngFor="let tipo of sriTipos" [value]="tipo.code">{{ tipo.label }}</option>
                   </select>
                   <div class="error-feedback" *ngIf="proveedorForm.get('tipo_identificacion')?.invalid && proveedorForm.get('tipo_identificacion')?.touched">
                     <small>El tipo de documento es requerido</small>
@@ -51,7 +50,7 @@ import { PROVINCIAS, CIUDADES, getCiudadesByProvincia, Provincia, Ciudad } from 
                     [class.is-invalid]="proveedorForm.get('identificacion')?.invalid && proveedorForm.get('identificacion')?.touched"
                     placeholder="Ej: 1712345678001"
                     (keypress)="validateIdentification($event)"
-                    [maxlength]="proveedorForm.get('tipo_identificacion')?.value === 'CEDULA' ? 10 : (proveedorForm.get('tipo_identificacion')?.value === 'RUC' ? 13 : 20)"
+                    [maxlength]="proveedorForm.get('tipo_identificacion')?.value === '05' ? 10 : (proveedorForm.get('tipo_identificacion')?.value === '04' ? 13 : 20)"
                   >
                   <div class="error-feedback" *ngIf="proveedorForm.get('identificacion')?.invalid && proveedorForm.get('identificacion')?.touched">
                     <small *ngIf="proveedorForm.get('identificacion')?.hasError('required')">La identificación es obligatoria</small>
@@ -275,11 +274,12 @@ export class CreateProveedorModalComponent implements OnInit, OnDestroy {
     provincias: Provincia[] = PROVINCIAS;
     ciudadesDisponibles: Ciudad[] = [];
     initialFormValue: any;
+    sriTipos = SRI_TIPOS_IDENTIFICACION;
 
     constructor(private fb: FormBuilder) {
         this.proveedorForm = this.fb.group({
             identificacion: ['', [Validators.required, SriValidators.rucEcuador()]],
-            tipo_identificacion: ['RUC', [Validators.required]],
+            tipo_identificacion: ['04', [Validators.required]],
             razon_social: ['', [Validators.required, Validators.minLength(3)]],
             nombre_comercial: ['', [Validators.required]],
             email: ['', [Validators.required, Validators.pattern(/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/)]],
@@ -298,11 +298,11 @@ export class CreateProveedorModalComponent implements OnInit, OnDestroy {
 
     private applyValidators(val: string) {
         const idCont = this.proveedorForm.get('identificacion');
-        if (val === 'RUC') {
+        if (val === '04') {
             idCont?.setValidators([Validators.required, SriValidators.rucEcuador()]);
-        } else if (val === 'CEDULA') {
+        } else if (val === '05') {
             idCont?.setValidators([Validators.required, SriValidators.identificacionEcuador()]);
-        } else if (val === 'PASAPORTE') {
+        } else if (val === '06') {
             idCont?.setValidators([Validators.required, SriValidators.pasaporte()]);
         } else {
             idCont?.setValidators([Validators.required]);
@@ -366,7 +366,7 @@ export class CreateProveedorModalComponent implements OnInit, OnDestroy {
 
     validateIdentification(event: KeyboardEvent) {
         const tipoId = this.proveedorForm.get('tipo_identificacion')?.value;
-        if (tipoId === 'PASAPORTE') return;
+        if (tipoId === '06') return;
         const charCode = event.which ? event.which : event.keyCode;
         if (charCode > 31 && (charCode < 48 || charCode > 57)) {
             event.preventDefault();

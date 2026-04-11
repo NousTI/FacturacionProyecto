@@ -1,6 +1,7 @@
 import { Component, Input, Output, EventEmitter, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Proveedor } from '../../../../../domain/models/proveedor.model';
+import { GET_IDENTIFICACION_LABEL } from '../../../../../core/constants/sri-iva.constants';
 
 @Component({
     selector: 'app-proveedor-detail-modal',
@@ -40,7 +41,7 @@ import { Proveedor } from '../../../../../domain/models/proveedor.model';
             <div class="detail-grid">
               <div class="detail-item">
                 <span class="detail-label">Tipo de Documento</span>
-                <span class="detail-value badge-type">{{ proveedor.tipo_identificacion }}</span>
+                <span class="detail-value badge-type">{{ getTipoIdLabel(proveedor.tipo_identificacion) }}</span>
               </div>
               <div class="detail-item">
                 <span class="detail-label">Número</span>
@@ -174,6 +175,10 @@ export class ProveedorDetailModalComponent implements OnInit, OnDestroy {
 
     ngOnInit() { document.body.style.overflow = 'hidden'; }
     ngOnDestroy() { document.body.style.overflow = 'auto'; }
+
+    getTipoIdLabel(code: string): string {
+        return GET_IDENTIFICACION_LABEL(code);
+    }
 
     getInitials(name: string): string {
         if (!name) return '??';

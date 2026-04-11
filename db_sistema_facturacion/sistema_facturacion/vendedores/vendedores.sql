@@ -14,8 +14,10 @@ CREATE TABLE IF NOT EXISTS sistema_facturacion.vendedores (
     apellidos TEXT NOT NULL,
 
     telefono TEXT,
-    documento_identidad TEXT,
-    tipo_identificacion TEXT DEFAULT 'CEDULA',
+    identificacion TEXT NOT NULL,
+    -- 04: RUC, 05: Cédula, 06: Pasaporte, 07: Consumidor Final, 08: Identificación del Exterior
+    tipo_identificacion TEXT NOT NULL DEFAULT '05'
+        CHECK (tipo_identificacion IN ('04', '05', '06', '07', '08')),
 
     porcentaje_comision NUMERIC(5,2),
     porcentaje_comision_inicial NUMERIC(5,2),
@@ -37,5 +39,8 @@ CREATE TABLE IF NOT EXISTS sistema_facturacion.vendedores (
 
     -- Auditoría
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+
+    -- Un vendedor se identifica de forma única por su documento (RUC/Cédula)
+    CONSTRAINT uq_vendedor_identificacion UNIQUE (identificacion)
 );

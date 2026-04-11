@@ -1,6 +1,6 @@
 from uuid import UUID
 from datetime import datetime
-from typing import Optional, Dict, Any, List
+from typing import Optional, Dict, Any, List, Literal
 from pydantic import BaseModel, EmailStr, Field, field_validator
 from ...utils.validators import validar_identificacion
 
@@ -8,8 +8,8 @@ class VendedorBase(BaseModel):
     nombres: str
     apellidos: str
     telefono: Optional[str] = Field(None, pattern=r"^([0-9]{10})?$")
-    documento_identidad: str
-    tipo_identificacion: Optional[str] = "CEDULA"
+    identificacion: str
+    tipo_identificacion: Optional[Literal['04', '05', '06', '07', '08']] = "05"
     porcentaje_comision: Optional[float] = Field(default=0.0, ge=0, le=100)
     porcentaje_comision_inicial: Optional[float] = None
     porcentaje_comision_recurrente: Optional[float] = None
@@ -21,11 +21,11 @@ class VendedorBase(BaseModel):
     activo: bool = True
     configuracion: Optional[Dict[str, Any]] = None
 
-    @field_validator("documento_identidad")
+    @field_validator("identificacion")
     @classmethod
     def validar_documento(cls, v: str) -> str:
         if v and not validar_identificacion(v):
-            raise ValueError(f"La identificación '{v}' no es un documento válido (Cédula, RUC o Pasaporte).")
+            raise ValueError(f"La identificación '{v}' no es un documento válido según el SRI.")
         return v
 
 class VendedorCreacion(VendedorBase):
@@ -36,8 +36,8 @@ class VendedorActualizacion(BaseModel):
     nombres: Optional[str] = None
     apellidos: Optional[str] = None
     telefono: Optional[str] = Field(None, pattern=r"^([0-9]{10})?$")
-    documento_identidad: Optional[str] = Field(None)
-    tipo_identificacion: Optional[str] = None
+    identificacion: Optional[str] = Field(None)
+    tipo_identificacion: Optional[Literal['04', '05', '06', '07', '08']] = None
     porcentaje_comision: Optional[float] = None
     porcentaje_comision_inicial: Optional[float] = None
     porcentaje_comision_recurrente: Optional[float] = None

@@ -6,7 +6,7 @@ from ...utils.validators import validar_identificacion
 
 class ClienteBase(BaseModel):
     identificacion: str
-    tipo_identificacion: Literal['CEDULA', 'RUC', 'PASAPORTE']
+    tipo_identificacion: Literal['04', '05', '06', '07', '08']
     razon_social: str
     nombre_comercial: Optional[str] = None
     email: Optional[EmailStr] = None
@@ -25,7 +25,7 @@ class ClienteBase(BaseModel):
         tipo = info.data.get("tipo_identificacion")
         
         if v and not validar_identificacion(v):
-            raise ValueError(f"La identificación '{v}' no es un(a) {tipo} válido(a) según SRI.")
+            raise ValueError(f"La identificación '{v}' no es válida para el tipo '{tipo}' según el SRI.")
         return v
 
 class ClienteCreacion(ClienteBase):
@@ -33,7 +33,7 @@ class ClienteCreacion(ClienteBase):
 
 class ClienteActualizacion(BaseModel):
     identificacion: Optional[str] = None
-    tipo_identificacion: Optional[Literal['CEDULA', 'RUC', 'PASAPORTE']] = None
+    tipo_identificacion: Optional[Literal['04', '05', '06', '07', '08']] = None
     razon_social: Optional[str] = None
     nombre_comercial: Optional[str] = None
     email: Optional[EmailStr] = None
@@ -54,7 +54,7 @@ class ClienteActualizacion(BaseModel):
         tipo = info.data.get("tipo_identificacion")
         
         if v and not validar_identificacion(v):
-            raise ValueError(f"La identificación '{v}' no es un(a) {tipo} válido(a) según SRI.")
+            raise ValueError(f"La identificación '{v}' no es válida para el tipo '{tipo}' según el SRI.")
         return v
 
 class ClienteLectura(ClienteBase):

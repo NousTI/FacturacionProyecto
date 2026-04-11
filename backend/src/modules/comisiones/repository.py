@@ -60,7 +60,7 @@ class RepositorioComisiones:
         query = """
             SELECT c.*, v.nombres || ' ' || v.apellidos as vendedor_nombre,
                    v.nombres as vendedor_nombres, v.apellidos as vendedor_apellidos,
-                   v.documento_identidad, v.telefono, uv.email as vendedor_email,
+                   v.identificacion, v.telefono, uv.email as vendedor_email,
                    e.nombre_comercial as empresa_nombre, p.monto as monto_pago,
                    COALESCE(u.email, u_log.email) as aprobado_por_nombre 
             FROM sistema_facturacion.comisiones c

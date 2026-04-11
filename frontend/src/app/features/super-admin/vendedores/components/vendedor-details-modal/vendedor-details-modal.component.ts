@@ -1,6 +1,7 @@
 import { Component, EventEmitter, Input, Output, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Vendedor, VendedorService } from '../../services/vendedor.service';
+import { GET_IDENTIFICACION_LABEL } from '../../../../../core/constants/sri-iva.constants';
 
 @Component({
   selector: 'app-vendedor-details-modal',
@@ -20,6 +21,7 @@ import { Vendedor, VendedorService } from '../../services/vendedor.service';
                         {{ vendedor.activo ? 'Vendedor Activo' : 'Vendedor Bloqueado' }}
                     </span>
                     <small class="text-muted"><i class="bi bi-envelope me-1"></i>{{ vendedor.email }}</small>
+                    <small class="text-muted ms-2"><i class="bi bi-card-text me-1"></i>{{ getTipoIdLabel(vendedor.tipoIdentificacion || '') }}: {{ vendedor.identificacion }}</small>
                 </div>
             </div>
           </div>
@@ -280,6 +282,10 @@ import { Vendedor, VendedorService } from '../../services/vendedor.service';
 export class VendedorDetailsModalComponent implements OnInit {
   @Input() vendedor!: Vendedor;
   @Output() onClose = new EventEmitter<void>();
+
+  getTipoIdLabel(code: string): string {
+    return GET_IDENTIFICACION_LABEL(code);
+  }
 
   companies: any[] = [];
   loading: boolean = true;

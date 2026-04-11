@@ -192,7 +192,7 @@ export class VendedoresPage implements OnInit {
             temp = temp.filter(v =>
                 v.nombre.toLowerCase().includes(q) ||
                 v.email.toLowerCase().includes(q) ||
-                v.documentoIdentidad.includes(q)
+                v.identificacion.includes(q)
             );
         }
 
@@ -236,7 +236,7 @@ export class VendedoresPage implements OnInit {
                 nombres: event.vendedor.nombres,
                 apellidos: event.vendedor.apellidos,
                 tipoIdentificacion: event.vendedor.tipoIdentificacion,
-                documentoIdentidad: event.vendedor.documentoIdentidad,
+                identificacion: event.vendedor.identificacion,
                 email: event.vendedor.email,
                 telefono: event.vendedor.telefono,
                 tipoComision: event.vendedor.tipoComision,
@@ -302,7 +302,7 @@ export class VendedoresPage implements OnInit {
         this.editing = false;
         this.saving = false;
         this.selectedVendedorData = {
-            nombres: '', apellidos: '', tipoIdentificacion: 'CEDULA', documentoIdentidad: '', email: '', telefono: '',
+            nombres: '', apellidos: '', tipoIdentificacion: '05', identificacion: '', email: '', telefono: '',
             tipoComision: 'PORCENTAJE',
             porcentajeComisionInicial: 0,
             porcentajeComisionRecurrente: 0,

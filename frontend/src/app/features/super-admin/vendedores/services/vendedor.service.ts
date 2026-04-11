@@ -19,7 +19,7 @@ export interface Vendedor {
     email: string;
     telefono: string;
     tipoIdentificacion?: string;
-    documentoIdentidad: string;
+    identificacion: string;
     activo: boolean;
     empresasAsignadas: number;
     empresas_asignadas?: number;
@@ -75,8 +75,8 @@ export class VendedorService {
             apellidos: data.apellidos,
             email: data.email,
             telefono: data.telefono || '',
-            tipoIdentificacion: data.tipo_identificacion || 'CEDULA',
-            documentoIdentidad: data.documento_identidad || '',
+            tipoIdentificacion: data.tipo_identificacion || '05',
+            identificacion: data.identificacion || '',
             activo: data.activo,
             empresasAsignadas: data.empresas_asignadas || 0,
             empresasActivas: data.empresas_activas || 0,
@@ -111,7 +111,7 @@ export class VendedorService {
         const mapped: any = {};
         const mapping: any = {
             'tipoIdentificacion': 'tipo_identificacion',
-            'documentoIdentidad': 'documento_identidad',
+            'identificacion': 'identificacion',
             'tipoComision': 'tipo_comision',
             'porcentajeComisionInicial': 'porcentaje_comision_inicial',
             'porcentajeComisionRecurrente': 'porcentaje_comision_recurrente',

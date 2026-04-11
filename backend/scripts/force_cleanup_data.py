@@ -15,9 +15,10 @@ def fix_data():
         # Vendedores: Telefono must be 10 digits
         db.execute(text("UPDATE vendedor SET telefono = NULL WHERE length(telefono) != 10"))
         
-        # Vendedores: Documento Identidad must be 10 digits
-        db.execute(text("UPDATE vendedor SET documento_identidad = NULL WHERE length(documento_identidad) != 10"))
-        
+      # 1. Cleanup Vendedores identification
+    with db_session() as db:
+        db.execute(text("UPDATE sistema_facturacion.vendedores SET identificacion = NULL WHERE length(identificacion) != 10 AND tipo_identificacion = '05'"))
+        db.commit()
         # Empresas: Telefono must be 10 digits
         db.execute(text("UPDATE empresa SET telefono = NULL WHERE length(telefono) != 10"))
         

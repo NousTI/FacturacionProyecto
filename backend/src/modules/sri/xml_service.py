@@ -127,17 +127,19 @@ class ServicioSRIXML:
             
         ET.SubElement(info_fac, 'obligadoContabilidad').text = 'SI' if empresa.get('obligado_contabilidad') else 'NO'
         
-        tipo_id_raw = cliente.get('tipo_identificacion', '').upper()
+        tipo_id_raw = str(cliente.get('tipo_identificacion', '')).strip().upper()
         identificacion = str(cliente.get('identificacion', ''))
         
         if identificacion == '9999999999999': 
             tipo_id = SRITipoIdentificacion.CONSUMIDOR_FINAL
-        elif 'RUC' in tipo_id_raw: 
+        elif tipo_id_raw in ['04', 'RUC']: 
             tipo_id = SRITipoIdentificacion.RUC
-        elif 'CEDULA' in tipo_id_raw: 
+        elif tipo_id_raw in ['05', 'CEDULA']: 
             tipo_id = SRITipoIdentificacion.CEDULA
-        elif 'PASAPORTE' in tipo_id_raw:
+        elif tipo_id_raw in ['06', 'PASAPORTE']:
              tipo_id = SRITipoIdentificacion.PASAPORTE
+        elif tipo_id_raw == '07':
+             tipo_id = SRITipoIdentificacion.CONSUMIDOR_FINAL
         else: 
             tipo_id = SRITipoIdentificacion.ID_EXTERIOR 
 
