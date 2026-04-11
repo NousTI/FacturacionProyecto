@@ -14,6 +14,7 @@ class EmpresaBase(BaseModel):
     direccion: str = Field(..., min_length=1)
     logo_url: Optional[str] = None
     activo: bool = True
+    tipo_persona: str = Field(..., pattern="^(NATURAL|JURIDICA)$")
     tipo_contribuyente: str
     obligado_contabilidad: bool = False
 
@@ -45,6 +46,7 @@ class EmpresaActualizacion(BaseModel):
     direccion: Optional[str] = None
     logo_url: Optional[str] = None
     activo: Optional[bool] = None
+    tipo_persona: Optional[str] = Field(None, pattern="^(NATURAL|JURIDICA)$")
     tipo_contribuyente: Optional[str] = None
     obligado_contabilidad: Optional[bool] = None
 

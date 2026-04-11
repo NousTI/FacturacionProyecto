@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { VendedorEmpresaService } from '../../services/vendedor-empresa.service';
 import { SriValidators } from '../../../../../shared/utils/sri-validators';
+import { SRI_TIPOS_PERSONA, SRI_TIPOS_CONTRIBUYENTE } from '../../../../../core/constants/sri-iva.constants';
 
 @Component({
     selector: 'app-vendedor-create-empresa-modal',
@@ -63,18 +64,26 @@ import { SriValidators } from '../../../../../shared/utils/sri-validators';
                   </div>
                   <span class="hint-final" *ngIf="!empresaForm.get('ruc')?.touched">13 dígitos</span>
                 </div>
-                <div class="col-md-12">
-                  <label class="label-final">Tipo de Contribuyente *</label>
+                <div class="col-md-6">
+                  <label class="label-final">Tipo de Persona *</label>
+                  <select formControlName="tipo_persona" class="select-final" 
+                    [class.is-invalid]="empresaForm.get('tipo_persona')?.invalid && empresaForm.get('tipo_persona')?.touched">
+                    <option value="">Seleccionar...</option>
+                    <option *ngFor="let t of tiposPersona" [value]="t.code">{{ t.label }}</option>
+                  </select>
+                  <div class="error-feedback" *ngIf="empresaForm.get('tipo_persona')?.invalid && empresaForm.get('tipo_persona')?.touched">
+                    Debe seleccionar el tipo de persona
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <label class="label-final">Régimen Tributario *</label>
                   <select formControlName="tipo_contribuyente" class="select-final"
                     [class.is-invalid]="empresaForm.get('tipo_contribuyente')?.invalid && empresaForm.get('tipo_contribuyente')?.touched">
                     <option value="">Seleccionar...</option>
-                    <option value="PERSONA_NATURAL">Persona Natural</option>
-                    <option value="PERSONA_JURIDICA">Persona Juridica</option>
-                    <option value="RIMPE_NEGOCIO_POPULAR">RIMPE - Negocio Popular</option>
-                    <option value="RIMPE_EMPRENDEDOR">RIMPE - Emprendedor</option>
+                    <option *ngFor="let t of tiposContribuyente" [value]="t.code">{{ t.label }}</option>
                   </select>
                   <div class="error-feedback" *ngIf="empresaForm.get('tipo_contribuyente')?.invalid && empresaForm.get('tipo_contribuyente')?.touched">
-                    Debe seleccionar un tipo de contribuyente
+                    Debe seleccionar un régimen
                   </div>
                 </div>
                 <div class="col-12">
@@ -359,6 +368,8 @@ export class VendedorCreateEmpresaModalComponent implements OnInit, OnDestroy {
 
     empresaForm: FormGroup;
     planes: any[] = [];
+    tiposPersona = SRI_TIPOS_PERSONA;
+    tiposContribuyente = SRI_TIPOS_CONTRIBUYENTE;
 
     constructor(
         private fb: FormBuilder,
@@ -371,6 +382,7 @@ export class VendedorCreateEmpresaModalComponent implements OnInit, OnDestroy {
             email: ['', [Validators.required, Validators.email]],
             telefono: ['', [Validators.required, Validators.pattern(/^09[0-9]{8}$/)]],
             direccion: ['', [Validators.required, Validators.minLength(5)]],
+            tipo_persona: ['', Validators.required],
             tipo_contribuyente: ['', Validators.required],
             obligado_contabilidad: [false],
             plan_id: ['', Validators.required],
@@ -384,11 +396,12 @@ export class VendedorCreateEmpresaModalComponent implements OnInit, OnDestroy {
         document.body.style.overflow = 'hidden';
         this.loadCatalogs();
 
-        if (this.empresa) {
-            this.empresaForm.patchValue({
-                ...this.empresa,
-                razon_social: this.empresa.razon_social || this.empresa.razonSocial
-            });
+            if (this.empresa) {
+                this.empresaForm.patchValue({
+                    ...this.empresa,
+                    razon_social: this.empresa.razon_social || this.empresa.razonSocial,
+                    tipo_persona: this.empresa.tipo_persona || 'NATURAL'
+                });
             // Deactivate plan fields on edit
             this.empresaForm.get('plan_id')?.clearValidators();
             this.empresaForm.get('plan_id')?.updateValueAndValidity();

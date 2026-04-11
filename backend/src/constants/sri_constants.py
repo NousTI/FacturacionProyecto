@@ -28,6 +28,15 @@ class SRITipoIdentificacion(str, Enum):
     ID_EXTERIOR = "08"
     PLACA = "09"
 
+class SRITipoPersona(str, Enum):
+    NATURAL = "NATURAL"
+    JURIDICA = "JURIDICA"
+
+class SRITipoContribuyente(str, Enum):
+    REGIMEN_GENERAL = "REGIMEN_GENERAL"
+    RIMPE_EMPRENDEDOR = "RIMPE_EMPRENDEDOR"
+    RIMPE_POPULAR = "RIMPE_POPULAR"
+
 class SRIEstadoRespuesta(str, Enum):
     RECIBIDA = 'RECIBIDA'
     DEVUELTA = 'DEVUELTA'

@@ -2,6 +2,7 @@ import { Component, Input, Output, EventEmitter, OnInit, OnDestroy } from '@angu
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Empresa } from '../../../../../domain/models/empresa.model';
+import { SRI_TIPOS_PERSONA, SRI_TIPOS_CONTRIBUYENTE } from '../../../../../core/constants/sri-iva.constants';
 
 @Component({
   selector: 'app-edit-empresa-modal',
@@ -127,12 +128,15 @@ import { Empresa } from '../../../../../domain/models/empresa.model';
               <h3 class="section-header-lux">Configuración Tributaria</h3>
               <div class="row g-3">
                 <div class="col-md-6">
-                  <label class="label-lux">Tipo de Contribuyente</label>
+                  <label class="label-lux">Tipo de Persona</label>
+                  <select [(ngModel)]="formData.tipo_persona" name="tipo_persona" class="select-lux">
+                    <option *ngFor="let t of tiposPersona" [value]="t.code">{{ t.label }}</option>
+                  </select>
+                </div>
+                <div class="col-md-6">
+                  <label class="label-lux">Régimen Tributario</label>
                   <select [(ngModel)]="formData.tipo_contribuyente" name="tipo_contribuyente" class="select-lux">
-                    <option value="PERSONA_NATURAL">Persona Natural</option>
-                    <option value="SOCIEDAD">Sociedad</option>
-                    <option value="MICROEMPRESA">Microempresa (RIMPE)</option>
-                    <option value="NEGOCIO_POPULAR">Negocio Popular (RIMPE)</option>
+                    <option *ngFor="let t of tiposContribuyente" [value]="t.code">{{ t.label }}</option>
                   </select>
                 </div>
                 <div class="col-md-6 d-flex align-items-center pt-3">
@@ -270,6 +274,8 @@ export class EditEmpresaModalComponent implements OnInit, OnDestroy {
   @Output() onClose = new EventEmitter<void>();
 
   formData: any = {};
+  tiposPersona = SRI_TIPOS_PERSONA;
+  tiposContribuyente = SRI_TIPOS_CONTRIBUYENTE;
 
   ngOnInit() {
     document.body.style.overflow = 'hidden';
@@ -292,7 +298,7 @@ export class EditEmpresaModalComponent implements OnInit, OnDestroy {
 
     const editableFields: (keyof Empresa)[] = [
       'razon_social', 'nombre_comercial', 'email', 'telefono',
-      'direccion', 'tipo_contribuyente', 'obligado_contabilidad', 'logo_url'
+      'direccion', 'tipo_persona', 'tipo_contribuyente', 'obligado_contabilidad', 'logo_url'
     ];
 
     return editableFields.some(field => {

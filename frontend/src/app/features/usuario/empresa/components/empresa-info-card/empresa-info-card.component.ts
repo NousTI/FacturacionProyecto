@@ -2,6 +2,7 @@ import { Component, Input, Output, EventEmitter, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Empresa } from '../../../../../domain/models/empresa.model';
 import { PermissionsService } from '../../../../../core/auth/permissions.service';
+import { GET_PERSONA_LABEL, GET_CONTRIBUYENTE_LABEL } from '../../../../../core/constants/sri-iva.constants';
 import { CONFIGURACION_PERMISSIONS } from '../../../../../constants/permission-codes';
 
 @Component({
@@ -69,8 +70,8 @@ import { CONFIGURACION_PERMISSIONS } from '../../../../../constants/permission-c
               <i class="bi bi-person-badge"></i>
             </div>
             <div class="info-content">
-              <label>Tipo Contribuyente</label>
-              <span class="value">{{ empresa.tipo_contribuyente || 'No especificado' }}</span>
+              <label>Tipo Persona | Régimen</label>
+              <span class="value">{{ getPersonaLabel(empresa.tipo_persona) + ' | ' + getContribuyenteLabel(empresa.tipo_contribuyente) }}</span>
             </div>
           </div>
 
@@ -248,5 +249,13 @@ export class EmpresaInfoCardComponent {
 
   get canEdit(): boolean {
     return this.permissionsService.hasPermission(CONFIGURACION_PERMISSIONS.EMPRESA);
+  }
+
+  getPersonaLabel(code: string): string {
+    return GET_PERSONA_LABEL(code);
+  }
+
+  getContribuyenteLabel(code: string): string {
+    return GET_CONTRIBUYENTE_LABEL(code);
   }
 }

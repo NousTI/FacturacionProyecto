@@ -10,6 +10,7 @@ import { ToastComponent } from '../../../shared/components/toast/toast.component
 import { EmpresaService } from './services/empresa.service';
 import { AuthFacade } from '../../../core/auth/auth.facade';
 import { UiService } from '../../../shared/services/ui.service';
+import { GET_PERSONA_LABEL, GET_CONTRIBUYENTE_LABEL } from '../../../core/constants/sri-iva.constants';
 import { Empresa } from '../../../domain/models/empresa.model';
 
 // Re-check triggered for Empresa interface update
@@ -194,7 +195,9 @@ import { Empresa } from '../../../domain/models/empresa.model';
                 <div class="info-footer-lux mt-4">
                    <div class="d-flex align-items-center gap-2">
                       <i class="bi bi-shield-check text-success fs-5"></i>
-                      <span class="text-muted" style="font-size: 0.8rem; font-weight: 600;">Contribuyente: <b>{{ empresa.tipo_contribuyente || 'No definido' }}</b></span>
+                      <span class="text-muted" style="font-size: 0.8rem; font-weight: 600;">
+                        Tipo: <b>{{ getPersonaLabel(empresa.tipo_persona) }}</b> | Régimen: <b>{{ getContribuyenteLabel(empresa.tipo_contribuyente) }}</b>
+                      </span>
                    </div>
                 </div>
               </div>
@@ -490,7 +493,7 @@ export class EmpresaPage implements OnInit {
     // Solo enviar campos permitidos para actualización para evitar errores 422
     const updatableFields = [
       'ruc', 'razon_social', 'nombre_comercial', 'email', 'telefono',
-      'direccion', 'logo_url', 'tipo_contribuyente', 'obligado_contabilidad'
+      'direccion', 'logo_url', 'tipo_persona', 'tipo_contribuyente', 'obligado_contabilidad'
     ];
 
     const payload: any = {};
@@ -539,5 +542,13 @@ export class EmpresaPage implements OnInit {
   isOverdue(fecha: string | null): boolean {
     if (!fecha) return false;
     return new Date(fecha) < new Date();
+  }
+
+  getPersonaLabel(code: string): string {
+    return GET_PERSONA_LABEL(code);
+  }
+
+  getContribuyenteLabel(code: string): string {
+    return GET_CONTRIBUYENTE_LABEL(code);
   }
 }

@@ -14,7 +14,7 @@ CREATE TABLE IF NOT EXISTS sistema_facturacion.empresas (
         ON DELETE SET NULL,
 
     -- Identificación SRI
-    ruc TEXT NOT NULL UNIQUE,
+    ruc TEXT NOT NULL UNIQUE CHECK (ruc ~ '^[0-9]{10}001$'), -- 13 dígitos, termina en 001
     razon_social TEXT NOT NULL,
     nombre_comercial TEXT,
 
@@ -27,8 +27,12 @@ CREATE TABLE IF NOT EXISTS sistema_facturacion.empresas (
     -- Estado administrativo (no SaaS)
     activo BOOLEAN NOT NULL DEFAULT TRUE,
 
+    tipo_persona TEXT NOT NULL
+        CHECK (tipo_persona IN ('NATURAL', 'JURIDICA')),
     -- Información tributaria obligatoria
-    tipo_contribuyente TEXT NOT NULL,
+    tipo_contribuyente TEXT NOT NULL
+        CHECK (tipo_contribuyente IN ('REGIMEN_GENERAL', 'RIMPE_EMPRENDEDOR', 'RIMPE_POPULAR')),
+
     obligado_contabilidad BOOLEAN NOT NULL DEFAULT FALSE,
 
     -- Auditoría

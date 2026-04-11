@@ -14,7 +14,8 @@ export interface Empresa {
     activo: boolean;
 
     // SRI y Contabilidad
-    tipo_contribuyente: string;
+    tipo_persona: 'NATURAL' | 'JURIDICA';
+    tipo_contribuyente: 'REGIMEN_GENERAL' | 'RIMPE_EMPRENDEDOR' | 'RIMPE_POPULAR';
     obligado_contabilidad: boolean;
 
     // Suscripción y Vendedor
@@ -59,7 +60,8 @@ export const EMPRESA_TEMPLATE: Partial<Empresa> = {
     ruc: '',
     email: '',
     direccion: '',
-    tipo_contribuyente: 'Persona Natural',
+    tipo_persona: 'NATURAL',
+    tipo_contribuyente: 'REGIMEN_GENERAL',
     obligado_contabilidad: false,
     activo: true,
     plan_nombre: 'Cargando...',
@@ -82,7 +84,8 @@ export interface EmpresaCreate {
     direccion: string;
     logo_url?: string;
     activo?: boolean;
-    tipo_contribuyente: string;
+    tipo_persona: 'NATURAL' | 'JURIDICA';
+    tipo_contribuyente: 'REGIMEN_GENERAL' | 'RIMPE_EMPRENDEDOR' | 'RIMPE_POPULAR';
     obligado_contabilidad?: boolean;
     vendedor_id?: string;
 }
@@ -96,7 +99,8 @@ export interface EmpresaUpdate {
     direccion?: string;
     logo_url?: string;
     activo?: boolean;
-    tipo_contribuyente?: string;
+    tipo_persona?: 'NATURAL' | 'JURIDICA';
+    tipo_contribuyente?: 'REGIMEN_GENERAL' | 'RIMPE_EMPRENDEDOR' | 'RIMPE_POPULAR';
     obligado_contabilidad?: boolean;
     vendedor_id?: string;
 }

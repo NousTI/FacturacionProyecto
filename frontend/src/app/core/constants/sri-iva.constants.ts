@@ -37,5 +37,29 @@ export const GET_IDENTIFICACION_LABEL = (code: string): string => {
     const tipo = SRI_TIPOS_IDENTIFICACION.find(t => t.code === code);
     return tipo ? tipo.label : (code || 'Desconocido');
 };
+/**
+ * Clasificación de tipo de persona para empresas.
+ */
+export const SRI_TIPOS_PERSONA = [
+    { code: 'NATURAL', label: 'Persona Natural' },
+    { code: 'JURIDICA', label: 'Persona Jurídica' },
+];
 
+/**
+ * Regímenes tributarios vigentes para empresas en Ecuador.
+ */
+export const SRI_TIPOS_CONTRIBUYENTE = [
+    { code: 'REGIMEN_GENERAL', label: 'Régimen General' },
+    { code: 'RIMPE_EMPRENDEDOR', label: 'RIMPE - Emprendedor' },
+    { code: 'RIMPE_POPULAR', label: 'RIMPE - Negocio Popular' },
+];
 
+export const GET_PERSONA_LABEL = (code: string): string => {
+    const tipo = SRI_TIPOS_PERSONA.find(t => t.code === code);
+    return tipo ? tipo.label : (code || 'N/A');
+};
+
+export const GET_CONTRIBUYENTE_LABEL = (code: string): string => {
+    const tipo = SRI_TIPOS_CONTRIBUYENTE.find(t => t.code === code);
+    return tipo ? tipo.label : (code || 'No Definido');
+};

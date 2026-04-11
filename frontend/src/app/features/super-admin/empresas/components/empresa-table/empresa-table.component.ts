@@ -1,5 +1,6 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { GET_PERSONA_LABEL, GET_CONTRIBUYENTE_LABEL } from '../../../../../core/constants/sri-iva.constants';
 
 @Component({
   selector: 'app-empresa-table',
@@ -44,7 +45,9 @@ import { CommonModule } from '@angular/common';
                     <span class="text-danger fw-800" style="font-size: var(--text-base);" *ngIf="empresa.suscripcion_estado && empresa.suscripcion_estado !== 'ACTIVA' && empresa.suscripcion_estado !== 'PRUEBA'">{{ empresa.suscripcion_estado }}</span>
                     <span class="text-muted fw-800" style="font-size: var(--text-base);" *ngIf="!empresa.suscripcion_estado">Sin Suscripción</span>
                     
-                    <small class="text-muted" style="font-size: var(--text-xs);">{{ empresa.tipo_contribuyente }}</small>
+                    <small class="text-muted" style="font-size: var(--text-xs); font-weight: 700;">
+                      {{ getPersonaLabel(empresa.tipo_persona) + ' | ' + getContribuyenteLabel(empresa.tipo_contribuyente) }}
+                    </small>
                   </div>
                 </td>
                 <td>
@@ -308,5 +311,13 @@ export class EmpresaTableComponent {
     if (!date) return 0;
     const diff = new Date(date).getTime() - new Date().getTime();
     return Math.max(0, Math.ceil(diff / (1000 * 60 * 60 * 24)));
+  }
+
+  getPersonaLabel(code: string): string {
+    return GET_PERSONA_LABEL(code);
+  }
+
+  getContribuyenteLabel(code: string): string {
+    return GET_CONTRIBUYENTE_LABEL(code);
   }
 }
