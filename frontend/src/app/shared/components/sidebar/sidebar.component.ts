@@ -106,9 +106,6 @@ import { SidebarService } from './sidebar.service';
                   <a *hasPermission="'GASTOS_VER'" routerLink="/usuario/gastos" routerLinkActive="active" class="menu-item px-3 mb-1" title="Gastos">
                     <i class="bi bi-cash-stack"></i> <span class="menu-text ms-3">Gastos</span>
                   </a>
-                  <!-- <a *hasPermission="'INVENTARIO_VER'" routerLink="/usuario/inventarios" routerLinkActive="active" class="menu-item px-3 mb-1" title="Inventarios">
-                    <i class="bi bi-archive"></i> <span class="menu-text ms-3">Inventarios</span>
-                  </a> -->
                   <a *hasPermission="'PRODUCTOS_VER'" routerLink="/usuario/productos" routerLinkActive="active" class="menu-item px-3 mb-1" title="Productos">
                     <i class="bi bi-box-seam"></i> <span class="menu-text ms-3">Productos</span>
                   </a>
@@ -169,7 +166,7 @@ import { SidebarService } from './sidebar.service';
       </div>
 
       <!-- Footer Action: Collapse -->
-      <div class="sidebar-footer p-3 border-top">
+      <div class="sidebar-footer py-2 px-3 border-top">
         <button (click)="sidebarService.toggle()" class="menu-item w-100 border-0 bg-transparent text-start" [title]="(sidebarService.isCollapsed$ | async) ? 'Expandir' : 'Colapsar'">
           <i class="bi" [class.bi-arrow-left-short]="!(sidebarService.isCollapsed$ | async)" [class.bi-arrow-right-short]="(sidebarService.isCollapsed$ | async)" style="font-size: 1.5rem;"></i>
           <span class="menu-text ms-2">Colapsar</span>
@@ -207,9 +204,9 @@ import { SidebarService } from './sidebar.service';
       padding: 7px 14px;
       border-radius: 10px;
       text-decoration: none;
-      color: #64748b;
+      color: #161d35;
       font-weight: 500;
-      font-size: 0.835rem;
+      font-size: 0.9rem;
       transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
       cursor: pointer;
       white-space: nowrap;
@@ -268,7 +265,7 @@ import { SidebarService } from './sidebar.service';
       justify-content: center;
       padding: 0 !important;
     }
-    .is-collapsed .sidebar-header .logo-icon {
+    .is-collapsed .logo-text {
       margin-right: 0 !important;
     }
     .is-collapsed .menu-item {
@@ -277,7 +274,7 @@ import { SidebarService } from './sidebar.service';
       padding-right: 0 !important;
     }
     .is-collapsed .sidebar-footer {
-       padding: 1rem 0 !important;
+       padding: 0.5rem 0 !important;
     }
   `],
   standalone: false

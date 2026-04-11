@@ -7,22 +7,23 @@ import { CommonModule } from '@angular/common';
   standalone: true,
   imports: [ReactiveFormsModule, CommonModule],
   template: `
-    <div class="login-card shadow-lg p-5">
-      <div class="text-center mb-4">
-        <h2 class="fw-bold mb-1">Bienvenido</h2>
-        </div>
+    <div class="vh-center animate-fade-in-scale">
+      <div class="editorial-card">
+        <h1 class="editorial-title" style="font-size: 3.5rem;">NousTI</h1>
+        <p class="editorial-subtitle">Sistema de facturación.</p>
 
-      <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
-        <div class="mb-3">
-          <input type="email" class="form-control custom-input" id="email" formControlName="email"
-                 placeholder="Ingresa tu correo"
+        <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="w-100 d-flex flex-column align-items-center">
+        <div class="editorial-input-group">
+          <label class="editorial-label">Correo electrónico</label>
+          <input type="email" class="editorial-input" formControlName="email"
+                 placeholder="nombre@ejemplo.com"
                  [ngClass]="{'is-invalid': isInvalid('email')}">
         </div>
         
-        <div class="mb-4 position-relative">
+        <div class="editorial-input-group position-relative">
+          <label class="editorial-label">Contraseña</label>
           <input [type]="showPassword ? 'text' : 'password'" 
-                 class="form-control custom-input pe-5" 
-                 id="password" 
+                 class="editorial-input pe-5" 
                  formControlName="password"
                  placeholder="••••••••"
                  [ngClass]="{'is-invalid': isInvalid('password')}">
@@ -33,71 +34,27 @@ import { CommonModule } from '@angular/common';
           </button>
         </div>
 
-        <button type="submit" class="btn btn-dark w-100 py-2 fw-semibold" [disabled]="loginForm.invalid || isLoading">
+        <button type="submit" class="btn-editorial mt-4" [disabled]="loginForm.invalid || isLoading">
           <span *ngIf="isLoading" class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-          {{ isLoading ? 'Iniciando sesión...' : 'Iniciar Sesión' }}
+          {{ isLoading ? 'PROCESANDO...' : 'INICIAR SESIÓN' }}
         </button>
       </form>
     </div>
+  </div>
   `,
   styles: [`
-    .login-card {
-      background: white;
-      border-radius: 32px;
-      width: 100%;
-      max-width: 440px;
-      border: 1px solid rgba(0,0,0,0.05);
-    }
-    .logo-circle {
-      width: 64px;
-      height: 64px;
-      background: linear-gradient(135deg, #242424ff 0%, #00f2fe 100%);
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      box-shadow: 0 8px 16px rgba(79, 172, 254, 0.3);
-    }
-    .logo-circle svg {
-      width: 32px;
-      height: 32px;
-    }
-    .custom-input {
-      border-radius: 12px;
-      padding: 12px 16px;
-      border: 1px solid #e0e0e0;
-      background-color: #fcfcfc;
-      transition: all 0.2s ease;
-    }
-    .custom-input:focus {
-      border-color: #4facfe;
-      box-shadow: 0 0 0 3px rgba(79, 172, 254, 0.1);
-      background-color: #fff;
-    }
     .btn-toggle-password {
       position: absolute;
-      right: 15px;
-      top: 50%;
-      transform: translateY(-50%);
+      right: 20px;
+      bottom: 12px;
       background: none;
       border: none;
       color: #9e9e9e;
       padding: 0;
-      font-size: 1.2rem;
+      font-size: 1.1rem;
       display: flex;
       align-items: center;
-    }
-    .btn-dark {
-      border-radius: 12px;
-      background-color: #1a1a1a;
-      border: none;
-      transition: transform 0.1s active;
-    }
-    .btn-dark:hover {
-      background-color: #000;
-    }
-    .btn-dark:active {
-      transform: scale(0.98);
+      z-index: 10;
     }
   `]
 })

@@ -10,18 +10,15 @@ import { UiService } from '../../../../shared/services/ui.service';
   standalone: true,
   imports: [CommonModule, LoginFormComponent, ToastComponent],
   template: `
-    <div class="d-flex align-items-center justify-content-center h-100 vh-100 bg-light">
-      <div class="login-container animate__animated animate__fadeIn">
-        <app-login-form [isLoading]="isLoading" (login)="onLogin($event)"></app-login-form>
-      </div>
+    <div class="main-auth-container">
+      <app-login-form [isLoading]="isLoading" (login)="onLogin($event)"></app-login-form>
       <app-toast></app-toast>
     </div>
   `,
   styles: [`
-    .login-container {
+    .main-auth-container {
       width: 100%;
-      max-width: 440px;
-      padding: 20px;
+      height: 100vh;
     }
   `]
 })
