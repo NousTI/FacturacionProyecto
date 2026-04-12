@@ -22,53 +22,49 @@ import { Plan } from '../../services/plan.service';
               </tr>
             </thead>
             <tbody>
-              <tr *ngFor="let plan of planes; trackBy: trackByPlanId" class="animate__animated animate__fadeIn">
+              <tr *ngFor="let plan of planes; trackBy: trackByPlanId">
                 <td>
-                  <div class="d-flex align-items-center">
+                  <div class="d-flex align-items-center" style="max-width: 300px;">
                     <div class="plan-icon me-3" [style.background]="getPlanColor(plan.name, 0.1)" [style.color]="getPlanColor(plan.name, 1)">
                       <i class="bi bi-box"></i>
                     </div>
-                    <div>
-                      <span class="fw-bold text-dark d-block mb-0">{{ plan.name }}</span>
-                      <small class="text-muted d-block" style="font-size: 0.75rem; max-width: 250px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-                        {{ plan.description }}
-                      </small>
+                    <div class="text-truncate">
+                      <span class="fw-bold text-dark d-block mb-0 text-truncate" [title]="plan.name">{{ plan.name }}</span>
+                      <small class="text-muted" style="font-size: 0.7rem;">{{ plan.description }}</small>
                     </div>
                   </div>
                 </td>
                 <td>
-                  <span class="fw-800 text-dark">{{ plan.price | currency:'USD' }}</span>
+                  <span class="fw-600 text-dark" style="font-size: 0.85rem;">{{ plan.price | currency:'USD' }}</span>
                 </td>
-
                 <td>
                   <div class="d-flex align-items-center cursor-pointer" (click)="onViewCompanies.emit(plan)">
                     <span class="subs-count me-2">{{ plan.activeCompanies }}</span>
                     <i class="bi bi-arrow-right-short text-muted"></i>
                   </div>
                 </td>
-                <td>
-
-                  <span class="badge-status-premium" [ngClass]="plan.visible_publico ? 'active' : 'inactive'">
+                <td class="text-center">
+                  <span class="badge-status-premium" [ngClass]="plan.visible_publico ? 'activo' : 'inactivo'">
                     {{ plan.visible_publico ? 'VISIBLE' : 'OCULTO' }}
                   </span>
                 </td>
-                <td>
-                  <span class="badge-status-premium" [ngClass]="plan.status === 'ACTIVO' ? 'active' : 'inactive'">
+                <td class="text-center">
+                  <span class="badge-status-premium" [ngClass]="plan.status === 'ACTIVO' ? 'activo' : 'inactivo'">
                     {{ plan.status }}
                   </span>
                 </td>
                 <td class="text-end">
                   <div class="dropdown">
-                    <button 
-                      class="btn-action-trigger" 
-                      type="button" 
-                      [id]="'actions-' + plan.id" 
-                      data-bs-toggle="dropdown" 
+                    <button
+                      class="btn-action-trigger"
+                      type="button"
+                      [id]="'actions-' + plan.id"
+                      data-bs-toggle="dropdown"
                       aria-expanded="false"
                     >
                       <i class="bi bi-three-dots"></i>
                     </button>
-                    <ul class="dropdown-menu dropdown-menu-end border-0 p-2 rounded-4" data-bs-popper="static" [attr.aria-labelledby]="'actions-' + plan.id">
+                    <ul class="dropdown-menu dropdown-menu-end border-0 p-2 rounded-4" [attr.aria-labelledby]="'actions-' + plan.id">
                       <li>
                         <a class="dropdown-item rounded-3 py-2" href="javascript:void(0)" (click)="onEdit.emit(plan)">
                           <i class="bi bi-pencil-square text-corporate"></i>
@@ -104,6 +100,12 @@ import { Plan } from '../../services/plan.service';
                   </div>
                 </td>
               </tr>
+              <tr *ngIf="planes.length === 0">
+                <td colspan="6" class="text-center p-5 text-muted">
+                  <i class="bi bi-inbox fs-1 d-block mb-3"></i>
+                  No se encontraron planes registrados.
+                </td>
+              </tr>
             </tbody>
           </table>
         </div>
@@ -134,7 +136,7 @@ import { Plan } from '../../services/plan.service';
       min-height: 0;
       height: auto;
       max-height: 100%;
-      overflow: visible;
+      overflow: hidden;
       margin-bottom: 0;
     }
     .table-responsive-premium {
@@ -197,8 +199,8 @@ import { Plan } from '../../services/plan.service';
       display: inline-block;
       text-transform: capitalize;
     }
-    .badge-status-premium.active { background: var(--status-success-bg, #dcfce7); color: var(--status-success-text, #15803d); }
-    .badge-status-premium.inactive { background: var(--status-danger-bg, #fee2e2); color: var(--status-danger-text, #b91c1c); }
+    .badge-status-premium.activo { background: var(--status-success-bg, #dcfce7); color: var(--status-success-text, #15803d); }
+    .badge-status-premium.inactivo { background: var(--status-danger-bg, #fee2e2); color: var(--status-danger-text, #b91c1c); }
 
     .btn-action-trigger {
       background: transparent; border: none;
@@ -210,21 +212,12 @@ import { Plan } from '../../services/plan.service';
       background: #f8fafc; color: #0f172a;
     }
 
-    .dropdown {
-      position: relative;
-    }
     .dropdown-menu {
-      position: absolute !important;
-      top: 100% !important;
-      right: 0 !important;
-      left: auto !important;
       border: 1px solid var(--border-color, #e2e8f0) !important;
-      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15) !important;
+      box-shadow: none !important;
       border-radius: 12px !important;
       padding: 0.5rem !important;
-      z-index: 9999 !important;
-      margin-top: 0.5rem !important;
-      transform: translateZ(0) !important;
+      z-index: 1050 !important;
     }
     .dropdown-item {
       border-radius: 8px !important;
@@ -239,12 +232,10 @@ import { Plan } from '../../services/plan.service';
 
     .cursor-pointer { cursor: pointer; }
     .text-corporate { color: var(--primary-color, #111827) !important; }
-    .fw-800 { font-weight: 800; }
     .fw-bold { font-weight: 700; }
     .text-dark { color: #0f172a; }
     .text-muted { color: var(--text-muted, #475569); }
     .fw-600 { font-weight: 600; }
-    .text-danger { color: #dc2626 !important; }
   `],
   standalone: true,
   imports: [CommonModule]

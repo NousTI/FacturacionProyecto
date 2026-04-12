@@ -9,13 +9,13 @@ import { FormsModule } from '@angular/forms';
       <div class="actions-bar-container">
         <div class="row align-items-center g-3">
           <!-- Búsqueda Principal -->
-          <div class="col-lg-4">
+          <div class="col-lg-5">
             <div class="search-box-premium">
               <i class="bi bi-search"></i>
               <input
                 type="text"
                 [(ngModel)]="searchQuery"
-                (ngModelChange)="searchQueryChange.emit($event)"
+                (ngModelChange)="onSearchChange($event)"
                 placeholder="Q Buscar por nombre o descripción..."
                 class="form-control-premium-search"
               >
@@ -23,7 +23,7 @@ import { FormsModule } from '@angular/forms';
           </div>
 
           <!-- Filtros Rápidos -->
-          <div class="col-lg-4">
+          <div class="col-lg-5">
             <div class="row g-2">
               <div class="col-md-6">
                 <div class="dropdown">
@@ -35,7 +35,7 @@ import { FormsModule } from '@angular/forms';
                   >
                     <span>{{ getPublicoLabel() }}</span>
                   </button>
-                  <ul class="dropdown-menu dropdown-menu-premium">
+                  <ul class="dropdown-menu border-0 shadow-sm dropdown-menu-premium">
                     <li><a class="dropdown-item" (click)="setFilter('publico', 'ALL')">Todos</a></li>
                     <li><a class="dropdown-item" (click)="setFilter('publico', true)">Visibles</a></li>
                     <li><a class="dropdown-item" (click)="setFilter('publico', false)">Ocultos</a></li>
@@ -52,7 +52,7 @@ import { FormsModule } from '@angular/forms';
                   >
                     <span>{{ getEstadoLabel() }}</span>
                   </button>
-                  <ul class="dropdown-menu dropdown-menu-premium">
+                  <ul class="dropdown-menu border-0 shadow-sm dropdown-menu-premium">
                     <li><a class="dropdown-item" (click)="setFilter('estado', 'ALL')">Todos los Estados</a></li>
                     <li><a class="dropdown-item" (click)="setFilter('estado', 'ACTIVO')">Activos</a></li>
                     <li><a class="dropdown-item" (click)="setFilter('estado', 'INACTIVO')">Inactivos</a></li>
@@ -136,6 +136,7 @@ import { FormsModule } from '@angular/forms';
       margin-top: 0.5rem !important;
       max-height: 300px;
       overflow-y: auto;
+      background: #ffffff;
     }
     .dropdown-item {
       border-radius: 8px !important;
@@ -182,6 +183,10 @@ export class PlanActionsComponent {
     publico: 'ALL',
     estado: 'ALL'
   };
+
+  onSearchChange(value: string) {
+    this.searchQueryChange.emit(value);
+  }
 
   onFilterChange() {
     this.onFilterChangeEmit.emit(this.filters);
