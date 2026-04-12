@@ -6,73 +6,139 @@ import { FormsModule } from '@angular/forms';
     selector: 'app-vendedor-plan-actions',
     standalone: true,
     imports: [CommonModule, FormsModule],
-    template: `
-    <div class="actions-container mb-4">
-      <div class="search-wrapper">
-        <i class="bi bi-search search-icon"></i>
-        <input 
-          type="text" 
-          class="form-control premium-search" 
-          placeholder="Buscar planes por nombre o descripción..."
-          [ngModel]="searchQuery"
-          (ngModelChange)="searchQueryChange.emit($event)"
-        >
-      </div>
+  template: `
+    <section class="module-actions">
+      <div class="actions-bar-container">
+        <div class="row align-items-center g-3">
+          <!-- Búsqueda Principal -->
+          <div class="col-lg-5">
+            <div class="search-box-premium">
+              <i class="bi bi-search"></i>
+              <input
+                type="text"
+                [(ngModel)]="searchQuery"
+                (ngModelChange)="searchQueryChange.emit($event)"
+                placeholder="Buscar planes por nombre o descripción..."
+                class="form-control-premium-search"
+              >
+            </div>
+          </div>
 
-    </div>
+          <!-- Estado Filter -->
+          <div class="col-lg-3">
+            <select
+              [(ngModel)]="filterEstado"
+              (ngModelChange)="filterEstadoChange.emit($event)"
+              class="form-select-premium"
+            >
+              <option value="ALL">Todos los Estados</option>
+              <option value="ACTIVO">Activos</option>
+              <option value="OCULTO">Ocultos</option>
+            </select>
+          </div>
+
+          <!-- Categoría Filter (Optional) -->
+          <div class="col-lg-2">
+            <select
+              [(ngModel)]="filterCategoria"
+              (ngModelChange)="filterCategoriaChange.emit($event)"
+              class="form-select-premium"
+            >
+              <option value="ALL">Todas las Categorías</option>
+              <option value="BASICO">Básico</option>
+              <option value="PROFESIONAL">Profesional</option>
+              <option value="ENTERPRISE">Enterprise</option>
+            </select>
+          </div>
+
+          <!-- Botón Nuevo Plan (Opcional) -->
+          <div class="col-lg-2 text-end">
+            <!-- Reservado para futuro -->
+          </div>
+        </div>
+      </div>
+    </section>
   `,
-    styles: [`
-    .actions-container {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 1.5rem;
+  styles: [`
+    :host {
+      display: block;
     }
-    .search-wrapper {
+    .actions-bar-container {
+      background: transparent;
+      border: none;
+      padding: 0;
+    }
+    .search-box-premium {
       position: relative;
-      flex: 1;
-      max-width: 500px;
+      width: 100%;
     }
-    .search-icon {
+    .search-box-premium i {
       position: absolute;
-      left: 1.25rem;
+      left: 1rem;
       top: 50%;
       transform: translateY(-50%);
       color: #94a3b8;
-      font-size: 1.1rem;
+      font-size: 1rem;
     }
-    .premium-search {
-      padding: 0.85rem 1.25rem 0.85rem 3.25rem;
-      border-radius: 16px;
-      border: 1px solid #f1f5f9;
-      background: white;
-      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.02);
-      font-size: 0.95rem;
-      transition: all 0.3s ease;
+    .form-control-premium-search {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 0 1rem 0 2.75rem;
+      height: 42px;
+      font-size: var(--text-md, 0.95rem);
+      color: #0f172a;
+      transition: all 0.2s;
+      width: 100%;
     }
-    .premium-search:focus {
-      border-color: #161d35;
-      box-shadow: 0 4px 20px rgba(22, 29, 53, 0.08);
+    .form-control-premium-search:focus {
+      border-color: #cbd5e1;
+      outline: none;
+      box-shadow: none;
+    }
+    .form-select-premium {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 0 1rem;
+      height: 42px;
+      font-size: var(--text-base, 0.85rem);
+      color: #475569;
+      width: 100%;
+      cursor: pointer;
+      text-align: left;
+    }
+    .form-select-premium:focus {
+      border-color: #cbd5e1;
       outline: none;
     }
-    .button-group {
-      display: flex;
-      gap: 0.75rem;
+    .dropdown-menu-premium {
+      border-radius: 12px !important;
+      padding: 0.5rem !important;
+      min-width: 100%;
+      margin-top: 0.5rem !important;
     }
-    .info-badge-premium {
-      background: rgba(22, 29, 53, 0.05);
-      color: #161d35;
-      padding: 0.85rem 1.75rem;
-      border-radius: 16px;
-      font-weight: 700;
-      display: flex;
-      align-items: center;
-      font-size: 0.9rem;
-      border: 1px solid rgba(22, 29, 53, 0.1);
+    .dropdown-item {
+      border-radius: 8px !important;
+      padding: 0.6rem 1rem !important;
+      color: #475569 !important;
+      font-size: var(--text-base, 0.85rem) !important;
+      font-weight: 500 !important;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .dropdown-item:hover {
+      background-color: var(--primary-color, #161d35) !important;
+      color: #ffffff !important;
     }
   `]
 })
 export class VendedorPlanActionsComponent {
-    @Input() searchQuery: string = '';
-    @Output() searchQueryChange = new EventEmitter<string>();
+  @Input() searchQuery: string = '';
+  @Input() filterEstado: string = 'ALL';
+  @Input() filterCategoria: string = 'ALL';
+
+  @Output() searchQueryChange = new EventEmitter<string>();
+  @Output() filterEstadoChange = new EventEmitter<string>();
+  @Output() filterCategoriaChange = new EventEmitter<string>();
 }
