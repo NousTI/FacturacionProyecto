@@ -28,13 +28,20 @@ import { PuntoEmision } from '../../../../../domain/models/punto-emision.model';
           <div class="form-section-final">
             <h3 class="section-header-final">Información Básica</h3>
             <div class="row g-3">
-              <div class="col-md-4">
+              <div class="col-md-2">
                 <label class="label-final">Código</label>
-                <div class="detail-value">{{ puntoEmision.codigo }}</div>
+                <div class="detail-value fw-bold text-primary">{{ puntoEmision.codigo }}</div>
               </div>
-              <div class="col-md-8">
-                <label class="label-final">Nombre del Punto de Emisión</label>
+              <div class="col-md-6">
+                <label class="label-final">Nombre del Punto</label>
                 <div class="detail-value">{{ puntoEmision.nombre }}</div>
+              </div>
+              <div class="col-md-4">
+                <label class="label-final">Teléfono</label>
+                <div class="detail-value">
+                  <i class="bi bi-telephone text-muted me-2"></i>
+                  {{ puntoEmision.telefono || 'No registrado' }}
+                </div>
               </div>
             </div>
           </div>
@@ -50,16 +57,39 @@ import { PuntoEmision } from '../../../../../domain/models/punto-emision.model';
             </div>
           </div>
 
-          <!-- SECCIÓN: INFORMACIÓN DE SECUENCIAL -->
+          <!-- SECCIÓN: SECUENCIALES INDEPENDIENTES -->
           <div class="form-section-final">
-            <h3 class="section-header-final">Información del Secuencial</h3>
+            <h3 class="section-header-final">Contadores de Secuenciales (Próximo Número)</h3>
             <div class="row g-3">
-              <div class="col-12">
-                <label class="label-final">Próximo Secuencial a Usar (SRI)</label>
-                <div class="detail-value" style="font-weight: 700; color: #10b981; font-size: 1.1rem;">
-                  {{ ('000000000' + (puntoEmision.secuencial_actual || 0)).slice(-9) }}
+              <div class="col-md-4">
+                <label class="label-final text-uppercase" style="font-size: 0.65rem;">Facturas</label>
+                <div class="detail-value text-primary fw-bold" style="font-size: 1.1rem;">
+                  {{ ('000000000' + (puntoEmision.secuencial_factura || 0)).slice(-9) }}
                 </div>
-                <small style="color: #64748b;">Este valor se incrementará automáticamente con cada factura emitida</small>
+              </div>
+              <div class="col-md-4">
+                <label class="label-final text-uppercase" style="font-size: 0.65rem;">Notas Crédito</label>
+                <div class="detail-value text-muted" style="font-size: 1.1rem;">
+                  {{ ('000000000' + (puntoEmision.secuencial_nota_credito || 0)).slice(-9) }}
+                </div>
+              </div>
+              <div class="col-md-4">
+                <label class="label-final text-uppercase" style="font-size: 0.65rem;">Notas Débito</label>
+                <div class="detail-value text-muted" style="font-size: 1.1rem;">
+                  {{ ('000000000' + (puntoEmision.secuencial_nota_debito || 0)).slice(-9) }}
+                </div>
+              </div>
+              <div class="col-md-6">
+                <label class="label-final text-uppercase" style="font-size: 0.65rem;">Retenciones</label>
+                <div class="detail-value text-muted" style="font-size: 1.1rem;">
+                  {{ ('000000000' + (puntoEmision.secuencial_retencion || 0)).slice(-9) }}
+                </div>
+              </div>
+              <div class="col-md-6">
+                <label class="label-final text-uppercase" style="font-size: 0.65rem;">Guías Remisión</label>
+                <div class="detail-value text-muted" style="font-size: 1.1rem;">
+                  {{ ('000000000' + (puntoEmision.secuencial_guia_remision || 0)).slice(-9) }}
+                </div>
               </div>
             </div>
           </div>

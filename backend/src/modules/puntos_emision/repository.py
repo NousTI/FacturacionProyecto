@@ -85,13 +85,28 @@ class RepositorioPuntosEmision:
             cur.execute(query, (str(id),))
             return cur.rowcount > 0
 
-    def incrementar_secuencial(self, id: UUID) -> Optional[int]:
-        query = "UPDATE sistema_facturacion.puntos_emision SET secuencial_actual = secuencial_actual + 1, updated_at = NOW() WHERE id = %s RETURNING secuencial_actual"
+    def incrementar_secuencial(self, id: UUID, tipo_comprobante: str) -> Optional[int]:
+        """
+        Incrementa el secuencial para un tipo de comprobante específico.
+        tipo_comprobante: factura, nota_credito, nota_debito, retencion, guia_remision
+        """
+        column_map = {
+            'factura': 'secuencial_factura',
+            'nota_credito': 'secuencial_nota_credito',
+            'nota_debito': 'secuencial_nota_debito',
+            'retencion': 'secuencial_retencion',
+            'guia_remision': 'secuencial_guia_remision'
+        }
+        
+        col = column_map.get(tipo_comprobante.lower())
+        if not col:
+            return None
+
+        query = f"UPDATE sistema_facturacion.puntos_emision SET {col} = {col} + 1, updated_at = NOW() WHERE id = %s RETURNING {col}"
         with db_transaction(self.db) as cur:
              cur.execute(query, (str(id),))
              row = cur.fetchone()
              if row:
-                  # Safe access for different cursor types
-                  try: return row['secuencial_actual'] - 1
+                  try: return row[col] - 1
                   except: return row[0] - 1
         return None

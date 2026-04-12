@@ -89,23 +89,42 @@ import { Establecimiento } from '../../../../../domain/models/establecimiento.mo
               <h3 class="section-header-final">Puntos de Emisión</h3>
               <div class="info-box">
                   <p><span class="label">Cantidad de Puntos:</span> <strong>{{ establecimiento.puntos_emision_total || 0 }}</strong></p>
-                <p><span class="label">Último Secuencial:</span> <strong>{{ establecimiento.ultimo_secuencial || 'N/A' }}</strong></p>
               </div>
             </div>
 
-            <!-- SECCIÓN: ESTADO -->
+            <!-- SECCIÓN: CONFIGURACIÓN Y ESTADO -->
             <div class="form-section-final border-0 mb-0">
-              <h3 class="section-header-final">Estado</h3>
-              <div class="form-check form-switch switch-final">
-                <input
-                  class="form-check-input"
-                  type="checkbox"
-                  formControlName="activo"
-                  id="activoCheck"
-                >
-                <label class="form-check-label ms-2" for="activoCheck">
-                  Establecimiento Activo
-                </label>
+              <h3 class="section-header-final">Configuración y Estado</h3>
+              
+              <div class="row g-3">
+                <div class="col-md-6">
+                  <div class="form-check form-switch switch-final">
+                    <input
+                      class="form-check-input"
+                      type="checkbox"
+                      formControlName="es_matriz"
+                      id="matrizCheck"
+                    >
+                    <label class="form-check-label ms-2" for="matrizCheck">
+                      Establecimiento Matriz
+                    </label>
+                  </div>
+                  <small class="text-muted d-block mt-1">Solo puede haber un establecimiento matriz.</small>
+                </div>
+
+                <div class="col-md-6">
+                  <div class="form-check form-switch switch-final">
+                    <input
+                      class="form-check-input"
+                      type="checkbox"
+                      formControlName="activo"
+                      id="activoCheck"
+                    >
+                    <label class="form-check-label ms-2" for="activoCheck">
+                      Establecimiento Activo
+                    </label>
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -445,6 +464,7 @@ export class CreateEstablecimientoModalComponent implements OnInit {
         Validators.required,
         Validators.minLength(5)
       ]],
+      es_matriz: [false],
       activo: [true]
     });
   }

@@ -50,17 +50,22 @@ import { Establecimiento } from '../../../../../domain/models/establecimiento.mo
             </div>
           </div>
 
-          <!-- SECCIÓN: PUNTOS DE EMISIÓN -->
+          <!-- SECCIÓN: CONFIGURACIÓN -->
           <div class="form-section-final">
-            <h3 class="section-header-final">Puntos de Emisión</h3>
+            <h3 class="section-header-final">Configuración</h3>
             <div class="row g-3">
+              <div class="col-md-6">
+                <label class="label-final">Tipo de Sede</label>
+                <div class="detail-value">
+                  <span *ngIf="establecimiento.es_matriz" class="badge bg-dark text-warning border border-warning px-3 py-2 rounded-pill fw-bold" style="font-size: 0.75rem;">
+                    ⭐ MATRIZ
+                  </span>
+                  <span *ngIf="!establecimiento.es_matriz" class="text-muted">Sucursal</span>
+                </div>
+              </div>
               <div class="col-md-6">
                 <label class="label-final">Cantidad de Puntos</label>
                 <div class="detail-value">{{ establecimiento.puntos_emision_total || 0 }}</div>
-              </div>
-              <div class="col-md-6">
-                <label class="label-final">Último Secuencial</label>
-                <div class="detail-value">{{ ('00' + (establecimiento.ultimo_secuencial || 0)).slice(-3) }}</div>
               </div>
             </div>
           </div>

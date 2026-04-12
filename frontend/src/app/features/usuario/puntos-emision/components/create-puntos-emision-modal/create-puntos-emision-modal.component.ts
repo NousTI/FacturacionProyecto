@@ -45,11 +45,11 @@ import { Observable } from 'rxjs';
                   >
                   <div class="error-feedback" *ngIf="isInvalidField('codigo')">
                     <i class="bi bi-exclamation-circle"></i>
-                    Debe ser 3 dígitos (001-999)
+                    3 dígitos (001-999)
                   </div>
                 </div>
                 <div class="col-md-8">
-                  <label class="label-final">Nombre del Punto de Emisión *</label>
+                  <label class="label-final">Nombre del Punto *</label>
                   <input
                     type="text"
                     formControlName="nombre"
@@ -59,7 +59,19 @@ import { Observable } from 'rxjs';
                   >
                   <div class="error-feedback" *ngIf="isInvalidField('nombre')">
                     <i class="bi bi-exclamation-circle"></i>
-                    El nombre es requerido (3-100 caracteres)
+                    Requerido (3-100 carac.)
+                  </div>
+                </div>
+                <div class="col-12">
+                  <label class="label-final">Teléfono de Contacto (Opcional)</label>
+                  <div class="input-group-premium">
+                    <i class="bi bi-telephone"></i>
+                    <input
+                      type="text"
+                      formControlName="telefono"
+                      class="input-final ps-5"
+                      placeholder="Ej: 0999999999"
+                    >
                   </div>
                 </div>
               </div>
@@ -81,10 +93,39 @@ import { Observable } from 'rxjs';
                       {{ est.nombre }}
                     </option>
                   </select>
-                  <div class="error-feedback" *ngIf="isInvalidField('establecimiento_id')">
-                    <i class="bi bi-exclamation-circle"></i>
-                    El establecimiento es requerido
-                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- SECCIÓN: SECUENCIALES -->
+            <div class="form-section-final">
+              <div class="d-flex justify-content-between align-items-center mb-3">
+                <h3 class="section-header-final mb-0">Secuenciales de Documentos</h3>
+                <span class="badge bg-soft-info text-info rounded-pill px-3 py-1" style="font-size: 0.7rem;">
+                  Siguiente Número a Emitir
+                </span>
+              </div>
+              
+              <div class="row g-3">
+                <div class="col-md-4">
+                  <label class="label-final">Facturas</label>
+                  <input type="number" formControlName="secuencial_factura" class="input-final" min="1">
+                </div>
+                <div class="col-md-4">
+                  <label class="label-final">Notas de Crédito</label>
+                  <input type="number" formControlName="secuencial_nota_credito" class="input-final" min="1">
+                </div>
+                <div class="col-md-4">
+                  <label class="label-final">Notas de Débito</label>
+                  <input type="number" formControlName="secuencial_nota_debito" class="input-final" min="1">
+                </div>
+                <div class="col-md-6">
+                  <label class="label-final">Retenciones</label>
+                  <input type="number" formControlName="secuencial_retencion" class="input-final" min="1">
+                </div>
+                <div class="col-md-6">
+                  <label class="label-final">Guías de Remisión</label>
+                  <input type="number" formControlName="secuencial_guia_remision" class="input-final" min="1">
                 </div>
               </div>
             </div>
@@ -253,6 +294,23 @@ import { Observable } from 'rxjs';
       font-weight: 600;
       transition: all 0.2s;
       font-family: inherit;
+    }
+
+    .input-group-premium {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+
+    .input-group-premium i {
+      position: absolute;
+      left: 1.25rem;
+      color: #94a3b8;
+      font-size: 1.1rem;
+    }
+
+    .bg-soft-info {
+      background: #e0f2fe;
     }
 
     .input-final:focus {
@@ -451,6 +509,12 @@ export class CreatePuntosEmisionModalComponent implements OnInit {
       establecimiento_id: ['', [
         Validators.required
       ]],
+      telefono: [''],
+      secuencial_factura: [1, [Validators.required, Validators.min(1)]],
+      secuencial_nota_credito: [1, [Validators.required, Validators.min(1)]],
+      secuencial_nota_debito: [1, [Validators.required, Validators.min(1)]],
+      secuencial_retencion: [1, [Validators.required, Validators.min(1)]],
+      secuencial_guia_remision: [1, [Validators.required, Validators.min(1)]],
       activo: [true]
     });
     

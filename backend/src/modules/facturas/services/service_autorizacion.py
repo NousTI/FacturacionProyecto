@@ -107,7 +107,7 @@ class ServicioAutorizacion:
             punto = self.core.punto_emision_service.obtener_punto(factura['punto_emision_id'], usuario_actual)
             establecimiento = self.core.establecimiento_service.obtener_establecimiento(factura['establecimiento_id'], usuario_actual)
             
-            secuencial = self.core.punto_emision_repo.incrementar_secuencial(factura['punto_emision_id'])
+            secuencial = self.core.punto_emision_repo.incrementar_secuencial(factura['punto_emision_id'], 'factura')
             if secuencial is None:
                 raise AppError("No se pudo obtener el secuencial del punto de emisión", 500)
             

@@ -7,6 +7,7 @@ class EstablecimientoBase(BaseModel):
     codigo: str = Field(..., pattern=r'^\d{3}$', description="Código de establecimiento SRI (001-999)")
     nombre: str
     direccion: str = Field(..., min_length=1, description="Dirección del establecimiento")
+    es_matriz: bool = False
     activo: bool = True
 
 class EstablecimientoCreacion(EstablecimientoBase):
@@ -16,13 +17,13 @@ class EstablecimientoActualizacion(BaseModel):
     codigo: Optional[str] = Field(None, pattern=r'^\d{3}$', description="Código de establecimiento SRI (001-999)")
     nombre: Optional[str] = None
     direccion: Optional[str] = Field(None, min_length=1, description="Dirección del establecimiento")
+    es_matriz: Optional[bool] = None
     activo: Optional[bool] = None
 
 class EstablecimientoLectura(EstablecimientoBase):
     id: UUID
     empresa_id: UUID
     puntos_emision_total: int = 0
-    ultimo_secuencial: int = 0
     created_at: datetime
     updated_at: datetime
 

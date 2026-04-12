@@ -34,8 +34,7 @@ class RepositorioEstablecimientos:
         query = """
             SELECT 
                 e.*,
-                COALESCE(COUNT(pe.id), 0) as puntos_emision_total,
-                COALESCE(MAX(pe.secuencial_actual), 0) as ultimo_secuencial
+                COALESCE(COUNT(pe.id), 0) as puntos_emision_total
             FROM sistema_facturacion.establecimientos e
             LEFT JOIN sistema_facturacion.puntos_emision pe ON e.id = pe.establecimiento_id
             WHERE e.id = %s
@@ -50,8 +49,7 @@ class RepositorioEstablecimientos:
         query = """
             SELECT 
                 e.*,
-                COALESCE(COUNT(pe.id), 0) as puntos_emision_total,
-                COALESCE(MAX(pe.secuencial_actual), 0) as ultimo_secuencial
+                COALESCE(COUNT(pe.id), 0) as puntos_emision_total
             FROM sistema_facturacion.establecimientos e
             LEFT JOIN sistema_facturacion.puntos_emision pe ON e.id = pe.establecimiento_id
         """

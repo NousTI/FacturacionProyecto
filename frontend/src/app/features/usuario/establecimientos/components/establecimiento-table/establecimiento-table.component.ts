@@ -20,7 +20,6 @@ import { HasPermissionDirective } from '../../../../../shared/directives/has-per
                 <th>Dirección</th>
                 <th style="width: 110px">Estado</th>
                 <th style="width: 120px">🔑 Puntos PE</th>
-                <th style="width: 140px">Último Secuencial</th>
                 <th class="text-end" style="width: 80px">Acciones</th>
               </tr>
             </thead>
@@ -37,8 +36,11 @@ import { HasPermissionDirective } from '../../../../../shared/directives/has-per
                       {{ getInitials(est.nombre) }}
                     </div>
                     <div>
-                      <span class="fw-bold text-dark d-block mb-0">{{ est.nombre }}</span>
-                      <small class="text-muted" style="font-size: 0.75rem;">{{ est.empresa_id | slice:0:8 }}</small>
+                      <div class="d-flex align-items-center gap-2">
+                        <span class="fw-bold text-dark d-block mb-0">{{ est.nombre }}</span>
+                        <span *ngIf="est.es_matriz" class="badge-matriz">⭐ MATRIZ</span>
+                      </div>
+                      <small class="text-muted" style="font-size: 0.75rem;">{{ est.codigo }} | {{ est.id | slice:0:8 }}</small>
                     </div>
                   </div>
                 </td>
@@ -65,10 +67,6 @@ import { HasPermissionDirective } from '../../../../../shared/directives/has-per
                   <span class="puntos-badge">{{ est.puntos_emision_total || 0 }}</span>
                 </td>
 
-                <!-- Último Secuencial -->
-                <td>
-                  <span class="secuencial-badge">{{ ('00' + (est.ultimo_secuencial || 0)).slice(-3) }}</span>
-                </td>
 
                 <!-- Acciones -->
                 <td class="text-end">
@@ -216,6 +214,17 @@ import { HasPermissionDirective } from '../../../../../shared/directives/has-per
       color: #92400e;
       font-weight: 700;
       font-size: 0.9rem;
+    }
+
+    .badge-matriz {
+      background: #161d35;
+      color: #fbbf24;
+      font-size: 0.65rem;
+      font-weight: 800;
+      padding: 0.15rem 0.5rem;
+      border-radius: 6px;
+      letter-spacing: 0.05em;
+      border: 1px solid #fbbf24;
     }
 
     .dropdown {

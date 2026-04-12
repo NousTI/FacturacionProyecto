@@ -18,7 +18,7 @@ import { HasPermissionDirective } from '../../../../../shared/directives/has-per
                 <th>Punto Emisión</th>
                 <th style="width: 100px">Código</th>
                 <th>Establecimiento</th>
-                <th style="width: 140px">Secuencial</th>
+                <th style="width: 140px">Secuenciales</th>
                 <th style="width: 110px">Estado</th>
                 <th class="text-end" style="width: 80px">Acciones</th>
               </tr>
@@ -52,9 +52,17 @@ import { HasPermissionDirective } from '../../../../../shared/directives/has-per
                   <span class="text-dark" style="font-size: 0.85rem;">{{ pe.establecimiento_id | slice:0:12 }}...</span>
                 </td>
 
-                <!-- Secuencial -->
+                <!-- Secuenciales -->
                 <td>
-                  <span class="secuencial-badge">{{ ('000000000' + (pe.secuencial_actual || 0)).slice(-9) }}</span>
+                  <div class="secuencial-group" [title]="getSecuencialesTooltip(pe)">
+                    <span class="secuencial-badge">
+                      <i class="bi bi-file-earmark-text me-1"></i>
+                      {{ ('000000000' + (pe.secuencial_factura || 0)).slice(-9) }}
+                    </span>
+                    <button class="btn-info-secuenciales" type="button">
+                      <i class="bi bi-info-circle"></i>
+                    </button>
+                  </div>
                 </td>
 
                 <!-- Estado -->
@@ -184,13 +192,35 @@ import { HasPermissionDirective } from '../../../../../shared/directives/has-per
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      padding: 0.35rem 0.85rem;
+      padding: 0.35rem 0.65rem;
       border-radius: 8px;
       background: #fef3c7;
       color: #92400e;
       font-weight: 700;
-      font-size: 0.85rem;
+      font-size: 0.8rem;
       font-family: 'Courier New', monospace;
+    }
+
+    .secuencial-group {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      cursor: help;
+    }
+
+    .btn-info-secuenciales {
+      background: none;
+      border: none;
+      color: #94a3b8;
+      padding: 0;
+      display: flex;
+      align-items: center;
+      font-size: 1rem;
+      transition: color 0.2s;
+    }
+
+    .btn-info-secuenciales:hover {
+      color: #161d35;
     }
 
     .badge-status-premium {
@@ -339,5 +369,15 @@ export class PuntosEmisionTableComponent {
     ];
     const index = text.charCodeAt(0) % colors.length;
     return colors[index];
+  }
+
+  getSecuencialesTooltip(pe: PuntoEmision): string {
+    return `
+Factura: ${pe.secuencial_factura}
+Nota Crédito: ${pe.secuencial_nota_credito}
+Nota Débito: ${pe.secuencial_nota_debito}
+Retención: ${pe.secuencial_retencion}
+Guía Remisión: ${pe.secuencial_guia_remision}
+    `.trim();
   }
 }
