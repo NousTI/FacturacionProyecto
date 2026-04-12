@@ -62,7 +62,7 @@ import { Plan } from '../../../../super-admin/planes/services/plan.service';
 
                 <!-- Público Badge -->
                 <td>
-                  <span class="badge-status-premium" [ngClass]="plan.visible_publico ? 'activo' : 'inactivo'">
+                  <span class="badge-status-premium" [ngClass]="plan.visible_publico ? 'visible' : 'oculto'">
                     {{ plan.visible_publico ? 'VISIBLE' : 'OCULTO' }}
                   </span>
                 </td>
@@ -177,20 +177,25 @@ import { Plan } from '../../../../super-admin/planes/services/plan.service';
     }
 
     .badge-status-premium {
-      padding: 0.25rem 0.75rem;
+      padding: 0.4rem 0.85rem;
       border-radius: 6px;
       font-size: var(--text-sm, 0.75rem);
       font-weight: 600;
       display: inline-block;
       text-transform: uppercase;
+      color: #ffffff;
     }
     .badge-status-premium.activo {
-      background: #dcfce7;
-      color: #15803d;
+      background: #10b981;
     }
     .badge-status-premium.inactivo {
-      background: #fee2e2;
-      color: #b91c1c;
+      background: #ef4444;
+    }
+    .badge-status-premium.visible {
+      background: #3b82f6;
+    }
+    .badge-status-premium.oculto {
+      background: #8b5cf6;
     }
 
     .badge-role-premium {

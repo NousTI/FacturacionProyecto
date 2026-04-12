@@ -24,74 +24,69 @@ import { FormsModule } from '@angular/forms';
             </div>
           </div>
 
-          <!-- Filtros Rápidos -->
-          <div class="col-lg-6">
-            <div class="row g-2">
-              <!-- Estado Filter (ACTIVO/INACTIVO) -->
-              <div class="col-md-4">
-                <div class="dropdown w-100">
-                  <button
-                    class="form-select-premium dropdown-toggle d-flex align-items-center justify-content-between"
-                    type="button"
-                    data-bs-toggle="dropdown"
-                    aria-expanded="false"
-                  >
-                    <span class="text-truncate">{{ getEstadoLabel() }}</span>
-                  </button>
-                  <ul class="dropdown-menu dropdown-menu-premium w-100">
-                    <li><a class="dropdown-item" (click)="setFilterEstado('ALL')">Todos los Estados</a></li>
-                    <li><hr class="dropdown-divider"></li>
-                    <li><a class="dropdown-item" (click)="setFilterEstado('ACTIVO')">Activos</a></li>
-                    <li><a class="dropdown-item" (click)="setFilterEstado('INACTIVO')">Inactivos</a></li>
-                  </ul>
-                </div>
-              </div>
+          <!-- Estado Filter (ACTIVO/INACTIVO) -->
+          <div class="col-lg-2">
+            <div class="dropdown w-100">
+              <button
+                class="form-select-premium dropdown-toggle d-flex align-items-center justify-content-between"
+                type="button"
+                data-bs-toggle="dropdown"
+                aria-expanded="false"
+              >
+                <span class="text-truncate">{{ getEstadoLabel() }}</span>
+              </button>
+              <ul class="dropdown-menu dropdown-menu-premium w-100">
+                <li><a class="dropdown-item" (click)="setFilterEstado('ALL')">Todos los Estados</a></li>
+                <li><hr class="dropdown-divider"></li>
+                <li><a class="dropdown-item" (click)="setFilterEstado('ACTIVO')">Activos</a></li>
+                <li><a class="dropdown-item" (click)="setFilterEstado('INACTIVO')">Inactivos</a></li>
+              </ul>
+            </div>
+          </div>
 
-              <!-- Público Filter (VISIBLE/OCULTO) -->
-              <div class="col-md-4">
-                <div class="dropdown w-100">
-                  <button
-                    class="form-select-premium dropdown-toggle d-flex align-items-center justify-content-between"
-                    type="button"
-                    data-bs-toggle="dropdown"
-                    aria-expanded="false"
-                  >
-                    <span class="text-truncate">{{ getPublicoLabel() }}</span>
-                  </button>
-                  <ul class="dropdown-menu dropdown-menu-premium w-100">
-                    <li><a class="dropdown-item" (click)="setFilterPublico('ALL')">Todos</a></li>
-                    <li><hr class="dropdown-divider"></li>
-                    <li><a class="dropdown-item" (click)="setFilterPublico('VISIBLE')">Públicos</a></li>
-                    <li><a class="dropdown-item" (click)="setFilterPublico('OCULTO')">Ocultos</a></li>
-                  </ul>
-                </div>
-              </div>
+          <!-- Público Filter (VISIBLE/OCULTO) -->
+          <div class="col-lg-2">
+            <div class="dropdown w-100">
+              <button
+                class="form-select-premium dropdown-toggle d-flex align-items-center justify-content-between"
+                type="button"
+                data-bs-toggle="dropdown"
+                aria-expanded="false"
+              >
+                <span class="text-truncate">{{ getPublicoLabel() }}</span>
+              </button>
+              <ul class="dropdown-menu dropdown-menu-premium w-100">
+                <li><a class="dropdown-item" (click)="setFilterPublico('ALL')">Todos</a></li>
+                <li><hr class="dropdown-divider"></li>
+                <li><a class="dropdown-item" (click)="setFilterPublico('VISIBLE')">Públicos</a></li>
+                <li><a class="dropdown-item" (click)="setFilterPublico('OCULTO')">Ocultos</a></li>
+              </ul>
+            </div>
+          </div>
 
-              <!-- Categoría Filter -->
-              <div class="col-md-4">
-                <div class="dropdown w-100">
-                  <button
-                    class="form-select-premium dropdown-toggle d-flex align-items-center justify-content-between"
-                    type="button"
-                    data-bs-toggle="dropdown"
-                    aria-expanded="false"
-                  >
-                    <span class="text-truncate">{{ getCategoriaLabel() }}</span>
-                  </button>
-                  <ul class="dropdown-menu dropdown-menu-premium w-100">
-                    <li><a class="dropdown-item" (click)="setFilterCategoria('ALL')">Todas las Categorías</a></li>
-                    <li><hr class="dropdown-divider"></li>
-                    <li><a class="dropdown-item" (click)="setFilterCategoria('BASICO')">Básico</a></li>
-                    <li><a class="dropdown-item" (click)="setFilterCategoria('PROFESIONAL')">Profesional</a></li>
-                    <li><a class="dropdown-item" (click)="setFilterCategoria('ENTERPRISE')">Enterprise</a></li>
-                  </ul>
-                </div>
-              </div>
+          <!-- Categoría Filter -->
+          <div class="col-lg-3">
+            <div class="dropdown w-100">
+              <button
+                class="form-select-premium dropdown-toggle d-flex align-items-center justify-content-between"
+                type="button"
+                data-bs-toggle="dropdown"
+                aria-expanded="false"
+              >
+                <span class="text-truncate">{{ getCategoriaLabel() }}</span>
+              </button>
+              <ul class="dropdown-menu dropdown-menu-premium w-100">
+                <li><a class="dropdown-item" (click)="setFilterCategoria('ALL')">Todas las Categorías</a></li>
+                <li><hr class="dropdown-divider"></li>
+                <li><a class="dropdown-item" (click)="setFilterCategoria('BASICO')">Básico</a></li>
+                <li><a class="dropdown-item" (click)="setFilterCategoria('PROFESIONAL')">Profesional</a></li>
+                <li><a class="dropdown-item" (click)="setFilterCategoria('ENTERPRISE')">Enterprise</a></li>
+              </ul>
             </div>
           </div>
 
           <!-- Botón Nuevo Plan (Opcional) -->
-          <div class="col-lg-3 text-lg-end">
+          <div class="col-lg-2">
             <!-- Reservado para futuro -->
           </div>
         </div>
