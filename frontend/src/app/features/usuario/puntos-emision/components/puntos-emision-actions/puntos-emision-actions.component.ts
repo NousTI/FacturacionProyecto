@@ -9,204 +9,168 @@ import { HasPermissionDirective } from '../../../../../shared/directives/has-per
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommonModule, FormsModule, HasPermissionDirective],
   template: `
-    <div class="actions-container">
-      <!-- Campo de Búsqueda -->
-      <div class="search-box">
-        <i class="bi bi-search"></i>
-        <input
-          type="text"
-          [(ngModel)]="searchQuery"
-          (input)="onSearchChange()"
-          placeholder="Buscar por código, nombre..."
-          class="search-input"
-        >
-        <button
-          *ngIf="searchQuery"
-          (click)="clearSearch()"
-          class="btn-clear-search"
-          type="button"
-        >
-          <i class="bi bi-x-circle-fill"></i>
-        </button>
+    <section class="module-actions">
+      <div class="actions-bar-container">
+        <div class="row align-items-center g-3">
+          <!-- Búsqueda Principal -->
+          <div class="col-lg-7">
+            <div class="search-box-premium">
+              <i class="bi bi-search"></i>
+              <input 
+                type="text" 
+                [(ngModel)]="searchQuery" 
+                (ngModelChange)="onSearchChange()"
+                placeholder="Q Buscar por Código o Nombre..." 
+                class="form-control-premium-search"
+              >
+              <button 
+                *ngIf="searchQuery" 
+                (click)="clearSearch()" 
+                class="btn-clear-search-premium"
+              >
+                <i class="bi bi-x"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- Filtro Estado -->
+          <div class="col-lg-3">
+            <div class="dropdown">
+              <button 
+                class="form-select-premium dropdown-toggle d-flex align-items-center justify-content-between" 
+                type="button" 
+                data-bs-toggle="dropdown" 
+                aria-expanded="false"
+              >
+                <span>{{ getEstadoLabel() }}</span>
+              </button>
+              <ul class="dropdown-menu border-0 shadow-sm dropdown-menu-premium">
+                <li><a class="dropdown-item" (click)="setEstado('ALL')">Todos los Estados</a></li>
+                <li><a class="dropdown-item" (click)="setEstado('ACTIVO')">Activos</a></li>
+                <li><a class="dropdown-item" (click)="setEstado('INACTIVO')">Inactivos</a></li>
+              </ul>
+            </div>
+          </div>
+
+          <!-- Botón de Acción -->
+          <div class="col-lg-2 text-lg-end">
+            <button 
+              *hasPermission="'PUNTO_EMISION_GESTIONAR'"
+              (click)="onCreate.emit()"
+              class="btn-system-action w-100"
+            >
+              <i class="bi bi-plus-lg me-2"></i>
+              <span>Nuevo Punto</span>
+            </button>
+          </div>
+        </div>
       </div>
-
-      <!-- Filtro Estado -->
-      <select
-        [(ngModel)]="estadoFilter"
-        (change)="onEstadoFilterChange()"
-        class="filter-select"
-      >
-        <option value="ALL">Todos</option>
-        <option value="ACTIVO">🟢 Activos</option>
-        <option value="INACTIVO">⚫ Inactivos</option>
-      </select>
-
-      <!-- Botón Crear -->
-      <button
-        *hasPermission="'PUNTO_EMISION_GESTIONAR'"
-        (click)="onCreate.emit()"
-        class="btn-create-premium"
-        type="button"
-      >
-        <i class="bi bi-plus-lg"></i>
-        <span>Crear Punto Emisión</span>
-      </button>
-    </div>
+    </section>
   `,
   styles: [`
-    .actions-container {
-      display: flex;
-      gap: 1rem;
-      margin-bottom: 2rem;
-      align-items: center;
-      flex-wrap: wrap;
+    :host {
+      display: block;
+      margin-bottom: 1.5rem;
     }
-
-    .search-box {
-      flex: 1;
-      min-width: 250px;
+    .actions-bar-container {
+      background: transparent;
+      border: none;
+    }
+    .search-box-premium {
       position: relative;
-      display: flex;
-      align-items: center;
+      width: 100%;
     }
-
-    .search-box i {
+    .search-box-premium i {
       position: absolute;
-      left: 1.25rem;
+      left: 1rem;
+      top: 50%;
+      transform: translateY(-50%);
       color: #94a3b8;
       font-size: 1rem;
-      z-index: 5;
     }
-
-    .search-input {
-      width: 100%;
-      padding: 0.75rem 1.25rem 0.75rem 2.75rem;
+    .form-control-premium-search {
+      background: #ffffff;
       border: 1px solid #e2e8f0;
       border-radius: 12px;
-      background: #ffffff;
-      font-size: 0.9rem;
-      color: #475569;
-      font-weight: 600;
+      padding: 0 2.5rem 0 2.75rem;
+      height: 42px;
+      font-size: var(--text-md);
+      color: #0f172a;
       transition: all 0.2s;
-      font-family: inherit;
+      width: 100%;
     }
-
-    .search-input:focus {
-      border-color: #161d35;
+    .form-control-premium-search:focus {
+      border-color: #cbd5e1;
       outline: none;
-      box-shadow: 0 0 0 4px rgba(22, 29, 53, 0.05);
-      background: #ffffff;
+      box-shadow: none;
     }
-
-    .search-input::placeholder {
-      color: #cbd5e1;
-    }
-
-    .btn-clear-search {
+    .btn-clear-search-premium {
       position: absolute;
-      right: 1rem;
-      background: none;
+      right: 0.75rem;
+      top: 50%;
+      transform: translateY(-50%);
+      background: transparent;
       border: none;
       color: #94a3b8;
-      font-size: 1rem;
       cursor: pointer;
-      padding: 0.5rem;
-      transition: all 0.2s;
-      z-index: 6;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.25rem;
     }
-
-    .btn-clear-search:hover {
-      color: #161d35;
-      transform: scale(1.1);
-    }
-
-    .filter-select {
-      padding: 0.75rem 1.25rem;
+    .form-select-premium {
+      background: #ffffff;
       border: 1px solid #e2e8f0;
       border-radius: 12px;
-      background: #ffffff;
+      padding: 0 1rem;
+      height: 42px;
+      font-size: var(--text-base);
       color: #475569;
-      font-size: 0.9rem;
-      font-weight: 600;
+      width: 100%;
+      cursor: pointer;
+      text-align: left;
+    }
+    .form-select-premium:focus {
+      border-color: #cbd5e1;
+      outline: none;
+    }
+    .dropdown-menu-premium {
+      border-radius: 12px !important;
+      padding: 0.5rem !important;
+      min-width: 100%;
+      margin-top: 0.5rem !important;
+    }
+    .dropdown-item {
+      border-radius: 8px !important;
+      padding: 0.6rem 1rem !important;
+      color: #475569 !important;
+      font-size: var(--text-base) !important;
+      font-weight: 500 !important;
       cursor: pointer;
       transition: all 0.2s;
-      font-family: inherit;
     }
-
-    .filter-select:focus {
-      border-color: #161d35;
-      outline: none;
-      box-shadow: 0 0 0 4px rgba(22, 29, 53, 0.05);
+    .dropdown-item:hover {
+      background-color: var(--primary-color, #161d35) !important;
+      color: #ffffff !important;
     }
-
-    .filter-select:hover {
-      border-color: #cbd5e1;
-    }
-
-    .btn-create-premium {
-      background: #161d35;
+    .btn-system-action {
+      background: #111827;
       color: #ffffff;
       border: none;
-      padding: 0.75rem 1.5rem;
+      padding: 0 1rem;
+      height: 42px;
       border-radius: 12px;
-      font-weight: 700;
-      cursor: pointer;
-      transition: all 0.2s;
-      display: flex;
+      font-weight: 600;
+      display: inline-flex;
       align-items: center;
-      gap: 0.5rem;
-      font-size: 0.9rem;
-      font-family: inherit;
+      justify-content: center;
+      transition: all 0.2s;
+      font-size: var(--text-base);
+      white-space: nowrap;
     }
-
-    .btn-create-premium:hover {
-      background: #232d4d;
+    .btn-system-action:hover {
+      background: #1f2937;
       transform: translateY(-1px);
-      box-shadow: 0 10px 25px -5px rgba(22, 29, 53, 0.15);
-    }
-
-    .btn-create-premium:active {
-      transform: translateY(0);
-    }
-
-    .btn-create-premium i {
-      font-size: 1.1rem;
-    }
-
-    @media (max-width: 1024px) {
-      .actions-container {
-        flex-direction: column;
-      }
-
-      .search-box {
-        width: 100%;
-      }
-
-      .btn-create-premium {
-        width: 100%;
-        justify-content: center;
-      }
-    }
-
-    @media (max-width: 767px) {
-      .actions-container {
-        gap: 0.75rem;
-      }
-
-      .search-input,
-      .filter-select,
-      .btn-create-premium {
-        font-size: 0.85rem;
-        padding: 0.65rem 1rem;
-      }
-
-      .search-box i {
-        left: 1rem;
-      }
-
-      .search-input {
-        padding-left: 2.5rem;
-      }
     }
   `]
 })
@@ -227,7 +191,17 @@ export class PuntosEmisionActionsComponent {
     this.searchQueryChange.emit('');
   }
 
-  onEstadoFilterChange() {
+  setEstado(estado: string) {
+    this.estadoFilter = estado;
     this.onFilterChange.emit({ estado: this.estadoFilter });
+  }
+
+  getEstadoLabel(): string {
+    const labels: any = {
+      'ALL': 'Todos los Estados',
+      'ACTIVO': 'Activos',
+      'INACTIVO': 'Inactivos'
+    };
+    return labels[this.estadoFilter] || 'Estado';
   }
 }

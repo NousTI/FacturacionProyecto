@@ -39,12 +39,11 @@ export class EstablecimientosService {
       tap(data => {
         console.log('EstablecimientosService: Datos recibidos', data?.length);
         this.establecimientosCache$.next(data);
-        this.actualizarStats();
       }),
+      switchMap(() => this.actualizarStats()),
       catchError(err => {
-        console.error('Error loading establecimientos:', err);
-        this.uiService.showToast('Error al cargar establecimientos', 'danger', 'No se pudieron cargar los datos. Intenta nuevamente.');
-        return of([]);
+        console.error('Error loading establecimientos data/stats:', err);
+        return of(null);
       })
     ).subscribe();
 
@@ -83,7 +82,7 @@ export class EstablecimientosService {
         const current = this.establecimientosCache$.value || [];
         this.establecimientosCache$.next([...current, response as any]);
         // Actualizar stats
-        this.actualizarStats();
+        this.actualizarStats().subscribe();
       }),
       catchError(err => {
         console.error('Error creating establecimiento:', err);
@@ -129,7 +128,7 @@ export class EstablecimientosService {
         const filtered = current.filter(e => e.id !== id);
         this.establecimientosCache$.next(filtered);
         // Actualizar stats
-        this.actualizarStats();
+        this.actualizarStats().subscribe();
       }),
       catchError(err => {
         console.error('Error deleting establecimiento:', err);
@@ -147,16 +146,18 @@ export class EstablecimientosService {
   }
 
   /**
-   * Actualiza las estadísticas internamente
+   * Actualiza las estadísticas desde el servidor
    */
-  private actualizarStats(): void {
-    const establecimientos = this.establecimientosCache$.value || [];
-    const stats: EstablecimientoStats = {
-      total: establecimientos.length,
-      activos: establecimientos.filter(e => e.activo).length,
-      con_puntos_emision: establecimientos.filter(e => (e as any).puntos_emision_count > 0).length
-    };
-    this.statsCache$.next(stats);
+  private actualizarStats(): Observable<EstablecimientoStats | null> {
+    return this.apiService.obtenerEstadisticas().pipe(
+      tap(stats => {
+        this.statsCache$.next(stats);
+      }),
+      catchError(err => {
+        console.error('Error fetching establecimientos stats:', err);
+        return of(null);
+      })
+    );
   }
 
   /**

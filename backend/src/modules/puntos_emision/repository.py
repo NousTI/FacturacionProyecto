@@ -110,3 +110,29 @@ class RepositorioPuntosEmision:
                   try: return row[col] - 1
                   except: return row[0] - 1
         return None
+    def obtener_estadisticas(self, empresa_id: UUID) -> dict:
+        """Obtiene estadísticas de puntos de emisión para una empresa específica"""
+        query = """
+            WITH puntos AS (
+                SELECT 
+                    pe.id,
+                    pe.activo,
+                    EXISTS(SELECT 1 FROM sistema_facturacion.facturas f WHERE f.punto_emision_id = pe.id) as tiene_facturas
+                FROM sistema_facturacion.puntos_emision pe
+                JOIN sistema_facturacion.establecimientos e ON pe.establecimiento_id = e.id
+                WHERE e.empresa_id = %s
+            )
+            SELECT 
+                COUNT(*) as total,
+                COUNT(*) FILTER (WHERE activo = TRUE) as activos,
+                COUNT(*) FILTER (WHERE tiene_facturas = TRUE) as con_facturacion
+            FROM puntos
+        """
+        with self.db.cursor() as cur:
+            cur.execute(query, (str(empresa_id),))
+            row = cur.fetchone()
+            return dict(row) if row else {
+                'total': 0,
+                'activos': 0,
+                'con_facturacion': 0
+            }

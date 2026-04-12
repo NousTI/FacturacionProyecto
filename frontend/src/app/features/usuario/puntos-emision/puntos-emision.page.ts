@@ -1,7 +1,7 @@
 import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Subject, takeUntil, finalize, map, Observable } from 'rxjs';
+import { Subject, takeUntil, finalize, map, Observable, BehaviorSubject } from 'rxjs';
 
 import { PuntosEmisionStatsComponent } from './components/puntos-emision-stats/puntos-emision-stats.component';
 import { PuntosEmisionActionsComponent } from './components/puntos-emision-actions/puntos-emision-actions.component';
@@ -51,15 +51,18 @@ interface PuntosEmisionStats {
         <!-- ACCIONES Y FILTROS -->
         <app-puntos-emision-actions
           [(searchQuery)]="searchQuery"
+          (searchQueryChange)="onSearchQueryChange()"
           (onFilterChange)="handleFilters($event)"
           (onCreate)="openCreateModal()"
         ></app-puntos-emision-actions>
 
         <!-- TABLA DE PUNTOS EMISIÓN -->
-        <app-puntos-emision-table
-          [puntosEmision]="filteredPuntosEmision"
-          (onAction)="handleAction($event)"
-        ></app-puntos-emision-table>
+        <div class="table-flex-grow">
+          <app-puntos-emision-table
+            [puntosEmision]="filteredPuntosEmision"
+            (onAction)="handleAction($event)"
+          ></app-puntos-emision-table>
+        </div>
 
         <!-- MODAL DE CREACIÓN/EDICIÓN -->
         <app-create-puntos-emision-modal
@@ -112,9 +115,30 @@ interface PuntosEmisionStats {
     </div>
   `,
   styles: [`
+    :host {
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      width: 100%;
+      overflow: hidden;
+      min-height: 0;
+    }
     .puntos-emision-page-container {
-      min-height: 100vh;
-      background: #f8fafc;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      background: var(--bg-main, #ffffff);
+      padding: 0;
+      overflow: hidden;
+      min-height: 0;
+    }
+
+    .table-flex-grow {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+      overflow: hidden;
     }
 
     .no-permission-container { min-height: 70vh; }
@@ -127,77 +151,6 @@ interface PuntosEmisionStats {
     .animate-fade-in { animation: fadeIn 0.4s ease-out; }
 
     @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
-
-    .page-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      margin-bottom: 2rem;
-    }
-
-    .page-title {
-      font-size: 1.75rem;
-      font-weight: 900;
-      color: #161d35;
-      margin-bottom: 0.25rem;
-      letter-spacing: -0.01em;
-    }
-
-    .page-subtitle {
-      color: #94a3b8;
-      font-size: 0.95rem;
-      font-weight: 500;
-      margin: 0;
-    }
-
-    .btn-refresh-premium {
-      background: white;
-      border: 1px solid #e2e8f0;
-      width: 40px;
-      height: 40px;
-      border-radius: 12px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: #64748b;
-      cursor: pointer;
-      transition: all 0.2s;
-      font-size: 1rem;
-    }
-
-    .btn-refresh-premium:hover {
-      background: #f8fafc;
-      color: #161d35;
-      border-color: #cbd5e1;
-      transform: translateY(-2px);
-    }
-
-    .btn-refresh-premium.spinning i {
-      animation: spin 1s linear infinite;
-    }
-
-    @keyframes spin {
-      from {
-        transform: rotate(0deg);
-      }
-      to {
-        transform: rotate(360deg);
-      }
-    }
-
-    @media (max-width: 768px) {
-      .puntos-emision-page-container {
-        background: #f8fafc;
-      }
-
-      .page-title {
-        font-size: 1.5rem;
-      }
-
-      .page-subtitle {
-        font-size: 0.85rem;
-      }
-    }
   `]
 })
 export class PuntosEmisionPage implements OnInit, OnDestroy {
@@ -227,6 +180,7 @@ export class PuntosEmisionPage implements OnInit, OnDestroy {
 
   // RxJS
   private destroy$ = new Subject<void>();
+  private filterTrigger$ = new BehaviorSubject<void>(void 0);
 
   private permissionsService = inject(PermissionsService);
 
@@ -240,13 +194,18 @@ export class PuntosEmisionPage implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
-    // Subscribe to puntosEmision and apply filters
-    this.puntosEmision$
+    // Escuchar cambios en los datos y en los filtros reactivamente
+    import('rxjs').then(({ combineLatest }) => {
+      combineLatest([
+        this.puntosEmision$,
+        this.filterTrigger$
+      ])
       .pipe(takeUntil(this.destroy$))
-      .subscribe(data => {
+      .subscribe(([data]) => {
         this.filteredPuntosEmision = this.applyFilters(data);
         this.cdr.markForCheck();
       });
+    });
   }
 
   ngOnDestroy() {
@@ -268,16 +227,14 @@ export class PuntosEmisionPage implements OnInit, OnDestroy {
    */
   handleFilters(event: any) {
     this.filters.estado = event.estado;
-    // Reaplicar filtros solo a los datos actuales
-    this.applyFiltersToList();
+    this.filterTrigger$.next();
   }
 
   /**
-   * Aplica filtros al listado actual
+   * Maneja cambios en el input de búsqueda
    */
-  applyFiltersToList() {
-    // Solo procesa el filtering, sin recargar datos
-    this.cdr.markForCheck();
+  onSearchQueryChange() {
+    this.filterTrigger$.next();
   }
 
   /**

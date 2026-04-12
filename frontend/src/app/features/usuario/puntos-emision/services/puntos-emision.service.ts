@@ -35,13 +35,12 @@ export class PuntosEmisionService {
       switchMap(() => this.apiService.listar()),
       tap(data => {
         this.puntosEmisionCache$.next(data);
-        // Actualizar stats cuando se cargan los datos
-        this.actualizarStats();
       }),
+      // Cargar stats en paralelo o secuencialmente
+      switchMap(() => this.actualizarStats()),
       catchError(err => {
-        console.error('Error loading puntos emisión:', err);
-        this.uiService.showToast('Error al cargar puntos emisión', 'danger', 'No se pudieron cargar los datos. Intenta nuevamente.');
-        return of([]);
+        console.error('Error loading puntos emisión data/stats:', err);
+        return of(null);
       })
     ).subscribe();
 
@@ -80,7 +79,7 @@ export class PuntosEmisionService {
         const current = this.puntosEmisionCache$.value || [];
         this.puntosEmisionCache$.next([...current, response as any]);
         // Actualizar stats
-        this.actualizarStats();
+        this.actualizarStats().subscribe();
       }),
       catchError(err => {
         console.error('Error creating punto emisión:', err);
@@ -126,7 +125,7 @@ export class PuntosEmisionService {
         const filtered = current.filter(pe => pe.id !== id);
         this.puntosEmisionCache$.next(filtered);
         // Actualizar stats
-        this.actualizarStats();
+        this.actualizarStats().subscribe();
       }),
       catchError(err => {
         console.error('Error deleting punto emisión:', err);
@@ -144,16 +143,18 @@ export class PuntosEmisionService {
   }
 
   /**
-   * Actualiza las estadísticas internamente
+   * Actualiza las estadísticas desde el servidor
    */
-  private actualizarStats(): void {
-    const puntosEmision = this.puntosEmisionCache$.value || [];
-    const stats: PuntosEmisionStats = {
-      total: puntosEmision.length,
-      activos: puntosEmision.filter(pe => pe.activo).length,
-      con_facturacion: puntosEmision.filter(pe => (pe as any).facturacion_count > 0).length
-    };
-    this.statsCache$.next(stats);
+  private actualizarStats(): Observable<PuntosEmisionStats | null> {
+    return this.apiService.obtenerEstadisticas().pipe(
+      tap(stats => {
+        this.statsCache$.next(stats);
+      }),
+      catchError(err => {
+        console.error('Error fetching puntos emisión stats:', err);
+        return of(null);
+      })
+    );
   }
 
   /**

@@ -1,7 +1,7 @@
 import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Subject, takeUntil, finalize, map, Observable } from 'rxjs';
+import { Subject, takeUntil, finalize, map, Observable, BehaviorSubject } from 'rxjs';
 
 import { EstablecimientoStatsComponent } from './components/establecimiento-stats/establecimiento-stats.component';
 import { EstablecimientoActionsComponent } from './components/establecimiento-actions/establecimiento-actions.component';
@@ -51,15 +51,18 @@ interface EstablecimientoStats {
         <!-- ACCIONES Y FILTROS -->
         <app-establecimiento-actions
           [(searchQuery)]="searchQuery"
+          (searchQueryChange)="onSearchQueryChange()"
           (onFilterChange)="handleFilters($event)"
           (onCreate)="openCreateModal()"
         ></app-establecimiento-actions>
 
         <!-- TABLA DE ESTABLECIMIENTOS -->
-        <app-establecimiento-table
-          [establecimientos]="filteredEstablecimientos"
-          (onAction)="handleAction($event)"
-        ></app-establecimiento-table>
+        <div class="table-flex-grow">
+          <app-establecimiento-table
+            [establecimientos]="filteredEstablecimientos"
+            (onAction)="handleAction($event)"
+          ></app-establecimiento-table>
+        </div>
 
         <!-- MODAL DE CREACIÓN/EDICIÓN -->
         <app-create-establecimiento-modal
@@ -112,10 +115,30 @@ interface EstablecimientoStats {
     </div>
   `,
   styles: [`
+    :host {
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      width: 100%;
+      overflow: hidden;
+      min-height: 0;
+    }
     .establecimientos-page-container {
-      min-height: 100vh;
-      background: var(--bg-main);
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      background: var(--bg-main, #ffffff);
       padding: 0;
+      overflow: hidden;
+      min-height: 0;
+    }
+
+    .table-flex-grow {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+      overflow: hidden;
     }
 
     .no-permission-container { min-height: 70vh; }
@@ -157,6 +180,7 @@ export class EstablecimientosPage implements OnInit, OnDestroy {
 
   // RxJS
   private destroy$ = new Subject<void>();
+  private filterTrigger$ = new BehaviorSubject<void>(void 0);
 
   private permissionsService = inject(PermissionsService);
 
@@ -170,13 +194,18 @@ export class EstablecimientosPage implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
-    // Subscribe to establecimientos and apply filters
-    this.establecimientos$
+    // Escuchar cambios en los datos y en los filtros reactivamente
+    import('rxjs').then(({ combineLatest }) => {
+      combineLatest([
+        this.establecimientos$,
+        this.filterTrigger$
+      ])
       .pipe(takeUntil(this.destroy$))
-      .subscribe(data => {
+      .subscribe(([data]) => {
         this.filteredEstablecimientos = this.applyFilters(data);
         this.cdr.markForCheck();
       });
+    });
   }
 
   ngOnDestroy() {
@@ -198,16 +227,14 @@ export class EstablecimientosPage implements OnInit, OnDestroy {
    */
   handleFilters(event: any) {
     this.filters.estado = event.estado;
-    // Reaplicar filtros solo a los datos actuales
-    this.applyFiltersToList();
+    this.filterTrigger$.next();
   }
 
   /**
-   * Aplica filtros al listado actual
+   * Maneja cambios en el input de búsqueda
    */
-  applyFiltersToList() {
-    // Solo procesa el filtering, sin recargar datos
-    this.cdr.markForCheck();
+  onSearchQueryChange() {
+    this.filterTrigger$.next();
   }
 
   /**

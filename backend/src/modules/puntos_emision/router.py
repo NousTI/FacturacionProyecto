@@ -32,6 +32,14 @@ def listar_puntos(
     puntos = servicio.listar_puntos(usuario, establecimiento_id, limit, offset, solo_activos)
     return success_response(puntos, "Puntos de emisión listados correctamente")
 
+@router.get("/stats")
+def obtener_estadisticas(
+    usuario: dict = Depends(requerir_permiso(PermissionCodes.PUNTO_EMISION_VER)),
+    servicio: ServicioPuntosEmision = Depends()
+):
+    stats = servicio.obtener_estadisticas(usuario)
+    return success_response(stats, "Estadísticas de puntos de emisión obtenidas correctamente")
+
 @router.get("/{punto_id}", response_model=RespuestaBase[PuntoEmisionLectura])
 def obtener_punto(
     punto_id: UUID,

@@ -9,85 +9,69 @@ import { HasPermissionDirective } from '../../../../../shared/directives/has-per
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommonModule, HasPermissionDirective],
   template: `
-    <section class="module-table">
-      <div class="table-container border-0 shadow-premium">
+    <section class="module-table-premium">
+      <div class="table-container-premium">
         <div class="table-responsive-premium">
-          <table class="table mb-0 align-middle">
+          <table class="table-editorial">
             <thead>
               <tr>
-                <th>Punto Emisión</th>
-                <th style="width: 100px">Código</th>
-                <th>Establecimiento</th>
-                <th style="width: 140px">Secuenciales</th>
-                <th style="width: 110px">Estado</th>
+                <th style="width: 250px">Punto Emisión</th>
+                <th style="width: 120px">Código</th>
+                <th style="width: 200px">Establecimiento</th>
+                <th style="width: 180px">Secuenciales</th>
+                <th class="text-center" style="width: 130px">Estado</th>
                 <th class="text-end" style="width: 80px">Acciones</th>
               </tr>
             </thead>
             <tbody>
-              <tr *ngFor="let pe of puntosEmision" class="table-row">
-                <!-- Nombre -->
+              <tr *ngFor="let pe of puntosEmision">
                 <td>
-                  <div class="d-flex align-items-center">
+                  <div class="d-flex align-items-center" style="max-width: 230px;">
                     <div 
-                      class="avatar-soft-premium me-3" 
-                      [style.background]="getAvatarColor(pe.nombre, 0.1)"
-                      [style.color]="getAvatarColor(pe.nombre, 1)"
+                      class="avatar-soft-editorial me-3" 
+                      style="background: var(--primary-color); color: var(--bg-main);"
                     >
                       {{ getInitials(pe.nombre) }}
                     </div>
-                    <div>
-                      <span class="fw-bold text-dark d-block mb-0">{{ pe.nombre }}</span>
-                      <small class="text-muted" style="font-size: 0.75rem;">{{ pe.id | slice:0:8 }}</small>
+                    <div class="text-truncate">
+                      <span class="fw-bold text-dark d-block mb-0 text-truncate" [title]="pe.nombre">{{ pe.nombre }}</span>
+                      <small class="text-muted" style="font-size: var(--text-xs);">{{ pe.id | slice:0:8 }}</small>
                     </div>
                   </div>
                 </td>
-
-                <!-- Código -->
                 <td>
-                  <span class="badge-code">{{ pe.codigo }}</span>
+                  <span class="badge-code-editorial">{{ pe.codigo }}</span>
                 </td>
-
-                <!-- Establecimiento -->
                 <td>
-                  <span class="text-dark" style="font-size: 0.85rem;">{{ pe.establecimiento_id | slice:0:12 }}...</span>
+                  <span class="text-dark fw-600" style="font-size: var(--text-base);">{{ pe.establecimiento_nombre || 'Sin Establecimiento' }}</span>
                 </td>
-
-                <!-- Secuenciales -->
                 <td>
                   <div class="secuencial-group" [title]="getSecuencialesTooltip(pe)">
-                    <span class="secuencial-badge">
+                    <span class="secuencial-badge-editorial">
                       <i class="bi bi-file-earmark-text me-1"></i>
                       {{ ('000000000' + (pe.secuencial_factura || 0)).slice(-9) }}
                     </span>
-                    <button class="btn-info-secuenciales" type="button">
-                      <i class="bi bi-info-circle"></i>
-                    </button>
                   </div>
                 </td>
-
-                <!-- Estado -->
-                <td>
-                  <span class="badge-status-premium" [ngClass]="pe.activo ? 'activo' : 'inactivo'">
-                    {{ pe.activo ? '🟢 ACTIVO' : '⚫ INACTIVO' }}
+                <td class="text-center">
+                  <span class="badge-status-editorial" [ngClass]="pe.activo ? 'activo' : 'inactivo'">
+                    {{ pe.activo ? 'ACTIVO' : 'INACTIVO' }}
                   </span>
                 </td>
-
-                <!-- Acciones -->
                 <td class="text-end">
                   <div class="dropdown">
-                    <button
-                      class="btn-action-trigger"
-                      type="button"
-                      [id]="'actions-' + pe.id"
-                      data-bs-toggle="dropdown"
+                    <button 
+                      class="btn-action-trigger-editorial" 
+                      type="button" 
+                      [id]="'actions-' + pe.id" 
+                      data-bs-toggle="dropdown" 
+                      data-bs-boundary="viewport"
+                      data-bs-popper-config='{"strategy":"fixed"}'
                       aria-expanded="false"
                     >
                       <i class="bi bi-three-dots"></i>
                     </button>
-                    <ul 
-                      class="dropdown-menu dropdown-menu-end shadow-premium-lg border-0 p-2 rounded-4" 
-                      [attr.aria-labelledby]="'actions-' + pe.id"
-                    >
+                    <ul class="dropdown-menu dropdown-menu-end border-0 p-2 rounded-4 shadow-sm" [attr.aria-labelledby]="'actions-' + pe.id">
                       <li>
                         <a class="dropdown-item rounded-3 py-2" href="javascript:void(0)" (click)="onAction.emit({type: 'view', puntoEmision: pe})">
                           <i class="bi bi-eye"></i>
@@ -111,236 +95,193 @@ import { HasPermissionDirective } from '../../../../../shared/directives/has-per
                   </div>
                 </td>
               </tr>
+              <tr *ngIf="puntosEmision.length === 0">
+                <td colspan="6" class="text-center p-5 text-muted">
+                  <i class="bi bi-inbox fs-1 d-block mb-3 opacity-50"></i>
+                  No se encontraron puntos de emisión registrados.
+                </td>
+              </tr>
             </tbody>
           </table>
-
-          <!-- Empty State -->
-          <div *ngIf="puntosEmision.length === 0" class="empty-state">
-            <i class="bi bi-inbox"></i>
-            <p>No se encontraron puntos de emisión</p>
-          </div>
         </div>
       </div>
     </section>
   `,
   styles: [`
-    .module-table {
-      background: white;
+    :host {
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      min-height: 0;
+      width: 100%;
+    }
+    .module-table-premium {
+      display: flex;
+      flex-direction: column;
+      height: auto;
+      max-height: 100%;
+      min-height: 0;
+      background: var(--bg-main);
       border-radius: 24px;
-      box-shadow: 0 10px 25px -5px rgba(22, 29, 53, 0.05), 0 4px 6px -4px rgba(22, 29, 53, 0.05);
-      border: 1px solid #f1f5f9;
-      overflow: visible !important;
+      border: 1px solid var(--border-color);
+      margin-bottom: 2rem;
+      overflow: hidden;
+      font-family: var(--font-main);
+      flex: 0 1 auto;
     }
-
+    .table-container-premium {
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+      overflow: hidden;
+      flex: 0 1 auto;
+    }
     .table-responsive-premium {
-      overflow: visible !important;
-      position: relative;
+      overflow-y: auto;
+      overflow-x: auto;
+      min-height: 0;
+      overscroll-behavior: contain;
     }
+    
+    .table-responsive-premium::-webkit-scrollbar { width: 6px; height: 6px; }
+    .table-responsive-premium::-webkit-scrollbar-track { background: transparent; }
+    .table-responsive-premium::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 10px; }
 
-    .table {
-      border-collapse: collapse;
+    .table-editorial {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      vertical-align: middle;
     }
-
-    .table thead {
-      background: #f8fafc;
-      border-bottom: 2px solid #f1f5f9;
+    .table-editorial thead {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      background: var(--bg-main);
     }
-
-    .table th {
-      font-weight: 700;
-      color: #64748b;
-      font-size: 0.8rem;
+    .table-editorial th {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      background: var(--bg-main);
       padding: 1rem 1.5rem;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
+      font-size: var(--text-base);
+      color: var(--text-main);
+      font-weight: 600;
+      border-bottom: 2px solid var(--border-color);
+      vertical-align: middle;
+      text-align: left;
+    }
+    .table-editorial td {
+      padding: 1rem 1.5rem;
+      border-bottom: 1px solid var(--border-color);
+      transition: all 0.2s;
+      font-size: var(--text-base);
+      color: var(--text-main);
+    }
+    .table-editorial tbody tr:hover td {
+      background-color: var(--bg-main);
     }
 
-    .table td {
-      padding: 1.25rem 1.5rem;
-      border-bottom: 1px solid #f1f5f9;
-    }
-
-    .table tbody tr:hover {
-      background: #f8fafc;
-      transition: background-color 0.2s;
-    }
-
-    .avatar-soft-premium {
-      width: 40px;
-      height: 40px;
-      border-radius: 12px;
+    .avatar-soft-editorial {
+      width: 32px;
+      height: 32px;
+      border-radius: 10px;
       display: flex;
       align-items: center;
       justify-content: center;
       font-weight: 700;
-      font-size: 0.9rem;
+      font-size: 0.8rem;
       flex-shrink: 0;
     }
 
-    .badge-code {
-      background: #f0f9ff;
-      color: #0369a1;
-      padding: 0.35rem 0.85rem;
+    .badge-code-editorial {
+      background: var(--border-color);
+      color: var(--text-main);
+      padding: 0.35rem 0.6rem;
       border-radius: 8px;
       font-weight: 700;
-      font-size: 0.85rem;
-      font-family: 'Courier New', monospace;
-      display: inline-block;
+      font-size: var(--text-sm);
     }
 
-    .secuencial-badge {
+    .secuencial-badge-editorial {
       display: inline-flex;
       align-items: center;
-      justify-content: center;
-      padding: 0.35rem 0.65rem;
-      border-radius: 8px;
-      background: #fef3c7;
-      color: #92400e;
+      background: var(--bg-main);
+      border: none;
+      padding: 0.35rem 0.75rem;
+      border-radius: 10px;
+      color: var(--text-muted);
       font-weight: 700;
       font-size: 0.8rem;
-      font-family: 'Courier New', monospace;
     }
 
     .secuencial-group {
       display: flex;
       align-items: center;
       gap: 0.5rem;
-      cursor: help;
     }
 
-    .btn-info-secuenciales {
-      background: none;
-      border: none;
-      color: #94a3b8;
-      padding: 0;
-      display: flex;
+    .badge-status-editorial {
+      display: inline-flex;
       align-items: center;
-      font-size: 1rem;
-      transition: color 0.2s;
-    }
-
-    .btn-info-secuenciales:hover {
-      color: #161d35;
-    }
-
-    .badge-status-premium {
-      display: inline-block;
-      padding: 0.35rem 0.85rem;
-      border-radius: 100px;
-      font-size: 0.75rem;
+      padding: 0.25rem 0.75rem;
+      border-radius: 8px;
+      font-size: 0.65rem;
       font-weight: 700;
-      letter-spacing: 0.05em;
-      white-space: nowrap;
+      letter-spacing: 0.5px;
+      text-transform: capitalize;
+    }
+    .badge-status-editorial.activo { 
+      background: var(--status-success-bg); 
+      color: var(--status-success-text); 
+    }
+    .badge-status-editorial.inactivo { 
+      background: var(--status-neutral-bg); 
+      color: var(--status-neutral-text); 
     }
 
-    .badge-status-premium.activo {
-      background: #ecfdf5;
-      color: #10b981;
-    }
-
-    .badge-status-premium.inactivo {
-      background: #fef2f2;
-      color: #ef4444;
-    }
-
-    .dropdown {
-      position: relative;
-    }
-
-    .btn-action-trigger {
-      background: #f8fafc;
-      border: none;
+    .btn-action-trigger-editorial {
       width: 32px;
       height: 32px;
       border-radius: 8px;
-      color: #94a3b8;
-      cursor: pointer;
+      border: none;
+      background: transparent;
+      color: var(--text-muted);
       transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
-
-    .btn-action-trigger:hover,
-    .btn-action-trigger[aria-expanded="true"] {
-      background: #161d35;
-      color: #ffffff;
+    .btn-action-trigger-editorial:hover {
+      background: var(--border-color);
+      color: var(--text-main);
     }
 
     .dropdown-menu {
-      border-radius: 16px;
-      border: 1px solid #e2e8f0 !important;
-      box-shadow: 0 15px 35px rgba(22, 29, 53, 0.2) !important;
-      z-index: 1000 !important;
-      padding: 0.75rem !important;
+      z-index: 1050 !important;
+      position: fixed !important;
+      border: 1px solid var(--border-color) !important;
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1) !important;
+      border-radius: 12px !important;
+      padding: 0.5rem !important;
+      background: var(--bg-main);
     }
-
     .dropdown-item {
-      font-size: 0.85rem;
-      font-weight: 600;
-      color: #475569;
-      padding: 0.65rem 1rem;
-      display: flex;
+      border-radius: 8px !important;
+      font-size: var(--text-base);
+      font-weight: 500;
+      color: var(--text-muted); 
+      padding: 0.5rem 1rem;
+      display: flex; 
       align-items: center;
-      border-radius: 10px !important;
-      margin: 0.25rem;
+      cursor: pointer;
     }
-
-    .dropdown-item:hover {
-      background: #f8fafc;
-      color: #161d35;
+    .dropdown-item:hover { 
+      background: var(--border-color); 
+      color: var(--text-main); 
     }
-
-    .dropdown-item i {
-      font-size: 1.1rem;
-      width: 18px;
-      text-align: center;
-    }
-
-    .dropdown-item.text-danger:hover {
-      background: #fef2f2;
-      color: #ef4444;
-    }
-
-    .empty-state {
-      text-align: center;
-      padding: 3rem 2rem;
-      color: #94a3b8;
-    }
-
-    .empty-state i {
-      font-size: 3rem;
-      display: block;
-      margin-bottom: 1rem;
-      opacity: 0.5;
-    }
-
-    @media (max-width: 1024px) {
-      .table-responsive-premium {
-        overflow-x: auto;
-      }
-
-      .table th,
-      .table td {
-        padding: 0.75rem;
-        font-size: 0.85rem;
-      }
-    }
-
-    @media (max-width: 768px) {
-      .table th,
-      .table td {
-        padding: 0.65rem;
-      }
-
-      .avatar-soft-premium {
-        width: 32px;
-        height: 32px;
-        font-size: 0.8rem;
-      }
-
-      .badge-status-premium {
-        font-size: 0.7rem;
-        padding: 0.25rem 0.65rem;
-      }
-    }
+    .dropdown-item i { font-size: 1.1rem; margin-right: 0.75rem; color: var(--text-muted); }
   `]
 })
 export class PuntosEmisionTableComponent {
@@ -356,19 +297,6 @@ export class PuntosEmisionTableComponent {
       .slice(0, 2)
       .map(word => word.charAt(0).toUpperCase())
       .join('');
-  }
-
-  getAvatarColor(text: string, opacity: number): string {
-    const colors = [
-      'rgba(59, 130, 246, ' + opacity + ')',    // Blue
-      'rgba(16, 185, 129, ' + opacity + ')',    // Green
-      'rgba(245, 158, 11, ' + opacity + ')',    // Amber
-      'rgba(139, 92, 246, ' + opacity + ')',    // Purple
-      'rgba(239, 68, 68, ' + opacity + ')',     // Red
-      'rgba(6, 182, 212, ' + opacity + ')',     // Cyan
-    ];
-    const index = text.charCodeAt(0) % colors.length;
-    return colors[index];
   }
 
   getSecuencialesTooltip(pe: PuntoEmision): string {

@@ -115,3 +115,11 @@ class ServicioPuntosEmision:
         if not self.repo.eliminar_punto(punto_id):
             raise AppError("Error al eliminar punto de emisión", 500, "DB_ERROR")
         return True
+
+    def obtener_estadisticas(self, usuario_actual: dict):
+        """Obtiene estadísticas de puntos de emisión para el usuario actual"""
+        empresa_id = usuario_actual.get("empresa_id")
+        if not empresa_id:
+            raise AppError("Empresa no identificada para el usuario", 400, "AUTH_ERROR")
+        
+        return self.repo.obtener_estadisticas(UUID(str(empresa_id)))

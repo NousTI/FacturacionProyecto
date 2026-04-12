@@ -9,81 +9,69 @@ import { HasPermissionDirective } from '../../../../../shared/directives/has-per
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommonModule, HasPermissionDirective],
   template: `
-    <section class="module-table">
-      <div class="table-container border-0">
+    <section class="module-table-premium">
+      <div class="table-container-premium">
         <div class="table-responsive-premium">
-          <table class="table mb-0 align-middle">
+          <table class="table-editorial">
             <thead>
               <tr>
-                <th>Establecimiento</th>
-                <th style="width: 120px">Código SRI</th>
+                <th style="width: 500px">Establecimiento</th>
+                <th style="width: 200px">Código</th>
                 <th>Dirección</th>
-                <th style="width: 110px">Estado</th>
-                <th style="width: 120px">🔑 Puntos PE</th>
+                <th class="text-center" style="width: 180px">Estado</th>
+                <th class="text-center" style="width: 130px">Puntos Emisión</th>
                 <th class="text-end" style="width: 80px">Acciones</th>
               </tr>
             </thead>
             <tbody>
-              <tr *ngFor="let est of establecimientos" class="table-row">
-                <!-- Nombre -->
+              <tr *ngFor="let est of establecimientos">
                 <td>
-                  <div class="d-flex align-items-center">
+                  <div class="d-flex align-items-center" style="max-width: 230px;">
                     <div 
-                      class="avatar-soft-premium me-3" 
-                      [style.background]="getAvatarColor(est.nombre, 0.1)"
-                      [style.color]="getAvatarColor(est.nombre, 1)"
+                      class="avatar-soft-editorial me-3" 
+                      style="background: var(--primary-color); color: var(--bg-main);"
                     >
                       {{ getInitials(est.nombre) }}
                     </div>
-                    <div>
-                      <div class="d-flex align-items-center gap-2">
-                        <span class="fw-bold text-dark d-block mb-0">{{ est.nombre }}</span>
-                        <span *ngIf="est.es_matriz" class="badge-matriz">⭐ MATRIZ</span>
+                    <div class="text-truncate">
+                      <div class="d-flex align-items-center gap-1 text-truncate">
+                        <span class="fw-bold text-main d-block mb-0 text-truncate" [title]="est.nombre">{{ est.nombre }}</span>
+                        <i *ngIf="est.es_matriz" class="bi bi-patch-check-fill text-primary" title="Matriz" style="font-size: 0.8rem;"></i>
                       </div>
-                      <small class="text-muted" style="font-size: 0.75rem;">{{ est.codigo }} | {{ est.id | slice:0:8 }}</small>
+                      <small class="text-muted d-block" style="font-size: var(--text-xs); line-height: 1;">{{ est.id | slice:0:8 }}</small>
                     </div>
                   </div>
                 </td>
-
-                <!-- Código SRI -->
                 <td>
-                  <span class="badge-code">{{ est.codigo }}</span>
+                  <span class="badge-code-editorial">{{ est.codigo }}</span>
                 </td>
-
-                <!-- Dirección -->
                 <td>
-                  <span class="text-dark" style="font-size: 0.85rem;">{{ est.direccion }}</span>
+                  <span class="text-dark fw-500" style="font-size: var(--text-base);" [title]="est.direccion">{{ est.direccion | slice:0:50 }}{{ est.direccion.length > 50 ? '...' : '' }}</span>
                 </td>
-
-                <!-- Estado -->
-                <td>
-                  <span class="badge-status-premium" [ngClass]="est.activo ? 'activo' : 'inactivo'">
-                    {{ est.activo ? '🟢 ACTIVO' : '⚫ INACTIVO' }}
+                <td class="text-center">
+                  <span class="badge-status-editorial" [ngClass]="est.activo ? 'activo' : 'inactivo'">
+                    {{ est.activo ? 'ACTIVO' : 'INACTIVO' }}
                   </span>
                 </td>
-
-                <!-- Puntos de Emisión -->
-                <td>
-                  <span class="puntos-badge">{{ est.puntos_emision_total || 0 }}</span>
+                <td class="text-center">
+                  <span class="secuencial-badge-editorial mx-auto" style="width: fit-content;">
+                    {{ est.puntos_emision_total || 0 }}
+                  </span>
                 </td>
-
-
-                <!-- Acciones -->
                 <td class="text-end">
                   <div class="dropdown">
-                    <button
-                      class="btn-action-trigger"
-                      type="button"
-                      [id]="'actions-' + est.id"
-                      data-bs-toggle="dropdown"
+                    <button 
+                      class="btn-action-trigger-editorial" 
+                      type="button" 
+                      [id]="'actions-' + est.id" 
+                      data-bs-toggle="dropdown" 
+                      data-bs-boundary="viewport"
+                      data-bs-popper-config='{"strategy":"fixed"}'
                       aria-expanded="false"
                     >
                       <i class="bi bi-three-dots"></i>
                     </button>
-                    <ul 
-                      class="dropdown-menu dropdown-menu-end border-0 p-2 rounded-4" 
-                      [attr.aria-labelledby]="'actions-' + est.id"
-                    >
+                    <ul class="dropdown-menu dropdown-menu-end border-0 p-2 rounded-4 shadow-sm" [attr.aria-labelledby]="'actions-' + est.id">
                       <li>
                         <a class="dropdown-item rounded-3 py-2" href="javascript:void(0)" (click)="onAction.emit({type: 'view', establecimiento: est})">
                           <i class="bi bi-eye"></i>
@@ -107,222 +95,180 @@ import { HasPermissionDirective } from '../../../../../shared/directives/has-per
                   </div>
                 </td>
               </tr>
+              <tr *ngIf="establecimientos.length === 0">
+                <td colspan="6" class="text-center p-5 text-muted">
+                  <i class="bi bi-inbox fs-1 d-block mb-3 opacity-50"></i>
+                  No se encontraron establecimientos registrados.
+                </td>
+              </tr>
             </tbody>
           </table>
-
-          <!-- Empty State -->
-          <div *ngIf="establecimientos.length === 0" class="empty-state">
-            <i class="bi bi-inbox"></i>
-            <p>No se encontraron establecimientos</p>
-          </div>
         </div>
       </div>
     </section>
   `,
   styles: [`
-    .module-table {
-      background: white;
+    :host {
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      min-height: 0;
+      width: 100%;
+    }
+    .module-table-premium {
+      display: flex;
+      flex-direction: column;
+      height: auto;
+      max-height: 100%;
+      min-height: 0;
+      background: var(--bg-main);
       border-radius: 24px;
-      border: 1px solid #f1f5f9;
-      overflow: visible !important;
+      border: 1px solid var(--border-color);
+      margin-bottom: 2rem;
+      overflow: hidden;
+      font-family: var(--font-main);
+      flex: 0 1 auto;
     }
-
+    .table-container-premium {
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+      overflow: hidden;
+      flex: 0 1 auto;
+    }
     .table-responsive-premium {
-      overflow: visible !important;
-      position: relative;
+      overflow-y: auto;
+      overflow-x: auto;
+      min-height: 0;
+      overscroll-behavior: contain;
     }
+    
+    .table-responsive-premium::-webkit-scrollbar { width: 6px; height: 6px; }
+    .table-responsive-premium::-webkit-scrollbar-track { background: transparent; }
+    .table-responsive-premium::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 10px; }
 
-    .table {
-      border-collapse: collapse;
+    .table-editorial {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      vertical-align: middle;
     }
-
-    .table thead {
-      background: #f8fafc;
-      border-bottom: 2px solid #f1f5f9;
+    .table-editorial thead {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      background: var(--bg-main);
     }
-
-    .table th {
-      font-weight: 700;
-      color: #64748b;
-      font-size: 0.8rem;
+    .table-editorial th {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      background: var(--bg-main);
       padding: 1rem 1.5rem;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
+      font-size: var(--text-base);
+      color: var(--text-main);
+      font-weight: 600;
+      border-bottom: 2px solid var(--border-color);
+      vertical-align: middle;
+      text-align: left;
+    }
+    .table-editorial td {
+      padding: 1.5rem 1.5rem;
+      border-bottom: 1px solid var(--border-color);
+      transition: all 0.2s;
+      font-size: var(--text-base);
+      color: var(--text-main);
+    }
+    .table-editorial tbody tr:hover td {
+      background-color: var(--bg-main);
     }
 
-    .table td {
-      padding: 1.25rem 1.5rem;
-      border-bottom: 1px solid #f1f5f9;
-    }
-
-    .table tbody tr:hover {
-      background: #f8fafc;
-      transition: background-color 0.2s;
-    }
-
-    .avatar-soft-premium {
-      width: 40px;
-      height: 40px;
-      border-radius: 12px;
+    .avatar-soft-editorial {
+      width: 32px;
+      height: 32px;
+      border-radius: 10px;
       display: flex;
       align-items: center;
       justify-content: center;
       font-weight: 700;
-      font-size: 0.9rem;
+      font-size: 0.8rem;
       flex-shrink: 0;
     }
 
-    .badge-code {
-      background: #f0f9ff;
-      color: #0369a1;
-      padding: 0.35rem 0.85rem;
+    .badge-code-editorial {
+      background: var(--border-color);
+      color: var(--text-main);
+      padding: 0.35rem 0.6rem;
       border-radius: 8px;
       font-weight: 700;
-      font-size: 0.85rem;
-      font-family: 'Courier New', monospace;
-      display: inline-block;
+      font-size: var(--text-sm);
     }
 
-    .badge-status-premium {
-      display: inline-block;
-      padding: 0.35rem 0.85rem;
-      border-radius: 100px;
-      font-size: 0.75rem;
+    .secuencial-badge-editorial {
+      display: flex;
+      align-items: center;
+      background: var(--bg-main);
+      border: 1px solid var(--border-color);
+      padding: 0.35rem 0.75rem;
+      border-radius: 10px;
+      color: var(--text-muted);
       font-weight: 700;
-      letter-spacing: 0.05em;
-      white-space: nowrap;
+      font-size: 0.8rem;
     }
 
-    .badge-status-premium.activo {
-      background: #ecfdf5;
-      color: #10b981;
-    }
-
-    .badge-status-premium.inactivo {
-      background: #fef2f2;
-      color: #ef4444;
-    }
-
-    .puntos-badge {
+    .badge-status-editorial {
       display: inline-flex;
       align-items: center;
-      justify-content: center;
-      width: 36px;
-      height: 36px;
+      padding: 0.25rem 0.75rem;
       border-radius: 8px;
-      background: #fef3c7;
-      color: #92400e;
-      font-weight: 700;
-      font-size: 0.9rem;
-    }
-
-    .badge-matriz {
-      background: #161d35;
-      color: #fbbf24;
       font-size: 0.65rem;
-      font-weight: 800;
-      padding: 0.15rem 0.5rem;
-      border-radius: 6px;
-      letter-spacing: 0.05em;
-      border: 1px solid #fbbf24;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      text-transform: capitalize;
+      border: none !important;
+      outline: none !important;
+      box-shadow: none !important;
+    }
+    .badge-status-editorial.activo { 
+      background: var(--status-success-bg); 
+      color: var(--status-success-text); 
+    }
+    .badge-status-editorial.inactivo { 
+      background: var(--status-neutral-bg); 
+      color: var(--status-neutral-text); 
     }
 
-    .dropdown {
-      position: relative;
-    }
-
-    .btn-action-trigger {
-      background: #f8fafc;
-      border: none;
+    .btn-action-trigger-editorial {
       width: 32px;
       height: 32px;
       border-radius: 8px;
-      color: #94a3b8;
-      cursor: pointer;
+      border: none;
+      background: transparent;
+      color: var(--text-muted);
       transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
-
-    .btn-action-trigger:hover,
-    .btn-action-trigger[aria-expanded="true"] {
-      background: #161d35;
-      color: #ffffff;
-    }
-
-    .dropdown-menu {
-      border-radius: 16px;
-      border: 1px solid #e2e8f0 !important;
-      z-index: 1000 !important;
-      padding: 0.75rem !important;
+    .btn-action-trigger-editorial:hover {
+      background: var(--border-color);
+      color: var(--text-main);
     }
 
     .dropdown-item {
-      font-size: 0.85rem;
-      font-weight: 600;
-      color: #475569;
-      padding: 0.65rem 1rem;
-      display: flex;
-      align-items: center;
-      border-radius: 10px !important;
-      margin: 0.25rem;
+      font-size: var(--text-base);
+      font-weight: 500;
+      color: var(--text-muted);
     }
+    .dropdown-item i { font-size: 1rem; color: var(--text-muted); }
+    .dropdown-item:hover { background: var(--bg-main); color: var(--primary-color); }
+    .dropdown-item:hover i { color: var(--primary-color); }
 
-    .dropdown-item:hover {
-      background: #f8fafc;
-      color: #161d35;
-    }
-
-    .dropdown-item i {
-      font-size: 1.1rem;
-      width: 18px;
-      text-align: center;
-    }
-
-    .dropdown-item.text-danger:hover {
-      background: #fef2f2;
-      color: #ef4444;
-    }
-
-    .empty-state {
-      text-align: center;
-      padding: 3rem 2rem;
-      color: #94a3b8;
-    }
-
-    .empty-state i {
-      font-size: 3rem;
-      display: block;
-      margin-bottom: 1rem;
-      opacity: 0.5;
-    }
-
-    @media (max-width: 1024px) {
-      .table-responsive-premium {
-        overflow-x: auto;
-      }
-
-      .table th,
-      .table td {
-        padding: 0.75rem;
-        font-size: 0.85rem;
-      }
-    }
-
-    @media (max-width: 768px) {
-      .table th,
-      .table td {
-        padding: 0.65rem;
-      }
-
-      .avatar-soft-premium {
-        width: 32px;
-        height: 32px;
-        font-size: 0.8rem;
-      }
-
-      .badge-status-premium {
-        font-size: 0.7rem;
-        padding: 0.25rem 0.65rem;
-      }
+    .dropdown-menu {
+      z-index: 1050 !important;
+      position: fixed !important;
+      border: 1px solid var(--border-color) !important;
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1) !important;
     }
   `]
 })
