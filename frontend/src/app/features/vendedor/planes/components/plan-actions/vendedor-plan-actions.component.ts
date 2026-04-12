@@ -98,10 +98,11 @@ import { FormsModule } from '@angular/forms';
       display: block;
     }
     .actions-bar-container {
-      background: transparent;
-      border: none;
-      padding: 0;
-      width: 100%;
+      background: #ffffff;
+      border: 1px solid #f1f5f9;
+      border-radius: 20px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+      padding: 1.5rem;
     }
     .search-box-premium {
       position: relative;

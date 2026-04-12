@@ -134,6 +134,7 @@ import { Plan } from '../../../../super-admin/planes/services/plan.service';
       background: var(--bg-main, #ffffff);
       border-radius: 20px;
       border: 1px solid var(--border-color, #f1f5f9);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
       display: flex;
       flex-direction: column;
       min-height: 0;
