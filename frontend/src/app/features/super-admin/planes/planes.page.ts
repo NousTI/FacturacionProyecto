@@ -103,6 +103,7 @@ import { map } from 'rxjs/operators';
       padding: 0;
       overflow: hidden;
       min-height: 0;
+      gap: 24px;
     }
     .planes-content-wrapper {
       flex: 0 0 auto;

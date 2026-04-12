@@ -109,6 +109,7 @@ import { environment } from '../../../../environments/environment';
       padding: 0;
       overflow: hidden;
       min-height: 0;
+      gap: 24px;
     }
 
     /* Confirmation Modal */

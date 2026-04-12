@@ -5,7 +5,7 @@ import { VendedorStats } from '../../services/vendedor.service';
 @Component({
   selector: 'app-vendedor-stats',
   template: `
-    <div class="stats-compact-row mb-4">
+    <div class="stats-compact-row">
       <div class="stat-item-mini">
         <div class="icon-circle" style="background: rgba(22, 29, 53, 0.1); color: var(--primary-color);">
           <i class="bi bi-person-badge-fill"></i>
@@ -62,7 +62,7 @@ import { VendedorStats } from '../../services/vendedor.service';
       align-items: center;
       justify-content: space-between;
       border: 1px solid #f1f5f9;
-      margin-bottom: 1.5rem;
+      margin-bottom: 0;
     }
     .stat-item-mini {
       display: flex;

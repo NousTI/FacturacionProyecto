@@ -102,9 +102,9 @@ import { VendedorActionsComponent } from './components/vendedor-actions/vendedor
       flex: 1;
       display: flex;
       flex-direction: column;
-      padding: 0;
       overflow: hidden;
       min-height: 0;
+      gap: 24px;
     }
     .table-wrapper {
       flex: 1;

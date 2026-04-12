@@ -112,6 +112,7 @@ import { Subject, takeUntil, finalize } from 'rxjs';
       padding: 0;
       overflow: hidden;
       min-height: 0;
+      gap: 24px;
     }
   `],
   standalone: true,

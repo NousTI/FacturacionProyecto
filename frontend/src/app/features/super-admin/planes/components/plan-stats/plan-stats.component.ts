@@ -4,7 +4,7 @@ import { CommonModule } from '@angular/common';
 @Component({
   selector: 'app-plan-stats',
   template: `
-    <div class="stats-compact-row mb-4">
+    <div class="stats-compact-row">
       <div class="stat-item-mini">
         <div class="icon-circle" style="background: rgba(99, 102, 241, 0.1); color: #6366f1;">
           <i class="bi bi-wallet2"></i>
@@ -49,7 +49,7 @@ import { CommonModule } from '@angular/common';
       align-items: center;
       justify-content: space-between;
       border: 1px solid #f1f5f9;
-      margin-bottom: 1.5rem;
+      margin-bottom: 0;
     }
     .stat-item-mini {
       display: flex;

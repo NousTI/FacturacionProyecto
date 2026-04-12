@@ -58,7 +58,7 @@ import { FormsModule } from '@angular/forms';
   styles: [`
     :host {
       display: block;
-      margin-bottom: 1.5rem;
+      margin-bottom: 0;
     }
     .actions-bar-container {
       background: transparent;

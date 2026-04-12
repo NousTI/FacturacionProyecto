@@ -5,101 +5,96 @@ import { CommonModule } from '@angular/common';
   selector: 'app-comisiones-table',
   template: `
     <section class="module-table">
-      <div class="table-container border-0 shadow-premium">
+      <div class="table-container">
         <div class="table-responsive-premium">
           <table class="table mb-0 align-middle">
             <thead>
               <tr>
-                <th>Vendedor</th>
-                <th>Concepto</th>
+                <th style="width: 200px">Vendedor</th>
+                <th style="width: 200px">Concepto</th>
                 <th style="width: 150px">Monto</th>
                 <th style="width: 150px">Generado</th>
-                <th style="width: 150px">Estado</th>
-                <th class="text-end" style="width: 100px">Acciones</th>
+                <th class="text-center" style="width: 120px">Estado</th>
+                <th class="text-end" style="width: 80px">Acciones</th>
               </tr>
             </thead>
             <tbody>
-              <tr *ngFor="let comision of comisiones" class="animate__animated animate__fadeIn">
+              <tr *ngFor="let comision of comisiones">
                 <td>
-                  <div class="d-flex align-items-center">
-                    <div class="avatar-soft-premium me-3">
+                  <div class="d-flex align-items-center" style="max-width: 180px;">
+                    <div class="avatar-soft-premium me-2">
                       {{ (comision.vendedor_nombre || '??').substring(0, 2).toUpperCase() }}
                     </div>
-                    <div>
-                      <span class="fw-bold text-dark d-block mb-0">{{ comision.vendedor_nombre }}</span>
+                    <div class="text-truncate">
+                      <span class="fw-bold text-dark d-block mb-0 text-truncate" [title]="comision.vendedor_nombre">{{ comision.vendedor_nombre }}</span>
                     </div>
                   </div>
                 </td>
                 <td>
-                  <span class="text-dark fw-medium" style="font-size: 0.9rem;">{{ comision.concepto }}</span>
+                  <span class="text-dark fw-600" style="font-size: 0.85rem;">{{ comision.concepto }}</span>
                 </td>
                 <td>
-                  <span class="text-corporate fw-bold" style="font-size: 0.95rem;">{{ comision.monto | currency:'USD' }}</span>
-                </td>
-                <td class="text-muted" style="font-size: 0.85rem;">
-                   {{ comision.fecha_generacion | date:'dd/MM/yyyy' }}
+                  <span class="text-dark fw-600" style="font-size: 0.85rem;">{{ comision.monto | currency:'USD' }}</span>
                 </td>
                 <td>
+                  <span class="text-muted fw-600" style="font-size: 0.85rem;">{{ comision.fecha_generacion | date:'dd/MM/yyyy' }}</span>
+                </td>
+                <td class="text-center">
                   <span class="badge-status-premium" [ngClass]="getStatusClass(comision.estado)">
                     {{ comision.estado }}
                   </span>
                 </td>
                 <td class="text-end">
                   <div class="dropdown">
-                    <button 
-                      class="btn-action-trigger" 
-                      type="button" 
-                      [id]="'actions-' + comision.id" 
-                      data-bs-toggle="dropdown" 
+                    <button
+                      class="btn-action-trigger"
+                      type="button"
+                      [id]="'actions-' + comision.id"
+                      data-bs-toggle="dropdown"
                       aria-expanded="false"
                     >
                       <i class="bi bi-three-dots"></i>
                     </button>
-                    <ul class="dropdown-menu dropdown-menu-end shadow-premium-lg border-0 p-2 rounded-4" [attr.aria-labelledby]="'actions-' + comision.id">
+                    <ul class="dropdown-menu dropdown-menu-end border-0 p-2 rounded-4" [attr.aria-labelledby]="'actions-' + comision.id">
                       <li>
                         <a class="dropdown-item rounded-3 py-2" href="javascript:void(0)" (click)="onAction.emit({type: 'view_logs', comision: comision})">
                           <i class="bi bi-clock-history text-corporate"></i>
-                          <div class="ms-2 d-flex flex-column">
-                            <span>Auditoría</span>
-                          </div>
+                          <span class="ms-2">Auditoría</span>
                         </a>
                       </li>
-
-                        <li *ngIf="comision.estado === 'PENDIENTE'">
-                          <a class="dropdown-item rounded-3 py-2" href="javascript:void(0)" (click)="onAction.emit({type: 'approve', comision: comision})">
-                            <i class="bi bi-check-circle text-success"></i>
-                            <span class="ms-2">Aprobar Comisión</span>
-                          </a>
-                        </li>
-                        <li *ngIf="comision.estado === 'PENDIENTE'">
-                          <a class="dropdown-item rounded-3 py-2" href="javascript:void(0)" (click)="onAction.emit({type: 'reject', comision: comision})">
-                            <i class="bi bi-x-circle text-danger"></i>
-                            <span class="ms-2">Rechazar Comisión</span>
-                          </a>
-                        </li>
-                        <li *ngIf="comision.estado === 'APROBADA'">
-                          <a class="dropdown-item rounded-3 py-2" href="javascript:void(0)" (click)="onAction.emit({type: 'register_payment', comision: comision})">
-                            <i class="bi bi-wallet2 text-corporate"></i>
-                            <span class="ms-2">Registrar Pago</span>
-                          </a>
-                        </li>
-                        <!-- View Details is always available -->
-                        <li>
-                          <a class="dropdown-item rounded-3 py-2" href="javascript:void(0)" (click)="onAction.emit({type: 'view_details', comision: comision})">
-                            <i class="bi bi-eye text-corporate"></i>
-                            <div class="ms-2 d-flex flex-column">
-                              <span>Ver Detalles</span>
-                            </div>
-                          </a>
-                        </li>
+                      <li *ngIf="comision.estado === 'PENDIENTE'">
+                        <a class="dropdown-item rounded-3 py-2" href="javascript:void(0)" (click)="onAction.emit({type: 'approve', comision: comision})">
+                          <i class="bi bi-check-circle text-corporate"></i>
+                          <span class="ms-2">Aprobar Comisión</span>
+                        </a>
+                      </li>
+                      <li *ngIf="comision.estado === 'PENDIENTE'">
+                        <a class="dropdown-item rounded-3 py-2" href="javascript:void(0)" (click)="onAction.emit({type: 'reject', comision: comision})">
+                          <i class="bi bi-x-circle text-danger"></i>
+                          <span class="ms-2">Rechazar Comisión</span>
+                        </a>
+                      </li>
+                      <li *ngIf="comision.estado === 'APROBADA'">
+                        <a class="dropdown-item rounded-3 py-2" href="javascript:void(0)" (click)="onAction.emit({type: 'register_payment', comision: comision})">
+                          <i class="bi bi-wallet2 text-corporate"></i>
+                          <span class="ms-2">Registrar Pago</span>
+                        </a>
+                      </li>
+                      <li><hr class="dropdown-divider mx-2"></li>
+                      <li>
+                        <a class="dropdown-item rounded-3 py-2" href="javascript:void(0)" (click)="onAction.emit({type: 'view_details', comision: comision})">
+                          <i class="bi bi-eye text-corporate"></i>
+                          <span class="ms-2">Ver Detalles</span>
+                        </a>
+                      </li>
                     </ul>
                   </div>
                 </td>
               </tr>
               <tr *ngIf="comisiones.length === 0">
-                <td colspan="6" class="text-center py-5 text-muted">
+                <td colspan="6" class="text-center p-5 text-muted">
                   <i class="bi bi-inbox fs-1 d-block mb-3"></i>
-                  No hay comisiones para mostrar
+                  No se encontraron comisiones registradas.
                 </td>
               </tr>
             </tbody>
@@ -109,110 +104,148 @@ import { CommonModule } from '@angular/common';
     </section>
   `,
   styles: [`
+    :host {
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      min-height: 0;
+      width: 100%;
+    }
     .module-table {
-      margin-top: 1rem;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+      margin-top: 0;
     }
     .table-container {
-      background: #ffffff;
-      border-radius: 24px;
-      border: 1px solid #f1f5f9;
-      position: relative;
-      z-index: 1;
-      min-height: 300px;
-      overflow: visible !important;
+      background: var(--bg-main, #ffffff);
+      border-radius: 20px;
+      border: 1px solid var(--border-color, #f1f5f9);
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+      height: auto;
+      max-height: 100%;
+      overflow: hidden;
+      margin-bottom: 0;
     }
     .table-responsive-premium {
-      overflow: visible !important;
+      flex: 1;
+      overflow-y: auto;
+      overflow-x: auto;
       position: relative;
     }
     .table {
       border-collapse: separate;
       border-spacing: 0;
       width: 100%;
-      margin-bottom: 0;
     }
     .table thead th {
-      background: #f8fafc;
-      padding: 1rem 1.5rem;
-      font-size: 0.7rem;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      color: #94a3b8;
-      font-weight: 800;
-      border-bottom: 2px solid #f1f5f9;
       position: sticky;
       top: 0;
       z-index: 10;
+      background: var(--bg-main, #ffffff);
+      padding: 1rem 1.5rem;
+      font-size: var(--text-base);
+      color: #0f172a;
+      font-weight: 600;
+      border-bottom: 2px solid var(--border-color, #f1f5f9);
+      vertical-align: middle;
     }
-    .table thead th:first-child { border-top-left-radius: 24px; }
-    .table thead th:last-child { border-top-right-radius: 24px; }
-
-    .table tbody tr {
-      position: relative;
-    }
-    .table tbody tr:focus-within,
-    .table tbody tr:hover {
-      z-index: 100;
-      background-color: #f8fafc;
-    }
-    .table tbody tr:has(.show),
-    .table tbody tr:has(.btn-action-trigger[aria-expanded="true"]) {
-      z-index: 10001 !important;
-    }
-    
     .table tbody td {
-      padding: 1.15rem 1.5rem;
-      border-bottom: 1px solid #f8fafc;
-      background: transparent;
+      padding: 1.25rem 1.5rem;
+      border-bottom: 1px solid var(--border-color, #f1f5f9);
+      color: var(--text-muted, #475569);
+      font-size: var(--text-md);
     }
-
     .avatar-soft-premium {
-      width: 38px; height: 38px;
-      background: #f1f5f9; color: #161d35;
-      border-radius: 10px; display: flex;
-      align-items: center; justify-content: center;
-      font-weight: 800; font-size: 0.8rem;
-    }
-    .badge-status-premium {
-      padding: 0.4rem 0.85rem; border-radius: 100px;
-      font-size: 0.75rem; font-weight: 800;
-    }
-    .badge-status-premium.active { background: #dcfce7; color: #15803d; } /* APRROVED/PAID */
-    .badge-status-premium.pending { background: #fff7ed; color: #c2410c; } /* PENDING */
-    .badge-status-premium.rejected { background: #fee2e2; color: #b91c1c; } /* REJECTED */
-    .badge-status-premium.paid { background: #d1fae5; color: #059669; } /* PAID */
-
-    .btn-action-trigger {
-      background: #f8fafc; border: none;
-      width: 32px; height: 32px;
-      border-radius: 8px; color: #94a3b8;
-      transition: all 0.2s;
-    }
-    .btn-action-trigger:hover, .btn-action-trigger[aria-expanded="true"] {
-      background: #161d35; color: #ffffff;
-    }
-
-    .dropdown { position: relative; }
-    .dropdown-menu {
-      z-index: 10001;
-      min-width: 210px;
-      border: 1px solid #e2e8f0 !important;
-      box-shadow: 0 15px 35px rgba(22, 29, 53, 0.25) !important;
-    }
-    .dropdown-item {
-      font-size: 0.85rem; font-weight: 600;
-      color: #475569; padding: 0.65rem 1.15rem;
-      cursor: pointer;
+      width: 38px;
+      height: 38px;
+      border-radius: 12px;
       display: flex;
       align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: var(--text-base);
+      background: var(--primary-color);
+      color: white;
     }
-    .dropdown-item:hover { background: #f8fafc; color: #161d35; }
-    .dropdown-item i { font-size: 1.1rem; }
-    
-    .text-corporate { color: #161d35 !important; }
-    .text-success { color: #22c55e !important; }
-    .shadow-premium { box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.04); }
-    .shadow-premium-lg { box-shadow: 0 20px 40px -15px rgba(0, 10, 30, 0.15); }
+    .badge-status-premium {
+      padding: 0.25rem 0.75rem;
+      border-radius: 6px;
+      font-size: var(--text-sm);
+      font-weight: 600;
+      display: inline-block;
+      text-transform: capitalize;
+    }
+    .badge-status-premium.active {
+      background: var(--status-success-bg);
+      color: var(--status-success-text);
+    }
+    .badge-status-premium.pending {
+      background: var(--status-warning-bg);
+      color: var(--status-warning-text);
+    }
+    .badge-status-premium.rejected {
+      background: var(--status-danger-bg);
+      color: var(--status-danger-text);
+    }
+    .badge-status-premium.paid {
+      background: var(--status-success-bg);
+      color: var(--status-success-text);
+    }
+    .btn-action-trigger {
+      background: transparent;
+      border: none;
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      color: var(--status-neutral);
+      transition: all 0.2s;
+    }
+    .btn-action-trigger:hover,
+    .btn-action-trigger[aria-expanded="true"] {
+      background: var(--bg-main);
+      color: var(--text-main);
+    }
+    .dropdown-menu {
+      border: 1px solid var(--border-color) !important;
+      box-shadow: none !important;
+      border-radius: 12px !important;
+      padding: 0.5rem !important;
+      z-index: 1050 !important;
+    }
+    .dropdown-item {
+      border-radius: 8px !important;
+      font-size: var(--text-base);
+      font-weight: 500;
+      color: var(--text-muted);
+      padding: 0.5rem 1rem;
+      display: flex;
+      align-items: center;
+      cursor: pointer;
+    }
+    .dropdown-item:hover {
+      background: var(--bg-main);
+      color: var(--text-main);
+    }
+    .dropdown-item i {
+      font-size: 1.1rem;
+      margin-right: 0.75rem;
+    }
+    .fw-600 {
+      font-weight: 600;
+    }
+    .text-corporate {
+      color: var(--primary-color) !important;
+    }
+    .text-success {
+      color: var(--status-success) !important;
+    }
+    .text-danger {
+      color: var(--status-danger) !important;
+    }
   `],
   standalone: true,
   imports: [CommonModule]

@@ -4,9 +4,9 @@ import { CommonModule } from '@angular/common';
 @Component({
     selector: 'app-comisiones-stats',
     template: `
-    <div class="stats-compact-row mb-4">
+    <div class="stats-compact-row">
       <div class="stat-item-mini">
-        <div class="icon-circle" style="background: rgba(22, 29, 53, 0.05); color: #161d35;">
+        <div class="icon-circle" style="background: rgba(59, 130, 246, 0.1); color: var(--status-info);">
           <i class="bi bi-cash-stack"></i>
         </div>
         <div class="stat-info">
@@ -18,7 +18,7 @@ import { CommonModule } from '@angular/common';
       <div class="stat-divider"></div>
 
       <div class="stat-item-mini">
-        <div class="icon-circle" style="background: rgba(239, 68, 68, 0.1); color: #ef4444;">
+        <div class="icon-circle" style="background: rgba(239, 68, 68, 0.1); color: var(--status-danger);">
           <i class="bi bi-hourglass-split"></i>
         </div>
         <div class="stat-info">
@@ -30,7 +30,7 @@ import { CommonModule } from '@angular/common';
       <div class="stat-divider"></div>
 
       <div class="stat-item-mini">
-        <div class="icon-circle" style="background: rgba(16, 185, 129, 0.1); color: #10b981;">
+        <div class="icon-circle" style="background: rgba(16, 185, 129, 0.1); color: var(--status-success);">
           <i class="bi bi-check-circle"></i>
         </div>
         <div class="stat-info">
@@ -48,56 +48,63 @@ import { CommonModule } from '@angular/common';
       display: flex;
       align-items: center;
       justify-content: space-between;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
       border: 1px solid #f1f5f9;
+      margin-bottom: 0;
     }
     .stat-item-mini {
       display: flex;
       align-items: center;
-      gap: 1.25rem;
+      gap: 1.1rem;
       flex: 1;
     }
     .icon-circle {
-      width: 44px;
-      height: 44px;
+      width: 42px;
+      height: 42px;
       border-radius: 12px;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 1.25rem;
+      font-size: 1.2rem;
     }
     .stat-info {
       display: flex;
       flex-direction: column;
     }
     .stat-label {
-      font-size: 0.7rem;
+      font-size: 0.65rem;
       font-weight: 800;
       color: #94a3b8;
       text-transform: uppercase;
       letter-spacing: 0.5px;
     }
     .stat-value {
-      font-size: 1.5rem;
+      font-size: 1.35rem;
       font-weight: 800;
       color: #1e293b;
       line-height: 1.2;
     }
+    .text-success {
+      color: var(--status-success) !important;
+    }
+    .text-danger {
+      color: var(--status-danger) !important;
+    }
     .stat-divider {
       width: 1px;
-      height: 40px;
+      height: 35px;
       background: #f1f5f9;
-      margin: 0 2rem;
+      margin: 0 1.5rem;
     }
-    @media (max-width: 768px) {
+    @media (max-width: 992px) {
       .stats-compact-row {
-        flex-direction: column;
-        align-items: flex-start;
+        flex-wrap: wrap;
         gap: 1.5rem;
-        padding: 1.5rem;
       }
       .stat-divider {
         display: none;
+      }
+      .stat-item-mini {
+        min-width: 45%;
       }
     }
   `],
