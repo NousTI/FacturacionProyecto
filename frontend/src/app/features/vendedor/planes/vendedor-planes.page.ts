@@ -32,14 +32,14 @@ import { map } from 'rxjs/operators';
 
       <!-- 2. ACTIONS & FILTERS -->
       <app-vendedor-plan-actions
-        [(searchQuery)]="searchQuery"
-        [(filterEstado)]="filterEstado"
-        [(filterPublico)]="filterPublico"
-        [(filterCategoria)]="filterCategoria"
-        (searchQueryChange)="filterData()"
-        (filterEstadoChange)="filterData()"
-        (filterPublicoChange)="filterData()"
-        (filterCategoriaChange)="filterData()"
+        [searchQuery]="searchQuery"
+        [filterEstado]="filterEstado"
+        [filterPublico]="filterPublico"
+        [filterCategoria]="filterCategoria"
+        (searchQueryChange)="onSearchChange($event)"
+        (filterEstadoChange)="onFilterEstadoChange($event)"
+        (filterPublicoChange)="onFilterPublicoChange($event)"
+        (filterCategoriaChange)="onFilterCategoriaChange($event)"
       ></app-vendedor-plan-actions>
 
       <!-- 3. TABLE -->
@@ -210,6 +210,26 @@ export class VendedorPlanesPage implements OnInit {
       },
       error: (err) => console.error('Error precarga empresas', err)
     });
+  }
+
+  onSearchChange(value: string) {
+    this.searchQuery = value;
+    this.filterData();
+  }
+
+  onFilterEstadoChange(value: string) {
+    this.filterEstado = value;
+    this.filterData();
+  }
+
+  onFilterPublicoChange(value: string) {
+    this.filterPublico = value;
+    this.filterData();
+  }
+
+  onFilterCategoriaChange(value: string) {
+    this.filterCategoria = value;
+    this.filterData();
   }
 
   viewCompanies(plan: Plan) {
