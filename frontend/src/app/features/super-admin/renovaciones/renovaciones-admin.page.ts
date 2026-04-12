@@ -39,12 +39,11 @@ import { UserRole } from '../../../domain/enums/role.enum';
       <!-- 1. Stats -->
       <app-renovaciones-stats [stats]="stats"></app-renovaciones-stats>
 
-      <!-- 2. Actions (Search & History Toggle) -->
+      <!-- 2. Actions (Search & Status Filter) -->
       <app-renovaciones-actions
         [(searchQuery)]="searchQuery"
-        [verHistorial]="verHistorial"
-        (onToggleHistorial)="toggleHistorial()"
-        (onRefresh)="cargarSolicitudes()"
+        [currentStatus]="statusFilter"
+        (onStatusChange)="statusFilter = $event"
       ></app-renovaciones-actions>
 
       <!-- 3. Table -->
@@ -114,7 +113,7 @@ export class RenovacionesAdminPage implements OnInit, OnDestroy {
   cargando: boolean = false;
   isVendedor: boolean = false;
   highlightedId: string | null = null;
-  verHistorial: boolean = false;
+  statusFilter: string = 'ALL';
 
   // Stats
   stats = { pending: 0, accepted: 0, rejected: 0 };
@@ -170,12 +169,7 @@ export class RenovacionesAdminPage implements OnInit, OnDestroy {
   }
 
   cargarSolicitudes() {
-    this.api.listarSolicitudes(this.verHistorial).subscribe();
-  }
-
-  toggleHistorial() {
-    this.verHistorial = !this.verHistorial;
-    this.cargarSolicitudes();
+    this.api.listarSolicitudes().subscribe();
   }
 
   calculateStats() {
@@ -187,12 +181,23 @@ export class RenovacionesAdminPage implements OnInit, OnDestroy {
   }
 
   get filteredSolicitudes() {
-    if (!this.searchQuery) return this.solicitudes;
-    const q = this.searchQuery.toLowerCase();
-    return this.solicitudes.filter(s => 
-      s.empresa_nombre?.toLowerCase().includes(q) || 
-      s.plan_nombre?.toLowerCase().includes(q)
-    );
+    let temp = [...this.solicitudes];
+
+    // Filter by Status
+    if (this.statusFilter !== 'ALL') {
+      temp = temp.filter(s => s.estado === this.statusFilter);
+    }
+
+    // Filter by Search Query
+    if (this.searchQuery) {
+      const q = this.searchQuery.toLowerCase();
+      temp = temp.filter(s => 
+        s.empresa_nombre?.toLowerCase().includes(q) || 
+        s.plan_nombre?.toLowerCase().includes(q)
+      );
+    }
+
+    return temp;
   }
 
   private checkHighlight(data: SolicitudRenovacion[]) {

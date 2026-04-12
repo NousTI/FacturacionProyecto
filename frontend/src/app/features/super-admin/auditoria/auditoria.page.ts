@@ -5,10 +5,12 @@ import { AuditoriaService, LogAuditoria } from './services/auditoria.service';
 import { UiService } from '../../../shared/services/ui.service';
 import { ToastComponent } from '../../../shared/components/toast/toast.component';
 import {
-  AuditoriaFiltrosComponent,
-  FiltrosAuditoria,
-  AuditoriaTablComponent,
+  AuditoriaStatsComponent,
+  AuditoriaActionsComponent,
+  AuditoriaTableComponent,
   AuditoriaPaginacionComponent,
+  AuditoriaDetailModalComponent,
+  FiltrosAuditoria,
   PaginationState
 } from './components';
 
@@ -18,36 +20,69 @@ import {
   imports: [
     CommonModule,
     ToastComponent,
-    AuditoriaFiltrosComponent,
-    AuditoriaTablComponent,
-    AuditoriaPaginacionComponent
+    AuditoriaStatsComponent,
+    AuditoriaActionsComponent,
+    AuditoriaTableComponent,
+    AuditoriaPaginacionComponent,
+    AuditoriaDetailModalComponent
   ],
   template: `
-    <div class="auditoria-container animate__animated animate__fadeIn">
-      <!-- Filtros -->
-      <app-auditoria-filtros
+    <div class="auditoria-page-container animate__animated animate__fadeIn">
+      
+      <!-- 1. Estadísticas -->
+      <app-auditoria-stats [stats]="stats"></app-auditoria-stats>
+
+      <!-- 2. Acciones y Filtros -->
+      <app-auditoria-actions
         [filtros]="filtros"
         (filtrar)="onFiltrar($event)"
-        (exportar)="exportarExcel()">
-      </app-auditoria-filtros>
+        (exportar)="exportarExcel()"
+      ></app-auditoria-actions>
 
-      <!-- Tabla -->
-      <app-auditoria-tabla
+      <!-- 3. Tabla de Resultados -->
+      <app-auditoria-table
         [logs]="logsActuales"
-        [isLoading]="isLoading">
-      </app-auditoria-tabla>
+        [isLoading]="isLoading"
+        (onVerDetalle)="abrirDetalle($event)"
+      ></app-auditoria-table>
 
-      <!-- Paginación -->
+      <!-- 4. Paginación -->
       <app-auditoria-paginacion
         [pagination]="pagination"
         (pageChange)="onPageChange($event)"
-        (pageSizeChange)="onPageSizeChange($event)">
-      </app-auditoria-paginacion>
+        (pageSizeChange)="onPageSizeChange($event)"
+      ></app-auditoria-paginacion>
+
+      <!-- 5. Modal de Detalle -->
+      <app-auditoria-detail-modal
+        *ngIf="showDetailModal"
+        [log]="selectedLog"
+        (onClose)="cerrarDetalle()"
+      ></app-auditoria-detail-modal>
+
+      <app-toast></app-toast>
     </div>
-    <app-toast></app-toast>
   `,
   styles: [`
-    .card { border-radius: 20px; }
+    :host {
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      width: 100%;
+      overflow: hidden;
+      min-height: 0;
+    }
+    .auditoria-page-container {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      background: var(--bg-main, #ffffff);
+      padding: 0;
+      overflow: hidden;
+      min-height: 0;
+      gap: 24px;
+      position: relative;
+    }
   `]
 })
 export class AuditoriaPage implements OnInit, OnDestroy {
@@ -66,6 +101,13 @@ export class AuditoriaPage implements OnInit, OnDestroy {
     totalItems: 0
   };
 
+  // Stats
+  stats = { total: 0, alertas: 0, modulos: 0, hoy: 0 };
+
+  // Modales
+  showDetailModal = false;
+  selectedLog: LogAuditoria | null = null;
+
   private destroy$ = new Subject<void>();
 
   constructor(
@@ -75,7 +117,7 @@ export class AuditoriaPage implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit() {
-    setTimeout(() => this.cargarLogs(), 100);
+    this.cargarLogs();
   }
 
   ngOnDestroy() {
@@ -90,27 +132,37 @@ export class AuditoriaPage implements OnInit, OnDestroy {
   }
 
   cargarLogs() {
-    console.log('[AuditoriaPage] Iniciando carga de logs con filtros:', this.filtros);
     this.isLoading = true;
-    this.pagination.currentPage = 1; // Reset a la primera página
+    this.pagination.currentPage = 1;
 
     this.auditoriaService.listarAuditoria(this.filtros)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (data) => {
-          console.log('[AuditoriaPage] Datos recibidos con éxito:', data.length);
           this.logsTotal = data;
           this.pagination.totalItems = data.length;
+          this.calculateStats(data);
           this.isLoading = false;
           this.cdr.detectChanges();
         },
         error: (err) => {
-          console.error('[AuditoriaPage] ERROR detallado al cargar logs:', err);
           this.uiService.showError(err, 'Error al cargar auditoría');
           this.isLoading = false;
           this.cdr.detectChanges();
         }
       });
+  }
+
+  calculateStats(data: LogAuditoria[]) {
+    const hoy = new Date().toISOString().split('T')[0];
+    const alertasEventos = ['LOGIN_FALLIDO', 'ERROR', 'BLOQUEO', 'ELIMINADO'];
+    
+    this.stats = {
+      total: data.length,
+      alertas: data.filter(l => alertasEventos.some(e => l.evento.toUpperCase().includes(e))).length,
+      modulos: new Set(data.map(l => l.modulo)).size,
+      hoy: data.filter(l => l.created_at.startsWith(hoy)).length
+    };
   }
 
   onFiltrar(filtros: FiltrosAuditoria) {
@@ -125,11 +177,24 @@ export class AuditoriaPage implements OnInit, OnDestroy {
 
   onPageSizeChange(pageSize: number) {
     this.pagination.pageSize = pageSize;
-    this.pagination.currentPage = 1; // Reset a la primera página
+    this.pagination.currentPage = 1;
+    this.cdr.detectChanges();
+  }
+
+  abrirDetalle(log: LogAuditoria) {
+    this.selectedLog = log;
+    this.showDetailModal = true;
+    this.cdr.detectChanges();
+  }
+
+  cerrarDetalle() {
+    this.showDetailModal = false;
+    this.selectedLog = null;
     this.cdr.detectChanges();
   }
 
   exportarExcel() {
-    this.uiService.showToast('Generando reporte de auditoría...', 'info');
+    this.uiService.showToast('Generando reporte en formato Excel...', 'info');
+    // Implementación futura de exportación real
   }
 }

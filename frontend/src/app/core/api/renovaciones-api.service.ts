@@ -18,7 +18,7 @@ export class RenovacionesApiService extends BaseApiService {
     );
   }
 
-  listarSolicitudes(historial: boolean = false): Observable<SolicitudRenovacion[]> {
+  listarSolicitudes(historial: boolean = true): Observable<SolicitudRenovacion[]> {
     let params = new HttpParams();
     if (historial) params = params.set('historial', 'true');
     
