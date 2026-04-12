@@ -20,7 +20,7 @@ import { HasPermissionDirective } from '../../../../../shared/directives/has-per
                 <th style="width: 200px">Establecimiento</th>
                 <th style="width: 180px">Secuenciales</th>
                 <th class="text-center" style="width: 130px">Estado</th>
-                <th class="text-end" style="width: 80px">Acciones</th>
+                <th class="text-center" style="width: 100px">Acciones</th>
               </tr>
             </thead>
             <tbody>
@@ -58,8 +58,8 @@ import { HasPermissionDirective } from '../../../../../shared/directives/has-per
                     {{ pe.activo ? 'ACTIVO' : 'INACTIVO' }}
                   </span>
                 </td>
-                <td class="text-end">
-                  <div class="dropdown">
+                <td class="text-center">
+                  <div class="dropdown d-flex justify-content-center">
                     <button 
                       class="btn-action-trigger-editorial" 
                       type="button" 
@@ -172,6 +172,8 @@ import { HasPermissionDirective } from '../../../../../shared/directives/has-per
       vertical-align: middle;
       text-align: left;
     }
+    .table-editorial th.text-center { text-align: center !important; }
+    .table-editorial td.text-center { text-align: center !important; }
     .table-editorial td {
       padding: 1rem 1.5rem;
       border-bottom: 1px solid var(--border-color);
@@ -249,7 +251,7 @@ import { HasPermissionDirective } from '../../../../../shared/directives/has-per
       background: transparent;
       color: var(--text-muted);
       transition: all 0.2s;
-      display: flex;
+      display: inline-flex;
       align-items: center;
       justify-content: center;
     }
