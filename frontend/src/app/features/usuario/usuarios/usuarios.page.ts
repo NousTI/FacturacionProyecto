@@ -3,12 +3,12 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Subject, takeUntil, finalize, Observable } from 'rxjs';
 
-import { UsuarioStatsComponent } from './components/usuario-stats/usuario-stats.component';
-import { UsuarioActionsComponent } from './components/usuario-actions/usuario-actions.component';
-import { UsuarioTableComponent } from './components/usuario-table/usuario-table.component';
-import { UsuarioFormModalComponent } from './components/usuario-form-modal/usuario-form-modal.component';
-import { UsuarioDetailModalComponent } from './components/usuario-detail-modal/usuario-detail-modal.component';
-import { UsuarioRoleModalComponent } from './components/usuario-role-modal/usuario-role-modal.component';
+import { UsuariosStatsComponent } from './components/usuarios-stats.component';
+import { UsuariosActionsComponent } from './components/usuarios-actions.component';
+import { UsuariosTableComponent } from './components/usuarios-table.component';
+import { UsuarioFormModalComponent } from './components/modals/usuario-form-modal.component';
+import { UsuarioDetailModalComponent } from './components/modals/usuario-detail-modal.component';
+import { UsuarioRoleModalComponent } from './components/modals/usuario-role-modal.component';
 import { ConfirmModalComponent } from '../../../shared/components/confirm-modal/confirm-modal.component';
 import { ToastComponent } from '../../../shared/components/toast/toast.component';
 
@@ -26,9 +26,9 @@ import { inject } from '@angular/core';
   imports: [
     CommonModule,
     FormsModule,
-    UsuarioStatsComponent,
-    UsuarioActionsComponent,
-    UsuarioTableComponent,
+    UsuariosStatsComponent,
+    UsuariosActionsComponent,
+    UsuariosTableComponent,
     UsuarioFormModalComponent,
     UsuarioDetailModalComponent,
     UsuarioRoleModalComponent,
@@ -38,50 +38,52 @@ import { inject } from '@angular/core';
   template: `
     <div class="usuarios-page-container">
       <ng-container *ngIf="canView; else noPermission">
-        <!-- ESTADÍSTICAS -->
-        <app-usuario-stats
+        
+        <!-- 1. STATS -->
+        <app-usuarios-stats
           *ngIf="stats$ | async as st"
           [total]="st.total"
           [active]="st.activos"
           [inactive]="st.inactivos"
-        ></app-usuario-stats>
+        ></app-usuarios-stats>
 
-        <!-- ACCIONES Y FILTROS -->
-        <app-usuario-actions
+        <!-- 2. ACCIONES Y FILTROS -->
+        <app-usuarios-actions
           [(searchQuery)]="searchQuery"
           [isLoading]="isLoading"
+          [availableRoles]="availableRoles"
           (onFilterChangeEmit)="handleFilters($event)"
           (onCreate)="openCreateModal()"
           (onRefresh)="refreshData()"
-        ></app-usuario-actions>
+        ></app-usuarios-actions>
 
-        <!-- TABLA DE USUARIOS -->
-        <div class="animate-fade-in" style="animation-delay: 0.1s">
-          <app-usuario-table
-            [usuarios]="filteredUsuarios"
-            (onAction)="handleAction($event)"
-          ></app-usuario-table>
-        </div>
+        <!-- 3. TABLA -->
+        <app-usuarios-table
+          [usuarios]="filteredUsuarios"
+          [currentUserId]="currentUserId"
+          (onAction)="handleAction($event)"
+        ></app-usuarios-table>
+
       </ng-container>
 
       <!-- TEMPLATE SIN PERMISO -->
       <ng-template #noPermission>
-        <div class="no-permission-container d-flex flex-column align-items-center justify-content-center p-5 text-center">
-          <div class="icon-lock-wrapper mb-4">
+        <div class="no-permission-container">
+          <div class="icon-lock-wrapper">
             <i class="bi bi-shield-lock-fill"></i>
           </div>
-          <h2 class="fw-bold text-dark mb-2">Acceso Restringido</h2>
-          <p class="text-muted mb-4 max-w-400">
-            No tienes permisos suficientes para listar o ver los usuarios de esta empresa. 
+          <h2>Acceso Restringido</h2>
+          <p>
+            No tienes permisos suficientes para gestionar los usuarios de esta empresa. 
             Si crees que esto es un error, contacta a tu administrador.
           </p>
-          <button class="btn btn-dark rounded-pill px-4 py-2" (click)="refreshData()">
-            <i class="bi bi-arrow-clockwise me-2"></i> Reintentar
+          <button class="btn-retry" (click)="refreshData()">
+            <i class="bi bi-arrow-clockwise me-2"></i> Reintentar sincronización
           </button>
         </div>
       </ng-template>
 
-      <!-- MODALS -->
+      <!-- MODALES -->
       <app-usuario-form-modal
         *ngIf="showFormModal"
         [usuario]="selectedUsuario"
@@ -120,29 +122,20 @@ import { inject } from '@angular/core';
     </div>
   `,
   styles: [`
-    .usuarios-page-container {
-      min-height: 100vh;
-      background: #f8fafc;
-    }
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-    .animate-fade-in { animation: fadeIn 0.4s ease-out forwards; }
+    :host { display: flex; flex-direction: column; flex: 1; width: 100%; overflow: hidden; min-height: 0; }
+    .usuarios-page-container { flex: 1; display: flex; flex-direction: column; background: var(--bg-main, #ffffff); padding: 0; overflow: hidden; min-height: 0; gap: 24px; }
     
-    .no-permission-container {
-      min-height: 60vh;
-    }
+    /* No Permission */
+    .no-permission-container { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 3rem; }
     .icon-lock-wrapper {
-      width: 80px;
-      height: 80px;
-      background: #fee2e2;
-      color: #ef4444;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 2.5rem;
-      box-shadow: 0 10px 15px -3px rgba(239, 68, 68, 0.2);
+      width: 100px; height: 100px; background: #fee2e2; color: #ef4444; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center; font-size: 3rem;
+      margin-bottom: 1.5rem; box-shadow: 0 10px 25px -5px rgba(239, 68, 68, 0.3);
     }
-    .max-w-400 { max-width: 400px; }
+    .no-permission-container h2 { font-weight: 800; color: #1e293b; margin-bottom: 0.5rem; }
+    .no-permission-container p { color: #64748b; max-width: 400px; margin-bottom: 2rem; line-height: 1.6; }
+    .btn-retry { background: #1e293b; color: white; border: none; padding: 1rem 2rem; border-radius: 100px; font-weight: 700; transition: all 0.2s; cursor: pointer; }
+    .btn-retry:hover { transform: scale(1.05); background: #0f172a; }
   `]
 })
 export class UsuariosPage implements OnInit, OnDestroy {
@@ -151,7 +144,12 @@ export class UsuariosPage implements OnInit, OnDestroy {
 
   filteredUsuarios: User[] = [];
   searchQuery: string = '';
-  filters = { rol: 'ALL' };
+  filters = { rol: 'ALL', estado: 'ALL' };
+  
+  get currentUserId(): string {
+    const user = this.authService.getUser();
+    return String(user?.id || (user as any)?.usuario_id || (user as any)?.id_usuario || '');
+  }
 
   // Modales
   showFormModal = false;
@@ -166,6 +164,7 @@ export class UsuariosPage implements OnInit, OnDestroy {
 
   private destroy$ = new Subject<void>();
   private _allUsuarios: User[] = [];
+  availableRoles: any[] = [];
 
   private permissionsService = inject(PermissionsService);
 
@@ -186,6 +185,7 @@ export class UsuariosPage implements OnInit, OnDestroy {
   ngOnInit() {
     this.uiService.setPageHeader('Gestión de Usuarios', 'Administra los accesos y roles del personal de tu empresa');
     this.usuariosService.loadInitialData();
+    this.fetchRoles();
 
     this.usuarios$
       .pipe(takeUntil(this.destroy$))
@@ -209,11 +209,33 @@ export class UsuariosPage implements OnInit, OnDestroy {
         (u.apellidos || '').toLowerCase().includes(query) ||
         (u.email || u.correo || '').toLowerCase().includes(query);
 
-      const matchRol = this.filters.rol === 'ALL' || u.rol_codigo === this.filters.rol || u.role === this.filters.rol;
+      const matchRol = this.filters.rol === 'ALL' || 
+                       u.empresa_rol_id === this.filters.rol || 
+                       u.rol_codigo === this.filters.rol || 
+                       u.role === this.filters.rol;
 
-      return matchSearch && matchRol;
+      const matchEstado = this.filters.estado === 'ALL' || 
+                          (this.filters.estado === 'ACTIVE' && u.activo !== false) ||
+                          (this.filters.estado === 'INACTIVE' && u.activo === false);
+
+      return matchSearch && matchRol && matchEstado;
     });
     this.cd.detectChanges();
+  }
+
+  fetchRoles() {
+    this.usuariosService.listarRoles().subscribe({
+      next: (roles) => {
+        // Filtrar según requerimiento del usuario (solo roles creados/empresa, no sistemas/vendedor/superadmin)
+        this.availableRoles = roles.filter(r => 
+          r.codigo !== 'SUPERADMIN' && 
+          r.codigo !== 'VENDEDOR' && 
+          r.codigo !== 'USUARIO' && 
+          r.activo !== false
+        );
+        this.cd.detectChanges();
+      }
+    });
   }
 
   handleFilters(filters: any) {

@@ -2,17 +2,17 @@ import { Component, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 @Component({
-    selector: 'app-usuario-stats',
-    standalone: true,
-    imports: [CommonModule],
-    template: `
-    <div class="stats-compact-row mb-4">
+  selector: 'app-clientes-stats',
+  standalone: true,
+  imports: [CommonModule],
+  template: `
+    <div class="stats-compact-row">
       <div class="stat-item-mini">
-        <div class="icon-circle" style="background: rgba(22, 29, 53, 0.05); color: #161d35;">
+        <div class="icon-circle" style="background: rgba(59, 130, 246, 0.1); color: #3b82f6;">
           <i class="bi bi-people-fill"></i>
         </div>
         <div class="stat-info">
-          <span class="stat-label">Total Usuarios</span>
+          <span class="stat-label">Total Clientes</span>
           <span class="stat-value">{{ total }}</span>
         </div>
       </div>
@@ -24,25 +24,28 @@ import { CommonModule } from '@angular/common';
           <i class="bi bi-person-check-fill"></i>
         </div>
         <div class="stat-info">
-          <span class="stat-label">Activos</span>
-          <span class="stat-value">{{ active }}</span>
+          <span class="stat-label">Clientes Activos</span>
+          <span class="stat-value text-success">{{ active }}</span>
         </div>
       </div>
 
       <div class="stat-divider"></div>
 
       <div class="stat-item-mini">
-        <div class="icon-circle" style="background: rgba(239, 68, 68, 0.1); color: #ef4444;">
-          <i class="bi bi-person-x-fill"></i>
+        <div class="icon-circle" style="background: rgba(245, 158, 11, 0.1); color: #f59e0b;">
+          <i class="bi bi-credit-card-fill"></i>
         </div>
         <div class="stat-info">
-          <span class="stat-label">Inactivos</span>
-          <span class="stat-value">{{ inactive }}</span>
+          <span class="stat-label">Con Crédito</span>
+          <span class="stat-value text-warning">{{ credit }}</span>
         </div>
       </div>
     </div>
   `,
-    styles: [`
+  styles: [`
+    :host {
+      display: block;
+    }
     .stats-compact-row {
       background: white;
       border-radius: 20px;
@@ -50,8 +53,8 @@ import { CommonModule } from '@angular/common';
       display: flex;
       align-items: center;
       justify-content: space-between;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
       border: 1px solid #f1f5f9;
+      margin-bottom: 0;
     }
     .stat-item-mini {
       display: flex;
@@ -85,6 +88,12 @@ import { CommonModule } from '@angular/common';
       color: #1e293b;
       line-height: 1.2;
     }
+    .text-success {
+      color: #10b981 !important;
+    }
+    .text-warning {
+      color: #f59e0b !important;
+    }
     .stat-divider {
       width: 1px;
       height: 35px;
@@ -96,13 +105,17 @@ import { CommonModule } from '@angular/common';
         flex-wrap: wrap;
         gap: 1.5rem;
       }
-      .stat-divider { display: none; }
-      .stat-item-mini { min-width: 45%; }
+      .stat-divider {
+        display: none;
+      }
+      .stat-item-mini {
+        min-width: 45%;
+      }
     }
   `]
 })
-export class UsuarioStatsComponent {
-    @Input() total: number = 0;
-    @Input() active: number = 0;
-    @Input() inactive: number = 0;
+export class ClientesStatsComponent {
+  @Input() total: number = 0;
+  @Input() active: number = 0;
+  @Input() credit: number = 0;
 }

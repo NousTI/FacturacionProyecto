@@ -7,6 +7,7 @@ export interface User {
     user_id?: string;
     nombre?: string;
     apellido?: string;
+    username?: string;
     correo?: string;
     requiere_cambio_password?: boolean;
 
@@ -21,6 +22,7 @@ export interface User {
     empresa_id?: string;
     empresa_suscripcion_estado?: string;
     empresa_rol_id?: string;
+    empresa_nombre?: string;
     rol_nombre?: string;
     rol_codigo?: string;
     role?: UserRole | string;
@@ -49,4 +51,6 @@ export interface User {
         phone: string;
         message: string;
     };
+    created_at?: string;
+    updated_at?: string;
 }

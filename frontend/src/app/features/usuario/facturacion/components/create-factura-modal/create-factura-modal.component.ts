@@ -19,7 +19,7 @@ import { FacturaCreacion, FacturaDetalleCreacion, Factura, FacturaDetalle } from
 import { ConfigSRI } from '../../../certificado-sri/models/sri-config.model';
 import { ConfirmModalComponent } from '../../../../../shared/components/confirm-modal/confirm-modal.component';
 import { forkJoin, switchMap, tap, catchError, of, filter, take, map, Observable, fromEvent, Subject, takeUntil } from 'rxjs';
-import { CreateClienteModalComponent } from '../../../clientes/components/create-cliente-modal/create-cliente-modal.component';
+import { ClienteFormModalComponent } from '../../../clientes/components/modals/cliente-form-modal.component';
 
 import { FacturaClienteHeaderComponent } from './components/factura-cliente-header/factura-cliente-header.component';
 import { FacturaEmisionHeaderComponent } from './components/factura-emision-header/factura-emision-header.component';
@@ -32,7 +32,7 @@ import { FacturaTotalesPanelComponent } from './components/factura-totales-panel
   standalone: true,
   encapsulation: ViewEncapsulation.None,
   imports: [
-    CommonModule, FormsModule, ReactiveFormsModule, ConfirmModalComponent, CreateClienteModalComponent,
+    CommonModule, FormsModule, ReactiveFormsModule, ConfirmModalComponent, ClienteFormModalComponent,
     FacturaClienteHeaderComponent, FacturaEmisionHeaderComponent, FacturaDetallesTableComponent, 
     FacturaRecurrenteConfigComponent, FacturaTotalesPanelComponent
   ],
@@ -146,14 +146,13 @@ import { FacturaTotalesPanelComponent } from './components/factura-totales-panel
       </div>
     </div>
 
-    <!-- Modal Cliente Nuevo/Edición -->
-    <app-create-cliente-modal
+    <app-cliente-form-modal
       *ngIf="showCreateClienteModal"
       [cliente]="clienteParaEditar"
       [loading]="isCreatingCliente"
       (onSave)="handleClienteSave($event)"
       (onClose)="closeClienteModal()"
-    ></app-create-cliente-modal>
+    ></app-cliente-form-modal>
 
     <!-- Modal de confirmación para eliminar ítem -->
     <app-confirm-modal
