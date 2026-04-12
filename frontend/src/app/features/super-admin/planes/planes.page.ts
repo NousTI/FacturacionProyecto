@@ -17,18 +17,20 @@ import { map } from 'rxjs/operators';
 @Component({
   selector: 'app-planes',
   template: `
-    <div class="planes-page-container animate__animated animate__fadeIn">
-      
-      <!-- 1. ESTADÍSTICAS DE PLANES -->
-      <app-plan-stats
-        [stats]="stats"
-      ></app-plan-stats>
+    <div class="planes-page-container">
+      <div class="planes-content-wrapper">
+        <!-- 1. ESTADÍSTICAS DE PLANES -->
+        <app-plan-stats
+          [stats]="stats"
+        ></app-plan-stats>
 
-      <!-- 2. ACCIONES Y BÚSQUEDA -->
-      <app-plan-actions
-        [(searchQuery)]="searchQuery"
-        (onCreate)="openCreateModal()"
-      ></app-plan-actions>
+        <!-- 2. ACCIONES Y BÚSQUEDA -->
+        <app-plan-actions
+          [(searchQuery)]="searchQuery"
+          (onFilterChangeEmit)="handleFilters($event)"
+          (onCreate)="openCreateModal()"
+        ></app-plan-actions>
+      </div>
 
       <!-- 3. TABLA DE PLANES -->
       <app-plan-table
@@ -41,14 +43,14 @@ import { map } from 'rxjs/operators';
       ></app-plan-table>
 
       <!-- 4. MODALES -->
-      
+
       <!-- Ver Detalles del Plan -->
       <app-plan-details-modal
         *ngIf="showDetailsModal && selectedPlan"
         [plan]="selectedPlan"
         (onClose)="showDetailsModal = false"
       ></app-plan-details-modal>
-      
+
       <!-- Crear / Editar Plan -->
       <app-plan-modal
         *ngIf="showPlanModal"
@@ -81,15 +83,35 @@ import { map } from 'rxjs/operators';
         (onCancel)="showConfirmModal = false"
       ></app-confirm-modal>
 
-
-
       <app-toast></app-toast>
     </div>
   `,
   styles: [`
+    :host {
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      width: 100%;
+      overflow: hidden;
+      min-height: 0;
+    }
     .planes-page-container {
-      position: relative;
-      min-height: 400px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      background: var(--bg-main, #ffffff);
+      padding: 0;
+      overflow: hidden;
+      min-height: 0;
+    }
+    .planes-content-wrapper {
+      flex: 0 0 auto;
+    }
+    app-plan-table {
+      flex: 1;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
     }
   `],
   standalone: true,
@@ -124,6 +146,12 @@ export class PlanesPage implements OnInit {
   selectedPlan: Plan | null = null;
   selectedPlanName: string = '';
   selectedPlanId: string = '';
+
+  // Filters
+  activeFilters: any = {
+    publico: 'ALL',
+    estado: 'ALL'
+  };
 
   // Confirm Modal Config
   confirmTitle: string = '';
@@ -206,11 +234,34 @@ export class PlanesPage implements OnInit {
   }
 
   get filteredPlanes() {
-    if (!this.searchQuery) return this.planes;
-    return this.planes.filter(p =>
-      p.name.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
-      p.description.toLowerCase().includes(this.searchQuery.toLowerCase())
-    );
+    let temp = [...this.planes];
+
+    // Filtro por búsqueda
+    if (this.searchQuery) {
+      const q = this.searchQuery.toLowerCase();
+      temp = temp.filter(p =>
+        p.name.toLowerCase().includes(q) ||
+        p.description.toLowerCase().includes(q)
+      );
+    }
+
+    // Filtro por visibilidad pública
+    if (this.activeFilters.publico !== 'ALL') {
+      const isPublic = this.activeFilters.publico === true || this.activeFilters.publico === 'true';
+      temp = temp.filter(p => p.visible_publico === isPublic);
+    }
+
+    // Filtro por estado
+    if (this.activeFilters.estado !== 'ALL') {
+      temp = temp.filter(p => p.status === this.activeFilters.estado);
+    }
+
+    return temp;
+  }
+
+  handleFilters(filters: any) {
+    this.activeFilters = { ...filters };
+    this.cdr.markForCheck();
   }
 
   openCreateModal() {

@@ -5,15 +5,18 @@
 CREATE TABLE IF NOT EXISTS sistema_facturacion.productos (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
 
-    empresa_id UUID NOT NULL
-        REFERENCES sistema_facturacion.empresas(id) ON DELETE CASCADE,
+    empresa_id UUID NOT NULL REFERENCES sistema_facturacion.empresas(id) ON DELETE CASCADE,
 
     codigo TEXT NOT NULL,
     nombre TEXT NOT NULL,
     descripcion TEXT,
 
-    precio NUMERIC(12,2) NOT NULL CHECK (precio >= 0),
-    costo NUMERIC(12,2) NOT NULL CHECK (costo >= 0),
+    -- ... (tus campos anteriores están bien)
+    codigo_ice TEXT, -- Requerido para ciertos productos
+    porcentaje_ice NUMERIC(5,2) DEFAULT 0,
+    -- Cambiar a NUMERIC para permitir decimales en el precio/costo
+    precio NUMERIC(12,4) NOT NULL CHECK (precio >= 0),
+    costo NUMERIC(12,4) NOT NULL CHECK (costo >= 0),
 
     stock_actual NUMERIC(12,3) NOT NULL DEFAULT 0 CHECK (stock_actual >= 0),
     stock_minimo NUMERIC(12,3) NOT NULL DEFAULT 0 CHECK (stock_minimo >= 0),
@@ -24,8 +27,8 @@ CREATE TABLE IF NOT EXISTS sistema_facturacion.productos (
 
     maneja_inventario BOOLEAN NOT NULL DEFAULT TRUE,
 
-    tipo TEXT, -- BIEN o SERVICIO
-    unidad_medida TEXT,
+    tipo TEXT, -- BIEN o SERVICIO -> Agregar Check
+    unidad_medida TEXT, -- Agregar Check o tabla externa
 
     activo BOOLEAN NOT NULL DEFAULT TRUE,
 

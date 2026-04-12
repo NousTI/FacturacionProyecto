@@ -5,98 +5,168 @@ import { FormsModule } from '@angular/forms';
 @Component({
   selector: 'app-plan-actions',
   template: `
-    <div class="actions-container mb-4">
-      <div class="search-wrapper">
-        <i class="bi bi-search search-icon"></i>
-        <input 
-          type="text" 
-          class="form-control premium-search" 
-          placeholder="Buscar planes por nombre o descripción..."
-          [ngModel]="searchQuery"
-          (ngModelChange)="searchQueryChange.emit($event)"
-        >
-      </div>
+    <section class="module-actions">
+      <div class="actions-bar-container">
+        <div class="row align-items-center g-3">
+          <!-- Búsqueda Principal -->
+          <div class="col-lg-4">
+            <div class="search-box-premium">
+              <i class="bi bi-search"></i>
+              <input
+                type="text"
+                [(ngModel)]="searchQuery"
+                (ngModelChange)="searchQueryChange.emit($event)"
+                placeholder="Q Buscar por nombre o descripción..."
+                class="form-control-premium-search"
+              >
+            </div>
+          </div>
 
-      <div class="button-group">
-        <!-- History button transferred to subscriptions -->
-        <button class="btn btn-create-premium" (click)="onCreate.emit()">
-          <i class="bi bi-plus-lg me-2"></i>
-          Nuevo Plan
-        </button>
+          <!-- Filtros Rápidos -->
+          <div class="col-lg-4">
+            <div class="row g-2">
+              <div class="col-md-6">
+                <div class="dropdown">
+                  <button
+                    class="form-select-premium dropdown-toggle d-flex align-items-center justify-content-between"
+                    type="button"
+                    data-bs-toggle="dropdown"
+                    aria-expanded="false"
+                  >
+                    <span>{{ getPublicoLabel() }}</span>
+                  </button>
+                  <ul class="dropdown-menu dropdown-menu-premium">
+                    <li><a class="dropdown-item" (click)="setFilter('publico', 'ALL')">Todos</a></li>
+                    <li><a class="dropdown-item" (click)="setFilter('publico', true)">Visibles</a></li>
+                    <li><a class="dropdown-item" (click)="setFilter('publico', false)">Ocultos</a></li>
+                  </ul>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="dropdown">
+                  <button
+                    class="form-select-premium dropdown-toggle d-flex align-items-center justify-content-between"
+                    type="button"
+                    data-bs-toggle="dropdown"
+                    aria-expanded="false"
+                  >
+                    <span>{{ getEstadoLabel() }}</span>
+                  </button>
+                  <ul class="dropdown-menu dropdown-menu-premium">
+                    <li><a class="dropdown-item" (click)="setFilter('estado', 'ALL')">Todos los Estados</a></li>
+                    <li><a class="dropdown-item" (click)="setFilter('estado', 'ACTIVO')">Activos</a></li>
+                    <li><a class="dropdown-item" (click)="setFilter('estado', 'INACTIVO')">Inactivos</a></li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Botón de Acción -->
+          <div class="col-lg-2 text-lg-end">
+            <button
+              (click)="onCreate.emit()"
+              class="btn-system-action w-100"
+            >
+              <i class="bi bi-plus-lg me-2"></i>
+              <span>Nuevo Plan</span>
+            </button>
+          </div>
+        </div>
       </div>
-    </div>
+    </section>
   `,
   styles: [`
-    .actions-container {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 1.5rem;
+    :host {
+      display: block;
+      margin-bottom: 1.5rem;
     }
-    .search-wrapper {
+    .actions-bar-container {
+      background: transparent;
+      border: none;
+    }
+    .search-box-premium {
       position: relative;
-      flex: 1;
-      max-width: 500px;
+      width: 100%;
     }
-    .search-icon {
+    .search-box-premium i {
       position: absolute;
-      left: 1.25rem;
+      left: 1rem;
       top: 50%;
       transform: translateY(-50%);
       color: #94a3b8;
-      font-size: 1.1rem;
+      font-size: 1rem;
     }
-    .premium-search {
-      padding: 0.85rem 1.25rem 0.85rem 3.25rem;
-      border-radius: 16px;
-      border: 1px solid #f1f5f9;
-      background: white;
-      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.02);
-      font-size: 0.95rem;
-      transition: all 0.3s ease;
+    .form-control-premium-search {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 0 1rem 0 2.75rem;
+      height: 42px;
+      font-size: var(--text-md);
+      color: #0f172a;
+      transition: all 0.2s;
+      width: 100%;
     }
-    .premium-search:focus {
-      border-color: #6366f1;
-      box-shadow: 0 4px 20px rgba(99, 102, 241, 0.08);
+    .form-control-premium-search:focus {
+      border-color: #cbd5e1;
+      outline: none;
+      box-shadow: none;
+    }
+    .form-select-premium {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 0 1rem;
+      height: 42px;
+      font-size: var(--text-base);
+      color: #475569;
+      width: 100%;
+      cursor: pointer;
+      text-align: left;
+    }
+    .form-select-premium:focus {
+      border-color: #cbd5e1;
       outline: none;
     }
-    .button-group {
-      display: flex;
-      gap: 0.75rem;
+    .dropdown-menu-premium {
+      border-radius: 12px !important;
+      padding: 0.5rem !important;
+      min-width: 100%;
+      margin-top: 0.5rem !important;
+      max-height: 300px;
+      overflow-y: auto;
     }
-    .btn-create-premium {
-      background: #161d35;
-      color: white;
-      padding: 0.85rem 1.75rem;
-      border-radius: 16px;
-      font-weight: 700;
+    .dropdown-item {
+      border-radius: 8px !important;
+      padding: 0.6rem 1rem !important;
+      color: #475569 !important;
+      font-size: var(--text-base) !important;
+      font-weight: 500 !important;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .dropdown-item:hover {
+      background-color: var(--primary-color, #161d35) !important;
+      color: #ffffff !important;
+    }
+    .btn-system-action {
+      background: #111827;
+      color: #ffffff;
       border: none;
-      display: flex;
+      padding: 0 1.5rem;
+      height: 42px;
+      border-radius: 12px;
+      font-weight: 600;
+      display: inline-flex;
       align-items: center;
-      transition: all 0.3s ease;
-      font-size: 0.9rem;
+      justify-content: center;
+      transition: all 0.2s;
+      font-size: var(--text-base);
     }
-    .btn-create-premium:hover {
-      background: #000;
-      transform: translateY(-2px);
-      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
-    }
-    .btn-history {
-      background: white;
-      color: #64748b;
-      padding: 0.85rem 1.5rem;
-      border-radius: 16px;
-      font-weight: 700;
-      border: 1px solid #f1f5f9;
-      display: flex;
-      align-items: center;
-      transition: all 0.3s ease;
-      font-size: 0.9rem;
-    }
-    .btn-history:hover {
-      background: #f8fafc;
-      color: #1e293b;
-      border-color: #e2e8f0;
+    .btn-system-action:hover {
+      background: #1f2937;
+      transform: translateY(-1px);
     }
   `],
   standalone: true,
@@ -105,5 +175,38 @@ import { FormsModule } from '@angular/forms';
 export class PlanActionsComponent {
   @Input() searchQuery: string = '';
   @Output() searchQueryChange = new EventEmitter<string>();
+  @Output() onFilterChangeEmit = new EventEmitter<any>();
   @Output() onCreate = new EventEmitter<void>();
+
+  filters = {
+    publico: 'ALL',
+    estado: 'ALL'
+  };
+
+  onFilterChange() {
+    this.onFilterChangeEmit.emit(this.filters);
+  }
+
+  setFilter(key: string, value: any) {
+    (this.filters as any)[key] = value;
+    this.onFilterChange();
+  }
+
+  getPublicoLabel(): string {
+    const labels: any = {
+      'ALL': 'Todos',
+      'true': 'Visibles',
+      'false': 'Ocultos'
+    };
+    return labels[String(this.filters.publico)] || 'Público';
+  }
+
+  getEstadoLabel(): string {
+    const labels: any = {
+      'ALL': 'Todos los Estados',
+      'ACTIVO': 'Activos',
+      'INACTIVO': 'Inactivos'
+    };
+    return labels[(this.filters as any).estado] || 'Estado';
+  }
 }

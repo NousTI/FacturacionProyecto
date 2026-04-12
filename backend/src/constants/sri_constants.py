@@ -10,10 +10,13 @@ class SRITipoEmision(str, Enum):
 
 class SRICodigoDocumento(str, Enum):
     FACTURA = "01"
-    NOTA_DE_DEBITO = "04"
-    NOTA_DE_CREDITO = "05"
+    NOTA_DE_DEBITO = "04"  # [cite: 583]
+    NOTA_DE_CREDITO = "05" # [cite: 583]
     GUIA_DE_REMISION = "06"
-    COMPROBANTE_DE_RETENCION = "07"
+    COMPROBANTE_DE_RETENCION = "07" # [cite: 417, 789]
+    LIQUIDACION_DE_COMPRA = "03"    # Muy importante para compras a personas sin RUC [cite: 226, 626]
+    TIQUETES_MAQUINAS_REGISTRADORAS = "12" 
+    NOTAS_DE_VENTA_RIMPE = "11"     # El antiguo RISE [cite: 315, 683]
 
 class SRICodigoImpuesto(str, Enum):
     IVA = "2"
@@ -72,3 +75,16 @@ SRI_URLS = {
 
 SRI_TIMEOUT_SECONDS = 30
 SRI_TIME_SLEEP_AUTORIZACION = 3
+
+
+class UnidadMedida(str, Enum):
+    UNIDAD = "u"        # [cite: 315]
+    KILOGRAMO = "kg"
+    GRAMO = "g"
+    LIBRA = "lb"
+    METRO = "m"
+    METRO_CUADRADO = "m2"
+    LITRO = "l"
+    CAJA = "cj"         # [cite: 359]
+    PAQUETE = "pq"
+    SERVICIO = "serv"   # Para ítems intangibles [cite: 589]

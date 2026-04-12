@@ -7,7 +7,7 @@ import { Plan } from '../../services/plan.service';
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <section class="module-table">
-      <div class="table-container border-0 shadow-premium">
+      <div class="table-container">
         <div class="table-responsive-premium">
           <table class="table mb-0 align-middle">
             <thead>
@@ -68,7 +68,7 @@ import { Plan } from '../../services/plan.service';
                     >
                       <i class="bi bi-three-dots"></i>
                     </button>
-                    <ul class="dropdown-menu dropdown-menu-end shadow-premium-lg border-0 p-2 rounded-4" [attr.aria-labelledby]="'actions-' + plan.id">
+                    <ul class="dropdown-menu dropdown-menu-end border-0 p-2 rounded-4" data-bs-popper="static" [attr.aria-labelledby]="'actions-' + plan.id">
                       <li>
                         <a class="dropdown-item rounded-3 py-2" href="javascript:void(0)" (click)="onEdit.emit(plan)">
                           <i class="bi bi-pencil-square text-corporate"></i>
@@ -111,40 +111,63 @@ import { Plan } from '../../services/plan.service';
     </section>
   `,
   styles: [`
-    .module-table { margin-top: 1rem; }
+    :host {
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      min-height: 0;
+      width: 100%;
+    }
+    .module-table {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+      margin-top: 0;
+    }
     .table-container {
-      background: #ffffff;
-      border-radius: 24px;
-      border: 1px solid #f1f5f9;
-      overflow: visible !important;
+      background: var(--bg-main, #ffffff);
+      border-radius: 20px;
+      border: 1px solid var(--border-color, #f1f5f9);
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+      height: auto;
+      max-height: 100%;
+      overflow: visible;
+      margin-bottom: 0;
     }
-    .table-responsive-premium { overflow: visible !important; position: relative; }
-    .table thead th {
-      background: #f8fafc;
-      padding: 1.15rem 1.5rem;
-      font-size: 0.7rem;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      color: #94a3b8;
-      font-weight: 800;
-      border-bottom: 2px solid #f1f5f9;
-    }
-    .table tbody tr {
+    .table-responsive-premium {
+      flex: 1;
+      overflow-y: auto;
+      overflow-x: auto;
       position: relative;
     }
-    .table tbody tr:focus-within,
-    .table tbody tr:hover {
-      z-index: 100;
+    .table {
+      border-collapse: separate;
+      border-spacing: 0;
+      width: 100%;
     }
-    .table tbody tr:has(.show),
-    .table tbody tr:has(.btn-action-trigger[aria-expanded="true"]) {
-      z-index: 10001 !important;
+    .table thead th {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      background: var(--bg-main, #ffffff);
+      padding: 1rem 1.5rem;
+      font-size: var(--text-base);
+      color: #0f172a;
+      font-weight: 600;
+      border-bottom: 2px solid var(--border-color, #f1f5f9);
+      vertical-align: middle;
     }
-
     .table tbody td {
       padding: 1.25rem 1.5rem;
-      border-bottom: 1px solid #f8fafc;
-      background: transparent;
+      border-bottom: 1px solid var(--border-color, #f1f5f9);
+      color: var(--text-muted, #475569);
+      font-size: var(--text-md);
+    }
+    .table tbody tr:last-child td {
+      border-bottom: none;
     }
     .plan-icon {
       width: 40px; height: 40px;
@@ -167,51 +190,61 @@ import { Plan } from '../../services/plan.service';
       font-size: 1.1rem;
     }
     .badge-status-premium {
-      padding: 0.4rem 0.85rem; border-radius: 100px;
-      font-size: 0.75rem; font-weight: 800;
+      padding: 0.25rem 0.75rem;
+      border-radius: 6px;
+      font-size: var(--text-sm);
+      font-weight: 600;
+      display: inline-block;
+      text-transform: capitalize;
     }
-    .badge-status-premium.active { background: #dcfce7; color: #15803d; }
-    .badge-status-premium.inactive { background: #fee2e2; color: #b91c1c; }
-    
+    .badge-status-premium.active { background: var(--status-success-bg, #dcfce7); color: var(--status-success-text, #15803d); }
+    .badge-status-premium.inactive { background: var(--status-danger-bg, #fee2e2); color: var(--status-danger-text, #b91c1c); }
+
     .btn-action-trigger {
-      background: #f8fafc; border: none;
+      background: transparent; border: none;
       width: 32px; height: 32px;
       border-radius: 8px; color: #94a3b8;
       transition: all 0.2s;
     }
     .btn-action-trigger:hover, .btn-action-trigger[aria-expanded="true"] {
-      background: #161d35; color: #ffffff;
+      background: #f8fafc; color: #0f172a;
     }
-    
+
     .dropdown {
       position: relative;
     }
     .dropdown-menu {
-      z-index: 100000 !important;
-      min-width: 210px;
-      border: 1px solid #e2e8f0 !important;
-      box-shadow: 0 15px 35px rgba(22, 29, 53, 0.25) !important;
-      position: fixed !important;
+      position: absolute !important;
+      top: 100% !important;
+      right: 0 !important;
+      left: auto !important;
+      border: 1px solid var(--border-color, #e2e8f0) !important;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15) !important;
+      border-radius: 12px !important;
+      padding: 0.5rem !important;
+      z-index: 9999 !important;
+      margin-top: 0.5rem !important;
+      transform: translateZ(0) !important;
     }
-
     .dropdown-item {
-      font-size: 0.85rem; font-weight: 600;
-      color: #475569; padding: 0.65rem 1.15rem;
+      border-radius: 8px !important;
+      font-size: var(--text-base);
+      font-weight: 500;
+      color: var(--text-muted, #475569); padding: 0.5rem 1rem;
       display: flex; align-items: center;
       cursor: pointer;
     }
-    .dropdown-item:hover {
-      background: #f8fafc; color: #161d35;
-    }
-    .switch-table .form-check-input:checked {
-      background-color: #161d35;
-      border-color: #161d35;
-    }
+    .dropdown-item:hover { background: #f8fafc; color: #0f172a; }
+    .dropdown-item i { font-size: 1.1rem; margin-right: 0.75rem; }
+
     .cursor-pointer { cursor: pointer; }
-    .text-corporate { color: #161d35 !important; }
+    .text-corporate { color: var(--primary-color, #111827) !important; }
     .fw-800 { font-weight: 800; }
-    .shadow-premium { box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.04); }
-    .shadow-premium-lg { box-shadow: 0 20px 40px -15px rgba(0, 10, 30, 0.15); }
+    .fw-bold { font-weight: 700; }
+    .text-dark { color: #0f172a; }
+    .text-muted { color: var(--text-muted, #475569); }
+    .fw-600 { font-weight: 600; }
+    .text-danger { color: #dc2626 !important; }
   `],
   standalone: true,
   imports: [CommonModule]

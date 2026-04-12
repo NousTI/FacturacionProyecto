@@ -44,8 +44,7 @@ import { Establecimiento } from '../../../../../domain/models/establecimiento.mo
             <h3 class="section-header-final">Ubicación</h3>
             <div class="row g-3">
               <div class="col-12">
-                <label class="label-final">Dirección Completa</label>
-                <div class="detail-value">{{ establecimiento.direccion }}</div>
+                <label class="label-final">Dirección: {{ establecimiento.direccion }}</label>
               </div>
             </div>
           </div>
@@ -80,12 +79,6 @@ import { Establecimiento } from '../../../../../domain/models/establecimiento.mo
                   <span class="badge-status-premium" [ngClass]="establecimiento.activo ? 'activo' : 'inactivo'">
                     {{ establecimiento.activo ? '🟢 ACTIVO' : '⚫ INACTIVO' }}
                   </span>
-                </div>
-              </div>
-              <div class="col-md-6">
-                <label class="label-final">Empresa ID</label>
-                <div class="detail-value" style="font-family: monospace; font-size: 0.8rem;">
-                  {{ establecimiento.empresa_id | slice:0:13 }}...
                 </div>
               </div>
               <div class="col-md-6">
