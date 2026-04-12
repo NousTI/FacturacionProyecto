@@ -25,7 +25,9 @@ import { map } from 'rxjs/operators';
     <div class="planes-page-container">
       <!-- 1. STATS -->
       <app-vendedor-plan-stats
-        [stats]="stats"
+        [totalPlanes]="totalPlanes"
+        [planesActivos]="planesActivos"
+        [planesOcultos]="planesOcultos"
       ></app-vendedor-plan-stats>
 
       <!-- 2. ACTIONS & FILTERS -->
