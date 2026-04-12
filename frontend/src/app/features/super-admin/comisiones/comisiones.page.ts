@@ -138,7 +138,7 @@ import { UiService } from '../../../shared/services/ui.service';
 
     .actions-box-lux {
       background: transparent; border: none;
-      border-radius: 20px; padding: 1rem 0;
+      border-radius: 20px; padding: 0;
       margin-bottom: 0;
     }
 

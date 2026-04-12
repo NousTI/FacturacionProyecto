@@ -94,6 +94,7 @@ import { GET_PERSONA_LABEL, GET_CONTRIBUYENTE_LABEL } from '../../../../../core/
                       [id]="'actions-' + empresa.id" 
                       data-bs-toggle="dropdown" 
                       aria-expanded="false"
+                      data-bs-popper-config='{"strategy":"fixed"}'
                     >
                       <i class="bi bi-three-dots"></i>
                     </button>

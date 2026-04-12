@@ -2,51 +2,51 @@ import { Component, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 @Component({
-  selector: 'app-suscripcion-stats',
+  selector: 'app-renovaciones-stats',
+  standalone: true,
+  imports: [CommonModule],
   template: `
     <div class="stats-compact-row">
-      <!-- Activas -->
+      <!-- Pendientes -->
+      <div class="stat-item-mini">
+        <div class="icon-circle" style="background: rgba(245, 158, 11, 0.1); color: var(--status-warning);">
+          <i class="bi bi-hourglass-split"></i>
+        </div>
+        <div class="stat-info">
+          <span class="stat-label">Pendientes</span>
+          <span class="stat-value text-warning">{{ stats.pending || 0 }}</span>
+        </div>
+      </div>
+
+      <div class="stat-divider"></div>
+
+      <!-- Aceptadas -->
       <div class="stat-item-mini">
         <div class="icon-circle" style="background: rgba(16, 185, 129, 0.1); color: var(--status-success);">
           <i class="bi bi-check-circle-fill"></i>
         </div>
         <div class="stat-info">
-          <span class="stat-label">Suscripciones Activas</span>
-          <span class="stat-value text-success">{{ stats.active || 0 }}</span>
+          <span class="stat-label">Aceptadas</span>
+          <span class="stat-value text-success">{{ stats.accepted || 0 }}</span>
         </div>
       </div>
 
       <div class="stat-divider"></div>
 
-      <!-- Vencidas -->
+      <!-- Rechazadas -->
       <div class="stat-item-mini">
         <div class="icon-circle" style="background: rgba(239, 68, 68, 0.1); color: var(--status-danger);">
-          <i class="bi bi-exclamation-octagon-fill"></i>
+          <i class="bi bi-x-octagon-fill"></i>
         </div>
         <div class="stat-info">
-          <span class="stat-label">Suscripciones Vencidas</span>
-          <span class="stat-value text-danger">{{ stats.overdue || 0 }}</span>
-        </div>
-      </div>
-
-      <div class="stat-divider"></div>
-
-      <!-- Proyección de Cobros -->
-      <div class="stat-item-mini">
-        <div class="icon-circle" style="background: rgba(59, 130, 246, 0.1); color: var(--status-info);">
-          <i class="bi bi-graph-up-arrow"></i>
-        </div>
-        <div class="stat-info">
-          <span class="stat-label">Proyección de Cobros</span>
-          <span class="stat-value">{{ stats.projectedCollection || 0 | currency:'USD' }}</span>
+          <span class="stat-label">Rechazadas</span>
+          <span class="stat-value text-danger">{{ stats.rejected || 0 }}</span>
         </div>
       </div>
     </div>
   `,
   styles: [`
-    :host {
-      display: block;
-    }
+    :host { display: block; }
     .stats-compact-row {
       background: white; border-radius: 20px; padding: 1.25rem 2rem;
       display: flex; align-items: center; justify-content: space-between;
@@ -64,6 +64,7 @@ import { CommonModule } from '@angular/common';
     .stat-value { font-size: 1.35rem; font-weight: 800; color: #1e293b; line-height: 1.2; }
     
     .text-success { color: var(--status-success) !important; }
+    .text-warning { color: var(--status-warning) !important; }
     .text-danger { color: var(--status-danger) !important; }
 
     .stat-divider { width: 1px; height: 35px; background: #f1f5f9; margin: 0 1.5rem; }
@@ -74,10 +75,7 @@ import { CommonModule } from '@angular/common';
       .stat-item-mini { min-width: 45%; }
     }
   `]
-,
-  standalone: true,
-  imports: [CommonModule]
 })
-export class SuscripcionStatsComponent {
+export class RenovacionesStatsComponent {
   @Input() stats: any = {};
 }

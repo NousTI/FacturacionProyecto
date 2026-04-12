@@ -84,6 +84,10 @@ import { FormsModule } from '@angular/forms';
     :host {
       display: block;
     }
+    .actions-bar-container {
+      background: transparent;
+      border: none;
+    }
   `]
 })
 export class ClientesActionsComponent {

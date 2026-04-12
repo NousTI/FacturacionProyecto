@@ -8,13 +8,13 @@ import { RenovacionesAdminPage } from './renovaciones/renovaciones-admin.page';
 
 @NgModule({
     declarations: [
-        RenovacionesAdminPage
     ],
     imports: [
         CommonModule,
         FormsModule,
         SuperAdminRoutingModule,
-        SharedModule
+        SharedModule,
+        RenovacionesAdminPage
     ]
 })
 export class SuperAdminModule { }

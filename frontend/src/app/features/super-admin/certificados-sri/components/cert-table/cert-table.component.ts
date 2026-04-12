@@ -7,156 +7,218 @@ import { SriCertConfig } from '../../services/sri-cert.service';
     standalone: true,
     imports: [CommonModule],
     template: `
-    <div class="table-container-lux">
-      <div class="table-responsive">
-        <table class="table align-middle mb-0">
-          <thead>
-            <tr>
-              <th class="ps-4">Empresa</th>
-              <th>Estado SRI</th>
-              <th>Vencimiento</th>
-              <th>Días Restantes</th>
-              <th class="pe-4 text-end">Acciones</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let cert of certificados" class="row-lux">
-              
-              <!-- Empresa Info -->
-              <td class="ps-4">
-                <div class="d-flex align-items-center gap-3">
-                  <div class="avatar-soft-lux" style="background: rgba(22, 29, 53, 0.1); color: #161d35;">
-                    {{ (cert.empresa_nombre || 'N').charAt(0) }}
-                  </div>
-                  <div>
-                    <h6 class="mb-0 fw-bold text-dark" style="font-size: 0.95rem;">{{ cert.empresa_nombre || 'No asignada' }}</h6>
-                    <span class="text-secondary small d-flex align-items-center gap-1">
-                      <i class="bi bi-hash"></i> {{ cert.empresa_ruc || 'Sin RUC' }}
-                    </span>
-                  </div>
-                </div>
-              </td>
-
-              <!-- Estado Badge -->
-              <td>
-                 <div class="d-flex flex-column gap-1">
-                    <div class="badge-status-lux" [ngClass]="getStatusClass(cert)">
-                        <div class="dot"></div>
-                        {{ cert.estado }}
+    <section class="module-table">
+      <div class="table-container">
+        <div class="table-responsive-premium">
+          <table class="table mb-0 align-middle">
+            <thead>
+              <tr>
+                <th style="width: 280px">Empresa</th>
+                <th style="width: 180px">Estado SRI</th>
+                <th style="width: 180px">Vencimiento</th>
+                <th style="width: 180px">Días Restantes</th>
+                <th class="text-end" style="width: 80px">Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let cert of certificados">
+                <!-- Empresa Info -->
+                <td>
+                  <div class="d-flex align-items-center">
+                    <div class="avatar-soft-premium me-2">
+                      {{ (cert.empresa_nombre || 'N').charAt(0) }}
                     </div>
-                    <span class="text-secondary opacity-75 fw-bold ms-1" style="font-size: 0.65rem;">
-                        {{ cert.ambiente }}
-                    </span>
-                 </div>
-              </td>
-
-              <!-- Fecha Vencimiento -->
-              <td>
-                 <div class="d-flex flex-column">
-                    <span class="fw-bold text-dark">{{ cert.fecha_expiracion_cert | date:'dd MMM, yyyy' }}</span>
-                    <span class="text-muted small">{{ cert.fecha_expiracion_cert | date:'shortTime' }}</span>
-                 </div>
-              </td>
-
-              <!-- Días Restantes -->
-              <td>
-                <div class="d-flex align-items-center gap-2">
-                    <div class="progress flex-grow-1" style="height: 6px; width: 80px; background-color: #e2e8f0;">
-                        <div class="progress-bar rounded-pill" role="progressbar" 
-                             [style.width.%]="getExpiryProgress(cert.days_until_expiry)"
-                             [ngClass]="{
-                                'bg-success': (cert.days_until_expiry || 0) > 30,
-                                'bg-warning': (cert.days_until_expiry || 0) <= 30 && (cert.days_until_expiry || 0) > 0,
-                                'bg-danger': (cert.days_until_expiry || 0) <= 0
-                             }">
-                        </div>
+                    <div class="text-truncate">
+                      <span class="fw-bold text-dark d-block mb-0 text-truncate" [title]="cert.empresa_nombre || 'No asignada'">
+                        {{ cert.empresa_nombre || 'No asignada' }}
+                      </span>
+                      <small class="text-muted d-flex align-items-center gap-1" style="font-size: 0.7rem;">
+                        <i class="bi bi-hash"></i> {{ cert.empresa_ruc || 'Sin RUC' }}
+                      </small>
                     </div>
-                    <span class="fw-bold small" 
-                          [ngClass]="{
-                             'text-danger': (cert.days_until_expiry || 0) <= 0,
-                             'text-warning': (cert.days_until_expiry || 0) > 0 && (cert.days_until_expiry || 0) <= 30,
-                             'text-success': (cert.days_until_expiry || 0) > 30
-                          }">{{ (cert.days_until_expiry || 0) > 0 ? (cert.days_until_expiry + ' días') : 'VENCIDO' }}</span>
-                </div>
-              </td>
-
-              <!-- Acciones -->
-              <td class="text-end pe-4">
-                 <div class="dropdown">
-                    <button class="btn-trigger-lux dropdown-toggle-kebab" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                       <i class="bi bi-three-dots-vertical"></i>
-                    </button>
-                    <ul class="dropdown-menu dropdown-menu-end border-0 shadow-sm rounded-4" style="min-width: 180px;">
-                       <li>
-                          <button class="dropdown-item d-flex align-items-center gap-2 py-2" (click)="onViewDetails.emit(cert)">
-                             <i class="bi bi-eye text-primary"></i> Ver detalles
-                          </button>
-                       </li>
-                    </ul>
-                 </div>
-              </td>
-
-            </tr>
-          </tbody>
-          <!-- Empty State -->
-          <tfoot *ngIf="certificados.length === 0">
-            <tr>
-              <td colspan="6" class="text-center py-5">
-                <div class="d-flex flex-column align-items-center opacity-50">
-                  <i class="bi bi-shield-x display-4 mb-2 text-secondary"></i>
-                  <h6 class="text-secondary fw-bold">No se encontraron certificados</h6>
-                  <p class="small text-muted mb-0">Intenta ajustar los filtros de búsqueda</p>
-                </div>
-              </td>
-            </tr>
-          </tfoot>
-        </table>
+                  </div>
+                </td>
+  
+                <!-- Estado SRI -->
+                <td>
+                   <div class="d-flex flex-column gap-1">
+                      <span class="badge-status-premium" [ngClass]="getStatusClass(cert)">
+                          {{ cert.estado }}
+                      </span>
+                      <small class="text-muted fw-bold ms-1" style="font-size: 0.65rem;">
+                          {{ cert.ambiente }}
+                      </small>
+                   </div>
+                </td>
+  
+                <!-- Vencimiento -->
+                <td>
+                   <div class="d-flex flex-column">
+                      <span class="text-dark fw-600" style="font-size: 0.85rem;">{{ cert.fecha_expiracion_cert | date:'dd MMM, yyyy' }}</span>
+                      <small class="text-muted" style="font-size: 0.7rem;">{{ cert.fecha_expiracion_cert | date:'shortTime' }}</small>
+                   </div>
+                </td>
+  
+                <!-- Días Restantes -->
+                <td>
+                  <div class="d-flex align-items-center gap-2">
+                      <div class="progress flex-grow-1" style="height: 6px; width: 60px; background-color: var(--border-color);">
+                          <div class="progress-bar rounded-pill" role="progressbar" 
+                               [style.width.%]="getExpiryProgress(cert.days_until_expiry)"
+                               [ngClass]="{
+                                  'bg-success': (cert.days_until_expiry || 0) > 30,
+                                  'bg-warning': (cert.days_until_expiry || 0) <= 30 && (cert.days_until_expiry || 0) > 0,
+                                  'bg-danger': (cert.days_until_expiry || 0) <= 0
+                               }">
+                          </div>
+                      </div>
+                      <span class="fw-bold fs-7" 
+                            [ngClass]="{
+                               'text-danger': (cert.days_until_expiry || 0) <= 0,
+                               'text-warning': (cert.days_until_expiry || 0) > 0 && (cert.days_until_expiry || 0) <= 30,
+                               'text-success': (cert.days_until_expiry || 0) > 30
+                            }">{{ (cert.days_until_expiry || 0) > 0 ? (cert.days_until_expiry + 'd') : 'VENCIDO' }}</span>
+                  </div>
+                </td>
+  
+                <!-- Acciones -->
+                <td class="text-end">
+                   <div class="dropdown">
+                      <button 
+                        class="btn-action-trigger" 
+                        type="button" 
+                        data-bs-toggle="dropdown" 
+                        aria-expanded="false"
+                        data-bs-popper-config='{"strategy":"fixed"}'
+                      >
+                         <i class="bi bi-three-dots"></i>
+                      </button>
+                      <ul class="dropdown-menu dropdown-menu-end border-0 p-2 rounded-4">
+                         <li>
+                            <button class="dropdown-item rounded-3 py-2" (click)="onViewDetails.emit(cert)">
+                               <i class="bi bi-eye text-corporate"></i>
+                               <span class="ms-2">Ver Detalles</span>
+                            </button>
+                         </li>
+                         <li *ngIf="false">
+                           <button class="dropdown-item rounded-3 py-2" (click)="onViewHistory.emit(cert)">
+                              <i class="bi bi-clock-history text-corporate"></i>
+                              <span class="ms-2">Historial</span>
+                           </button>
+                         </li>
+                      </ul>
+                   </div>
+                </td>
+  
+              </tr>
+              <tr *ngIf="certificados.length === 0">
+                <td colspan="5" class="text-center p-5 text-muted">
+                  <i class="bi bi-shield-x fs-1 d-block mb-3"></i>
+                  No se encontraron certificados configurados.
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </div>
-    </div>
+    </section>
   `,
     styles: [`
-    .table-container-lux {
-      background: white; border: 1px solid #f1f5f9; border-radius: 24px;
-      overflow: visible; margin-top: 1rem;
+    :host {
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      min-height: 0;
+      width: 100%;
     }
-    .table-responsive { overflow: visible; }
+    .module-table { 
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+    }
+    .table-container {
+      background: var(--bg-main, #ffffff);
+      border-radius: 20px;
+      border: 1px solid var(--border-color, #f1f5f9);
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+      overflow: hidden;
+    }
+    .table-responsive-premium { 
+      flex: 1;
+      overflow-y: auto; 
+      overflow-x: auto;
+      position: relative; 
+    }
     .table thead th {
-      background: #fcfdfe; padding: 1.25rem 1rem; font-size: 0.65rem;
-      text-transform: uppercase; letter-spacing: 1px; color: #94a3b8;
-      font-weight: 800; border-bottom: 1px solid #f1f5f9;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      background: var(--bg-main, #ffffff);
+      padding: 1rem 1.5rem;
+      font-size: var(--text-base);
+      color: #0f172a;
+      font-weight: 600;
+      border-bottom: 2px solid var(--border-color, #f1f5f9);
     }
-    .row-lux { transition: background-color 0.2s; }
-    .row-lux:hover { background-color: #f8fafc; }
-    .table tbody td { padding: 1.25rem 1rem; border-bottom: 1px solid #fcfdfe; }
-    
-    .avatar-soft-lux {
-      width: 36px; height: 36px; border-radius: 10px; display: flex;
-      align-items: center; justify-content: center; font-weight: 800; font-size: 0.75rem;
+    .table tbody td {
+      padding: 1.25rem 1.5rem;
+      border-bottom: 1px solid var(--border-color, #f1f5f9);
+      color: var(--text-muted, #475569);
+      font-size: var(--text-md);
     }
     
-    .badge-status-lux {
-      display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.4rem 0.8rem;
-      border-radius: 10px; font-size: 0.7rem; font-weight: 800; text-transform: uppercase;
+    .avatar-soft-premium {
+      width: 38px; height: 38px;
+      border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 700; font-size: var(--text-base);
+      background: var(--primary-color, #161d35);
+      color: #ffffff;
     }
-    .badge-status-lux .dot { width: 6px; height: 6px; border-radius: 50%; }
     
-    .status-autorizada { background: #ecfdf5; color: #065f46; }
-    .status-autorizada .dot { background: #10b981; }
-    .status-proceso { background: #fffbeb; color: #92400e; }
-    .status-proceso .dot { background: #f59e0b; }
-    .status-error { background: #fef2f2; color: #991b1b; }
-    .status-error .dot { background: #ef4444; }
+    .badge-status-premium {
+      padding: 0.25rem 0.75rem;
+      border-radius: 6px;
+      font-size: var(--text-sm);
+      font-weight: 600;
+      display: inline-block;
+      text-transform: uppercase;
+    }
+    .badge-status-premium.activo { background: var(--status-success-bg, #dcfce7); color: var(--status-success-text, #15803d); }
+    .badge-status-premium.vencido { background: var(--status-danger-bg, #fee2e2); color: var(--status-danger-text, #b91c1c); }
+    .badge-status-premium.por-vencer { background: var(--status-warning-bg, #fef3c7); color: var(--status-warning-text, #92400e); }
 
-    .btn-trigger-lux {
-      background: transparent; border: none; width: 32px; height: 32px;
-      border-radius: 8px; color: #94a3b8; transition: all 0.2s;
+    .btn-action-trigger {
+      background: transparent; border: none;
+      width: 32px; height: 32px;
+      border-radius: 8px; color: #94a3b8;
+      transition: all 0.2s;
     }
-    .btn-trigger-lux:hover { background: #f1f5f9; color: #161d35; }
+    .btn-action-trigger:hover {
+      background: #f8fafc; color: #0f172a;
+    }
     
-    /* Hide dropdown toggle caret */
-    .dropdown-toggle-kebab::after {
-      display: none;
+    .dropdown-item {
+      display: flex; align-items: center; padding: 0.5rem 1rem;
+      font-size: var(--text-base); font-weight: 500;
+      color: var(--text-muted); cursor: pointer;
     }
+    .dropdown-item i { font-size: 1.1rem; margin-right: 0.75rem; }
+    .dropdown-item:hover { background: #f8fafc; color: #0f172a; }
+
+    .bg-success { background-color: var(--status-success) !important; }
+    .bg-warning { background-color: var(--status-warning) !important; }
+    .bg-danger { background-color: var(--status-danger) !important; }
+    .text-success { color: var(--status-success) !important; }
+    .text-warning { color: var(--status-warning) !important; }
+    .text-danger { color: var(--status-danger) !important; }
+    
+    .fw-600 { font-weight: 600; }
+    .text-corporate { color: var(--primary-color) !important; }
+    .fs-7 { font-size: 0.8rem; }
   `]
 })
 export class CertTableComponent {
@@ -165,9 +227,9 @@ export class CertTableComponent {
     @Output() onViewDetails = new EventEmitter<SriCertConfig>();
 
     getStatusClass(cert: SriCertConfig): string {
-        if (cert.estado === 'ACTIVO' && (cert.days_until_expiry || 0) > 30) return 'status-autorizada';
-        if (cert.estado === 'ACTIVO' && (cert.days_until_expiry || 0) <= 30) return 'status-proceso';
-        return 'status-error'; // Vencido o revocado
+        if (cert.estado === 'ACTIVO' && (cert.days_until_expiry || 0) > 30) return 'activo';
+        if (cert.estado === 'ACTIVO' && (cert.days_until_expiry || 0) <= 30) return 'por-vencer';
+        return 'vencido'; // Vencido o revocado
     }
 
     getExpiryProgress(days: number | undefined): number {

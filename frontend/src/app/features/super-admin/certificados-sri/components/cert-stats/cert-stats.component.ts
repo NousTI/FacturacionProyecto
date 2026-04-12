@@ -6,9 +6,9 @@ import { CommonModule } from '@angular/common';
     standalone: true,
     imports: [CommonModule],
     template: `
-    <div class="stats-compact-row mb-4">
+    <div class="stats-compact-row">
       <div class="stat-item-mini">
-        <div class="icon-circle" style="background: rgba(22, 29, 53, 0.05); color: #161d35;">
+        <div class="icon-circle" style="background: rgba(22, 29, 53, 0.1); color: var(--primary-color);">
           <i class="bi bi-shield-check"></i>
         </div>
         <div class="stat-info">
@@ -16,49 +16,52 @@ import { CommonModule } from '@angular/common';
           <span class="stat-value">{{ stats.total || 0 }}</span>
         </div>
       </div>
-
+  
       <div class="stat-divider"></div>
-
+  
       <div class="stat-item-mini">
-        <div class="icon-circle" style="background: rgba(16, 185, 129, 0.1); color: #10b981;">
+        <div class="icon-circle" style="background: rgba(16, 185, 129, 0.1); color: var(--status-success);">
           <i class="bi bi-check-lg"></i>
         </div>
         <div class="stat-info">
           <span class="stat-label">Vigentes</span>
-          <span class="stat-value">{{ stats.active || 0 }}</span>
+          <span class="stat-value text-success">{{ stats.active || 0 }}</span>
         </div>
       </div>
-
+  
       <div class="stat-divider"></div>
-
+  
       <div class="stat-item-mini">
-        <div class="icon-circle" style="background: rgba(245, 158, 11, 0.1); color: #f59e0b;">
+        <div class="icon-circle" style="background: rgba(245, 158, 11, 0.1); color: var(--status-warning);">
             <i class="bi bi-exclamation-lg"></i>
         </div>
         <div class="stat-info">
           <span class="stat-label">Por Vencer (< 30d)</span>
-          <span class="stat-value">{{ stats.expiring || 0 }}</span>
+          <span class="stat-value text-warning">{{ stats.expiring || 0 }}</span>
         </div>
       </div>
-
+  
       <div class="stat-divider"></div>
-
+  
       <div class="stat-item-mini">
-        <div class="icon-circle" style="background: rgba(239, 68, 68, 0.1); color: #ef4444;">
+        <div class="icon-circle" style="background: rgba(239, 68, 68, 0.1); color: var(--status-danger);">
           <i class="bi bi-x-lg"></i>
         </div>
         <div class="stat-info">
           <span class="stat-label">Vencidos / Revocados</span>
-          <span class="stat-value">{{ stats.expired || 0 }}</span>
+          <span class="stat-value text-danger">{{ stats.expired || 0 }}</span>
         </div>
       </div>
     </div>
   `,
     styles: [`
+    :host {
+      display: block;
+    }
     .stats-compact-row {
       background: white; border-radius: 20px; padding: 1.25rem 2rem;
       display: flex; align-items: center; justify-content: space-between;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03); border: 1px solid #f1f5f9;
+      border: 1px solid var(--border-color, #f1f5f9);
     }
     .stat-item-mini { display: flex; align-items: center; gap: 1.1rem; flex: 1; }
     .icon-circle {
@@ -70,6 +73,11 @@ import { CommonModule } from '@angular/common';
       font-size: 0.65rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px;
     }
     .stat-value { font-size: 1.35rem; font-weight: 800; color: #1e293b; line-height: 1.2; }
+    
+    .text-success { color: var(--status-success) !important; }
+    .text-warning { color: var(--status-warning) !important; }
+    .text-danger { color: var(--status-danger) !important; }
+
     .stat-divider { width: 1px; height: 35px; background: #f1f5f9; margin: 0 1.5rem; }
     
     @media (max-width: 992px) {

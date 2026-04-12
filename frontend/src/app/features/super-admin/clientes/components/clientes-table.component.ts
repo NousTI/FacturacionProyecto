@@ -62,6 +62,7 @@ import { ClienteUsuario } from '../services/clientes.service';
                       [id]="'actions-' + cliente.id" 
                       data-bs-toggle="dropdown" 
                       aria-expanded="false"
+                      data-bs-popper-config='{"strategy":"fixed"}'
                     >
                       <i class="bi bi-three-dots"></i>
                     </button>

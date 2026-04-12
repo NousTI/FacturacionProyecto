@@ -7,64 +7,79 @@ import { Suscripcion } from '../../services/suscripcion.service';
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <section class="module-table">
-      <div class="table-container border-0 shadow-premium">
+      <div class="table-container">
         <div class="table-responsive-premium">
           <table class="table mb-0 align-middle">
             <thead>
               <tr>
-                <th>Empresa</th>
-                <th>Plan</th>
-                <th style="width: 130px">Inicio</th>
-                <th style="width: 130px">Vencimiento</th>
-                <th style="width: 120px">Pago</th>
-                <th style="width: 120px">Estado</th>
-                <th class="text-end" style="width: 100px">Acciones</th>
+                <th style="width: 280px">Empresa</th>
+                <th style="width: 180px">Plan / Precio</th>
+                <th style="width: 150px">Inicio</th>
+                <th style="width: 150px">Vencimiento</th>
+                <th style="width: 130px">Pago</th>
+                <th style="width: 130px">Estado</th>
+                <th class="text-end" style="width: 80px">Acciones</th>
               </tr>
             </thead>
             <tbody>
-              <tr *ngFor="let sub of suscripciones; trackBy: trackById" class="">
+              <tr *ngFor="let sub of suscripciones; trackBy: trackById">
+                <!-- Empresa -->
                 <td>
                   <div class="d-flex align-items-center">
-                    <div class="empresa-icon me-3">
-                      <i class="bi bi-building"></i>
+                    <div class="avatar-soft-premium me-2">
+                       <i class="bi bi-building"></i>
                     </div>
-                    <div>
-                      <span class="fw-bold text-dark d-block mb-0">{{ sub.empresa_nombre || 'Empresa Desconocida' }}</span>
-                      <small class="text-muted d-block" style="font-size: 0.75rem;">
+                    <div class="text-truncate">
+                      <span class="fw-bold text-dark d-block mb-0 text-truncate" [title]="sub.empresa_nombre || 'Empresa Desconocida'">
+                        {{ sub.empresa_nombre || 'Empresa Desconocida' }}
+                      </span>
+                      <small class="text-muted" style="font-size: 0.7rem;">
                         ID: {{ sub.empresa_id.substring(0,8) }}...
                       </small>
                     </div>
                   </div>
                 </td>
-                <td>
-                  <span class="badge-cycle">{{ sub.plan_nombre || 'Sin Plan' }}</span>
-                  <div class="mt-1" *ngIf="sub.precio_plan">
-                    <small class="text-muted">{{ sub.precio_plan | currency:'USD' }}/año</small>
-                  </div>
-                </td>
+
+                <!-- Plan -->
                 <td>
                   <div class="d-flex flex-column">
-                    <span class="fw-800 text-muted" style="font-size: 0.85rem;">{{ sub.fecha_inicio ? (sub.fecha_inicio | date:'dd MMM yyyy') : '-' }}</span>
+                    <span class="text-dark fw-600" style="font-size: 0.85rem;">{{ sub.plan_nombre || 'Sin Plan' }}</span>
+                    <small class="text-muted" *ngIf="sub.precio_plan">{{ sub.precio_plan | currency:'USD' }} / año</small>
                   </div>
                 </td>
+
+                <!-- Inicio -->
+                <td>
+                   <span class="text-muted fw-600" style="font-size: 0.85rem;">{{ sub.fecha_inicio ? (sub.fecha_inicio | date:'dd MMM, yyyy') : '-' }}</span>
+                </td>
+
+                <!-- Vencimiento -->
                 <td>
                   <div class="d-flex flex-column">
-                    <span class="fw-800 text-dark">{{ sub.fecha_fin ? (sub.fecha_fin | date:'dd MMM yyyy') : '-' }}</span>
-                    <small class="text-muted" *ngIf="sub.fecha_fin && isOverdue(sub.fecha_fin)">
-                      <i class="bi bi-exclamation-triangle-fill text-danger me-1"></i> <span class="text-danger">Vencido</span>
+                    <span class="fw-bold" [class.text-danger]="sub.fecha_fin && isOverdue(sub.fecha_fin)" style="font-size: 0.85rem;">
+                       {{ sub.fecha_fin ? (sub.fecha_fin | date:'dd MMM, yyyy') : '-' }}
+                    </span>
+                    <small class="text-danger fw-700" *ngIf="sub.fecha_fin && isOverdue(sub.fecha_fin)" style="font-size: 0.65rem;">
+                       VENCIDO
                     </small>
                   </div>
                 </td>
+
+                <!-- Pago -->
                 <td>
                     <span class="badge-pago" [ngClass]="sub.estado_pago?.toLowerCase()">
                         {{ sub.estado_pago || 'PENDIENTE' }}
                     </span>
                 </td>
+
+                <!-- Estado -->
                 <td>
                   <span class="badge-status-premium" [ngClass]="getStatusClass(sub.estado)">
                     {{ sub.estado }}
                   </span>
                 </td>
+
+                <!-- Acciones -->
                 <td class="text-end">
                   <div class="dropdown">
                     <button 
@@ -73,28 +88,29 @@ import { Suscripcion } from '../../services/suscripcion.service';
                       [id]="'actions-' + sub.id" 
                       data-bs-toggle="dropdown" 
                       aria-expanded="false"
+                      data-bs-popper-config='{"strategy":"fixed"}'
                     >
                       <i class="bi bi-three-dots"></i>
                     </button>
-                    <ul class="dropdown-menu dropdown-menu-end shadow-premium-lg border-0 p-2 rounded-4" [attr.aria-labelledby]="'actions-' + sub.id">
+                    <ul class="dropdown-menu dropdown-menu-end border-0 p-2 rounded-4" [attr.aria-labelledby]="'actions-' + sub.id">
                       <li>
-                        <a *ngIf="sub.estado_pago !== 'PAGADO'" class="dropdown-item rounded-3 py-2" href="javascript:void(0)" (click)="onRegistrarPago.emit(sub)">
+                        <button *ngIf="sub.estado_pago !== 'PAGADO'" class="dropdown-item rounded-3 py-2" (click)="onRegistrarPago.emit(sub)">
                           <i class="bi bi-currency-dollar text-success"></i>
                           <span class="ms-2">Registrar Pago</span>
-                        </a>
+                        </button>
                       </li>
                       <li>
-                        <a class="dropdown-item rounded-3 py-2" href="javascript:void(0)" (click)="onVerHistorial.emit(sub)">
+                        <button class="dropdown-item rounded-3 py-2" (click)="onVerHistorial.emit(sub)">
                           <i class="bi bi-clock-history text-corporate"></i>
                           <span class="ms-2">Historial de Pagos</span>
-                        </a>
+                        </button>
                       </li>
                       <li><hr class="dropdown-divider mx-2"></li>
                       <li>
-                         <a *ngIf="sub.estado !== 'CANCELADA' && sub.estado !== 'VENCIDA'" class="dropdown-item rounded-3 py-2" href="javascript:void(0)" (click)="onCancelar.emit(sub)">
+                         <button *ngIf="sub.estado !== 'CANCELADA' && sub.estado !== 'VENCIDA'" class="dropdown-item rounded-3 py-2" (click)="onCancelar.emit(sub)">
                           <i class="bi bi-x-circle-fill text-danger"></i>
                           <span class="ms-2">Cancelar Suscripción</span>
-                        </a>
+                        </button>
                       </li>
                     </ul>
                   </div>
@@ -105,7 +121,7 @@ import { Suscripcion } from '../../services/suscripcion.service';
           
           <div *ngIf="suscripciones.length === 0" class="text-center p-5 text-muted">
             <i class="bi bi-inbox fs-1 d-block mb-3"></i>
-            No se encontraron suscripciones.
+            No se encontraron suscripciones registradas.
           </div>
 
         </div>
@@ -113,109 +129,102 @@ import { Suscripcion } from '../../services/suscripcion.service';
     </section>
   `,
   styles: [`
-    .module-table { margin-top: 1rem; }
+    :host {
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      min-height: 0;
+      width: 100%;
+    }
+    .module-table { 
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+    }
     .table-container {
-      background: #ffffff;
-      border-radius: 24px;
-      border: 1px solid #f1f5f9;
-      overflow: visible !important;
+      background: var(--bg-main, #ffffff);
+      border-radius: 20px;
+      border: 1px solid var(--border-color, #f1f5f9);
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+      overflow: hidden;
     }
-    .table-responsive-premium { overflow: visible !important; }
+    .table-responsive-premium { 
+      flex: 1;
+      overflow-y: auto; 
+      overflow-x: auto;
+      position: relative; 
+    }
     .table thead th {
-      background: #f8fafc;
-      padding: 1.15rem 1.5rem;
-      font-size: 0.7rem;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      color: #94a3b8;
-      font-weight: 800;
-      border-bottom: 2px solid #f1f5f9;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      background: var(--bg-main, #ffffff);
+      padding: 1rem 1.5rem;
+      font-size: var(--text-base);
+      color: #0f172a;
+      font-weight: 600;
+      border-bottom: 2px solid var(--border-color, #f1f5f9);
     }
-    .table tbody tr {
-      position: relative;
-    }
-    .table tbody tr:focus-within,
-    .table tbody tr:hover {
-      z-index: 100;
-    }
-    .table tbody tr:has(.show),
-    .table tbody tr:has(.btn-action-trigger[aria-expanded="true"]) {
-      z-index: 10001 !important;
-    }
-
     .table tbody td {
       padding: 1.25rem 1.5rem;
-      border-bottom: 1px solid #f8fafc;
-      background: transparent;
+      border-bottom: 1px solid var(--border-color, #f1f5f9);
+      color: var(--text-muted, #475569);
+      font-size: var(--text-md);
     }
     
-    .empresa-icon {
-      width: 40px; height: 40px;
+    .avatar-soft-premium {
+      width: 38px; height: 38px;
       border-radius: 12px;
-      background: #f1f5f9;
-      color: #64748b;
       display: flex; align-items: center; justify-content: center;
-      font-size: 1.1rem;
-    }
-
-    .badge-cycle {
-      background: #f1f5f9;
-      color: #475569;
-      padding: 0.35rem 0.75rem;
-      border-radius: 8px;
-      font-size: 0.75rem;
-      font-weight: 700;
-      text-transform: uppercase;
+      font-weight: 700; font-size: 1rem;
+      background: var(--primary-color, #161d35);
+      color: #ffffff;
     }
 
     .badge-status-premium {
-      padding: 0.4rem 0.85rem; border-radius: 100px;
-      font-size: 0.75rem; font-weight: 800;
+      padding: 0.25rem 0.75rem;
+      border-radius: 6px;
+      font-size: var(--text-sm);
+      font-weight: 600;
+      display: inline-block;
+      text-transform: uppercase;
     }
-    .badge-status-premium.activa { background: #dcfce7; color: #15803d; }
-    .badge-status-premium.vencida { background: #fee2e2; color: #b91c1c; }
-    .badge-status-premium.cancelada { background: #f1f5f9; color: #64748b; }
-    .badge-status-premium.suspendida { background: #f8fafc; color: #475569; text-decoration: line-through; }
+    .badge-status-premium.activa { background: var(--status-success-bg, #dcfce7); color: var(--status-success-text, #15803d); }
+    .badge-status-premium.vencida { background: var(--status-danger-bg, #fee2e2); color: var(--status-danger-text, #b91c1c); }
+    .badge-status-premium.cancelada { background: var(--border-color, #f1f5f9); color: var(--text-muted, #64748b); }
+    .badge-status-premium.suspendida { background: var(--bg-main, #f8fafc); color: var(--text-muted, #475569); text-decoration: line-through; }
     
     .badge-pago {
         padding: 0.3rem 0.6rem; border-radius: 6px; font-size: 0.7rem; font-weight: 700; text-transform: uppercase;
     }
     .badge-pago.pagado { background: #eff6ff; color: #1d4ed8; border: 1px solid #dbeafe; }
     .badge-pago.pendiente { background: #fff7ed; color: #c2410c; border: 1px solid #ffedd5; }
-    .badge-pago.atrasado { background: #fef2f2; color: #b91c1c; border: 1px solid #fee2e2; }
-    
+    .badge-pago.atrasado { background: var(--status-danger-bg, #fee2e2); color: var(--status-danger-text, #b91c1c); border: 1px solid #fecaca; }
+
     .btn-action-trigger {
-      background: #f8fafc; border: none;
+      background: transparent; border: none;
       width: 32px; height: 32px;
       border-radius: 8px; color: #94a3b8;
       transition: all 0.2s;
     }
     .btn-action-trigger:hover, .btn-action-trigger[aria-expanded="true"] {
-      background: #161d35; color: #ffffff;
-    }
-    
-    .dropdown-menu {
-      z-index: 10005 !important;
-      min-width: 230px;
-      border: 1px solid #e2e8f0 !important;
-      box-shadow: 0 15px 35px rgba(22, 29, 53, 0.15) !important;
-      margin-top: 5px !important;
-      pointer-events: auto !important;
+      background: #f8fafc; color: #0f172a;
     }
 
     .dropdown-item {
-      font-size: 0.85rem; font-weight: 600;
-      color: #475569; padding: 0.65rem 1.15rem;
-      display: flex; align-items: center;
-      cursor: pointer;
+      display: flex; align-items: center; padding: 0.5rem 1rem;
+      font-size: var(--text-base); font-weight: 500;
+      color: var(--text-muted); cursor: pointer; border: none; background: transparent; width: 100%; text-align: left;
     }
-    .dropdown-item:hover {
-      background: #f8fafc; color: #161d35;
-    }
-    .text-corporate { color: #161d35 !important; }
-    .fw-800 { font-weight: 800; }
-    .shadow-premium { box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.04); }
-    .shadow-premium-lg { box-shadow: 0 20px 40px -15px rgba(0, 10, 30, 0.15); }
+    .dropdown-item i { font-size: 1.1rem; margin-right: 0.75rem; }
+    .dropdown-item:hover { background: #f8fafc; color: #0f172a; }
+
+    .fw-600 { font-weight: 600; }
+    .fw-700 { font-weight: 700; }
+    .text-corporate { color: var(--primary-color) !important; }
   `],
   standalone: true,
   imports: [CommonModule]

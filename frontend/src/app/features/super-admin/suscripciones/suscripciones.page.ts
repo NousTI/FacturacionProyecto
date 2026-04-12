@@ -6,6 +6,7 @@ import { forkJoin, map } from 'rxjs';
 // Components
 import { SuscripcionStatsComponent } from './components/suscripcion-stats/suscripcion-stats.component';
 import { SuscripcionTableComponent } from './components/suscripcion-table/suscripcion-table.component';
+import { SuscripcionActionsComponent } from './components/suscripcion-actions/suscripcion-actions.component';
 import { RegistroPagoModalComponent } from './components/registro-pago-modal/registro-pago-modal.component';
 import { HistorialPagosModalComponent } from './components/historial-pagos-modal/historial-pagos-modal.component';
 import { SuscripcionHistoryModalComponent } from './components/history-modal/history-modal.component';
@@ -24,6 +25,7 @@ import { UiService } from '../../../shared/services/ui.service';
         FormsModule,
         SuscripcionStatsComponent,
         SuscripcionTableComponent,
+        SuscripcionActionsComponent,
         RegistroPagoModalComponent,
         HistorialPagosModalComponent,
         SuscripcionHistoryModalComponent,
@@ -33,47 +35,19 @@ import { UiService } from '../../../shared/services/ui.service';
     template: `
     <div class="suscripciones-page-container animate__animated animate__fadeIn">
       
-      <!-- 1. ESTADÍSTICAS -->
+      <!-- 1. Stats -->
       <app-suscripcion-stats [stats]="stats"></app-suscripcion-stats>
 
-      <!-- 2. CONTROL Y FILTROS -->
-      <div class="d-flex justify-content-between align-items-center mb-4">
-        <!-- Search and Maintenance -->
-        <div class="d-flex align-items-center gap-3">
-          <div class="search-box">
-            <i class="bi bi-search search-icon"></i>
-            <input 
-              type="text" 
-              class="form-control search-input" 
-              placeholder="Buscar empresa..."
-              [(ngModel)]="searchQuery"
-            >
-          </div>
-          
-          <button 
-            class="btn-maintenance" 
-            (click)="ejecutarMantenimiento()" 
-            [disabled]="isRunningMaintenance"
-            title="Ejecutar limpieza de vencimientos"
-          >
-            <i class="bi" [class.bi-gear-fill]="!isRunningMaintenance" [class.spinner-border]="isRunningMaintenance" [class.spinner-border-sm]="isRunningMaintenance"></i>
-            <span class="ms-2 d-none d-md-inline">{{ isRunningMaintenance ? 'Procesando...' : 'Mantenimiento' }}</span>
-          </button>
-        </div>
+      <!-- 2. Actions (Search, Maintenance, Filters) -->
+      <app-suscripcion-actions
+        [(searchQuery)]="searchQuery"
+        [(filterStatus)]="filterStatus"
+        [isRunningMaintenance]="isRunningMaintenance"
+        (onMaintenance)="ejecutarMantenimiento()"
+        (onOpenHistory)="showHistorySectionModal = true"
+      ></app-suscripcion-actions>
 
-        <!-- Filter Tabs -->
-        <div class="filter-tabs d-flex gap-2">
-           <button class="btn-tab" (click)="showHistorySectionModal = true">
-             <i class="bi bi-clock-history me-1"></i> Historial
-           </button>
-           <div class="vr mx-1"></div>
-           <button class="btn-tab" [class.active]="filterStatus === 'ALL'" (click)="setFilter('ALL')">Todos</button>
-           <button class="btn-tab" [class.active]="filterStatus === 'ACTIVA'" (click)="setFilter('ACTIVA')">Activas</button>
-           <button class="btn-tab" [class.active]="filterStatus === 'VENCIDA'" (click)="setFilter('VENCIDA')">Vencidas</button>
-        </div>
-      </div>
-
-      <!-- 3. TABLA -->
+      <!-- 3. Table -->
       <app-suscripcion-table
         [suscripciones]="filteredSuscripciones"
         (onRegistrarPago)="openRegistroPago($event)"
@@ -82,8 +56,7 @@ import { UiService } from '../../../shared/services/ui.service';
         (onCancelar)="confirmarAccion($event, 'CANCELAR')"
       ></app-suscripcion-table>
 
-      <!-- 4. MODALES -->
-      
+      <!-- 4. Modals -->
       <!-- Registrar Pago -->
       <app-registro-pago-modal
         *ngIf="showRegistroPagoModal"
@@ -93,7 +66,7 @@ import { UiService } from '../../../shared/services/ui.service';
         (onClose)="showRegistroPagoModal = false"
       ></app-registro-pago-modal>
 
-      <!-- Historial -->
+      <!-- Historial de Pagos Empresa -->
       <app-historial-pagos-modal
         *ngIf="showHistorialModal"
         [companyName]="selectedSuscripcion?.empresa_nombre || ''"
@@ -125,57 +98,37 @@ import { UiService } from '../../../shared/services/ui.service';
       <!-- Loading Overlay -->
       <div *ngIf="globalLoading" class="loading-overlay">
          <div class="spinner-border text-primary" role="status"></div>
-         <span class="ms-3 fw-bold text-white fs-5">Cargando suscripciones...</span>
+         <p class="ms-3 fw-bold text-white fs-5 mb-0">Cargando suscripciones...</p>
       </div>
     </div>
   `,
     styles: [`
+    :host {
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      width: 100%;
+      overflow: hidden;
+      min-height: 0;
+    }
     .suscripciones-page-container {
-      padding: 0; 
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      background: var(--bg-main, #ffffff);
+      padding: 0;
+      overflow: hidden;
+      min-height: 0;
+      gap: 24px;
       position: relative;
-      min-height: 400px;
     }
-    .search-box {
-      position: relative;
-      width: 300px;
-    }
-    .search-icon {
-      position: absolute; left: 15px; top: 50%; transform: translateY(-50%);
-      color: #94a3b8; font-size: 1rem;
-    }
-    .search-input {
-      padding-left: 40px; border-radius: 12px; border: 1px solid #e2e8f0;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.02); height: 46px; font-size: 0.95rem;
-    }
-    .search-input:focus { border-color: #6366f1; box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1); }
-    
-    .btn-tab {
-      background: white; border: 1px solid #e2e8f0; color: #64748b;
-      padding: 0.5rem 1.25rem; border-radius: 10px; font-weight: 600; font-size: 0.9rem;
-      transition: all 0.2s;
-    }
-    .btn-tab.active {
-      background: #161d35; color: white; border-color: #161d35;
-    }
-    .btn-tab:hover:not(.active) { background: #f8fafc; }
-
-    .btn-maintenance {
-      background: #f8fafc; border: 1px solid #e2e8f0; color: #1e293b;
-      padding: 0.5rem 1rem; border-radius: 12px; font-weight: 700; font-size: 0.85rem;
-      transition: all 0.2s; display: flex; align-items: center; justify-content: center;
-      height: 46px;
-    }
-    .btn-maintenance:hover:not(:disabled) { background: #f1f5f9; border-color: #cbd5e1; transform: translateY(-1px); }
-    .btn-maintenance:disabled { opacity: 0.6; cursor: not-allowed; }
-    .btn-maintenance i { font-size: 1.1rem; }
-
     .loading-overlay {
       position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-      background: rgba(255,255,255,0.8); backdrop-filter: blur(2px);
+      background: rgba(0,0,0,0.4); backdrop-filter: blur(4px);
       display: flex; align-items: center; justify-content: center;
-      z-index: 50; border-radius: 20px;
+      z-index: 1060; border-radius: 20px;
     }
-  `]
+    `]
 })
 export class SuscripcionesPage implements OnInit {
     suscripciones: Suscripcion[] = [];

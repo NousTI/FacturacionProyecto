@@ -80,6 +80,10 @@ import { FormsModule } from '@angular/forms';
     :host {
       display: block;
     }
+    .actions-bar-container {
+      background: transparent;
+      border: none;
+    }
   `],
   standalone: true,
   imports: [CommonModule, FormsModule]
