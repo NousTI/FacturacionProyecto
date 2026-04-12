@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, Output, OnInit, OnDestroy } from '@angular/core';
+import { Component, EventEmitter, Input, Output, OnInit, OnDestroy, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Permiso } from '../../../../domain/models/perfil.model';
 import { PermissionItemComponent } from './permission-item.component';
@@ -6,30 +6,31 @@ import { PermissionItemComponent } from './permission-item.component';
 @Component({
   selector: 'app-profile-permissions-modal',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommonModule, PermissionItemComponent],
   template: `
-    <div class="modal-overlay animate__animated animate__fadeIn animate__faster" (click)="close()">
-      <div class="modal-container-lux" (click)="$event.stopPropagation()">
+    <div class="editorial-modal-overlay" (click)="close()">
+      <div class="editorial-modal-container" (click)="$event.stopPropagation()">
         
-        <div class="modal-header-lux">
-          <div class="module-header">
-            <div class="module-icon-large" [ngClass]="getModuleIcon(modulo)">
+        <div class="editorial-modal-header border-0 bg-transparent px-4 pt-4 pb-2">
+          <div class="d-flex align-items-center gap-3">
+            <div class="editorial-module-icon-orb" [ngClass]="getModuleIcon(modulo)">
               <i class="bi" [ngClass]="getModuleIconClass(modulo)"></i>
             </div>
-            <div class="module-info-text">
-              <h2 class="module-name text-uppercase">{{ modulo }}</h2>
-              <span class="module-stats">
-                {{ getGrantedCount() }} de {{ permisos.length }} permisos concedidos
+            <div class="module-title-wrap">
+              <h2 class="h4 fw-bold mb-0 text-uppercase">{{ modulo }}</h2>
+              <span class="editorial-badge secondary small">
+                {{ getGrantedCount() }} concedidos de {{ permisos.length }}
               </span>
             </div>
           </div>
-          <button (click)="close()" class="btn-close-lux">
+          <button (click)="close()" class="btn-editorial-close">
             <i class="bi bi-x"></i>
           </button>
         </div>
 
-        <div class="modal-body-lux scroll-custom">
-          <div class="permisos-list">
+        <div class="editorial-modal-body px-4 py-3 scroll-custom">
+          <div class="permissions-editorial-stack">
             <app-permission-item 
               *ngFor="let perm of permisos" 
               [permiso]="perm">
@@ -37,72 +38,65 @@ import { PermissionItemComponent } from './permission-item.component';
           </div>
           
           <div *ngIf="permisos.length === 0" class="text-center py-5">
-            <i class="bi bi-info-circle fs-2 text-muted mb-2 d-block"></i>
-            <p class="text-muted">No se encontraron permisos en este módulo.</p>
+            <i class="bi bi-shield-slash fs-1 opacity-25 d-block mb-3"></i>
+            <p class="text-muted fw-bold">No hay permisos definidos para este módulo.</p>
           </div>
         </div>
 
-        <div class="modal-footer-lux">
-          <button (click)="close()" class="btn-primary-lux px-4">Cerrar</button>
+        <div class="editorial-modal-footer px-4 py-3 border-0 bg-transparent d-flex justify-content-end">
+          <button (click)="close()" class="btn-editorial-action px-5">Entendido</button>
         </div>
       </div>
     </div>
   `,
-    styles: [`
-    .modal-overlay {
+  styles: [`
+    .editorial-modal-overlay {
       position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-      background: rgba(15, 23, 53, 0.4); backdrop-filter: blur(10px);
-      display: flex; align-items: center; justify-content: center; z-index: 99999; padding: 1rem;
+      background: rgba(15, 23, 42, 0.45); backdrop-filter: blur(8px);
+      display: flex; align-items: center; justify-content: center; z-index: 99999; padding: 1.5rem;
     }
-    .modal-container-lux {
-      background: #ffffff; width: 750px;
-      max-width: 95vw; max-height: 90vh; border-radius: 32px;
+    .editorial-modal-container {
+      background: white; width: 800px;
+      max-width: 100%; max-height: 85vh; border-radius: 32px;
       display: flex; flex-direction: column; overflow: hidden;
-      box-shadow: 0 50px 100px -20px rgba(15, 23, 53, 0.3);
+      box-shadow: 0 40px 100px -20px rgba(0,0,0,0.25);
     }
-    .modal-header-lux {
-      background: linear-gradient(to right, #f8fafc, #ffffff);
-      padding: 2rem 2.5rem; display: flex; justify-content: space-between; align-items: center;
-      border-bottom: 1px solid #f1f5f9;
-    }
-    .module-header { display: flex; align-items: center; gap: 1.5rem; }
-    .module-icon-large {
-      width: 64px; height: 64px; border-radius: 20px;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 2rem;
-    }
-    .module-icon-large.clientes { background: #eff6ff; color: #2563eb; }
-    .module-icon-large.productos { background: #fdf2f8; color: #db2777; }
-    .module-icon-large.facturas { background: #ecfdf5; color: #059669; }
-    .module-icon-large.configuracion { background: #f1f5f9; color: #475569; }
-    .module-icon-large.default { background: #f8fafc; color: #94a3b8; }
-
-    .module-name { font-size: 1.5rem; font-weight: 800; color: #161d35; margin: 0; letter-spacing: -0.5px; }
-    .module-stats { font-size: 0.85rem; font-weight: 600; color: #64748b; }
-
-    .btn-close-lux { background: white; border: 1.5px solid #f1f5f9; width: 44px; height: 44px; border-radius: 12px; color: #64748b; font-size: 1.25rem; }
+    .editorial-modal-header { display: flex; justify-content: space-between; align-items: flex-start; }
     
-    .modal-body-lux { padding: 2.5rem; overflow-y: auto; flex: 1; background: #fafbfc; }
-    
-    .permisos-list {
-      display: flex;
-      flex-direction: column;
-      gap: 1rem;
+    .editorial-module-icon-orb {
+      width: 56px; height: 56px; border-radius: 18px;
+      display: flex; align-items: center; justify-content: center; font-size: 1.75rem;
+      &.clientes { background: #eff6ff; color: #3b82f6; }
+      &.productos { background: #fdf2f8; color: #db2777; }
+      &.facturas { background: #ecfdf5; color: #10b981; }
+      &.configuracion { background: #f1f5f9; color: #64748b; }
+      &.default { background: #f8fafc; color: #94a3b8; }
     }
 
-    .modal-footer-lux { padding: 1.5rem 2.5rem; border-top: 1px solid #f1f5f9; display: flex; justify-content: flex-end; background: white; }
-    .btn-primary-lux { background: #161d35; color: white; border: none; height: 48px; border-radius: 14px; font-weight: 700; transition: all 0.2s; }
-    .btn-primary-lux:hover { background: #262f4d; transform: translateY(-1px); }
+    .btn-editorial-close {
+      background: #f1f5f9; border: none; width: 42px; height: 42px;
+      border-radius: 12px; color: #64748b; font-size: 1.5rem;
+      transition: all 0.2s;
+      &:hover { background: #e2e8f0; color: #1e293b; }
+    }
     
+    .editorial-modal-body { overflow-y: auto; flex: 1; }
+    .permissions-editorial-stack { display: flex; flex-direction: column; gap: 0.85rem; }
+    
+    .btn-editorial-action {
+      background: #1e293b; color: white; border: none; height: 52px;
+      border-radius: 16px; font-weight: 850; font-size: 0.95rem;
+      transition: all 0.2s;
+      &:hover { transform: translateY(-2px); box-shadow: 0 10px 20px -5px rgba(0,0,0,0.2); }
+    }
+
+    .editorial-badge {
+      font-size: 0.65rem; font-weight: 900; padding: 3px 10px; border-radius: 8px;
+      &.secondary { background: #f1f5f9; color: #64748b; margin-top: 4px; display: inline-block; }
+    }
+
     .scroll-custom::-webkit-scrollbar { width: 6px; }
     .scroll-custom::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
-
-    @media (max-width: 768px) {
-      .modal-header-lux { padding: 1.5rem; }
-      .module-header { gap: 1rem; }
-      .module-icon-large { width: 48px; height: 48px; font-size: 1.5rem; }
-      .module-name { font-size: 1.25rem; }
-    }
   `]
 })
 export class ProfilePermissionsModalComponent implements OnInit, OnDestroy {

@@ -1,65 +1,95 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Subject, Observable } from 'rxjs';
+import { Subject, Observable, tap } from 'rxjs';
 import { AuthFacade } from '../../../core/auth/auth.facade';
 import { ProfileService } from './services/profile.service';
 import { PerfilUsuario } from '../../../domain/models/perfil.model';
 import { UiService } from '../../../shared/services/ui.service';
 
-// Components
-import { ProfileHeaderComponent } from './components/profile-header.component';
-import { ProfileEmpresaComponent } from './components/profile-empresa.component';
-import { ProfilePermissionsComponent } from './components/profile-permissions.component';
-import { ProfileAuditComponent } from './components/profile-audit.component';
+// New Modular Components
+import { ProfileInfoCardComponent } from './components/profile-info-card.component';
+import { ProfilePersonalDataCardComponent } from './components/profile-personal-data-card.component';
+import { ProfileSecurityCardComponent } from './components/profile-security-card.component';
+import { ProfileBusinessCardComponent } from './components/profile-business-card.component';
+import { ProfilePermissionsListCardComponent } from './components/profile-permissions-list-card.component';
 
 @Component({
   selector: 'app-profile',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     CommonModule,
-    ProfileHeaderComponent,
-    ProfileEmpresaComponent,
-    ProfilePermissionsComponent,
-    ProfileAuditComponent
+    ProfileInfoCardComponent,
+    ProfilePersonalDataCardComponent,
+    ProfileSecurityCardComponent,
+    ProfileBusinessCardComponent,
+    ProfilePermissionsListCardComponent
   ],
   template: `
-    <div class="profile-container">
+    <div class="profile-page-wrapper">
       
-      <!-- HEADER & MAIN DATA -->
+      <!-- LOADING STATE -->
       <ng-container *ngIf="perfil$ | async as perfil; else loadingTpl">
         
-        <div class="animate-fade-in">
-          <app-profile-header 
-              [perfil]="perfil"
-              [loading]="(loading$ | async) || false"
-              [isSaving]="isSaving"
-              (onUpdate)="updateProfile($event)"
-              (onChangePassword)="changePassword($event)">
-          </app-profile-header>
-
+        <div class="profile-main-layout animate-fade-in">
+          
           <!-- ALERT: CHANGE PASSWORD REQUIRED -->
-          <div *ngIf="perfil.requiere_cambio_password" class="alert-cambio-password mb-4 animate-fade-in shadow-sm">
+          <div *ngIf="perfil.requiere_cambio_password" class="editorial-alert-notice shadow-sm mb-4">
             <div class="d-flex align-items-center gap-3">
-              <div class="alert-icon">
+              <div class="alert-icon-wrapper warning">
                 <i class="bi bi-shield-lock-fill"></i>
               </div>
               <div class="flex-grow-1">
-                <h6 class="mb-1 fw-bold text-dark">Cambio de contraseña requerido</h6>
-                <p class="mb-0 text-muted small">Por motivos de seguridad, el administrador ha solicitado que actualices tu contraseña.</p>
+                <h6 class="mb-1 fw-bold">Seguridad: Cambio de contraseña requerido</h6>
+                <p class="mb-0 small opacity-75">Por motivos de seguridad, el sistema solicita que actualices tu contraseña de acceso.</p>
               </div>
             </div>
           </div>
 
           <div class="row g-4">
-            <!-- BOTTOM LEFT: Empresa & Audit -->
-            <div class="col-lg-5">
-              <app-profile-empresa [perfil]="perfil"></app-profile-empresa>
-              <app-profile-audit [perfil]="perfil"></app-profile-audit>
+            <!-- COLUMN 1 (LEFT) - Información básica y Empresa -->
+            <div class="col-lg-3 d-flex flex-column gap-4">
+              <app-profile-info-card 
+                [perfil]="perfil">
+              </app-profile-info-card>
+
+              <app-profile-business-card 
+                [perfil]="perfil">
+              </app-profile-business-card>
             </div>
 
-            <!-- RIGHT: Permissions Accordion -->
-            <div class="col-lg-7">
-              <app-profile-permissions [permisos]="perfil.permisos"></app-profile-permissions>
+            <!-- COLUMN 2 (CENTER) - Edición y Seguridad -->
+            <div class="col-lg-5 d-flex flex-column gap-4">
+              <app-profile-personal-data-card
+                #personalDataCard
+                [perfil]="perfil"
+                [isSaving]="isSaving"
+                (onSave)="saveProfileUpdate($event)">
+              </app-profile-personal-data-card>
+
+              <app-profile-security-card
+                #securityCard
+                [isSaving]="isSaving"
+                (onChangePassword)="savePasswordUpdate($event)">
+              </app-profile-security-card>
+
+              <!-- AUDIT SUMMARY -->
+              <div class="editorial-card audit-mini-card p-3">
+                 <div class="d-flex justify-content-between align-items-center opacity-75">
+                    <div class="d-flex align-items-center gap-2">
+                       <i class="bi bi-clock-history"></i>
+                       <span class="smallest-text">Registro: {{ perfil.created_at | date:'mediumDate' }}</span>
+                    </div>
+                    <div class="smallest-text">Estado: <strong>{{ perfil.activo ? 'ACTIVO' : 'INACTIVO' }}</strong></div>
+                 </div>
+              </div>
+            </div>
+
+            <!-- COLUMN 3 (RIGHT) - Alcance de Permisos -->
+            <div class="col-lg-4">
+              <app-profile-permissions-list-card
+                [permisos]="perfil.permisos || []">
+              </app-profile-permissions-list-card>
             </div>
           </div>
         </div>
@@ -68,58 +98,44 @@ import { ProfileAuditComponent } from './components/profile-audit.component';
 
       <!-- Loading Template -->
       <ng-template #loadingTpl>
-        <div class="loading-full">
-           <div class="lux-spinner"></div>
-           <p class="mt-3 fs-5 fw-bold text-muted">Cargando identidad del usuario...</p>
+        <div class="profile-loading-overlay">
+           <div class="editorial-spinner"></div>
+           <p class="mt-3 fs-6 fw-bold text-muted">Sincronizando identidad...</p>
         </div>
       </ng-template>
 
     </div>
   `,
   styles: [`
-    .profile-container {
-      max-width: 1400px;
-      margin: 0 auto;
-      padding: 1.5rem;
-      position: relative;
+    .editorial-alert-notice {
+      background: #fffbeb; border: 1px solid #fef3c7; padding: 1.5rem; border-radius: 20px; color: #92400e;
+    }
+    .alert-icon-wrapper {
+      width: 48px; height: 48px; display: flex; align-items: center; justify-content: center;
+      background: #fdf2f8; color: #db2777; border-radius: 14px; font-size: 1.25rem;
+      &.warning { background: #fef3c7; color: #d97706; }
     }
 
-    .loading-full {
-        height: 80vh;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
+    .profile-loading-overlay { height: 70vh; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+    .editorial-spinner {
+      width: 44px; height: 44px; border: 3.5px solid #f1f5f9; border-top-color: #1e293b; border-radius: 50%;
+      animation: spin 0.85s cubic-bezier(0.4, 0, 0.2, 1) infinite;
     }
+    @keyframes spin { to { transform: rotate(360deg); } }
 
-    .lux-spinner {
-      width: 50px; height: 50px;
-      border: 4px solid #f1f5f9;
-      border-top-color: #161d35;
-      border-radius: 50%;
-      animation: spin 1s linear infinite;
-    }
-
-    @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-    .animate-fade-in { animation: fadeIn 0.5s ease; }
+    .animate-fade-in { animation: fadeIn 0.4s ease-out; }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-    .alert-cambio-password {
-      background: #fff9db;
-      border-left: 6px solid #fab005;
-      padding: 1.25rem;
-      border-radius: 18px;
-    }
-    
-    .alert-icon {
-      width: 48px; height: 48px;
-      display: flex; align-items: center; justify-content: center;
-      background: #fab005; color: #fff;
-      border-radius: 14px; font-size: 1.25rem;
-    }
+    .audit-mini-card { background: #f8fafc; border: 1px solid #f1f5f9; border-radius: 16px; min-height: auto !important; }
+    .smallest-text { font-size: 0.7rem; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; }
+
+    @media (max-width: 768px) { .profile-page-wrapper { padding: 1rem; } }
   `]
 })
 export class ProfilePage implements OnInit, OnDestroy {
+  @ViewChild('personalDataCard') personalDataCard!: ProfilePersonalDataCardComponent;
+  @ViewChild('securityCard') securityCard!: ProfileSecurityCardComponent;
+
   perfil$: Observable<PerfilUsuario | null>;
   loading$: Observable<boolean>;
   isSaving = false;
@@ -128,13 +144,19 @@ export class ProfilePage implements OnInit, OnDestroy {
   constructor(
     private profileService: ProfileService,
     private authFacade: AuthFacade,
-    private uiService: UiService
+    private uiService: UiService,
+    private cdr: ChangeDetectorRef
   ) {
-    this.perfil$ = this.profileService.perfil$;
+    this.perfil$ = this.profileService.perfil$.pipe(
+      tap(() => {
+        this.cdr.markForCheck();
+      })
+    );
     this.loading$ = this.profileService.loading$;
   }
 
   ngOnInit() {
+    this.uiService.setPageHeader('Configuración de Perfil', 'Gestione su información personal y seguridad de la cuenta');
     this.profileService.loadProfile();
   }
 
@@ -143,32 +165,40 @@ export class ProfilePage implements OnInit, OnDestroy {
     this.destroy$.complete();
   }
 
-
-
-  updateProfile(datos: { nombres: string, apellidos: string, telefono: string }) {
+  saveProfileUpdate(datos: { nombres: string, apellidos: string, telefono: string }) {
     this.isSaving = true;
+    this.cdr.markForCheck();
+
     this.profileService.updateProfile(datos).subscribe({
       next: () => {
-        this.uiService.showToast('Perfil actualizado correctamente', 'success');
         this.isSaving = false;
+        this.uiService.showToast('Perfil actualizado correctamente', 'success');
+        this.personalDataCard.closeEdit();
+        this.cdr.markForCheck();
       },
       error: (err) => {
         this.isSaving = false;
         this.uiService.showError(err, 'Error al actualizar perfil');
+        this.cdr.markForCheck();
       }
     });
   }
 
-  changePassword(nueva_password: string) {
+  savePasswordUpdate(password: string) {
     this.isSaving = true;
-    this.profileService.updatePassword(nueva_password).subscribe({
+    this.cdr.markForCheck();
+
+    this.profileService.updatePassword(password).subscribe({
       next: () => {
-        this.uiService.showToast('Contraseña actualizada correctamente', 'success');
         this.isSaving = false;
+        this.uiService.showToast('Contraseña actualizada correctamente', 'success');
+        this.securityCard.closeChange();
+        this.cdr.markForCheck();
       },
       error: (err) => {
         this.isSaving = false;
         this.uiService.showError(err, 'Error al cambiar contraseña');
+        this.cdr.markForCheck();
       }
     });
   }
