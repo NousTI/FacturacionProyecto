@@ -11,7 +11,7 @@ import { FormsModule } from '@angular/forms';
       <div class="actions-bar-container">
         <div class="row align-items-center g-3">
           <!-- Búsqueda Principal -->
-          <div class="col-lg-5">
+          <div class="col-lg-4">
             <div class="search-box-premium">
               <i class="bi bi-search"></i>
               <input
@@ -24,25 +24,41 @@ import { FormsModule } from '@angular/forms';
             </div>
           </div>
 
-          <!-- Estado Filter -->
-          <div class="col-lg-3">
+          <!-- Estado Filter (ACTIVO/INACTIVO) -->
+          <div class="col-lg-2">
             <select
               [(ngModel)]="filterEstado"
               (ngModelChange)="filterEstadoChange.emit($event)"
               class="form-select-premium"
+              title="Filtrar por estado de activación"
             >
               <option value="ALL">Todos los Estados</option>
               <option value="ACTIVO">Activos</option>
+              <option value="INACTIVO">Inactivos</option>
+            </select>
+          </div>
+
+          <!-- Público Filter (VISIBLE/OCULTO) -->
+          <div class="col-lg-2">
+            <select
+              [(ngModel)]="filterPublico"
+              (ngModelChange)="filterPublicoChange.emit($event)"
+              class="form-select-premium"
+              title="Filtrar por visibilidad pública"
+            >
+              <option value="ALL">Todos</option>
+              <option value="VISIBLE">Públicos</option>
               <option value="OCULTO">Ocultos</option>
             </select>
           </div>
 
-          <!-- Categoría Filter (Optional) -->
+          <!-- Categoría Filter -->
           <div class="col-lg-2">
             <select
               [(ngModel)]="filterCategoria"
               (ngModelChange)="filterCategoriaChange.emit($event)"
               class="form-select-premium"
+              title="Filtrar por categoría del plan"
             >
               <option value="ALL">Todas las Categorías</option>
               <option value="BASICO">Básico</option>
@@ -136,9 +152,11 @@ import { FormsModule } from '@angular/forms';
 export class VendedorPlanActionsComponent {
   @Input() searchQuery: string = '';
   @Input() filterEstado: string = 'ALL';
+  @Input() filterPublico: string = 'ALL';
   @Input() filterCategoria: string = 'ALL';
 
   @Output() searchQueryChange = new EventEmitter<string>();
   @Output() filterEstadoChange = new EventEmitter<string>();
+  @Output() filterPublicoChange = new EventEmitter<string>();
   @Output() filterCategoriaChange = new EventEmitter<string>();
 }

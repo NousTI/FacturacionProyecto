@@ -34,9 +34,11 @@ import { map } from 'rxjs/operators';
       <app-vendedor-plan-actions
         [(searchQuery)]="searchQuery"
         [(filterEstado)]="filterEstado"
+        [(filterPublico)]="filterPublico"
         [(filterCategoria)]="filterCategoria"
         (searchQueryChange)="filterData()"
         (filterEstadoChange)="filterData()"
+        (filterPublicoChange)="filterData()"
         (filterCategoriaChange)="filterData()"
       ></app-vendedor-plan-actions>
 
@@ -99,6 +101,7 @@ export class VendedorPlanesPage implements OnInit {
   filteredPlanes: Plan[] = [];
   searchQuery: string = '';
   filterEstado: string = 'ALL';
+  filterPublico: string = 'ALL';
   filterCategoria: string = 'ALL';
 
   totalPlanes: number = 0;
@@ -150,9 +153,18 @@ export class VendedorPlanesPage implements OnInit {
   filterData() {
     let temp = [...this.planes];
 
-    // Filter por estado
+    // Filter por estado (ACTIVO/INACTIVO)
     if (this.filterEstado !== 'ALL') {
       temp = temp.filter(p => p.status === this.filterEstado);
+    }
+
+    // Filter por público (VISIBLE/OCULTO)
+    if (this.filterPublico !== 'ALL') {
+      if (this.filterPublico === 'VISIBLE') {
+        temp = temp.filter(p => p.visible_publico);
+      } else if (this.filterPublico === 'OCULTO') {
+        temp = temp.filter(p => !p.visible_publico);
+      }
     }
 
     // Filter por categoría (basado en nombre del plan)
