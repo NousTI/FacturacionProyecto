@@ -101,6 +101,7 @@ import { FormsModule } from '@angular/forms';
       background: transparent;
       border: none;
       padding: 0;
+      width: 100%;
     }
     .search-box-premium {
       position: relative;
