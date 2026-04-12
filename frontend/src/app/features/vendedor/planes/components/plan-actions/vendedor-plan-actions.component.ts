@@ -9,9 +9,9 @@ import { FormsModule } from '@angular/forms';
   template: `
     <section class="module-actions">
       <div class="actions-bar-container">
-        <div class="row align-items-center g-3">
+        <div class="filters-row">
           <!-- Búsqueda Principal -->
-          <div class="col-lg-3">
+          <div class="filter-item">
             <div class="search-box-premium">
               <i class="bi bi-search"></i>
               <input
@@ -25,7 +25,7 @@ import { FormsModule } from '@angular/forms';
           </div>
 
           <!-- Estado Filter (ACTIVO/INACTIVO) -->
-          <div class="col-lg-2">
+          <div class="filter-item">
             <div class="dropdown w-100">
               <button
                 class="form-select-premium dropdown-toggle d-flex align-items-center justify-content-between"
@@ -45,7 +45,7 @@ import { FormsModule } from '@angular/forms';
           </div>
 
           <!-- Público Filter (VISIBLE/OCULTO) -->
-          <div class="col-lg-2">
+          <div class="filter-item">
             <div class="dropdown w-100">
               <button
                 class="form-select-premium dropdown-toggle d-flex align-items-center justify-content-between"
@@ -65,7 +65,7 @@ import { FormsModule } from '@angular/forms';
           </div>
 
           <!-- Categoría Filter -->
-          <div class="col-lg-3">
+          <div class="filter-item">
             <div class="dropdown w-100">
               <button
                 class="form-select-premium dropdown-toggle d-flex align-items-center justify-content-between"
@@ -84,11 +84,6 @@ import { FormsModule } from '@angular/forms';
               </ul>
             </div>
           </div>
-
-          <!-- Botón Nuevo Plan (Opcional) -->
-          <div class="col-lg-2">
-            <!-- Reservado para futuro -->
-          </div>
         </div>
       </div>
     </section>
@@ -98,11 +93,20 @@ import { FormsModule } from '@angular/forms';
       display: block;
     }
     .actions-bar-container {
-      background: #ffffff;
-      border: 1px solid #f1f5f9;
-      border-radius: 20px;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
-      padding: 1.5rem;
+      background: transparent;
+      border: none;
+      padding: 0;
+      width: 100%;
+    }
+    .filters-row {
+      display: flex;
+      gap: 1rem;
+      width: 100%;
+      align-items: center;
+    }
+    .filter-item {
+      flex: 1;
+      min-width: 0;
     }
     .search-box-premium {
       position: relative;
