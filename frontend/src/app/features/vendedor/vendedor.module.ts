@@ -5,13 +5,12 @@ import { SharedModule } from '../../shared/shared.module';
 import { RenovacionesVendedorPage } from './renovaciones/renovaciones-vendedor.page';
 
 @NgModule({
-    declarations: [
-        RenovacionesVendedorPage
-    ],
+    declarations: [],
     imports: [
         CommonModule,
         VendedorRoutingModule,
-        SharedModule
+        SharedModule,
+        RenovacionesVendedorPage
     ]
 })
 export class VendedorModule { }

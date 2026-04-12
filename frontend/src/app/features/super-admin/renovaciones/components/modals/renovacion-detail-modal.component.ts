@@ -27,7 +27,6 @@ import { SolicitudRenovacion } from '../../../../../domain/models/renovacion.mod
                     </div>
                     <div>
                       <h5 class="mb-0 fw-800 text-dark">{{ seleccionada.empresa_nombre }}</h5>
-                      <span class="text-muted small">ID: {{ seleccionada.empresa_id }}</span>
                     </div>
                   </div>
                   
@@ -63,9 +62,10 @@ import { SolicitudRenovacion } from '../../../../../domain/models/renovacion.mod
                     </div>
                   </div>
 
-                  <div class="side-info-card" *ngIf="seleccionada.comprobante_url">
+                  <!-- Comprobante (Oculto temporalmente) -->
+                  <div class="side-info-card" *ngIf="false">
                     <label>Comprobante de Pago</label>
-                    <a [href]="seleccionada.comprobante_url" target="_blank" class="btn-attachment mt-2">
+                    <a [href]="seleccionada?.comprobante_url" target="_blank" class="btn-attachment mt-2">
                        <i class="bi bi-file-earmark-image me-2 text-primary"></i>
                        <span class="text-truncate">Ver Adjunto</span>
                        <i class="bi bi-box-arrow-up-right ms-auto smallest opacity-50"></i>

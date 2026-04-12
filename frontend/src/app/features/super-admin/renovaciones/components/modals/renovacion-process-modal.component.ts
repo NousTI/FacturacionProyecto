@@ -35,9 +35,10 @@ import { SolicitudRenovacion } from '../../../../../domain/models/renovacion.mod
               </ul>
             </div>
 
-            <div *ngIf="seleccionada.comprobante_url" class="mb-2">
+            <!-- Comprobante (Oculto temporalmente) -->
+            <div *ngIf="false" class="mb-2">
                <label class="smallest text-uppercase fw-800 text-muted d-block mb-2">Documento Recibido</label>
-               <a [href]="seleccionada.comprobante_url" target="_blank" class="btn-attachment">
+               <a [href]="seleccionada?.comprobante_url" target="_blank" class="btn-attachment">
                  <i class="bi bi-file-earmark-image me-2 text-primary"></i>
                  <span class="text-truncate">Ver comprobante adjunto</span>
                  <i class="bi bi-box-arrow-up-right ms-auto smallest opacity-50"></i>
