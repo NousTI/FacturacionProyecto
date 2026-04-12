@@ -31,11 +31,7 @@ class RepositorioLogs:
             return [dict(row) for row in cur.fetchall()]
 
     # --- Auditoría General de Seguridad ---
-
-    def listar_auditoria(self, filters: dict = None, limit: int = 100, offset: int = 0) -> List[dict]:
-        # El usuario quiere ver logs de seguridad (login), comisiones, suscripciones y creación de usuarios.
-        # Unificamos las tablas de logs en una sola vista de auditoría.
-        
+    def _construir_query_auditoria(self, filters: dict = None):
         query_base = """
             WITH unified_logs AS (
                 -- 1. Logs de Usuario/Seguridad
@@ -110,11 +106,23 @@ class RepositorioLogs:
         if conditions:
             query_base += " WHERE " + " AND ".join(conditions)
 
-        query_base += " ORDER BY l.created_at DESC LIMIT %s OFFSET %s"
+        return query_base, params
+
+    def listar_auditoria(self, filters: dict = None, limit: int = 100, offset: int = 0) -> List[dict]:
+        query, params = self._construir_query_auditoria(filters)
+        query += " ORDER BY created_at DESC LIMIT %s OFFSET %s"
         params.extend([limit, offset])
 
         with self.db.cursor() as cur:
-            cur.execute(query_base, tuple(params))
+            cur.execute(query, tuple(params))
+            return [dict(row) for row in cur.fetchall()]
+
+    def obtener_auditoria_exportar(self, filters: dict = None) -> List[dict]:
+        query, params = self._construir_query_auditoria(filters)
+        query += " ORDER BY created_at DESC LIMIT 5000"
+
+        with self.db.cursor() as cur:
+            cur.execute(query, tuple(params))
             return [dict(row) for row in cur.fetchall()]
 
     def registrar_evento(self, user_id: UUID, evento: str, detail: str = None, ip: str = None, ua: str = None, origen: str = 'SISTEMA'):

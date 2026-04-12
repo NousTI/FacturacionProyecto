@@ -38,7 +38,16 @@ export class AuditoriaService {
     return this.http.get<LogAuditoria[]>(this.apiUrl, { params });
   }
 
-  // El superadmin pidió exportar a Excel. 
-  // Reutilizamos la lógica de generación de archivos si el backend lo permite, 
-  // o avisamos que es exportación CSV/Excel.
+  exportarExcel(filtros: any = {}): Observable<Blob> {
+    let params = new HttpParams();
+    if (filtros.usuario) params = params.set('usuario', filtros.usuario);
+    if (filtros.evento) params = params.set('evento', filtros.evento);
+    if (filtros.fecha_inicio) params = params.set('fecha_inicio', filtros.fecha_inicio);
+    if (filtros.fecha_fin) params = params.set('fecha_fin', filtros.fecha_fin);
+
+    return this.http.get(`${this.apiUrl}/export`, {
+      params,
+      responseType: 'blob'
+    });
+  }
 }

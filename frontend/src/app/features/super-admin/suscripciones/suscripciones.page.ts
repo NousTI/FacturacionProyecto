@@ -42,6 +42,7 @@ import { UiService } from '../../../shared/services/ui.service';
       <app-suscripcion-actions
         [(searchQuery)]="searchQuery"
         [(filterStatus)]="filterStatus"
+        [(filterPagoStatus)]="filterPagoStatus"
         [isRunningMaintenance]="isRunningMaintenance"
         (onMaintenance)="ejecutarMantenimiento()"
         (onOpenHistory)="showHistorySectionModal = true"
@@ -50,6 +51,7 @@ import { UiService } from '../../../shared/services/ui.service';
       <!-- 3. Table -->
       <app-suscripcion-table
         [suscripciones]="filteredSuscripciones"
+        [loading]="globalLoading"
         (onRegistrarPago)="openRegistroPago($event)"
         (onVerHistorial)="openHistorial($event)"
         (onActivar)="confirmarAccion($event, 'ACTIVAR')"
@@ -94,12 +96,6 @@ import { UiService } from '../../../shared/services/ui.service';
       ></app-confirm-modal>
 
       <app-toast></app-toast>
-      
-      <!-- Loading Overlay -->
-      <div *ngIf="globalLoading" class="loading-overlay">
-         <div class="spinner-border text-primary" role="status"></div>
-         <p class="ms-3 fw-bold text-white fs-5 mb-0">Cargando suscripciones...</p>
-      </div>
     </div>
   `,
     styles: [`
@@ -122,12 +118,6 @@ import { UiService } from '../../../shared/services/ui.service';
       gap: 24px;
       position: relative;
     }
-    .loading-overlay {
-      position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-      background: rgba(0,0,0,0.4); backdrop-filter: blur(4px);
-      display: flex; align-items: center; justify-content: center;
-      z-index: 1060; border-radius: 20px;
-    }
     `]
 })
 export class SuscripcionesPage implements OnInit {
@@ -142,6 +132,7 @@ export class SuscripcionesPage implements OnInit {
 
     searchQuery = '';
     filterStatus = 'ALL';
+    filterPagoStatus = 'ALL';
 
     // UI State
     globalLoading = false;
@@ -274,7 +265,7 @@ export class SuscripcionesPage implements OnInit {
 
     get filteredSuscripciones() {
         let filtered = this.suscripciones;
-
+ 
         // Search
         if (this.searchQuery) {
             const q = this.searchQuery.toLowerCase();
@@ -283,12 +274,17 @@ export class SuscripcionesPage implements OnInit {
                 (s.plan_nombre || '').toLowerCase().includes(q)
             );
         }
-
+ 
         // Status Filter
         if (this.filterStatus !== 'ALL') {
             filtered = filtered.filter(s => s.estado === this.filterStatus);
         }
 
+        // Pago Status Filter
+        if (this.filterPagoStatus !== 'ALL') {
+            filtered = filtered.filter(s => s.estado_pago === this.filterPagoStatus);
+        }
+ 
         return filtered;
     }
 

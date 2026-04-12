@@ -11,11 +11,11 @@ import { InfoTooltipComponent } from '../../../../shared/components/info-tooltip
     <div class="row g-3 mb-4">
       <!-- Empresas Activas -->
       <div class="col-6 col-lg-3">
-        <div class="kpi-card">
-          <div class="kpi-icon" style="color:#10b981; background:rgba(16,185,129,.1)">
+        <div class="kpi-card-premium">
+          <div class="icon-circle" style="color: var(--status-success); background: var(--border-color)">
             <i class="bi bi-building-check"></i>
           </div>
-          <div class="kpi-body">
+          <div class="kpi-content">
             <span class="kpi-label d-flex align-items-center gap-1">Empresas Activas
               <app-info-tooltip message="Número de empresas con suscripción activa en el periodo seleccionado."></app-info-tooltip>
             </span>
@@ -26,31 +26,33 @@ import { InfoTooltipComponent } from '../../../../shared/components/info-tooltip
 
       <!-- Ingresos Dinámicos -->
       <div class="col-6 col-lg-3">
-        <div class="kpi-card shadow-sm border-0">
-          <div class="kpi-icon" style="color:#6366f1; background:rgba(99,102,241,.1)">
+        <div class="kpi-card-premium">
+          <div class="icon-circle" style="color: var(--primary-color); background: var(--border-color)">
             <i class="bi bi-wallet2"></i>
           </div>
-          <div class="kpi-body">
+          <div class="kpi-content">
             <span class="kpi-label d-flex align-items-center gap-1">
               {{ getIncomeLabel() }}
               <app-info-tooltip [message]="getIncomeTooltip()"></app-info-tooltip>
             </span>
-            <span class="kpi-value text-truncate">{{ kpis?.ingresos_mensuales || 0 | currency:'USD':'symbol':'1.0-2' }}</span>
-            <span class="kpi-trend" [ngClass]="(kpis?.variacion_ingresos || 0) >= 0 ? 'up' : 'down'">
-              <i class="bi" [ngClass]="(kpis?.variacion_ingresos || 0) >= 0 ? 'bi-arrow-up-short' : 'bi-arrow-down-short'"></i>
-              {{ kpis?.variacion_ingresos || 0 }}%
-            </span>
+            <div class="d-flex align-items-baseline gap-2">
+              <span class="kpi-value text-truncate">{{ kpis?.ingresos_mensuales || 0 | currency:'USD':'symbol':'1.0-2' }}</span>
+              <span class="kpi-trend" [ngClass]="(kpis?.variacion_ingresos || 0) >= 0 ? 'up' : 'down'">
+                <i class="bi" [ngClass]="(kpis?.variacion_ingresos || 0) >= 0 ? 'bi-arrow-up-short' : 'bi-arrow-down-short'"></i>
+                {{ kpis?.variacion_ingresos || 0 }}%
+              </span>
+            </div>
           </div>
         </div>
       </div>
 
       <!-- Comisiones Pendientes -->
       <div class="col-6 col-lg-3">
-        <div class="kpi-card">
-          <div class="kpi-icon" style="color:#f59e0b; background:rgba(245,158,11,.1)">
+        <div class="kpi-card-premium">
+          <div class="icon-circle" style="color: var(--status-warning); background: var(--border-color)">
             <i class="bi bi-percent"></i>
           </div>
-          <div class="kpi-body">
+          <div class="kpi-content">
             <span class="kpi-label d-flex align-items-center gap-1">Comisiones Pend.
               <app-info-tooltip message="Monto total en comisiones de vendedores que aún no han sido liquidadas."></app-info-tooltip>
             </span>
@@ -61,11 +63,11 @@ import { InfoTooltipComponent } from '../../../../shared/components/info-tooltip
 
       <!-- Pagos Atrasados / Empresas por vencer -->
       <div class="col-6 col-lg-3">
-        <div class="kpi-card">
-          <div class="kpi-icon" style="color:#ef4444; background:rgba(239,68,68,.1)">
+        <div class="kpi-card-premium">
+          <div class="icon-circle" style="color: var(--status-danger); background: var(--border-color)">
             <i class="bi bi-clock-history"></i>
           </div>
-          <div class="kpi-body">
+          <div class="kpi-content">
             <span class="kpi-label d-flex align-items-center gap-1">Próximos Venc.
               <app-info-tooltip message="Empresas cuya suscripción vence en los próximos 7 días y requieren atención."></app-info-tooltip>
             </span>
@@ -78,27 +80,61 @@ import { InfoTooltipComponent } from '../../../../shared/components/info-tooltip
     </div>
   `,
   styles: [`
-    .kpi-card {
-      background: white;
-      border: 1px solid #f1f5f9;
-      border-radius: 14px;
-      padding: 1.25rem;
+    .kpi-card-premium {
+      background: var(--bg-main, #ffffff);
+      border: 1px solid var(--border-color);
+      border-radius: 20px;
+      padding: 1.25rem 1.5rem;
       display: flex;
       align-items: center;
-      gap: 1rem;
+      gap: 1.1rem;
       height: 100%;
+      transition: all 0.2s ease;
     }
-    .kpi-icon {
-      width: 42px; height: 42px; border-radius: 10px;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 1.2rem; flex-shrink: 0;
+    .icon-circle {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.25rem;
+      flex-shrink: 0;
     }
-    .kpi-body { display: flex; flex-direction: column; min-width: 0; }
-    .kpi-label { font-size: 0.65rem; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.4px; }
-    .kpi-value { font-size: 1.25rem; font-weight: 800; color: #161d35; line-height: 1.2; }
-    .kpi-trend { font-size: 0.7rem; font-weight: 700; }
-    .kpi-trend.up   { color: #10b981; }
-    .kpi-trend.down { color: #ef4444; }
+    .kpi-content {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+    }
+    .kpi-label {
+      font-size: 0.65rem;
+      font-weight: 800;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 2px;
+    }
+    .kpi-value {
+      font-size: 1.35rem;
+      font-weight: 800;
+      color: var(--primary-color);
+      line-height: 1.2;
+    }
+    .kpi-trend {
+      font-size: 0.75rem;
+      font-weight: 700;
+    }
+    .up { color: var(--status-success); }
+    .down { color: var(--status-danger); }
+
+    .text-danger {
+      color: var(--status-danger) !important;
+    }
+
+    @media (max-width: 1400px) {
+      .kpi-value { font-size: 1.15rem; }
+      .kpi-card-premium { padding: 1rem; gap: 0.85rem; }
+    }
   `]
 })
 export class SuperAdminStatsComponent implements OnChanges {

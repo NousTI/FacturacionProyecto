@@ -155,12 +155,12 @@ export class AuditoriaPage implements OnInit, OnDestroy {
 
   calculateStats(data: LogAuditoria[]) {
     const hoy = new Date().toISOString().split('T')[0];
-    const alertasEventos = ['LOGIN_FALLIDO', 'ERROR', 'BLOQUEO', 'ELIMINADO'];
+    const alertasEventos = ['FALLIDO', 'ERROR', 'BLOQUEO', 'ELIMINADO', 'PASSWORD_CAMBIADA', 'EXCEPTION'];
     
     this.stats = {
       total: data.length,
       alertas: data.filter(l => alertasEventos.some(e => l.evento.toUpperCase().includes(e))).length,
-      modulos: new Set(data.map(l => l.modulo)).size,
+      modulos: new Set(data.filter(l => l.modulo).map(l => l.modulo)).size,
       hoy: data.filter(l => l.created_at.startsWith(hoy)).length
     };
   }
@@ -195,6 +195,30 @@ export class AuditoriaPage implements OnInit, OnDestroy {
 
   exportarExcel() {
     this.uiService.showToast('Generando reporte en formato Excel...', 'info');
-    // Implementación futura de exportación real
+    this.isLoading = true;
+
+    this.auditoriaService.exportarExcel(this.filtros)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (blob) => {
+          const url = window.URL.createObjectURL(blob);
+          const link = document.createElement('a');
+          const timestamp = new Date().toISOString().split('T')[0];
+          
+          link.href = url;
+          link.download = `reporte_auditoria_${timestamp}.xlsx`;
+          link.click();
+          
+          window.URL.revokeObjectURL(url);
+          this.uiService.showToast('Reporte exportado correctamente', 'success');
+          this.isLoading = false;
+          this.cdr.detectChanges();
+        },
+        error: (err) => {
+          this.uiService.showError(err, 'Error al exportar auditoría');
+          this.isLoading = false;
+          this.cdr.detectChanges();
+        }
+      });
   }
 }

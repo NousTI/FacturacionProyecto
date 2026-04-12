@@ -22,6 +22,14 @@ import { Suscripcion } from '../../services/suscripcion.service';
               </tr>
             </thead>
             <tbody>
+              <tr *ngIf="loading">
+                <td colspan="7" class="py-5 text-center">
+                  <div class="d-flex flex-column align-items-center justify-content-center p-4">
+                    <div class="spinner-border text-primary mb-3" role="status" style="width: 2.5rem; height: 2.5rem;"></div>
+                    <span class="text-muted fw-bold">Cargando suscripciones...</span>
+                  </div>
+                </td>
+              </tr>
               <tr *ngFor="let sub of suscripciones; trackBy: trackById">
                 <!-- Empresa -->
                 <td>
@@ -119,7 +127,7 @@ import { Suscripcion } from '../../services/suscripcion.service';
             </tbody>
           </table>
           
-          <div *ngIf="suscripciones.length === 0" class="text-center p-5 text-muted">
+          <div *ngIf="!loading && suscripciones.length === 0" class="text-center p-5 text-muted">
             <i class="bi bi-inbox fs-1 d-block mb-3"></i>
             No se encontraron suscripciones registradas.
           </div>
@@ -199,10 +207,11 @@ import { Suscripcion } from '../../services/suscripcion.service';
     
     .badge-pago {
         padding: 0.3rem 0.6rem; border-radius: 6px; font-size: 0.7rem; font-weight: 700; text-transform: uppercase;
+        color: #ffffff !important; border: none !important;
     }
-    .badge-pago.pagado { background: #eff6ff; color: #1d4ed8; border: 1px solid #dbeafe; }
-    .badge-pago.pendiente { background: #fff7ed; color: #c2410c; border: 1px solid #ffedd5; }
-    .badge-pago.atrasado { background: var(--status-danger-bg, #fee2e2); color: var(--status-danger-text, #b91c1c); border: 1px solid #fecaca; }
+    .badge-pago.pagado { background: #1d4ed8; }
+    .badge-pago.pendiente { background: #c2410c; }
+    .badge-pago.atrasado { background: #b91c1c; }
 
     .btn-action-trigger {
       background: transparent; border: none;
@@ -230,6 +239,7 @@ import { Suscripcion } from '../../services/suscripcion.service';
   imports: [CommonModule]
 })
 export class SuscripcionTableComponent {
+  @Input() loading: boolean = false;
   @Input() suscripciones: Suscripcion[] = [];
   @Output() onRegistrarPago = new EventEmitter<Suscripcion>();
   @Output() onVerHistorial = new EventEmitter<Suscripcion>();

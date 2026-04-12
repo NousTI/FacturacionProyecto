@@ -25,8 +25,8 @@ import { Plan } from '../../services/plan.service';
               <tr *ngFor="let plan of planes; trackBy: trackByPlanId">
                 <td>
                   <div class="d-flex align-items-center" style="max-width: 300px;">
-                    <div class="plan-icon me-3" [style.background]="getPlanColor(plan.name, 0.1)" [style.color]="getPlanColor(plan.name, 1)">
-                      <i class="bi bi-box"></i>
+                    <div class="avatar-soft-premium me-3">
+                      <i class="bi bi-stack"></i>
                     </div>
                     <div class="text-truncate">
                       <span class="fw-bold text-dark d-block mb-0 text-truncate" [title]="plan.name">{{ plan.name }}</span>
@@ -172,11 +172,14 @@ import { Plan } from '../../services/plan.service';
     .table tbody tr:last-child td {
       border-bottom: none;
     }
-    .plan-icon {
-      width: 40px; height: 40px;
+    .avatar-soft-premium {
+      width: 38px; height: 38px;
       border-radius: 12px;
       display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
       font-size: 1.1rem;
+      background: var(--primary-color, #161d35);
+      color: #ffffff;
     }
     .badge-cycle {
       background: #f1f5f9;
@@ -254,9 +257,6 @@ export class PlanTableComponent {
   }
 
   getPlanColor(name: string, opacity: number): string {
-    if (name.includes('Básico')) return `rgba(99, 102, 241, ${opacity})`;
-    if (name.includes('Profesional')) return `rgba(16, 185, 129, ${opacity})`;
-    if (name.includes('Enterprise')) return `rgba(245, 158, 11, ${opacity})`;
     return `rgba(148, 163, 184, ${opacity})`;
   }
 }

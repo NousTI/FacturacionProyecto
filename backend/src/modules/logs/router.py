@@ -51,3 +51,31 @@ def listar_auditoria(
         "fecha_fin": fecha_fin
     }
     return servicio.listar_auditoria(filters, limit, offset)
+
+@router.get("/auditoria/export")
+def exportar_auditoria(
+    usuario: str = None,
+    evento: str = None,
+    fecha_inicio: str = None,
+    fecha_fin: str = None,
+    admin: dict = Depends(requerir_superadmin),
+    servicio: ServicioLogs = Depends()
+):
+    from fastapi.responses import StreamingResponse
+    from datetime import datetime
+    
+    filters = {
+        "usuario": usuario,
+        "evento": evento,
+        "fecha_inicio": fecha_inicio,
+        "fecha_fin": fecha_fin
+    }
+    
+    file_stream = servicio.exportar_auditoria(filters)
+    filename = f"auditoria_{datetime.now().strftime('%Y%m%d_%H%M%S')}.xlsx"
+    
+    return StreamingResponse(
+        file_stream,
+        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        headers={"Content-Disposition": f"attachment; filename={filename}"}
+    )

@@ -20,10 +20,10 @@ export class NotificacionesApiService extends BaseApiService {
   }
 
   marcarComoLeida(id: string): Observable<Notificacion> {
-    return this.patch<Notificacion>(`${this.endpoint}/${id}/leer`, {});
+    return this.patch<Notificacion>(`${this.endpoint}/${id}/marcar-leida`, {});
   }
 
   marcarTodasComoLeidas(): Observable<{ success: boolean }> {
-    return this.post<{ success: boolean }>(`${this.endpoint}/leer-todas`, {});
+    return this.patch<{ success: boolean }>(`${this.endpoint}/marcar-todas-leidas`, {});
   }
 }

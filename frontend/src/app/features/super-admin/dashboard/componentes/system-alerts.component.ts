@@ -34,37 +34,57 @@ import { InfoTooltipComponent } from '../../../../shared/components/info-tooltip
     .alerts-container {
       display: flex;
       flex-direction: column;
-      gap: 10px;
-    }
-    .alert-empty {
-      background: #f0fdf4;
-      border: 1px solid #bbf7d0;
-      color: #166534;
-      padding: 1rem;
-      border-radius: 12px;
-      display: flex;
-      align-items: center;
-      font-size: 0.875rem;
-      font-weight: 600;
+      gap: 8px;
     }
     .alert-item {
       display: flex;
       align-items: center;
       gap: 12px;
-      padding: 0.85rem 1.25rem;
-      border-radius: 12px;
+      padding: 0.75rem 1.25rem;
+      border-radius: 16px;
       font-size: 0.85rem;
       border: 1px solid transparent;
+      transition: all 0.2s ease;
     }
-    .alert-item.critical { background: #fef2f2; border-color: #fecaca; color: #991b1b; }
-    .alert-item.warning { background: #fff7ed; border-color: #fed7aa; color: #9a3412; }
-    .alert-item.info { background: #eff6ff; border-color: #bfdbfe; color: #1e40af; }
+    .alert-item:hover {
+      transform: translateX(4px);
+    }
+    .alert-item.critical { 
+      background: var(--border-color); 
+      border-color: var(--border-color); 
+      color: var(--status-danger); 
+    }
+    .alert-item.warning { 
+      background: var(--border-color); 
+      border-color: var(--border-color); 
+      color: var(--status-warning); 
+    }
+    .alert-item.info { 
+      background: var(--border-color); 
+      border-color: var(--border-color); 
+      color: var(--status-info); 
+    }
     
-    .alert-content { flex: 1; }
-    .badge { padding: 4px 8px; border-radius: 6px; font-weight: 800; font-size: 0.7rem; }
-    .badge-critical { background: #ef4444; color: white; }
-    .badge-warning { background: #f59e0b; color: white; }
-    .badge-info { background: #3b82f6; color: white; }
+    .alert-content { 
+      flex: 1; 
+      font-weight: 500;
+    }
+    .alert-content strong {
+      font-weight: 700;
+      text-transform: uppercase;
+      font-size: 0.75rem;
+      margin-right: 4px;
+    }
+    .badge { 
+      padding: 4px 10px; 
+      border-radius: 10px; 
+      font-weight: 800; 
+      font-size: 0.75rem; 
+      border: none;
+    }
+    .badge-critical { background: var(--status-danger); color: white; }
+    .badge-warning { background: var(--status-warning); color: white; }
+    .badge-info { background: var(--status-info); color: white; }
   `]
 })
 export class SuperAdminAlertsComponent {

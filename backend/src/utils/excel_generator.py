@@ -51,9 +51,11 @@ def generate_excel_report(title: str, headers: List[str], data: List[Dict[str, A
             cell.border = border
 
     # Auto-ajuste de columnas
-    for column_cells in ws.columns:
-        length = max(len(str(cell.value)) for cell in column_cells)
-        ws.column_dimensions[column_cells[0].column_letter].width = length + 2
+    from openpyxl.utils import get_column_letter
+    for col_idx, column_cells in enumerate(ws.columns, 1):
+        # Ignorar valores None para el cálculo del ancho
+        length = max(len(str(cell.value)) if cell in column_cells and cell.value is not None else 0 for cell in column_cells)
+        ws.column_dimensions[get_column_letter(col_idx)].width = min(length + 2, 50)  # Límite de 50 para evitar columnas gigantes
 
     output = BytesIO()
     wb.save(output)

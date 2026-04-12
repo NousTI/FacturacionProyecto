@@ -80,8 +80,7 @@ export interface FiltrosAuditoria {
           <div class="col-lg-2 text-lg-end">
             <button 
               (click)="exportar.emit()" 
-              class="btn-system-action w-100"
-              style="background: #10b981;"
+              class="btn-system-action btn-excel-green w-100"
             >
               <i class="bi bi-file-earmark-excel me-2"></i>
               <span>Exportar</span>
@@ -105,6 +104,14 @@ export interface FiltrosAuditoria {
     .form-select-premium {
       height: 48px;
     }
+    .btn-excel-green {
+      background: #10b981 !important;
+      color: white !important;
+    }
+    .btn-excel-green:hover {
+      background: #059669 !important;
+      transform: translateY(-1px);
+    }
   `]
 })
 export class AuditoriaActionsComponent {
@@ -124,9 +131,7 @@ export class AuditoriaActionsComponent {
     { label: 'Logout', value: 'LOGOUT' },
     { label: 'Password Cambiada', value: 'PASSWORD_CAMBIADA' },
     { label: 'Comisión Pagar', value: 'COMISION_PENDIENTE' },
-    { label: 'Plan Activa', value: 'PLAN_ACTIVA' },
-    { label: 'Vendedor Creado', value: 'VENDEDOR_CREADO' },
-    { label: 'SRI Emitido', value: 'SRI_EMITIDO' }
+    { label: 'Plan Activa', value: 'PLAN_ACTIVA' }
   ];
 
   onFilterChange() {

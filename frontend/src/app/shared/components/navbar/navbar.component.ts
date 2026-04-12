@@ -182,7 +182,13 @@ import { Notificacion } from '../../../domain/models/notificacion.model';
       border-bottom: 1px solid rgba(0,0,0,0.03);
     }
     .notif-item:hover {
-      background: #f8fafc;
+      background: var(--primary-color) !important;
+    }
+    .notif-item:hover .text-muted,
+    .notif-item:hover .smallest,
+    .notif-item:hover span,
+    .notif-item:hover p {
+      color: #ffffff !important;
     }
     .notif-item.unread {
       background: #f0f9ff;

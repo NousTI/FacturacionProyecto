@@ -23,7 +23,7 @@ import { LogAuditoria } from '../services/auditoria.service';
               </tr>
             </thead>
             <tbody>
-              <tr *ngFor="let log of logs; trackBy: trackById" class="animate__animated animate__fadeIn">
+              <tr *ngFor="let log of logs; trackBy: trackById">
                 <!-- Fecha -->
                 <td>
                   <div class="d-flex flex-column">
@@ -88,17 +88,11 @@ import { LogAuditoria } from '../services/auditoria.service';
                     >
                       <i class="bi bi-three-dots"></i>
                     </button>
-                    <ul class="dropdown-menu dropdown-menu-end border-0 p-2 rounded-4 shadow-lg" [attr.aria-labelledby]="'actions-' + log.id">
+                    <ul class="dropdown-menu dropdown-menu-end border-0 p-2 rounded-4" [attr.aria-labelledby]="'actions-' + log.id">
                       <li>
                         <button class="dropdown-item rounded-3 py-2" (click)="onVerDetalle.emit(log)">
                           <i class="bi bi-info-circle text-primary"></i>
                           <span class="ms-2">Ver Detalle JSON</span>
-                        </button>
-                      </li>
-                      <li>
-                        <button class="dropdown-item rounded-3 py-2" (click)="copiarIp(log.ip_address)">
-                          <i class="bi bi-clipboard"></i>
-                          <span class="ms-2">Copiar IP</span>
                         </button>
                       </li>
                     </ul>
@@ -130,7 +124,13 @@ import { LogAuditoria } from '../services/auditoria.service';
       border: 1px solid var(--border-color, #f1f5f9);
       display: flex; flex-direction: column; min-height: 0; overflow: hidden;
     }
-    .table-responsive-premium { flex: 1; overflow-y: auto; overflow-x: auto; position: relative; }
+    .table-responsive-premium { 
+      flex: 1; 
+      overflow-y: auto; 
+      overflow-x: visible; 
+      position: relative; 
+      min-height: 300px;
+    }
     .table thead th {
       position: sticky; top: 0; z-index: 10;
       background: #f8fafc; padding: 1rem 1.5rem;
@@ -183,6 +183,14 @@ import { LogAuditoria } from '../services/auditoria.service';
       background: #f8fafc; color: #0f172a;
     }
 
+    .dropdown-menu {
+      border: 1px solid var(--border-color, #e2e8f0) !important;
+      box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1) !important;
+      border-radius: 12px !important;
+      padding: 0.5rem !important;
+      z-index: 9999 !important;
+    }
+
     .dropdown-item {
       display: flex; align-items: center; padding: 0.5rem 1rem;
       font-size: 0.85rem; font-weight: 500;
@@ -223,12 +231,5 @@ export class AuditoriaTableComponent {
     if (ev.includes('EDITAD') || ev.includes('ACTUALIZADO') || ev.includes('CAMBIO')) return 'update';
     if (ev.includes('ELIMINADO')) return 'delete';
     return 'default';
-  }
-
-  copiarIp(ip?: string) {
-    if (ip) {
-      navigator.clipboard.writeText(ip);
-      // Podríamos emitir un evento para un toast, pero por simplicidad lo dejamos así
-    }
   }
 }

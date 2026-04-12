@@ -44,8 +44,9 @@ export interface HorizontalBarData {
     </div>
   `,
     styles: [`
+    :host { display: block; height: 100%; overflow: hidden; }
     .soft-card {
-        min-height: 320px;
+        height: 100%;
         padding: 1.5rem;
         background: white;
         border-radius: 1rem;
