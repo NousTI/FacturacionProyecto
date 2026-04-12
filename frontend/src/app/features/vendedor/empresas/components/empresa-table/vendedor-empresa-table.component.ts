@@ -7,13 +7,13 @@ import { CommonModule } from '@angular/common';
   imports: [CommonModule],
   template: `
     <section class="module-table">
-      <div class="table-container border-0 shadow-premium">
+      <div class="table-container">
         <div class="table-responsive-premium">
           <table class="table mb-0 align-middle">
             <thead>
               <tr>
-                <th>Empresa</th>
-                <th style="width: 130px">Estado</th>
+                <th style="width: 250px">Empresa</th>
+                <th style="width: 130px; text-align: center;">Estado</th>
                 <th style="width: 180px">Plan Actual</th>
                 <th style="width: 160px">Uso de Recursos</th>
                 <th style="width: 140px">Inicio</th>
@@ -24,24 +24,24 @@ import { CommonModule } from '@angular/common';
             <tbody>
               <tr *ngFor="let empresa of empresas">
                 <td>
-                  <div class="d-flex align-items-center">
+                  <div class="d-flex align-items-center" style="max-width: 230px;">
                     <div class="avatar-soft-premium me-3" [style.background]="getAvatarColor(empresa.razonSocial, 0.1)" [style.color]="getAvatarColor(empresa.razonSocial, 1)">
                       {{ getInitials(empresa.razonSocial) }}
                     </div>
-                    <div>
-                      <span class="fw-bold text-dark d-block mb-0">{{ empresa.razonSocial }}</span>
-                      <small class="text-muted font-mono" style="font-size: 0.7rem;">{{ empresa.ruc }}</small>
+                    <div class="text-truncate">
+                      <span class="fw-bold text-dark d-block mb-0 text-truncate" [title]="empresa.razonSocial">{{ empresa.razonSocial }}</span>
+                      <small class="text-muted font-mono" style="font-size: 0.73rem;">{{ empresa.ruc }}</small>
                     </div>
                   </div>
                 </td>
-                <td>
+                <td class="text-center">
                   <span class="badge-status-premium" [ngClass]="empresa.estado?.toLowerCase() || 'inactivo'">
                     {{ empresa.estado || 'INACTIVO' }}
                   </span>
                 </td>
                 <td>
                   <div class="d-flex flex-column">
-                    <span class="text-corporate fw-800" style="font-size: 0.85rem;">{{ empresa.plan || 'Sin Plan' }}</span>
+                    <span class="text-corporate fw-700" style="font-size: 0.85rem;">{{ empresa.plan || 'Sin Plan' }}</span>
                   </div>
                 </td>
                 <td>
@@ -57,7 +57,7 @@ import { CommonModule } from '@angular/common';
                 </td>
                 <td>
                    <div class="d-flex flex-column">
-                    <span class="text-muted fw-bold" style="font-size: 0.85rem;">
+                    <span class="text-muted fw-600" style="font-size: 0.85rem;">
                       {{ empresa.fechaInicio ? (empresa.fechaInicio | date:'dd/MM/yyyy') : '-' }}
                     </span>
                   </div>
@@ -80,10 +80,11 @@ import { CommonModule } from '@angular/common';
                       [id]="'actions-' + empresa.id" 
                       data-bs-toggle="dropdown" 
                       aria-expanded="false"
+                      data-bs-popper-config='{"strategy":"fixed"}'
                     >
                       <i class="bi bi-three-dots"></i>
                     </button>
-                    <ul class="dropdown-menu dropdown-menu-end shadow-premium-lg border-0 p-2 rounded-4" [attr.aria-labelledby]="'actions-' + empresa.id">
+                    <ul class="dropdown-menu dropdown-menu-end border-0 p-2 rounded-4" [attr.aria-labelledby]="'actions-' + empresa.id">
                       <!-- VIEW DETAILS -->
                       <li>
                         <a class="dropdown-item rounded-3 py-2" href="javascript:void(0)" (click)="onAction.emit({type: 'view_details', empresa})">
@@ -101,20 +102,6 @@ import { CommonModule } from '@angular/common';
                           <span class="ms-2">Acceder</span>
                         </a>
                       </li>
-
-                      <!-- CHANGE PLAN (Conditional) - DESACTIVADO POR SOLICITUD
-                      <li>
-                        <a *ngIf="canChangePlan" class="dropdown-item rounded-3 py-2" href="javascript:void(0)" (click)="onAction.emit({type: 'change_plan', empresa})">
-                           <i class="bi bi-arrow-up-right-circle text-corporate"></i>
-                           <span class="ms-2">Cambiar Plan</span>
-                        </a>
-                        <a *ngIf="!canChangePlan" class="dropdown-item rounded-3 py-2 disabled-action" href="javascript:void(0)" title="No tienes permisos para cambiar el plan">
-                           <i class="bi bi-arrow-up-right-circle text-muted"></i>
-                           <span class="ms-2">Cambiar Plan</span>
-                           <i class="bi bi-lock-fill ms-auto text-muted" style="font-size: 0.7rem;"></i>
-                        </a>
-                      </li>
-                      -->
                     </ul>
                   </div>
                 </td>
@@ -131,88 +118,132 @@ import { CommonModule } from '@angular/common';
     </section>
   `,
   styles: [`
-    .module-table { margin-top: 1rem; }
+    :host {
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      min-height: 0;
+      width: 100%;
+    }
+    .module-table { 
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+      margin-top: 0; 
+    }
     .table-container {
-      background: #ffffff;
-      border-radius: 24px;
-      border: 1px solid #f1f5f9;
-      overflow: visible !important;
+      background: var(--bg-main, #ffffff);
+      border-radius: 20px;
+      border: 1px solid var(--border-color, #f1f5f9);
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+      height: auto;
+      max-height: 100%;
+      overflow: hidden;
+      margin-bottom: 0;
     }
-    .table-responsive-premium { overflow: visible !important; position: relative; }
+    .table-responsive-premium { 
+      flex: 1;
+      overflow-y: auto; 
+      overflow-x: auto;
+      position: relative; 
+    }
+    .table {
+      border-collapse: separate;
+      border-spacing: 0;
+      width: 100%;
+    }
     .table thead th {
-      background: #f8fafc;
-      padding: 1.15rem 1.5rem;
-      font-size: 0.7rem;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      color: #94a3b8;
-      font-weight: 800;
-      border-bottom: 2px solid #f1f5f9;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      background: var(--bg-main, #ffffff);
+      padding: 1rem 1.5rem;
+      font-size: var(--text-base);
+      color: #0f172a;
+      font-weight: 600;
+      border-bottom: 2px solid var(--border-color, #f1f5f9);
+      vertical-align: middle;
     }
-    .table tbody td { padding: 1.25rem 1.5rem; border-bottom: 1px solid #f8fafc; }
+    .table tbody td {
+      padding: 1.25rem 1.5rem;
+      border-bottom: 1px solid var(--border-color, #f1f5f9);
+      color: var(--text-muted, #475569);
+      font-size: var(--text-md);
+      vertical-align: middle;
+    }
     
     .avatar-soft-premium {
-      width: 40px; height: 40px; border-radius: 12px;
+      width: 40px; height: 40px;
+      border-radius: 12px;
       display: flex; align-items: center; justify-content: center;
       font-weight: 800; font-size: 0.85rem;
     }
     
     .badge-status-premium {
-      padding: 0.4rem 0.85rem; border-radius: 100px;
-      font-size: 0.7rem; font-weight: 800; text-transform: uppercase;
+      padding: 0.25rem 0.75rem;
+      border-radius: 6px;
+      font-size: var(--text-sm);
+      font-weight: 600;
+      display: inline-block;
+      text-transform: uppercase;
     }
-    .badge-status-premium.activo { background: #dcfce7; color: #15803d; }
-    .badge-status-premium.inactivo { background: #fee2e2; color: #b91c1c; }
-    .badge-status-premium.vencida { background: #fef9c3; color: #a16207; }
+    .badge-status-premium.activo { background: var(--status-success-bg, #dcfce7); color: var(--status-success-text, #ffffff); }
+    .badge-status-premium.inactivo { background: var(--status-danger-bg, #fee2e2); color: var(--status-danger-text, #ffffff); }
+    .badge-status-premium.vencida { background: var(--status-warning-bg, #fef9c3); color: var(--status-warning-text, #ffffff); }
 
-    .usage-container { width: 100%; max-width: 120px; }
+    /* For business logic colors if they differ from semantic ones */
+    .badge-status-premium.ACTIVO { background: #dcfce7; color: #15803d; }
+    .badge-status-premium.INACTIVO { background: #fee2e2; color: #b91c1c; }
+
+    .usage-container { width: 100%; max-width: 140px; }
     .progress-premium {
       height: 6px; background: #f1f5f9; border-radius: 10px; overflow: hidden;
     }
     .progress-bar-premium {
-      height: 100%; background: #161d35; border-radius: 10px; transition: width 0.3s ease;
+      height: 100%; background: var(--primary-color, #161d35); border-radius: 10px; transition: width 0.3s ease;
     }
     
     .btn-action-trigger {
-      background: #f8fafc; border: none; width: 32px; height: 32px;
-      border-radius: 8px; color: #94a3b8; transition: all 0.2s;
+      background: transparent; border: none;
+      width: 32px; height: 32px;
+      border-radius: 8px; color: #94a3b8;
+      transition: all 0.2s;
     }
     .btn-action-trigger:hover, .btn-action-trigger[aria-expanded="true"] {
-      background: #161d35; color: #ffffff;
+      background: #f8fafc; color: #0f172a;
     }
     
     .dropdown-menu {
-      z-index: 100000 !important;
-      min-width: 220px;
-      border: 1px solid #e2e8f0 !important;
-      box-shadow: 0 15px 35px rgba(22, 29, 53, 0.25) !important;
-      padding: 0.75rem !important;
-      position: fixed !important;
+      border: 1px solid var(--border-color, #e2e8f0) !important;
+      box-shadow: none !important;
+      border-radius: 12px !important;
+      padding: 0.5rem !important;
+      z-index: 1050 !important;
     }
     .dropdown-item {
-      font-size: 0.85rem; font-weight: 600; color: #475569;
-      padding: 0.65rem 1rem; display: flex; align-items: center;
-      border-radius: 10px !important;
+      border-radius: 8px !important;
+      font-size: var(--text-base);
+      font-weight: 500;
+      color: var(--text-muted, #475569); padding: 0.5rem 1rem;
+      display: flex; align-items: center;
+      cursor: pointer;
     }
-    .dropdown-item:hover:not(.disabled-action) { background: #f8fafc; color: #161d35; }
-    .dropdown-item i { font-size: 1.1rem; }
+    .dropdown-item:hover { background: #f8fafc; color: #0f172a; }
+    .dropdown-item i { font-size: 1.1rem; margin-right: 0.75rem; }
     
-    /* Disabled Action Style */
-    .disabled-action {
-        color: #94a3b8; cursor: not-allowed; opacity: 0.7;
-    }
-    .disabled-action:hover { background: transparent; color: #94a3b8; }
-
+    .fw-600 { font-weight: 600; }
+    .fw-700 { font-weight: 700; }
     .fw-800 { font-weight: 800; }
-    .text-corporate { color: #161d35 !important; }
+    .text-corporate { color: var(--primary-color, #111827) !important; }
     .font-mono { font-family: 'DM Mono', monospace; }
-    .shadow-premium { box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.04); }
   `]
 })
 export class VendedorEmpresaTableComponent {
   @Input() empresas: any[] = [];
   @Input() canAccess: boolean = false;
-  @Input() canChangePlan: boolean = false;
   @Output() onAction = new EventEmitter<{ type: string, empresa: any }>();
 
   getInitials(name: string): string {

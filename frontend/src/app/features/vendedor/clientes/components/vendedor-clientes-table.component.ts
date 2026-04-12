@@ -7,18 +7,18 @@ import { CommonModule } from '@angular/common';
   imports: [CommonModule],
   template: `
     <section class="module-table">
-      <div class="table-container border-0 shadow-premium">
+      <div class="table-container">
         <div class="table-responsive-premium">
           <table class="table mb-0 align-middle">
             <thead>
               <tr>
-                <th>Cliente</th>
-                <th style="width: 150px">Empresa</th>
-                <th style="width: 120px" class="text-center">Origen</th>
+                <th style="width: 250px">Cliente</th>
+                <th style="width: 180px">Empresa</th>
+                <th style="width: 130px; text-align: center;">Origen</th>
                 <th style="width: 150px">Rol</th>
-                <th style="width: 110px">Estado</th>
-                <th style="width: 150px">Acceso</th>
-                <th class="text-end" style="width: 60px">Acciones</th>
+                <th style="width: 130px; text-align: center;">Estado</th>
+                <th style="width: 160px">Último Acceso</th>
+                <th class="text-end" style="width: 80px">Acciones</th>
               </tr>
             </thead>
             <tbody>
@@ -30,19 +30,19 @@ import { CommonModule } from '@angular/common';
                          [style.color]="getAvatarColor(cliente.nombres + ' ' + cliente.apellidos, 1)">
                       {{ getInitials(cliente.nombres + ' ' + cliente.apellidos) }}
                     </div>
-                    <div>
-                      <span class="fw-bold text-dark d-block mb-0">{{ cliente.nombres }} {{ cliente.apellidos }}</span>
-                      <small class="text-muted" style="font-size: 0.7rem;">{{ cliente.email }}</small>
+                    <div class="text-truncate" style="max-width: 180px;">
+                      <span class="fw-bold text-dark d-block mb-0 text-truncate">{{ cliente.nombres }} {{ cliente.apellidos }}</span>
+                      <small class="text-muted d-block text-truncate" style="font-size: 0.72rem;">{{ cliente.email }}</small>
                     </div>
                   </div>
                 </td>
                 <td>
-                  <span class="text-corporate fw-800" style="font-size: 0.8rem;">{{ cliente.empresa_nombre || 'N/A' }}</span>
+                  <span class="text-corporate fw-700" style="font-size: 0.85rem;">{{ cliente.empresa_nombre || 'N/A' }}</span>
                 </td>
                 <td class="text-center">
-                   <div [ngClass]="getOrigenClass(cliente.origen_creacion)" class="badge-origen">
+                   <div [ngClass]="getOrigenClass(cliente.origen_creacion)" class="badge-origen-premium">
                       <i class="bi" [ngClass]="getOrigenIcon(cliente.origen_creacion)"></i>
-                      {{ (cliente.origen_creacion || 'sistema') | uppercase }}
+                      {{ (cliente.origen_creacion || 'sistema') }}
                    </div>
                 </td>
                 <td>
@@ -50,15 +50,15 @@ import { CommonModule } from '@angular/common';
                     {{ cliente.rol_nombre || 'Sin Rol' }}
                   </span>
                 </td>
-                <td>
+                <td class="text-center">
                   <span class="badge-status-premium" [ngClass]="cliente.activo ? 'activo' : 'inactivo'">
                     {{ cliente.activo ? 'ACTIVO' : 'INACTIVO' }}
                   </span>
                 </td>
                 <td>
                   <div class="d-flex flex-column">
-                    <span class="fw-bold" style="font-size: 0.85rem;">
-                      {{ cliente.ultimo_acceso ? (cliente.ultimo_acceso | date:'dd/MM/yyyy HH:mm') : 'Nunca' }}
+                    <span class="fw-600 text-muted" style="font-size: 0.82rem;">
+                      {{ cliente.ultimo_acceso ? (cliente.ultimo_acceso | date:'dd/MM/yyyy HH:mm') : 'Sin registro' }}
                     </span>
                   </div>
                 </td>
@@ -70,18 +70,24 @@ import { CommonModule } from '@angular/common';
                       [id]="'actions-' + cliente.id" 
                       data-bs-toggle="dropdown" 
                       aria-expanded="false"
+                      data-bs-popper-config='{"strategy":"fixed"}'
                     >
                       <i class="bi bi-three-dots"></i>
                     </button>
-                    <ul class="dropdown-menu dropdown-menu-end shadow-premium-lg border-0 p-2 rounded-4" 
+                    <ul class="dropdown-menu dropdown-menu-end border-0 p-2 rounded-4" 
                         [attr.aria-labelledby]="'actions-' + cliente.id">
-                      <!-- VIEW DETAILS -->
                       <li>
                         <a class="dropdown-item rounded-3 py-2" href="javascript:void(0)" 
                            (click)="onAction.emit({type: 'view_details', cliente})">
                           <i class="bi bi-eye text-corporate"></i>
-                          <span class="ms-2">Ver Detalles</span>
+                          <span class="ms-2">Ver Detalles Completos</span>
                         </a>
+                      </li>
+                      <li><hr class="dropdown-divider mx-2"></li>
+                      <li>
+                        <div class="px-3 py-1 text-muted" style="font-size: 0.65rem;">
+                          <i class="bi bi-lock-fill me-1"></i> Solo lectura (Vendedor)
+                        </div>
                       </li>
                     </ul>
                   </div>
@@ -91,97 +97,135 @@ import { CommonModule } from '@angular/common';
           </table>
 
           <div *ngIf="clientes.length === 0" class="text-center p-5 text-muted">
-            <i class="bi bi-inbox fs-1 d-block mb-3"></i>
-            No se encontraron clientes.
+            <i class="bi bi-person-x fs-1 d-block mb-3"></i>
+            No se encontraron usuarios para mostrar.
           </div>
         </div>
       </div>
     </section>
   `,
   styles: [`
-    .module-table { margin-top: 0.5rem; }
+    :host {
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      width: 100%;
+      min-height: 0;
+    }
+    .module-table { 
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+    }
     .table-container {
-      background: #ffffff;
-      border-radius: 16px;
-      border: 1px solid #f1f5f9;
-      overflow: visible !important;
+      background: var(--bg-main, #ffffff);
+      border-radius: 20px;
+      border: 1px solid var(--border-color, #f1f5f9);
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+      overflow: hidden;
     }
-    .table-responsive-premium { overflow: visible !important; position: relative; }
+    .table-responsive-premium { 
+      flex: 1;
+      overflow-y: auto; 
+      overflow-x: auto;
+      position: relative; 
+    }
     .table thead th {
-      background: #f8fafc;
-      padding: 0.75rem 1.25rem;
-      font-size: 0.65rem;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      color: #94a3b8;
-      font-weight: 800;
-      border-bottom: 2px solid #f1f5f9;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      background: var(--bg-main, #ffffff);
+      padding: 1rem 1.25rem;
+      font-size: var(--text-base);
+      color: #0f172a;
+      font-weight: 600;
+      border-bottom: 2px solid var(--border-color, #f1f5f9);
+      vertical-align: middle;
     }
-    .table tbody td { padding: 0.75rem 1.25rem; border-bottom: 1px solid #f8fafc; }
+    .table tbody td {
+      padding: 1.25rem 1.25rem;
+      border-bottom: 1px solid var(--border-color, #f1f5f9);
+      color: var(--text-muted, #475569);
+      font-size: var(--text-md);
+      vertical-align: middle;
+    }
     
     .avatar-soft-premium {
-      width: 32px; height: 32px; border-radius: 10px;
+      width: 36px; height: 36px;
+      border-radius: 12px;
       display: flex; align-items: center; justify-content: center;
-      font-weight: 800; font-size: 0.75rem;
+      font-weight: 800; font-size: 0.85rem;
     }
     
     .badge-status-premium {
-      padding: 0.25rem 0.65rem; border-radius: 100px;
-      font-size: 0.65rem; font-weight: 800; text-transform: uppercase;
+      padding: 0.25rem 0.75rem;
+      border-radius: 6px;
+      font-size: var(--text-sm);
+      font-weight: 600;
+      display: inline-block;
+      text-transform: uppercase;
     }
-    .badge-status-premium.activo { background: #dcfce7; color: #15803d; }
-    .badge-status-premium.inactivo { background: #fee2e2; color: #b91c1c; }
+    .badge-status-premium.activo { background: var(--status-success-bg, #dcfce7); color: var(--status-success-text, #ffffff); }
+    .badge-status-premium.inactivo { background: var(--status-danger-bg, #fee2e2); color: var(--status-danger-text, #ffffff); }
 
     .badge-role-premium {
-      padding: 0.25rem 0.65rem; border-radius: 100px;
-      font-size: 0.65rem; font-weight: 700;
-      background: rgba(22, 29, 53, 0.05);
-      color: #161d35;
+      padding: 0.25rem 0.75rem;
+      border-radius: 6px;
+      font-size: var(--text-sm);
+      font-weight: 600;
+      background: #f1f5f9;
+      color: #1e293b;
+      display: inline-block;
     }
+
+    .badge-origen-premium {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        padding: 0.2rem 0.6rem;
+        border-radius: 6px;
+        font-size: 0.65rem;
+        font-weight: 700;
+        text-transform: uppercase;
+    }
+    .badge-origen-premium.superadmin { background: #eff6ff; color: #1e40af; border: 1px solid #bfdbfe; }
+    .badge-origen-premium.vendedor { background: #fff7ed; color: #9a3412; border: 1px solid #fed7aa; }
+    .badge-origen-premium.sistema { background: #f1f5f9; color: #475569; border: 1px solid #e2e8f0; }
     
     .btn-action-trigger {
-      background: #f8fafc; border: none; width: 32px; height: 32px;
-      border-radius: 8px; color: #94a3b8; transition: all 0.2s;
+      background: transparent; border: none;
+      width: 32px; height: 32px;
+      border-radius: 8px; color: #94a3b8;
+      transition: all 0.2s;
     }
     .btn-action-trigger:hover, .btn-action-trigger[aria-expanded="true"] {
-      background: #161d35; color: #ffffff;
+      background: #f8fafc; color: #0f172a;
     }
     
     .dropdown-menu {
-      z-index: 100000 !important;
-      min-width: 220px;
-      border: 1px solid #e2e8f0 !important;
-      box-shadow: 0 15px 35px rgba(22, 29, 53, 0.25) !important;
-      padding: 0.75rem !important;
-      position: fixed !important;
+      border: 1px solid var(--border-color, #e2e8f0) !important;
+      box-shadow: none !important;
+      border-radius: 12px !important;
+      padding: 0.5rem !important;
+      z-index: 1050 !important;
     }
     .dropdown-item {
-      font-size: 0.85rem; font-weight: 600; color: #475569;
-      padding: 0.65rem 1rem; display: flex; align-items: center;
-      border-radius: 10px !important;
+      border-radius: 8px !important;
+      font-size: var(--text-base);
+      font-weight: 500;
+      color: var(--text-muted, #475569); padding: 0.5rem 1rem;
+      display: flex; align-items: center;
+      cursor: pointer;
     }
-    .dropdown-item:hover { background: #f8fafc; color: #161d35; }
-    .dropdown-item i { font-size: 1.1rem; }
-    .dropdown-item.text-danger:hover { background: #fee2e2; color: #b91c1c; }
-
-    .fw-800 { font-weight: 800; }
-    .text-corporate { color: #161d35 !important; }
-    .shadow-premium { box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.04); }
-
-    /* Origin Badge */
-    .badge-origen {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.3rem;
-        padding: 0.1rem 0.4rem;
-        border-radius: 4px;
-        font-size: 0.5rem;
-        font-weight: 800;
-        text-transform: uppercase;
-    }
-    .badge-origen.superadmin { background: #eff6ff; color: #1e40af; border: 1px solid #bfdbfe; }
-    .badge-origen.vendedor { background: #fff7ed; color: #9a3412; border: 1px solid #fed7aa; }
-    .badge-origen.sistema { background: #f1f5f9; color: #475569; border: 1px solid #e2e8f0; }
+    .dropdown-item:hover { background: #f8fafc; color: #0f172a; }
+    .dropdown-item i { font-size: 1.1rem; margin-right: 0.75rem; }
+    
+    .fw-600 { font-weight: 600; }
+    .fw-700 { font-weight: 700; }
+    .text-corporate { color: var(--primary-color, #111827) !important; }
   `]
 })
 export class VendedorClientesTableComponent {

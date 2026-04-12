@@ -2,42 +2,45 @@ import { Component, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 @Component({
-    selector: 'app-vendedor-comisiones-stats',
-    standalone: true,
-    imports: [CommonModule],
+  selector: 'app-vendedor-suscripcion-stats',
+  standalone: true,
+  imports: [CommonModule],
   template: `
     <div class="stats-compact-row">
+      <!-- ACTIVAS -->
       <div class="stat-item-mini">
-        <div class="icon-circle" style="background: rgba(22, 29, 53, 0.05); color: #161d35;">
+        <div class="icon-circle" style="background: rgba(16, 185, 129, 0.1); color: #10b981;">
+          <i class="bi bi-check-circle-fill"></i>
+        </div>
+        <div class="stat-info">
+          <span class="stat-label">Suscripciones Activas</span>
+          <span class="stat-value text-success">{{ stats.active }}</span>
+        </div>
+      </div>
+
+      <div class="stat-divider"></div>
+
+      <!-- VENCIDAS -->
+      <div class="stat-item-mini">
+        <div class="icon-circle" style="background: rgba(239, 68, 68, 0.1); color: #ef4444;">
+          <i class="bi bi-exclamation-triangle-fill"></i>
+        </div>
+        <div class="stat-info">
+          <span class="stat-label">Suscripciones Vencidas</span>
+          <span class="stat-value text-danger">{{ stats.overdue }}</span>
+        </div>
+      </div>
+
+      <div class="stat-divider"></div>
+
+      <!-- PROYECCIÓN (Opcional/Futuro) -->
+      <div class="stat-item-mini">
+        <div class="icon-circle" style="background: rgba(59, 130, 246, 0.1); color: #3b82f6;">
           <i class="bi bi-cash-stack"></i>
         </div>
         <div class="stat-info">
-          <span class="stat-label">Total Generado</span>
-          <span class="stat-value">{{ total | currency:'USD' }}</span>
-        </div>
-      </div>
-
-      <div class="stat-divider"></div>
-
-      <div class="stat-item-mini">
-        <div class="icon-circle" style="background: rgba(239, 68, 68, 0.08); color: #ef4444;">
-          <i class="bi bi-hourglass-split"></i>
-        </div>
-        <div class="stat-info">
-          <span class="stat-label">Pendiente</span>
-          <span class="stat-value text-danger">{{ pendientes | currency:'USD' }}</span>
-        </div>
-      </div>
-         
-      <div class="stat-divider"></div>
-
-      <div class="stat-item-mini">
-        <div class="icon-circle" style="background: rgba(16, 185, 129, 0.08); color: #10b981;">
-          <i class="bi bi-wallet2"></i>
-        </div>
-        <div class="stat-info">
-          <span class="stat-label">Pagado</span>
-          <span class="stat-value text-success">{{ pagados | currency:'USD' }}</span>
+          <span class="stat-label">Recaudación Proyectada</span>
+          <span class="stat-value">{{ stats.projectedCollection | currency:'USD' }}</span>
         </div>
       </div>
     </div>
@@ -89,10 +92,10 @@ import { CommonModule } from '@angular/common';
       line-height: 1.2;
     }
     .text-success {
-      color: var(--status-success, #10b981) !important;
+      color: #10b981 !important;
     }
     .text-danger {
-      color: var(--status-danger, #ef4444) !important;
+      color: #ef4444 !important;
     }
     .stat-divider {
       width: 1px;
@@ -114,8 +117,6 @@ import { CommonModule } from '@angular/common';
     }
   `]
 })
-export class VendedorComisionesStatsComponent {
-    @Input() total: number = 0;
-    @Input() pendientes: number = 0;
-    @Input() pagados: number = 0;
+export class VendedorSuscripcionStatsComponent {
+  @Input() stats: any = { active: 0, overdue: 0, projectedCollection: 0 };
 }

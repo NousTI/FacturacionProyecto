@@ -4,16 +4,18 @@ import { FormsModule } from '@angular/forms';
 import { Subject, takeUntil } from 'rxjs';
 
 // Components
-import { SuscripcionStatsComponent } from '../../super-admin/suscripciones/components/suscripcion-stats/suscripcion-stats.component';
-import { HistorialPagosModalComponent } from '../../super-admin/suscripciones/components/historial-pagos-modal/historial-pagos-modal.component';
+import { VendedorSuscripcionStatsComponent } from './components/vendedor-suscripcion-stats.component';
+import { VendedorSuscripcionActionsComponent } from './components/vendedor-suscripcion-actions.component';
 import { VendedorSuscripcionTableComponent } from './components/table/vendedor-suscripcion-table.component';
 import { SeguimientoNotasModalComponent } from './components/notas-modal/seguimiento-notas-modal.component';
 import { VendedorHistoryModalComponent } from './components/history-modal/vendedor-history-modal.component';
+import { HistorialPagosModalComponent } from '../../super-admin/suscripciones/components/historial-pagos-modal/historial-pagos-modal.component';
 import { ToastComponent } from '../../../shared/components/toast/toast.component';
 
 // Services
 import { VendedorSuscripcionService, Suscripcion } from './services/vendedor-suscripcion.service';
-import { SuscripcionService, PagoHistorico } from '../../super-admin/suscripciones/services/suscripcion.service'; // Reuse for history
+import { SuscripcionService, PagoHistorico } from '../../super-admin/suscripciones/services/suscripcion.service'; 
+import { VendedorEmpresaService } from '../empresas/services/vendedor-empresa.service';
 import { UiService } from '../../../shared/services/ui.service';
 
 @Component({
@@ -22,44 +24,32 @@ import { UiService } from '../../../shared/services/ui.service';
   imports: [
     CommonModule,
     FormsModule,
-    SuscripcionStatsComponent,
+    VendedorSuscripcionStatsComponent,
+    VendedorSuscripcionActionsComponent,
     VendedorSuscripcionTableComponent,
     HistorialPagosModalComponent,
     SeguimientoNotasModalComponent,
-    VendedorHistoryModalComponent, // Added
+    VendedorHistoryModalComponent,
     ToastComponent
   ],
   template: `
-    <div class="suscripciones-page-container animate__animated animate__fadeIn">
-      <!-- 2. ESTADÍSTICAS -->
-      <app-suscripcion-stats [stats]="stats"></app-suscripcion-stats>
+    <div class="suscripciones-page-container">
+      <!-- STATS -->
+      <app-vendedor-suscripcion-stats
+        [stats]="stats"
+      ></app-vendedor-suscripcion-stats>
 
-      <!-- 3. FILTROS -->
-      <div class="d-flex justify-content-between align-items-center mb-4 mt-4">
-        <!-- Search -->
-        <div class="search-box">
-          <i class="bi bi-search search-icon"></i>
-          <input 
-            type="text" 
-            class="form-control search-input" 
-            placeholder="Buscar empresa..."
-            [(ngModel)]="searchQuery"
-          >
-        </div>
+      <!-- SEARCH & ACTIONS BAR -->
+      <app-vendedor-suscripcion-actions
+        [(searchQuery)]="searchQuery"
+        [(filterStatus)]="filterStatus"
+        [(filterPago)]="filterPago"
+        [(filterPlan)]="filterPlan"
+        [planes]="planes"
+        (onOpenHistory)="showGeneralHistoryModal = true"
+      ></app-vendedor-suscripcion-actions>
 
-        <!-- Filter Tabs -->
-        <div class="filter-tabs d-flex gap-2">
-           <button class="btn-tab" (click)="showGeneralHistoryModal = true">
-             <i class="bi bi-clock-history me-1"></i> Historial
-           </button>
-           <div class="vr mx-1"></div>
-           <button class="btn-tab" [class.active]="filterStatus === 'ALL'" (click)="setFilter('ALL')">Todos</button>
-           <button class="btn-tab" [class.active]="filterStatus === 'ACTIVA'" (click)="setFilter('ACTIVA')">Activos</button>
-           <button class="btn-tab" [class.active]="filterStatus === 'VENCIDA'" (click)="setFilter('VENCIDA')">Vencidas</button>
-        </div>
-      </div>
-
-      <!-- 4. TABLA -->
+      <!-- TABLE -->
       <app-vendedor-suscripcion-table
         [suscripciones]="filteredSuscripciones"
         (onVerHistorial)="openHistorial($event)"
@@ -93,51 +83,42 @@ import { UiService } from '../../../shared/services/ui.service';
       <app-toast></app-toast>
     </div>
   `,
-  styles: [`
+    styles: [`
+    :host {
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      width: 100%;
+      overflow: hidden;
+      min-height: 0;
+    }
     .suscripciones-page-container {
-      position: relative;
-      min-height: 100vh;
-      background: #f8fafc;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      background: var(--bg-main, #ffffff);
+      padding: 0;
+      overflow: hidden;
+      min-height: 0;
+      gap: 24px;
     }
-    .page-title { font-size: 1.75rem; font-weight: 800; color: #161d35; margin-bottom: 0.25rem; }
-
-    .search-box {
-      position: relative;
-      width: 300px;
-    }
-    .search-icon {
-      position: absolute; left: 15px; top: 50%; transform: translateY(-50%);
-      color: #94a3b8; font-size: 1rem;
-    }
-    .search-input {
-      padding-left: 40px; border-radius: 12px; border: 1px solid #e2e8f0;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.02); height: 46px; font-size: 0.95rem;
-    }
-    .search-input:focus { border-color: #6366f1; box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1); }
-    
-    .btn-tab {
-      background: white; border: 1px solid #e2e8f0; color: #64748b;
-      padding: 0.5rem 1.25rem; border-radius: 10px; font-weight: 600; font-size: 0.9rem;
-      transition: all 0.2s;
-    }
-    .btn-tab.active {
-      background: #161d35; color: white; border-color: #161d35;
-    }
-    .btn-tab:hover:not(.active) { background: #f8fafc; }
   `]
 })
 export class VendedorSuscripcionesPage implements OnInit {
   suscripciones: Suscripcion[] = [];
   historialPagos: PagoHistorico[] = [];
+  selectedSuscripcion: Suscripcion | null = null;
+  planes: any[] = [];
 
   // UI State
   searchQuery = '';
   filterStatus = 'ALL';
+  filterPago = 'ALL';
+  filterPlan = 'ALL';
 
   showHistorialModal = false;
   showGeneralHistoryModal = false;
   showNotasModal = false;
-  selectedSuscripcion: Suscripcion | null = null;
 
   stats = {
     active: 0,
@@ -149,13 +130,15 @@ export class VendedorSuscripcionesPage implements OnInit {
 
   constructor(
     private subService: VendedorSuscripcionService,
-    private adminSubService: SuscripcionService, // To fetch history
+    private empService: VendedorEmpresaService,
+    private adminSubService: SuscripcionService, 
     private uiService: UiService,
     private cd: ChangeDetectorRef
   ) { }
 
   ngOnInit() {
     this.loadData();
+    this.loadPlanes();
   }
 
   loadData() {
@@ -169,6 +152,13 @@ export class VendedorSuscripcionesPage implements OnInit {
         },
         error: (err) => this.uiService.showError(err, 'Error cargando suscripciones')
       });
+  }
+
+  loadPlanes() {
+    this.empService.getPlanes().subscribe(data => {
+      this.planes = data;
+      this.cd.detectChanges();
+    });
   }
 
   calculateStats() {
@@ -196,6 +186,14 @@ export class VendedorSuscripcionesPage implements OnInit {
 
     if (this.filterStatus !== 'ALL') {
       filtered = filtered.filter(s => s.estado === this.filterStatus);
+    }
+
+    if (this.filterPago !== 'ALL') {
+      filtered = filtered.filter(s => s.estado_pago === this.filterPago);
+    }
+
+    if (this.filterPlan !== 'ALL') {
+      filtered = filtered.filter(s => s.plan_id?.toString() === this.filterPlan.toString());
     }
 
     return filtered;

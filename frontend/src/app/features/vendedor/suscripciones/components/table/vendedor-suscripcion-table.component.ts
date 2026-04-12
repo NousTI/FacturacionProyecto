@@ -4,34 +4,36 @@ import { Suscripcion } from '../../services/vendedor-suscripcion.service';
 
 @Component({
   selector: 'app-vendedor-suscripcion-table',
+  standalone: true,
+  imports: [CommonModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <section class="module-table">
-      <div class="table-container border-0 shadow-premium">
+      <div class="table-container">
         <div class="table-responsive-premium">
           <table class="table mb-0 align-middle">
             <thead>
               <tr>
-                <th>Empresa</th>
-                <th>Plan</th>
-                <th style="width: 130px">Inicio</th>
-                <th style="width: 130px">Vencimiento</th>
-                <th style="width: 140px">Estado Pagos</th>
-                <th style="width: 120px">Estado</th>
+                <th style="width: 250px">Empresa</th>
+                <th style="width: 180px">Plan</th>
+                <th style="width: 130px; text-align: center;">Inicio</th>
+                <th style="width: 130px; text-align: center;">Vencimiento</th>
+                <th style="width: 140px; text-align: center;">Pagos</th>
+                <th style="width: 120px; text-align: center;">Estado</th>
                 <th class="text-end" style="width: 100px">Acciones</th>
               </tr>
             </thead>
             <tbody>
-              <tr *ngFor="let sub of suscripciones; trackBy: trackById" class="animate__animated animate__fadeIn">
+              <tr *ngFor="let sub of suscripciones; trackBy: trackById">
                 <!-- EMPRESA -->
                 <td>
-                  <div class="d-flex align-items-center">
-                    <div class="empresa-icon me-3">
+                  <div class="d-flex align-items-center" style="max-width: 230px;">
+                    <div class="avatar-soft-premium me-3">
                       <i class="bi bi-building"></i>
                     </div>
-                    <div>
-                      <span class="fw-bold text-dark d-block mb-0">{{ sub.empresa_nombre || 'Empresa Desconocida' }}</span>
-                      <small class="text-muted d-block" style="font-size: 0.75rem;">
+                    <div class="text-truncate">
+                      <span class="fw-bold text-dark d-block mb-0 text-truncate" [title]="sub.empresa_nombre">{{ sub.empresa_nombre || 'Empresa Desconocida' }}</span>
+                      <small class="text-muted d-block" style="font-size: 0.73rem;">
                         ID: {{ sub.empresa_id.substring(0,8) }}...
                       </small>
                     </div>
@@ -41,87 +43,73 @@ import { Suscripcion } from '../../services/vendedor-suscripcion.service';
                 <!-- PLAN -->
                 <td>
                   <div class="d-flex flex-column">
-                    <span class="badge-cycle w-fit mb-1">{{ sub.plan_nombre || 'Sin Plan' }}</span>
-                    <small class="text-muted fw-bold" style="font-size: 0.75rem;">
+                    <span class="text-corporate fw-700 mb-0" style="font-size: 0.85rem;">{{ sub.plan_nombre || 'Sin Plan' }}</span>
+                    <small class="text-muted fw-bold" style="font-size: 0.73rem;">
                        {{ sub.precio_plan | currency:'USD' }} / año
                     </small>
                   </div>
                 </td>
 
                 <!-- INICIO -->
-                <td>
-                  <div class="d-flex flex-column">
-                    <span class="fw-800 text-muted" style="font-size: 0.85rem;">{{ sub.fecha_inicio ? (sub.fecha_inicio | date:'dd MMM yyyy') : '-' }}</span>
-                  </div>
+                <td class="text-center">
+                   <span class="text-muted fw-600" style="font-size: 0.85rem;">{{ sub.fecha_inicio ? (sub.fecha_inicio | date:'dd/MM/yyyy') : '-' }}</span>
                 </td>
 
                 <!-- VENCIMIENTO -->
-                <td>
-                  <div class="d-flex flex-column">
-                    <span class="fw-800 text-dark">{{ sub.fecha_fin ? (sub.fecha_fin | date:'dd MMM yyyy') : '-' }}</span>
+                <td class="text-center">
+                  <div class="d-flex flex-column align-items-center">
+                    <span class="fw-bold" [class.text-danger]="isOverdue(sub)" style="font-size: 0.85rem;">{{ sub.fecha_fin ? (sub.fecha_fin | date:'dd/MM/yyyy') : '-' }}</span>
                     
-                    <small *ngIf="sub.fecha_fin && isOverdue(sub) && sub.days_overdue" class="text-danger fw-bold mt-1" style="font-size: 0.7rem;">
-                      <i class="bi bi-exclamation-circle me-1"></i>Vencido hace {{ sub.days_overdue }} días
+                    <small *ngIf="sub.fecha_fin && isOverdue(sub) && sub.days_overdue" class="text-danger fw-bold mt-1" style="font-size: 0.65rem;">
+                      {{ sub.days_overdue }} d. vencido
                     </small>
                   </div>
                 </td>
 
                 <!-- ESTADO PAGOS -->
-                <td>
-                    <div class="d-flex flex-column gap-1">
-                        <span class="badge-pago w-fit" [ngClass]="sub.estado_pago?.toLowerCase()">
+                <td class="text-center">
+                    <div class="d-flex flex-column align-items-center">
+                        <span class="badge-pago-solid" [ngClass]="sub.estado_pago?.toLowerCase() || 'pendiente'">
                             {{ sub.estado_pago || 'PENDIENTE' }}
                         </span>
-                        
-                        <div *ngIf="sub.last_payment" class="mt-1">
-                            <small class="text-muted" style="font-size: 0.65rem;">Último: {{ sub.last_payment.amount | currency:'USD' }}</small>
-                        </div>
                     </div>
                 </td>
 
                 <!-- ESTADO -->
-                <td>
-                  <span class="badge-status-premium" [ngClass]="getStatusClass(sub.estado)">
+                <td class="text-center">
+                  <span class="badge-status-premium" [ngClass]="sub.estado.toLowerCase()">
                     {{ sub.estado }}
                   </span>
                 </td>
 
                 <!-- ACCIONES -->
                 <td class="text-end">
-                  <div class="d-flex align-items-center justify-content-end gap-2">
-
-                      <div class="dropdown">
-                        <button 
-                          class="btn-action-trigger" 
-                          type="button" 
-                          [id]="'actions-' + sub.id" 
-                          data-bs-toggle="dropdown" 
-                          aria-expanded="false"
-                        >
-                          <i class="bi bi-three-dots"></i>
-                        </button>
-                        <ul class="dropdown-menu dropdown-menu-end shadow-premium-lg border-0 p-2 rounded-4" [attr.aria-labelledby]="'actions-' + sub.id">
-                          
-                          <!-- VER HISTORIAL (Keep in dropdown too) -->
+                  <div class="dropdown">
+                    <button 
+                      class="btn-action-trigger" 
+                      type="button" 
+                      [id]="'actions-' + sub.id" 
+                      data-bs-toggle="dropdown" 
+                      aria-expanded="false"
+                      data-bs-popper-config='{"strategy":"fixed"}'
+                    >
+                      <i class="bi bi-three-dots"></i>
+                    </button>
+                        <ul class="dropdown-menu dropdown-menu-end border-0 p-2 rounded-4" [attr.aria-labelledby]="'actions-' + sub.id">
                           <li>
                             <a class="dropdown-item rounded-3 py-2" href="javascript:void(0)" (click)="onVerHistorial.emit(sub)">
                               <i class="bi bi-clock-history text-corporate"></i>
                               <span class="ms-2">Historial de Pagos</span>
                             </a>
                           </li>
-
-                      
-                      <!-- RESTRICTED/VISUAL ONLY -->
-                      <li><hr class="dropdown-divider mx-2"></li>
-                      <li>
-                        <div class="px-3 py-1 text-muted" style="font-size: 0.7rem;">
-                          <i class="bi bi-lock-fill me-1"></i> Gestión de pagos restringida
-                        </div>
-                      </li>
-
-                    </ul>
+                          <li><hr class="dropdown-divider mx-2"></li>
+                          <li>
+                            <div class="px-3 py-1 text-muted" style="font-size: 0.65rem;">
+                              <i class="bi bi-lock-fill me-1"></i> Solo lectura (Vendedor)
+                            </div>
+                          </li>
+                        </ul>
                   </div>
-                </div>
                 </td>
               </tr>
             </tbody>
@@ -131,132 +119,125 @@ import { Suscripcion } from '../../services/vendedor-suscripcion.service';
             <i class="bi bi-inbox fs-1 d-block mb-3"></i>
             No se encontraron suscripciones asociadas.
           </div>
-
         </div>
       </div>
     </section>
   `,
   styles: [`
-    .module-table { margin-top: 1rem; }
+    :host {
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      min-height: 0;
+      width: 100%;
+    }
+    .module-table { 
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+    }
     .table-container {
-      background: #ffffff;
-      border-radius: 24px;
-      border: 1px solid #f1f5f9;
-      overflow: visible !important;
+      background: var(--bg-main, #ffffff);
+      border-radius: 20px;
+      border: 1px solid var(--border-color, #f1f5f9);
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+      overflow: hidden;
+      margin-bottom: 0;
     }
-    .table-responsive-premium { overflow: visible !important; }
+    .table-responsive-premium { 
+      flex: 1;
+      overflow-y: auto; 
+      overflow-x: auto;
+      position: relative; 
+    }
     .table thead th {
-      background: #f8fafc;
-      padding: 1.15rem 1.5rem;
-      font-size: 0.7rem;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      color: #94a3b8;
-      font-weight: 800;
-      border-bottom: 2px solid #f1f5f9;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      background: var(--bg-main, #ffffff);
+      padding: 1rem 1.5rem;
+      font-size: var(--text-base);
+      color: #0f172a;
+      font-weight: 600;
+      border-bottom: 2px solid var(--border-color, #f1f5f9);
+      vertical-align: middle;
     }
-    .table tbody tr {
-      position: relative;
-    }
-    .table tbody tr:focus-within,
-    .table tbody tr:hover {
-      z-index: 100;
-        background: #f8fafc;
-    }
-    .table tbody tr:has(.show),
-    .table tbody tr:has(.btn-action-trigger[aria-expanded="true"]) {
-      z-index: 10001 !important;
-    }
-
     .table tbody td {
       padding: 1.25rem 1.5rem;
-      border-bottom: 1px solid #f8fafc;
-      background: transparent;
+      border-bottom: 1px solid var(--border-color, #f1f5f9);
+      color: var(--text-muted, #475569);
+      font-size: var(--text-md);
+      vertical-align: middle;
     }
     
-    .empresa-icon {
+    .avatar-soft-premium {
       width: 40px; height: 40px;
       border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 800; font-size: 1.1rem;
       background: #f1f5f9;
       color: #64748b;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 1.1rem;
     }
-
-    .badge-cycle {
-      background: #f1f5f9;
-      color: #475569;
-      padding: 0.35rem 0.75rem;
-      border-radius: 8px;
-      font-size: 0.75rem;
-      font-weight: 700;
+    
+    .badge-status-premium {
+      padding: 0.25rem 0.75rem;
+      border-radius: 6px;
+      font-size: var(--text-sm);
+      font-weight: 600;
+      display: inline-block;
       text-transform: uppercase;
     }
-
-    .badge-status-premium {
-      padding: 0.4rem 0.85rem; border-radius: 100px;
-      font-size: 0.75rem; font-weight: 800;
-    }
-    .badge-status-premium.activa { background: #dcfce7; color: #15803d; }
-    .badge-status-premium.vencida { background: #fee2e2; color: #b91c1c; }
+    .badge-status-premium.activa { background: var(--status-success-bg, #dcfce7); color: var(--status-success-text, #ffffff); }
+    .badge-status-premium.vencida { background: var(--status-danger-bg, #fee2e2); color: var(--status-danger-text, #ffffff); }
     .badge-status-premium.cancelada { background: #f1f5f9; color: #64748b; }
-    .badge-status-premium.suspendida { background: #f8fafc; color: #475569; text-decoration: line-through; }
-    
-    .badge-pago {
-        padding: 0.3rem 0.6rem; border-radius: 6px; font-size: 0.7rem; font-weight: 700; text-transform: uppercase;
-    }
-    .badge-pago.pagado { background: #eff6ff; color: #1d4ed8; border: 1px solid #dbeafe; }
-    .badge-pago.pendiente { background: #fff7ed; color: #c2410c; border: 1px solid #ffedd5; }
-    .badge-pago.anulado { background: #fef2f2; color: #b91c1c; border: 1px solid #fee2e2; }
-    .badge-pago.reembolsado { background: #f1f5f9; color: #64748b; border: 1px solid #e2e8f0; }
 
+    .badge-pago-solid {
+        padding: 0.25rem 0.6rem;
+        border-radius: 4px;
+        font-size: 0.65rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        color: #ffffff !important;
+    }
+    .badge-pago-solid.pagado { background: #1d4ed8; }
+    .badge-pago-solid.pendiente { background: #c2410c; }
+    .badge-pago-solid.anulado { background: #b91c1c; }
+    
     .btn-action-trigger {
-      background: #f8fafc; border: none;
+      background: transparent; border: none;
       width: 32px; height: 32px;
       border-radius: 8px; color: #94a3b8;
       transition: all 0.2s;
     }
     .btn-action-trigger:hover, .btn-action-trigger[aria-expanded="true"] {
-      background: #161d35; color: #ffffff;
-    }
-
-    .btn-icon-action {
-      background: #eff6ff; border: none;
-      width: 32px; height: 32px;
-      border-radius: 8px; color: #3b82f6;
-      transition: all 0.2s;
-      display: flex; align-items: center; justify-content: center;
-    }
-    .btn-icon-action:hover {
-      background: #2563eb; color: #ffffff;
+      background: #f8fafc; color: #0f172a;
     }
     
     .dropdown-menu {
-      z-index: 10005 !important;
-      min-width: 230px;
-      border: 1px solid #e2e8f0 !important;
-      box-shadow: 0 15px 35px rgba(22, 29, 53, 0.15) !important;
-      margin-top: 5px !important;
-      pointer-events: auto !important;
+      border: 1px solid var(--border-color, #e2e8f0) !important;
+      box-shadow: none !important;
+      border-radius: 12px !important;
+      padding: 0.5rem !important;
+      z-index: 1050 !important;
     }
-
     .dropdown-item {
-      font-size: 0.85rem; font-weight: 600;
-      color: #475569; padding: 0.65rem 1.15rem;
+      border-radius: 8px !important;
+      font-size: var(--text-base);
+      font-weight: 500;
+      color: var(--text-muted, #475569); padding: 0.5rem 1rem;
       display: flex; align-items: center;
       cursor: pointer;
     }
-    .dropdown-item:hover {
-      background: #f8fafc; color: #161d35;
-    }
-    .text-corporate { color: #161d35 !important; }
-    .fw-800 { font-weight: 800; }
-    .w-fit { width: fit-content; }
-    .shadow-premium { box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.04); }
-    .shadow-premium-lg { box-shadow: 0 20px 40px -15px rgba(0, 10, 30, 0.15); }
-  `],
-  standalone: true,
-  imports: [CommonModule]
+    .dropdown-item:hover { background: #f8fafc; color: #0f172a; }
+    .dropdown-item i { font-size: 1.1rem; margin-right: 0.75rem; }
+    
+    .fw-600 { font-weight: 600; }
+    .fw-700 { font-weight: 700; }
+    .text-corporate { color: var(--primary-color, #111827) !important; }
+  `]
 })
 export class VendedorSuscripcionTableComponent {
   @Input() suscripciones: Suscripcion[] = [];

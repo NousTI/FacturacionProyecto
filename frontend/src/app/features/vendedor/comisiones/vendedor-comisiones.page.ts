@@ -23,9 +23,7 @@ import { UiService } from '../../../shared/services/ui.service';
     VendedorComisionesAuditModalComponent
   ],
   template: `
-    <!-- Comisiones Page Container -->
-    <div class="comisiones-page-container animate__animated animate__fadeIn">
-      
+    <div class="comisiones-page-container">
       <!-- 1. STATS -->
       <app-vendedor-comisiones-stats
         [total]="stats.total"
@@ -33,45 +31,27 @@ import { UiService } from '../../../shared/services/ui.service';
         [pagados]="stats.pagados"
       ></app-vendedor-comisiones-stats>
 
-      <!-- 2. TABS NAV -->
-      <div class="tabs-container mb-4">
-        <ul class="nav nav-pills custom-pills">
-          <li class="nav-item" *ngFor="let tab of tabs">
-            <a 
-              class="nav-link" 
-              [class.active]="currentTab === tab.id"
-              (click)="selectTab(tab.id)"
-              href="javascript:void(0)"
-            >
-              {{ tab.label }}
-            </a>
-          </li>
-        </ul>
-      </div>
-
-      <!-- 3. ACTIONS -->
+      <!-- 2. ACTIONS & FILTERS -->
       <app-vendedor-comisiones-actions
         [(searchQuery)]="searchQuery"
         (searchQueryChange)="filterComisiones()"
+        [tabs]="tabs"
+        [currentTab]="currentTab"
+        (tabChange)="selectTab($event)"
+        [empresas]="empresas"
+        [selectedEmpresa]="selectedEmpresa"
+        (empresaChange)="selectEmpresa($event)"
       ></app-vendedor-comisiones-actions>
 
-      <!-- 4. CONTENT -->
-      
-      <!-- Main List View -->
-      <ng-container *ngIf="isListView()">
-        <app-vendedor-comisiones-table
-          [comisiones]="filteredComisiones"
-          (onAction)="handleAction($event)"
-        ></app-vendedor-comisiones-table>
-      </ng-container>
-
-      <!-- Audit Tab / List -->
-      <div *ngIf="currentTab === 'AUDIT'">
-         <app-vendedor-comisiones-table
-          [comisiones]="filteredComisiones"
-          [isAudit]="true"
-          (onAction)="handleAction($event)"
-        ></app-vendedor-comisiones-table>
+      <!-- 3. CONTENT -->
+      <div class="page-content-wrapper">
+         <!-- Main List View -->
+        <ng-container *ngIf="isListView()">
+          <app-vendedor-comisiones-table
+            [comisiones]="filteredComisiones"
+            (onAction)="handleAction($event)"
+          ></app-vendedor-comisiones-table>
+        </ng-container>
       </div>
 
       <!-- DETAILS MODAL -->
@@ -92,44 +72,30 @@ import { UiService } from '../../../shared/services/ui.service';
     </div>
   `,
   styles: [`
+    :host {
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      width: 100%;
+      overflow: hidden;
+      min-height: 0;
+    }
     .comisiones-page-container {
-      background: #f8fafc;
-      min-height: 100vh;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      background: var(--bg-main, #ffffff);
+      padding: 0;
+      overflow: hidden;
+      min-height: 0;
+      gap: 24px;
     }
-    .tabs-container {
-      overflow-x: auto;
-      padding-bottom: 0.5rem;
-    }
-    .custom-pills {
-      gap: 0.5rem;
-      flex-wrap: nowrap;
-    }
-    .custom-pills .nav-link {
-      background: #f8fafc;
-      color: #64748b;
-      font-weight: 600;
-      font-size: 0.9rem;
-      border-radius: 12px;
-      padding: 0.6rem 1.2rem;
-      border: 1px solid transparent;
-      transition: all 0.2s;
-      white-space: nowrap;
-    }
-    .custom-pills .nav-link:hover {
-      background: #f1f5f9;
-      color: #1e293b;
-    }
-    .custom-pills .nav-link.active {
-      background: #161d35;
-      color: #ffffff;
-      box-shadow: 0 4px 12px rgba(22, 29, 53, 0.15);
-    }
-    .placeholder-module {
-      background: white;
-      border-radius: 20px;
-      padding: 2rem;
-      border: 1px solid #f1f5f9;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+    .page-content-wrapper {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+      overflow: hidden;
     }
   `],
 })
@@ -138,6 +104,8 @@ export class VendedorComisionesPage implements OnInit {
   allComisiones: Comision[] = [];
   filteredComisiones: Comision[] = [];
   searchQuery: string = '';
+  empresas: string[] = [];
+  selectedEmpresa: string = 'ALL';
 
   showDetailsModal = false;
   selectedComision: Comision | null = null;
@@ -151,8 +119,7 @@ export class VendedorComisionesPage implements OnInit {
     { id: 'PENDING', label: 'Por Aprobar' },
     { id: 'APPROVED', label: 'Por Pagar' },
     { id: 'PAID', label: 'Historial Pagos' },
-    { id: 'REJECTED', label: 'Rechazadas' },
-    { id: 'AUDIT', label: 'Auditoría' }
+    { id: 'REJECTED', label: 'Rechazadas' }
   ];
   currentTab = 'ALL';
 
@@ -174,6 +141,7 @@ export class VendedorComisionesPage implements OnInit {
     });
     this.comisionesService.getAllComisiones().subscribe(data => {
       this.allComisiones = data;
+      this.empresas = Array.from(new Set(data.map(c => c.empresa_nombre).filter((name): name is string => !!name))).sort();
       this.filterComisiones();
       this.cdr.detectChanges();
     });
@@ -181,6 +149,11 @@ export class VendedorComisionesPage implements OnInit {
 
   selectTab(tabId: string) {
     this.currentTab = tabId;
+    this.filterComisiones();
+  }
+
+  selectEmpresa(emp: string) {
+    this.selectedEmpresa = emp;
     this.filterComisiones();
   }
 
@@ -196,6 +169,10 @@ export class VendedorComisionesPage implements OnInit {
       if (this.currentTab === 'APPROVED') temp = temp.filter(c => c.estado === 'APROBADA');
       if (this.currentTab === 'PAID') temp = temp.filter(c => c.estado === 'PAGADA');
       if (this.currentTab === 'REJECTED') temp = temp.filter(c => c.estado === 'RECHAZADA');
+    }
+
+    if (this.selectedEmpresa !== 'ALL') {
+      temp = temp.filter(c => c.empresa_nombre === this.selectedEmpresa);
     }
 
     if (this.searchQuery) {

@@ -357,16 +357,14 @@ class RepositorioUsuarios:
         params = []
         where_clauses = []
         
-        if vendedor_id:
-            if actor_user_id:
-                where_clauses.append("(e.vendedor_id = %s OR l.actor_user_id = %s)")
-                params.extend([str(vendedor_id), str(actor_user_id)])
-            else:
-                where_clauses.append("e.vendedor_id = %s")
-                params.append(str(vendedor_id))
-        elif actor_user_id:
+        if actor_user_id:
+            # VENDEDOR: solo ve lo que él creó (requisito usuario)
             where_clauses.append("l.actor_user_id = %s")
             params.append(str(actor_user_id))
+        elif vendedor_id:
+            # SUPERADMIN: ve todo lo de las empresas del vendedor seleccionado
+            where_clauses.append("e.vendedor_id = %s")
+            params.append(str(vendedor_id))
             
         if where_clauses:
             query += " WHERE " + " AND ".join(where_clauses)
@@ -391,16 +389,12 @@ class RepositorioUsuarios:
         params = []
         where_clauses = []
         
-        if vendedor_id:
-            if actor_user_id:
-                where_clauses.append("(e.vendedor_id = %s OR l.actor_user_id = %s)")
-                params.extend([str(vendedor_id), str(actor_user_id)])
-            else:
-                where_clauses.append("e.vendedor_id = %s")
-                params.append(str(vendedor_id))
-        elif actor_user_id:
+        if actor_user_id:
             where_clauses.append("l.actor_user_id = %s")
             params.append(str(actor_user_id))
+        elif vendedor_id:
+            where_clauses.append("e.vendedor_id = %s")
+            params.append(str(vendedor_id))
             
         if where_clauses:
             query += " WHERE " + " AND ".join(where_clauses)

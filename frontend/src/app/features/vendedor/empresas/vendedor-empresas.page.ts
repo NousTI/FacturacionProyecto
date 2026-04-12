@@ -7,7 +7,8 @@ import { VendedorEmpresaTableComponent } from './components/empresa-table/vended
 import { VendedorCreateEmpresaModalComponent } from './components/create-empresa-modal/vendedor-create-empresa-modal.component';
 import { VendedorEmpresaDetailsModalComponent } from './components/details-modal/vendedor-empresa-details-modal.component';
 import { VendedorChangePlanModalComponent } from './components/change-plan-modal/vendedor-change-plan-modal.component';
-import { EmpresaStatsComponent } from '../../super-admin/empresas/components/empresa-stats/empresa-stats.component';
+import { VendedorEmpresaStatsComponent } from './components/vendedor-empresa-stats.component';
+import { VendedorEmpresaActionsComponent } from './components/vendedor-empresa-actions.component';
 import { UiService } from '../../../shared/services/ui.service';
 import { AuthFacade } from '../../../core/auth/auth.facade';
 import { ToastComponent } from '../../../shared/components/toast/toast.component';
@@ -22,74 +23,34 @@ import { PermissionsService } from '../../../core/auth/permissions.service';
         FormsModule,
         VendedorEmpresaTableComponent,
         VendedorCreateEmpresaModalComponent,
-        VendedorCreateEmpresaModalComponent,
         VendedorEmpresaDetailsModalComponent,
         VendedorChangePlanModalComponent,
-        EmpresaStatsComponent,
+        VendedorEmpresaStatsComponent,
+        VendedorEmpresaActionsComponent,
         ToastComponent
     ],
     template: `
     <div class="empresas-page-container">
       <!-- STATS -->
-      <app-empresa-stats
+      <app-vendedor-empresa-stats
         *ngIf="stats"
-        [total]="stats.total"
-        [active]="stats.activas"
-        [inactive]="stats.inactivas"
-      ></app-empresa-stats>
+        [stats]="stats"
+      ></app-vendedor-empresa-stats>
 
       <!-- SEARCH & ACTIONS BAR -->
-      <section class="module-actions mb-4">
-        <div class="actions-bar-container shadow-sm py-2 px-4 rounded-4">
-            <div class="row align-items-center g-3">
-            
-            <!-- Búsqueda -->
-            <div class="col-lg-5">
-                <div class="search-box-premium">
-                <i class="bi bi-search"></i>
-                <input 
-                    type="text" 
-                    [(ngModel)]="searchQuery" 
-                    placeholder="Buscar por razón social, RUC..." 
-                    class="form-control-premium-search"
-                >
-                </div>
-            </div>
-
-            <!-- Filtros -->
-            <div class="col-lg-4">
-                <select class="form-select-premium" [(ngModel)]="filterEstado">
-                    <option value="ALL">Todos los Estados</option>
-                    <option value="ACTIVO">Activos</option>
-                    <option value="INACTIVO">Inactivos</option>
-                </select>
-            </div>
-
-            <!-- Botón de Acción -->
-            <div class="col-lg-3 text-lg-end">
-                <div class="d-inline-block w-100" [title]="!canCreate ? 'No tienes permiso para crear empresas' : ''">
-                    <button 
-                        [disabled]="!canCreate"
-                        [class.restricted-btn]="!canCreate"
-                        class="btn-premium-primary w-100 justify-content-center"
-                        (click)="openCreateModal()"
-                        style="height: 40px;"
-                    >
-                        <i class="bi" [ngClass]="canCreate ? 'bi-plus-lg' : 'bi-lock-fill'"></i>
-                        <span class="ms-2">{{ canCreate ? 'Nueva Empresa' : 'Creación Restringida' }}</span>
-                    </button>
-                </div>
-            </div>
-            
-            </div>
-        </div>
-      </section>
+      <app-vendedor-empresa-actions
+        [(searchQuery)]="searchQuery"
+        [(filterEstado)]="filterEstado"
+        [(filterPlan)]="filterPlan"
+        [planes]="planes"
+        [canCreate]="canCreate"
+        (onCreate)="openCreateModal()"
+      ></app-vendedor-empresa-actions>
 
       <!-- TABLE -->
       <app-vendedor-empresa-table
         [empresas]="filteredEmpresas"
         [canAccess]="canAccess"
-        [canChangePlan]="canChangePlan"
         (onAction)="handleAction($event)"
       ></app-vendedor-empresa-table>
       
@@ -104,7 +65,6 @@ import { PermissionsService } from '../../../core/auth/permissions.service';
       <app-vendedor-empresa-details-modal
         *ngIf="showDetailsModal"
         [empresa]="selectedEmpresa"
-        (onClose)="closeDetailsModal()"
         (onClose)="closeDetailsModal()"
       ></app-vendedor-empresa-details-modal>
 
@@ -121,99 +81,23 @@ import { PermissionsService } from '../../../core/auth/permissions.service';
     </div>
   `,
     styles: [`
+    :host {
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      width: 100%;
+      overflow: hidden;
+      min-height: 0;
+    }
     .empresas-page-container {
-      min-height: 100vh;
-      background: #f8fafc;
-    }
-    .page-title {
-        font-size: 1.75rem;
-        font-weight: 800;
-        color: #161d35;
-        letter-spacing: -0.5px;
-        margin-bottom: 0.25rem;
-    }
-    
-    /* REUSED STYLES FROM ADMIN */
-    .actions-bar-container {
-      background: #ffffff;
-      border: 1px solid rgba(0, 0, 0, 0.05);
-    }
-    .search-box-premium {
-      position: relative;
-      width: 100%;
-    }
-    .search-box-premium i {
-      position: absolute;
-      left: 1.25rem;
-      top: 50%;
-      transform: translateY(-50%);
-      color: #94a3b8;
-      font-size: 1.1rem;
-    }
-    .form-control-premium-search {
-      background: #f8fafc;
-      border: 1.5px solid rgba(0, 0, 0, 0.05);
-      border-radius: 14px;
-      padding: 0 1.25rem 0 3.25rem;
-      height: 40px;
-      font-size: 0.9rem;
-      font-weight: 500;
-      color: #161d35;
-      transition: all 0.2s;
-      width: 100%;
-    }
-    .form-control-premium-search:focus {
-      background: #ffffff;
-      border-color: #161d35;
-      box-shadow: 0 0 0 4px rgba(22, 29, 53, 0.05);
-      outline: none;
-    }
-    .form-select-premium {
-      background: #f8fafc;
-      border: 1.5px solid rgba(0, 0, 0, 0.05);
-      border-radius: 14px;
-      padding: 0 1rem;
-      height: 40px;
-      font-size: 0.85rem;
-      font-weight: 600;
-      color: #475569;
-      width: 100%;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-    .form-select-premium:focus {
-      border-color: #161d35;
-      outline: none;
-    }
-
-    .btn-premium-primary {
-        background: #161d35;
-        color: #ffffff;
-        border: none;
-        padding: 0 1.5rem;
-        border-radius: 12px;
-        font-weight: 700;
-        font-size: 0.95rem;
-        display: flex;
-        align-items: center;
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        box-shadow: 0 10px 20px -5px rgba(22, 29, 53, 0.3);
-    }
-    .btn-premium-primary:not(:disabled):hover {
-        transform: translateY(-2px);
-        box-shadow: 0 20px 30px -8px rgba(22, 29, 53, 0.4);
-        background: #232d4d;
-    }
-    
-    /* RESTRICTED STATE */
-    .restricted-btn {
-        background: #94a3b8 !important;
-        cursor: not-allowed !important;
-        box-shadow: none !important;
-        opacity: 0.7;
-    }
-    .restricted-btn:hover {
-        transform: none !important;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      background: var(--bg-main, #ffffff);
+      padding: 0;
+      overflow: hidden;
+      min-height: 0;
+      gap: 24px;
     }
   `]
 })
@@ -224,11 +108,13 @@ export class VendedorEmpresasPage implements OnInit, OnDestroy {
     showCreateModal = false;
     showDetailsModal = false;
     showPlanModal = false;
+    planes: any[] = [];
     selectedEmpresa: any = null;
 
     // Filters
     searchQuery = '';
     filterEstado = 'ALL';
+    filterPlan = 'ALL';
 
     // Permissions
     canCreate = false;
@@ -248,6 +134,7 @@ export class VendedorEmpresasPage implements OnInit, OnDestroy {
     ngOnInit() {
         this.checkPermissions();
         this.loadData();
+        this.loadPlanes();
 
         // Subscribe to data
         this.vendedorService.getEmpresas()
@@ -274,6 +161,13 @@ export class VendedorEmpresasPage implements OnInit, OnDestroy {
         this.vendedorService.loadMyEmpresas();
     }
 
+    loadPlanes() {
+        this.vendedorService.getPlanes().subscribe(data => {
+            this.planes = data;
+            this.cd.detectChanges();
+        });
+    }
+
     get filteredEmpresas() {
         return this.empresas.filter(e => {
             const matchSearch = !this.searchQuery ||
@@ -284,7 +178,10 @@ export class VendedorEmpresasPage implements OnInit, OnDestroy {
                 (this.filterEstado === 'ACTIVO' && e.activo) ||
                 (this.filterEstado === 'INACTIVO' && !e.activo);
 
-            return matchSearch && matchEstado;
+            const matchPlan = this.filterPlan === 'ALL' || 
+                (e.planId?.toString() === this.filterPlan.toString());
+
+            return matchSearch && matchEstado && matchPlan;
         });
     }
 
