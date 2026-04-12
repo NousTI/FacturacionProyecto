@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter } from '@angular/core';
+import { Component, Input, Output, EventEmitter, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Proveedor } from '../../../../domain/models/proveedor.model';
 import { HasPermissionDirective } from '../../../../shared/directives/has-permission.directive';
@@ -7,165 +7,184 @@ import { GET_IDENTIFICACION_LABEL } from '../../../../core/constants/sri-iva.con
 @Component({
   selector: 'app-proveedores-table',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommonModule, HasPermissionDirective],
   template: `
-    <div class="table-premium-container">
-      <div class="table-responsive">
-        <table class="table-premium">
-          <thead>
-            <tr>
-              <th>Proveedor</th>
-              <th>Identificación</th>
-              <th>Estado</th>
-              <th>Contacto / Ubicación</th>
-              <th>Crédito</th>
-              <th class="text-center">Acciones</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let p of proveedores" class="table-row">
-              <!-- PROVEEDOR -->
-              <td>
-                <div class="client-info">
-                  <div class="avatar" [style.background]="getAvatarColor(p.razon_social, 0.1)" [style.color]="getAvatarColor(p.razon_social, 1)">
-                    {{ getInitials(p.razon_social) }}
+    <section class="module-table-premium">
+      <div class="table-container-premium">
+        <div class="table-responsive-premium">
+          <table class="table-editorial">
+            <thead>
+              <tr>
+                <th style="width: 280px">Proveedor</th>
+                <th style="width: 160px">Identificación</th>
+                <th style="width: 140px" class="text-center">Estado</th>
+                <th style="width: 250px">Contacto / Ubicación</th>
+                <th style="width: 120px">Crédito</th>
+                <th class="text-center" style="width: 100px">Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let p of proveedores">
+                <!-- PROVEEDOR -->
+                <td>
+                  <div class="client-info-editorial">
+                    <div class="avatar-editorial" [style.background]="getAvatarColor(p.razon_social, 0.1)" [style.color]="getAvatarColor(p.razon_social, 1)">
+                      {{ getInitials(p.razon_social) }}
+                    </div>
+                    <div class="details-editorial">
+                      <span class="name-editorial">{{ p.razon_social }}</span>
+                      <span class="sub-editorial">{{ p.nombre_comercial || 'Sin nombre comercial' }}</span>
+                    </div>
                   </div>
-                  <div class="details">
-                    <span class="name">{{ p.razon_social }}</span>
-                    <span class="sub">{{ p.nombre_comercial || 'Sin nombre comercial' }}</span>
+                </td>
+
+                <!-- IDENTIFICACIÓN -->
+                <td>
+                  <div class="id-info-editorial">
+                    <span class="id-value-editorial">{{ p.identificacion }}</span>
+                    <span class="id-type-editorial">{{ getTipoIdLabel(p.tipo_identificacion) }}</span>
                   </div>
-                </div>
-              </td>
+                </td>
 
-              <!-- IDENTIFICACIÓN -->
-              <td>
-                <div class="id-info">
-                  <span class="id-value">{{ p.identificacion }}</span>
-                  <span class="id-type">{{ getTipoIdLabel(p.tipo_identificacion) }}</span>
-                </div>
-              </td>
+                <!-- ESTADO -->
+                <td class="text-center">
+                  <span class="badge-status-editorial" [ngClass]="p.activo ? 'activo' : 'inactivo'">
+                    <i class="bi" [ngClass]="p.activo ? 'bi-check-circle-fill' : 'bi-x-circle-fill'"></i>
+                    {{ p.activo ? 'Activo' : 'Inactivo' }}
+                  </span>
+                </td>
 
-              <!-- ESTADO -->
-              <td>
-                <span class="status-badge" [ngClass]="p.activo ? 'active' : 'inactive'">
-                  <i class="bi" [ngClass]="p.activo ? 'bi-check-circle-fill' : 'bi-x-circle-fill'"></i>
-                  {{ p.activo ? 'Activo' : 'Inactivo' }}
-                </span>
-              </td>
-
-              <!-- CONTACTO -->
-              <td>
-                <div class="contact-info">
-                  <div class="contact-item">
-                    <i class="bi bi-envelope"></i>
-                    <span>{{ p.email || '—' }}</span>
+                <!-- CONTACTO -->
+                <td>
+                  <div class="contact-info-editorial">
+                    <div class="contact-item-editorial">
+                      <i class="bi bi-envelope"></i>
+                      <span>{{ p.email || '—' }}</span>
+                    </div>
+                    <div class="contact-item-editorial">
+                      <i class="bi bi-geo-alt"></i>
+                      <span>{{ p.ciudad }}, {{ p.provincia }}</span>
+                    </div>
                   </div>
-                  <div class="contact-item">
-                    <i class="bi bi-geo-alt"></i>
-                    <span>{{ p.ciudad }}, {{ p.provincia }}</span>
+                </td>
+
+                <!-- CRÉDITO -->
+                <td>
+                  <div class="credit-info-editorial">
+                    <span class="amount-editorial">{{ p.dias_credito }} días</span>
+                    <span class="days-editorial">Plazo</span>
                   </div>
-                </div>
-              </td>
+                </td>
 
-              <!-- CRÉDITO -->
-              <td>
-                <div class="credit-info">
-                  <span class="amount">{{ p.dias_credito }} días</span>
-                  <span class="days">Plazo de pago</span>
-                </div>
-              </td>
-
-              <!-- ACCIONES -->
-              <td class="text-center">
-                <div class="dropdown">
-                  <button class="btn-actions" 
-                          type="button" 
-                          data-bs-toggle="dropdown" 
-                          aria-expanded="false"
-                          data-bs-popper-config='{"strategy":"fixed"}'>
-                    <i class="bi bi-three-dots-vertical"></i>
-                  </button>
-                  <ul class="dropdown-menu dropdown-menu-end">
-                    <li>
-                      <a class="dropdown-item" (click)="onAction.emit({type: 'view', proveedor: p})">
-                        <i class="bi bi-eye text-primary"></i> Ver Detalles
-                      </a>
-                    </li>
-                    <li *hasPermission="'PROVEEDOR_EDITAR'">
-                      <a class="dropdown-item" (click)="onAction.emit({type: 'edit', proveedor: p})">
-                        <i class="bi bi-pencil text-success"></i> Editar Proveedor
-                      </a>
-                    </li>
-                    <li *hasPermission="'PROVEEDOR_ELIMINAR'">
-                      <a class="dropdown-item" (click)="onAction.emit({type: 'toggle', proveedor: p})">
-                        <i class="bi" [ngClass]="p.activo ? 'bi-toggle-off text-muted' : 'bi-toggle-on text-primary'"></i>
-                        {{ p.activo ? 'Desactivar' : 'Activar' }}
-                      </a>
-                    </li>
-                    <li *hasPermission="'PROVEEDOR_ELIMINAR'">
-                      <hr class="dropdown-divider">
-                    </li>
-                    <li *hasPermission="'PROVEEDOR_ELIMINAR'">
-                      <a class="dropdown-item text-danger" (click)="onAction.emit({type: 'delete', proveedor: p})">
-                        <i class="bi bi-trash"></i> Eliminar
-                      </a>
-                    </li>
-                  </ul>
-                </div>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-
-        <!-- EMPTY STATE -->
-        <div *ngIf="proveedores.length === 0" class="empty-state">
-          <div class="empty-icon">
-            <i class="bi bi-shop"></i>
-          </div>
-          <h3>No se encontraron proveedores</h3>
-          <p>No hay registros que coincidan con los criterios de búsqueda o filtros aplicados.</p>
+                <!-- ACCIONES -->
+                <td class="text-center">
+                  <div class="dropdown d-flex justify-content-center">
+                    <button class="btn-action-trigger-editorial" 
+                            type="button" 
+                            [id]="'actions-' + p.id"
+                            data-bs-toggle="dropdown" 
+                            data-bs-boundary="viewport"
+                            data-bs-popper-config='{"strategy":"fixed"}'
+                            aria-expanded="false">
+                      <i class="bi bi-three-dots"></i>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end border-0 p-2 rounded-4 shadow-sm" [attr.aria-labelledby]="'actions-' + p.id">
+                      <li>
+                        <a class="dropdown-item rounded-3 py-2" (click)="onAction.emit({type: 'view', proveedor: p})">
+                          <i class="bi bi-eye"></i>
+                          <span class="ms-2">Ver Detalles</span>
+                        </a>
+                      </li>
+                      <li *hasPermission="'PROVEEDOR_EDITAR'">
+                        <a class="dropdown-item rounded-3 py-2" (click)="onAction.emit({type: 'edit', proveedor: p})">
+                          <i class="bi bi-pencil-square"></i>
+                          <span class="ms-2">Editar</span>
+                        </a>
+                      </li>
+                      <li>
+                        <a class="dropdown-item rounded-3 py-2" (click)="onAction.emit({type: 'toggle', proveedor: p})">
+                          <i class="bi" [ngClass]="p.activo ? 'bi-toggle-off' : 'bi-toggle-on'"></i>
+                          <span class="ms-2">{{ p.activo ? 'Desactivar' : 'Activar' }}</span>
+                        </a>
+                      </li>
+                      <li><hr class="dropdown-divider mx-2"></li>
+                      <li *hasPermission="'PROVEEDOR_ELIMINAR'">
+                        <a class="dropdown-item rounded-3 py-2 text-danger" (click)="onAction.emit({type: 'delete', proveedor: p})">
+                          <i class="bi bi-trash"></i>
+                          <span class="ms-2">Eliminar</span>
+                        </a>
+                      </li>
+                    </ul>
+                  </div>
+                </td>
+              </tr>
+              <tr *ngIf="proveedores.length === 0">
+                <td colspan="6" class="text-center p-5 text-muted">
+                    <div class="empty-state-editorial">
+                        <i class="bi bi-shop opacity-25" style="font-size: 3rem;"></i>
+                        <h4 class="mt-3 fw-bold">No se encontraron proveedores</h4>
+                        <p>No hay registros que coincidan con los filtros aplicados.</p>
+                    </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
         </div>
       </div>
-    </div>
+    </section>
   `,
   styles: [`
-    .table-premium-container { background: white; border-radius: 20px; border: 1px solid #f1f5f9; overflow: hidden; }
-    .table-premium { width: 100%; border-collapse: separate; border-spacing: 0; }
-    .table-premium thead th { background: #f8fafc; padding: 1.25rem 1.5rem; font-size: 0.75rem; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; border-bottom: 1px solid #f1f5f9; }
-    .table-row { transition: all 0.2s; }
-    .table-row:hover { background: #f8fafc; }
-    .table-row td { padding: 1.25rem 1.5rem; border-bottom: 1px solid #f1f5f9; vertical-align: middle; }
-    .table-row:last-child td { border-bottom: none; }
-    .client-info { display: flex; align-items: center; gap: 1rem; }
-    .avatar { width: 42px; height: 42px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 0.9rem; }
-    .details { display: flex; flex-direction: column; }
-    .name { font-weight: 700; color: #1e293b; font-size: 0.95rem; }
-    .sub { font-size: 0.75rem; color: #94a3b8; }
-    .id-info { display: flex; flex-direction: column; }
-    .id-value { font-weight: 700; color: #475569; font-size: 0.9rem; }
-    .id-type { font-size: 0.7rem; color: #94a3b8; text-transform: uppercase; font-weight: 600; }
-    .status-badge { display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.4rem 0.8rem; border-radius: 100px; font-size: 0.75rem; font-weight: 701; }
-    .status-badge.active { background: #15803d; color: white; }
-    .status-badge.inactive { background: #dc2626; color: white; }
-    .contact-info { display: flex; flex-direction: column; gap: 0.3rem; }
-    .contact-item { display: flex; align-items: center; gap: 0.5rem; font-size: 0.85rem; color: #64748b; }
-    .contact-item i { font-size: 0.9rem; color: #94a3b8; }
-    .credit-info { display: flex; flex-direction: column; }
-    .amount { font-weight: 800; color: #1e293b; font-size: 0.9rem; }
-    .days { font-size: 0.75rem; color: #64748b; }
-    .btn-actions { 
-      width: 36px; height: 36px; border-radius: 10px; border: none; background: transparent; color: #94a3b8; 
-      display: flex; align-items: center; justify-content: center; transition: all 0.2s; margin: 0 auto;
+    :host { display: block; width: 100%; flex: 1; min-height: 0; }
+    .module-table-premium { background: white; border-radius: 24px; border: 1px solid #f1f5f9; overflow: hidden; }
+    .table-container-premium { display: flex; flex-direction: column; }
+    .table-responsive-premium { overflow-x: auto; overscroll-behavior: contain; }
+    .table-editorial { width: 100%; border-collapse: separate; border-spacing: 0; table-layout: fixed; }
+    
+    .table-editorial th {
+      padding: 1.25rem 1.5rem; background: #f8fafc; font-size: 0.75rem; font-weight: 800;
+      color: #64748b; text-transform: uppercase; letter-spacing: 0.05em;
+      border-bottom: 2px solid #f1f5f9; text-align: left;
     }
-    .btn-actions:hover { background: #f1f5f9; color: #1e293b; }
-    .dropdown-menu { border-radius: 12px; border: 1px solid #f1f5f9; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); padding: 0.5rem; }
-    .dropdown-item { border-radius: 8px; padding: 0.6rem 1rem; font-weight: 600; font-size: 0.85rem; display: flex; align-items: center; gap: 0.75rem; color: #475569; cursor: pointer; }
-    .dropdown-item i { font-size: 1rem; }
-    .dropdown-item:hover { background: #f8fafc; }
-    .empty-state { padding: 4rem 2rem; text-align: center; }
-    .empty-icon { width: 64px; height: 64px; background: #f8fafc; color: #cbd5e1; border-radius: 20px; display: flex; align-items: center; justify-content: center; font-size: 2rem; margin: 0 auto 1.5rem; }
-    .empty-state h3 { font-weight: 800; color: #1e293b; margin-bottom: 0.5rem; }
-    .empty-state p { color: #64748b; max-width: 400px; margin: 0 auto; }
+    .table-editorial td { padding: 1.1rem 1.5rem; border-bottom: 1px solid #f1f5f9; vertical-align: middle; transition: all 0.2s; }
+    .table-editorial tbody tr:hover td { background-color: #f8fafc; }
+    .table-editorial tbody tr:last-child td { border-bottom: none; }
+
+    .client-info-editorial { display: flex; align-items: center; gap: 1rem; }
+    .avatar-editorial { width: 38px; height: 38px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 0.85rem; flex-shrink: 0; }
+    .details-editorial { display: flex; flex-direction: column; min-width: 0; }
+    .name-editorial { font-weight: 700; color: #1e293b; font-size: 0.95rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .sub-editorial { font-size: 0.75rem; color: #94a3b8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+    .id-info-editorial { display: flex; flex-direction: column; }
+    .id-value-editorial { font-weight: 700; color: #475569; font-size: 0.9rem; }
+    .id-type-editorial { font-size: 0.7rem; color: #94a3b8; text-transform: uppercase; font-weight: 600; }
+
+    .badge-status-editorial { display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.35rem 0.8rem; border-radius: 10px; font-size: 0.7rem; font-weight: 800; text-transform: uppercase; }
+    .badge-status-editorial.activo { background: #dcfce7; color: #15803d; }
+    .badge-status-editorial.inactivo { background: #fee2e2; color: #dc2626; }
+
+    .contact-info-editorial { display: flex; flex-direction: column; gap: 0.25rem; }
+    .contact-item-editorial { display: flex; align-items: center; gap: 0.5rem; font-size: 0.8rem; color: #64748b; }
+    .contact-item-editorial i { font-size: 0.9rem; color: #94a3b8; }
+
+    .credit-info-editorial { display: flex; flex-direction: column; }
+    .amount-editorial { font-weight: 700; color: #1e293b; font-size: 0.9rem; }
+    .days-editorial { font-size: 0.75rem; color: #94a3b8; }
+
+    .btn-action-trigger-editorial {
+      width: 34px; height: 34px; border-radius: 10px; border: none; background: transparent; color: #94a3b8;
+      display: flex; align-items: center; justify-content: center; transition: all 0.2s;
+    }
+    .btn-action-trigger-editorial:hover { background: #f1f5f9; color: #1e293b; }
+
+    .dropdown-menu { border-radius: 12px; border: 1px solid #f1f5f9; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.08); padding: 0.5rem; z-index: 1050 !important; position: fixed !important; }
+    .dropdown-item { border-radius: 8px; padding: 0.6rem 1rem; font-weight: 600; font-size: 0.85rem; display: flex; align-items: center; gap: 0.75rem; color: #475569; cursor: pointer; transition: all 0.2s; }
+    .dropdown-item i { font-size: 1.1rem; }
+    .dropdown-item:hover { background: #f8fafc; color: #1e293b; }
+    .dropdown-item.text-danger:hover { background: #fef2f2; }
+
+    .empty-state-editorial { text-align: center; }
   `]
 })
 export class ProveedoresTableComponent {

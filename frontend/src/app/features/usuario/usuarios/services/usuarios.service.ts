@@ -18,8 +18,13 @@ export class UsuariosService {
     private usuariosSubject = new BehaviorSubject<User[]>([]);
     public usuarios$ = this.usuariosSubject.asObservable();
 
-    private statsSubject = new BehaviorSubject<UsuariosStats>({ total: 0, activos: 0, inactivos: 0 });
-    public stats$ = this.statsSubject.asObservable();
+    public stats$: Observable<UsuariosStats> = this.usuarios$.pipe(
+        map(users => ({
+            total: users.length,
+            activos: users.filter(u => u.activo !== false).length,
+            inactivos: users.filter(u => u.activo === false).length
+        }))
+    );
 
     constructor() { }
 
@@ -34,10 +39,7 @@ export class UsuariosService {
     listarUsuarios(): Observable<User[]> {
         return from(http.get<ApiResponse<User[]>>(API_ENDPOINTS.USUARIOS.BASE)).pipe(
             map(res => res.data.detalles),
-            tap(users => {
-                this.usuariosSubject.next(users);
-                this.calculateStats(users);
-            })
+            tap(users => this.usuariosSubject.next(users))
         );
     }
 
@@ -47,22 +49,12 @@ export class UsuariosService {
         );
     }
 
-    private calculateStats(users: User[]) {
-        const stats: UsuariosStats = {
-            total: users.length,
-            activos: users.filter(u => u.activo !== false).length,
-            inactivos: users.filter(u => u.activo === false).length
-        };
-        this.statsSubject.next(stats);
-    }
-
     createUsuario(data: any): Observable<User> {
         return from(http.post<ApiResponse<User>>(API_ENDPOINTS.USUARIOS.BASE, data)).pipe(
             map(res => res.data.detalles),
             tap(newUser => {
                 const current = this.usuariosSubject.value;
                 this.usuariosSubject.next([...current, newUser]);
-                this.calculateStats(this.usuariosSubject.value);
             })
         );
     }
@@ -76,7 +68,6 @@ export class UsuariosService {
                 if (index !== -1) {
                     current[index] = updatedUser;
                     this.usuariosSubject.next([...current]);
-                    this.calculateStats(current);
                 }
             })
         );
@@ -88,7 +79,6 @@ export class UsuariosService {
                 const current = this.usuariosSubject.value;
                 const filtered = current.filter(u => u.id !== id);
                 this.usuariosSubject.next(filtered);
-                this.calculateStats(filtered);
             })
         );
     }

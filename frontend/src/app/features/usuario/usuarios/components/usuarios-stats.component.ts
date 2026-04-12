@@ -1,14 +1,15 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-usuarios-stats',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommonModule],
   template: `
     <div class="stats-compact-row">
       <div class="stat-item-mini">
-        <div class="icon-circle" style="background: rgba(30, 41, 59, 0.1); color: #1e293b;">
+        <div class="icon-circle" style="background: rgba(30, 41, 59, 0.08); color: #1e293b;">
           <i class="bi bi-people-fill"></i>
         </div>
         <div class="stat-info">
@@ -20,7 +21,7 @@ import { CommonModule } from '@angular/common';
       <div class="stat-divider"></div>
 
       <div class="stat-item-mini">
-        <div class="icon-circle" style="background: rgba(16, 185, 129, 0.1); color: #10b981;">
+        <div class="icon-circle" style="background: #ecfdf5; color: #10b981;">
           <i class="bi bi-person-check-fill"></i>
         </div>
         <div class="stat-info">
@@ -32,7 +33,7 @@ import { CommonModule } from '@angular/common';
       <div class="stat-divider"></div>
 
       <div class="stat-item-mini">
-        <div class="icon-circle" style="background: rgba(239, 68, 68, 0.1); color: #ef4444;">
+        <div class="icon-circle" style="background: #fff1f2; color: #f43f5e;">
           <i class="bi bi-person-x-fill"></i>
         </div>
         <div class="stat-info">
@@ -47,21 +48,21 @@ import { CommonModule } from '@angular/common';
     .stats-compact-row {
       background: white; border-radius: 20px; padding: 1.25rem 2rem;
       display: flex; align-items: center; justify-content: space-between;
-      border: 1px solid #f1f5f9;
+      border: 1px solid #f1f5f9; box-shadow: 0 1px 3px rgba(0,0,0,0.02);
     }
     .stat-item-mini { display: flex; align-items: center; gap: 1.1rem; flex: 1; }
     .icon-circle {
-      width: 42px; height: 42px; border-radius: 12px;
-      display: flex; align-items: center; justify-content: center; font-size: 1.2rem;
+      width: 44px; height: 44px; border-radius: 14px;
+      display: flex; align-items: center; justify-content: center; font-size: 1.25rem;
     }
     .stat-info { display: flex; flex-direction: column; }
-    .stat-label { font-size: 0.65rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; }
-    .stat-value { font-size: 1.35rem; font-weight: 800; color: #1e293b; line-height: 1.2; }
+    .stat-label { font-size: 0.65rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; }
+    .stat-value { font-size: 1.4rem; font-weight: 850; color: #0f172a; line-height: 1.2; letter-spacing: -0.01em; }
     .text-success { color: #10b981 !important; }
-    .text-danger { color: #ef4444 !important; }
-    .stat-divider { width: 1px; height: 35px; background: #f1f5f9; margin: 0 1.5rem; }
+    .text-danger { color: #f43f5e !important; }
+    .stat-divider { width: 1px; height: 35px; background: #f1f5f9; margin: 0 2rem; }
     @media (max-width: 992px) {
-      .stats-compact-row { flex-wrap: wrap; gap: 1.5rem; }
+      .stats-compact-row { flex-wrap: wrap; gap: 1.5rem; padding: 1.5rem; }
       .stat-divider { display: none; }
       .stat-item-mini { min-width: 45%; }
     }

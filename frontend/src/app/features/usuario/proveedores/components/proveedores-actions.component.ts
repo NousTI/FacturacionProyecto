@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Output, Input } from '@angular/core';
+import { Component, EventEmitter, Input, Output, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HasPermissionDirective } from '../../../../shared/directives/has-permission.directive';
@@ -6,91 +6,145 @@ import { HasPermissionDirective } from '../../../../shared/directives/has-permis
 @Component({
   selector: 'app-proveedores-actions',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommonModule, FormsModule, HasPermissionDirective],
   template: `
-    <div class="actions-container">
-      <div class="search-wrapper">
-        <i class="bi bi-search"></i>
-        <input 
-          type="text" 
-          [(ngModel)]="searchQuery" 
-          (ngModelChange)="onSearchChange($event)"
-          placeholder="Buscar por proveedor, identificación o email..."
-          class="search-input"
-        >
-      </div>
+    <section class="module-actions">
+      <div class="actions-bar-container">
+        <div class="row align-items-center g-3">
+          <!-- Búsqueda Principal -->
+          <div class="col-lg-7">
+            <div class="search-box-premium">
+              <i class="bi bi-search"></i>
+              <input 
+                type="text" 
+                [(ngModel)]="searchQuery" 
+                (ngModelChange)="onSearchChange()"
+                placeholder="Q Buscar por Identificación, Razón Social o Email..." 
+                class="form-control-premium-search"
+              >
+              <button 
+                *ngIf="searchQuery" 
+                (click)="clearSearch()" 
+                class="btn-clear-search-premium"
+              >
+                <i class="bi bi-x"></i>
+              </button>
+            </div>
+          </div>
 
-      <div class="buttons-group">
-        <!-- FILTRO ESTADO -->
-        <div class="dropdown">
-          <button class="btn-filter" 
-                  type="button" 
-                  data-bs-toggle="dropdown"
-                  data-bs-popper-config='{"strategy":"fixed"}'>
-            <i class="bi bi-filter"></i>
-            <span>{{ filters.estado === 'ALL' ? 'Todos' : (filters.estado === 'ACTIVO' ? 'Activos' : 'Inactivos') }}</span>
-          </button>
-          <ul class="dropdown-menu dropdown-menu-end">
-            <li><a class="dropdown-item" (click)="setFilter('ALL')">Todos los Estados</a></li>
-            <li><a class="dropdown-item" (click)="setFilter('ACTIVO')">Activos</a></li>
-            <li><a class="dropdown-item" (click)="setFilter('INACTIVO')">Inactivos</a></li>
-          </ul>
+          <!-- Filtro Estado -->
+          <div class="col-lg-3">
+            <div class="dropdown">
+              <button 
+                class="form-select-premium dropdown-toggle d-flex align-items-center justify-content-between" 
+                type="button" 
+                data-bs-toggle="dropdown" 
+                aria-expanded="false"
+              >
+                <span>{{ getEstadoLabel() }}</span>
+              </button>
+              <ul class="dropdown-menu border-0 shadow-sm dropdown-menu-premium dropdown-menu-end">
+                <li><a class="dropdown-item" (click)="setEstado('ALL')">Todos los Estados</a></li>
+                <li><a class="dropdown-item" (click)="setEstado('ACTIVO')">Activos</a></li>
+                <li><a class="dropdown-item" (click)="setEstado('INACTIVO')">Inactivos</a></li>
+              </ul>
+            </div>
+          </div>
+
+          <!-- Botón de Acción -->
+          <div class="col-lg-2 text-lg-end">
+            <button 
+              *hasPermission="'PROVEEDOR_CREAR'"
+              (click)="onCreate.emit()"
+              class="btn-system-action w-100"
+            >
+              <i class="bi bi-plus-lg me-2"></i>
+              <span>Nuevo Proveedor</span>
+            </button>
+          </div>
         </div>
-
-        <button 
-          *hasPermission="'PROVEEDOR_CREAR'"
-          (click)="onCreate.emit()"
-          class="btn-primary"
-        >
-          <i class="bi bi-plus-lg"></i>
-          <span>Nuevo Proveedor</span>
-        </button>
       </div>
-    </div>
+    </section>
   `,
   styles: [`
-    .actions-container {
-      display: flex; align-items: center; justify-content: space-between;
-      gap: 1.5rem; background: transparent; padding: 0; border: none;
+    :host { display: block; }
+    .actions-bar-container { background: transparent; border: none; }
+    
+    .search-box-premium { position: relative; width: 100%; }
+    .search-box-premium i {
+      position: absolute; left: 1.1rem; top: 50%; transform: translateY(-50%);
+      color: #94a3b8; font-size: 1rem;
     }
-    .search-wrapper { position: relative; flex: 1; max-width: 500px; }
-    .search-wrapper i { position: absolute; left: 1.1rem; top: 50%; transform: translateY(-50%); color: #94a3b8; font-size: 1rem; }
-    .search-input {
-      width: 100%; padding: 0.75rem 1rem 0.75rem 2.8rem; border-radius: 14px;
-      border: 1px solid #e2e8f0; background: #f8fafc; font-size: 0.9rem;
-      font-weight: 500; transition: all 0.2s;
+    .form-control-premium-search {
+      background: #ffffff; border: 1px solid #e2e8f0; border-radius: 14px;
+      padding: 0 2.5rem 0 2.85rem; height: 44px; font-size: 0.95rem; color: #0f172a;
+      transition: all 0.2s; width: 100%; font-weight: 500;
     }
-    .search-input:focus { outline: none; background: white; border-color: #3b82f6; box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1); }
-    .buttons-group { display: flex; align-items: center; gap: 0.75rem; }
-    .btn-filter, .btn-primary {
-      display: flex; align-items: center; justify-content: center; gap: 0.6rem;
-      padding: 0.7rem 1.1rem; border-radius: 12px; font-weight: 700; font-size: 0.85rem;
-      cursor: pointer; transition: all 0.2s; border: none;
+    .form-control-premium-search:focus { border-color: #cbd5e1; outline: none; box-shadow: 0 4px 12px rgba(0,0,0,0.03); }
+    .btn-clear-search-premium {
+      position: absolute; right: 0.75rem; top: 50%; transform: translateY(-50%);
+      background: transparent; border: none; color: #94a3b8; cursor: pointer;
+      display: flex; align-items: center; justify-content: center; font-size: 1.25rem;
     }
-    .btn-filter { background: #f1f5f9; color: #475569; }
-    .btn-filter:hover { background: #e2e8f0; }
-    .btn-primary { background: #1e293b; color: white; padding: 0.7rem 1.3rem; }
-    .btn-primary:hover { background: #0f172a; transform: translateY(-1px); }
-    .dropdown-menu { border-radius: 12px; border: 1px solid #f1f5f9; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); padding: 0.5rem; margin-top: 0.5rem; }
-    .dropdown-item { border-radius: 8px; padding: 0.6rem 1rem; font-weight: 600; font-size: 0.85rem; color: #475569; cursor: pointer; }
-    .dropdown-item:hover { background: #f8fafc; color: #1e293b; }
-    @media (max-width: 768px) { .actions-container { flex-direction: column; align-items: stretch; } .search-wrapper { max-width: 100%; } }
+
+    .form-select-premium {
+      background: #ffffff; border: 1px solid #e2e8f0; border-radius: 14px;
+      padding: 0 1.25rem; height: 44px; font-size: 0.9rem; color: #475569;
+      width: 100%; cursor: pointer; text-align: left; font-weight: 600;
+      transition: all 0.2s;
+    }
+    .form-select-premium:hover { border-color: #cbd5e1; }
+
+    .dropdown-menu-premium {
+      border-radius: 12px !important; padding: 0.5rem !important; min-width: 100%;
+      margin-top: 0.5rem !important; border: 1px solid #f1f5f9 !important;
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05) !important;
+    }
+    .dropdown-item {
+      border-radius: 8px !important; padding: 0.65rem 1rem !important;
+      color: #475569 !important; font-size: 0.85rem !important;
+      font-weight: 600 !important; cursor: pointer; transition: all 0.2s;
+    }
+    .dropdown-item:hover { background-color: var(--primary-color, #1e293b) !important; color: #ffffff !important; }
+
+    .btn-system-action {
+      background: #1e293b; color: #ffffff; border: none; padding: 0 1.25rem;
+      height: 44px; border-radius: 14px; font-weight: 700; font-size: 0.85rem;
+      display: inline-flex; align-items: center; justify-content: center;
+      transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1); white-space: nowrap;
+    }
+    .btn-system-action:hover { background: #0f172a; transform: translateY(-1.5px); box-shadow: 0 8px 15px -3px rgba(15, 23, 42, 0.2); }
   `]
 })
 export class ProveedoresActionsComponent {
   @Input() searchQuery: string = '';
   @Output() searchQueryChange = new EventEmitter<string>();
-  @Output() onFilterChangeEmit = new EventEmitter<any>();
+  @Output() onFilterChangeEmit = new EventEmitter<{ estado: string }>();
   @Output() onCreate = new EventEmitter<void>();
 
-  filters = { estado: 'ALL' };
+  estadoFilter: string = 'ALL';
 
-  onSearchChange(value: string) {
-    this.searchQueryChange.emit(value);
+  onSearchChange() {
+    this.searchQueryChange.emit(this.searchQuery);
   }
 
-  setFilter(estado: string) {
-    this.filters.estado = estado;
-    this.onFilterChangeEmit.emit(this.filters);
+  clearSearch() {
+    this.searchQuery = '';
+    this.searchQueryChange.emit('');
+  }
+
+  setEstado(estado: string) {
+    this.estadoFilter = estado;
+    this.onFilterChangeEmit.emit({ estado: this.estadoFilter });
+  }
+
+  getEstadoLabel(): string {
+    const labels: any = {
+      'ALL': 'Todos los Estados',
+      'ACTIVO': 'Proveedores Activos',
+      'INACTIVO': 'Proveedores Inactivos'
+    };
+    return labels[this.estadoFilter] || 'Filtrar Estado';
   }
 }

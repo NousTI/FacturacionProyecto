@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, Output, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
+import { Component, EventEmitter, Input, Output, OnInit, OnDestroy, ChangeDetectorRef, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { User } from '../../../../../domain/models/user.model';
 import { UsuariosService } from '../../services/usuarios.service';
@@ -6,6 +6,7 @@ import { UsuariosService } from '../../services/usuarios.service';
 @Component({
   selector: 'app-usuario-role-modal',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommonModule],
   template: `
     <div class="modal-overlay" (click)="close()">

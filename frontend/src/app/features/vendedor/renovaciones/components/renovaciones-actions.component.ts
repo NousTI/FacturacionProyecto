@@ -7,7 +7,7 @@ import { FormsModule } from '@angular/forms';
   standalone: true,
   imports: [CommonModule, FormsModule],
   template: `
-    <section class="module-actions animate__animated animate__fadeInUp">
+    <section class="module-actions">
       <div class="actions-bar-container">
         <div class="row align-items-center g-3">
           <!-- Búsqueda Principal -->

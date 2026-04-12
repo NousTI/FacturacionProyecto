@@ -28,7 +28,7 @@ import { RenovacionDetailModalComponent } from './components/modals/renovacion-d
     RenovacionDetailModalComponent
   ],
   template: `
-    <div class="renovaciones-page-container animate__animated animate__fadeIn">
+    <div class="renovaciones-page-container">
       
       <!-- 1. Stats -->
       <app-renovaciones-stats [stats]="stats"></app-renovaciones-stats>

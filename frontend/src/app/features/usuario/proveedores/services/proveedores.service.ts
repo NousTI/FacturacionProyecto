@@ -25,6 +25,16 @@ export class ProveedoresService extends BaseApiService {
         );
     }
 
+    get stats$() {
+        return this.proveedores$.pipe(
+            map(list => ({
+                total: list.length,
+                activos: list.filter(p => p.activo).length,
+                con_credito: list.filter(p => p.dias_credito > 0).length
+            }))
+        );
+    }
+
     loadInitialData(): void {
         if (this._loaded) return;
 

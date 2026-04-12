@@ -6,7 +6,7 @@ import { CommonModule } from '@angular/common';
   standalone: true,
   imports: [CommonModule],
   template: `
-    <div class="stats-compact-row animate__animated animate__fadeIn">
+    <div class="stats-compact-row">
       <!-- Pendientes / En Revisión -->
       <div class="stat-item-mini">
         <div class="icon-circle" style="background: rgba(245, 158, 11, 0.1); color: var(--status-warning);">

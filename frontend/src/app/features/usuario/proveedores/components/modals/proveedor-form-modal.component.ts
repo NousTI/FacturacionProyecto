@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Output, Input, OnInit, OnDestroy } from '@angular/core';
+import { Component, EventEmitter, Output, Input, OnInit, OnDestroy, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Proveedor } from '../../../../../domain/models/proveedor.model';
@@ -9,6 +9,7 @@ import { SRI_TIPOS_IDENTIFICACION } from '../../../../../core/constants/sri-iva.
 @Component({
   selector: 'app-proveedor-form-modal',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommonModule, ReactiveFormsModule],
   template: `
     <div class="modal-overlay" (click)="close()">
@@ -40,7 +41,7 @@ import { SRI_TIPOS_IDENTIFICACION } from '../../../../../core/constants/sri-iva.
               <div class="row g-3">
                 <div class="col-md-6">
                   <label class="form-label">Tipo de documento *</label>
-                  <select formControlName="tipo_identificacion" class="form-select-premium" [class.is-invalid]="proveedorForm.get('tipo_identificacion')?.invalid && proveedorForm.get('tipo_identificacion')?.touched">
+                  <select formControlName="tipo_identificacion" class="form-select-premium" [class.is-invalid]="isFieldInvalid('tipo_identificacion')">
                     <option *ngFor="let tipo of sriTipos" [value]="tipo.code">{{ tipo.label }}</option>
                   </select>
                 </div>
@@ -50,12 +51,12 @@ import { SRI_TIPOS_IDENTIFICACION } from '../../../../../core/constants/sri-iva.
                     type="text"
                     formControlName="identificacion"
                     class="form-input-premium"
-                    [class.is-invalid]="proveedorForm.get('identificacion')?.invalid && proveedorForm.get('identificacion')?.touched"
+                    [class.is-invalid]="isFieldInvalid('identificacion')"
                     placeholder="Ej: 1712345678001"
                     (keypress)="validateIdentification($event)"
                     [maxlength]="getIdentificacionLimit()"
                   >
-                  <div class="invalid-feedback-custom" *ngIf="proveedorForm.get('identificacion')?.invalid && proveedorForm.get('identificacion')?.touched">
+                  <div class="invalid-feedback" *ngIf="isFieldInvalid('identificacion')">
                     <span *ngIf="proveedorForm.get('identificacion')?.hasError('required')">Requerido</span>
                     <span *ngIf="proveedorForm.get('identificacion')?.hasError('identificacionInvalid') || proveedorForm.get('identificacion')?.hasError('rucInvalid') || proveedorForm.get('identificacion')?.hasError('cedulaInvalid')">
                         Formato inválido
@@ -74,11 +75,17 @@ import { SRI_TIPOS_IDENTIFICACION } from '../../../../../core/constants/sri-iva.
               <div class="row g-3">
                 <div class="col-12">
                   <label class="form-label">Nombres Completos / Razón Social *</label>
-                  <input type="text" formControlName="razon_social" class="form-input-premium" [class.is-invalid]="proveedorForm.get('razon_social')?.invalid && proveedorForm.get('razon_social')?.touched" placeholder="Ej: Distribuidora XYZ S.A.">
+                  <input type="text" formControlName="razon_social" class="form-input-premium" [class.is-invalid]="isFieldInvalid('razon_social')" placeholder="Ej: Distribuidora XYZ S.A.">
+                  <div class="invalid-feedback" *ngIf="isFieldInvalid('razon_social')">
+                    La razón social es obligatoria
+                  </div>
                 </div>
                 <div class="col-md-12">
                   <label class="form-label">Nombre Comercial *</label>
-                  <input type="text" formControlName="nombre_comercial" class="form-input-premium" [class.is-invalid]="proveedorForm.get('nombre_comercial')?.invalid && proveedorForm.get('nombre_comercial')?.touched" placeholder="Ej: Distribuidora XYZ">
+                  <input type="text" formControlName="nombre_comercial" class="form-input-premium" [class.is-invalid]="isFieldInvalid('nombre_comercial')" placeholder="Ej: Distribuidora XYZ">
+                  <div class="invalid-feedback" *ngIf="isFieldInvalid('nombre_comercial')">
+                    El nombre comercial es obligatorio
+                  </div>
                 </div>
               </div>
             </div>
@@ -92,7 +99,11 @@ import { SRI_TIPOS_IDENTIFICACION } from '../../../../../core/constants/sri-iva.
               <div class="row g-3">
                 <div class="col-md-7">
                   <label class="form-label">Correo Electrónico *</label>
-                  <input type="email" formControlName="email" class="form-input-premium" [class.is-invalid]="proveedorForm.get('email')?.invalid && proveedorForm.get('email')?.touched" placeholder="proveedor@ejemplo.com">
+                  <input type="email" formControlName="email" class="form-input-premium" [class.is-invalid]="isFieldInvalid('email')" placeholder="proveedor@ejemplo.com">
+                  <div class="invalid-feedback" *ngIf="isFieldInvalid('email')">
+                    <span *ngIf="proveedorForm.get('email')?.hasError('required')">El correo es obligatorio</span>
+                    <span *ngIf="proveedorForm.get('email')?.hasError('pattern')">Formato de correo inválido</span>
+                  </div>
                 </div>
                 <div class="col-md-5">
                   <label class="form-label">Teléfono</label>
@@ -100,29 +111,41 @@ import { SRI_TIPOS_IDENTIFICACION } from '../../../../../core/constants/sri-iva.
                     type="text"
                     formControlName="telefono"
                     class="form-input-premium"
-                    [class.is-invalid]="proveedorForm.get('telefono')?.invalid && proveedorForm.get('telefono')?.touched"
+                    [class.is-invalid]="isFieldInvalid('telefono')"
                     placeholder="Ej: 022123456"
                     (keypress)="validateNumbers($event)"
                     maxlength="10"
                   >
+                  <div class="invalid-feedback" *ngIf="isFieldInvalid('telefono')">
+                    El teléfono debe tener entre 9 y 10 dígitos
+                  </div>
                 </div>
                 <div class="col-md-6">
                   <label class="form-label">Provincia *</label>
-                  <select formControlName="provincia" class="form-select-premium" (change)="onProvinciaChange()" [class.is-invalid]="proveedorForm.get('provincia')?.invalid && proveedorForm.get('provincia')?.touched">
+                  <select formControlName="provincia" class="form-select-premium" (change)="onProvinciaChange()" [class.is-invalid]="isFieldInvalid('provincia')">
                     <option value="">Seleccione...</option>
                     <option *ngFor="let prov of provincias" [value]="prov.nombre">{{ prov.nombre }}</option>
                   </select>
+                  <div class="invalid-feedback" *ngIf="isFieldInvalid('provincia')">
+                    Requerido
+                  </div>
                 </div>
                 <div class="col-md-6">
                   <label class="form-label">Ciudad *</label>
-                  <select formControlName="ciudad" class="form-select-premium" [disabled]="!proveedorForm.get('provincia')?.value" [class.is-invalid]="proveedorForm.get('ciudad')?.invalid && proveedorForm.get('ciudad')?.touched">
+                  <select formControlName="ciudad" class="form-select-premium" [disabled]="!proveedorForm.get('provincia')?.value" [class.is-invalid]="isFieldInvalid('ciudad')">
                     <option value="">Seleccione...</option>
                     <option *ngFor="let city of ciudadesDisponibles" [value]="city.nombre">{{ city.nombre }}</option>
                   </select>
+                  <div class="invalid-feedback" *ngIf="isFieldInvalid('ciudad')">
+                    Requerido
+                  </div>
                 </div>
                 <div class="col-12">
                   <label class="form-label">Dirección Fiscal *</label>
-                  <textarea formControlName="direccion" class="form-input-premium" [class.is-invalid]="proveedorForm.get('direccion')?.invalid && proveedorForm.get('direccion')?.touched" rows="2" placeholder="Escriba la dirección exacta..."></textarea>
+                  <textarea formControlName="direccion" class="form-input-premium" [class.is-invalid]="isFieldInvalid('direccion')" rows="2" placeholder="Escriba la dirección exacta..."></textarea>
+                  <div class="invalid-feedback" *ngIf="isFieldInvalid('direccion')">
+                    La dirección es obligatoria
+                  </div>
                 </div>
               </div>
             </div>
@@ -141,7 +164,7 @@ import { SRI_TIPOS_IDENTIFICACION } from '../../../../../core/constants/sri-iva.
                       formControlName="dias_credito"
                       class="form-input-premium"
                       (keypress)="validateNoNegative($event)"
-                      [class.is-invalid]="proveedorForm.get('dias_credito')?.invalid && proveedorForm.get('dias_credito')?.touched"
+                      [class.is-invalid]="isFieldInvalid('dias_credito')"
                       placeholder="0"
                     >
                   </div>
@@ -193,8 +216,10 @@ import { SRI_TIPOS_IDENTIFICACION } from '../../../../../core/constants/sri-iva.
     .form-label { font-size: 0.8rem; font-weight: 700; color: #475569; margin-bottom: 0.5rem; }
     .form-input-premium, .form-select-premium { width: 100%; padding: 0.75rem 1rem; border-radius: 12px; border: 1px solid #e2e8f0; background: #f8fafc; font-size: 0.95rem; font-weight: 500; transition: all 0.2s; }
     .form-input-premium:focus, .form-select-premium:focus { outline: none; background: white; border-color: #3b82f6; box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1); }
-    .form-input-premium.is-invalid, .form-select-premium.is-invalid { border-color: #ef4444; background: #fef2f2; }
-    .invalid-feedback-custom { color: #ef4444; font-size: 0.75rem; font-weight: 600; margin-top: 0.4rem; }
+    .form-input-premium.is-invalid, .form-select-premium.is-invalid {
+      border-color: #f43f5e; background: #fff1f2;
+    }
+    .invalid-feedback { color: #f43f5e; font-size: 0.75rem; font-weight: 600; margin-top: 0.4rem; display: block; }
     .modal-footer { padding: 1.5rem 2rem; border-top: 1px solid #f1f5f9; display: flex; align-items: center; justify-content: space-between; background: #f8fafc; }
     .status-toggle { display: flex; align-items: center; gap: 1rem; }
     .status-toggle span { font-size: 0.85rem; font-weight: 700; color: #94a3b8; }
@@ -222,6 +247,7 @@ export class ProveedorFormModalComponent implements OnInit, OnDestroy {
   ciudadesDisponibles: Ciudad[] = [];
   initialFormValue: any = {};
   sriTipos = SRI_TIPOS_IDENTIFICACION;
+  submitted = false;
 
   constructor(private fb: FormBuilder) {
     this.proveedorForm = this.fb.group({
@@ -299,7 +325,12 @@ export class ProveedorFormModalComponent implements OnInit, OnDestroy {
   }
 
   submit() {
-    if (this.proveedorForm.valid) this.onSave.emit(this.proveedorForm.value);
+    this.submitted = true;
+    if (this.proveedorForm.invalid) {
+      this.proveedorForm.markAllAsTouched();
+      return;
+    }
+    if (this.proveedorForm.valid) this.onSave.emit(this.proveedorForm.getRawValue());
   }
 
   getIdentificacionLimit(): number {
@@ -326,10 +357,15 @@ export class ProveedorFormModalComponent implements OnInit, OnDestroy {
     if (charCode > 31 && (charCode < 48 || charCode > 57)) event.preventDefault();
   }
 
+  isFieldInvalid(fieldName: string): boolean {
+    const control = this.proveedorForm.get(fieldName);
+    return !!(control && control.invalid && (control.touched || this.submitted));
+  }
+
   getSubmitButtonDisabled(): boolean {
     if (this.loading) return true;
-    if (!this.proveedor) return this.proveedorForm.invalid;
-    return !this.hasChanges || this.proveedorForm.invalid;
+    if (!this.proveedor) return false; // Let internal validation handle it
+    return !this.hasChanges || (this.proveedorForm.invalid && this.submitted);
   }
 
   get hasChanges(): boolean {

@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Output, Input, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
+import { Component, EventEmitter, Output, Input, OnInit, OnDestroy, ChangeDetectorRef, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { User } from '../../../../../domain/models/user.model';
@@ -8,6 +8,7 @@ import { AuthService } from '../../../../../core/auth/auth.service';
 @Component({
   selector: 'app-usuario-form-modal',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommonModule, ReactiveFormsModule],
   template: `
     <div class="modal-overlay" (click)="close()">
@@ -39,11 +40,21 @@ import { AuthService } from '../../../../../core/auth/auth.service';
               <div class="row g-3">
                 <div class="col-md-6">
                   <label class="form-label">Nombres *</label>
-                  <input type="text" formControlName="nombre" class="form-input-premium" [class.is-invalid]="userForm.get('nombre')?.invalid && userForm.get('nombre')?.touched" placeholder="Ej: Juan">
+                  <input type="text" formControlName="nombre" class="form-input-premium" 
+                         [class.is-invalid]="isFieldInvalid('nombre')" 
+                         placeholder="Ej: Juan">
+                  <div class="invalid-feedback" *ngIf="isFieldInvalid('nombre')">
+                    El nombre es obligatorio
+                  </div>
                 </div>
                 <div class="col-md-6">
                   <label class="form-label">Apellidos *</label>
-                  <input type="text" formControlName="apellido" class="form-input-premium" [class.is-invalid]="userForm.get('apellido')?.invalid && userForm.get('apellido')?.touched" placeholder="Ej: Pérez">
+                  <input type="text" formControlName="apellido" class="form-input-premium" 
+                         [class.is-invalid]="isFieldInvalid('apellido')" 
+                         placeholder="Ej: Pérez">
+                  <div class="invalid-feedback" *ngIf="isFieldInvalid('apellido')">
+                    El apellido es obligatorio
+                  </div>
                 </div>
               </div>
             </div>
@@ -57,12 +68,25 @@ import { AuthService } from '../../../../../core/auth/auth.service';
               <div class="row g-3">
                 <div class="col-md-12">
                   <label class="form-label">Correo Electrónico *</label>
-                  <input type="email" formControlName="correo" class="form-input-premium" [class.is-invalid]="userForm.get('correo')?.invalid && userForm.get('correo')?.touched" placeholder="juan.perez@empresa.com" [readonly]="!!usuario">
+                  <input type="email" formControlName="correo" class="form-input-premium" 
+                         [class.is-invalid]="isFieldInvalid('correo')" 
+                         placeholder="juan.perez@empresa.com" [readonly]="!!usuario">
+                  <div class="invalid-feedback" *ngIf="userForm.get('correo')?.errors?.['required'] && isFieldInvalid('correo')">
+                    El correo es obligatorio
+                  </div>
+                  <div class="invalid-feedback" *ngIf="userForm.get('correo')?.errors?.['email'] && isFieldInvalid('correo')">
+                    Ingrese un correo electrónico válido
+                  </div>
                   <small *ngIf="usuario" class="text-muted-xs mt-1 d-block">El correo electrónico no se puede modificar por seguridad.</small>
                 </div>
                 <div class="col-md-12">
                   <label class="form-label">Teléfono de contacto</label>
-                  <input type="text" formControlName="telefono" class="form-input-premium" (keypress)="validateNumbers($event)" maxlength="10" placeholder="0999999999">
+                  <input type="text" formControlName="telefono" class="form-input-premium" 
+                         [class.is-invalid]="isFieldInvalid('telefono')"
+                         (keypress)="validateNumbers($event)" maxlength="10" placeholder="0999999999">
+                  <div class="invalid-feedback" *ngIf="isFieldInvalid('telefono')">
+                    El teléfono debe tener 10 dígitos
+                  </div>
                 </div>
                 
                 <!-- PASSWORD NOTICE FOR NEW USERS -->
@@ -96,10 +120,14 @@ import { AuthService } from '../../../../../core/auth/auth.service';
               <div class="row g-3">
                 <div class="col-md-12">
                   <label class="form-label">Rol Asignado *</label>
-                  <select formControlName="empresa_rol_id" class="form-select-premium" [class.is-invalid]="userForm.get('empresa_rol_id')?.invalid && userForm.get('empresa_rol_id')?.touched">
+                  <select formControlName="empresa_rol_id" class="form-select-premium" 
+                          [class.is-invalid]="isFieldInvalid('empresa_rol_id')">
                     <option value="" disabled>Seleccione un rol corporativo...</option>
                     <option *ngFor="let rol of availableRoles" [value]="rol.id">{{ rol.nombre }}</option>
                   </select>
+                  <div class="invalid-feedback" *ngIf="isFieldInvalid('empresa_rol_id')">
+                    Debe asignar un rol al usuario
+                  </div>
                 </div>
               </div>
             </div>
@@ -153,6 +181,12 @@ import { AuthService } from '../../../../../core/auth/auth.service';
     .form-input-premium, .form-select-premium { width: 100%; padding: 0.75rem 1rem; border-radius: 12px; border: 1px solid #e2e8f0; background: #f8fafc; font-size: 0.95rem; font-weight: 500; transition: all 0.2s; }
     .form-input-premium:focus, .form-select-premium:focus { outline: none; background: white; border-color: #3b82f6; box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1); }
     .form-input-premium[readonly] { background: #f1f5f9; cursor: not-allowed; }
+    
+    /* VALIDATION STYLES */
+    .is-invalid { border-color: #f43f5e !important; background-color: #fff1f2 !important; }
+    .is-invalid:focus { box-shadow: 0 0 0 4px rgba(244, 63, 94, 0.1) !important; }
+    .invalid-feedback { color: #f43f5e; font-size: 0.75rem; font-weight: 600; margin-top: 0.4rem; padding-left: 0.5rem; display: block; }
+
     .text-muted-xs { font-size: 0.7rem; color: #94a3b8; font-weight: 600; }
     .info-notice { display: flex; gap: 1rem; padding: 1rem; background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 16px; }
     .info-notice i { color: #0284c7; font-size: 1.2rem; }
@@ -187,6 +221,7 @@ export class UsuarioFormModalComponent implements OnInit, OnDestroy {
   userForm: FormGroup;
   availableRoles: any[] = [];
   initialValues: any = null;
+  submitted: boolean = false;
 
   constructor(
     private fb: FormBuilder,
@@ -258,14 +293,24 @@ export class UsuarioFormModalComponent implements OnInit, OnDestroy {
     return JSON.stringify(this.userForm.getRawValue()) !== JSON.stringify(this.initialValues);
   }
 
+  isFieldInvalid(fieldName: string): boolean {
+    const control = this.userForm.get(fieldName);
+    return !!(control && control.invalid && (control.touched || this.submitted));
+  }
+
   getSubmitDisabled(): boolean {
     if (this.loading) return true;
-    if (this.userForm.invalid) return true;
-    if (this.usuario && !this.hasChanges()) return true;
+    if (this.usuario && !this.hasChanges() && !this.submitted) return true;
     return false;
   }
 
   submit() {
+    this.submitted = true;
+    if (this.userForm.invalid) {
+      this.userForm.markAllAsTouched();
+      return;
+    }
+
     if (this.userForm.valid) {
       const raw = this.userForm.getRawValue();
       const payload: any = {

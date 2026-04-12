@@ -40,7 +40,7 @@ import { SRI_TIPOS_IDENTIFICACION } from '../../../../../core/constants/sri-iva.
               <div class="row g-3">
                 <div class="col-md-6">
                   <label class="form-label">Tipo de documento *</label>
-                  <select formControlName="tipo_identificacion" class="form-select-premium" [class.is-invalid]="clienteForm.get('tipo_identificacion')?.invalid && clienteForm.get('tipo_identificacion')?.touched">
+                  <select formControlName="tipo_identificacion" class="form-select-premium" [class.is-invalid]="isFieldInvalid('tipo_identificacion')">
                     <option *ngFor="let tipo of sriTipos" [value]="tipo.code">{{ tipo.label }}</option>
                   </select>
                 </div>
@@ -50,12 +50,12 @@ import { SRI_TIPOS_IDENTIFICACION } from '../../../../../core/constants/sri-iva.
                     type="text"
                     formControlName="identificacion"
                     class="form-input-premium"
-                    [class.is-invalid]="clienteForm.get('identificacion')?.invalid && clienteForm.get('identificacion')?.touched"
+                    [class.is-invalid]="isFieldInvalid('identificacion')"
                     placeholder="Ej: 1712345678001"
                     (keypress)="validateIdentification($event)"
                     [maxlength]="clienteForm.get('tipo_identificacion')?.value === '05' ? 10 : (clienteForm.get('tipo_identificacion')?.value === '04' ? 13 : 20)"
                   >
-                  <div class="invalid-feedback-custom" *ngIf="clienteForm.get('identificacion')?.invalid && clienteForm.get('identificacion')?.touched">
+                  <div class="invalid-feedback" *ngIf="isFieldInvalid('identificacion')">
                     <span *ngIf="clienteForm.get('identificacion')?.hasError('required')">Requerido</span>
                     <span *ngIf="clienteForm.get('identificacion')?.hasError('identificacionInvalid')">{{ getIdentificationErrorMessage() }}</span>
                     <span *ngIf="clienteForm.get('identificacion')?.hasError('rucInvalid')">{{ clienteForm.get('identificacion')?.getError('rucInvalid')?.message || 'RUC no válido' }}</span>
@@ -74,11 +74,17 @@ import { SRI_TIPOS_IDENTIFICACION } from '../../../../../core/constants/sri-iva.
               <div class="row g-3">
                 <div class="col-12">
                   <label class="form-label">Nombres Completos / Razón Social *</label>
-                  <input type="text" formControlName="razon_social" class="form-input-premium" [class.is-invalid]="clienteForm.get('razon_social')?.invalid && clienteForm.get('razon_social')?.touched" placeholder="Ej: Importadora Global S.A.">
+                  <input type="text" formControlName="razon_social" class="form-input-premium" [class.is-invalid]="isFieldInvalid('razon_social')" placeholder="Ej: Importadora Global S.A.">
+                  <div class="invalid-feedback" *ngIf="isFieldInvalid('razon_social')">
+                    La razón social es obligatoria
+                  </div>
                 </div>
                 <div class="col-md-12">
                   <label class="form-label">Nombre Comercial *</label>
-                  <input type="text" formControlName="nombre_comercial" class="form-input-premium" [class.is-invalid]="clienteForm.get('nombre_comercial')?.invalid && clienteForm.get('nombre_comercial')?.touched" placeholder="Ej: Tienda Virtual">
+                  <input type="text" formControlName="nombre_comercial" class="form-input-premium" [class.is-invalid]="isFieldInvalid('nombre_comercial')" placeholder="Ej: Tienda Virtual">
+                  <div class="invalid-feedback" *ngIf="isFieldInvalid('nombre_comercial')">
+                    El nombre comercial es obligatorio
+                  </div>
                 </div>
               </div>
             </div>
@@ -92,7 +98,11 @@ import { SRI_TIPOS_IDENTIFICACION } from '../../../../../core/constants/sri-iva.
               <div class="row g-3">
                 <div class="col-md-7">
                   <label class="form-label">Correo Electrónico *</label>
-                  <input type="email" formControlName="email" class="form-input-premium" [class.is-invalid]="clienteForm.get('email')?.invalid && clienteForm.get('email')?.touched" placeholder="cliente@ejemplo.com">
+                  <input type="email" formControlName="email" class="form-input-premium" [class.is-invalid]="isFieldInvalid('email')" placeholder="cliente@ejemplo.com">
+                  <div class="invalid-feedback" *ngIf="isFieldInvalid('email')">
+                    <span *ngIf="clienteForm.get('email')?.hasError('required')">El correo es obligatorio</span>
+                    <span *ngIf="clienteForm.get('email')?.hasError('pattern')">Formato de correo inválido</span>
+                  </div>
                 </div>
                 <div class="col-md-5">
                   <label class="form-label">Teléfono</label>
@@ -100,29 +110,41 @@ import { SRI_TIPOS_IDENTIFICACION } from '../../../../../core/constants/sri-iva.
                     type="text"
                     formControlName="telefono"
                     class="form-input-premium"
-                    [class.is-invalid]="clienteForm.get('telefono')?.invalid && clienteForm.get('telefono')?.touched"
+                    [class.is-invalid]="isFieldInvalid('telefono')"
                     placeholder="Ej: 0987654321"
                     (keypress)="validateNumbers($event)"
                     maxlength="10"
                   >
+                  <div class="invalid-feedback" *ngIf="isFieldInvalid('telefono')">
+                    El teléfono debe tener 10 dígitos (Ej: 09...)
+                  </div>
                 </div>
                 <div class="col-md-6">
                   <label class="form-label">Provincia *</label>
-                  <select formControlName="provincia" class="form-select-premium" [class.is-invalid]="clienteForm.get('provincia')?.invalid && clienteForm.get('provincia')?.touched">
+                  <select formControlName="provincia" class="form-select-premium" [class.is-invalid]="isFieldInvalid('provincia')">
                     <option value="">Seleccione...</option>
                     <option *ngFor="let prov of provincias" [value]="prov.nombre">{{ prov.nombre }}</option>
                   </select>
+                  <div class="invalid-feedback" *ngIf="isFieldInvalid('provincia')">
+                    Requerido
+                  </div>
                 </div>
                 <div class="col-md-6">
                   <label class="form-label">Ciudad *</label>
-                  <select formControlName="ciudad" class="form-select-premium" [disabled]="!clienteForm.get('provincia')?.value" [class.is-invalid]="clienteForm.get('ciudad')?.invalid && clienteForm.get('ciudad')?.touched">
+                  <select formControlName="ciudad" class="form-select-premium" [disabled]="!clienteForm.get('provincia')?.value" [class.is-invalid]="isFieldInvalid('ciudad')">
                     <option value="">Seleccione...</option>
                     <option *ngFor="let city of ciudadesDisponibles" [value]="city.nombre">{{ city.nombre }}</option>
                   </select>
+                  <div class="invalid-feedback" *ngIf="isFieldInvalid('ciudad')">
+                    Requerido
+                  </div>
                 </div>
                 <div class="col-12">
                   <label class="form-label">Dirección Fiscal *</label>
-                  <textarea formControlName="direccion" class="form-input-premium" [class.is-invalid]="clienteForm.get('direccion')?.invalid && clienteForm.get('direccion')?.touched" rows="2" placeholder="Escriba la dirección exacta..."></textarea>
+                  <textarea formControlName="direccion" class="form-input-premium" [class.is-invalid]="isFieldInvalid('direccion')" rows="2" placeholder="Escriba la dirección exacta..."></textarea>
+                  <div class="invalid-feedback" *ngIf="isFieldInvalid('direccion')">
+                    La dirección es obligatoria
+                  </div>
                 </div>
               </div>
             </div>
@@ -148,7 +170,7 @@ import { SRI_TIPOS_IDENTIFICACION } from '../../../../../core/constants/sri-iva.
                       formControlName="dias_credito"
                       class="form-input-premium"
                       (keypress)="validateNoNegative($event)"
-                      [class.is-invalid]="clienteForm.get('dias_credito')?.invalid && clienteForm.get('dias_credito')?.touched"
+                      [class.is-invalid]="isFieldInvalid('dias_credito')"
                       placeholder="0"
                     >
                   </div>
@@ -240,7 +262,7 @@ import { SRI_TIPOS_IDENTIFICACION } from '../../../../../core/constants/sri-iva.
       box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
     }
     .form-input-premium.is-invalid, .form-select-premium.is-invalid {
-      border-color: #ef4444; background: #fef2f2;
+      border-color: #f43f5e; background: #fff1f2;
     }
 
     .input-group-premium { display: flex; align-items: center; position: relative; }
@@ -249,7 +271,7 @@ import { SRI_TIPOS_IDENTIFICACION } from '../../../../../core/constants/sri-iva.
     }
     .input-group-premium .form-input-premium { padding-left: 2rem; }
 
-    .invalid-feedback-custom { color: #ef4444; font-size: 0.75rem; font-weight: 600; margin-top: 0.4rem; }
+    .invalid-feedback { color: #f43f5e; font-size: 0.75rem; font-weight: 600; margin-top: 0.4rem; display: block; }
 
     /* Footer */
     .modal-footer {
@@ -292,6 +314,7 @@ export class ClienteFormModalComponent implements OnInit, OnDestroy {
   ciudadesDisponibles: Ciudad[] = [];
   initialFormValue: any = {};
   sriTipos = SRI_TIPOS_IDENTIFICACION;
+  submitted = false;
 
   constructor(private fb: FormBuilder) {
     this.clienteForm = this.fb.group({
@@ -375,8 +398,11 @@ export class ClienteFormModalComponent implements OnInit, OnDestroy {
   }
 
   submit() {
-    if (!this.cliente && this.clienteForm.invalid) return;
-    if (this.cliente && !this.hasChanges) return;
+    this.submitted = true;
+    if (this.clienteForm.invalid) {
+      this.clienteForm.markAllAsTouched();
+      return;
+    }
     this.onSave.emit(this.clienteForm.value);
   }
 
@@ -407,9 +433,15 @@ export class ClienteFormModalComponent implements OnInit, OnDestroy {
     return 'Identificación inválida';
   }
 
+  isFieldInvalid(fieldName: string): boolean {
+    const control = this.clienteForm.get(fieldName);
+    return !!(control && control.invalid && (control.touched || this.submitted));
+  }
+
   getSubmitButtonDisabled(): boolean {
-    if (!this.cliente) return this.clienteForm.invalid || this.loading;
-    return !this.hasChanges || this.loading;
+    if (this.loading) return true;
+    if (!this.cliente) return false;
+    return !this.hasChanges || (this.clienteForm.invalid && this.submitted);
   }
 
   get hasChanges(): boolean {

@@ -7,8 +7,8 @@ import { SolicitudRenovacion } from '../../../../../domain/models/renovacion.mod
   standalone: true,
   imports: [CommonModule],
   template: `
-    <div class="modal-overlay animate__animated animate__fadeIn animate__faster" (click)="onClose.emit()">
-      <div class="modal-container-premium animate__animated animate__slideInUp animate__faster" (click)="$event.stopPropagation()">
+    <div class="modal-overlay" (click)="onClose.emit()">
+      <div class="modal-container-premium" (click)="$event.stopPropagation()">
         
         <div class="modal-header-premium">
           <div class="d-flex align-items-center gap-3">

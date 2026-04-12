@@ -1,9 +1,10 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-proveedores-stats',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommonModule],
   template: `
     <div class="stats-compact-row">
@@ -57,8 +58,8 @@ import { CommonModule } from '@angular/common';
     .stat-info { display: flex; flex-direction: column; }
     .stat-label { font-size: 0.65rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; }
     .stat-value { font-size: 1.35rem; font-weight: 800; color: #1e293b; line-height: 1.2; }
-    .text-success { color: #10b981 !important; }
-    .text-warning { color: #f59e0b !important; }
+    .text-success { color: var(--status-success, #10b981) !important; }
+    .text-warning { color: var(--status-warning, #f59e0b) !important; }
     .stat-divider { width: 1px; height: 35px; background: #f1f5f9; margin: 0 1.5rem; }
     @media (max-width: 992px) {
       .stats-compact-row { flex-wrap: wrap; gap: 1.5rem; }

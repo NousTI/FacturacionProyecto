@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter } from '@angular/core';
+import { Component, Input, Output, EventEmitter, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { User } from '../../../../domain/models/user.model';
 import { HasPermissionDirective } from '../../../../core/directives/has-permission.directive';
@@ -6,157 +6,178 @@ import { HasPermissionDirective } from '../../../../core/directives/has-permissi
 @Component({
   selector: 'app-usuarios-table',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommonModule, HasPermissionDirective],
   template: `
-    <div class="table-premium-container">
-      <div class="table-responsive">
-        <table class="table-premium">
-          <thead>
-            <tr>
-              <th>Usuario</th>
-              <th>Contacto</th>
-              <th>Rol / Permisos</th>
-              <th>Estado</th>
-              <th class="text-center">Acciones</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let u of usuarios" class="table-row">
-              <!-- USUARIO -->
-              <td>
-                <div class="user-info">
-                  <div class="avatar" [style.background]="getAvatarColor((u.nombre || u.nombres || ''), 0.1)" [style.color]="getAvatarColor((u.nombre || u.nombres || ''), 1)">
-                    {{ getInitials(u) }}
-                  </div>
-                  <div class="details">
-                    <div class="name-container">
-                      <span class="name">{{ u.nombres || u.nombre }} {{ u.apellidos || '' }}</span>
-                      <span *ngIf="isSelf(u)" class="me-label">(tu)</span>
+    <section class="module-table-premium">
+      <div class="table-container-premium">
+        <div class="table-responsive-premium">
+          <table class="table-editorial">
+            <thead>
+              <tr>
+                <th style="width: 320px">Usuario</th>
+                <th style="width: 200px">Rol / Permisos</th>
+                <th style="width: 250px">Contacto</th>
+                <th style="width: 140px" class="text-center">Estado</th>
+                <th class="text-center" style="width: 100px">Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let u of usuarios">
+                
+                <!-- USUARIO -->
+                <td>
+                  <div class="client-info-editorial">
+                    <div class="avatar-soft-editorial" [style.background]="getAvatarColor((u.nombre || u.nombres || ''), 0.1)" [style.color]="getAvatarColor((u.nombre || u.nombres || ''), 1)">
+                      {{ getInitials(u) }}
                     </div>
-                    <span class="sub text-lowercase">{{ u.email || u.correo }}</span>
+                    <div class="details-editorial">
+                      <div class="d-flex align-items-center gap-2">
+                        <span class="name-editorial">{{ u.nombres || u.nombre }} {{ u.apellidos || '' }}</span>
+                        <span *ngIf="isSelf(u)" class="me-label">tú</span>
+                      </div>
+                      <span class="sub-editorial text-lowercase">{{ u.email || u.correo }}</span>
+                    </div>
                   </div>
-                </div>
-              </td>
+                </td>
 
-              <!-- CONTACTO -->
-              <td>
-                <div class="contact-info">
-                  <div class="contact-item">
-                    <i class="bi bi-envelope"></i>
-                    <span>{{ u.email || u.correo || '—' }}</span>
+                <!-- ROL -->
+                <td>
+                  <div class="role-info-editorial">
+                    <span class="badge-role-editorial">{{ u.rol_nombre || u.role || 'Usuario' }}</span>
+                    <span class="role-sub-editorial" *ngIf="u.empresa_nombre">{{ u.empresa_nombre }}</span>
                   </div>
-                  <div class="contact-item" *ngIf="u.telefono">
-                    <i class="bi bi-phone"></i>
-                    <span>{{ u.telefono }}</span>
+                </td>
+
+                <!-- CONTACTO -->
+                <td>
+                  <div class="contact-info-editorial">
+                    <div class="contact-item-editorial">
+                      <i class="bi bi-envelope"></i>
+                      <span>{{ u.email || u.correo || '—' }}</span>
+                    </div>
+                    <div class="contact-item-editorial" *ngIf="u.telefono">
+                      <i class="bi bi-phone"></i>
+                      <span>{{ u.telefono }}</span>
+                    </div>
                   </div>
-                </div>
-              </td>
+                </td>
 
-              <!-- ROL -->
-              <td>
-                <div class="role-info">
-                  <span class="role-badge">{{ u.rol_nombre || u.role || 'Usuario' }}</span>
-                  <span class="role-sub" *ngIf="u.empresa_nombre">{{ u.empresa_nombre }}</span>
-                </div>
-              </td>
+                <!-- ESTADO -->
+                <td class="text-center">
+                  <span class="badge-status-editorial" [ngClass]="u.activo !== false ? 'activo' : 'inactivo'">
+                    <i class="bi" [ngClass]="u.activo !== false ? 'bi-check-circle-fill' : 'bi-x-circle-fill'"></i>
+                    {{ u.activo !== false ? 'Activo' : 'Inactivo' }}
+                  </span>
+                </td>
 
-              <!-- ESTADO -->
-              <td>
-                <span class="status-badge" [ngClass]="u.activo !== false ? 'active' : 'inactive'">
-                  <i class="bi" [ngClass]="u.activo !== false ? 'bi-check-circle-fill' : 'bi-x-circle-fill'"></i>
-                  {{ u.activo !== false ? 'Activo' : 'Inactivo' }}
-                </span>
-              </td>
+                <!-- ACCIONES -->
+                <td class="text-center">
+                  <div class="dropdown d-flex justify-content-center">
+                    <button class="btn-action-trigger-editorial" 
+                            type="button" 
+                            [id]="'actions-' + u.id"
+                            data-bs-toggle="dropdown" 
+                            data-bs-boundary="viewport"
+                            data-bs-popper-config='{"strategy":"fixed"}'
+                            aria-expanded="false">
+                      <i class="bi bi-three-dots"></i>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end border-0 p-2 rounded-4 shadow-sm" [attr.aria-labelledby]="'actions-' + u.id">
+                      <li>
+                        <a class="dropdown-item rounded-3 py-2" (click)="onAction.emit({type: 'view', usuario: u})">
+                          <i class="bi bi-eye"></i>
+                          <span class="ms-2">Perfil Completo</span>
+                        </a>
+                      </li>
+                      <li *hasPermission="'USUARIOS_EMPRESA_EDITAR'">
+                        <a class="dropdown-item rounded-3 py-2" (click)="onAction.emit({type: 'edit', usuario: u})">
+                          <i class="bi bi-pencil-square"></i>
+                          <span class="ms-2">Editar Datos</span>
+                        </a>
+                      </li>
+                      <li *hasPermission="'USUARIOS_EMPRESA_EDITAR'">
+                        <a class="dropdown-item rounded-3 py-2" (click)="onAction.emit({type: 'role', usuario: u})">
+                          <i class="bi bi-shield-lock"></i>
+                          <span class="ms-2">Cambiar Rol</span>
+                        </a>
+                      </li>
+                      <li><hr class="dropdown-divider mx-2"></li>
+                      <li *hasPermission="'USUARIOS_EMPRESA_ELIMINAR'">
+                        <a class="dropdown-item rounded-3 py-2 text-danger" (click)="onAction.emit({type: 'delete', usuario: u})">
+                          <i class="bi bi-person-x"></i>
+                          <span class="ms-2">Eliminar Usuario</span>
+                        </a>
+                      </li>
+                    </ul>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
 
-              <!-- ACCIONES -->
-              <td class="text-center">
-                <div class="dropdown">
-                  <button class="btn-actions" 
-                          type="button" 
-                          data-bs-toggle="dropdown" 
-                          aria-expanded="false"
-                          data-bs-popper-config='{"strategy":"fixed"}'>
-                    <i class="bi bi-three-dots-vertical"></i>
-                  </button>
-                  <ul class="dropdown-menu dropdown-menu-end">
-                    <li>
-                      <a class="dropdown-item" (click)="onAction.emit({type: 'view', usuario: u})">
-                        <i class="bi bi-eye text-primary"></i> Perfil Completo
-                      </a>
-                    </li>
-                    <li *hasPermission="'USUARIOS_EMPRESA_EDITAR'">
-                      <a class="dropdown-item" (click)="onAction.emit({type: 'edit', usuario: u})">
-                        <i class="bi bi-pencil-square text-success"></i> Editar Datos
-                      </a>
-                    </li>
-                    <li *hasPermission="'USUARIOS_EMPRESA_EDITAR'">
-                      <a class="dropdown-item" (click)="onAction.emit({type: 'role', usuario: u})">
-                        <i class="bi bi-shield-lock text-warning"></i> Cambiar Rol
-                      </a>
-                    </li>
-                    <li *hasPermission="'USUARIOS_EMPRESA_ELIMINAR'">
-                      <hr class="dropdown-divider">
-                    </li>
-                    <li *hasPermission="'USUARIOS_EMPRESA_ELIMINAR'">
-                      <a class="dropdown-item text-danger" (click)="onAction.emit({type: 'delete', usuario: u})">
-                        <i class="bi bi-person-x"></i> Eliminar Usuario
-                      </a>
-                    </li>
-                  </ul>
-                </div>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-
-        <!-- EMPTY STATE -->
-        <div *ngIf="usuarios.length === 0" class="empty-state">
-          <div class="empty-icon">
-            <i class="bi bi-people"></i>
+          <!-- EMPTY STATE -->
+          <div *ngIf="usuarios.length === 0" class="empty-state-editorial p-5">
+            <div class="empty-icon-editorial mb-3">
+              <i class="bi bi-people opacity-25" style="font-size: 3.5rem;"></i>
+            </div>
+            <h4 class="fw-bold">No se encontraron usuarios</h4>
+            <p class="text-muted">No hay registros que coincidan con la búsqueda o filtros aplicados.</p>
           </div>
-          <h3>No se encontraron usuarios</h3>
-          <p>No hay registros que coincidan con la búsqueda o filtros aplicados.</p>
         </div>
       </div>
-    </div>
+    </section>
   `,
   styles: [`
-    .table-premium-container { background: white; border-radius: 20px; border: 1px solid #f1f5f9; overflow: hidden; }
-    .table-premium { width: 100%; border-collapse: separate; border-spacing: 0; }
-    .table-premium thead th { background: #f8fafc; padding: 1.25rem 1.5rem; font-size: 0.75rem; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; border-bottom: 1px solid #f1f5f9; }
-    .table-row { transition: all 0.2s; }
-    .table-row:hover { background: #f8fafc; }
-    .table-row td { padding: 1.25rem 1.5rem; border-bottom: 1px solid #f1f5f9; vertical-align: middle; }
-    .table-row:last-child td { border-bottom: none; }
-    .user-info { display: flex; align-items: center; gap: 1rem; }
-    .avatar { width: 42px; height: 42px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 0.9rem; }
-    .details { display: flex; flex-direction: column; }
-    .name-container { display: flex; align-items: center; gap: 0.5rem; }
-    .name { font-weight: 700; color: #1e293b; font-size: 0.95rem; }
-    .me-label { font-size: 0.65rem; font-weight: 900; color: #3b82f6; background: #eff6ff; padding: 0.1rem 0.4rem; border-radius: 4px; text-transform: uppercase; letter-spacing: 0.02em; }
-    .sub { font-size: 0.75rem; color: #94a3b8; }
-    .contact-info { display: flex; flex-direction: column; gap: 0.3rem; }
-    .contact-item { display: flex; align-items: center; gap: 0.5rem; font-size: 0.85rem; color: #64748b; }
-    .contact-item i { font-size: 0.9rem; color: #94a3b8; }
-    .role-info { display: flex; flex-direction: column; gap: 0.2rem; }
-    .role-badge { display: inline-block; font-size: 0.75rem; font-weight: 800; color: #475569; background: #f1f5f9; padding: 0.25rem 0.6rem; border-radius: 6px; width: fit-content; }
-    .role-sub { font-size: 0.7rem; color: #94a3b8; font-weight: 600; }
-    .status-badge { display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.4rem 0.8rem; border-radius: 100px; font-size: 0.75rem; font-weight: 700; }
-    .status-badge.active { background: #15803d; color: white; }
-    .status-badge.inactive { background: #dc2626; color: white; }
-    .btn-actions { 
-      width: 36px; height: 36px; border-radius: 10px; border: none; background: transparent; color: #94a3b8; 
-      display: flex; align-items: center; justify-content: center; transition: all 0.2s; margin: 0 auto;
+    :host { display: block; width: 100%; flex: 1; min-height: 0; }
+    .module-table-premium { background: white; border-radius: 24px; border: 1px solid #f1f5f9; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.02); }
+    .table-container-premium { display: flex; flex-direction: column; }
+    .table-responsive-premium { overflow-x: auto; overscroll-behavior: contain; }
+    .table-editorial { width: 100%; border-collapse: separate; border-spacing: 0; table-layout: fixed; }
+    
+    .table-editorial th {
+      padding: 1.25rem 1.5rem; background: #f8fafc; font-size: 0.75rem; font-weight: 800;
+      color: #64748b; text-transform: uppercase; letter-spacing: 0.05em;
+      border-bottom: 2px solid #f1f5f9; text-align: left;
     }
-    .btn-actions:hover { background: #f1f5f9; color: #1e293b; }
-    .dropdown-menu { border-radius: 12px; border: 1px solid #f1f5f9; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); padding: 0.5rem; }
-    .dropdown-item { border-radius: 8px; padding: 0.6rem 1rem; font-weight: 600; font-size: 0.85rem; display: flex; align-items: center; gap: 0.75rem; color: #475569; cursor: pointer; }
-    .dropdown-item i { font-size: 1rem; }
-    .dropdown-item:hover { background: #f8fafc; }
-    .empty-state { padding: 4rem 2rem; text-align: center; }
-    .empty-icon { width: 64px; height: 64px; background: #f8fafc; color: #cbd5e1; border-radius: 20px; display: flex; align-items: center; justify-content: center; font-size: 2rem; margin: 0 auto 1.5rem; }
-    .empty-state h3 { font-weight: 800; color: #1e293b; margin-bottom: 0.5rem; }
-    .empty-state p { color: #64748b; max-width: 400px; margin: 0 auto; }
+    .table-editorial td { padding: 1.1rem 1.5rem; border-bottom: 1px solid #f1f5f9; vertical-align: middle; transition: all 0.2s; }
+    .table-editorial tbody tr:hover td { background-color: #f8fafc; }
+    .table-editorial tbody tr:last-child td { border-bottom: none; }
+
+    .client-info-editorial { display: flex; align-items: center; gap: 1rem; }
+    .avatar-soft-editorial { width: 40px; height: 40px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 0.9rem; flex-shrink: 0; }
+    .details-editorial { display: flex; flex-direction: column; min-width: 0; }
+    .name-editorial { font-weight: 700; color: #1e293b; font-size: 0.95rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .sub-editorial { font-size: 0.75rem; color: #94a3b8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .me-label { font-size: 0.65rem; font-weight: 900; color: #3b82f6; background: #eff6ff; padding: 0.1rem 0.5rem; border-radius: 6px; text-transform: uppercase; letter-spacing: 0.02em; }
+
+    .role-info-editorial { display: flex; flex-direction: column; gap: 0.25rem; }
+    .badge-role-editorial { display: inline-flex; font-size: 0.75rem; font-weight: 800; color: #475569; background: #f1f5f9; padding: 0.3rem 0.75rem; border-radius: 8px; width: fit-content; }
+    .role-sub-editorial { font-size: 0.7rem; color: #94a3b8; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+    .contact-info-editorial { display: flex; flex-direction: column; gap: 0.25rem; }
+    .contact-item-editorial { display: flex; align-items: center; gap: 0.5rem; font-size: 0.8rem; color: #64748b; }
+    .contact-item-editorial i { font-size: 0.9rem; color: #94a3b8; }
+
+    .badge-status-editorial { display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.35rem 0.8rem; border-radius: 10px; font-size: 0.7rem; font-weight: 800; text-transform: uppercase; }
+    .badge-status-editorial.activo { background: #dcfce7; color: #15803d; }
+    .badge-status-editorial.inactivo { background: #fee2e2; color: #f43f5e; }
+
+    .btn-action-trigger-editorial {
+      width: 34px; height: 34px; border-radius: 10px; border: none; background: transparent; color: #94a3b8;
+      display: flex; align-items: center; justify-content: center; transition: all 0.2s;
+    }
+    .btn-action-trigger-editorial:hover { background: #f1f5f9; color: #1e293b; }
+
+    .dropdown-menu { border-radius: 14px; border: 1px solid #f1f5f9; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.08); padding: 0.5rem; z-index: 1050 !important; position: fixed !important; }
+    .dropdown-item { border-radius: 10px; padding: 0.65rem 1rem; font-weight: 600; font-size: 0.85rem; display: flex; align-items: center; gap: 0.75rem; color: #475569; cursor: pointer; transition: all 0.2s; }
+    .dropdown-item i { font-size: 1.1rem; color: #94a3b8; transition: all 0.2s; }
+    .dropdown-item:hover { background: #f8fafc; color: #1e293b; }
+    .dropdown-item:hover i { color: #1e293b; }
+    .dropdown-item.text-danger:hover { background: #fff1f2; color: #f43f5e; }
+    .dropdown-item.text-danger:hover i { color: #f43f5e; }
+
+    .empty-state-editorial { text-align: center; }
   `]
 })
 export class UsuariosTableComponent {

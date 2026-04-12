@@ -1,7 +1,7 @@
-import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Subject, takeUntil, finalize, Observable } from 'rxjs';
+import { Subject, takeUntil, finalize, Observable, BehaviorSubject, combineLatest, map, startWith } from 'rxjs';
 
 import { UsuariosStatsComponent } from './components/usuarios-stats.component';
 import { UsuariosActionsComponent } from './components/usuarios-actions.component';
@@ -23,6 +23,7 @@ import { inject } from '@angular/core';
 @Component({
   selector: 'app-usuario-usuarios',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     CommonModule,
     FormsModule,
@@ -50,7 +51,7 @@ import { inject } from '@angular/core';
         <!-- 2. ACCIONES Y FILTROS -->
         <app-usuarios-actions
           [(searchQuery)]="searchQuery"
-          [isLoading]="isLoading"
+          [isLoading]="(isLoading$ | async) ?? false"
           [availableRoles]="availableRoles"
           (onFilterChangeEmit)="handleFilters($event)"
           (onCreate)="openCreateModal()"
@@ -59,7 +60,7 @@ import { inject } from '@angular/core';
 
         <!-- 3. TABLA -->
         <app-usuarios-table
-          [usuarios]="filteredUsuarios"
+          [usuarios]="(filteredUsuarios$ | async) || []"
           [currentUserId]="currentUserId"
           (onAction)="handleAction($event)"
         ></app-usuarios-table>
@@ -68,19 +69,23 @@ import { inject } from '@angular/core';
 
       <!-- TEMPLATE SIN PERMISO -->
       <ng-template #noPermission>
-        <div class="no-permission-container">
-          <div class="icon-lock-wrapper">
-            <i class="bi bi-shield-lock-fill"></i>
+        <section class="unauthorized-access-premium">
+          <div class="unauthorized-container shadow-sm">
+            <div class="icon-pulse-wrapper">
+              <i class="bi bi-shield-lock-fill"></i>
+            </div>
+            <div class="text-content">
+              <h2>Acceso Reservado</h2>
+              <p>Tu rol actual no permite gestionar usuarios. Si necesitas realizar esta acción, por favor contacta al administrador del sistema.</p>
+            </div>
+            <div class="unauthorized-actions">
+              <button class="btn-premium-outline" (click)="refreshData()">
+                <i class="bi bi-arrow-clockwise me-2"></i>
+                Actualizar Estado
+              </button>
+            </div>
           </div>
-          <h2>Acceso Restringido</h2>
-          <p>
-            No tienes permisos suficientes para gestionar los usuarios de esta empresa. 
-            Si crees que esto es un error, contacta a tu administrador.
-          </p>
-          <button class="btn-retry" (click)="refreshData()">
-            <i class="bi bi-arrow-clockwise me-2"></i> Reintentar sincronización
-          </button>
-        </div>
+        </section>
       </ng-template>
 
       <!-- MODALES -->
@@ -123,29 +128,28 @@ import { inject } from '@angular/core';
   `,
   styles: [`
     :host { display: flex; flex-direction: column; flex: 1; width: 100%; overflow: hidden; min-height: 0; }
-    .usuarios-page-container { flex: 1; display: flex; flex-direction: column; background: var(--bg-main, #ffffff); padding: 0; overflow: hidden; min-height: 0; gap: 24px; }
+    .usuarios-page-container { flex: 1; display: flex; flex-direction: column; background: transparent; padding: 0; overflow: hidden; min-height: 0; gap: 24px; }
     
-    /* No Permission */
-    .no-permission-container { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 3rem; }
-    .icon-lock-wrapper {
-      width: 100px; height: 100px; background: #fee2e2; color: #ef4444; border-radius: 50%;
-      display: flex; align-items: center; justify-content: center; font-size: 3rem;
-      margin-bottom: 1.5rem; box-shadow: 0 10px 25px -5px rgba(239, 68, 68, 0.3);
-    }
-    .no-permission-container h2 { font-weight: 800; color: #1e293b; margin-bottom: 0.5rem; }
-    .no-permission-container p { color: #64748b; max-width: 400px; margin-bottom: 2rem; line-height: 1.6; }
-    .btn-retry { background: #1e293b; color: white; border: none; padding: 1rem 2rem; border-radius: 100px; font-weight: 700; transition: all 0.2s; cursor: pointer; }
-    .btn-retry:hover { transform: scale(1.05); background: #0f172a; }
+    /* Unauthorized Premium Style */
+    .unauthorized-access-premium { flex: 1; display: flex; align-items: center; justify-content: center; padding: 2rem; background: transparent; }
+    .unauthorized-container { background: #ffffff; border-radius: 28px; padding: 3.5rem 2.5rem; max-width: 500px; width: 100%; text-align: center; border: 1px solid #f1f5f9; }
+    .icon-pulse-wrapper { position: relative; width: 88px; height: 88px; background: #fff1f2; color: #f43f5e; border-radius: 24px; display: flex; align-items: center; justify-content: center; font-size: 2.25rem; margin: 0 auto 2rem; }
+    .text-content h2 { font-weight: 850; color: #0f172a; margin-bottom: 0.75rem; font-size: 1.5rem; letter-spacing: -0.02em; }
+    .text-content p { color: #64748b; font-size: 0.95rem; line-height: 1.6; margin-bottom: 2rem; }
+    .btn-premium-outline { background: white; color: #0f172a; border: 1px solid #e2e8f0; padding: 0.75rem 1.5rem; border-radius: 14px; font-weight: 700; font-size: 0.9rem; transition: all 0.2s; display: inline-flex; align-items: center; justify-content: center; }
+    .btn-premium-outline:hover { background: #f8fafc; border-color: #cbd5e1; transform: translateY(-1px); }
   `]
 })
 export class UsuariosPage implements OnInit, OnDestroy {
-  usuarios$: Observable<User[]>;
   stats$: Observable<UsuariosStats>;
+  filteredUsuarios$: Observable<User[]>;
+  isLoading$ = new BehaviorSubject<boolean>(false);
 
-  filteredUsuarios: User[] = [];
   searchQuery: string = '';
-  filters = { rol: 'ALL', estado: 'ALL' };
-  
+  private searchQuery$ = new BehaviorSubject<string>('');
+  private filters$ = new BehaviorSubject<{ rol: string, estado: string }>({ rol: 'ALL', estado: 'ALL' });
+  private refreshTrigger$ = new Subject<void>();
+
   get currentUserId(): string {
     const user = this.authService.getUser();
     return String(user?.id || (user as any)?.usuario_id || (user as any)?.id_usuario || '');
@@ -158,12 +162,10 @@ export class UsuariosPage implements OnInit, OnDestroy {
   showConfirmModal = false;
   selectedUsuario: User | null = null;
 
-  isLoading = false;
   isSaving = false;
   isDeleting = false;
 
   private destroy$ = new Subject<void>();
-  private _allUsuarios: User[] = [];
   availableRoles: any[] = [];
 
   private permissionsService = inject(PermissionsService);
@@ -174,8 +176,35 @@ export class UsuariosPage implements OnInit, OnDestroy {
     private authService: AuthService,
     private cd: ChangeDetectorRef
   ) {
-    this.usuarios$ = this.usuariosService.usuarios$;
     this.stats$ = this.usuariosService.stats$;
+
+    this.filteredUsuarios$ = combineLatest([
+      this.usuariosService.usuarios$,
+      this.searchQuery$,
+      this.filters$
+    ]).pipe(
+      map(([usuarios, query, filters]) => {
+        return usuarios.filter(u => {
+          const q = query.toLowerCase();
+          const matchSearch = !q ||
+            (u.nombre || '').toLowerCase().includes(q) ||
+            (u.nombres || '').toLowerCase().includes(q) ||
+            (u.apellidos || '').toLowerCase().includes(q) ||
+            (u.email || u.correo || '').toLowerCase().includes(q);
+
+          const matchRol = filters.rol === 'ALL' || 
+                           u.empresa_rol_id === filters.rol || 
+                           u.rol_codigo === filters.rol || 
+                           u.role === filters.rol;
+
+          const matchEstado = filters.estado === 'ALL' || 
+                              (filters.estado === 'ACTIVE' && u.activo !== false) ||
+                              (filters.estado === 'INACTIVE' && u.activo === false);
+
+          return matchSearch && matchRol && matchEstado;
+        });
+      })
+    );
   }
 
   get canView(): boolean {
@@ -186,13 +215,6 @@ export class UsuariosPage implements OnInit, OnDestroy {
     this.uiService.setPageHeader('Gestión de Usuarios', 'Administra los accesos y roles del personal de tu empresa');
     this.usuariosService.loadInitialData();
     this.fetchRoles();
-
-    this.usuarios$
-      .pipe(takeUntil(this.destroy$))
-      .subscribe(usuarios => {
-        this._allUsuarios = usuarios;
-        this.applyFilters();
-      });
   }
 
   ngOnDestroy() {
@@ -200,55 +222,34 @@ export class UsuariosPage implements OnInit, OnDestroy {
     this.destroy$.complete();
   }
 
-  applyFilters() {
-    this.filteredUsuarios = this._allUsuarios.filter(u => {
-      const query = this.searchQuery.toLowerCase();
-      const matchSearch = !query ||
-        (u.nombre || '').toLowerCase().includes(query) ||
-        (u.nombres || '').toLowerCase().includes(query) ||
-        (u.apellidos || '').toLowerCase().includes(query) ||
-        (u.email || u.correo || '').toLowerCase().includes(query);
-
-      const matchRol = this.filters.rol === 'ALL' || 
-                       u.empresa_rol_id === this.filters.rol || 
-                       u.rol_codigo === this.filters.rol || 
-                       u.role === this.filters.rol;
-
-      const matchEstado = this.filters.estado === 'ALL' || 
-                          (this.filters.estado === 'ACTIVE' && u.activo !== false) ||
-                          (this.filters.estado === 'INACTIVE' && u.activo === false);
-
-      return matchSearch && matchRol && matchEstado;
-    });
-    this.cd.detectChanges();
+  onSearchChange() {
+    this.searchQuery$.next(this.searchQuery);
   }
 
   fetchRoles() {
-    this.usuariosService.listarRoles().subscribe({
+    this.usuariosService.listarRoles().pipe(takeUntil(this.destroy$)).subscribe({
       next: (roles) => {
-        // Filtrar según requerimiento del usuario (solo roles creados/empresa, no sistemas/vendedor/superadmin)
         this.availableRoles = roles.filter(r => 
           r.codigo !== 'SUPERADMIN' && 
           r.codigo !== 'VENDEDOR' && 
           r.codigo !== 'USUARIO' && 
           r.activo !== false
         );
-        this.cd.detectChanges();
+        this.cd.markForCheck();
       }
     });
   }
 
   handleFilters(filters: any) {
-    this.filters = filters;
-    this.applyFilters();
+    this.filters$.next(filters);
   }
 
   refreshData() {
-    this.isLoading = true;
+    this.isLoading$.next(true);
     this.usuariosService.listarUsuarios()
       .pipe(finalize(() => {
-        this.isLoading = false;
-        this.cd.detectChanges();
+        this.isLoading$.next(false);
+        this.cd.markForCheck();
       }))
       .subscribe();
   }
@@ -263,7 +264,6 @@ export class UsuariosPage implements OnInit, OnDestroy {
     const currentUser = this.authService.getUser();
     const currentUserId = String(currentUser?.id || (currentUser as any)?.usuario_id || (currentUser as any)?.id_usuario || '');
     
-    // El usuario objetivo puede tener su ID en .id o .user_id
     const targetProfileId = String(event.usuario.id || '');
     const targetAuthId = String(event.usuario.user_id || (event.usuario as any)?.usuario_id || '');
     
@@ -280,18 +280,18 @@ export class UsuariosPage implements OnInit, OnDestroy {
       this.selectedUsuario = event.usuario;
       this.showConfirmModal = true;
     } else if (event.type === 'view') {
-      this.isLoading = true;
+      this.isLoading$.next(true);
       this.usuariosService.obtenerUsuario(event.usuario.id).subscribe({
         next: (fullUser) => {
           this.selectedUsuario = fullUser;
           this.showDetailModal = true;
-          this.isLoading = false;
-          this.cd.detectChanges();
+          this.isLoading$.next(false);
+          this.cd.markForCheck();
         },
         error: (err) => {
           this.uiService.showError(err, 'Error al cargar detalles del usuario');
-          this.isLoading = false;
-          this.cd.detectChanges();
+          this.isLoading$.next(false);
+          this.cd.markForCheck();
         }
       });
     } else if (event.type === 'role') {
@@ -299,18 +299,18 @@ export class UsuariosPage implements OnInit, OnDestroy {
         this.uiService.showToast('No puedes cambiar tu propio rol', 'warning');
         return;
       }
-      this.isLoading = true;
+      this.isLoading$.next(true);
       this.usuariosService.obtenerUsuario(event.usuario.id).subscribe({
         next: (fullUser) => {
           this.selectedUsuario = fullUser;
           this.showRoleModal = true;
-          this.isLoading = false;
-          this.cd.detectChanges();
+          this.isLoading$.next(false);
+          this.cd.markForCheck();
         },
         error: (err) => {
           this.uiService.showError(err, 'Error al cargar detalles del usuario');
-          this.isLoading = false;
-          this.cd.detectChanges();
+          this.isLoading$.next(false);
+          this.cd.markForCheck();
         }
       });
     }
@@ -325,16 +325,16 @@ export class UsuariosPage implements OnInit, OnDestroy {
       next: (user: User) => {
         this.selectedUsuario = user;
         this.showFormModal = false;
-        this.applyFilters();
         this.uiService.showToast(
           isUpdating ? 'Usuario actualizado correctamente' : 'Usuario creado exitosamente',
           'success'
         );
+        this.cd.markForCheck();
       },
       error: (err: any) => this.uiService.showError(err, 'Error al procesar solicitud'),
       complete: () => {
         this.isSaving = false;
-        this.cd.detectChanges();
+        this.cd.markForCheck();
       }
     };
 
@@ -352,14 +352,14 @@ export class UsuariosPage implements OnInit, OnDestroy {
     this.usuariosService.updateUsuario(this.selectedUsuario.id, { empresa_rol_id: empresaRolId })
       .pipe(finalize(() => {
         this.isSaving = false;
-        this.cd.detectChanges();
+        this.cd.markForCheck();
       }))
       .subscribe({
         next: (updatedUser) => {
           this.selectedUsuario = updatedUser;
           this.showRoleModal = false;
-          this.applyFilters();
           this.uiService.showToast('Rol actualizado correctamente', 'success');
+          this.cd.markForCheck();
         },
         error: (err) => this.uiService.showError(err, 'Error al actualizar rol')
       });
@@ -371,12 +371,13 @@ export class UsuariosPage implements OnInit, OnDestroy {
     this.usuariosService.deleteUsuario(this.selectedUsuario.id)
       .pipe(finalize(() => {
         this.isDeleting = false;
-        this.cd.detectChanges();
+        this.cd.markForCheck();
       }))
       .subscribe({
         next: () => {
           this.uiService.showToast('Usuario eliminado correctamente', 'success');
           this.showConfirmModal = false;
+          this.cd.markForCheck();
         },
         error: (err) => this.uiService.showError(err)
       });

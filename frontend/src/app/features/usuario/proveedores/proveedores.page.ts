@@ -1,7 +1,7 @@
-import { Component, OnInit, OnDestroy, ChangeDetectorRef, inject } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Subject, takeUntil, finalize } from 'rxjs';
+import { Subject, takeUntil, finalize, Observable, BehaviorSubject, combineLatest } from 'rxjs';
 
 import { ProveedoresStatsComponent } from './components/proveedores-stats.component';
 import { ProveedoresActionsComponent } from './components/proveedores-actions.component';
@@ -21,6 +21,7 @@ import { PROVEEDORES_PERMISSIONS } from '../../../constants/permission-codes';
 @Component({
     selector: 'app-usuario-proveedores',
     standalone: true,
+    changeDetection: ChangeDetectionStrategy.OnPush,
     imports: [
         CommonModule,
         FormsModule,
@@ -39,14 +40,16 @@ import { PROVEEDORES_PERMISSIONS } from '../../../constants/permission-codes';
         
         <!-- 1. STATS -->
         <app-proveedores-stats
-          [total]="totalProveedores"
-          [active]="activosCount"
-          [credit]="conCreditoCount"
+          *ngIf="stats$ | async as st"
+          [total]="st.total"
+          [active]="st.activos"
+          [credit]="st.con_credito"
         ></app-proveedores-stats>
 
         <!-- 2. ACCIONES Y FILTROS -->
         <app-proveedores-actions
           [(searchQuery)]="searchQuery"
+          (searchQueryChange)="onSearchTrigger()"
           (onFilterChangeEmit)="handleFilters($event)"
           (onCreate)="openCreateModal()"
         ></app-proveedores-actions>
@@ -97,17 +100,19 @@ import { PROVEEDORES_PERMISSIONS } from '../../../constants/permission-codes';
       <!-- TEMPLATE SIN PERMISO -->
       <ng-template #noPermission>
         <div class="no-permission-container">
-          <div class="icon-lock-wrapper">
-            <i class="bi bi-shield-lock-fill"></i>
+          <div class="restricted-card-premium">
+            <div class="icon-lock-wrapper mb-4">
+              <i class="bi bi-shield-lock-fill"></i>
+            </div>
+            <h2 class="fw-bold mb-2">Acceso Reservado</h2>
+            <p class="text-muted mb-4 mx-auto" style="max-width: 450px;">
+              No tienes permisos suficientes para gestionar el directorio de proveedores. 
+              Contacta al administrador para solicitar el permiso <strong>PROVEEDORES_VER</strong>.
+            </p>
+            <button class="btn btn-retry" (click)="refreshData()">
+              <i class="bi bi-arrow-clockwise me-2"></i> Reintentar sincronización
+            </button>
           </div>
-          <h2>Acceso Restringido</h2>
-          <p>
-            No tienes permisos suficientes para gestionar el directorio de proveedores. 
-            Contacta al administrador si crees que esto es un error.
-          </p>
-          <button class="btn-retry" (click)="refreshData()">
-            <i class="bi bi-arrow-clockwise me-2"></i> Reintentar sincronización
-          </button>
         </div>
       </ng-template>
 
@@ -137,39 +142,22 @@ import { PROVEEDORES_PERMISSIONS } from '../../../constants/permission-codes';
 
     /* No Permission */
     .no-permission-container {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      text-align: center;
-      padding: 3rem;
+      flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
+      text-align: center; padding: 3rem; min-height: 70vh;
+    }
+    .restricted-card-premium {
+      background: white; padding: 4rem 3rem; border-radius: 32px;
+      box-shadow: 0 25px 50px rgba(0,0,0,0.05); border: 1px solid #f1f5f9;
+      max-width: 600px; width: 100%;
     }
     .icon-lock-wrapper {
-      width: 100px;
-      height: 100px;
-      background: #fee2e2;
-      color: #ef4444;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 3rem;
-      margin-bottom: 1.5rem;
-      box-shadow: 0 10px 25px -5px rgba(239, 68, 68, 0.3);
+      width: 100px; height: 100px; background: #fee2e2; color: #ef4444; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center; font-size: 3rem;
+      margin: 0 auto 1.5rem; box-shadow: 0 10px 25px -5px rgba(239, 68, 68, 0.3);
     }
-    .no-permission-container h2 { font-weight: 800; color: #1e293b; margin-bottom: 0.5rem; }
-    .no-permission-container p { color: #64748b; max-width: 400px; margin-bottom: 2rem; line-height: 1.6; }
-    
     .btn-retry {
-      background: #1e293b;
-      color: white;
-      border: none;
-      padding: 1rem 2rem;
-      border-radius: 100px;
-      font-weight: 700;
-      transition: all 0.2s;
-      cursor: pointer;
+      background: #1e293b; color: white; border: none; padding: 1rem 2.5rem;
+      border-radius: 100px; font-weight: 700; transition: all 0.2s; cursor: pointer;
     }
     .btn-retry:hover { transform: scale(1.05); background: #0f172a; }
   `]
@@ -181,10 +169,10 @@ export class ProveedoresPage implements OnInit, OnDestroy {
 
     private _allProveedores: Proveedor[] = [];
     filteredProveedores: Proveedor[] = [];
-
-    totalProveedores = 0;
-    activosCount = 0;
-    conCreditoCount = 0;
+    
+    // Observables
+    proveedores$: Observable<Proveedor[]>;
+    stats$: Observable<any>;
 
     searchQuery: string = '';
     filters = { estado: 'ALL' };
@@ -200,26 +188,31 @@ export class ProveedoresPage implements OnInit, OnDestroy {
     isToggling = false;
 
     private destroy$ = new Subject<void>();
+    private filterTrigger$ = new BehaviorSubject<void>(void 0);
     private permissionsService = inject(PermissionsService);
 
     constructor(
         private proveedoresService: ProveedoresService,
         private uiService: UiService,
-        private cd: ChangeDetectorRef
-    ) {}
+        private cdr: ChangeDetectorRef
+    ) {
+        this.proveedores$ = this.proveedoresService.proveedores$;
+        this.stats$ = this.proveedoresService.stats$;
+    }
 
     ngOnInit() {
         this.uiService.setPageHeader('Gestión de Proveedores', 'Administra el directorio de proveedores de tu empresa');
         this.proveedoresService.loadInitialData();
 
-        this.proveedoresService.proveedores$
-            .pipe(takeUntil(this.destroy$))
-            .subscribe(proveedores => {
-                this._allProveedores = proveedores;
-                this.updateStats();
-                this.applyFilters();
-                this.cd.detectChanges();
-            });
+        combineLatest([
+            this.proveedores$,
+            this.filterTrigger$
+        ])
+        .pipe(takeUntil(this.destroy$))
+        .subscribe(([proveedores]) => {
+            this.filteredProveedores = this.applyFilters(proveedores);
+            this.cdr.markForCheck();
+        });
     }
 
     ngOnDestroy() {
@@ -227,15 +220,13 @@ export class ProveedoresPage implements OnInit, OnDestroy {
         this.destroy$.complete();
     }
 
-    updateStats() {
-        this.totalProveedores = this._allProveedores.length;
-        this.activosCount = this._allProveedores.filter(p => p.activo).length;
-        this.conCreditoCount = this._allProveedores.filter(p => p.dias_credito > 0).length;
+    onSearchTrigger() {
+        this.filterTrigger$.next();
     }
 
-    applyFilters() {
+    applyFilters(data: Proveedor[]): Proveedor[] {
         const query = this.searchQuery.toLowerCase();
-        this.filteredProveedores = this._allProveedores.filter(p => {
+        return data.filter(p => {
             const matchSearch = !query ||
                 p.razon_social.toLowerCase().includes(query) ||
                 p.identificacion.includes(query) ||
@@ -251,7 +242,7 @@ export class ProveedoresPage implements OnInit, OnDestroy {
 
     handleFilters(filters: any) {
         this.filters = filters;
-        this.applyFilters();
+        this.filterTrigger$.next();
     }
 
     openCreateModal() {
@@ -281,7 +272,7 @@ export class ProveedoresPage implements OnInit, OnDestroy {
         operation
             .pipe(finalize(() => {
                 this.isSaving = false;
-                this.cd.detectChanges();
+                this.cdr.markForCheck();
             }))
             .subscribe({
                 next: () => {
@@ -303,7 +294,7 @@ export class ProveedoresPage implements OnInit, OnDestroy {
         this.proveedoresService.deleteProveedor(this.selectedProveedor.id)
             .pipe(finalize(() => {
                 this.isDeleting = false;
-                this.cd.detectChanges();
+                this.cdr.markForCheck();
             }))
             .subscribe({
                 next: () => {
@@ -322,7 +313,7 @@ export class ProveedoresPage implements OnInit, OnDestroy {
         this.proveedoresService.toggleActivo(this.selectedProveedor.id)
             .pipe(finalize(() => {
                 this.isToggling = false;
-                this.cd.detectChanges();
+                this.cdr.markForCheck();
             }))
             .subscribe({
                 next: (updated) => {
@@ -341,7 +332,7 @@ export class ProveedoresPage implements OnInit, OnDestroy {
         this.proveedoresService.refresh();
         setTimeout(() => {
             this.isLoading = false;
-            this.cd.detectChanges();
+            this.cdr.markForCheck();
         }, 800);
     }
 }

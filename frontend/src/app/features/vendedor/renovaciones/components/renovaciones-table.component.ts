@@ -7,7 +7,7 @@ import { SolicitudRenovacion } from '../../../../domain/models/renovacion.model'
   standalone: true,
   imports: [CommonModule],
   template: `
-    <section class="module-table animate__animated animate__fadeIn">
+    <section class="module-table">
       <div class="table-container">
         <div class="table-responsive-premium">
           <table class="table mb-0 align-middle">
