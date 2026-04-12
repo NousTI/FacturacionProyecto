@@ -54,6 +54,9 @@ import { VendedorStats } from '../../services/vendedor.service';
     </div>
   `,
   styles: [`
+    :host {
+      display: block;
+    }
     .stats-compact-row {
       background: white;
       border-radius: 20px;

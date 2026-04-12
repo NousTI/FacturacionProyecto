@@ -18,7 +18,6 @@ import { map } from 'rxjs/operators';
   selector: 'app-planes',
   template: `
     <div class="planes-page-container">
-      <div class="planes-content-wrapper">
         <!-- 1. ESTADÍSTICAS DE PLANES -->
         <app-plan-stats
           [stats]="stats"
@@ -30,7 +29,6 @@ import { map } from 'rxjs/operators';
           (onFilterChangeEmit)="handleFilters($event)"
           (onCreate)="openCreateModal()"
         ></app-plan-actions>
-      </div>
 
       <!-- 3. TABLA DE PLANES -->
       <app-plan-table
@@ -104,9 +102,6 @@ import { map } from 'rxjs/operators';
       overflow: hidden;
       min-height: 0;
       gap: 24px;
-    }
-    .planes-content-wrapper {
-      flex: 0 0 auto;
     }
     app-plan-table {
       flex: 1;

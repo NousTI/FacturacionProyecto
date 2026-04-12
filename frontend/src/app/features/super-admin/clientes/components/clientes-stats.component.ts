@@ -41,6 +41,9 @@ import { CommonModule } from '@angular/common';
     </div>
   `,
   styles: [`
+    :host {
+      display: block;
+    }
     .stats-compact-row {
       background: white;
       border-radius: 20px;

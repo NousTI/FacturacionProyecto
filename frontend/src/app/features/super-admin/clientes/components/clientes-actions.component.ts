@@ -80,7 +80,11 @@ import { FormsModule } from '@angular/forms';
       </div>
     </section>
   `,
-  styles: []
+  styles: [`
+    :host {
+      display: block;
+    }
+  `]
 })
 export class ClientesActionsComponent {
   @Input() searchQuery: string = '';
