@@ -149,3 +149,14 @@ class SuscripcionLogLectura(SuscripcionLogBase):
     
     class Config:
         from_attributes = True
+
+
+class ReactivacionEmpresa(BaseModel):
+    """Payload para reactivar una empresa desde la Zona de Rescate (Opción B)."""
+    plan_id: UUID
+    monto: Decimal
+    metodo_pago: str                         # EFECTIVO, TRANSFERENCIA, TARJETA, etc.
+    numero_comprobante: Optional[str] = None
+    fecha_inicio_periodo: Optional[datetime] = None  # Por defecto: ahora
+    fecha_fin_periodo: Optional[datetime] = None     # Por defecto: 1 año desde inicio
+    observaciones: Optional[str] = None

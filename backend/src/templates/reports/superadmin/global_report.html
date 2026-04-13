@@ -70,6 +70,7 @@
         .bg-blue { background: #dbeafe; color: #1e40af; }
 
         .tooltip-icon { cursor: help; color: #3b82f6; font-weight: bold; }
+        .no-data { display: flex; align-items: center; justify-content: center; height: 120px; color: #9ca3af; font-size: 9px; border: 1px dashed #e2e8f0; border-radius: 4px; }
     </style>
 </head>
 <body>
@@ -131,13 +132,21 @@
         <div class="chart-box">
             <h2>Rescate vs Upgrade (%)</h2>
             <div class="chart-container">
-                <canvas id="chartRescateUpgrade"></canvas>
+                {% if data.zona_rescate > 0 or data.zona_upgrade > 0 %}
+                    <canvas id="chartRescateUpgrade"></canvas>
+                {% else %}
+                    <div class="no-data">⚠️ Sin empresas en zonas críticas para este período</div>
+                {% endif %}
             </div>
         </div>
         <div class="chart-box">
             <h2>Planes Más Vendidos</h2>
             <div class="chart-container">
-                <canvas id="chartPlanes"></canvas>
+                {% if data.planes_mas_vendidos %}
+                    <canvas id="chartPlanes"></canvas>
+                {% else %}
+                    <div class="no-data">📅 Sin ventas de planes en este período</div>
+                {% endif %}
             </div>
         </div>
     </div>
@@ -145,7 +154,11 @@
     <div class="chart-box" style="margin-bottom: 18px;">
         <h2>Top 10 Vendedores (Ingresos)</h2>
         <div class="chart-container" style="height: 200px;">
-            <canvas id="chartVendedores"></canvas>
+            {% if data.top_vendedores %}
+                <canvas id="chartVendedores"></canvas>
+            {% else %}
+                <div class="no-data">👤 Sin vendedores con ingresos registrados en este período</div>
+            {% endif %}
         </div>
     </div>
 
@@ -154,56 +167,45 @@
     <table>
         <thead>
             <tr>
-                <th style="width:25%">Empresa <span class="tooltip-icon" title="Hover para ver: Vendedor, Antigüedad, Representante">(i)</span></th>
-                <th style="width:15%">Plan</th>
-                <th style="width:15%">Ult. Acceso</th>
-                <th style="width:15%">Vencimiento</th>
-                <th style="width:15%">Email</th>
-                <th style="width:15%">Teléfono</th>
+                <th style="width:20%">Empresa <span class="tooltip-icon" title="Hover para ver: Vendedor, Antigüedad, Representante">(i)</span></th>
+                <th style="width:12%">Plan Vencido</th>
+                <th style="width:13%">Ult. Acceso</th>
+                <th style="width:13%">Venció</th>
+                <th style="width:15%">Correo empresa</th>
+                <th style="width:12%">Telefono empresa</th>
+                <th style="width:10%">Dead line</th>
             </tr>
         </thead>
         <tbody>
             {% for e in data.empresas_rescate %}
-            <tr title="Vendedor: {{ e.vendedor_nombre }}, Antigüedad: {% if e.fecha_registro %}{{ (now_obj - e.fecha_registro).days }} días{% endif %}, Representante: {{ e.representante or '--' }}">
+            <tr title="Vendedor: {{ e.vendedor_nombre or 'N/A' }} | Antigüedad: {{ e.antiguedad or 'N/A' }} | Rep: {{ e.representante or 'N/A' }}">
                 <td class="font-bold">{{ e.nombre_empresa }}</td>
                 <td>{{ e.plan_nombre or '--' }}</td>
-                <td>{{ e.ultimo_acceso if e.ultimo_acceso and e.ultimo_acceso is string else (e.ultimo_acceso.strftime('%Y-%m-%d') if e.ultimo_acceso else '--') }}</td>
+                <td>{{ e.ultimo_acceso_fmt or '--' }}</td>
                 <td>{{ e.fecha_vencimiento if e.fecha_vencimiento is string else (e.fecha_vencimiento.strftime('%d/%m/%Y') if e.fecha_vencimiento else '--') }}</td>
                 <td style="font-size:8px; color:#64748b;">{{ e.email or '--' }}</td>
                 <td style="font-size:8px;">{{ e.telefono or '--' }}</td>
+                <td>
+                    {% set dlf = e.deadline_fmt or '' %}
+                    {% if dlf == 'Vencido' or '<' in dlf %}
+                        <span class="badge bg-red">{{ dlf or '--' }}</span>
+                    {% elif 'días' in dlf and dlf.split()[0] | int < 4 %}
+                        <span class="badge bg-red">{{ dlf }}</span>
+                    {% elif 'días' in dlf and dlf.split()[0] | int < 8 %}
+                        <span class="badge bg-amber">{{ dlf }}</span>
+                    {% else %}
+                        <span class="badge">{{ dlf or '--' }}</span>
+                    {% endif %}
+                </td>
             </tr>
             {% endfor %}
             {% if not data.empresas_rescate %}
-            <tr><td colspan="6" style="text-align:center; color:#9ca3af; padding: 12px;">Sin empresas en zona de rescate</td></tr>
+            <tr><td colspan="7" style="text-align:center; color:#9ca3af; padding: 12px;">Sin empresas en zona de rescate</td></tr>
             {% endif %}
         </tbody>
     </table>
 
-    <!-- ZONA DE UPGRADE -->
-    <h2>Zona de Upgrade — Alto Uso del Plan ({{ data.empresas_upgrade | length }})</h2>
-    <table>
-        <thead>
-            <tr>
-                <th style="width:35%">Empresa</th>
-                <th style="width:25%">Plan Actual</th>
-                <th style="width:20%">Uso Facturas</th>
-                <th class="text-right" style="width:20%">% Uso</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for e in data.empresas_upgrade %}
-            <tr>
-                <td class="font-bold">{{ e.nombre_empresa }}</td>
-                <td>{{ e.plan_nombre }}</td>
-                <td>{{ e.facturas_mes }} / {{ e.max_facturas_mes }}</td>
-                <td class="text-right font-bold">{{ "{:.1f}%".format(e.porcentaje_uso) }}</td>
-            </tr>
-            {% endfor %}
-            {% if not data.empresas_upgrade %}
-            <tr><td colspan="4" style="text-align:center; color:#9ca3af; padding: 12px;">Sin empresas en zona de upgrade</td></tr>
-            {% endif %}
-        </tbody>
-    </table>
+
 
     <div id="footer">
         Generado por

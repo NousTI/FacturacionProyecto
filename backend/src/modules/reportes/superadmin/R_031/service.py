@@ -5,7 +5,7 @@ class ServicioR031:
     def __init__(self, repo: RepositorioR031):
         self.repo = repo
 
-    def obtener_reporte_global(
+    def obtener_r_031_reporte_global(
         self,
         fecha_inicio: Optional[str] = None,
         fecha_fin: Optional[str] = None
@@ -15,7 +15,6 @@ class ServicioR031:
         """
         kpis = self.repo.obtener_kpis_globales(fecha_inicio, fecha_fin)
         empresas_rescate = self.repo.obtener_zona_rescate(fecha_inicio, fecha_fin)
-        empresas_upgrade = self.repo.obtener_zona_upgrade(fecha_inicio, fecha_fin)
         planes_mas_vendidos = self.repo.obtener_planes_mas_vendidos(fecha_inicio, fecha_fin)
         top_vendedores = self.repo.obtener_top_vendedores(fecha_inicio, fecha_fin)
 
@@ -33,7 +32,6 @@ class ServicioR031:
 
             # Tablas
             "empresas_rescate": empresas_rescate,
-            "empresas_upgrade": empresas_upgrade,
             "planes_mas_vendidos": planes_mas_vendidos,
             "top_vendedores": top_vendedores
         }

@@ -82,3 +82,8 @@ class SuscripcionController:
         historial = self.service.obtener_historial_suscripcion(empresa_id, usuario_actual)
         return success_response(historial)
 
+    # --- Reactivación Zona de Rescate ---
+    def reactivar_empresa_rescate(self, empresa_id: UUID, body, usuario_actual: dict):
+        resultado = self.service.reactivar_empresa_rescate(empresa_id, body, usuario_actual)
+        return success_response(resultado, "Empresa reactivada exitosamente")
+

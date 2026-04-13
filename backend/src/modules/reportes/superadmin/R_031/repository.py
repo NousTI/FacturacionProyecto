@@ -92,7 +92,18 @@ class RepositorioR031:
                  FROM sistema_facturacion.empresas e
                  JOIN sistema_facturacion.suscripciones s ON s.empresa_id = e.id
                  WHERE s.estado IN ('VENCIDA', 'SUSPENDIDA') AND e.activo = FALSE
-                   AND s.fecha_fin BETWEEN {f_inicio} AND {f_fin}) as zona_rescate
+                   AND s.fecha_fin BETWEEN {f_inicio} AND {f_fin}) as zona_rescate,
+
+                -- Total usuarios (denominador para tasa de abandono)
+                (SELECT COUNT(id) FROM sistema_facturacion.usuarios) as total_usuarios,
+
+                -- Usuarios en zona de rescate (numerador para tasa de abandono)
+                (SELECT COUNT(u.id)
+                 FROM sistema_facturacion.usuarios u
+                 JOIN sistema_facturacion.empresas e ON u.empresa_id = e.id
+                 JOIN sistema_facturacion.suscripciones s ON s.empresa_id = e.id
+                 WHERE s.estado IN ('VENCIDA', 'SUSPENDIDA') AND e.activo = FALSE
+                   AND s.fecha_fin BETWEEN {f_inicio} AND {f_fin}) as usuarios_en_rescate
         """
 
         query = query.format(
@@ -112,7 +123,9 @@ class RepositorioR031:
             fi_use, ff_use,           # usuarios_nuevos_mes
             fi_use, fi_use,           # empresas_activas_mes_anterior
             fi_use, ff_use,           # zona_upgrade
-            fi_use, ff_use            # zona_rescate
+            fi_use, ff_use,           # zona_rescate
+            # total_usuarios (sin params)
+            fi_use, ff_use            # usuarios_en_rescate
         ]
 
         with self.db.cursor() as cur:
@@ -126,8 +139,11 @@ class RepositorioR031:
             data['tasa_crecimiento'] = round(
                 ((emp_act - emp_ant) / emp_ant * 100) if emp_ant > 0 else (100.0 if emp_act > 0 else 0.0), 2
             )
-            rescate = int(data.get('zona_rescate', 0))
-            data['tasa_abandono'] = round((rescate / emp_act * 100) if emp_act > 0 else 0.0, 2)
+            
+            # Tasa de abandono BASADA EN USUARIOS (como se solicitó)
+            usr_total = int(data.get('total_usuarios', 0))
+            usr_rescate = int(data.get('usuarios_en_rescate', 0))
+            data['tasa_abandono'] = round((usr_rescate / usr_total * 100) if usr_total > 0 else 0.0, 2)
 
             ing_anio = float(data.get('ingresos_anio', 0))
             ing_anio_ant = float(data.get('ingresos_anio_anterior', 0))
@@ -170,7 +186,7 @@ class RepositorioR031:
                  FROM sistema_facturacion.usuarios u3
                  JOIN sistema_facturacion.empresa_roles er3 ON u3.empresa_rol_id = er3.id
                  WHERE u3.empresa_id = e.id 
-                 ORDER BY (er3.codigo = 'ADMIN') DESC, u3.created_at ASC
+                 ORDER BY (er3.codigo = 'ADMIN_EMPRESA') DESC, u3.created_at ASC
                  LIMIT 1) as representante
             FROM sistema_facturacion.empresas e
             JOIN sistema_facturacion.suscripciones s ON s.empresa_id = e.id

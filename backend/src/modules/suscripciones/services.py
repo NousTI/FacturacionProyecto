@@ -5,7 +5,7 @@ from typing import List, Optional
 import logging
 
 from .repositories import RepositorioSuscripciones
-from .schemas import PlanCreacion, PagoSuscripcionCreacion, PagoSuscripcionQuick
+from .schemas import PlanCreacion, PagoSuscripcionCreacion, PagoSuscripcionQuick, ReactivacionEmpresa
 from ..comisiones.service import ServicioComisiones
 from ..modulos.service import ServicioModulos
 from ..empresas.repositories import RepositorioEmpresas
@@ -427,8 +427,6 @@ class ServicioSuscripciones:
         if not usuario_actual.get(AuthKeys.IS_SUPERADMIN):
             raise AppError("No autorizado", 403)
             
-        # Lógica para marcar como vencidas las suscripciones que pasaron su fecha fin
-        # Esto usualmente se haría en un cron job, pero aquí se expone vía API
         query = """
             SELECT s.* 
             FROM sistema_facturacion.suscripciones s
@@ -471,3 +469,64 @@ class ServicioSuscripciones:
             count += 1
             
         return {"procesados": count, "mensaje": f"Se marcaron {count} suscripciones como vencidas"}
+
+    def reactivar_empresa_rescate(self, empresa_id: UUID, datos: ReactivacionEmpresa, usuario_actual: dict):
+        """Opción B: Registra pago, reactiva suscripción y restaura acceso a la empresa."""
+        if not usuario_actual.get(AuthKeys.IS_SUPERADMIN):
+            raise AppError("No autorizado", 403)
+
+        empresa = self.empresa_repo.obtener_por_id(empresa_id)
+        if not empresa:
+            raise AppError("Empresa no encontrada", 404)
+
+        plan = self.repo.obtener_plan_por_id(datos.plan_id)
+        if not plan:
+            raise AppError("Plan no encontrado", 404)
+
+        fecha_inicio = datos.fecha_inicio_periodo or datetime.now()
+        if datos.fecha_fin_periodo:
+            fecha_fin = datos.fecha_fin_periodo
+        else:
+            try:
+                fecha_fin = fecha_inicio.replace(year=fecha_inicio.year + 1) - timedelta(days=1)
+            except ValueError:
+                fecha_fin = (fecha_inicio + timedelta(days=1)).replace(year=fecha_inicio.year + 1) - timedelta(days=2)
+
+        pago_dict = {
+            "empresa_id": empresa_id,
+            "plan_id": datos.plan_id,
+            "monto": datos.monto,
+            "fecha_pago": datetime.now(),
+            "fecha_inicio_periodo": fecha_inicio,
+            "fecha_fin_periodo": fecha_fin,
+            "metodo_pago": datos.metodo_pago,
+            "estado": "PAGADO",
+            "numero_comprobante": datos.numero_comprobante,
+            "registrado_por": usuario_actual['id'],
+            "tipo_pago": "REACTIVACION",
+            "observaciones": datos.observaciones or "Reactivación desde Zona de Rescate"
+        }
+
+        empresa_data = {
+            "id": empresa_id,
+            "fecha_activacion": fecha_inicio,
+            "fecha_vencimiento": fecha_fin,
+            "estado": "ACTIVA"
+        }
+
+        comision = self.comision_service.calcular_comision_potencial(empresa_id, float(datos.monto))
+        pago_id = self.repo.registrar_suscripcion_atomica(pago_dict, empresa_data, comision)
+
+        # Restaurar acceso: empresa.activo = TRUE
+        with self.repo.db.cursor() as cur:
+            cur.execute(
+                "UPDATE sistema_facturacion.empresas SET activo = TRUE, updated_at = NOW() WHERE id = %s",
+                (str(empresa_id),)
+            )
+        self.repo.db.commit()
+
+        # Sincronizar módulos del nuevo plan
+        self.modulo_service.sincronizar(empresa_id, datos.plan_id, fecha_fin)
+
+        logger.info(f"Empresa {empresa_id} reactivada desde Zona de Rescate por {usuario_actual['id']}")
+        return {"pago_id": pago_id, "mensaje": "Empresa reactivada exitosamente. Acceso restaurado."}

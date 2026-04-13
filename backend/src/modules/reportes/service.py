@@ -350,10 +350,9 @@ class ServicioReportes:
     # R-031: REPORTE GLOBAL SUPERADMIN
     # =========================================================
 
-    def obtener_reporte_global_superadmin(self, fecha_inicio: Optional[str] = None, fecha_fin: Optional[str] = None):
+    def obtener_r_031_reporte_global(self, fecha_inicio: Optional[str] = None, fecha_fin: Optional[str] = None):
         kpis = self.repo_r031.obtener_kpis_globales(fecha_inicio=fecha_inicio, fecha_fin=fecha_fin)
         rescate_raw = self.repo_r031.obtener_zona_rescate(fecha_inicio=fecha_inicio, fecha_fin=fecha_fin)
-        upgrade = self.repo_r031.obtener_zona_upgrade(fecha_inicio=fecha_inicio, fecha_fin=fecha_fin)
         planes = self.repo_r031.obtener_planes_mas_vendidos(fecha_inicio=fecha_inicio, fecha_fin=fecha_fin)
         top_vendedores = self.repo_r031.obtener_top_vendedores(fecha_inicio=fecha_inicio, fecha_fin=fecha_fin)
 
@@ -375,12 +374,11 @@ class ServicioReportes:
             # 2. Formatear Deadline
             deadline = e.get('deadline')
             if deadline:
-                # Si es datetime, convertir a fecha para comparar
                 if isinstance(deadline, datetime):
                     deadline_date = deadline.date()
                 else:
                     deadline_date = deadline
-                
+
                 diff_deadline = (deadline_date - now.date()).days
                 if diff_deadline < 31:
                     if diff_deadline < 0:
@@ -391,16 +389,15 @@ class ServicioReportes:
                         e['deadline_fmt'] = f"{diff_deadline} días"
                 else:
                     e['deadline_fmt'] = deadline_date.strftime('%Y-%m-%d')
-            
+
             # 3. Calcular Antigüedad
             f_registro = e.get('fecha_registro')
             if f_registro:
-                # Asegurar que f_registro sea date
                 if isinstance(f_registro, datetime):
                     f_reg_date = f_registro.date()
                 else:
                     f_reg_date = f_registro
-                
+
                 diff_ant = now.date() - f_reg_date
                 años = diff_ant.days // 365
                 meses = (diff_ant.days % 365) // 30
@@ -418,7 +415,6 @@ class ServicioReportes:
         return {
             **kpis,
             "empresas_rescate": empresas_rescate,
-            "empresas_upgrade": upgrade,
             "planes_mas_vendidos": planes,
             "top_vendedores": top_vendedores,
         }
@@ -601,7 +597,7 @@ class ServicioReportes:
             fecha_fin = params.get('fecha_fin')
             
             if tipo == 'SUPERADMIN_GLOBAL':
-                data = self.obtener_reporte_global_superadmin(fecha_inicio, fecha_fin)
+                data = self.obtener_r_031_reporte_global(fecha_inicio, fecha_fin)
                 template = "reports/superadmin/global_report.html"
             elif tipo == 'SUPERADMIN_COMISIONES':
                 vendedor_id = params.get('vendedor_id')

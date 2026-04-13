@@ -4,7 +4,8 @@ from uuid import UUID
 from .schemas import (
     PlanCreacion, PlanUpdate, PlanLectura, PlanStats,
     PagoSuscripcionQuick, HistoricoSuscripcion,
-    SuscripcionCreacion, SuscripcionLectura, SuscripcionLogLectura
+    SuscripcionCreacion, SuscripcionLectura, SuscripcionLogLectura,
+    ReactivacionEmpresa
 )
 from .controller import SuscripcionController
 from ..autenticacion.dependencies import get_current_user
@@ -144,6 +145,17 @@ def verificar_vencimientos(
     controller: SuscripcionController = Depends()
 ):
     return controller.verificar_vencimientos(usuario)
+
+# --- Reactivación desde Zona de Rescate ---
+@router.post("/{empresa_id}/reactivar")
+def reactivar_empresa_rescate(
+    empresa_id: UUID,
+    datos: ReactivacionEmpresa,
+    usuario: dict = Depends(_check_suscripciones_gestionar),
+    controller: SuscripcionController = Depends()
+):
+    """Reactivar empresa bloqueada: registra pago, activa suscripción y restaura acceso."""
+    return controller.reactivar_empresa_rescate(empresa_id, datos, usuario)
 
 # --- Audit Log ---
 @router.get('/{empresa_id}/historial', response_model=RespuestaBase[List[SuscripcionLogLectura]])

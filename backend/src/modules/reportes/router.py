@@ -353,14 +353,14 @@ def obtener_reporte_cartera(
 # R-031: REPORTE GLOBAL SUPERADMIN
 # =========================================================
 @router.get("/superadmin/global", response_model=ReporteGlobalSuperadmin)
-def obtener_reporte_global(
+def obtener_r_031_reporte_global(
     fecha_inicio: Optional[str] = None,
     fecha_fin: Optional[str] = None,
     usuario: dict = Depends(requerir_superadmin),
     servicio: ServicioReportes = Depends()
 ):
     """R-031: Vista consolidada de todas las empresas, ingresos, zonas upgrade/rescate y gráficas globales."""
-    return servicio.obtener_reporte_global_superadmin(fecha_inicio=fecha_inicio, fecha_fin=fecha_fin)
+    return servicio.obtener_r_031_reporte_global(fecha_inicio=fecha_inicio, fecha_fin=fecha_fin)
 
 
 # =========================================================

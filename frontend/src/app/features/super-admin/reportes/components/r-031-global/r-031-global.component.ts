@@ -1,12 +1,14 @@
 import { Component, OnInit, OnDestroy, Input, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { HttpClient } from '@angular/common/http';
 import { Subject, takeUntil } from 'rxjs';
 import {
   ReportesService, ReporteGlobal
 } from '../../services/reportes.service';
 import { UiService } from '../../../../../shared/services/ui.service';
 import { InfoTooltipComponent } from '../../../../../shared/components/info-tooltip/info-tooltip.component';
+import { environment } from '../../../../../../environments/environment';
 
 type RangoTipo = 'mes_actual' | 'mes_anterior' | 'anio_actual' | 'mes_especifico' | 'anio_especifico' | 'personalizado';
 
@@ -139,7 +141,7 @@ type RangoTipo = 'mes_actual' | 'mes_anterior' | 'anio_actual' | 'mes_especifico
       </div>
 
       <!-- Gráficas row -->
-      <div class="row g-4 mb-4">
+    <div class="row g-4 mb-4">
         <!-- Donut: rescate vs upgrade -->
         <div class="col-md-4">
           <div class="card-graf">
@@ -186,21 +188,21 @@ type RangoTipo = 'mes_actual' | 'mes_anterior' | 'anio_actual' | 'mes_especifico
       </div>
 
       <!-- Tabla: Zona de Rescate -->
-      <div class="card-tabla mb-4">
+      <div class="card-tabla">
         <div class="tabla-header">
-          <span><i class="bi bi-exclamation-triangle-fill text-danger me-2"></i>Zona de Rescate ({{ datos.empresas_rescate.length }})</span>
+          <span><i class="bi bi-exclamation-triangle-fill text-danger me-2"></i>Zona de Rescate ({{ datos.zona_rescate }})</span>
         </div>
         <div class="table-responsive">
           <table class="table table-hover align-middle mb-0">
             <thead>
               <tr>
                 <th>Empresa</th>
-                <th>Plan vencido</th>
-                <th>Últ. acceso</th>
+                <th>Plan Vencido</th>
+                <th>Ult. Intento acceso</th>
                 <th>Venció</th>
-                <th>Correo</th>
-                <th>Teléfono</th>
-                <th>Deadline</th>
+                <th>Correo empresa</th>
+                <th>Telefono empresa</th>
+                <th>Dead line</th>
                 <th class="text-center">Acción</th>
               </tr>
             </thead>
@@ -216,22 +218,22 @@ type RangoTipo = 'mes_actual' | 'mes_anterior' | 'anio_actual' | 'mes_especifico
                   </div>
                 </td>
                 <td><span class="badge-plan">{{ e.plan_nombre }}</span></td>
-                <td class="text-muted small">{{ formatAcceso(e.ultimo_acceso) }}</td>
-                <td class="text-muted small">{{ formatFecha(e.fecha_vencimiento) }}</td>
+                <td class="text-muted small">{{ e.ultimo_acceso_fmt }}</td>
+                <td class="text-muted small">{{ formatVencimiento(e.fecha_vencimiento) }}</td>
                 <td class="small">{{ e.email || '—' }}</td>
                 <td class="small">{{ e.telefono || '—' }}</td>
                 <td>
-                  <span class="badge-deadline" [ngClass]="deadlineClass(e.deadline)">
-                    {{ formatDeadline(e.deadline) }}
+                  <span class="badge-deadline" [ngClass]="deadlineClass(e.deadline_fmt)">
+                    {{ e.deadline_fmt }}
                   </span>
                 </td>
                 <td class="text-center">
                   <div class="d-flex justify-content-center gap-1">
-                    <button class="btn-accion btn-reactivar" (click)="reactivarEmpresa(e)" title="Reactivar Empresa">
-                      <i class="bi bi-arrow-repeat"></i>
+                    <button class="btn-accion btn-reactivar" (click)="reactivarEmpresa(e)" title="Reactivar/Eliminar">
+                        <i class="bi bi-arrow-repeat"></i>
                     </button>
-                    <button class="btn-accion btn-eliminar" (click)="eliminarEmpresa(e)" title="Eliminar Empresa">
-                      <i class="bi bi-trash"></i>
+                    <button class="btn-accion btn-eliminar" (click)="eliminarEmpresa(e)" title="Eliminar">
+                        <i class="bi bi-trash"></i>
                     </button>
                   </div>
                 </td>
@@ -243,41 +245,72 @@ type RangoTipo = 'mes_actual' | 'mes_anterior' | 'anio_actual' | 'mes_especifico
           </table>
         </div>
       </div>
+    </div>
 
-      <!-- Tabla: Zona de Upgrade -->
-      <div class="card-tabla">
-        <div class="tabla-header">
-          <span><i class="bi bi-arrow-up-circle-fill text-warning me-2"></i>Zona de Upgrade ({{ datos.empresas_upgrade.length }})</span>
+    <!-- Modal Reactivación (fuera del bloque *ngIf="datos") -->
+    <div class="modal-overlay" *ngIf="modalReactivar.visible" (click)="cerrarModal()">
+      <div class="modal-panel" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <span class="modal-title"><i class="bi bi-arrow-repeat me-2 text-success"></i>Reactivar empresa</span>
+          <button class="modal-close" (click)="cerrarModal()"><i class="bi bi-x-lg"></i></button>
         </div>
-        <div class="table-responsive">
-          <table class="table table-hover align-middle mb-0">
-            <thead>
-              <tr>
-                <th>Empresa</th>
-                <th>Plan actual</th>
-                <th>Facturas este mes</th>
-                <th>Límite del plan</th>
-                <th>% Uso</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let e of datos.empresas_upgrade">
-                <td class="fw-medium">{{ e.nombre_empresa }}</td>
-                <td><span class="badge-plan">{{ e.plan_nombre }}</span></td>
-                <td>{{ e.facturas_mes }}</td>
-                <td>{{ e.max_facturas_mes }}</td>
-                <td>
-                  <div class="progress-wrap">
-                    <div class="progress-bar-custom" [style.width.%]="e.porcentaje_uso" [ngClass]="e.porcentaje_uso >= 95 ? 'bg-danger' : 'bg-warning'"></div>
-                    <span class="progress-label">{{ e.porcentaje_uso }}%</span>
-                  </div>
-                </td>
-              </tr>
-              <tr *ngIf="datos.empresas_upgrade.length === 0">
-                <td colspan="5" class="text-center text-muted py-4">Sin empresas en zona de upgrade</td>
-              </tr>
-            </tbody>
-          </table>
+        <div class="modal-body">
+          <p class="modal-empresa">{{ modalReactivar.empresa?.nombre_empresa }}</p>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label-sm">Plan *</label>
+              <select class="form-select form-select-sm" [(ngModel)]="modalReactivar.plan_id" (change)="onPlanChange()">
+                <option value="">Seleccione un plan...</option>
+                <option *ngFor="let p of planesDisponibles" [value]="p.id">{{ p.nombre }} — {{ p.precio_anual | currency:'USD':'symbol':'1.0-0' }}/año</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label-sm">Monto cobrado *</label>
+              <input type="number" class="form-control form-control-sm" [(ngModel)]="modalReactivar.monto" placeholder="0.00" min="0">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label-sm">Método de pago *</label>
+              <select class="form-select form-select-sm" [(ngModel)]="modalReactivar.metodo_pago">
+                <option value="EFECTIVO">Efectivo</option>
+                <option value="TRANSFERENCIA">Transferencia bancaria</option>
+                <option value="TARJETA">Tarjeta de crédito/débito</option>
+                <option value="CHEQUE">Cheque</option>
+                <option value="OTRO">Otro</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label-sm">N° Comprobante</label>
+              <input type="text" class="form-control form-control-sm" [(ngModel)]="modalReactivar.numero_comprobante" placeholder="Opcional">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label-sm">Fecha inicio período</label>
+              <input type="date" class="form-control form-control-sm" [(ngModel)]="modalReactivar.fecha_inicio">
+            </div>
+            <div class="form-group">
+              <label class="form-label-sm">Fecha fin período</label>
+              <input type="date" class="form-control form-control-sm" [(ngModel)]="modalReactivar.fecha_fin">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label-sm">Observaciones</label>
+            <textarea class="form-control form-control-sm" [(ngModel)]="modalReactivar.observaciones" rows="2" placeholder="Motivo de reactivación..."></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn-modal-cancel" (click)="cerrarModal()">Cancelar</button>
+          <button class="btn-modal-confirm" (click)="confirmarReactivacion()" [disabled]="loadingReactivar || !modalReactivar.plan_id || !modalReactivar.monto">
+            <span *ngIf="loadingReactivar" class="spinner-border spinner-border-sm me-1"></span>
+            <i *ngIf="!loadingReactivar" class="bi bi-check-circle me-1"></i>
+            {{ loadingReactivar ? 'Procesando...' : 'Confirmar Reactivación' }}
+          </button>
         </div>
       </div>
     </div>
@@ -291,25 +324,24 @@ type RangoTipo = 'mes_actual' | 'mes_anterior' | 'anio_actual' | 'mes_especifico
     }
     .section-title { font-size: 1.1rem; font-weight: 700; color: #161d35; margin: 0; }
     .section-sub { color: #64748b; font-size: 0.85rem; margin: 0.25rem 0 0; }
-    .btn-generar { padding: 0.5rem 1rem; background: #3b82f6; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; }
-    .btn-pdf { padding: 0.5rem 1rem; background: #10b981; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; }
+    .btn-generar { padding: 0.5rem 1rem; background: #3b82f6; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: 600; }
+    .btn-pdf { padding: 0.5rem 1rem; background: #10b981; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: 600; }
     .btn-generar:disabled, .btn-pdf:disabled { opacity: 0.5; cursor: not-allowed; }
-    .filtros-card { background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 6px; padding: 1rem; }
+    .filtros-card { background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 4px; padding: 1rem; }
     .form-label-sm { font-size: 0.75rem; font-weight: 600; color: #374151; display: block; margin-bottom: 0.25rem; }
-    .form-select-sm, .form-control-sm { font-size: 0.8rem; padding: 0.25rem 0.5rem; }
+    .form-select-sm, .form-control-sm { font-size: 0.8rem; padding: 0.25rem 0.5rem; border-radius: 4px; border: 1px solid #d1d5db; }
     .rango-preview { color: #64748b; font-size: 0.8rem; }
     .empty-state, .loading-state { text-align: center; padding: 3rem 1rem; color: #64748b; }
     .empty-state i, .loading-state i { font-size: 2rem; margin-bottom: 1rem; }
     .spinner-grow { width: 2rem; height: 2rem; }
     .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 0.75rem; }
-    .kpi-card { border: 1px solid #e2e8f0; border-radius: 6px; padding: 0.75rem; background: #f8fafc; }
+    .kpi-card { border: 1px solid #e2e8f0; border-radius: 4px; padding: 0.75rem; background: #f8fafc; }
     .kpi-label { font-size: 0.6rem; font-weight: 700; color: #64748b; text-transform: uppercase; display: block; margin-bottom: 0.25rem; }
     .kpi-value { font-size: 1.1rem; font-weight: 800; color: #161d35; display: block; }
     .kpi-sub { font-size: 0.7rem; color: #64748b; }
     .kpi-warning { border-left: 3px solid #f59e0b; }
     .kpi-danger { border-left: 3px solid #ef4444; }
-    .kpi-success { border-left: 3px solid #10b981; }
-    .card-graf { border: 1px solid #e2e8f0; border-radius: 6px; padding: 1rem; background: #f8fafc; }
+    .card-graf { border: 1px solid #e2e8f0; border-radius: 4px; padding: 1rem; background: #f8fafc; }
     .graf-title { font-size: 0.85rem; font-weight: 700; color: #161d35; margin-bottom: 0.75rem; }
     .donut-wrap { display: flex; flex-direction: column; align-items: center; gap: 0.75rem; }
     .donut { width: 80px; height: 80px; border-radius: 50%; }
@@ -319,28 +351,39 @@ type RangoTipo = 'mes_actual' | 'mes_anterior' | 'anio_actual' | 'mes_especifico
     .dot-warning { background: #f59e0b; }
     .bar-chart { display: flex; flex-direction: column; gap: 0.5rem; }
     .bar-row { display: flex; align-items: center; gap: 0.5rem; font-size: 0.75rem; }
-    .bar-label { width: 60px; white-space: nowrap; }
+    .bar-label { width: 60px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .bar-track { flex: 1; height: 1.5rem; background: #e2e8f0; border-radius: 3px; position: relative; }
-    .bar-fill { height: 100%; border-radius: 3px; transition: width 0.3s; }
+    .bar-fill { height: 100%; border-radius: 3px; }
     .bar-val { width: 50px; text-align: right; font-weight: 600; }
-    .card-tabla { border: 1px solid #e2e8f0; border-radius: 6px; overflow: hidden; margin-bottom: 1rem; }
-    .tabla-header { background: #f1f5f9; padding: 0.75rem 1rem; font-weight: 700; font-size: 0.8rem; color: #475569; }
+    .card-tabla { border: 1px solid #e2e8f0; border-radius: 4px; overflow: hidden; }
+    .tabla-header { background: #f1f5f9; padding: 0.75rem 1rem; font-weight: 700; font-size: 0.8rem; color: #475569; border-bottom: 1px solid #e2e8f0; }
     table { margin-bottom: 0; }
-    th { background: #f1f5f9; padding: 0.5rem 0.75rem; font-size: 0.7rem; text-transform: uppercase; color: #475569; font-weight: 700; border-bottom: 1px solid #e2e8f0; }
-    td { padding: 0.5rem 0.75rem; border-bottom: 1px solid #f1f5f9; font-size: 0.8rem; }
+    th { background: #f1f5f9; padding: 0.6rem 0.75rem; font-size: 0.7rem; text-transform: uppercase; color: #475569; font-weight: 700; border-bottom: 1px solid #e2e8f0; }
+    td { padding: 0.6rem 0.75rem; border-bottom: 1px solid #f1f5f9; font-size: 0.8rem; }
     tbody tr:nth-child(even) td { background: #fafbfc; }
-    .badge-plan { background: #dbeafe; color: #1e40af; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.7rem; font-weight: 600; }
-    .empresa-tooltip { cursor: help; color: #3b82f6; }
-    .btn-accion { padding: 0.25rem 0.5rem; background: none; border: none; cursor: pointer; font-size: 0.8rem; }
+    .badge-plan { background: #dbeafe; color: #1e40af; padding: 0.2rem 0.4rem; border-radius: 3px; font-size: 0.7rem; font-weight: 600; }
+    .empresa-tooltip { cursor: help; color: #3b82f6; font-weight: 600; }
+    .btn-accion { padding: 0.25rem; background: none; border: none; cursor: pointer; font-size: 0.9rem; }
     .btn-reactivar { color: #10b981; }
     .btn-eliminar { color: #ef4444; }
-    .badge-deadline { padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.7rem; font-weight: 600; }
-    .deadline-ok { background: #dcfce7; color: #166534; }
-    .deadline-warning { background: #fef3c7; color: #92400e; }
-    .deadline-urgent { background: #fee2e2; color: #991b1b; }
-    .progress-wrap { display: flex; align-items: center; gap: 0.25rem; height: 1.5rem; }
-    .progress-bar-custom { height: 100%; border-radius: 3px; transition: width 0.3s; }
-    .progress-label { font-size: 0.65rem; font-weight: 600; white-space: nowrap; }
+    .badge-deadline { padding: 0.2rem 0.4rem; border-radius: 3px; font-size: 0.7rem; font-weight: 600; }
+    .deadline-urgent { background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
+    .deadline-warning { background: #fef3c7; color: #92400e; border: 1px solid #fde68a; }
+    .deadline-ok { background: #dcfce7; color: #166534; border: 1px solid #bbf7d0; }
+    /* Modal */
+    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 9999; display: flex; align-items: center; justify-content: center; }
+    .modal-panel { background: #fff; border: 1px solid #e2e8f0; border-radius: 6px; width: 520px; max-width: 95vw; }
+    .modal-header { display: flex; justify-content: space-between; align-items: center; padding: 1rem 1.25rem; border-bottom: 1px solid #e2e8f0; }
+    .modal-title { font-size: 0.9rem; font-weight: 700; color: #161d35; }
+    .modal-close { background: none; border: none; cursor: pointer; color: #64748b; font-size: 1rem; }
+    .modal-body { padding: 1.25rem; }
+    .modal-empresa { font-size: 0.85rem; font-weight: 700; color: #3b82f6; margin-bottom: 1rem; }
+    .modal-footer { display: flex; justify-content: flex-end; gap: 0.5rem; padding: 0.75rem 1.25rem; border-top: 1px solid #e2e8f0; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 0.75rem; }
+    .form-group { display: flex; flex-direction: column; gap: 0.25rem; margin-bottom: 0.75rem; }
+    .btn-modal-cancel { padding: 0.4rem 1rem; background: #f1f5f9; color: #475569; border: 1px solid #e2e8f0; border-radius: 4px; cursor: pointer; font-weight: 600; font-size: 0.8rem; }
+    .btn-modal-confirm { padding: 0.4rem 1.25rem; background: #10b981; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: 600; font-size: 0.8rem; }
+    .btn-modal-confirm:disabled { opacity: 0.5; cursor: not-allowed; }
   `]
 })
 export class R031GlobalComponent implements OnInit, OnDestroy {
@@ -348,6 +391,21 @@ export class R031GlobalComponent implements OnInit, OnDestroy {
   datos: ReporteGlobal | null = null;
   loading = false;
   loadingPDF = false;
+  loadingReactivar = false;
+
+  // Modal reactivación
+  modalReactivar = {
+    visible: false,
+    empresa: null as any,
+    plan_id: '',
+    monto: null as number | null,
+    metodo_pago: 'TRANSFERENCIA',
+    numero_comprobante: '',
+    fecha_inicio: new Date().toISOString().split('T')[0],
+    fecha_fin: new Date(new Date().setFullYear(new Date().getFullYear() + 1) - 86400000).toISOString().split('T')[0],
+    observaciones: ''
+  };
+  planesDisponibles: any[] = [];
 
   rangoTipo: RangoTipo = 'mes_actual';
   mesFiltro = new Date().getMonth() + 1;
@@ -363,7 +421,8 @@ export class R031GlobalComponent implements OnInit, OnDestroy {
   constructor(
     private reportesService: ReportesService,
     private uiService: UiService,
-    private cd: ChangeDetectorRef
+    private cd: ChangeDetectorRef,
+    private http: HttpClient
   ) {}
 
   ngOnInit() {
@@ -465,48 +524,26 @@ export class R031GlobalComponent implements OnInit, OnDestroy {
     return `conic-gradient(#ef4444 0% ${pctRescate}%, #f59e0b ${pctRescate}% 100%)`;
   }
 
-  formatAcceso(fecha: string | null): string {
-    if (!fecha) return 'Sin acceso';
+  deadlineClass(fmt: string | undefined): string {
+    if (!fmt) return '';
+    const text = fmt.toLowerCase();
+    if (text.includes('vencido') || text.includes('hora') || text.includes(' hoy')) return 'deadline-urgent';
+    if (text.includes('días')) {
+      const days = parseInt(text.split(' ')[0]);
+      if (days < 3) return 'deadline-urgent';
+      if (days < 8) return 'deadline-warning';
+    }
+    return 'deadline-ok';
+  }
+
+  formatVencimiento(fecha: string | null): string {
+    if (!fecha) return '—';
     const d = new Date(fecha);
     const now = new Date();
     const diffMs = now.getTime() - d.getTime();
     const diffDays = Math.floor(diffMs / 86400000);
-    if (diffDays === 0) return 'Hoy, ' + d.toLocaleTimeString('es-EC', {hour:'2-digit', minute:'2-digit'});
-    if (diffDays === 1) return 'Ayer, ' + d.toLocaleTimeString('es-EC', {hour:'2-digit', minute:'2-digit'});
-    if (diffDays < 30) return `Hace ${diffDays} días`;
-    return d.toLocaleDateString('es-EC', {day:'2-digit',month:'short',year:'numeric'});
-  }
-
-  formatFecha(fecha: string | null): string {
-    if (!fecha) return '—';
-    const d = new Date(fecha);
-    const now = new Date();
-    const diffMs = d.getTime() - now.getTime();
-    const diffDays = Math.floor(diffMs / 86400000);
-    if (diffDays > -1 && diffDays < 31) return `Hace ${Math.abs(diffDays)} días`;
-    return d.toLocaleDateString('es-EC', {day:'2-digit',month:'short',year:'numeric'});
-  }
-
-  formatDeadline(deadline: string | null): string {
-    if (!deadline) return '—';
-    const d = new Date(deadline);
-    const now = new Date();
-    const diffMs = d.getTime() - now.getTime();
-    const diffH = Math.floor(diffMs / 3600000);
-    const diffDays = Math.floor(diffMs / 86400000);
-    if (diffH < 1) return '< 1 hora';
-    if (diffH < 8) return `< ${diffH}h`;
-    if (diffH < 24) return `< 24hs`;
-    if (diffDays <= 2) return `${diffDays} días`;
-    return `${diffDays} días`;
-  }
-
-  deadlineClass(deadline: string | null): string {
-    if (!deadline) return '';
-    const diffH = Math.floor((new Date(deadline).getTime() - Date.now()) / 3600000);
-    if (diffH < 24) return 'deadline-urgent';
-    if (diffH < 72) return 'deadline-warning';
-    return 'deadline-ok';
+    if (diffDays >= 0 && diffDays < 31) return `Hace ${diffDays} día${diffDays !== 1 ? 's' : ''}`;
+    return d.toLocaleDateString('es-EC', { year: 'numeric', month: '2-digit', day: '2-digit' });
   }
 
   getTooltipRescate(e: any): string {
@@ -514,7 +551,63 @@ export class R031GlobalComponent implements OnInit, OnDestroy {
   }
 
   reactivarEmpresa(e: any) {
-    this.uiService.showToast('Funcionalidad de Reactivación', 'info', `Iniciando proceso para ${e.nombre_empresa}`);
+    this.modalReactivar.empresa = e;
+    this.modalReactivar.plan_id = '';
+    this.modalReactivar.monto = null;
+    this.modalReactivar.metodo_pago = 'TRANSFERENCIA';
+    this.modalReactivar.numero_comprobante = '';
+    this.modalReactivar.observaciones = '';
+    this.modalReactivar.fecha_inicio = new Date().toISOString().split('T')[0];
+    const fin = new Date(); fin.setFullYear(fin.getFullYear() + 1); fin.setDate(fin.getDate() - 1);
+    this.modalReactivar.fecha_fin = fin.toISOString().split('T')[0];
+    this.modalReactivar.visible = true;
+    this.cd.detectChanges();
+    // Cargar planes si no están cargados
+    if (!this.planesDisponibles.length) {
+      this.http.get<any>(`${environment.apiUrl}/suscripciones/planes`).subscribe({
+        next: (res) => { this.planesDisponibles = res.data || []; this.cd.detectChanges(); },
+        error: () => { this.planesDisponibles = []; }
+      });
+    }
+  }
+
+  onPlanChange() {
+    const plan = this.planesDisponibles.find(p => p.id === this.modalReactivar.plan_id);
+    if (plan) this.modalReactivar.monto = plan.precio_anual;
+  }
+
+  cerrarModal() {
+    this.modalReactivar.visible = false;
+    this.modalReactivar.empresa = null;
+  }
+
+  confirmarReactivacion() {
+    if (!this.modalReactivar.plan_id || !this.modalReactivar.monto) return;
+    this.loadingReactivar = true;
+    const empresaId = this.modalReactivar.empresa?.id;
+    const payload = {
+      plan_id: this.modalReactivar.plan_id,
+      monto: this.modalReactivar.monto,
+      metodo_pago: this.modalReactivar.metodo_pago,
+      numero_comprobante: this.modalReactivar.numero_comprobante || null,
+      fecha_inicio_periodo: this.modalReactivar.fecha_inicio ? new Date(this.modalReactivar.fecha_inicio).toISOString() : null,
+      fecha_fin_periodo: this.modalReactivar.fecha_fin ? new Date(this.modalReactivar.fecha_fin).toISOString() : null,
+      observaciones: this.modalReactivar.observaciones || null
+    };
+    this.http.post<any>(`${environment.apiUrl}/suscripciones/${empresaId}/reactivar`, payload).subscribe({
+      next: (res) => {
+        this.loadingReactivar = false;
+        this.uiService.showToast('Empresa reactivada', 'success', res.data?.mensaje || 'Acceso restaurado correctamente');
+        this.cerrarModal();
+        this.generar(); // Recargar el reporte
+        this.cd.detectChanges();
+      },
+      error: (err) => {
+        this.loadingReactivar = false;
+        this.uiService.showError(err, 'Error al reactivar empresa');
+        this.cd.detectChanges();
+      }
+    });
   }
 
   eliminarEmpresa(e: any) {
