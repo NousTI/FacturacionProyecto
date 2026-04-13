@@ -14,16 +14,4 @@ CONFIG_PERMS = {
         "modulo": ModuloPermisos.CONFIGURACION,
         "descripcion": "Permite configurar firmas electrónicas y ambientes del SRI."
     },
-    "CONFIG_MODULOS": {
-        "codigo": "CONFIG_MODULOS",
-        "nombre": "Configurar Módulos Operativos",
-        "modulo": ModuloPermisos.CONFIGURACION,
-        "descripcion": "Permite habilitar o deshabilitar módulos operativos de la empresa."
-    },
-    "MODULOS_GESTIONAR": {
-        "codigo": "MODULOS_GESTIONAR",
-        "nombre": "Gestionar Módulos y Funciones",
-        "modulo": ModuloPermisos.CONFIGURACION,
-        "descripcion": "Permite habilitar o deshabilitar módulos operativos para la empresa."
-    },
 }

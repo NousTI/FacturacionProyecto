@@ -181,7 +181,7 @@ import { FacturaProgramada } from '../../../domain/models/facturacion-programada
           </div>
           <h2 class="fw-bold text-dark mb-2">Acceso Restringido</h2>
           <p class="text-muted mb-4 mx-auto" style="max-width: 450px;">
-            No dispones de los permisos de visualización necesarios para el módulo de Facturación Recurrente. 
+            No dispones de los permisos de visualización necesarios para el módulo de Facturación Programada. 
             Contacta a tu administrador para solicitar acceso.
           </p>
           <button class="btn btn-primary rounded-pill px-5 py-3 fw-bold shadow-sm" (click)="refreshData()" style="background-color: #161d35; border: none;">
@@ -304,7 +304,7 @@ export class FacturacionRecurrentePage implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
-    this.uiService.setPageHeader('Facturación Recurrente', 'Automatización de emisiones periódicas');
+    this.uiService.setPageHeader('Facturación Programada', 'Automatización de emisiones periódicas');
     
     // Suscripción reactiva al cache del servicio
     this.subscription.add(

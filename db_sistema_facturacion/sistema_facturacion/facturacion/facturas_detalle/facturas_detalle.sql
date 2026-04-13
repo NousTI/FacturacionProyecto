@@ -31,10 +31,10 @@ CREATE TABLE IF NOT EXISTS sistema_facturacion.facturas_detalle (
     valor_iva NUMERIC(12,2) NOT NULL DEFAULT 0
         CHECK (valor_iva >= 0),
 
-    -- NUEVOS CAMPOS SRI
-    codigo_impuesto VARCHAR(1) NOT NULL DEFAULT '2',
-    tarifa_iva NUMERIC(5,2) NOT NULL DEFAULT 0,
-    base_imponible NUMERIC(12,2) NOT NULL DEFAULT 0,
+    -- -- NUEVOS CAMPOS SRI
+    -- codigo_impuesto VARCHAR(1) NOT NULL DEFAULT '2',
+    -- tarifa_iva NUMERIC(5,2) NOT NULL DEFAULT 0,
+    -- base_imponible NUMERIC(12,2) NOT NULL DEFAULT 0,
 
     costo_unitario NUMERIC(12,2),
 

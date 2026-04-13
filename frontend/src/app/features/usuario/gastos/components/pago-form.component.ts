@@ -10,7 +10,10 @@ import { Gasto } from '../../../../domain/models/gasto.model';
   imports: [CommonModule, ReactiveFormsModule],
   template: `
     <div class="editorial-form-wrapper">
-      <!-- Summary Card -->
+      <h4 class="form-title-editorial">
+        {{ viewOnly ? 'Detalles del Pago' : (editMode ? 'Editar Pago Registrado' : 'Registrar Nuevo Pago') }}
+      </h4>
+
       <div class="summary-ticket-premium mb-5" *ngIf="selectedGasto">
         <label class="editorial-label-muted">Aplicar pago a:</label>
         <div class="d-flex justify-content-between align-items-end mt-2">
@@ -34,7 +37,6 @@ import { Gasto } from '../../../../domain/models/gasto.model';
 
       <form [formGroup]="form" (ngSubmit)="submit()">
         <div class="editorial-grid-2">
-          <!-- Gasto Selector (if not pre-selected) -->
           <div class="col-span-2" *ngIf="!selectedGasto">
             <label class="editorial-label">Seleccionar Gasto</label>
             <select class="editorial-input" formControlName="gasto_id" [class.is-invalid]="isInvalid('gasto_id')">
@@ -45,7 +47,6 @@ import { Gasto } from '../../../../domain/models/gasto.model';
             </select>
           </div>
 
-          <!-- Monto -->
           <div>
             <label class="editorial-label">Monto del Pago</label>
             <div class="input-editorial-group">
@@ -59,9 +60,9 @@ import { Gasto } from '../../../../domain/models/gasto.model';
                 [class.is-invalid]="isInvalid('monto')"
               >
             </div>
+            <div class="invalid-feedback-minimal" *ngIf="isInvalid('monto')">Monto inválido o excede el total.</div>
           </div>
 
-          <!-- Fecha -->
           <div>
             <label class="editorial-label">Fecha de Pago</label>
             <input 
@@ -72,7 +73,6 @@ import { Gasto } from '../../../../domain/models/gasto.model';
             >
           </div>
 
-          <!-- Método -->
           <div>
             <label class="editorial-label">Método de Pago</label>
             <select class="editorial-input" formControlName="metodo_pago" [class.is-invalid]="isInvalid('metodo_pago')">
@@ -84,26 +84,22 @@ import { Gasto } from '../../../../domain/models/gasto.model';
             </select>
           </div>
 
-          <!-- Referencia -->
           <div>
             <label class="editorial-label">Nº Referencia</label>
             <input type="text" class="editorial-input" formControlName="numero_referencia" placeholder="Opcional">
           </div>
 
-          <!-- Comprobante -->
           <div>
             <label class="editorial-label">Nº Comprobante</label>
             <input type="text" class="editorial-input" formControlName="numero_comprobante" placeholder="Opcional">
           </div>
 
-          <!-- Observaciones -->
           <div class="col-span-2">
             <label class="editorial-label">Observaciones</label>
-            <textarea class="editorial-input" formControlName="observaciones" rows="1" placeholder="Notas..."></textarea>
+            <textarea class="editorial-input" formControlName="observaciones" rows="2" placeholder="Notas..."></textarea>
           </div>
         </div>
 
-        <!-- Acciones -->
         <div class="d-flex justify-content-end gap-3 mt-5 pt-3 border-top-editorial" *ngIf="!viewOnly">
           <button type="button" class="btn-editorial-secondary" (click)="cancel.emit()">
             Cancelar
@@ -125,6 +121,10 @@ import { Gasto } from '../../../../domain/models/gasto.model';
   styles: [`
     :host { display: block; }
     .editorial-form-wrapper { padding: 1.5rem; }
+
+    .form-title-editorial { 
+      font-size: 1.2rem; font-weight: 800; color: #161d35; margin-bottom: 2rem; padding-bottom: 1rem; border-bottom: 1.5px solid #f1f5f9;
+    }
     
     .summary-ticket-premium {
       background: #f8fafc; padding: 1.5rem; border-radius: 20px; border: 1.5px solid #e2e8f0; border-left: 6px solid #161d35;
@@ -161,6 +161,7 @@ import { Gasto } from '../../../../domain/models/gasto.model';
     .status-pendiente { background: #fff7ed; color: #9a3412; border: 1px solid #ffedd5; }
     .status-pagado { background: #f0fdf4; color: #166534; border: 1px solid #dcfce7; }
     
+    .invalid-feedback-minimal { font-size: 0.75rem; color: #ef4444; font-weight: 500; margin-top: 0.4rem; }
     .border-top-editorial { border-top: 1px solid #f1f5f9; }
     
     .btn-system-action { 
@@ -203,42 +204,24 @@ export class PagoFormComponent implements OnInit {
   ngOnInit() {
     this.setupGastoSubscription();
 
+    if (this.editData) {
+      this.editMode = true;
+      this.form.patchValue({
+        ...this.editData,
+        fecha_pago: this.editData.fecha_pago?.split('T')[0]
+      });
+      this.initialValue = this.form.getRawValue();
+    }
+
     if (this.selectedGasto) {
       this.onGastoSelected(this.selectedGasto);
     } else if (!this.editMode) {
       this.togglePaymentFields(false);
     }
 
-    if (this.editMode && this.editData) {
-      this.editMode = true;
-      this.form.patchValue({
-        ...this.editData,
-        fecha_pago: this.editData.fecha_pago?.split('T')[0]
-      });
-    }
-
-    // Aplicar restricciones de bloqueo DESPUÉS de cargar datos
+    // Bloqueos de seguridad si el gasto ya está pagado
     if (this.selectedGasto?.estado_pago === 'pagado' && !this.viewOnly) {
-      // Bloquear SIEMPRE estos campos
-      this.form.get('gasto_id')?.disable();
-      this.form.get('monto')?.disable();
-      this.form.get('fecha_pago')?.disable();
-      this.form.get('metodo_pago')?.disable();
-
-      // Campos opcionales: bloquear si tienen valor, permitir si están vacíos
-      if (this.editData?.numero_referencia) {
-        this.form.get('numero_referencia')?.disable();
-      }
-      if (this.editData?.numero_comprobante) {
-        this.form.get('numero_comprobante')?.disable();
-      }
-      if (this.editData?.observaciones) {
-        this.form.get('observaciones')?.disable();
-      }
-    }
-
-    if (this.editMode && this.editData) {
-      this.initialValue = this.form.getRawValue();
+      ['gasto_id', 'monto', 'fecha_pago', 'metodo_pago'].forEach(ctrl => this.form.get(ctrl)?.disable());
     }
 
     if (this.viewOnly) {
@@ -260,9 +243,7 @@ export class PagoFormComponent implements OnInit {
     this.form.get('gasto_id')?.valueChanges.subscribe(id => {
       if (id) {
         const gasto = this.availableGastos.find(g => g.id === id);
-        if (gasto) {
-          this.onGastoSelected(gasto);
-        }
+        if (gasto) this.onGastoSelected(gasto);
       } else {
         this.togglePaymentFields(false);
         this.selectedGasto = null;
@@ -274,7 +255,6 @@ export class PagoFormComponent implements OnInit {
     this.selectedGasto = gasto;
     this.togglePaymentFields(true);
     
-    // Si es un nuevo pago, sugerimos el total del gasto
     if (!this.editMode) {
       this.form.patchValue({ 
         gasto_id: gasto.id,
@@ -282,7 +262,6 @@ export class PagoFormComponent implements OnInit {
       }, { emitEvent: false });
     }
 
-    // Aplicar validador dinámico de máximo
     this.form.get('monto')?.setValidators([
       Validators.required, 
       Validators.min(0.01), 
@@ -292,20 +271,14 @@ export class PagoFormComponent implements OnInit {
   }
 
   private togglePaymentFields(enabled: boolean) {
-    const fields = ['monto', 'fecha_pago', 'metodo_pago', 'numero_referencia'];
+    const fields = ['monto', 'fecha_pago', 'metodo_pago', 'numero_referencia', 'numero_comprobante', 'observaciones'];
     fields.forEach(field => {
-      if (enabled) {
-        this.form.get(field)?.enable({ emitEvent: false });
-      } else {
-        this.form.get(field)?.disable({ emitEvent: false });
-      }
+      enabled ? this.form.get(field)?.enable({ emitEvent: false }) : this.form.get(field)?.disable({ emitEvent: false });
     });
   }
 
   onlyPositiveNumbers(event: KeyboardEvent) {
-    if (['-', 'e', 'E', '+'].includes(event.key)) {
-      event.preventDefault();
-    }
+    if (['-', 'e', 'E', '+'].includes(event.key)) event.preventDefault();
   }
 
   isInvalid(controlName: string): boolean {
@@ -315,20 +288,7 @@ export class PagoFormComponent implements OnInit {
 
   submit() {
     if (this.form.valid) {
-      if (this.editMode) {
-        // En modo edición, solo enviar campos que cambiaron (dirty)
-        const dirtyValues: any = {};
-        Object.keys(this.form.controls).forEach(key => {
-          const control = this.form.get(key);
-          if (control?.dirty || control?.touched) {
-            dirtyValues[key] = control?.value;
-          }
-        });
-        this.onSubmit.emit(dirtyValues);
-      } else {
-        // En modo creación, enviar todos los valores
-        this.onSubmit.emit(this.form.getRawValue());
-      }
+      this.onSubmit.emit(this.form.getRawValue());
     }
   }
 }

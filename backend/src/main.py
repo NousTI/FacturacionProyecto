@@ -13,7 +13,7 @@ from .jobs.session_cleanup import cleanup_expired_sessions
 
 app = FastAPI(
     title="Sistema de Facturación API",
-    description="API para gestión de clientes, facturación e inventario",
+    description="API para gestión de clientes y facturación",
     version="2.0.0",
     debug=env.DEBUG if 'env' in globals() else True
 )

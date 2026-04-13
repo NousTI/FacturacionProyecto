@@ -76,15 +76,6 @@ export const GASTOS_PERMISSIONS = {
   PAGO_ELIMINAR: 'PAGO_GASTO_ELIMINAR'
 } as const;
 
-// ============================================================================
-// MÓDULO: INVENTARIOS
-// ============================================================================
-export const INVENTARIOS_PERMISSIONS = {
-  VER: 'INVENTARIO_VER',
-  CREAR: 'INVENTARIO_CREAR',
-  EDITAR: 'INVENTARIO_EDITAR',
-  ELIMINAR: 'INVENTARIO_ELIMINAR'
-} as const;
 
 // ============================================================================
 // MÓDULO: PROVEEDORES
@@ -124,8 +115,6 @@ export const REPORTES_PERMISSIONS = {
 export const CONFIGURACION_PERMISSIONS = {
   EMPRESA: 'CONFIG_EMPRESA',
   SRI: 'CONFIG_SRI',
-  MODULOS: 'CONFIG_MODULOS',
-  MODULOS_GESTIONAR: 'MODULOS_GESTIONAR',
   ROLES: 'CONFIG_ROLES'
 } as const;
 
@@ -134,13 +123,10 @@ export const CONFIGURACION_PERMISSIONS = {
 // ============================================================================
 export const USUARIOS_PERMISSIONS = {
   // Usuarios de Empresa
-  EMPRESA_VER: 'USUARIOS_EMPRESA_VER',
-  EMPRESA_CREAR: 'USUARIOS_EMPRESA_CREAR',
-  EMPRESA_EDITAR: 'USUARIOS_EMPRESA_EDITAR',
-  EMPRESA_ELIMINAR: 'USUARIOS_EMPRESA_ELIMINAR',
-  // Usuarios Generales
   VER: 'USUARIOS_VER',
-  GESTIONAR: 'USUARIOS_GESTIONAR'
+  CREAR: 'USUARIOS_CREAR',
+  EDITAR: 'USUARIOS_EDITAR',
+  ELIMINAR: 'USUARIOS_ELIMINAR',
 } as const;
 
 export const ROLES_PERMISSIONS = {
@@ -156,9 +142,7 @@ export const ROLES_PERMISSIONS = {
 // ============================================================================
 export const OTROS_PERMISSIONS = {
   DASHBOARD_VER: 'DASHBOARD_VER',
-  SUSCRIPCIONES_VER: 'SUSCRIPCIONES_VER',
   CUENTA_COBRAR_VER: 'CUENTA_COBRAR_VER',
-  CUENTA_PAGAR_VER: 'CUENTA_PAGAR_VER'
 } as const;
 
 // ============================================================================
@@ -170,7 +154,6 @@ export const ALL_PERMISSIONS = {
   FACTURAS: FACTURAS_PERMISSIONS,
   FACTURACION_PROGRAMADA: FACTURACION_PROGRAMADA_PERMISSIONS,
   GASTOS: GASTOS_PERMISSIONS,
-  INVENTARIOS: INVENTARIOS_PERMISSIONS,
   PROVEEDORES: PROVEEDORES_PERMISSIONS,
   ESTABLECIMIENTOS: ESTABLECIMIENTOS_PERMISSIONS,
   PUNTOS_EMISION: PUNTOS_EMISION_PERMISSIONS,
@@ -188,7 +171,6 @@ export type ClientesPermission = typeof CLIENTES_PERMISSIONS[keyof typeof CLIENT
 export type ProductosPermission = typeof PRODUCTOS_PERMISSIONS[keyof typeof PRODUCTOS_PERMISSIONS];
 export type FacturasPermission = typeof FACTURAS_PERMISSIONS[keyof typeof FACTURAS_PERMISSIONS];
 export type GastosPermission = typeof GASTOS_PERMISSIONS[keyof typeof GASTOS_PERMISSIONS];
-export type InventariosPermission = typeof INVENTARIOS_PERMISSIONS[keyof typeof INVENTARIOS_PERMISSIONS];
 export type ProveedoresPermission = typeof PROVEEDORES_PERMISSIONS[keyof typeof PROVEEDORES_PERMISSIONS];
 export type EstablecimientosPermission = typeof ESTABLECIMIENTOS_PERMISSIONS[keyof typeof ESTABLECIMIENTOS_PERMISSIONS];
 export type PuntosEmisionPermission = typeof PUNTOS_EMISION_PERMISSIONS[keyof typeof PUNTOS_EMISION_PERMISSIONS];
@@ -204,7 +186,6 @@ export type AnyPermission =
   | ProductosPermission
   | FacturasPermission
   | GastosPermission
-  | InventariosPermission
   | ProveedoresPermission
   | EstablecimientosPermission
   | PuntosEmisionPermission
@@ -233,7 +214,6 @@ export function getAllPermissionCodes(): string[] {
   addPermissions(FACTURAS_PERMISSIONS);
   addPermissions(FACTURACION_PROGRAMADA_PERMISSIONS);
   addPermissions(GASTOS_PERMISSIONS);
-  addPermissions(INVENTARIOS_PERMISSIONS);
   addPermissions(PROVEEDORES_PERMISSIONS);
   addPermissions(ESTABLECIMIENTOS_PERMISSIONS);
   addPermissions(PUNTOS_EMISION_PERMISSIONS);

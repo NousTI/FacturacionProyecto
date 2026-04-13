@@ -16,7 +16,6 @@ import { ReportesPage } from './reportes/reportes.page';
 import { EstablecimientosPage } from './establecimientos/establecimientos.page';
 import { PuntosEmisionPage } from './puntos-emision/puntos-emision.page';
 import { CuentasCobrarPage } from './cuentas-cobrar/cuentas-cobrar.page';
-import { CuentasPagarPage } from './cuentas-pagar/cuentas-pagar.page';
 
 import { UsuariosPage } from './usuarios/usuarios.page';
 import { CertificadoSriPage } from './certificado-sri/certificado-sri.page';
@@ -24,7 +23,7 @@ import { EmpresaPage } from './empresa/empresa.page';
 import { RolesPermisosPage } from './roles/roles.page';
 import { ProveedoresPage } from './proveedores/proveedores.page';
 import { GastosPage } from './gastos/gastos.page';
-import { InventariosPage } from './inventarios/inventarios.page';
+import { ConfiguracionPage } from './configuracion/configuracion.page';
 
 import { CompanyActiveGuard } from '../../core/guards/company-active.guard';
 
@@ -48,7 +47,7 @@ const routes: Routes = [
         path: 'roles',
         component: RolesPermisosPage,
         canActivate: [RoleGuard, CompanyActiveGuard, permissionGuard],
-        data: { title: 'Roles y Permisos', roles: [UserRole.USUARIO], permission: 'CONFIG_ROLES' }
+        data: { title: 'Roles y Permisos', roles: [UserRole.USUARIO], permission: 'ROLES_VER' }
     },
     {
         path: 'empresa',
@@ -60,7 +59,7 @@ const routes: Routes = [
         path: 'usuarios',
         component: UsuariosPage,
         canActivate: [RoleGuard, CompanyActiveGuard, permissionGuard],
-        data: { title: 'Usuarios', roles: [UserRole.USUARIO], permission: 'USUARIOS_GESTIONAR' }
+        data: { title: 'Usuarios', roles: [UserRole.USUARIO], permission: 'USUARIOS_VER' }
     },
     {
         path: 'clientes',
@@ -92,17 +91,11 @@ const routes: Routes = [
         canActivate: [RoleGuard, CompanyActiveGuard, permissionGuard],
         data: { title: 'Cuentas por Cobrar', roles: [UserRole.USUARIO], permission: 'CUENTA_COBRAR_VER' }
     },
-    /* {
-        path: 'cuentas-pagar',
-        component: CuentasPagarPage,
-        canActivate: [RoleGuard, CompanyActiveGuard, permissionGuard],
-        data: { title: 'Cuentas por Pagar', roles: [UserRole.USUARIO], permission: 'CUENTA_PAGAR_VER' }
-    }, */
     {
         path: 'facturacion-recurrente',
         component: FacturacionRecurrentePage,
         canActivate: [RoleGuard, CompanyActiveGuard, permissionGuard],
-        data: { title: 'Facturación Recurrente', roles: [UserRole.USUARIO], permission: ['FACTURA_PROGRAMADA_VER', 'FACTURA_PROGRAMADA_VER_PROPIAS'] }
+        data: { title: 'Facturación Programada', roles: [UserRole.USUARIO], permission: ['FACTURA_PROGRAMADA_VER', 'FACTURA_PROGRAMADA_VER_PROPIAS'] }
     },
     {
         path: 'reportes',
@@ -123,6 +116,12 @@ const routes: Routes = [
         data: { title: 'Puntos de Emisión', roles: [UserRole.USUARIO], permission: ['PUNTO_EMISION_VER', 'PUNTO_EMISION_GESTIONAR'] }
     },
     {
+        path: 'configuracion',
+        component: ConfiguracionPage,
+        canActivate: [RoleGuard, CompanyActiveGuard],
+        data: { title: 'Configuración', roles: [UserRole.USUARIO] }
+    },
+    {
         path: 'perfil',
         component: ProfilePage,
         canActivate: [RoleGuard],
@@ -140,12 +139,6 @@ const routes: Routes = [
         canActivate: [RoleGuard, CompanyActiveGuard, permissionGuard],
         data: { title: 'Gastos y Egresos', roles: [UserRole.USUARIO], permission: 'GASTOS_VER' }
     }
-    // {
-    //     path: 'inventarios',
-    //     component: InventariosPage,
-    //     canActivate: [RoleGuard, CompanyActiveGuard, permissionGuard],
-    //     data: { title: 'Inventarios', roles: [UserRole.USUARIO], permission: 'INVENTARIO_VER' }
-    // }
 ];
 
 @NgModule({

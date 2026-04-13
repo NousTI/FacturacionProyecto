@@ -24,6 +24,12 @@ export const USUARIO_MODULES: ModuleConfig[] = [
     icon: 'people'
   },
   {
+    path: '/usuario/configuracion',
+    name: 'Configuración',
+    requiredPermissions: [],
+    icon: 'settings'
+  },
+  {
     path: '/usuario/productos',
     name: 'Productos',
     requiredPermissions: ['PRODUCTOS_VER'],
@@ -37,8 +43,8 @@ export const USUARIO_MODULES: ModuleConfig[] = [
   },
   {
     path: '/usuario/facturacion-recurrente',
-    name: 'Facturación Recurrente',
-    requiredPermissions: ['FACTURA_PROGRAMADA_VER'],
+    name: 'Facturación Programada',
+    requiredPermissions: ['FACTURA_PROGRAMADA_VER', 'FACTURA_PROGRAMADA_VER_PROPIAS'],
     icon: 'schedule'
   },
   {
@@ -46,12 +52,6 @@ export const USUARIO_MODULES: ModuleConfig[] = [
     name: 'Gastos y Egresos',
     requiredPermissions: ['GASTOS_VER', 'CATEGORIA_GASTO_VER', 'PAGO_GASTO_VER'],
     icon: 'money'
-  },
-  {
-    path: '/usuario/inventarios',
-    name: 'Inventarios',
-    requiredPermissions: ['INVENTARIO_VER'],
-    icon: 'warehouse'
   },
   {
     path: '/usuario/proveedores',
@@ -98,13 +98,13 @@ export const USUARIO_MODULES: ModuleConfig[] = [
   {
     path: '/usuario/usuarios',
     name: 'Usuarios',
-    requiredPermissions: ['USUARIOS_EMPRESA_VER', 'USUARIOS_GESTIONAR'],
+    requiredPermissions: ['USUARIOS_VER'],
     icon: 'group'
   },
   {
     path: '/usuario/roles',
     name: 'Roles y Permisos',
-    requiredPermissions: ['CONFIG_ROLES'],
+    requiredPermissions: ['ROLES_VER'],
     icon: 'admin_panel_settings'
   }
 ];

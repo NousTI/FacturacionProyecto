@@ -208,7 +208,7 @@ export class UsuariosPage implements OnInit, OnDestroy {
   }
 
   get canView(): boolean {
-    return this.permissionsService.hasPermission(USUARIOS_PERMISSIONS.EMPRESA_VER);
+    return this.permissionsService.hasPermission(USUARIOS_PERMISSIONS.VER);
   }
 
   ngOnInit() {

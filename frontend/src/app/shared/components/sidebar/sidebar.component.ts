@@ -99,10 +99,10 @@ import { SidebarService } from './sidebar.service';
               
               <ng-container *ngIf="isEmpresaActiva$ | async">
                 <ng-container *ngIf="isSuscripcionActiva$ | async">
-                  <a *hasPermission="'USUARIOS_GESTIONAR'" routerLink="/usuario/usuarios" routerLinkActive="active" class="menu-item px-3 mb-1" title="Usuarios">
+                  <a *hasPermission="'USUARIOS_VER'" routerLink="/usuario/usuarios" routerLinkActive="active" class="menu-item px-3 mb-1" title="Usuarios">
                     <i class="bi bi-person"></i> <span class="menu-text ms-3">Usuarios</span>
                   </a>
-                  <a *hasPermission="'CONFIG_ROLES'" routerLink="/usuario/roles" routerLinkActive="active" class="menu-item px-3 mb-1" title="Roles">
+                  <a *hasPermission="'ROLES_VER'" routerLink="/usuario/roles" routerLinkActive="active" class="menu-item px-3 mb-1" title="Roles">
                     <i class="bi bi-shield-check"></i> <span class="menu-text ms-3">Roles</span>
                   </a>
                   <a *hasPermission="'CLIENTES_VER'" routerLink="/usuario/clientes" routerLinkActive="active" class="menu-item px-3 mb-1" title="Clientes">
@@ -123,8 +123,8 @@ import { SidebarService } from './sidebar.service';
                   <a *hasPermission="'CUENTA_COBRAR_VER'" routerLink="/usuario/cuentas-cobrar" routerLinkActive="active" class="menu-item px-3 mb-1" title="Cuentas por Cobrar">
                     <i class="bi bi-wallet2"></i> <span class="menu-text ms-3">Cuentas por Cobrar</span>
                   </a>
-                  <a *hasPermission="['FACTURA_PROGRAMADA_VER', 'FACTURA_PROGRAMADA_VER_PROPIAS']" routerLink="/usuario/facturacion-recurrente" routerLinkActive="active" class="menu-item px-3 mb-1" title="Fac. Recurrente">
-                    <i class="bi bi-arrow-repeat"></i> <span class="menu-text ms-3">Fac. Recurrente</span>
+                  <a *hasPermission="['FACTURA_PROGRAMADA_VER', 'FACTURA_PROGRAMADA_VER_PROPIAS']" routerLink="/usuario/facturacion-recurrente" routerLinkActive="active" class="menu-item px-3 mb-1" title="Facturación Programada">
+                    <i class="bi bi-arrow-repeat"></i> <span class="menu-text ms-3">Fac. Programada</span>
                   </a>
                   <a *hasPermission="'REPORTES_VER'" routerLink="/usuario/reportes" routerLinkActive="active" class="menu-item px-3 mb-1" title="Reportes">
                     <i class="bi bi-bar-chart"></i> <span class="menu-text ms-3">Reportes</span>
@@ -141,6 +141,9 @@ import { SidebarService } from './sidebar.service';
                 </ng-container>
               </ng-container>
 
+              <a routerLink="/usuario/configuracion" routerLinkActive="active" class="menu-item px-3 mb-1" title="Configuración">
+                <i class="bi bi-gear"></i> <span class="menu-text ms-3">Configuración</span>
+              </a>
               <a routerLink="/usuario/perfil" routerLinkActive="active" class="menu-item px-3 mb-1" title="Mi Perfil">
                 <i class="bi bi-person-circle"></i> <span class="menu-text ms-3">Mi Perfil</span>
               </a>

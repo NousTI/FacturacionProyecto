@@ -15,24 +15,18 @@ from ...errors.app_error import AppError
 router = APIRouter()
 
 def _check_suscripciones_ver(usuario: dict = Depends(get_current_user)):
-    """Allow superadmin/vendors or users with SUSCRIPCIONES_VER permission"""
-    if usuario.get(AuthKeys.IS_SUPERADMIN):
+    """Allow superadmin, vendors or any company user"""
+    if (usuario.get(AuthKeys.IS_SUPERADMIN) or 
+        usuario.get(AuthKeys.IS_VENDEDOR) or 
+        usuario.get('empresa_id')):
         return usuario
-    if usuario.get(AuthKeys.IS_VENDEDOR):
-        # Vendors need puede_gestionar_planes permission (checked by service)
-        return usuario
-    # Regular users need permission
-    raise AppError("No tienes permisos suficientes para realizar esta acción", 403, code="PERM_001")
+    raise AppError("No tienes permisos suficientes", 403, code="PERM_001")
 
 def _check_suscripciones_gestionar(usuario: dict = Depends(get_current_user)):
-    """Allow superadmin/vendors or users with SUSCRIPCIONES_GESTIONAR permission"""
-    if usuario.get(AuthKeys.IS_SUPERADMIN):
+    """Allow only superadmin or vendors"""
+    if usuario.get(AuthKeys.IS_SUPERADMIN) or usuario.get(AuthKeys.IS_VENDEDOR):
         return usuario
-    if usuario.get(AuthKeys.IS_VENDEDOR):
-        # Vendors need puede_gestionar_planes permission (checked by service)
-        return usuario
-    # Regular users need permission
-    raise AppError("No tienes permisos suficientes para realizar esta acción", 403, code="PERM_001")
+    raise AppError("Acción restringida a administradores y vendedores", 403, code="PERM_001")
 
 # --- Planes ---
 @router.get("/planes", response_model=RespuestaBase[List[PlanLectura]])

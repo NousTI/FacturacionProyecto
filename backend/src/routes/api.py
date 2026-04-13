@@ -69,8 +69,6 @@ api_router.include_router(gastos_router, prefix="/gastos", dependencies=operativ
 from ..modules.cuentas_cobrar.router import router as cuentas_cobrar_router
 api_router.include_router(cuentas_cobrar_router, prefix="/cuentas-cobrar", tags=["Cuentas por Cobrar"], dependencies=operativo)
 
-from ..modules.cuentas_pagar.router import router as cuentas_pagar_router
-api_router.include_router(cuentas_pagar_router, prefix="/cuentas-pagar", tags=["Cuentas por Pagar"], dependencies=operativo)
 
 from ..modules.pagos_factura.router import router as pagos_factura_router
 api_router.include_router(pagos_factura_router, prefix="/pagos-factura", tags=["Pagos de Facturas"], dependencies=operativo)
@@ -94,8 +92,6 @@ api_router.include_router(reportes_router, prefix="/reportes", tags=["Reportes"]
 from ..modules.logs.router import router as logs_router
 api_router.include_router(logs_router, prefix="/logs", tags=["Logs de Emisión"], dependencies=operativo)
 
-from ..modules.inventarios.router import router as inventarios_router
-api_router.include_router(inventarios_router, prefix="/inventarios", tags=["Inventarios"], dependencies=operativo)
 
 from ..modules.facturas.routers.router_recurrentes import router as programaciones_router
 api_router.include_router(programaciones_router, prefix="/facturacion-programada", tags=["Facturación Programada"], dependencies=operativo)

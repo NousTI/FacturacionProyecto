@@ -23,7 +23,7 @@ import { finalize } from 'rxjs';
                  [class.bi-eye]="isViewOnly"></i>
             </div>
             <div class="header-text">
-              <h3>{{ isViewOnly ? 'Detalles de' : (programacion ? 'Editar' : 'Nueva') }} Facturación Recurrente</h3>
+              <h3>{{ isViewOnly ? 'Detalles de' : (programacion ? 'Editar' : 'Nueva') }} Facturación Programada</h3>
               <p>{{ isViewOnly ? 'Información completa de la regla de automatización.' : 'Configura la automatización de facturas para un cliente.' }}</p>
             </div>
           </div>

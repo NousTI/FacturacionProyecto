@@ -90,20 +90,20 @@ import { HasPermissionDirective } from '../../../../core/directives/has-permissi
                           <span class="ms-2">Perfil Completo</span>
                         </a>
                       </li>
-                      <li *hasPermission="'USUARIOS_EMPRESA_EDITAR'">
+                      <li *hasPermission="'USUARIOS_EDITAR'">
                         <a class="dropdown-item rounded-3 py-2" (click)="onAction.emit({type: 'edit', usuario: u})">
                           <i class="bi bi-pencil-square"></i>
                           <span class="ms-2">Editar Datos</span>
                         </a>
                       </li>
-                      <li *hasPermission="'USUARIOS_EMPRESA_EDITAR'">
+                      <li *hasPermission="'USUARIOS_EDITAR'">
                         <a class="dropdown-item rounded-3 py-2" (click)="onAction.emit({type: 'role', usuario: u})">
                           <i class="bi bi-shield-lock"></i>
                           <span class="ms-2">Cambiar Rol</span>
                         </a>
                       </li>
                       <li><hr class="dropdown-divider mx-2"></li>
-                      <li *hasPermission="'USUARIOS_EMPRESA_ELIMINAR'">
+                      <li *hasPermission="'USUARIOS_ELIMINAR'">
                         <a class="dropdown-item rounded-3 py-2 text-danger" (click)="onAction.emit({type: 'delete', usuario: u})">
                           <i class="bi bi-person-x"></i>
                           <span class="ms-2">Eliminar Usuario</span>

@@ -83,7 +83,7 @@ import { HasPermissionDirective } from '../../../../core/directives/has-permissi
 
               <!-- Botón Crear -->
               <button 
-                *hasPermission="'USUARIOS_EMPRESA_CREAR'"
+                *hasPermission="'USUARIOS_CREAR'"
                 (click)="onCreate.emit()"
                 class="btn-system-action"
                 style="min-width: 150px;"
