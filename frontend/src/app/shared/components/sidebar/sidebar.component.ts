@@ -34,6 +34,12 @@ import { SidebarService } from './sidebar.service';
               <i class="bi bi-grid-fill"></i> <span class="menu-text ms-3">Dashboard</span>
             </a>
             
+            <ng-container *ngIf="isVendedor$ | async">
+               <a *hasPermission="['acceder_empresas', 'crear_empresas']" routerLink="/vendedor/empresas" routerLinkActive="active" class="menu-item px-3 mb-1" title="Empresas">
+                 <i class="bi bi-building"></i> <span class="menu-text ms-3">Empresas</span>
+               </a>
+            </ng-container>
+            
             <ng-container *ngIf="isSuperadmin$ | async">
               <a routerLink="/empresas" routerLinkActive="active" class="menu-item px-3 mb-1" title="Empresas">
                 <i class="bi bi-building"></i> <span class="menu-text ms-3">Empresas</span>
@@ -54,9 +60,6 @@ import { SidebarService } from './sidebar.service';
 
             <!-- Vendedor Menu -->
             <ng-container *ngIf="isVendedor$ | async">
-               <a *hasPermission="['acceder_empresas', 'crear_empresas']" routerLink="/vendedor/empresas" routerLinkActive="active" class="menu-item px-3 mb-1" title="Empresas">
-                 <i class="bi bi-building"></i> <span class="menu-text ms-3">Empresas</span>
-               </a>
                 <a routerLink="/vendedor/pagos" routerLinkActive="active" class="menu-item px-3 mb-1" title="Pagos">
                   <i class="bi bi-credit-card"></i> <span class="menu-text ms-3">Pagos</span>
                 </a>
@@ -82,15 +85,20 @@ import { SidebarService } from './sidebar.service';
 
             <!-- Usuario Menu -->
             <ng-container *ngIf="isUsuario$ | async">
+              <ng-container *ngIf="isEmpresaActiva$ | async">
+                <ng-container *ngIf="isSuscripcionActiva$ | async">
+                  <a *hasPermission="'DASHBOARD_VER'" routerLink="/usuario/dashboard" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" class="menu-item px-3 mb-1" title="Dashboard">
+                    <i class="bi bi-grid-fill"></i> <span class="menu-text ms-3">Dashboard</span>
+                  </a>
+                </ng-container>
+              </ng-container>
+
               <a *hasPermission="'CONFIG_EMPRESA'" routerLink="/usuario/empresa" routerLinkActive="active" class="menu-item px-3 mb-1" title="Empresa">
                  <i class="bi bi-building"></i> <span class="menu-text ms-3">Empresa</span>
               </a>
               
               <ng-container *ngIf="isEmpresaActiva$ | async">
                 <ng-container *ngIf="isSuscripcionActiva$ | async">
-                  <a *hasPermission="'DASHBOARD_VER'" routerLink="/usuario/dashboard" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" class="menu-item px-3 mb-1" title="Dashboard">
-                    <i class="bi bi-grid-fill"></i> <span class="menu-text ms-3">Dashboard</span>
-                  </a>
                   <a *hasPermission="'USUARIOS_GESTIONAR'" routerLink="/usuario/usuarios" routerLinkActive="active" class="menu-item px-3 mb-1" title="Usuarios">
                     <i class="bi bi-person"></i> <span class="menu-text ms-3">Usuarios</span>
                   </a>

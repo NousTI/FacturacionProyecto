@@ -35,22 +35,28 @@ import { DashboardOverview } from '../../../shared/services/dashboard.service';
     TopProductsComponent
   ],
   template: `
-    <div class="dash-wrap p-0">
+    <div class="dash-wrap p-0 position-relative">
       
-      <!-- Estado de Carga -->
-      <div *ngIf="loading$ | async" class="d-flex justify-content-center align-items-center" style="height: 400px;">
+      <!-- 1. Spinner de Carga Inicial (Cero datos) -->
+      <div *ngIf="(loading$ | async) && !(overview$ | async)" 
+           class="d-flex justify-content-center align-items-center initial-loader">
         <div class="spinner-border text-primary" role="status">
           <span class="visually-hidden">Cargando...</span>
         </div>
       </div>
 
+      <!-- 2. Overlay de Carga (Actualizando filtros) -->
+      <div *ngIf="(loading$ | async) && (overview$ | async)" class="loading-overlay">
+        <div class="spinner-border text-primary" role="status"></div>
+      </div>
+
       <ng-container *ngIf="overview$ | async as overview">
         
         <!-- Banner de Aviso de Renovación (7 días antes) -->
-        <div *ngIf="renewalNotice" class="alert-renewal-glass mx-3 mb-4 animate__animated animate__fadeInDown">
+        <div *ngIf="renewalNotice" class="alert-renewal-flat mx-3 mb-4">
           <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
             <div class="d-flex align-items-center gap-3">
-              <div class="icon-pulse">
+              <div class="icon-static">
                 <i class="bi bi-calendar-event-fill fs-4 text-warning"></i>
               </div>
               <div>
@@ -58,7 +64,7 @@ import { DashboardOverview } from '../../../shared/services/dashboard.service';
                 <p class="m-0 text-muted fw-500" style="font-size: 0.85rem;">Renueva tu plan ahora para evitar interrupciones en el servicio.</p>
               </div>
             </div>
-            <a [href]="renewalWhatsappUrl" target="_blank" class="btn btn-warning fw-800 rounded-pill px-4 shadow-sm py-2">
+            <a [href]="renewalWhatsappUrl" target="_blank" class="btn btn-warning fw-800 rounded-pill px-4 py-2">
               <i class="bi bi-whatsapp me-2"></i>Renovar Plan con mi Asesor
             </a>
           </div>
@@ -75,11 +81,18 @@ import { DashboardOverview } from '../../../shared/services/dashboard.service';
           <div class="col-lg-8">
             <div class="d-flex flex-column gap-3">
 
-              <!-- Análisis de Tendencias (Bajo KPIs como se solicitó) -->
+              <!-- Análisis de Tendencias -->
               <app-chart-card 
+                class="dashboard-main-chart"
                 [title]="'Tendencia de Ventas (vs Anterior)'"
                 [data]="overview.ventas_tendencia || []"
-                barColor="linear-gradient(135deg, #6366f1 0%, #a855f7 100%)">
+                [barColor]="'var(--primary-color)'">
+                <!-- Filtros integrados en el header de la gráfica -->
+                <app-period-selector 
+                  actions
+                  [selectedPeriod]="selectedPeriod" 
+                  (onPeriodChange)="changePeriod($event)">
+                </app-period-selector>
               </app-chart-card>
 
               <!-- Actividad Reciente -->
@@ -87,18 +100,10 @@ import { DashboardOverview } from '../../../shared/services/dashboard.service';
             </div>
           </div>
 
-          <!-- ── COLUMNA DERECHA: ESTADO Y HERRAMIENTAS (4/12) ── -->
+          <!-- ── COLUMNA DERECHA: HERRAMIENTAS (4/12) ── -->
           <div class="col-lg-4">
-            <div class="d-flex flex-column gap-3 mt-2 pe-2">
+            <div class="d-flex flex-column gap-3 pe-2">
               
-              <!-- Filtro de Periodo (Optimización de espacio: se mueve al sidebar superior) -->
-              <div class="d-flex justify-content-end mb-1">
-                <app-period-selector 
-                  [selectedPeriod]="selectedPeriod" 
-                  (onPeriodChange)="changePeriod($event)">
-                </app-period-selector>
-              </div>
-
               <!-- Estado Critical (Suscripción y Firma) -->
               <app-status-cards 
                 [firmaInfo]="overview.firma_info" 
@@ -108,7 +113,7 @@ import { DashboardOverview } from '../../../shared/services/dashboard.service';
               <!-- Accesos Rápidos -->
               <app-quick-actions></app-quick-actions>
 
-              <!-- Desempeño de Productos (Ahora más compacto al lateral) -->
+              <!-- Desempeño de Productos -->
               <app-top-products [topProductos]="overview.top_productos || []"></app-top-products>
             </div>
           </div>
@@ -119,20 +124,40 @@ import { DashboardOverview } from '../../../shared/services/dashboard.service';
     </div>
   `,
   styles: [`
-    .dash-wrap { min-height: 100vh; padding-bottom: 2rem; }
+    .dash-wrap { min-height: 100vh; padding-bottom: 2rem; position: relative; }
     
-    .alert-renewal-glass {
-      background: rgba(255, 255, 255, 0.7);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-      border: 1px solid rgba(245, 158, 11, 0.2);
-      border-left: 5px solid #f59e0b;
-      border-radius: 20px;
-      padding: 1.25rem 2rem;
-      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.05);
+    .dashboard-main-chart {
+      display: block;
+      height: 400px;
     }
 
-    .icon-pulse {
+    .initial-loader {
+      height: 400px;
+      width: 100%;
+    }
+
+    .loading-overlay {
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(255, 255, 255, 0.4);
+      backdrop-filter: blur(2px);
+      -webkit-backdrop-filter: blur(2px);
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 20px;
+    }
+
+    .alert-renewal-flat {
+      background: #fffbeb;
+      border: 1px solid #fef3c7;
+      border-left: 5px solid var(--status-warning);
+      border-radius: 20px;
+      padding: 1.25rem 2rem;
+    }
+
+    .icon-static {
       width: 50px;
       height: 50px;
       background: rgba(245, 158, 11, 0.1);
@@ -140,17 +165,25 @@ import { DashboardOverview } from '../../../shared/services/dashboard.service';
       display: flex;
       align-items: center;
       justify-content: center;
-      animation: soft-pulse 2s infinite;
-    }
-
-    @keyframes soft-pulse {
-      0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.2); }
-      70% { transform: scale(1.05); box-shadow: 0 0 0 10px rgba(245, 158, 11, 0); }
-      100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(245, 158, 11, 0); }
     }
 
     .fw-800 { font-weight: 800; }
     .fw-500 { font-weight: 500; }
+
+    /* Flatten UI Globally for this module */
+    :host ::ng-deep {
+      .soft-card, .panel, .quick-link, .editorial-card, .chart-card, .info-tooltip-box {
+        box-shadow: none !important;
+        transition: none !important;
+        animation: none !important;
+        transform: none !important;
+      }
+      
+      .cursor-help {
+        transition: none !important;
+        transform: none !important;
+      }
+    }
   `]
 })
 export class DashboardPage implements OnInit {

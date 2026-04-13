@@ -1,103 +1,172 @@
 import { Component, Input } from '@angular/core';
 import { CommonModule, CurrencyPipe } from '@angular/common';
-import { StatCardComponent } from '../../../../../shared/components/stat-card/stat-card.component';
 import { InfoTooltipComponent } from '../../../../../shared/components/info-tooltip/info-tooltip.component';
 import { DashboardKPIs } from '../../../../../shared/services/dashboard.service';
 
 @Component({
   selector: 'app-dashboard-kpis',
   standalone: true,
-  imports: [CommonModule, StatCardComponent, InfoTooltipComponent],
+  imports: [CommonModule, InfoTooltipComponent],
   providers: [CurrencyPipe],
   template: `
     <div class="row g-3 mb-4">
+      <!-- Mismo diseño que dashboard de superadmin: kpi-card-premium -->
+      
       <!-- Fila 1: Operativa -->
       <div class="col-12 col-md-4">
-        <app-stat-card
-          [title]="getMontoTitle()"
-          [value]="(kpis?.ventas_periodo | currency:'USD':'symbol':'1.2-2') || '$0.00'"
-          [trend]="kpis?.variacion_ventas"
-          icon="bi-receipt"
-          iconBg="rgba(99,102,241,.1)"
-          iconColor="#6366f1">
-          <app-info-tooltip message="Suma total de facturas autorizadas en el periodo seleccionado."></app-info-tooltip>
-        </app-stat-card>
+        <div class="kpi-card-premium">
+          <div class="icon-circle" style="color: #6366f1; background: rgba(99,102,241,.1)">
+            <i class="bi bi-receipt"></i>
+          </div>
+          <div class="kpi-content">
+            <span class="kpi-label d-flex align-items-center gap-1">{{ getMontoTitle() }}
+              <app-info-tooltip message="Suma total de facturas autorizadas en el periodo seleccionado."></app-info-tooltip>
+            </span>
+            <div class="d-flex align-items-baseline gap-2">
+              <span class="kpi-value">{{ (kpis?.ventas_periodo || 0) | currency:'USD':'symbol':'1.2-2' }}</span>
+              <span *ngIf="kpis?.variacion_ventas" class="kpi-trend" [ngClass]="kpis.variacion_ventas >= 0 ? 'up' : 'down'">
+                 <i class="bi" [ngClass]="kpis.variacion_ventas >= 0 ? 'bi-arrow-up-short' : 'bi-arrow-down-short'"></i>
+                 {{ kpis.variacion_ventas }}%
+              </span>
+            </div>
+          </div>
+        </div>
       </div>
+
       <div class="col-12 col-md-4">
-        <app-stat-card
-          [title]="getVentasTitle()"
-          [value]="kpis?.ventas_hoy?.toString() || '0'"
-          icon="bi-check-circle"
-          iconBg="rgba(16,185,129,.1)"
-          iconColor="#10b981">
-          <app-info-tooltip message="Cantidad de comprobantes emitidos durante el periodo seleccionado."></app-info-tooltip>
-        </app-stat-card>
+        <div class="kpi-card-premium">
+          <div class="icon-circle" style="color: #10b981; background: rgba(16,185,129,.1)">
+            <i class="bi bi-check-circle"></i>
+          </div>
+          <div class="kpi-content">
+            <span class="kpi-label d-flex align-items-center gap-1">{{ getVentasTitle() }}
+              <app-info-tooltip message="Cantidad de comprobantes emitidos durante el periodo seleccionado."></app-info-tooltip>
+            </span>
+            <span class="kpi-value">{{ kpis?.ventas_hoy || 0 }}</span>
+          </div>
+        </div>
       </div>
+
       <div class="col-12 col-md-4">
-        <app-stat-card
-          [title]="getSaldosTitle()"
-          [value]="(kpis?.cuentas_cobrar | currency:'USD':'symbol':'1.2-2') || '$0.00'"
-          icon="bi-hourglass-split"
-          iconBg="rgba(245,158,11,.1)"
-          iconColor="#f59e0b">
-          <app-info-tooltip message="Total de facturas autorizadas que aún no han sido cobradas en este periodo."></app-info-tooltip>
-        </app-stat-card>
+        <div class="kpi-card-premium">
+          <div class="icon-circle" style="color: #f59e0b; background: rgba(245,158,11,.1)">
+            <i class="bi bi-hourglass-split"></i>
+          </div>
+          <div class="kpi-content">
+            <span class="kpi-label d-flex align-items-center gap-1">{{ getSaldosTitle() }}
+              <app-info-tooltip message="Total de facturas autorizadas que aún no han sido cobradas en este periodo."></app-info-tooltip>
+            </span>
+            <span class="kpi-value">{{ (kpis?.cuentas_cobrar || 0) | currency:'USD':'symbol':'1.2-2' }}</span>
+          </div>
+        </div>
       </div>
-      <!-- Card de Gastos oculta -->
-      <!-- <div class="col-6 col-lg-3">
-        <app-stat-card
-          title="Gastos (Mes)"
-          [value]="(kpis?.total_gastos | currency:'USD':'symbol':'1.2-2') || '$0.00'"
-          [trend]="kpis?.variacion_gastos"
-          icon="bi-wallet2"
-          iconBg="rgba(239,68,68,.1)"
-          iconColor="#ef4444">
-          <app-info-tooltip message="Total de gastos registrados en el sistema durante el periodo actual."></app-info-tooltip>
-        </app-stat-card>
-      </div> -->
 
       <!-- Fila 2: Ejecutiva (Solo si hay datos ejecutivos) -->
       <ng-container *ngIf="kpis?.ticket_promedio">
         <div class="col-6 col-lg-3">
-          <app-stat-card
-            title="Ticket Promedio"
-            [value]="(kpis?.ticket_promedio | currency:'USD':'symbol':'1.2-2') || '$0.00'"
-            icon="bi-cart-check"
-            iconBg="rgba(139,92,246,.1)"
-            iconColor="#8b5cf6">
-          </app-stat-card>
+          <div class="kpi-card-premium">
+            <div class="icon-circle" style="color: #8b5cf6; background: rgba(139,92,246,.1)">
+              <i class="bi bi-cart-check"></i>
+            </div>
+            <div class="kpi-content">
+              <span class="kpi-label">Ticket Promedio</span>
+              <span class="kpi-value text-truncate">{{ (kpis?.ticket_promedio || 0) | currency:'USD':'symbol':'1.2-2' }}</span>
+            </div>
+          </div>
         </div>
         <div class="col-6 col-lg-3">
-          <app-stat-card
-            title="Utilidad Neta"
-            [value]="(kpis?.utilidad_neta | currency:'USD':'symbol':'1.2-2') || '$0.00'"
-            icon="bi-graph-up-arrow"
-            iconBg="rgba(16,185,129,.1)"
-            iconColor="#10b981">
-          </app-stat-card>
+          <div class="kpi-card-premium">
+            <div class="icon-circle" style="color: #10b981; background: rgba(16,185,129,.1)">
+              <i class="bi bi-graph-up-arrow"></i>
+            </div>
+            <div class="kpi-content">
+              <span class="kpi-label">Utilidad Neta</span>
+              <span class="kpi-value text-truncate">{{ (kpis?.utilidad_neta || 0) | currency:'USD':'symbol':'1.2-2' }}</span>
+            </div>
+          </div>
         </div>
         <div class="col-6 col-lg-3">
-          <app-stat-card
-            title="% Recuperación"
-            [value]="(kpis?.porcentaje_recuperacion?.toFixed(1) + '%') || '0%'"
-            icon="bi-arrow-repeat"
-            iconBg="rgba(79,70,229,.1)"
-            iconColor="#4f46e5">
-          </app-stat-card>
+          <div class="kpi-card-premium">
+            <div class="icon-circle" style="color: #4f46e5; background: rgba(79,70,229,.1)">
+              <i class="bi bi-arrow-repeat"></i>
+            </div>
+            <div class="kpi-content">
+              <span class="kpi-label">% Recuperación</span>
+              <span class="kpi-value">{{ (kpis?.porcentaje_recuperacion?.toFixed(1) + '%') || '0%' }}</span>
+            </div>
+          </div>
         </div>
         <div class="col-6 col-lg-3">
-          <app-stat-card
-            title="Clientes Activos"
-            [value]="kpis?.clientes_activos?.toString() || '0'"
-            icon="bi-people"
-            iconBg="rgba(244,63,94,.1)"
-            iconColor="#f43f5e">
-          </app-stat-card>
+          <div class="kpi-card-premium">
+            <div class="icon-circle" style="color: #f43f5e; background: rgba(244,63,94,.1)">
+              <i class="bi bi-people"></i>
+            </div>
+            <div class="kpi-content">
+              <span class="kpi-label">Clientes Activos</span>
+              <span class="kpi-value">{{ kpis?.clientes_activos || 0 }}</span>
+            </div>
+          </div>
         </div>
       </ng-container>
     </div>
+  `,
+  styles: [`
+    .kpi-card-premium {
+      background: #ffffff;
+      border: 1px solid #f1f5f9;
+      border-radius: 20px;
+      padding: 1.25rem 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 1.1rem;
+      height: 100%;
+      /* NO ANIMATIONS OR SHADOWS AS REQUESTED */
+      transition: none;
+      box-shadow: none;
+    }
+    .icon-circle {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.25rem;
+      flex-shrink: 0;
+    }
+    .kpi-content {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+    }
+    .kpi-label {
+      font-size: 0.65rem;
+      font-weight: 800;
+      color: #64748b;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 2px;
+    }
+    .kpi-value {
+      font-size: 1.35rem;
+      font-weight: 800;
+      color: #1e293b;
+      line-height: 1.2;
+    }
+    .kpi-trend {
+      font-size: 0.75rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+    }
+    .up { color: #10b981; }
+    .down { color: #ef4444; }
 
-  `
+    @media (max-width: 1400px) {
+      .kpi-value { font-size: 1.15rem; }
+      .kpi-card-premium { padding: 1rem; gap: 0.85rem; }
+    }
+  `]
 })
 export class DashboardKpisComponent {
   @Input() kpis?: DashboardKPIs;
