@@ -100,7 +100,7 @@ import { PerfilUsuario } from '../../../../domain/models/perfil.model';
             <div class="d-flex justify-content-end gap-2 mt-4 pt-4 border-top">
               <button type="button" class="btn-minimal-editorial secondary" (click)="toggleEdit()" [disabled]="isSaving">Cancelar</button>
               <button type="submit" class="btn-minimal-editorial primary" 
-                      [disabled]="editForm.invalid || isSaving || !hasChanges() || !editData.nombres?.trim() || !editData.apellidos?.trim() || !editData.telefono?.trim()">
+                      [disabled]="editForm.invalid || isSaving || !hasChanges() || !editData.nombres.trim() || !editData.apellidos.trim() || !editData.telefono.trim()">
                 <span *ngIf="isSaving" class="spinner-border spinner-border-sm me-2"></span>
                 {{ isSaving ? 'Guardando...' : 'Aplicar Cambios' }}
               </button>

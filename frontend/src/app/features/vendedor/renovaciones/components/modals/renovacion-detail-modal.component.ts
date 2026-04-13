@@ -60,7 +60,7 @@ import { SolicitudRenovacion } from '../../../../../domain/models/renovacion.mod
                 <!-- Comprobante (Oculto temporalmente) -->
                 <div class="section-card py-3" *ngIf="false">
                   <label class="editorial-label mb-2">Comprobante Cargado</label>
-                  <a [href]="seleccionada?.comprobante_url" target="_blank" class="btn-adjunto">
+                  <a [href]="seleccionada.comprobante_url" target="_blank" class="btn-adjunto">
                     <div class="d-flex align-items-center gap-2">
                       <i class="bi bi-file-earmark-image fs-5 text-primary"></i>
                       <div class="text-truncate">

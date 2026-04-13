@@ -98,7 +98,7 @@ import { FormsModule } from '@angular/forms';
             <div class="d-flex justify-content-end gap-2 mt-4 pt-3 border-top">
               <button type="button" class="btn btn-light rounded-3" (click)="toggleEdit()">Cancelar</button>
               <button type="submit" class="btn-editorial" 
-                      [disabled]="editForm.invalid || isSaving || !hasChanges() || !editData.nombres?.trim() || !editData.apellidos?.trim() || !editData.telefono?.trim()"
+                      [disabled]="editForm.invalid || isSaving || !hasChanges() || !editData.nombres.trim() || !editData.apellidos.trim() || !editData.telefono.trim()"
                       style="padding: 0.5rem 2rem; border-radius: 12px;">
                 <span *ngIf="isSaving" class="spinner-border spinner-border-sm me-2"></span>
                 {{ isSaving ? 'Guardando...' : 'Guardar Cambios' }}

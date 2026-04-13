@@ -1,7 +1,7 @@
-import { Component, OnInit, OnDestroy, Input, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpClientModule } from '@angular/common/http';
 import { Subject, takeUntil } from 'rxjs';
 import {
   ReportesService, ReporteGlobal
@@ -15,7 +15,7 @@ type RangoTipo = 'mes_actual' | 'mes_anterior' | 'anio_actual' | 'mes_especifico
 @Component({
   selector: 'app-r-031-global',
   standalone: true,
-  imports: [CommonModule, FormsModule, InfoTooltipComponent],
+  imports: [CommonModule, FormsModule, HttpClientModule, InfoTooltipComponent],
   template: `
     <div class="section-header mb-4">
       <div>
@@ -314,6 +314,26 @@ type RangoTipo = 'mes_actual' | 'mes_anterior' | 'anio_actual' | 'mes_especifico
         </div>
       </div>
     </div>
+
+    <!-- Modal Eliminar empresa (placeholder) -->
+    <div class="modal-overlay" *ngIf="modalEliminar.visible" (click)="cerrarModalEliminar()">
+      <div class="modal-panel" style="width:420px" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <span class="modal-title"><i class="bi bi-trash me-2 text-danger"></i>Eliminar empresa</span>
+          <button class="modal-close" (click)="cerrarModalEliminar()"><i class="bi bi-x-lg"></i></button>
+        </div>
+        <div class="modal-body">
+          <p style="font-size:0.85rem; color:#374151;">¿Estás seguro de que deseas eliminar a <strong>{{ modalEliminar.empresa?.nombre_empresa }}</strong>?</p>
+          <p style="font-size:0.8rem; color:#6b7280;">Esta acción está en construcción y no realizará cambios por ahora.</p>
+        </div>
+        <div class="modal-footer">
+          <button class="btn-modal-cancel" (click)="cerrarModalEliminar()">Cancelar</button>
+          <button class="btn-modal-confirm" style="background:#ef4444" disabled>
+            <i class="bi bi-trash me-1"></i> Eliminar (próximamente)
+          </button>
+        </div>
+      </div>
+    </div>
   `,
   styles: [`
     .section-header {
@@ -406,6 +426,12 @@ export class R031GlobalComponent implements OnInit, OnDestroy {
     observaciones: ''
   };
   planesDisponibles: any[] = [];
+
+  // Modal eliminar
+  modalEliminar = {
+    visible: false,
+    empresa: null as any
+  };
 
   rangoTipo: RangoTipo = 'mes_actual';
   mesFiltro = new Date().getMonth() + 1;
@@ -611,6 +637,13 @@ export class R031GlobalComponent implements OnInit, OnDestroy {
   }
 
   eliminarEmpresa(e: any) {
-    this.uiService.showToast('Funcionalidad de Eliminación', 'warning', `Confirmación pendiente para borrar ${e.nombre_empresa}`);
+    this.modalEliminar.empresa = e;
+    this.modalEliminar.visible = true;
+    this.cd.detectChanges();
+  }
+
+  cerrarModalEliminar() {
+    this.modalEliminar.visible = false;
+    this.modalEliminar.empresa = null;
   }
 }

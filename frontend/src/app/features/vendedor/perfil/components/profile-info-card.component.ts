@@ -8,7 +8,7 @@ import { CommonModule } from '@angular/common';
   template: `
     <div class="editorial-card px-4 py-4 text-center mb-3">
       <div class="profile-avatar-large mx-auto mb-3">
-        {{ nombres.charAt(0) }}{{ apellidos?.charAt(0) }}
+        {{ nombres.charAt(0) }}{{ apellidos.charAt(0) }}
       </div>
       <h2 class="h5 fw-bold mb-1">{{ nombres }} {{ apellidos }}</h2>
       <div class="badge-role mb-4 d-inline-block">Vendedor Autorizado</div>
