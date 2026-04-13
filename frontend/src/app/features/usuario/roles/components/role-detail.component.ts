@@ -19,12 +19,12 @@ import { HasPermissionDirective } from '../../../../shared/directives/has-permis
         </div>
         <div class="d-flex gap-2">
           <ng-container *ngIf="!role.es_sistema">
-            <button *hasPermission="'ROLES_ELIMINAR'"
+            <button *hasPermission="'CONFIG_ROLES'"
                     class="btn btn-minimal-danger" (click)="onDelete.emit(role)">
               <i class="bi bi-trash"></i>
             </button>
           </ng-container>
-          <button *hasPermission="'ROLES_CREAR'" class="btn btn-minimal-primary" (click)="onCreate.emit()">
+          <button *hasPermission="'CONFIG_ROLES'" class="btn btn-minimal-primary" (click)="onCreate.emit()">
             <i class="bi bi-plus-circle-fill me-2"></i> Nuevo Rol
           </button>
         </div>

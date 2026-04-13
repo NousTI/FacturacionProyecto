@@ -2,6 +2,11 @@ import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { UiService } from '../../../shared/services/ui.service';
 import { ConfigEmpresaComponent } from './components/config-empresa/config-empresa.component';
+import { ConfigSriComponent } from './components/config-sri/config-sri.component';
+import { ConfigRolesComponent } from './components/config-roles/config-roles.component';
+import { ConfigEstablecimientosComponent } from './components/config-establecimientos/config-establecimientos.component';
+import { ConfigPuntosEmisionComponent } from './components/config-puntos-emision/config-puntos-emision.component';
+import { ConfigProfileComponent } from './components/config-profile/config-profile.component';
 import { HasPermissionDirective } from '../../../core/directives/has-permission.directive';
 import { PermissionsService } from '../../../core/auth/permissions.service';
 
@@ -16,7 +21,16 @@ interface ConfigSection {
 @Component({
   selector: 'app-configuracion',
   standalone: true,
-  imports: [CommonModule, ConfigEmpresaComponent, HasPermissionDirective],
+  imports: [
+    CommonModule, 
+    ConfigEmpresaComponent, 
+    ConfigSriComponent, 
+    ConfigRolesComponent, 
+    ConfigEstablecimientosComponent,
+    ConfigPuntosEmisionComponent,
+    ConfigProfileComponent,
+    HasPermissionDirective
+  ],
   template: `
     <div class="config-page animate__animated animate__fadeIn">
       <!-- SIDEBAR DE CONFIGURACIÓN -->
@@ -28,7 +42,7 @@ interface ConfigSection {
 
         <nav class="sidebar-nav">
            <button 
-             *ngFor="let section of sections" 
+             *ngFor="let section of filteredSections" 
              class="nav-tab" 
              [class.active]="activeSection().id === section.id"
              (click)="setSection(section)"
@@ -60,8 +74,41 @@ interface ConfigSection {
               </div>
             </ng-container>
 
+            <!-- SECCIÓN: DATOS SRI -->
+            <ng-container *ngIf="activeSection().id === 'datos-sri'">
+              <div *hasPermission="'CONFIG_SRI'; else restricted">
+                <app-config-sri></app-config-sri>
+              </div>
+            </ng-container>
+
+            <!-- SECCIÓN: ROLES Y PERMISOS -->
+            <ng-container *ngIf="activeSection().id === 'roles-permisos'">
+              <div *hasPermission="'CONFIG_ROLES'; else restricted">
+                <app-config-roles></app-config-roles>
+              </div>
+            </ng-container>
+
+            <!-- SECCIÓN: ESTABLECIMIENTOS -->
+            <ng-container *ngIf="activeSection().id === 'establecimientos'">
+              <div *hasPermission="'ESTABLECIMIENTO_GESTIONAR'; else restricted">
+                <app-config-establecimientos></app-config-establecimientos>
+              </div>
+            </ng-container>
+
+            <!-- SECCIÓN: PUNTOS DE EMISIÓN -->
+            <ng-container *ngIf="activeSection().id === 'puntos-emision'">
+              <div *hasPermission="'PUNTO_EMISION_GESTIONAR'; else restricted">
+                <app-config-puntos-emision></app-config-puntos-emision>
+              </div>
+            </ng-container>
+
+            <!-- SECCIÓN: PERFIL -->
+            <ng-container *ngIf="activeSection().id === 'perfil'">
+              <app-config-profile></app-config-profile>
+            </ng-container>
+
             <!-- SECCIONES EN CONSTRUCCIÓN -->
-            <ng-container *ngIf="activeSection().id !== 'empresa'">
+            <ng-container *ngIf="activeSection().id === 'other'">
               <div class="empty-placeholder">
                 <div class="placeholder-card">
                    <i class="bi" [class]="activeSection().icon"></i>
@@ -77,7 +124,7 @@ interface ConfigSection {
                   <i class="bi bi-shield-lock"></i>
                 </div>
                 <h3>Acceso Restringido</h3>
-                <p>No tienes los permisos necesarios (<b>CONFIG_EMPRESA</b>) para ver o gestionar la información de la empresa.</p>
+                <p>No tienes los permisos necesarios (<b>{{ activeSection().permission || 'N/A' }}</b>) para ver o gestionar esta sección.</p>
                 <span class="contact-hint">Contacta con tu administrador para solicitar acceso.</span>
               </div>
             </ng-template>
@@ -310,14 +357,25 @@ export class ConfiguracionPage implements OnInit {
     { id: 'empresa', label: 'Empresa', icon: 'bi-building', subtitle: 'Información general y datos de contacto de tu negocio.', permission: 'CONFIG_EMPRESA' },
     { id: 'datos-sri', label: 'Datos SRI', icon: 'bi-shield-check', subtitle: 'Configuración de facturación electrónica y firma digital.', permission: 'CONFIG_SRI' },
     { id: 'roles-permisos', label: 'Roles y Permisos', icon: 'bi-person-badge', subtitle: 'Gestión de accesos y perfiles de usuario.', permission: 'CONFIG_ROLES' },
-    { id: 'establecimientos', label: 'Establecimientos', icon: 'bi-shop', subtitle: 'Administración de locales físicos y sucursales.', permission: 'ESTABLECIMIENTO_VER' },
-    { id: 'puntos-emision', label: 'Puntos de Emisión', icon: 'bi-printer', subtitle: 'Configuración de cajas y terminales de facturación.', permission: 'PUNTO_EMISION_VER' }
+    { id: 'establecimientos', label: 'Establecimientos', icon: 'bi-shop', subtitle: 'Administración de locales físicos y sucursales.', permission: 'ESTABLECIMIENTO_GESTIONAR' },
+    { id: 'puntos-emision', label: 'Puntos de Emisión', icon: 'bi-printer', subtitle: 'Configuración de cajas y terminales de facturación.', permission: 'PUNTO_EMISION_GESTIONAR' },
+    { id: 'perfil', label: 'Perfil', icon: 'bi-person-circle', subtitle: 'Gestiona tu información personal y seguridad.' }
   ];
 
   activeSection = signal<ConfigSection>(this.sections[0]);
 
+  get filteredSections(): ConfigSection[] {
+    return this.sections.filter(s => !s.permission || this.permissionsService.hasPermission(s.permission));
+  }
+
   ngOnInit() {
     this.uiService.setPageHeader('Configuración', 'Ajustes generales del sistema');
+    
+    // Establecer la primera sección disponible (con permisos) como activa
+    const available = this.filteredSections;
+    if (available.length > 0) {
+      this.activeSection.set(available[0]);
+    }
   }
 
   setSection(section: ConfigSection) {

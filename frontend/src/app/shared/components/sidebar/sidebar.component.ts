@@ -93,17 +93,10 @@ import { SidebarService } from './sidebar.service';
                 </ng-container>
               </ng-container>
 
-              <a *hasPermission="'CONFIG_EMPRESA'" routerLink="/usuario/empresa" routerLinkActive="active" class="menu-item px-3 mb-1" title="Empresa">
-                 <i class="bi bi-building"></i> <span class="menu-text ms-3">Empresa</span>
-              </a>
-              
               <ng-container *ngIf="isEmpresaActiva$ | async">
                 <ng-container *ngIf="isSuscripcionActiva$ | async">
                   <a *hasPermission="'USUARIOS_VER'" routerLink="/usuario/usuarios" routerLinkActive="active" class="menu-item px-3 mb-1" title="Usuarios">
                     <i class="bi bi-person"></i> <span class="menu-text ms-3">Usuarios</span>
-                  </a>
-                  <a *hasPermission="'ROLES_VER'" routerLink="/usuario/roles" routerLinkActive="active" class="menu-item px-3 mb-1" title="Roles">
-                    <i class="bi bi-shield-check"></i> <span class="menu-text ms-3">Roles</span>
                   </a>
                   <a *hasPermission="'CLIENTES_VER'" routerLink="/usuario/clientes" routerLinkActive="active" class="menu-item px-3 mb-1" title="Clientes">
                     <i class="bi bi-people"></i> <span class="menu-text ms-3">Clientes</span>
@@ -128,15 +121,6 @@ import { SidebarService } from './sidebar.service';
                   </a>
                   <a *hasPermission="'REPORTES_VER'" routerLink="/usuario/reportes" routerLinkActive="active" class="menu-item px-3 mb-1" title="Reportes">
                     <i class="bi bi-bar-chart"></i> <span class="menu-text ms-3">Reportes</span>
-                  </a>
-                  <a *hasPermission="['ESTABLECIMIENTO_GESTIONAR', 'ESTABLECIMIENTO_VER']" routerLink="/usuario/establecimientos" routerLinkActive="active" class="menu-item px-3 mb-1" title="Establecimientos">
-                    <i class="bi bi-shop"></i> <span class="menu-text ms-3">Establecimientos</span>
-                  </a>
-                  <a *hasPermission="['PUNTO_EMISION_VER', 'PUNTO_EMISION_GESTIONAR']" routerLink="/usuario/puntos-emision" routerLinkActive="active" class="menu-item px-3 mb-1" title="Puntos Emisión">
-                    <i class="bi bi-printer"></i> <span class="menu-text ms-3">Puntos Emisión</span>
-                  </a>
-                  <a *hasPermission="'CONFIG_SRI'" routerLink="/usuario/certificado-sri" routerLinkActive="active" class="menu-item px-3 mb-1" title="Certificado SRI">
-                    <i class="bi bi-shield-lock"></i> <span class="menu-text ms-3">Certificado SRI</span>
                   </a>
                 </ng-container>
               </ng-container>

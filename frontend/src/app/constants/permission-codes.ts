@@ -130,10 +130,6 @@ export const USUARIOS_PERMISSIONS = {
 } as const;
 
 export const ROLES_PERMISSIONS = {
-  VER: 'ROLES_VER',
-  CREAR: 'ROLES_CREAR',
-  EDITAR: 'ROLES_EDITAR',
-  ELIMINAR: 'ROLES_ELIMINAR',
   CONFIG: 'CONFIG_ROLES'
 } as const;
 

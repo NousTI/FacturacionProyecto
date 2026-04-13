@@ -11,7 +11,7 @@ import { HasPermissionDirective } from '../../../../shared/directives/has-permis
     <div class="card card-minimal shadow-soft h-100">
       <div class="card-header-minimal d-flex justify-content-between align-items-center">
         <span class="text-secondary fw-bold small tracking-widest">ROLES</span>
-        <button *hasPermission="'ROLES_CREAR'" (click)="onCreate.emit()" class="btn-create-minimal" title="Nuevo Rol">
+        <button *hasPermission="'CONFIG_ROLES'" (click)="onCreate.emit()" class="btn-create-minimal" title="Nuevo Rol">
           <i class="bi bi-plus-lg"></i>
         </button>
       </div>
@@ -25,7 +25,7 @@ import { HasPermissionDirective } from '../../../../shared/directives/has-permis
               <span class="role-item-name">{{ role.nombre }}</span>
               <span class="role-item-count">{{ role.num_usuarios || 0 }} activos</span>
             </div>
-            <button *hasPermission="'ROLES_EDITAR'" class="btn-edit-minimal" (click)="onEditRole($event, role)">
+            <button *hasPermission="'CONFIG_ROLES'" class="btn-edit-minimal" (click)="onEditRole($event, role)">
               <i class="bi bi-pencil"></i>
             </button>
           </div>

@@ -45,12 +45,6 @@ class PermissionCodes:
     USUARIOS_ELIMINAR = "USUARIOS_ELIMINAR"
 
     # --- MODULO: ROLES ---
-    ROLES_VER = "ROLES_VER"
-    ROLES_CREAR = "ROLES_CREAR"
-    ROLES_EDITAR = "ROLES_EDITAR"
-    ROLES_ELIMINAR = "ROLES_ELIMINAR"
-    
-    # Granularidad Usuarios/Roles
     ROLES_GESTIONAR = "CONFIG_ROLES"
     
     # --- MÓDULO: ESTABLECIMIENTOS Y PUNTOS ---
