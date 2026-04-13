@@ -9,32 +9,35 @@ import { Gasto } from '../../../../domain/models/gasto.model';
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule],
   template: `
-    <div class="form-container">
-      <div class="expense-quick-info mb-4" *ngIf="selectedGasto">
-        <label class="text-xs text-muted text-uppercase fw-bold">Aplicar pago a:</label>
-        <div class="d-flex justify-content-between align-items-center mt-1">
-          <div>
-            <span class="d-block fw-bold">{{ selectedGasto.concepto }}</span>
-            <small class="text-muted">Factura: {{ selectedGasto.numero_factura || 'S/N' }}</small>
+    <div class="editorial-form-wrapper">
+      <!-- Summary Card -->
+      <div class="summary-ticket-premium mb-5" *ngIf="selectedGasto">
+        <label class="editorial-label-muted">Aplicar pago a:</label>
+        <div class="d-flex justify-content-between align-items-end mt-2">
+          <div class="summary-details">
+            <span class="summary-title">{{ selectedGasto.concepto }}</span>
+            <div class="summary-meta mt-1">
+              <span class="badge-code-editorial">FACTURA: {{ selectedGasto.numero_factura || 'S/N' }}</span>
+              <span class="badge-status-editorial ms-2" [ngClass]="'status-' + selectedGasto.estado_pago">{{ selectedGasto.estado_pago }}</span>
+            </div>
           </div>
-          <div class="text-end">
-            <span class="d-block fw-bold text-primary">\${{ selectedGasto.total | number:'1.2-2' }}</span>
-            <span class="badge" [ngClass]="'badge-' + selectedGasto.estado_pago">{{ selectedGasto.estado_pago }}</span>
+          <div class="summary-total text-end">
+            <span class="total-label d-block text-uppercase">Total Gasto</span>
+            <span class="total-amount">\${{ selectedGasto.total | number:'1.2-2' }}</span>
           </div>
         </div>
       </div>
 
-      <div class="alert alert-info alert-sm mb-3" *ngIf="editMode && gastoEsPagado">
-        <i class="bi bi-lock me-2"></i>
-        <span class="fw-500">Este pago está completo.</span> Solo puedes editar campos vacíos.
+      <div class="alert-minimalist mb-4" *ngIf="editMode && gastoEsPagado">
+        <span>ESTE PAGO ESTÁ COMPLETADO. SE PERMITEN CAMBIOS EN NOTAS.</span>
       </div>
 
       <form [formGroup]="form" (ngSubmit)="submit()">
-        <div class="form-grid">
+        <div class="editorial-grid-2">
           <!-- Gasto Selector (if not pre-selected) -->
-          <div class="form-group full-width" *ngIf="!selectedGasto">
-            <label class="form-label">Seleccionar Gasto *</label>
-            <select class="form-select" formControlName="gasto_id" [class.is-invalid]="isInvalid('gasto_id')">
+          <div class="col-span-2" *ngIf="!selectedGasto">
+            <label class="editorial-label">Seleccionar Gasto</label>
+            <select class="editorial-input" formControlName="gasto_id" [class.is-invalid]="isInvalid('gasto_id')">
               <option value="">Seleccione un gasto pendiente...</option>
               <option *ngFor="let g of availableGastos" [value]="g.id">
                 {{ g.concepto }} - {{ g.numero_factura || 'S/N' }} (\${{ g.total }})
@@ -43,43 +46,36 @@ import { Gasto } from '../../../../domain/models/gasto.model';
           </div>
 
           <!-- Monto -->
-          <div class="form-group">
-            <label class="form-label">Monto del Pago *</label>
-            <div class="input-group">
-              <span class="input-group-text">$</span>
+          <div>
+            <label class="editorial-label">Monto del Pago</label>
+            <div class="input-editorial-group">
+              <span class="addon">$</span>
               <input 
                 type="number" 
-                class="form-control" 
+                class="editorial-input addon-field" 
                 formControlName="monto" 
                 step="0.01"
                 (keydown)="onlyPositiveNumbers($event)"
                 [class.is-invalid]="isInvalid('monto')"
               >
             </div>
-            <div class="invalid-feedback" *ngIf="isInvalid('monto')">
-              <span *ngIf="form.get('monto')?.errors?.['required']">El monto es obligatorio.</span>
-              <span *ngIf="form.get('monto')?.errors?.['min']">El monto debe ser mayor a 0.</span>
-              <span *ngIf="form.get('monto')?.errors?.['max']">
-                El monto no puede exceder el total del gasto (\${{ selectedGasto?.total | number:'1.2-2' }}).
-              </span>
-            </div>
           </div>
 
           <!-- Fecha -->
-          <div class="form-group">
-            <label class="form-label">Fecha de Pago *</label>
+          <div>
+            <label class="editorial-label">Fecha de Pago</label>
             <input 
               type="date" 
-              class="form-control" 
+              class="editorial-input" 
               formControlName="fecha_pago"
               [class.is-invalid]="isInvalid('fecha_pago')"
             >
           </div>
 
           <!-- Método -->
-          <div class="form-group">
-            <label class="form-label">Método de Pago *</label>
-            <select class="form-select" formControlName="metodo_pago" [class.is-invalid]="isInvalid('metodo_pago')">
+          <div>
+            <label class="editorial-label">Método de Pago</label>
+            <select class="editorial-input" formControlName="metodo_pago" [class.is-invalid]="isInvalid('metodo_pago')">
               <option value="transferencia">Transferencia Bancaria</option>
               <option value="efectivo">Efectivo</option>
               <option value="tarjeta">Tarjeta de Crédito/Débito</option>
@@ -89,37 +85,38 @@ import { Gasto } from '../../../../domain/models/gasto.model';
           </div>
 
           <!-- Referencia -->
-          <div class="form-group">
-            <label class="form-label">Nº Referencia</label>
-            <input type="text" class="form-control" formControlName="numero_referencia" placeholder="Ej: 982347239">
+          <div>
+            <label class="editorial-label">Nº Referencia</label>
+            <input type="text" class="editorial-input" formControlName="numero_referencia" placeholder="Opcional">
           </div>
 
           <!-- Comprobante -->
-          <div class="form-group">
-            <label class="form-label">Nº Comprobante</label>
-            <input type="text" class="form-control" formControlName="numero_comprobante" placeholder="Ej: 001-001-000012345">
+          <div>
+            <label class="editorial-label">Nº Comprobante</label>
+            <input type="text" class="editorial-input" formControlName="numero_comprobante" placeholder="Opcional">
           </div>
 
           <!-- Observaciones -->
-          <div class="form-group full-width">
-            <label class="form-label">Observaciones</label>
-            <textarea class="form-control" formControlName="observaciones" rows="3" placeholder="Detalles adicionales del pago..."></textarea>
+          <div class="col-span-2">
+            <label class="editorial-label">Observaciones</label>
+            <textarea class="editorial-input" formControlName="observaciones" rows="1" placeholder="Notas..."></textarea>
           </div>
         </div>
 
-        <div class="form-actions d-flex justify-content-end gap-2 mt-4" *ngIf="!viewOnly">
-          <button type="button" class="btn btn-light" (click)="cancel.emit()">
+        <!-- Acciones -->
+        <div class="d-flex justify-content-end gap-3 mt-5 pt-3 border-top-editorial" *ngIf="!viewOnly">
+          <button type="button" class="btn-editorial-secondary" (click)="cancel.emit()">
             Cancelar
           </button>
-          <button type="submit" class="btn btn-primary px-4" [disabled]="form.invalid || loading || (editMode && !hasChanges)">
-            <span *ngIf="loading" class="spinner-border spinner-border-sm me-1"></span>
-            {{ editMode ? 'Actualizar Pago' : 'Registrar Pago' }}
+          <button type="submit" class="btn-system-action px-5" [disabled]="form.invalid || loading || (editMode && !hasChanges)">
+            <span *ngIf="loading" class="spinner-border spinner-border-sm me-2"></span>
+            {{ editMode ? 'GUARDAR PAGO' : 'REGISTRAR PAGO' }}
           </button>
         </div>
 
-        <div class="form-actions d-flex justify-content-end mt-4" *ngIf="viewOnly">
-          <button type="button" class="btn btn-primary px-4" (click)="cancel.emit()">
-            Cerrar Detalles
+        <div class="d-flex justify-content-end mt-5 pt-3 border-top-editorial" *ngIf="viewOnly">
+          <button type="button" class="btn-system-action px-5" (click)="cancel.emit()">
+            CERRAR DETALLES
           </button>
         </div>
       </form>
@@ -127,38 +124,54 @@ import { Gasto } from '../../../../domain/models/gasto.model';
   `,
   styles: [`
     :host { display: block; }
-    .form-container { animation: fadeIn 0.3s ease; }
-    .form-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; }
-    .full-width { grid-column: span 2; }
-
-    .expense-quick-info {
-      background: #f8fafc;
-      padding: 1rem;
-      border-radius: 12px;
-      border: 1px dashed #cbd5e1;
+    .editorial-form-wrapper { padding: 1.5rem; }
+    
+    .summary-ticket-premium {
+      background: #f8fafc; padding: 1.5rem; border-radius: 20px; border: 1.5px solid #e2e8f0; border-left: 6px solid #161d35;
+    }
+    .editorial-label-muted { font-size: 0.7rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.15em; }
+    .summary-title { font-size: 1.15rem; font-weight: 900; color: #1a1a1a; display: block; letter-spacing: -0.01em; }
+    .total-label { font-size: 0.65rem; font-weight: 800; color: #64748b; margin-bottom: 0.25rem; }
+    .total-amount { font-size: 1.5rem; font-weight: 900; color: #161d35; letter-spacing: -0.02em; }
+    
+    .alert-minimalist {
+      background: #f1f5f9; color: #475569; padding: 0.85rem 1rem; border-radius: 12px; font-size: 0.75rem; font-weight: 700; border: 1.5px solid #e2e8f0; text-align: center; letter-spacing: 0.05em;
     }
 
-    .alert-sm {
-      padding: 0.6rem 0.8rem;
-      font-size: 0.85rem;
-      border-radius: 8px;
+    .editorial-grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem; }
+    .col-span-2 { grid-column: span 2; }
+    
+    .editorial-label { 
+      display: block; font-size: 0.7rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; color: #64748b; margin-bottom: 0.5rem;
     }
-
-    .alert-info {
-      background: #dbeafe;
-      color: #1e40af;
-      border: 1px solid #93c5fd;
+    
+    .editorial-input { 
+      width: 100%; padding: 0.85rem 1.25rem; border-radius: 12px; border: 1.5px solid #e2e8f0; font-size: 0.95rem; font-weight: 500; color: #1a1a1a; transition: all 0.2s ease; background: #ffffff;
     }
-
-    .form-label { font-size: 0.85rem; font-weight: 600; color: #4b5563; margin-bottom: 0.4rem; display: block; }
-    .form-control, .form-select { padding: 0.6rem; border-radius: 10px; border: 1px solid #e2e8f0; }
-
-    .badge { padding: 0.25rem 0.5rem; border-radius: 6px; font-size: 0.7rem; }
-    .badge-pendiente { background: #fff7ed; color: #9a3412; }
-    .badge-pagado { background: #f0fdf4; color: #166534; }
-
-    .text-xs { font-size: 0.7rem; }
-    .fw-500 { font-weight: 500; }
+    .editorial-input:focus { outline: none; border-color: #161d35; background-color: #ffffff; }
+    .editorial-input.is-invalid { border-color: #ef4444; }
+    
+    .input-editorial-group { display: flex; align-items: stretch; border-radius: 12px; overflow: hidden; border: 1.5px solid #e2e8f0; }
+    .input-editorial-group:focus-within { border-color: #161d35; }
+    .addon { background: #f8fafc; padding: 0 1rem; display: flex; align-items: center; border-right: 1.5px solid #e2e8f0; color: #64748b; font-weight: 700; }
+    .addon-field { border: none !important; border-radius: 0; }
+    
+    .badge-code-editorial { background: #ffffff; color: #475569; padding: 0.35rem 0.75rem; border-radius: 8px; font-weight: 700; font-size: 0.7rem; border: 1.5px solid #e2e8f0; }
+    .badge-status-editorial { padding: 0.35rem 0.85rem; border-radius: 8px; font-weight: 800; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.05em; }
+    .status-pendiente { background: #fff7ed; color: #9a3412; border: 1px solid #ffedd5; }
+    .status-pagado { background: #f0fdf4; color: #166534; border: 1px solid #dcfce7; }
+    
+    .border-top-editorial { border-top: 1px solid #f1f5f9; }
+    
+    .btn-system-action { 
+      background: #111827; color: #ffffff; border: none; padding: 1rem 2.5rem; border-radius: 12px; font-weight: 800; font-size: 0.85rem; letter-spacing: 0.05em; transition: all 0.2s; 
+    }
+    .btn-system-action:hover { background: #000000; transform: translateY(-1px); }
+    
+    .btn-editorial-secondary { 
+      background: #f8fafc; color: #64748b; border: 1.5px solid #e2e8f0; padding: 1rem 2.5rem; border-radius: 12px; font-weight: 800; font-size: 0.85rem; letter-spacing: 0.05em; transition: all 0.2s; 
+    }
+    .btn-editorial-secondary:hover { background: #f1f5f9; color: #1a1a1a; border-color: #cbd5e1; }
   `]
 })
 export class PagoFormComponent implements OnInit {

@@ -19,7 +19,11 @@ import { ToastComponent } from '../../../shared/components/toast/toast.component
 import { HasPermissionDirective } from '../../../core/directives/has-permission.directive';
 
 // Modular Components
-import { EgresosStatsComponent } from './components/egresos-stats.component';
+import { GastosStatsComponent } from './components/gastos-stats/gastos-stats.component';
+import { GastosActionsComponent } from './components/gastos-actions/gastos-actions.component';
+import { GastosTableComponent } from './components/gastos-table/gastos-table.component';
+import { PagosTableComponent } from './components/pagos-table/pagos-table.component';
+import { CategoriasTableComponent } from './components/categorias-table/categorias-table.component';
 import { GastoFormComponent } from './components/gasto-form.component';
 import { PagoFormComponent } from './components/pago-form.component';
 import { CategoriaFormComponent } from './components/categoria-form.component';
@@ -33,231 +37,94 @@ import { CategoriaFormComponent } from './components/categoria-form.component';
     HasPermissionDirective,
     ConfirmModalComponent,
     ToastComponent,
-    EgresosStatsComponent,
+    GastosStatsComponent,
+    GastosActionsComponent,
+    GastosTableComponent,
+    PagosTableComponent,
+    CategoriasTableComponent,
     GastoFormComponent,
     PagoFormComponent,
     CategoriaFormComponent
   ],
   template: `
-    <div class="page-container">
+    <div class="page-container" style="display: flex; flex-direction: column; gap: 24px;">
       
       <ng-container *ngIf="canViewModule; else noPermission">
-        <!-- Stats (Consolidated Component) -->
-        <app-egresos-stats *ngIf="canViewGeneral" [stats]="stats$ | async"></app-egresos-stats>
+        <!-- Stats -->
+        <app-gastos-stats *ngIf="canViewGeneral" [stats]="stats$ | async"></app-gastos-stats>
 
-        <!-- Tabs Navigation -->
-        <div class="tabs-minimal mb-4">
-          <button *ngIf="canViewGeneral" class="tab-btn" [class.active]="activeTab === 'general'" (click)="setTab('general')">
-            <i class="bi bi-list-task"></i> Movimientos
-          </button>
-          <button *ngIf="canViewPagos" class="tab-btn" [class.active]="activeTab === 'pagos'" (click)="setTab('pagos')">
-            <i class="bi bi-cash-stack"></i> Historial de Pagos
-          </button>
-          <button *ngIf="canViewCategorias" class="tab-btn" [class.active]="activeTab === 'categorias'" (click)="setTab('categorias')">
-            <i class="bi bi-tags"></i> Categorías
-          </button>
-        </div>
+        <div class="main-content-card">
+          <!-- Tabs Navigation -->
+          <div class="tabs-minimal-premium">
+            <button *ngIf="canViewGeneral" class="tab-btn" [class.active]="activeTab === 'general'" (click)="setTab('general')">
+              <i class="bi bi-list-task"></i> Movimientos
+            </button>
+            <button *ngIf="canViewPagos" class="tab-btn" [class.active]="activeTab === 'pagos'" (click)="setTab('pagos')">
+              <i class="bi bi-cash-stack"></i> Historial de Pagos
+            </button>
+            <button *ngIf="canViewCategorias" class="tab-btn" [class.active]="activeTab === 'categorias'" (click)="setTab('categorias')">
+              <i class="bi bi-tags"></i> Categorías
+            </button>
+          </div>
 
-        <div [ngSwitch]="activeTab" class="tab-content">
-          
-          <!-- SECCIÓN 1: GASTOS GENERALES -->
-          <div *ngSwitchCase="'general'" class="fade-in">
-            <ng-container *ngIf="canViewGeneral">
-              <!-- Filtros -->
-              <div class="filters-card mb-4">
-                <div class="row g-3">
-                  <div class="col-md-6">
-                    <div class="search-box">
-                      <i class="bi bi-search"></i>
-                      <input type="text" class="form-control" placeholder="Buscar concepto, factura o proveedor..." [(ngModel)]="searchTerm" (input)="applyFilters()">
-                    </div>
-                  </div>
-                  <div class="col-md-3">
-                    <select class="form-select" [(ngModel)]="filterEstado" (change)="applyFilters()">
-                      <option value="">Todos los estados</option>
-                      <option value="pendiente" class="text-warning">Pendiente</option>
-                      <option value="pagado" class="text-success">Pagado</option>
-                      <option value="vencido" class="text-danger">Vencido</option>
-                    </select>
-                  </div>
-                  <div class="col-md-3 d-flex gap-2">
-                    <button *hasPermission="'GASTOS_CREAR'" class="btn btn-primary w-100" (click)="openCreateGastoModal()">
-                      <i class="bi bi-plus-lg me-2"></i> Nuevo Gasto
+          <div [ngSwitch]="activeTab" class="tab-content" style="padding-top: 1.5rem;">
+            
+            <!-- SECCIÓN 1: GASTOS GENERALES -->
+            <div *ngSwitchCase="'general'" class="fade-in" style="display: flex; flex-direction: column; gap: 20px;">
+              <ng-container *ngIf="canViewGeneral">
+                <!-- Acciones y Filtros -->
+                <app-gastos-actions 
+                  [(searchQuery)]="searchTerm" 
+                  [(filterEstado)]="filterEstado"
+                  (onCreate)="openCreateGastoModal()"
+                ></app-gastos-actions>
+
+                <!-- Tabla de Gastos -->
+                <app-gastos-table 
+                  [gastos]="(filteredGastos$ | async) ?? []" 
+                  [categorias]="categorias" 
+                  [proveedores]="proveedores"
+                  (onAction)="handleTableAction($event)"
+                ></app-gastos-table>
+              </ng-container>
+            </div>
+
+            <!-- SECCIÓN 2: PAGOS -->
+            <div *ngSwitchCase="'pagos'" class="fade-in" style="display: flex; flex-direction: column; gap: 20px;">
+              <ng-container *ngIf="canViewPagos">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                   <h5 class="fw-bold mb-0">Historial de Pagos Registrados</h5>
+                   <button *hasPermission="'PAGO_GASTO_CREAR'" class="btn-system-action" (click)="openCreatePagoModal()">
+                      <i class="bi bi-plus-lg me-2"></i> Registrar Pago
                     </button>
-                    <button class="btn btn-light" (click)="refresh()" [disabled]="isLoading">
-                      <i class="bi bi-arrow-clockwise" [class.spinning]="isLoading"></i>
-                    </button>
-                  </div>
                 </div>
-              </div>
+                
+                <app-pagos-table 
+                  [pagos]="(pagos$ | async) ?? []" 
+                  [gastos]="gastos"
+                  (onAction)="handlePagoTableAction($event)"
+                ></app-pagos-table>
+              </ng-container>
+            </div>
 
-              <!-- Tabla de Gastos -->
-              <div class="table-responsive soft-card">
-                <table class="table table-hover align-middle mb-0">
-                  <thead class="bg-light">
-                    <tr>
-                      <th class="ps-4">Factura</th>
-                      <th>Concepto</th>
-                      <th>Categoría</th>
-                      <th>Total</th>
-                      <th>Estado</th>
-                      <th>Fecha</th>
-                      <th class="text-end pe-4">Acciones</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr *ngFor="let gasto of filteredGastos$ | async">
-                      <td class="ps-4">
-                        <span class="fw-bold">{{ gasto.numero_factura || 'S/N' }}</span>
-                      </td>
-                      <td>
-                        <div class="d-flex flex-column">
-                          <span class="fw-bold">{{ gasto.concepto }}</span>
-                          <small class="text-muted">{{ getProveedorName(gasto.proveedor_id) }}</small>
-                        </div>
-                      </td>
-                      <td><span class="badge badge-soft-info">{{ getCategoriaName(gasto.categoria_gasto_id) }}</span></td>
-                      <td><span class="fw-bold text-dark">\${{ gasto.total | number:'1.2-2' }}</span></td>
-                      <td><span class="badge" [ngClass]="'badge-' + gasto.estado_pago">{{ gasto.estado_pago }}</span></td>
-                      <td>{{ gasto.fecha_emision | date:'shortDate' }}</td>
-                      <td class="text-end pe-4">
-                        <div class="action-buttons justify-content-end">
-                          <button *hasPermission="'GASTOS_VER'" class="btn-action view" (click)="handleViewGasto(gasto)" title="Ver Detalles">
-                            <i class="bi bi-eye"></i>
-                          </button>
-                          
-                          <ng-container *ngIf="gasto.estado_pago !== 'pagado' || !isGastoComplete(gasto)">
-                            <button *hasPermission="'GASTOS_EDITAR'" class="btn-action edit" (click)="handleEditGasto(gasto)" title="Editar">
-                              <i class="bi bi-pencil"></i>
-                            </button>
-                          </ng-container>
+            <!-- SECCIÓN 3: CATEGORÍAS -->
+            <div *ngSwitchCase="'categorias'" class="fade-in" style="display: flex; flex-direction: column; gap: 20px;">
+              <ng-container *ngIf="canViewCategorias">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                   <h5 class="fw-bold mb-0">Categorización de Egresos</h5>
+                   <button *hasPermission="'CATEGORIA_GASTO_CREAR'" class="btn-system-action" (click)="openCreateCategoriaModal()">
+                      <i class="bi bi-plus-lg me-2"></i> Nueva Categoría
+                    </button>
+                </div>
 
-                          <ng-container *hasPermission="'PAGO_GASTO_CREAR'">
-                            <button class="btn-action pay" *ngIf="gasto.estado_pago !== 'pagado'" (click)="handleQuickPay(gasto)" title="Registrar Pago">
-                              <i class="bi bi-cash"></i>
-                            </button>
-                          </ng-container>
-                          
-                          <button *hasPermission="'GASTOS_ELIMINAR'" class="btn-action delete" (click)="handleDeleteGasto(gasto)" title="Eliminar">
-                            <i class="bi bi-trash"></i>
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                    <tr *ngIf="!(filteredGastos$ | async)?.length">
-                      <td colspan="7" class="text-center py-5">
-                        <div class="empty-state">
-                          <i class="bi bi-search text-muted" style="font-size: 2rem;"></i>
-                          <p class="mt-2 text-muted">No se encontraron egresos con los filtros aplicados</p>
-                        </div>
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            </ng-container>
+                <app-categorias-table 
+                  [categorias]="(categorias$ | async) ?? []"
+                  (onAction)="handleCatTableAction($event)"
+                ></app-categorias-table>
+              </ng-container>
+            </div>
+
           </div>
-
-          <!-- SECCIÓN 2: PAGOS -->
-          <div *ngSwitchCase="'pagos'" class="fade-in">
-            <ng-container *ngIf="canViewPagos">
-              <div class="toolbar-minimal mb-3">
-                 <button *hasPermission="'PAGO_GASTO_CREAR'" class="btn btn-primary" (click)="openCreatePagoModal()">
-                    <i class="bi bi-plus-lg me-1"></i> Registrar Pago
-                  </button>
-              </div>
-              <div class="table-responsive soft-card">
-                <table class="table table-hover align-middle mb-0">
-                  <thead class="bg-light">
-                    <tr>
-                      <th class="ps-4">Gasto / Factura</th>
-                      <th>Monto</th>
-                      <th>Fecha</th>
-                      <th>Método</th>
-                      <th>Referencia</th>
-                      <th class="text-end pe-4">Acciones</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr *ngFor="let pago of pagos$ | async">
-                      <td class="ps-4">
-                        <div class="d-flex flex-column">
-                          <span>{{ getGastoInfo(pago.gasto_id) }}</span>
-                        </div>
-                      </td>
-                      <td><span class="fw-bold text-success">\${{ pago.monto | number:'1.2-2' }}</span></td>
-                      <td>{{ pago.fecha_pago | date:'mediumDate' }}</td>
-                      <td><span class="text-capitalize">{{ pago.metodo_pago }}</span></td>
-                      <td><code class="text-muted">{{ pago.numero_referencia || '-' }}</code></td>
-                      <td class="text-end pe-4">
-                        <div class="action-buttons justify-content-end">
-                          <button *hasPermission="'PAGO_GASTO_VER'" class="btn-action view" (click)="handleViewPago(pago)" title="Ver Detalles">
-                            <i class="bi bi-eye"></i>
-                          </button>
-
-                          <ng-container *ngIf="getGastoStatus(pago.gasto_id) !== 'pagado' || !isPagoComplete(pago)">
-                            <button *hasPermission="'PAGO_GASTO_EDITAR'" class="btn-action edit" (click)="handleEditPago(pago)" title="Editar">
-                              <i class="bi bi-pencil"></i>
-                            </button>
-                          </ng-container>
-
-                          <button *hasPermission="'PAGO_GASTO_ELIMINAR'" class="btn-action delete" (click)="handleDeletePago(pago)" title="Eliminar">
-                            <i class="bi bi-trash"></i>
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                    <tr *ngIf="!(pagos$ | async)?.length">
-                      <td colspan="6" class="text-center py-5 text-muted small">No hay pagos registrados aún</td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            </ng-container>
-          </div>
-
-          <!-- SECCIÓN 3: CATEGORÍAS -->
-          <div *ngSwitchCase="'categorias'" class="fade-in">
-            <ng-container *ngIf="canViewCategorias">
-              <div class="toolbar-minimal mb-3">
-                 <button *hasPermission="'CATEGORIA_GASTO_CREAR'" class="btn btn-primary" (click)="openCreateCategoriaModal()">
-                    <i class="bi bi-plus-lg me-1"></i> Nueva Categoría
-                  </button>
-              </div>
-              <div class="table-responsive soft-card">
-                <table class="table table-hover align-middle mb-0">
-                  <thead class="bg-light">
-                    <tr>
-                      <th class="ps-4">Código</th>
-                      <th>Nombre</th>
-                      <th>Tipo</th>
-                      <th>Estado</th>
-                      <th class="text-end pe-4">Acciones</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr *ngFor="let cat of categorias$ | async">
-                      <td class="ps-4"><code>{{ cat.codigo }}</code></td>
-                      <td><span class="fw-bold">{{ cat.nombre }}</span></td>
-                      <td><span class="text-muted text-capitalize">{{ cat.tipo }}</span></td>
-                      <td>
-                        <span class="badge" [ngClass]="cat.activo ? 'badge-success' : 'badge-danger'">
-                          {{ cat.activo ? 'Activa' : 'Inactiva' }}
-                        </span>
-                      </td>
-                      <td class="text-end pe-4">
-                        <div class="action-buttons justify-content-end">
-                          <button *hasPermission="'CATEGORIA_GASTO_EDITAR'" class="btn-action edit" (click)="handleEditCategoria(cat)"><i class="bi bi-pencil"></i></button>
-                          <button *hasPermission="'CATEGORIA_GASTO_ELIMINAR'" class="btn-action delete" (click)="handleDeleteCategoria(cat)"><i class="bi bi-trash"></i></button>
-                        </div>
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            </ng-container>
-          </div>
-
         </div>
       </ng-container>
 
@@ -270,7 +137,6 @@ import { CategoriaFormComponent } from './components/categoria-form.component';
           <h2 class="fw-bold text-dark mb-2">Acceso Restringido</h2>
           <p class="text-muted mb-4 mx-auto" style="max-width: 450px;">
             No dispones de los permisos de visualización necesarios para este módulo de egresos. 
-            Contacta a tu administrador para solicitar acceso a GASTOS, PAGOS o CATEGORÍAS.
           </p>
           <button class="btn btn-primary rounded-pill px-5 py-3 fw-bold shadow-sm" (click)="refresh()">
             <i class="bi bi-arrow-clockwise me-2"></i> Reintentar sincronización
@@ -278,25 +144,24 @@ import { CategoriaFormComponent } from './components/categoria-form.component';
         </div>
       </ng-template>
 
-      <!-- MODALES UNIFICADOS (Using Modular Components) -->
+      <!-- MODALES -->
       
       <!-- Modal Gasto -->
       <div class="modal-overlay" *ngIf="showGastoModal" (click)="closeModals()">
         <div class="modal-content-container glass-modal" (click)="$event.stopPropagation()">
           <div class="modal-header border-0">
-            <h5 class="fw-bold">{{ selectedGasto ? 'Editar Gasto' : 'Nuevo Gasto' }}</h5>
             <button class="btn-close" (click)="closeModals()"></button>
           </div>
           <div class="modal-body pt-0">
             <app-gasto-form 
-            [editData]="selectedGasto" 
-            [categorias]="categorias" 
-            [proveedores]="proveedores"
-            [loading]="isSaving"
-            [viewOnly]="isViewOnlyGasto"
-            (onSubmit)="saveGasto($event)" 
-            (cancel)="showGastoModal = false"
-          ></app-gasto-form>
+              [editData]="selectedGasto" 
+              [categorias]="categorias" 
+              [proveedores]="proveedores"
+              [loading]="isSaving"
+              [viewOnly]="isViewOnlyGasto"
+              (onSubmit)="saveGasto($event)" 
+              (cancel)="showGastoModal = false"
+            ></app-gasto-form>
           </div>
         </div>
       </div>
@@ -305,19 +170,18 @@ import { CategoriaFormComponent } from './components/categoria-form.component';
       <div class="modal-overlay" *ngIf="showPagoModal" (click)="closeModals()">
         <div class="modal-content-container glass-modal" (click)="$event.stopPropagation()">
           <div class="modal-header border-0">
-            <h5 class="fw-bold">{{ selectedPago ? 'Editar Pago' : 'Registrar Pago' }}</h5>
             <button class="btn-close" (click)="closeModals()"></button>
           </div>
           <div class="modal-body pt-0">
             <app-pago-form 
-            [editData]="selectedPago" 
-            [selectedGasto]="selectedGastoForPay"
-            [availableGastos]="gastosPendientes"
-            [loading]="isSaving"
-            [viewOnly]="isViewOnlyPago"
-            (onSubmit)="savePago($event)" 
-            (cancel)="showPagoModal = false"
-          ></app-pago-form>
+              [editData]="selectedPago" 
+              [selectedGasto]="selectedGastoForPay"
+              [availableGastos]="gastosPendientes"
+              [loading]="isSaving"
+              [viewOnly]="isViewOnlyPago"
+              (onSubmit)="savePago($event)" 
+              (cancel)="showPagoModal = false"
+            ></app-pago-form>
           </div>
         </div>
       </div>
@@ -326,7 +190,6 @@ import { CategoriaFormComponent } from './components/categoria-form.component';
       <div class="modal-overlay" *ngIf="showCategoriaModal" (click)="closeModals()">
         <div class="modal-content-container glass-modal" (click)="$event.stopPropagation()">
           <div class="modal-header border-0">
-            <h5 class="fw-bold">{{ selectedCategoria ? 'Editar Categoría' : 'Nueva Categoría' }}</h5>
             <button class="btn-close" (click)="closeModals()"></button>
           </div>
           <div class="modal-body pt-0">
@@ -341,8 +204,6 @@ import { CategoriaFormComponent } from './components/categoria-form.component';
       </div>
 
       <app-toast></app-toast>
-      
-      <!-- Confirm Modal Generic -->
       <app-confirm-modal
         *ngIf="showConfirmModal"
         [title]="confirmTitle"
@@ -355,57 +216,35 @@ import { CategoriaFormComponent } from './components/categoria-form.component';
     </div>
   `,
   styles: [`
-    .page-container { animation: fadeIn 0.4s ease-out; }
+    .main-content-card {
+      background: white; border-radius: 24px; padding: 2rem; border: 1px solid #f1f5f9;
+    }
     
-    .soft-card { background: white; border-radius: 16px; border: 1px solid #f1f5f9; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.05); overflow: hidden; }
+    .tabs-minimal-premium {
+      display: flex; gap: 0.5rem; border-bottom: 2px solid #f1f5f9; margin-bottom: 0.5rem;
+    }
+    .tab-btn {
+      background: none; border: none; padding: 0.85rem 1.5rem; cursor: pointer; color: #64748b; font-weight: 600; font-size: 0.95rem; border-radius: 12px 12px 0 0; border-bottom: 3px solid transparent; transition: all 0.2s; display: flex; align-items: center; gap: 0.6rem;
+    }
+    .tab-btn:hover { background: #f8fafc; color: #1e293b; }
+    .tab-btn.active { color: #2563eb; border-bottom-color: #2563eb; background: #eff6ff; }
     
-    .tabs-minimal { display: flex; gap: 0.5rem; border-bottom: 2px solid #f1f5f9; position: sticky; top: 0; background: #f8fafc; z-index: 10; padding-top: 0.5rem; }
-    .tab-btn { background: none; border: none; padding: 0.75rem 1.25rem; cursor: pointer; color: #64748b; font-weight: 600; font-size: 0.9rem; border-radius: 10px 10px 0 0; border-bottom: 3px solid transparent; transition: all 0.2s; display: flex; align-items: center; gap: 0.5rem; }
-    .tab-btn:hover { background: #f1f5f9; color: #1e293b; }
-    .tab-btn.active { color: #2563eb; border-bottom-color: #2563eb; background: white; }
-    
-    .filters-card { background: white; border-radius: 16px; padding: 1.25rem; border: 1px solid #f1f5f9; }
-    .search-box { position: relative; }
-    .search-box i { position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); color: #94a3b8; }
-    .search-box .form-control { padding-left: 2.5rem; border-radius: 10px; border-color: #e2e8f0; }
-    
-    .table th { padding: 1.25rem 1rem; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px; border: none; }
-    .table td { padding: 1.1rem 1rem; border-color: #f1f5f9; }
-    
-    .action-buttons { display: flex; gap: 0.5rem; }
-    .btn-action { width: 34px; height: 34px; border: none; border-radius: 10px; display: flex; align-items: center; justify-content: center; transition: all 0.2s; cursor: pointer; }
-    .btn-action.edit { color: #6366f1; background: rgba(99, 102, 241, 0.1); }
-    .btn-action.view { color: #0ea5e9; background: rgba(14, 165, 233, 0.1); }
-    .btn-action.pay { color: #10b981; background: rgba(16, 185, 129, 0.1); }
-    .btn-action.delete { background: #fef2f2; color: #ef4444; }
-    .btn-action:hover { transform: scale(1.1); }
-    
-    .badge { padding: 0.4rem 0.8rem; border-radius: 8px; font-weight: 600; text-transform: capitalize; font-size: 0.75rem; }
-    .badge-soft-info { background: #e0f2fe; color: #0369a1; }
-    .badge-success { background: #dcfce7; color: #166534; }
-    .badge-danger { background: #fee2e2; color: #991b1b; }
-    .badge-pendiente { background: #fff7ed; color: #9a3412; }
-    .badge-parcial { background: #fefce8; color: #854d0e; border: 1px solid #fef08a; }
-    .badge-pagado { background: #f0fdf4; color: #166534; }
-    .badge-vencido { background: #fef2f2; color: #991b1b; }
+    .btn-system-action {
+      background: #111827; color: #ffffff; border: none; padding: 0.6rem 1.25rem; border-radius: 10px; font-weight: 600; font-size: 0.9rem; display: inline-flex; align-items: center; transition: all 0.2s;
+    }
+    .btn-system-action:hover { background: #1f2937; transform: translateY(-1px); shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1); }
     
     .glass-modal { backdrop-filter: blur(8px); border: 1px solid rgba(255,255,255,0.2); }
     .modal-overlay { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.4); display: flex; align-items: center; justify-content: center; z-index: 1050; animation: fadeIn 0.2s; }
     .modal-content-container { display: block; background: white; border-radius: 20px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); max-height: 90vh; overflow-y: auto; width: 95%; max-width: 700px; position: relative; }
     
-    @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
     @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-
     .icon-lock-wrapper {
-      width: 90px; height: 90px; background: #eef2ff; border: 1px solid #e0e7ff;
-      border-radius: 24px; display: flex; align-items: center; justify-content: center;
-      box-shadow: 0 10px 25px -5px rgba(99, 102, 241, 0.2);
+      width: 90px; height: 90px; background: #eef2ff; border: 1px solid #e0e7ff; border-radius: 24px; display: flex; align-items: center; justify-content: center; box-shadow: 0 10px 25px -5px rgba(99, 102, 241, 0.2);
     }
-
-    .animate-in {
-      animation: fadeIn 0.4s ease-out;
-    }
+    .fade-in { animation: fadeIn 0.3s ease-out; }
   `]
+
 })
 export class GastosPage implements OnInit, OnDestroy {
   // Permission Getters
@@ -527,25 +366,29 @@ export class GastosPage implements OnInit, OnDestroy {
   get filterEstado(): string { return this.filterEstado$.value; }
   set filterEstado(val: string) { this.filterEstado$.next(val); }
 
-  applyFilters() { 
-    // Manual trigger no longer strictly needed with push-based BehaviorSubjects,
-    // but kept for backward compatibility if called from template.
-    this.cd.markForCheck();
+  // --- Event Handlers for Modular Components ---
+  handleTableAction(event: any) {
+    switch(event.type) {
+      case 'view': this.handleViewGasto(event.data); break;
+      case 'edit': this.handleEditGasto(event.data); break;
+      case 'delete': this.handleDeleteGasto(event.data); break;
+      case 'pay': this.handleQuickPay(event.data); break;
+    }
   }
 
-  isGastoComplete(g: Gasto): boolean {
-    // Only consider the invoice number as a 'mandatory' missing field 
-    // to keep the pencil icon visible for paid records.
-    return !!g.numero_factura;
+  handlePagoTableAction(event: any) {
+    switch(event.type) {
+      case 'view': this.handleViewPago(event.data); break;
+      case 'edit': this.handleEditPago(event.data); break;
+      case 'delete': this.handleDeletePago(event.data); break;
+    }
   }
 
-  isPagoComplete(p: PagoGasto): boolean {
-    // A payment is complete when all optional fields are filled
-    return !!p.numero_referencia && !!p.numero_comprobante && !!p.observaciones;
-  }
-
-  getGastoStatus(id: string): string {
-    return this.gastos.find(x => x.id === id)?.estado_pago || 'pendiente';
+  handleCatTableAction(event: any) {
+    switch(event.type) {
+      case 'edit': this.handleEditCategoria(event.data); break;
+      case 'delete': this.handleDeleteCategoria(event.data); break;
+    }
   }
 
   private createFilteredObservable(): Observable<Gasto[]> {
@@ -576,19 +419,9 @@ export class GastosPage implements OnInit, OnDestroy {
     );
   }
 
-  // --- Helpers ---
-  getCategoriaName(id: string): string {
-    return this.categorias.find(c => c.id === id)?.nombre || 'S/N';
-  }
-
   getProveedorName(id?: string): string {
     if (!id) return '';
     return this.proveedores.find(p => p.id === id)?.razon_social || '';
-  }
-
-  getGastoInfo(id: string): string {
-    const g = this.gastos.find(x => x.id === id);
-    return g ? `${g.concepto} (${g.numero_factura || 'S/N'})` : `Gasto #${id.substring(0,8)}`;
   }
 
   // --- Modal Openers ---

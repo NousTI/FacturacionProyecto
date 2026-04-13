@@ -10,140 +10,103 @@ import { Proveedor } from '../../../../domain/models/proveedor.model';
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule],
   template: `
-    <div class="form-container">
+    <div class="editorial-form-wrapper">
       <form [formGroup]="form" (ngSubmit)="submit()">
-        <div class="form-grid">
+        <div class="editorial-grid-2">
           <!-- Concepto -->
-          <div class="form-group full-width">
-            <label class="form-label">
-              <i class="bi bi-pencil-square"></i> Concepto / Descripción *
-            </label>
+          <div class="col-span-2">
+            <label class="editorial-label">Concepto / Descripción</label>
             <input 
               type="text" 
-              class="form-control" 
+              class="editorial-input" 
               formControlName="concepto" 
               placeholder="Ej: Pago de servicios básicos - Marzo"
               [class.is-invalid]="isInvalid('concepto')"
             >
-            <div class="invalid-feedback" *ngIf="isInvalid('concepto')">
-              El concepto es obligatorio.
-            </div>
+            <div class="invalid-feedback-minimal" *ngIf="isInvalid('concepto')">Este campo es obligatorio.</div>
           </div>
 
           <!-- Categoría -->
-          <div class="form-group">
-            <label class="form-label">
-              <i class="bi bi-tag"></i> Categoría *
-            </label>
+          <div>
+            <label class="editorial-label">Categoría</label>
             <select 
-              class="form-select" 
+              class="editorial-input" 
               formControlName="categoria_gasto_id" 
               [class.is-invalid]="isInvalid('categoria_gasto_id')"
             >
-              <option value="">Selecciona una categoría...</option>
+              <option value="">Seleccionar...</option>
               <option *ngFor="let cat of categorias" [value]="cat.id">{{ cat.tipo | uppercase }} | {{ cat.nombre }}</option>
             </select>
           </div>
 
           <!-- Proveedor -->
-          <div class="form-group">
-            <label class="form-label">
-              <i class="bi bi-truck"></i> Proveedor
-            </label>
-            <select class="form-select" formControlName="proveedor_id">
-              <option value="">Ninguno / Seleccionar...</option>
+          <div>
+            <label class="editorial-label">Proveedor</label>
+            <select class="editorial-input" formControlName="proveedor_id">
+              <option value="">S/P | Ninguno</option>
               <option *ngFor="let prov of proveedores" [value]="prov.id">{{ prov.razon_social }}</option>
             </select>
           </div>
 
           <!-- Factura -->
-          <div class="form-group">
-            <label class="form-label">
-              <i class="bi bi-receipt"></i> Nº de Factura
-            </label>
-            <input type="text" class="form-control" formControlName="numero_factura" placeholder="001-001-000000001">
+          <div>
+            <label class="editorial-label">Nº de Factura</label>
+            <input type="text" class="editorial-input" formControlName="numero_factura" placeholder="000-000-000000000">
           </div>
 
-          <!-- Fechas -->
-          <div class="form-group">
-            <label class="form-label">
-              <i class="bi bi-calendar-event"></i> Fecha de Emisión *
-            </label>
+          <!-- Fecha Emisión -->
+          <div>
+            <label class="editorial-label">Fecha de Emisión</label>
             <input 
               type="date" 
-              class="form-control" 
+              class="editorial-input" 
               formControlName="fecha_emision" 
               [class.is-invalid]="isInvalid('fecha_emision')"
             >
           </div>
 
-          <div class="form-group">
-            <label class="form-label">
-              <i class="bi bi-calendar-check"></i> Fecha de Vencimiento
-            </label>
-            <input 
-              type="date" 
-              class="form-control" 
-              formControlName="fecha_vencimiento"
-            >
-          </div>
-
           <!-- Subtotal -->
-          <div class="form-group">
-            <label class="form-label">
-              <i class="bi bi-calculator"></i> Subtotal *
-            </label>
-            <div class="input-group">
-              <span class="input-group-text">$</span>
+          <div>
+            <label class="editorial-label">Subtotal</label>
+            <div class="input-editorial-group">
+              <span class="addon">$</span>
               <input
                 type="number"
-                class="form-control"
+                class="editorial-input addon-field"
                 formControlName="subtotal"
                 step="0.01"
-                maxlength="12"
                 (keydown)="onlyPositiveNumbers($event)"
                 (input)="limitDecimalInput($event); calculateTotal()"
                 [class.is-invalid]="isInvalid('subtotal')"
               >
-              <div class="invalid-feedback" *ngIf="isInvalid('subtotal')">
-                El subtotal debe ser un número positivo.
-              </div>
             </div>
           </div>
 
           <!-- IVA -->
-          <div class="form-group">
-            <label class="form-label">
-              <i class="bi bi-plus-circle"></i> IVA
-            </label>
-            <div class="input-group">
-              <span class="input-group-text">$</span>
+          <div>
+            <label class="editorial-label">IVA</label>
+            <div class="input-editorial-group">
+              <span class="addon">$</span>
               <input
                 type="number"
-                class="form-control"
+                class="editorial-input addon-field"
                 formControlName="iva"
                 step="0.01"
-                maxlength="12"
                 (keydown)="onlyPositiveNumbers($event)"
                 (input)="limitDecimalInput($event); calculateTotal()"
                 [class.is-invalid]="isInvalid('iva')"
               >
-              <div class="invalid-feedback" *ngIf="isInvalid('iva')">
-                El IVA no puede ser negativo.
-              </div>
             </div>
           </div>
 
-          <!-- Total (ReadOnly) -->
-          <div class="form-group">
-            <label class="form-label fw-bold text-primary">
-              <i class="bi bi-cash-stack"></i> TOTAL A PAGAR
-            </label>
-            <div class="input-group">
-              <span class="input-group-text bg-primary text-white border-primary">$</span>
+          <!-- Total (Integrated Result) -->
+          <div class="total-result-area">
+            <label class="editorial-label text-white-muted">Total a Pagar</label>
+            <div class="d-flex align-items-center">
+              <span class="currency-symbol">$</span>
               <input 
                 type="number" 
-                class="form-control fw-bold border-primary" 
+                class="total-input-clean" 
                 formControlName="total" 
                 readonly
               >
@@ -151,36 +114,35 @@ import { Proveedor } from '../../../../domain/models/proveedor.model';
           </div>
 
           <!-- Estado -->
-          <div class="form-group">
-            <label class="form-label">
-              <i class="bi bi-info-circle"></i> Estado Inicial
-            </label>
-            <select class="form-select" formControlName="estado_pago">
+          <div>
+            <label class="editorial-label">Estado Inicial</label>
+            <select class="editorial-input" formControlName="estado_pago">
               <option value="pendiente">Pendiente</option>
               <option value="pagado">Pagado Total</option>
             </select>
           </div>
 
           <!-- Observaciones -->
-          <div class="form-group full-width">
-            <label class="form-label">Observaciones</label>
-            <textarea class="form-control" formControlName="observaciones" rows="2"></textarea>
+          <div class="col-span-2">
+            <label class="editorial-label">Observaciones</label>
+            <textarea class="editorial-input" formControlName="observaciones" rows="1"></textarea>
           </div>
         </div>
 
-        <div class="form-actions d-flex justify-content-end gap-2 mt-4" *ngIf="!viewOnly">
-          <button type="button" class="btn btn-light" (click)="cancel.emit()">
+        <!-- Acciones -->
+        <div class="d-flex justify-content-end gap-3 mt-5 pt-3 border-top-editorial" *ngIf="!viewOnly">
+          <button type="button" class="btn-editorial-secondary" (click)="cancel.emit()">
             Cancelar
           </button>
-          <button type="submit" class="btn btn-primary px-4" [disabled]="form.invalid || loading || (editMode && !hasChanges)">
-            <span *ngIf="loading" class="spinner-border spinner-border-sm me-1"></span>
-            {{ editMode ? 'Actualizar Gasto' : 'Registrar Gasto' }}
+          <button type="submit" class="btn-system-action px-5" [disabled]="form.invalid || loading || (editMode && !hasChanges)">
+            <span *ngIf="loading" class="spinner-border spinner-border-sm me-2"></span>
+            {{ editMode ? 'GUARDAR CAMBIOS' : 'REGISTRAR GASTO' }}
           </button>
         </div>
 
-        <div class="form-actions d-flex justify-content-end mt-4" *ngIf="viewOnly">
-          <button type="button" class="btn btn-primary px-4" (click)="cancel.emit()">
-            Cerrar Detalles
+        <div class="d-flex justify-content-end mt-5 pt-3 border-top-editorial" *ngIf="viewOnly">
+          <button type="button" class="btn-system-action px-5" (click)="cancel.emit()">
+            CERRAR DETALLES
           </button>
         </div>
       </form>
@@ -188,36 +150,44 @@ import { Proveedor } from '../../../../domain/models/proveedor.model';
   `,
   styles: [`
     :host { display: block; }
-    .form-container { animation: slideUp 0.3s ease; }
-    @keyframes slideUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    .editorial-form-wrapper { padding: 1.5rem; }
     
-    .form-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; }
-    .full-width { grid-column: span 2; }
+    .editorial-grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem; }
+    .col-span-2 { grid-column: span 2; }
     
-    .form-label { font-size: 0.85rem; font-weight: 600; color: #4b5563; margin-bottom: 0.4rem; display: flex; align-items: center; gap: 0.4rem; }
-    .form-label i { color: #6366f1; }
-    
-    .form-control, .form-select {
-      padding: 0.6rem 0.8rem;
-      border: 1px solid #e2e8f0;
-      border-radius: 10px;
-      font-size: 0.95rem;
-      transition: all 0.2s;
+    .editorial-label { 
+      display: block; font-size: 0.7rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; color: #64748b; margin-bottom: 0.5rem;
     }
+    .text-white-muted { color: #94a3b8; }
     
-    .form-control:focus, .form-select:focus {
-      border-color: #6366f1;
-      box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+    .editorial-input { 
+      width: 100%; padding: 0.85rem 1.25rem; border-radius: 12px; border: 1.5px solid #e2e8f0; font-size: 0.95rem; font-weight: 500; color: #1a1a1a; transition: all 0.2s ease; background: #ffffff;
     }
+    .editorial-input:focus { outline: none; border-color: #161d35; background-color: #ffffff; }
+    .editorial-input.is-invalid { border-color: #ef4444; }
     
-    .input-group-text {
-      background: #f8fafc;
-      border: 1px solid #e2e8f0;
-      border-radius: 10px 0 0 10px;
+    .input-editorial-group { display: flex; align-items: stretch; border-radius: 12px; overflow: hidden; border: 1.5px solid #e2e8f0; }
+    .input-editorial-group:focus-within { border-color: #161d35; }
+    .addon { background: #f8fafc; padding: 0 1rem; display: flex; align-items: center; border-right: 1.5px solid #e2e8f0; color: #64748b; font-weight: 700; }
+    .addon-field { border: none !important; border-radius: 0; }
+    
+    .total-result-area { background: #161d35; padding: 1rem 1.25rem; border-radius: 16px; color: white; display: flex; flex-direction: column; justify-content: center; }
+    .currency-symbol { font-size: 1.25rem; font-weight: 800; margin-right: 0.5rem; color: #94a3b8; }
+    .total-input-clean { background: transparent; border: none; font-size: 1.75rem; font-weight: 900; color: white; width: 100%; outline: none; pointer-events: none; }
+    
+    .invalid-feedback-minimal { font-size: 0.75rem; color: #ef4444; font-weight: 500; margin-top: 0.4rem; }
+    
+    .border-top-editorial { border-top: 1px solid #f1f5f9; }
+    
+    .btn-system-action { 
+      background: #111827; color: #ffffff; border: none; padding: 1rem 2.5rem; border-radius: 12px; font-weight: 800; font-size: 0.85rem; letter-spacing: 0.05em; transition: all 0.2s; 
     }
+    .btn-system-action:hover { background: #000000; transform: translateY(-1px); }
     
-    .is-invalid { border-color: #ef4444 !important; }
-    .invalid-feedback { font-size: 0.75rem; color: #ef4444; margin-top: 0.2rem; }
+    .btn-editorial-secondary { 
+      background: #f8fafc; color: #64748b; border: 1.5px solid #e2e8f0; padding: 1rem 2.5rem; border-radius: 12px; font-weight: 800; font-size: 0.85rem; letter-spacing: 0.05em; transition: all 0.2s; 
+    }
+    .btn-editorial-secondary:hover { background: #f1f5f9; color: #1a1a1a; border-color: #cbd5e1; }
   `]
 })
 export class GastoFormComponent implements OnInit {

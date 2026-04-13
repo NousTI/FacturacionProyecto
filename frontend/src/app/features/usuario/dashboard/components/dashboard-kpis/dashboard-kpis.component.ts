@@ -24,9 +24,9 @@ import { DashboardKPIs } from '../../../../../shared/services/dashboard.service'
             </span>
             <div class="d-flex align-items-baseline gap-2">
               <span class="kpi-value">{{ (kpis?.ventas_periodo || 0) | currency:'USD':'symbol':'1.2-2' }}</span>
-              <span *ngIf="kpis?.variacion_ventas" class="kpi-trend" [ngClass]="kpis.variacion_ventas >= 0 ? 'up' : 'down'">
-                 <i class="bi" [ngClass]="kpis.variacion_ventas >= 0 ? 'bi-arrow-up-short' : 'bi-arrow-down-short'"></i>
-                 {{ kpis.variacion_ventas }}%
+              <span *ngIf="kpis?.variacion_ventas" class="kpi-trend" [ngClass]="kpis?.variacion_ventas >= 0 ? 'up' : 'down'">
+                 <i class="bi" [ngClass]="kpis?.variacion_ventas >= 0 ? 'bi-arrow-up-short' : 'bi-arrow-down-short'"></i>
+                 {{ kpis?.variacion_ventas }}%
               </span>
             </div>
           </div>
