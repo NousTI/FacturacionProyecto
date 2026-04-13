@@ -60,13 +60,25 @@ import { PerfilUsuario } from '../../../../domain/models/perfil.model';
               <div class="col-md-6">
                 <div class="info-block-editorial">
                   <label>Nombres Completos</label>
-                  <input type="text" class="editorial-input-premium" [(ngModel)]="editData.nombres" name="nombres" required>
+                  <input type="text" class="editorial-input-premium" 
+                         [(ngModel)]="editData.nombres" name="nombres" 
+                         #nombres="ngModel" required
+                         [class.is-invalid-editorial]="nombres.invalid && (nombres.dirty || nombres.touched)">
+                  <small class="error-text-editorial" *ngIf="nombres.invalid && (nombres.dirty || nombres.touched)">
+                    El nombre es obligatorio
+                  </small>
                 </div>
               </div>
               <div class="col-md-6">
                 <div class="info-block-editorial">
                   <label>Apellidos Completos</label>
-                  <input type="text" class="editorial-input-premium" [(ngModel)]="editData.apellidos" name="apellidos" required>
+                  <input type="text" class="editorial-input-premium" 
+                         [(ngModel)]="editData.apellidos" name="apellidos" 
+                         #apellidos="ngModel" required
+                         [class.is-invalid-editorial]="apellidos.invalid && (apellidos.dirty || apellidos.touched)">
+                  <small class="error-text-editorial" *ngIf="apellidos.invalid && (apellidos.dirty || apellidos.touched)">
+                    El apellido es obligatorio
+                  </small>
                 </div>
               </div>
               <div class="col-md-12">
@@ -74,16 +86,21 @@ import { PerfilUsuario } from '../../../../domain/models/perfil.model';
                   <label>Número de Teléfono</label>
                   <input type="text" class="editorial-input-premium" 
                          [(ngModel)]="editData.telefono" name="telefono" 
-                         required pattern="^09[0-9]{8}$" maxlength="10"
-                         (keypress)="onlyNumbers($event)">
-                  <small class="hint-text-editorial mt-2 d-block">Formato requerido: 09XXXXXXXX (10 dígitos)</small>
+                         #telefono="ngModel" required pattern="^09[0-9]{8}$" maxlength="10"
+                         (keypress)="onlyNumbers($event)"
+                         [class.is-invalid-editorial]="telefono.invalid && (telefono.dirty || telefono.touched)">
+                  <small class="error-text-editorial" *ngIf="telefono.invalid && (telefono.dirty || telefono.touched)">
+                    Número inválido (Formato: 09XXXXXXXX)
+                  </small>
+                  <small class="hint-text-editorial mt-2 d-block" *ngIf="!telefono.invalid">Formato requerido: 09XXXXXXXX (10 dígitos)</small>
                 </div>
               </div>
             </div>
             
             <div class="d-flex justify-content-end gap-2 mt-4 pt-4 border-top">
               <button type="button" class="btn-minimal-editorial secondary" (click)="toggleEdit()" [disabled]="isSaving">Cancelar</button>
-              <button type="submit" class="btn-minimal-editorial primary" [disabled]="!editForm.form.valid || isSaving || !hasChanges()">
+              <button type="submit" class="btn-minimal-editorial primary" 
+                      [disabled]="editForm.invalid || isSaving || !hasChanges() || !editData.nombres?.trim() || !editData.apellidos?.trim() || !editData.telefono?.trim()">
                 <span *ngIf="isSaving" class="spinner-border spinner-border-sm me-2"></span>
                 {{ isSaving ? 'Guardando...' : 'Aplicar Cambios' }}
               </button>
@@ -132,8 +149,21 @@ import { PerfilUsuario } from '../../../../domain/models/perfil.model';
     }
 
     .hint-text-editorial { font-size: 0.65rem; color: #94a3b8; font-weight: 700; }
+    
+    .editorial-input-premium.is-invalid-editorial {
+      border-color: #ef4444 !important;
+      background: #fffafb !important;
+    }
+
+    .error-text-editorial {
+      color: #ef4444; font-size: 0.65rem; font-weight: 800;
+      text-transform: uppercase; letter-spacing: 0.05em; margin-top: 0.35rem;
+      display: block; animation: slideInDown 0.2s ease-out;
+    }
+
     .animate-fade-in { animation: fadeIn 0.3s ease; }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes slideInDown { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
   `]
 })
 export class ProfilePersonalDataCardComponent {
@@ -159,9 +189,19 @@ export class ProfilePersonalDataCardComponent {
   }
 
   hasChanges(): boolean {
-    return this.editData.nombres !== (this.perfil.nombres || '') ||
-           this.editData.apellidos !== (this.perfil.apellidos || '') ||
-           this.editData.telefono !== (this.perfil.telefono || '');
+    if (!this.perfil) return false;
+    
+    // Comparación ultra-robusta
+    const n1 = (this.editData.nombres || '').toString().trim();
+    const n2 = (this.perfil.nombres || '').toString().trim();
+    
+    const a1 = (this.editData.apellidos || '').toString().trim();
+    const a2 = (this.perfil.apellidos || '').toString().trim();
+    
+    const t1 = (this.editData.telefono || '').toString().trim();
+    const t2 = (this.perfil.telefono || '').toString().trim();
+
+    return n1 !== n2 || a1 !== a2 || t1 !== t2;
   }
 
   onlyNumbers(event: KeyboardEvent) {

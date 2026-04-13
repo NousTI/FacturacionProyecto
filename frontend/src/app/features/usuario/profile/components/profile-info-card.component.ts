@@ -38,13 +38,6 @@ import { PerfilUsuario } from '../../../../domain/models/perfil.model';
             {{ (perfil.ultimo_acceso | date:'shortDate') || 'Hoy' }}
           </div>
         </div>
-        
-        <div class="info-row-editorial d-flex justify-content-between align-items-center">
-          <label class="mb-0">ID de Sistema</label>
-          <div class="fw-bold small opacity-75">
-            #{{ perfil.id?.toString()?.substring(0, 8) }}
-          </div>
-        </div>
       </div>
     </div>
   `,

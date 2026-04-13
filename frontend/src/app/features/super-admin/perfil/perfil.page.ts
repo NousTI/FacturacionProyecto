@@ -116,33 +116,47 @@ import { SuperadminPerfil, SuperadminPerfilUpdate } from '../../../domain/models
               <ng-container *ngIf="isEditing">
                 <form (ngSubmit)="saveEdit()" #editForm="ngForm">
                   <div class="row g-4">
-                    <div class="col-md-6">
-                      <div class="info-row">
-                        <label class="editorial-label">Nombres Completos</label>
-                        <input type="text" class="editorial-input" [(ngModel)]="editData.nombres" name="nombres" required>
-                      </div>
-                    </div>
-                    <div class="col-md-6">
-                      <div class="info-row">
-                        <label class="editorial-label">Apellidos Completos</label>
-                        <input type="text" class="editorial-input" [(ngModel)]="editData.apellidos" name="apellidos" required>
-                      </div>
-                    </div>
-                    <div class="col-md-6">
-                      <div class="info-row">
-                        <label class="editorial-label">Teléfono de Contacto</label>
-                        <input type="text" 
-                               class="editorial-input" 
-                               [(ngModel)]="editData.telefono" 
-                               name="telefono"
-                               #telefonoInput="ngModel"
-                               pattern="^09[0-9]{8}$"
-                               maxlength="10">
-                        <div *ngIf="telefonoInput.invalid && (telefonoInput.dirty || telefonoInput.touched)" class="text-danger small mt-1 animate-fade-in">
-                          El teléfono debe empezar con 09 y tener 10 dígitos numéricos.
-                        </div>
-                      </div>
-                    </div>
+                     <div class="col-md-6">
+                       <div class="info-row">
+                         <label class="editorial-label">Nombres Completos</label>
+                         <input type="text" class="editorial-input" 
+                                [(ngModel)]="editData.nombres" name="nombres" 
+                                #nombresInput="ngModel" required
+                                [class.is-invalid-editorial]="nombresInput.invalid && (nombresInput.dirty || nombresInput.touched)">
+                         <small class="error-text-editorial" *ngIf="nombresInput.invalid && (nombresInput.dirty || nombresInput.touched)">
+                           El nombre es obligatorio
+                         </small>
+                       </div>
+                     </div>
+                     <div class="col-md-6">
+                       <div class="info-row">
+                         <label class="editorial-label">Apellidos Completos</label>
+                         <input type="text" class="editorial-input" 
+                                [(ngModel)]="editData.apellidos" name="apellidos" 
+                                #apellidosInput="ngModel" required
+                                [class.is-invalid-editorial]="apellidosInput.invalid && (apellidosInput.dirty || apellidosInput.touched)">
+                         <small class="error-text-editorial" *ngIf="apellidosInput.invalid && (apellidosInput.dirty || apellidosInput.touched)">
+                           El apellido es obligatorio
+                         </small>
+                       </div>
+                     </div>
+                     <div class="col-md-6">
+                       <div class="info-row">
+                         <label class="editorial-label">Teléfono de Contacto</label>
+                          <input type="text" 
+                                 class="editorial-input" 
+                                 [(ngModel)]="editData.telefono" 
+                                 name="telefono"
+                                 #telefonoInput="ngModel"
+                                 pattern="^09[0-9]{8}$"
+                                 maxlength="10"
+                                 (keypress)="onlyNumbers($event)"
+                                 [class.is-invalid-editorial]="telefonoInput.invalid && (telefonoInput.dirty || telefonoInput.touched)">
+                         <div *ngIf="telefonoInput.invalid && (telefonoInput.dirty || telefonoInput.touched)" class="error-text-editorial animate-fade-in">
+                           Número inválido (Formato: 09XXXXXXXX)
+                         </div>
+                       </div>
+                     </div>
                     <div class="col-md-6">
                       <div class="info-row">
                         <label class="editorial-label">Correo Electrónico de Acceso</label>
@@ -154,7 +168,9 @@ import { SuperadminPerfil, SuperadminPerfilUpdate } from '../../../domain/models
                   
                   <div class="d-flex justify-content-end gap-2 mt-4 pt-3 border-top">
                     <button type="button" class="btn btn-light rounded-3" (click)="cancelEdit()">Cancelar</button>
-                    <button type="submit" class="btn-editorial" [disabled]="!editForm.form.valid || isSaving" style="padding: 0.5rem 2rem; border-radius: 12px;">
+                    <button type="submit" class="btn-editorial" 
+                            [disabled]="editForm.invalid || isSaving || !hasChanges() || !editData.nombres?.trim() || !editData.apellidos?.trim() || !editData.telefono?.trim()" 
+                            style="padding: 0.5rem 2rem; border-radius: 12px;">
                       <span *ngIf="isSaving" class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
                       {{ isSaving ? 'Guardando...' : 'Guardar Cambios' }}
                     </button>
@@ -281,9 +297,32 @@ import { SuperadminPerfil, SuperadminPerfilUpdate } from '../../../domain/models
     .animate-fade-in {
       animation: fadeIn 0.3s ease;
     }
+
+    .editorial-input.is-invalid-editorial {
+      border-color: #ef4444 !important;
+      background-color: #fffafb !important;
+    }
+
+    .error-text-editorial {
+      color: #ef4444; font-size: 0.65rem; font-weight: 800;
+      text-transform: uppercase; letter-spacing: 0.05em; margin-top: 0.35rem;
+      display: block; animation: slideInDown 0.2s ease-out;
+    }
+
     @keyframes fadeIn {
         from { opacity: 0; transform: translateY(10px); }
         to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes slideInDown { from { opacity: 0; transform: translateY(-3px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* Estilo local para botón deshabilitado */
+    .btn-editorial:disabled {
+      background-color: #e2e8f0 !important;
+      color: #94a3b8 !important;
+      cursor: not-allowed !important;
+      transform: none !important;
+      box-shadow: none !important;
+      opacity: 0.7;
     }
   `]
 })
@@ -296,6 +335,8 @@ export class PerfilPage implements OnInit {
   showPassword = false;
   nuevaPassword = '';
   
+  private originalData: SuperadminPerfil | null = null;
+
   editData: SuperadminPerfilUpdate = {
     nombres: '',
     apellidos: '',
@@ -317,6 +358,7 @@ export class PerfilPage implements OnInit {
     // Tomamos el snapshot actual para pasarlo al formulario
     this.perfil$.pipe(take(1)).subscribe(perfil => {
       if (perfil) {
+        this.originalData = perfil;
         this.editData.nombres = perfil.nombres;
         this.editData.apellidos = perfil.apellidos;
         this.editData.telefono = perfil.telefono || '';
@@ -373,5 +415,28 @@ export class PerfilPage implements OnInit {
         this.uiService.showError(err, 'Error al cambiar contraseña');
       }
     });
+  }
+
+  onlyNumbers(event: KeyboardEvent) {
+    const charCode = event.which ? event.which : event.keyCode;
+    if (charCode > 31 && (charCode < 48 || charCode > 57)) {
+      event.preventDefault();
+    }
+  }
+
+  hasChanges(): boolean {
+    if (!this.originalData) return false;
+    
+    // Comparación ultra-robusta
+    const n1 = (this.editData.nombres || '').toString().trim();
+    const n2 = (this.originalData.nombres || '').toString().trim();
+    
+    const a1 = (this.editData.apellidos || '').toString().trim();
+    const a2 = (this.originalData.apellidos || '').toString().trim();
+    
+    const t1 = (this.editData.telefono || '').toString().trim();
+    const t2 = (this.originalData.telefono || '').toString().trim();
+
+    return n1 !== n2 || a1 !== a2 || t1 !== t2;
   }
 }
