@@ -84,8 +84,8 @@ export class AuthFacade {
                 }
             }),
             finalize(() => {
-                // Navigate after everything is cleared
-                this.router.navigate(['/auth/login']);
+                // Force a full page reload to clear all in-memory caches and singleton states
+                window.location.href = '/auth/login';
             })
         );
     }
