@@ -107,13 +107,13 @@ const routes: Routes = [
         path: 'establecimientos',
         component: EstablecimientosPage,
         canActivate: [RoleGuard, CompanyActiveGuard, permissionGuard],
-        data: { title: 'Establecimientos', roles: [UserRole.USUARIO], permission: ['ESTABLECIMIENTO_GESTIONAR', 'ESTABLECIMIENTO_VER'] }
+        data: { title: 'Establecimientos', roles: [UserRole.USUARIO], permission: ['ESTABLECIMIENTO_GESTIONAR'] }
     },
     {
         path: 'puntos-emision',
         component: PuntosEmisionPage,
         canActivate: [RoleGuard, CompanyActiveGuard, permissionGuard],
-        data: { title: 'Puntos de Emisión', roles: [UserRole.USUARIO], permission: ['PUNTO_EMISION_VER', 'PUNTO_EMISION_GESTIONAR'] }
+        data: { title: 'Puntos de Emisión', roles: [UserRole.USUARIO], permission: ['PUNTO_EMISION_GESTIONAR'] }
     },
     {
         path: 'configuracion',

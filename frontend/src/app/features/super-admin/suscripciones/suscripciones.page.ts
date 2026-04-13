@@ -11,6 +11,7 @@ import { RegistroPagoModalComponent } from './components/registro-pago-modal/reg
 import { HistorialPagosModalComponent } from './components/historial-pagos-modal/historial-pagos-modal.component';
 import { SuscripcionHistoryModalComponent } from './components/history-modal/history-modal.component';
 import { ConfirmModalComponent } from '../../../shared/components/confirm-modal/confirm-modal.component';
+import { ConfirmarCobroModalComponent } from './components/confirmar-cobro-modal/confirmar-cobro-modal.component';
 import { ToastComponent } from '../../../shared/components/toast/toast.component';
 
 // Services
@@ -30,6 +31,7 @@ import { UiService } from '../../../shared/services/ui.service';
         HistorialPagosModalComponent,
         SuscripcionHistoryModalComponent,
         ConfirmModalComponent,
+        ConfirmarCobroModalComponent,
         ToastComponent
     ],
     template: `
@@ -52,10 +54,12 @@ import { UiService } from '../../../shared/services/ui.service';
       <app-suscripcion-table
         [suscripciones]="filteredSuscripciones"
         [loading]="globalLoading"
-        (onRegistrarPago)="openRegistroPago($event)"
-        (onVerHistorial)="openHistorial($event)"
-        (onActivar)="confirmarAccion($event, 'ACTIVAR')"
-        (onCancelar)="confirmarAccion($event, 'CANCELAR')"
+        (onRegistrarPago)="openRegistroPago($any($event))"
+        (onConfirmarPago)="abrirConfirmarPago($any($event))"
+        (onVerHistorial)="openHistorial($any($event))"
+        (onActivar)="confirmarAccion($any($event), 'ACTIVAR')"
+        (onSuspender)="confirmarAccion($any($event), 'SUSPENDER')"
+        (onCancelar)="confirmarAccion($any($event), 'CANCELAR')"
       ></app-suscripcion-table>
 
       <!-- 4. Modals -->
@@ -67,6 +71,16 @@ import { UiService } from '../../../shared/services/ui.service';
         (onSave)="handleRegistroPago($event)"
         (onClose)="showRegistroPagoModal = false"
       ></app-registro-pago-modal>
+
+      <!-- Confirmar Recepción de Pago (Deuda) -->
+      <app-confirmar-cobro-modal
+        *ngIf="showConfirmarRecepcionModal"
+        [suscripcion]="selectedSuscripcion"
+        [pago]="selectedPagoParaConfirmar"
+        [processing]="isProcessingConfirm"
+        (onConfirm)="procesarConfirmacionPago($event)"
+        (onClose)="showConfirmarRecepcionModal = false"
+      ></app-confirmar-cobro-modal>
 
       <!-- Historial de Pagos Empresa -->
       <app-historial-pagos-modal
@@ -137,14 +151,17 @@ export class SuscripcionesPage implements OnInit {
     // UI State
     globalLoading = false;
     saving = false;
+    // --- Modales ---
     showRegistroPagoModal = false;
+    showConfirmarRecepcionModal = false; // Nuevo modal para confirmar deuda
     showHistorialModal = false;
     showHistorySectionModal = false; // New modal for general history
-
+    showConfirmModal = false;
+    
+    selectedPagoParaConfirmar: any = null;
     selectedSuscripcion: Suscripcion | null = null;
 
     // Confirm Modal
-    showConfirmModal = false;
     isProcessingConfirm = false;
     confirmTitle = '';
     confirmMessage = '';
@@ -227,6 +244,18 @@ export class SuscripcionesPage implements OnInit {
         
         // Logical check for UI indicators (overdue badge)
         const isOverdue = c.fecha_fin ? new Date(c.fecha_fin) < new Date() : false;
+        
+        // Determinar estado de pago real desde el backend
+        let estado_pago: any = c.estado_pago || 'PAGADO';
+
+        if (isOverdue) {
+            // Si tiene más de 3 días de vencimiento y no tiene un pago pendiente explícito, 
+            // lo marcamos como ATRASADO para alertar cobro
+            const diffDays = Math.floor((new Date().getTime() - new Date(c.fecha_fin).getTime()) / (1000 * 3600 * 24));
+            if (estado_pago === 'PAGADO') {
+                estado_pago = diffDays > 3 ? 'ATRASADO' : 'PENDIENTE';
+            }
+        }
 
         return {
             id: c.suscripcion_id || c.id, 
@@ -238,7 +267,7 @@ export class SuscripcionesPage implements OnInit {
             fecha_inicio: c.fecha_inicio,
             fecha_fin: c.fecha_fin,
             estado: estado,
-            estado_pago: isOverdue ? 'PENDIENTE' : 'PAGADO',
+            estado_pago: estado_pago,
             created_at: c.created_at || '',
             updated_at: ''
         };
@@ -251,11 +280,14 @@ export class SuscripcionesPage implements OnInit {
 
         this.suscripciones.forEach(s => {
             if (s.estado === 'ACTIVA') {
-                active++;
+                if (s.estado_pago === 'ATRASADO') {
+                    overdue++;
+                } else {
+                    active++;
+                }
                 projected += Number(s.precio_plan || 0);
             } else if (s.estado === 'VENCIDA') {
                 overdue++;
-                // Maybe add to projected if we expect them to pay? Let's say yes.
                 projected += Number(s.precio_plan || 0);
             }
         });
@@ -336,41 +368,35 @@ export class SuscripcionesPage implements OnInit {
         });
     }
 
-    confirmarAccion(sub: Suscripcion, accion: 'ACTIVAR' | 'CANCELAR') {
+    confirmarAccion(sub: Suscripcion, accion: 'ACTIVAR' | 'CANCELAR' | 'SUSPENDER') {
         this.selectedSuscripcion = sub;
 
         if (accion === 'CANCELAR') {
             this.confirmTitle = 'Cancelar Suscripción';
-            this.confirmMessage = `¿Estás seguro de cancelar la suscripción de "${sub.empresa_nombre}"? El servicio se detendrá.`;
-            this.confirmBtnText = 'Cancelar Suscripción';
+            this.confirmMessage = `¿Estás seguro de cancelar la suscripción de "${sub.empresa_nombre}"? El servicio se detendrá inmediatamente.`;
+            this.confirmBtnText = 'Confirmar Cancelación';
             this.confirmType = 'danger';
             this.confirmIcon = 'bi-x-circle-fill';
             this.pendingAction = () => {
                 this.callSuscripcionAction(sub.empresa_id, 'cancelar');
             };
-        } else {
+        } else if (accion === 'SUSPENDER') {
+            this.confirmTitle = 'Suspender Suscripción';
+            this.confirmMessage = `¿Deseas suspender temporalmente el servicio para "${sub.empresa_nombre}"?`;
+            this.confirmBtnText = 'Suspender';
+            this.confirmType = 'danger';
+            this.confirmIcon = 'bi-pause-circle-fill';
+            this.pendingAction = () => {
+                this.callSuscripcionAction(sub.empresa_id, 'suspender');
+            };
+        } else if (accion === 'ACTIVAR') {
             this.confirmTitle = 'Activar Suscripción';
-            this.confirmMessage = `¿Reactivar el servicio para "${sub.empresa_nombre}"?`;
-            this.confirmBtnText = 'Reactivar';
+            this.confirmMessage = `¿Reactivar el servicio para "${sub.empresa_nombre}"? Se mantendrán las fechas actuales del periodo.`;
+            this.confirmBtnText = 'Activar Servicio';
             this.confirmType = 'success';
             this.confirmIcon = 'bi-check-circle-fill';
             this.pendingAction = () => {
-                // Activar usually requires data, but let's see if we can just reactivate.
-                // Schema allows activating via `activar_suscripcion` which takes data.
-                // For simplicity, we might not implementation full re-activation logic here if it needs a plan selection.
-                // I'll assume endpoint /activar works or I should use 'suspender' toggle?
-                // The backend has /activar, /cancelar, /suspender.
-                // I'll assume manual activation needs plan info. But if it's just reactivating a cancelled one...
-                // Let's try activating with currrent plan data if possible.
-                // Actually, `activar` endpoint takes `SuscripcionCreacion`.
-                // I will implement Suspender/Levantar Suspensión logic instead if 'Activar' refers to that.
-                // But user asked for "Activa/Vencida/En gracia".
-                // I'll leave ACTIVAR pending or redirect to "Edit Subscription"?
-                // For now, I'll allow canceling. 
-                // If user wants to re-activate, maybe that's "Nuevo Plan" or "Registrar Pago" (if expired).
-                this.uiService.showToast('Funcionalidad de reactivación directa pendiente de validación.', 'warning');
-                this.showConfirmModal = false;
-                return;
+                this.callSuscripcionAction(sub.empresa_id, 'activar');
             };
         }
 
@@ -380,17 +406,32 @@ export class SuscripcionesPage implements OnInit {
         this.cdr.detectChanges();
     }
 
-    callSuscripcionAction(id: string, action: 'cancelar' | 'suspender') {
+    callSuscripcionAction(id: string, action: 'cancelar' | 'suspender' | 'activar') {
         this.isProcessingConfirm = true;
         const obs = 'Acción administrativa desde dashboard';
 
-        const request = action === 'cancelar'
-            ? this.susService.cancelarSuscripcion(id, obs)
-            : this.susService.suspenderSuscripcion(id, obs);
+        let request;
+        if (action === 'cancelar') {
+            request = this.susService.cancelarSuscripcion(id, obs);
+        } else if (action === 'suspender') {
+            request = this.susService.suspenderSuscripcion(id, obs);
+        } else {
+            // Activar
+            const sub = this.suscripciones.find(s => s.empresa_id === id);
+            const data = {
+                empresa_id: id,
+                plan_id: sub?.plan_id,
+                fecha_inicio: sub?.fecha_inicio,
+                fecha_fin: sub?.fecha_fin,
+                estado: 'ACTIVA'
+            };
+            request = this.susService.activarSuscripcion(data);
+        }
 
         request.subscribe({
             next: () => {
-                this.uiService.showToast(`Suscripción ${action === 'cancelar' ? 'cancelada' : 'suspendida'}`, 'success');
+                const actionMsg = action === 'cancelar' ? 'cancelada' : (action === 'suspender' ? 'suspendida' : 'activada');
+                this.uiService.showToast(`Suscripción ${actionMsg} exitosamente`, 'success');
                 this.isProcessingConfirm = false;
                 this.showConfirmModal = false;
                 this.loadData();
@@ -404,6 +445,39 @@ export class SuscripcionesPage implements OnInit {
 
     executeConfirmedAction() {
         this.pendingAction();
+    }
+
+    // --- Gestión de Deuda ---
+    abrirConfirmarPago(sub: Suscripcion) {
+        this.selectedSuscripcion = sub;
+        
+        // Buscamos el pago pendiente en el historial
+        this.susService.getPagos(sub.empresa_id).subscribe(pagos => {
+            const pendiente = pagos.find((p: any) => p.estado === 'PENDIENTE');
+            if (pendiente) {
+                this.selectedPagoParaConfirmar = pendiente;
+                this.showConfirmarRecepcionModal = true;
+                this.cdr.detectChanges();
+            } else {
+                this.uiService.showToast('No se encontró un cobro pendiente para esta empresa.', 'info');
+            }
+        });
+    }
+
+    procesarConfirmacionPago(data: any) {
+        this.isProcessingConfirm = true;
+        this.susService.confirmarPago(this.selectedPagoParaConfirmar.id, data).subscribe({
+            next: () => {
+                this.uiService.showToast('Pago confirmado exitosamente', 'success');
+                this.showConfirmarRecepcionModal = false;
+                this.isProcessingConfirm = false;
+                this.loadData();
+            },
+            error: (err) => {
+                this.isProcessingConfirm = false;
+                this.uiService.showError(err, 'Error al confirmar pago');
+            }
+        });
     }
 
     ejecutarMantenimiento() {

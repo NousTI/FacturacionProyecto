@@ -18,13 +18,13 @@ import { CommonModule } from '@angular/common';
 
       <div class="stat-divider"></div>
 
-      <!-- Vencidas -->
+      <!-- Atrasados -->
       <div class="stat-item-mini">
         <div class="icon-circle" style="background: rgba(239, 68, 68, 0.1); color: var(--status-danger);">
-          <i class="bi bi-exclamation-octagon-fill"></i>
+          <i class="bi bi-calendar-x-fill"></i>
         </div>
         <div class="stat-info">
-          <span class="stat-label">Suscripciones Vencidas</span>
+          <span class="stat-label">Pagos Atrasados</span>
           <span class="stat-value text-danger">{{ stats.overdue || 0 }}</span>
         </div>
       </div>

@@ -1,11 +1,12 @@
-import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { SolicitudRenovacion } from '../../../../../domain/models/renovacion.model';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
 
 @Component({
   selector: 'app-renovacion-process-modal',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, FormsModule],
   template: `
     <div class="modal-backdrop fade show"></div>
     <div class="modal fade show d-block" tabindex="-1">
@@ -35,14 +36,21 @@ import { SolicitudRenovacion } from '../../../../../domain/models/renovacion.mod
               </ul>
             </div>
 
-            <!-- Comprobante (Oculto temporalmente) -->
-            <div *ngIf="false" class="mb-2">
-               <label class="smallest text-uppercase fw-800 text-muted d-block mb-2">Documento Recibido</label>
-               <a [href]="seleccionada?.comprobante_url" target="_blank" class="btn-attachment">
-                 <i class="bi bi-file-earmark-image me-2 text-primary"></i>
-                 <span class="text-truncate">Ver comprobante adjunto</span>
-                 <i class="bi bi-box-arrow-up-right ms-auto smallest opacity-50"></i>
-               </a>
+            <div class="payment-fields mt-3">
+              <div class="mb-3">
+                <label class="smallest text-uppercase fw-800 text-muted d-block mb-2">Método de Pago</label>
+                <select [(ngModel)]="metodo_pago" class="form-select lux-input">
+                  <option value="TRANSFERENCIA">TRANSFERENCIA</option>
+                  <option value="EFECTIVO">EFECTIVO</option>
+                  <option value="TARJETA">TARJETA</option>
+                  <option value="OTRO">OTRO</option>
+                </select>
+              </div>
+              
+              <div class="mb-3">
+                <label class="smallest text-uppercase fw-800 text-muted d-block mb-2">Número de Comprobante / Referencia</label>
+                <input type="text" [(ngModel)]="numero_comprobante" class="form-control lux-input" placeholder="Ej: TR-000123">
+              </div>
             </div>
           </div>
           <div class="modal-footer border-0 p-4 pt-0">
@@ -50,7 +58,7 @@ import { SolicitudRenovacion } from '../../../../../domain/models/renovacion.mod
               <button class="btn-lux-secondary flex-grow-1" (click)="onClose.emit()">Cerrar</button>
               <ng-container *ngIf="seleccionada?.estado === 'PENDIENTE'">
                 <button class="btn btn-outline-danger px-4 border-0 fw-bold" (click)="onRejectAction.emit()">Rechazar</button>
-                <button class="btn-lux-primary px-4 fw-bold" [disabled]="cargando" (click)="onConfirm.emit()">
+                <button class="btn-lux-primary px-4 fw-bold" [disabled]="cargando" (click)="confirmar()">
                   <span *ngIf="cargando" class="spinner-border spinner-border-sm me-2"></span>
                   Confirmar Aprobación
                 </button>
@@ -100,6 +108,16 @@ export class RenovacionProcessModalComponent {
   @Input() seleccionada: SolicitudRenovacion | null = null;
   @Input() cargando: boolean = false;
   @Output() onClose = new EventEmitter<void>();
-  @Output() onConfirm = new EventEmitter<void>();
+  @Output() onConfirm = new EventEmitter<any>();
   @Output() onRejectAction = new EventEmitter<void>();
+
+  metodo_pago: string = 'TRANSFERENCIA';
+  numero_comprobante: string = '';
+
+  confirmar() {
+    this.onConfirm.emit({
+      metodo_pago: this.metodo_pago,
+      numero_comprobante: this.numero_comprobante
+    });
+  }
 }

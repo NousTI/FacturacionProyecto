@@ -321,7 +321,7 @@ export class EmpresasPage implements OnInit, OnDestroy {
   }
 
   updatePlan(event: any) {
-    this.empresaService.changePlan(this.selectedEmpresa.id, event.planId, event.monto, event.observaciones).subscribe({
+    this.empresaService.changePlan(this.selectedEmpresa.id, event.planId, event.monto, event.observaciones, event.estado, event.metodo_pago, event.numero_comprobante).subscribe({
       next: () => {
         this.uiService.showToast('Plan de suscripción actualizado', 'success');
         this.showPlanModal = false;

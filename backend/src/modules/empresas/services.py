@@ -86,6 +86,9 @@ class ServicioEmpresas:
         plan_id = payload.pop('plan_id', None)
         monto_pago = payload.pop('monto_pago', None)
         observacion_pago = payload.pop('observacion_pago', None)
+        payload.pop('estado_pago', None)
+        payload.pop('metodo_pago', None)
+        payload.pop('numero_comprobante', None)
 
         try:
              nueva = self.repo.crear_empresa(payload)

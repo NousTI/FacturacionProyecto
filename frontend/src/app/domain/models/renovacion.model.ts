@@ -34,4 +34,6 @@ export interface SolicitudRenovacionCreate {
 export interface SolicitudRenovacionProcess {
   estado: 'ACEPTADA' | 'RECHAZADA';
   motivo_rechazo?: string;
+  metodo_pago?: string;
+  numero_comprobante?: string;
 }

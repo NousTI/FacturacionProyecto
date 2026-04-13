@@ -91,12 +91,10 @@ export const PROVEEDORES_PERMISSIONS = {
 // MÓDULO: ESTABLECIMIENTOS Y PUNTOS DE EMISIÓN
 // ============================================================================
 export const ESTABLECIMIENTOS_PERMISSIONS = {
-  VER: 'ESTABLECIMIENTO_VER',
   GESTIONAR: 'ESTABLECIMIENTO_GESTIONAR'
 } as const;
 
 export const PUNTOS_EMISION_PERMISSIONS = {
-  VER: 'PUNTO_EMISION_VER',
   GESTIONAR: 'PUNTO_EMISION_GESTIONAR'
 } as const;
 

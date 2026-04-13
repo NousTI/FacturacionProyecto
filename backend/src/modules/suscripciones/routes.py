@@ -93,13 +93,22 @@ def registrar_pago_rapido(
 ):
     return controller.registrar_pago_rapido(datos, usuario)
 
-@router.get("/pagos", response_model=RespuestaBase[List[HistoricoSuscripcion]])
+@router.get("/pagos", tags=["Pagos"])
 def listar_pagos(
     empresa_id: Optional[UUID] = None,
-    usuario: dict = Depends(_check_suscripciones_ver),
-    controller: SuscripcionController = Depends()
+    controller: SuscripcionController = Depends(),
+    usuario_actual: dict = Depends(get_current_user)
 ):
-    return controller.listar_pagos(usuario, empresa_id)
+    return controller.listar_pagos(usuario_actual, empresa_id)
+
+@router.patch("/pagos/{pago_id}/confirmar", tags=["Pagos"])
+def confirmar_pago(
+    pago_id: UUID,
+    body: dict,
+    controller: SuscripcionController = Depends(),
+    usuario_actual: dict = Depends(get_current_user)
+):
+    return controller.confirmar_pago(pago_id, body, usuario_actual)
 
 
 # --- Suscripciones Lifecycle ---

@@ -127,11 +127,14 @@ export class EmpresaService {
         );
     }
 
-    changePlan(empresaId: string, planId: string, monto: number = 0, observaciones: string = ''): Observable<any> {
+    changePlan(empresaId: string, planId: string, monto: number = 0, observaciones: string = '', estado: string = 'PAGADO', metodo: string = 'TRANSFERENCIA', comprobante: string = ''): Observable<any> {
         return this.http.post(`${this.apiUrl}/${empresaId}/change-plan`, {
             plan_id: planId,
             monto,
-            observaciones
+            observaciones,
+            estado,
+            metodo_pago: metodo,
+            numero_comprobante: comprobante
         }).pipe(
             map((res: any) => this.mapEmpresa(res.detalles)),
             tap(updated => {

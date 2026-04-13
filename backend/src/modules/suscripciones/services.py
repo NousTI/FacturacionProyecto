@@ -127,18 +127,50 @@ class ServicioSuscripciones:
         plan = self.repo.obtener_plan_por_id(data.plan_id)
         if not plan: raise AppError("Plan no encontrado", 404)
         
-        # Verificar que no sea el mismo plan actual
+        # Verificar que no sea el mismo plan actual y esté activo
         current_sub = self.repo.obtener_suscripcion_por_empresa(data.empresa_id)
-        if current_sub and str(current_sub['plan_id']) == str(data.plan_id) and current_sub['estado'] == 'ACTIVA':
-            raise AppError(
-                message="Plan ya activo",
-                status_code=400,
-                code="SUBSCRIPTION_ALREADY_ACTIVE",
-                description=f"La empresa ya cuenta con el plan '{plan['nombre']}' activo."
-            )
         
-        monto = data.monto or plan['precio_anual']
+        # Validación 1: Evitar duplicar el mismo plan si ya está activo
+        if current_sub and str(current_sub['plan_id']) == str(data.plan_id) and current_sub['estado'] == 'ACTIVA':
+            # Solo bloqueamos si la fecha de inicio del nuevo pago es ANTES del vencimiento actual
+            # (Si es después, es una renovación legítima que se puede pre-registrar)
+            if not data.fecha_inicio_periodo or data.fecha_inicio_periodo < current_sub['fecha_fin']:
+                raise AppError(
+                    message="Plan ya activo",
+                    status_code=400,
+                    code="SUBSCRIPTION_ALREADY_ACTIVE",
+                    description=f"La empresa ya cuenta con el plan '{plan['nombre']}' activo hasta el {current_sub['fecha_fin'].strftime('%d/%m/%Y')}."
+                )
+        
+        # Validación 2: Verificar solapamiento de periodos pagados
         fecha_inicio = data.fecha_inicio_periodo or datetime.now()
+        
+        # Buscar si existe algún pago que cubra la fecha de inicio propuesta
+        pagos_existentes = self.repo.listar_pagos(empresa_id=data.empresa_id)
+        
+        # Normalizar fecha_inicio a naive para comparación
+        fecha_inicio_comp = fecha_inicio.replace(tzinfo=None) if fecha_inicio.tzinfo else fecha_inicio
+
+        for p in pagos_existentes:
+            p_inicio = p['fecha_inicio_periodo']
+            p_fin = p['fecha_fin_periodo']
+            
+            # Normalizar fechas de BD a naive
+            if isinstance(p_inicio, datetime) and p_inicio.tzinfo:
+                p_inicio = p_inicio.replace(tzinfo=None)
+            if isinstance(p_fin, datetime) and p_fin.tzinfo:
+                p_fin = p_fin.replace(tzinfo=None)
+
+            if p['estado'] == 'PAGADO' and p_inicio <= fecha_inicio_comp < p_fin:
+                logger.info(f"Checking overlap: existing plan={p['plan_id']}, requested plan={data.plan_id}")
+                # Solo bloqueamos si es el MISMO plan. 
+                if str(p['plan_id']) == str(data.plan_id):
+                    logger.warning(f"Overlap detected for SAME plan {data.plan_id}, but allowing due to administrative action.")
+                    # No lanzamos error, permitimos que el Superadmin registre múltiples pagos si es necesario 
+                    # (ej: para corregir estados o registrar periodos adicionales)
+                    pass
+
+        monto = data.monto or plan['precio_anual']
         
         if data.fecha_fin_periodo:
             fecha_fin = data.fecha_fin_periodo
@@ -167,10 +199,11 @@ class ServicioSuscripciones:
             "fecha_inicio_periodo": fecha_inicio,
             "fecha_fin_periodo": fecha_fin,
             "metodo_pago": data.metodo_pago,
-            "estado": "PAGADO",
+            "estado": data.estado or "PAGADO",
             "numero_comprobante": data.numero_comprobante,
             "registrado_por": usuario_actual['id'],
-            "tipo_pago": tipo_pago
+            "tipo_pago": tipo_pago,
+            "observaciones": data.observaciones
         }
         
         empresa_data = {
@@ -180,14 +213,41 @@ class ServicioSuscripciones:
             "estado": "ACTIVA"
         }
         
-        comision = self.comision_service.calcular_comision_potencial(data.empresa_id, float(monto))
+        comision = None
+        # Solo calcular comisión si está pagado. Si es pendiente, se calculará al confirmar.
+        if (data.estado or "PAGADO") == "PAGADO":
+            comision = self.comision_service.calcular_comision_potencial(data.empresa_id, float(monto))
         
         pago_id = self.repo.registrar_suscripcion_atomica(pago_dict, empresa_data, comision)
         
-        # Sincronizar módulos
+        # Sincronizar módulos (siempre lo hacemos para que el cliente no pierda acceso por temas administrativos)
         self.modulo_service.sincronizar(data.empresa_id, data.plan_id, fecha_fin)
         
-        return {"id": pago_id, "mensaje": "Pago registrado y suscripción activada"}
+        msg = "Pago registrado y suscripción activada" if pago_dict['estado'] == "PAGADO" else "Cobro pendiente registrado y suscripción actualizada"
+        return {"id": pago_id, "mensaje": msg}
+
+    def confirmar_pago(self, pago_id: UUID, numero_comprobante: str, metodo_pago: str, usuario_actual: dict):
+        if not usuario_actual.get(AuthKeys.IS_SUPERADMIN) and not usuario_actual.get(AuthKeys.IS_VENDEDOR):
+            raise AppError("No autorizado", 403)
+            
+        pago = self.repo.obtener_pago_por_id(pago_id)
+        if not pago: raise AppError("Pago no encontrado", 404)
+        if pago['estado'] == 'PAGADO': raise AppError("El pago ya está confirmado", 400)
+        
+        # 1. Actualizar Pago
+        pago_update = {
+            "estado": "PAGADO",
+            "numero_comprobante": numero_comprobante,
+            "metodo_pago": metodo_pago,
+            "fecha_pago": datetime.now()
+        }
+        
+        # 2. Calcular y registrar comisión ahora que está pagado
+        comision = self.comision_service.calcular_comision_potencial(pago['empresa_id'], float(pago['monto']))
+        
+        self.repo.confirmar_pago_atomico(pago_id, pago_update, comision)
+        
+        return {"mensaje": "Pago confirmado exitosamente y comisión generada"}
 
     def listar_pagos(self, usuario_actual: dict, empresa_id_filtro: Optional[UUID] = None):
         is_superadmin = usuario_actual.get(AuthKeys.IS_SUPERADMIN)

@@ -59,7 +59,7 @@ import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } 
                   </option>
                   <option *ngFor="let p of planes" 
                           [value]="p.id" 
-                          [disabled]="p.id === selectedEmpresaPlanId">
+                          [disabled]="p.id === selectedEmpresaPlanId && !esTiempoDeRenovacion">
                     {{ p.nombre }} - {{ p.precio_anual | currency }}/año
                     <span *ngIf="p.id === selectedEmpresaPlanId"> (Plan Actual)</span>
                   </option>
@@ -67,20 +67,12 @@ import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } 
                 <div class="invalid-feedback" *ngIf="renovacionForm.get('plan_id')?.invalid && renovacionForm.get('plan_id')?.touched">
                   Debe seleccionar un plan
                 </div>
-              </div>
-
-              <!-- Comprobante URL (Oculto temporalmente) -->
-              <div class="col-12" *ngIf="false">
-                <label class="editorial-label">3. URL Comprobante de Pago</label>
-                <input 
-                  type="text"
-                  class="editorial-input"
-                  formControlName="comprobante_url"
-                  placeholder="Enlace al comprobante (Ej: Google Drive, PDF, etc.)"
-                  [class.is-invalid]="renovacionForm.get('comprobante_url')?.invalid && renovacionForm.get('comprobante_url')?.touched"
-                >
-                <div class="invalid-feedback" *ngIf="renovacionForm.get('comprobante_url')?.invalid && renovacionForm.get('comprobante_url')?.touched">
-                  Debe proporcionar un enlace al comprobante
+                
+                <!-- Ayuda visual sobre renovación -->
+                <div *ngIf="selectedEmpresaPlanId && !esTiempoDeRenovacion" class="mt-2 smallest fw-600 text-muted animate__animated animate__fadeIn">
+                  <i class="bi bi-info-circle me-1"></i>
+                  La renovación del mismo plan solo está disponible 30 días antes del vencimiento (faltan {{ diasRestantesParaVencer }} días). 
+                  <strong>Puedes solicitar un Upgrade a otro plan ahora mismo.</strong>
                 </div>
               </div>
 
@@ -94,7 +86,7 @@ import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } 
                     <div>
                       <span class="editorial-label mb-0" style="color: #92400e;">Revisión Administrativa</span>
                       <p class="m-0 text-muted" style="font-size: 0.8rem;">
-                        La solicitud será revisada por el Superadmin para su activación definitiva.
+                        La solicitud será enviada al Superadmin. Él se encargará de gestionar el cobro y activar tu renovación.
                       </p>
                     </div>
                   </div>
@@ -168,12 +160,13 @@ export class RenovacionCreateModalComponent implements OnInit {
 
   renovacionForm: FormGroup;
   selectedEmpresaPlanId: string | null = null;
+  esTiempoDeRenovacion: boolean = false;
+  diasRestantesParaVencer: number = 0;
 
   constructor(private fb: FormBuilder) {
     this.renovacionForm = this.fb.group({
       empresa_id: ['', Validators.required],
-      plan_id: ['', Validators.required],
-      comprobante_url: ['', [Validators.minLength(5)]]
+      plan_id: ['', Validators.required]
     });
   }
 
@@ -182,7 +175,27 @@ export class RenovacionCreateModalComponent implements OnInit {
   onEmpresaChange() {
     const empresaId = this.renovacionForm.get('empresa_id')?.value;
     const emp = this.empresas.find(e => e.id === empresaId);
+    
     this.selectedEmpresaPlanId = emp ? emp.planId : null;
+    this.esTiempoDeRenovacion = false;
+    this.diasRestantesParaVencer = 0;
+
+    if (emp && emp.fechaVencimiento) {
+      const hoy = new Date();
+      const vencimiento = new Date(emp.fechaVencimiento);
+      
+      // Calcular diferencia en días
+      const diffTime = vencimiento.getTime() - hoy.getTime();
+      this.diasRestantesParaVencer = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      
+      // Regla de los 30 días
+      this.esTiempoDeRenovacion = this.diasRestantesParaVencer <= 30;
+    } else {
+        // Si no tiene fecha de vencimiento (empresa nueva sin plan previo), 
+        // técnicamente no es renovación sino ALTA, pero permitimos elegir cualquier plan.
+        this.esTiempoDeRenovacion = true; 
+    }
+
     this.renovacionForm.get('plan_id')?.setValue('');
   }
 

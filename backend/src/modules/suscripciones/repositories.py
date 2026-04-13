@@ -76,7 +76,10 @@ class RepositorioSuscripciones:
         query = """
             SELECT e.id, e.razon_social, e.nombre_comercial, e.ruc, e.email, e.telefono, 
                    s.fecha_inicio, s.fecha_fin, 
-                   s.estado, e.activo, e.created_at
+                   s.estado, e.activo, e.created_at,
+                   (SELECT ps.estado FROM sistema_facturacion.pagos_suscripciones ps 
+                    WHERE ps.empresa_id = e.id 
+                    ORDER BY ps.fecha_pago DESC, ps.created_at DESC LIMIT 1) as estado_pago
             FROM sistema_facturacion.empresas e
             JOIN sistema_facturacion.suscripciones s ON e.id = s.empresa_id
             WHERE s.plan_id = %s
@@ -210,6 +213,57 @@ class RepositorioSuscripciones:
             
             return pago_id
 
+    def obtener_pago_por_id(self, id: UUID) -> Optional[dict]:
+        with self.db.cursor() as cur:
+            cur.execute("SELECT * FROM sistema_facturacion.pagos_suscripciones WHERE id = %s", (str(id),))
+            row = cur.fetchone()
+            return dict(row) if row else None
+
+    def confirmar_pago_atomico(self, pago_id: UUID, pago_data: dict, comision_data: Optional[dict]):
+        with db_transaction(self.db) as cur:
+            # 1. Pago update
+            fields = [f"{k} = %s" for k in pago_data.keys()]
+            values = list(pago_data.values())
+            values.append(str(pago_id))
+            cur.execute(f"UPDATE sistema_facturacion.pagos_suscripciones SET {', '.join(fields)} WHERE id = %s", tuple(values))
+
+            # 2. Registrar Comision
+            if comision_data:
+                comision_data['pago_suscripcion_id'] = str(pago_id)
+                # ... same logic as in registrar_suscripcion_atomica ...
+                c_fields = list(comision_data.keys())
+                c_values = [str(v) if isinstance(v, UUID) else v for v in comision_data.values()]
+                placeholder_c = ["%s"] * len(c_fields)
+                cur.execute(f"INSERT INTO sistema_facturacion.comisiones ({', '.join(c_fields)}) VALUES ({', '.join(placeholder_c)}) RETURNING id", tuple(c_values))
+                comision_id = cur.fetchone()['id']
+                
+                # Snapshot and Log logic (reused from registrar_suscripcion_atomica)
+                # For brevity I'll assume we can modularize this or just repeat it here safely.
+                # In a real scenario I'd move this to a helper.
+                cur.execute("""
+                    SELECT c.*, v.nombres || ' ' || v.apellidos as vendedor_nombre,
+                           v.identificacion, uv.email as vendedor_email,
+                           e.nombre_comercial as empresa_nombre, p.monto as monto_pago
+                    FROM sistema_facturacion.comisiones c
+                    LEFT JOIN sistema_facturacion.vendedores v ON c.vendedor_id = v.id
+                    LEFT JOIN sistema_facturacion.users uv ON v.user_id = uv.id
+                    LEFT JOIN sistema_facturacion.pagos_suscripciones p ON c.pago_suscripcion_id = p.id
+                    LEFT JOIN sistema_facturacion.empresas e ON p.empresa_id = e.id
+                    WHERE c.id = %s
+                """, (str(comision_id),))
+                c_full = dict(cur.fetchone())
+                
+                snapshot = {
+                    "comision": {"id": str(comision_id), "estado": c_full['estado'], "estado_nuevo": 'PENDIENTE'},
+                    "valores": {"monto": float(c_full['monto']), "porcentaje_aplicado": float(c_full['porcentaje_aplicado']), "monto_pago": float(c_full['monto_pago'])},
+                    "fechas": {"fecha_generacion": c_full['fecha_generacion'].isoformat() if isinstance(c_full['fecha_generacion'], (date, datetime)) else c_full['fecha_generacion']},
+                    "vendedor": {"id": str(c_full['vendedor_id']), "nombre": c_full['vendedor_nombre'], "identificacion": c_full['identificacion'], "email": c_full['vendedor_email']},
+                    "empresa": {"razon_social": c_full['empresa_nombre']},
+                    "created_at": datetime.now().isoformat()
+                }
+                cur.execute("INSERT INTO sistema_facturacion.comisiones_logs (comision_id, rol_responsable, estado_nuevo, datos_snapshot, observaciones) VALUES (%s, %s, %s, %s, %s)",
+                          (str(comision_id), 'SISTEMA', 'PENDIENTE', json.dumps(snapshot, default=str), "Generación por confirmación de pago manual"))
+
     def listar_pagos(self, empresa_id: Optional[UUID] = None, vendedor_id: Optional[UUID] = None) -> List[dict]:
         query = "SELECT p.*, e.razon_social as razon_social, pl.nombre as plan_nombre FROM sistema_facturacion.pagos_suscripciones p " \
                 "JOIN sistema_facturacion.empresas e ON p.empresa_id = e.id JOIN sistema_facturacion.planes pl ON p.plan_id = pl.id"
@@ -227,7 +281,7 @@ class RepositorioSuscripciones:
         if where_clauses:
             query += " WHERE " + " AND ".join(where_clauses)
             
-        query += " ORDER BY p.fecha_pago DESC"
+        query += " ORDER BY p.fecha_pago DESC, p.created_at DESC"
         with self.db.cursor() as cur:
             cur.execute(query, tuple(params) if params else None)
             return [dict(row) for row in cur.fetchall()]
@@ -279,6 +333,21 @@ class RepositorioSuscripciones:
             cur.execute(query_activas, tuple(params_activas))
             activas = cur.fetchone()['activas']
 
+            # 2.1 Suscripciones Atrasadas (Vencidas pero aún marcadas como activas o esperando pago)
+            query_atrasadas = """
+                SELECT COUNT(*) as atrasadas 
+                FROM sistema_facturacion.suscripciones s
+                JOIN sistema_facturacion.empresas e ON s.empresa_id = e.id
+                WHERE s.estado = 'ACTIVA' AND s.fecha_fin < CURRENT_DATE
+            """
+            params_atrasadas = []
+            if vendedor_id:
+                query_atrasadas += " AND e.vendedor_id = %s"
+                params_atrasadas.append(vendedor_str)
+            
+            cur.execute(query_atrasadas, tuple(params_atrasadas))
+            atrasadas = cur.fetchone()['atrasadas']
+
             # 3. Plan más rentable
             query_rentable = """
                 SELECT pl.nombre 
@@ -305,6 +374,7 @@ class RepositorioSuscripciones:
             return {
                 "total_mrr": total_mrr,
                 "suscripciones_activas": activas,
+                "suscripciones_atrasadas": atrasadas,
                 "plan_mas_rentable": plan_rentable,
                 "crecimiento": 10.5 # Mocked growth for now
             }

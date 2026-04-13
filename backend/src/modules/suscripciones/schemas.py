@@ -95,6 +95,7 @@ class PagoSuscripcionQuick(BaseModel):
     fecha_inicio_periodo: Optional[datetime] = None
     fecha_fin_periodo: Optional[datetime] = None
     numero_comprobante: Optional[str] = None
+    estado: Optional[str] = "PAGADO" # PAGADO o PENDIENTE
     observaciones: Optional[str] = None
 
 # Suscripciones schemas

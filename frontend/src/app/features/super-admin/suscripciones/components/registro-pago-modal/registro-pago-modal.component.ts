@@ -31,29 +31,47 @@ import { Suscripcion } from '../../services/suscripcion.service';
 
               <div class="row g-3">
                 
-                <div class="col-md-6">
+                <div class="col-md-12 mb-2">
+                  <div class="d-flex align-items-center justify-content-between p-3 rounded-4 bg-light border">
+                    <div class="d-flex align-items-center gap-3">
+                      <div class="icon-payment" [class.active]="pagoRecibido">
+                        <i class="bi" [class.bi-cash-coin]="pagoRecibido" [class.bi-hourglass-split]="!pagoRecibido"></i>
+                      </div>
+                      <div>
+                        <div class="fw-bold text-dark">{{ pagoRecibido ? 'Pago Recibido' : 'Pago por Recibir (Pendiente)' }}</div>
+                        <div class="small text-muted">{{ pagoRecibido ? 'Detalla la transacción abajo.' : 'Se generará una deuda en el sistema.' }}</div>
+                      </div>
+                    </div>
+                    <div class="form-check form-switch fs-4">
+                      <input class="form-check-input ms-0" type="checkbox" role="switch" [checked]="pagoRecibido" (change)="togglePagoRecibido()">
+                    </div>
+                  </div>
+                </div>
+
+                <div class="col-md-12">
                   <label class="label-final">Monto ($) *</label>
                   <input type="number" formControlName="monto" class="input-final" placeholder="0.00">
                 </div>
 
-                <div class="col-md-6">
-                  <label class="label-final">Método de Pago *</label>
-                  <select formControlName="metodo_pago" class="input-final">
-                    <option value="" disabled>Seleccione...</option>
-                    <option *ngFor="let m of metodosPago" [value]="m">{{ m }}</option>
-                  </select>
-                </div>
+                <ng-container *ngIf="pagoRecibido">
+                  <div class="col-md-6 animate__animated animate__fadeIn">
+                    <label class="label-final">Método de Pago *</label>
+                    <select formControlName="metodo_pago" class="input-final">
+                      <option value="" disabled>Seleccione...</option>
+                      <option *ngFor="let m of metodosPago" [value]="m">{{ m }}</option>
+                    </select>
+                  </div>
+
+                  <div class="col-md-6 animate__animated animate__fadeIn">
+                     <label class="label-final">Número de Comprobante / Referencia *</label>
+                     <input type="text" formControlName="numero_comprobante" class="input-final" placeholder="Ej: TR-123456789">
+                  </div>
+                </ng-container>
 
                 <div class="col-md-12">
-                   <label class="label-final">Número de Comprobante / Referencia *</label>
-                   <input type="text" formControlName="numero_comprobante" class="input-final" placeholder="Ej: TR-123456789">
+                   <label class="label-final">Observaciones</label>
+                   <textarea formControlName="observaciones" class="input-final" rows="2" placeholder="Opcional..."></textarea>
                 </div>
-
-                 <!-- Fechas del Periodo (Opcionales, backend might infer but better explicit to update sub logic) -->
-                 <!-- If we want to support extending the subscription here, we might need start/end date inputs.
-                      Backend 'PagoSuscripcionQuick' accepts fecha_inicio_periodo/fecha_fin_periodo. 
-                      Let's add them or auto-calc. I'll add them as defaults to next month. 
-                 -->
               </div>
             </div>
 
@@ -65,7 +83,7 @@ import { Suscripcion } from '../../services/suscripcion.service';
           <button (click)="close()" [disabled]="saving" class="btn-cancel-final">Cancelar</button>
           <button (click)="submit()" [disabled]="pagoForm.invalid || saving" class="btn-submit-final d-flex align-items-center gap-2">
             <span *ngIf="saving" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-            {{ saving ? 'Registrar Pago' : 'Confirmar' }}
+            {{ saving ? 'Procesando...' : (pagoRecibido ? 'Registrar Pago' : 'Generar Deuda') }}
           </button>
         </div>
 
@@ -79,14 +97,14 @@ import { Suscripcion } from '../../services/suscripcion.service';
       display: flex; align-items: center; justify-content: center; z-index: 10000; padding: 1rem;
     }
     .modal-container-final {
-      background: #ffffff; width: 600px; max-width: 95vw; height: auto;
+      background: #ffffff; width: 500px; max-width: 95vw; height: auto;
       border-radius: 28px; display: flex; flex-direction: column; overflow: hidden;
       box-shadow: 0 40px 80px -20px rgba(22, 29, 53, 0.25);
     }
     .modal-header-final { padding: 1.5rem 2.5rem; display: flex; justify-content: space-between; align-items: center; }
     .modal-title-final { font-size: 1.25rem; font-weight: 800; color: #161d35; margin: 0; }
     .btn-close-final { background: none; border: none; font-size: 1.5rem; color: #94a3b8; cursor: pointer; }
-    .modal-body-final { padding: 0 2.5rem 1rem; flex: 1; } /* Removed overflow-y auto for small content */
+    .modal-body-final { padding: 0 2.5rem 1rem; flex: 1; }
     .form-section-final { margin-bottom: 2rem; padding-bottom: 0; }
     .label-final { font-size: 0.85rem; font-weight: 700; color: #64748b; margin-bottom: 0.6rem; display: block; }
     .input-final {
@@ -98,12 +116,14 @@ import { Suscripcion } from '../../services/suscripcion.service';
       box-shadow: 0 0 0 4px rgba(22, 29, 53, 0.05);
     }
     .alert-info {
-        background-color: #eff6ff;
-        border-color: #bfdbfe;
-        color: #1e40af;
-        border-radius: 12px;
-        font-size: 0.9rem;
+        background-color: #eff6ff; border-color: #bfdbfe; color: #1e40af; border-radius: 12px; font-size: 0.85rem;
     }
+    .icon-payment {
+      width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center;
+      background: #f1f5f9; color: #94a3b8; font-size: 1.4rem; transition: all 0.2s;
+    }
+    .icon-payment.active { background: rgba(16, 185, 129, 0.1); color: #10b981; }
+
     .modal-footer-final { padding: 1.5rem 2.5rem; background: #ffffff; display: flex; justify-content: flex-end; gap: 1rem; border-top: 1px solid #f1f5f9; }
     .btn-submit-final {
       background: #161d35; color: #ffffff; border: none; padding: 0.75rem 2.5rem;
@@ -124,12 +144,14 @@ export class RegistroPagoModalComponent implements OnInit, OnDestroy {
 
     pagoForm: FormGroup;
     metodosPago = ['TRANSFERENCIA', 'EFECTIVO', 'TARJETA', 'CHEQUE', 'OTRO'];
+    pagoRecibido: boolean = true;
 
     constructor(private fb: FormBuilder) {
         this.pagoForm = this.fb.group({
             monto: [0, [Validators.required, Validators.min(0)]],
-            metodo_pago: ['', Validators.required],
-            numero_comprobante: ['', Validators.required]
+            metodo_pago: ['TRANSFERENCIA', Validators.required],
+            numero_comprobante: ['', Validators.required],
+            observaciones: ['']
         });
     }
 
@@ -146,14 +168,31 @@ export class RegistroPagoModalComponent implements OnInit, OnDestroy {
         document.body.style.overflow = 'auto';
     }
 
+    togglePagoRecibido() {
+      this.pagoRecibido = !this.pagoRecibido;
+      if (this.pagoRecibido) {
+        this.pagoForm.get('metodo_pago')?.setValidators([Validators.required]);
+        this.pagoForm.get('numero_comprobante')?.setValidators([Validators.required]);
+      } else {
+        this.pagoForm.get('metodo_pago')?.clearValidators();
+        this.pagoForm.get('numero_comprobante')?.clearValidators();
+      }
+      this.pagoForm.get('metodo_pago')?.updateValueAndValidity();
+      this.pagoForm.get('numero_comprobante')?.updateValueAndValidity();
+    }
+
     submit() {
         if (this.pagoForm.invalid) return;
 
-        // Construct the payload expected by PagoQuick
+        const val = this.pagoForm.value;
         const payload = {
             empresa_id: this.suscripcion?.empresa_id,
             plan_id: this.suscripcion?.plan_id,
-            ...this.pagoForm.value
+            monto: val.monto,
+            metodo_pago: this.pagoRecibido ? val.metodo_pago : 'PENDIENTE',
+            numero_comprobante: this.pagoRecibido ? val.numero_comprobante : 'POR_RECIBIR',
+            estado: this.pagoRecibido ? 'PAGADO' : 'PENDIENTE',
+            observaciones: val.observaciones
         };
         this.onSave.emit(payload);
     }

@@ -64,12 +64,12 @@ import { UserRole } from '../../../domain/enums/role.enum';
         (onProcess)="irAProcesar()"
       ></app-renovacion-detail-modal>
 
-      <app-renovacion-process-modal
+        <app-renovacion-process-modal
         *ngIf="showProcessModal"
         [seleccionada]="seleccionada"
         [cargando]="cargando"
         (onClose)="showProcessModal = false"
-        (onConfirm)="procesar('ACEPTADA')"
+        (onConfirm)="procesar('ACEPTADA', $event)"
         (onRejectAction)="cerrarYRechazar()"
       ></app-renovacion-process-modal>
 
@@ -241,13 +241,15 @@ export class RenovacionesAdminPage implements OnInit, OnDestroy {
     }, 100);
   }
 
-  procesar(estado: 'ACEPTADA' | 'RECHAZADA') {
+  procesar(estado: 'ACEPTADA' | 'RECHAZADA', extraData?: any) {
     if (!this.seleccionada) return;
 
     this.cargando = true;
     const data: SolicitudRenovacionProcess = {
       estado,
-      motivo_rechazo: estado === 'RECHAZADA' ? this.motivoRechazo : undefined
+      motivo_rechazo: estado === 'RECHAZADA' ? this.motivoRechazo : undefined,
+      metodo_pago: extraData?.metodo_pago,
+      numero_comprobante: extraData?.numero_comprobante
     };
 
     this.api.procesarSolicitud(this.seleccionada.id, data)

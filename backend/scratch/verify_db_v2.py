@@ -16,48 +16,63 @@ except:
         DB_PORT = 5432
     env = MockEnv()
 
-def check_table(cur, table_name):
-    print(f"\n=== Verificando tabla: {table_name} ===")
+import argparse
+
+def check_table(cur, table_name, empresa_id=None):
+    print(f"\n{'='*60}")
+    print(f"=== TABLA: {table_name} ===")
+    print(f"{'='*60}")
     
-    # 1. Columnas
+    # 1. Columnas (Omitido para brevedad si hay filtro, o mostrar siempre)
+    # ... (mismo código) ...
     cur.execute(f"""
-        SELECT column_name, data_type, is_nullable
+        SELECT column_name, data_type, is_nullable, column_default
         FROM information_schema.columns
         WHERE table_schema = 'sistema_facturacion' AND table_name = '{table_name}'
         ORDER BY ordinal_position;
     """)
     cols = cur.fetchall()
-    print("--- Columnas ---")
-    for col in cols:
-        print(f"  {col['column_name']}: {col['data_type']} (Nullable: {col['is_nullable']})")
+    
+    # Check if empresa_id column exists
+    has_empresa_id = any(c['column_name'] == 'empresa_id' for c in cols)
 
-    # 2. Constraints
-    cur.execute(f"""
-        SELECT conname, pg_get_constraintdef(c.oid) as definition
-        FROM pg_constraint c
-        JOIN pg_namespace n ON n.oid = c.connamespace
-        WHERE n.nspname = 'sistema_facturacion' 
-        AND conrelid = 'sistema_facturacion.{table_name}'::regclass;
-    """)
-    constraints = cur.fetchall()
-    print("--- Restricciones ---")
-    for con in constraints:
-        print(f"  {con['conname']}: {con['definition']}")
+    # 3. Row Count
+    where_clause = ""
+    if empresa_id and has_empresa_id:
+        where_clause = f"WHERE empresa_id = '{empresa_id}'"
+    
+    cur.execute(f"SELECT COUNT(*) as total FROM sistema_facturacion.{table_name} {where_clause};")
+    count = cur.fetchone()['total']
+    print(f"--- ESTADÍSTICAS ---")
+    print(f"  Total de registros{' (filtrados)' if where_clause else ''}: {count}")
 
-    # 3. Data Samples
-    try:
-        cur.execute(f"SELECT DISTINCT tipo_identificacion FROM sistema_facturacion.{table_name};")
-        values = cur.fetchall()
-        print("--- Valores actuales de tipo_identificacion ---")
-        for val in values:
-            print(f"  - '{val['tipo_identificacion']}'")
-    except Exception as e:
-        print(f"  Error al leer datos: {e}")
+    # 4. Data Samples (top 5, ordered by date if possible)
+    if count > 0:
+        print(f"\n--- ÚLTIMOS REGISTROS ---")
+        order_by = ""
+        # Detect date columns for ordering
+        date_cols = [c['column_name'] for c in cols if 'date' in c['data_type'] or 'timestamp' in c['data_type']]
+        if 'created_at' in date_cols:
+            order_by = "ORDER BY created_at DESC"
+        elif date_cols:
+            order_by = f"ORDER BY {date_cols[0]} DESC"
+
+        cur.execute(f"SELECT * FROM sistema_facturacion.{table_name} {where_clause} {order_by} LIMIT 5;")
+        samples = cur.fetchall()
+        for i, row in enumerate(samples):
+            print(f"  [Registro {i+1}]:")
+            for k, v in row.items():
+                print(f"    {k}: {v}")
+    else:
+        print("\n--- SIN DATOS ---")
 
 def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--empresa", help="ID de la empresa a filtrar")
+    args = parser.parse_args()
+
     conn = None
     try:
-        # Use credentials from Env
         conn = psycopg2.connect(
             host=env.DB_HOST,
             database=env.DB_NAME,
@@ -68,14 +83,24 @@ def main():
         )
         cur = conn.cursor()
         
-        tables = ["clientes", "proveedores", "vendedores"]
+        tables = [
+            "suscripciones", 
+            "pagos_suscripciones", 
+            "comisiones"
+        ]
+        
         for table in tables:
-            check_table(cur, table)
+            try:
+                check_table(cur, table, args.empresa)
+            except Exception as e:
+                print(f"\nError al verificar tabla '{table}': {e}")
             
         conn.close()
     except Exception as e:
-        # Avoid encoding issues by forcing string conversion
-        print(f"Error detectado: {str(e).encode('ascii', 'ignore').decode('ascii')}")
+        print(f"Error de conexión: {str(e)}")
+
+if __name__ == "__main__":
+    main()
 
 if __name__ == "__main__":
     main()

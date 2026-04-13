@@ -155,7 +155,7 @@ interface PuntosEmisionStats {
 })
 export class PuntosEmisionPage implements OnInit, OnDestroy {
   get canView(): boolean {
-    return this.permissionsService.hasPermission(PUNTOS_EMISION_PERMISSIONS.VER);
+    return this.permissionsService.hasPermission(PUNTOS_EMISION_PERMISSIONS.GESTIONAR);
   }
 
   // Observables

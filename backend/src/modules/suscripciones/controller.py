@@ -46,6 +46,12 @@ class SuscripcionController:
         pagos = self.service.listar_pagos(usuario_actual, empresa_id)
         return success_response(pagos)
     
+    def confirmar_pago(self, pago_id: UUID, body: dict, usuario_actual: dict):
+        comprobante = body.get('numero_comprobante')
+        metodo = body.get('metodo_pago')
+        resultado = self.service.confirmar_pago(pago_id, comprobante, metodo, usuario_actual)
+        return success_response(resultado, "Pago confirmado")
+    
     # --- Stats ---
     def obtener_stats_dashboard(self, usuario_actual: dict):
         stats = self.service.obtener_stats_dashboard(usuario_actual)

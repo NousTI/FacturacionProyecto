@@ -64,3 +64,38 @@ CREATE TABLE IF NOT EXISTS sistema_facturacion.movimiento_inventario (
     fecha_movimiento TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
+
+-- =====================================================
+-- TABLA: REPORTE_GENERADO
+-- =====================================================
+CREATE TABLE IF NOT EXISTS sistema_facturacion.reporte_generado (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+
+    empresa_id UUID NOT NULL
+        REFERENCES sistema_facturacion.empresas(id) ON DELETE CASCADE,
+
+    usuario_id UUID NOT NULL
+        REFERENCES sistema_facturacion.usuarios(id) ON DELETE RESTRICT,
+
+    tipo_reporte TEXT NOT NULL,
+
+    nombre TEXT NOT NULL,
+
+    parametros JSONB,
+
+    formato VARCHAR(20),
+
+    archivo_url TEXT,
+
+    tamanio_bytes BIGINT,
+
+    estado VARCHAR(50),
+
+    fecha_generacion TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+
+    fecha_expiracion TIMESTAMPTZ,
+
+    descargas INTEGER DEFAULT 0,
+
+    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+);

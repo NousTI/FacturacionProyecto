@@ -14,7 +14,7 @@ router = APIRouter()
 @router.post("/", response_model=RespuestaBase[PuntoEmisionLectura], status_code=status.HTTP_201_CREATED)
 def crear_punto(
     datos: PuntoEmisionCreacion,
-    usuario: dict = Depends(requerir_permiso(PermissionCodes.PUNTO_EMISION_CREAR)),
+    usuario: dict = Depends(requerir_permiso(PermissionCodes.PUNTO_EMISION_GESTIONAR)),
     servicio: ServicioPuntosEmision = Depends()
 ):
     punto = servicio.crear_punto(datos, usuario)
@@ -26,7 +26,7 @@ def listar_puntos(
     limit: int = Query(100, ge=1),
     offset: int = Query(0, ge=0),
     solo_activos: bool = Query(False),
-    usuario: dict = Depends(requerir_permiso([PermissionCodes.PUNTO_EMISION_VER, PermissionCodes.FACTURAS_VER_TODAS, PermissionCodes.FACTURAS_VER_PROPIAS, PermissionCodes.FACTURAS_ENVIAR_SRI])),
+    usuario: dict = Depends(requerir_permiso([PermissionCodes.PUNTO_EMISION_GESTIONAR, PermissionCodes.FACTURAS_VER_TODAS, PermissionCodes.FACTURAS_VER_PROPIAS, PermissionCodes.FACTURAS_ENVIAR_SRI])),
     servicio: ServicioPuntosEmision = Depends()
 ):
     puntos = servicio.listar_puntos(usuario, establecimiento_id, limit, offset, solo_activos)
@@ -34,7 +34,7 @@ def listar_puntos(
 
 @router.get("/stats")
 def obtener_estadisticas(
-    usuario: dict = Depends(requerir_permiso(PermissionCodes.PUNTO_EMISION_VER)),
+    usuario: dict = Depends(requerir_permiso(PermissionCodes.PUNTO_EMISION_GESTIONAR)),
     servicio: ServicioPuntosEmision = Depends()
 ):
     stats = servicio.obtener_estadisticas(usuario)
@@ -43,7 +43,7 @@ def obtener_estadisticas(
 @router.get("/{punto_id}", response_model=RespuestaBase[PuntoEmisionLectura])
 def obtener_punto(
     punto_id: UUID,
-    usuario: dict = Depends(requerir_permiso([PermissionCodes.PUNTO_EMISION_VER, PermissionCodes.FACTURAS_VER_TODAS, PermissionCodes.FACTURAS_VER_PROPIAS, PermissionCodes.FACTURAS_ENVIAR_SRI])),
+    usuario: dict = Depends(requerir_permiso([PermissionCodes.PUNTO_EMISION_GESTIONAR, PermissionCodes.FACTURAS_VER_TODAS, PermissionCodes.FACTURAS_VER_PROPIAS, PermissionCodes.FACTURAS_ENVIAR_SRI])),
     servicio: ServicioPuntosEmision = Depends()
 ):
     punto = servicio.obtener_punto(punto_id, usuario)
@@ -53,7 +53,7 @@ def obtener_punto(
 def actualizar_punto(
     punto_id: UUID,
     datos: PuntoEmisionActualizacion,
-    usuario: dict = Depends(requerir_permiso(PermissionCodes.PUNTO_EMISION_EDITAR)),
+    usuario: dict = Depends(requerir_permiso(PermissionCodes.PUNTO_EMISION_GESTIONAR)),
     servicio: ServicioPuntosEmision = Depends()
 ):
     punto = servicio.actualizar_punto(punto_id, datos, usuario)
@@ -62,7 +62,7 @@ def actualizar_punto(
 @router.delete("/{punto_id}")
 def eliminar_punto(
     punto_id: UUID,
-    usuario: dict = Depends(requerir_permiso(PermissionCodes.PUNTO_EMISION_ELIMINAR)),
+    usuario: dict = Depends(requerir_permiso(PermissionCodes.PUNTO_EMISION_GESTIONAR)),
     servicio: ServicioPuntosEmision = Depends()
 ):
     servicio.eliminar_punto(punto_id, usuario)

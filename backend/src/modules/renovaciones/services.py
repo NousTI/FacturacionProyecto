@@ -3,12 +3,15 @@ from typing import List, Optional
 from uuid import UUID
 from datetime import datetime, timedelta
 from psycopg2.extras import RealDictCursor
+import logging
+
 from .repositories import RepositorioRenovaciones
 from .schemas import SolicitudRenovacionCreate, SolicitudRenovacionProcess
 from ..notificaciones.services import ServicioNotificaciones
 from ..notificaciones.schemas import NotificacionCreate
 from ..suscripciones.repositories import RepositorioSuscripciones
-# RealDictCursor se usa en los cursores dentro de los métodos
+
+logger = logging.getLogger("facturacion_api")
 
 class ServicioRenovaciones:
     def __init__(self, 
@@ -42,7 +45,7 @@ class ServicioRenovaciones:
         if not suscripcion:
             raise HTTPException(status_code=404, detail="No se encontró una suscripción previa para esta empresa.")
 
-        # Impedir renovar el mismo plan si la actual sigue activa y vigente
+        # Impedir renovar el mismo plan si falta mucho tiempo (Regla 30 días)
         from datetime import date, datetime
         hoy = date.today()
         # Normalizar fecha_fin a tipo date si es datetime
@@ -50,13 +53,17 @@ class ServicioRenovaciones:
         if isinstance(fecha_fin, datetime):
             fecha_fin = fecha_fin.date()
 
-        if suscripcion['estado'] == 'ACTIVA' and fecha_fin >= hoy:
-            # Si es el mismo plan, no permitir. Debe ser cambio (upgrade o cambio de plan)
-            if str(suscripcion['plan_id']) == str(data.plan_id):
+        if str(suscripcion['plan_id']) == str(data.plan_id):
+            # Solo permitir si faltan 30 días o menos para el vencimiento
+            dias_restantes = (fecha_fin - hoy).days
+            if dias_restantes > 30:
                 raise HTTPException(
                     status_code=400, 
-                    detail="La empresa ya tiene una suscripción activa con este mismo plan. Solo puedes solicitar cambios si deseas un plan diferente."
+                    detail=f"Todavía faltan {dias_restantes} días para el vencimiento. Solo puedes solicitar renovación cuando falten 30 días o menos."
                 )
+        else:
+            # Si el plan es diferente, es un Upgrade, se permite siempre.
+            logger.info(f"[UPGRADE] Vendedor solicita cambio de plan para empresa {empresa_id}")
 
         # 4. Crear solicitud
         sol_data = {
@@ -64,7 +71,6 @@ class ServicioRenovaciones:
             "suscripcion_id": suscripcion['id'],
             "plan_id": data.plan_id,
             "vendedor_id": vendedor_id_actual,
-            "comprobante_url": data.comprobante_url,
             "estado": "PENDIENTE"
         }
         nueva_solicitud = self.repo.crear_solicitud(sol_data)
@@ -138,19 +144,24 @@ class ServicioRenovaciones:
             base_date = suscripcion_actual['fecha_fin'] if suscripcion_actual and suscripcion_actual['fecha_fin'] > datetime.now().astimezone() else datetime.now()
             fecha_fin_nueva = base_date + timedelta(days=365)
 
+            # Determinar dinámicamente si es RENOVACION o UPGRADE
+            tipo_pago = "RENOVACION"
+            if suscripcion_actual and str(suscripcion_actual['plan_id']) != str(solicitud['plan_id']):
+                tipo_pago = "UPGRADE"
+
             pago_data = {
                 "empresa_id": str(empresa_id),
                 "plan_id": str(solicitud['plan_id']),
                 "monto": float(plan['precio_anual']),
-                "metodo_pago": "TRANSFERENCIA", 
+                "metodo_pago": data.metodo_pago or "TRANSFERENCIA", 
                 "estado": "PAGADO",
                 "fecha_pago": datetime.now(),
                 "fecha_inicio_periodo": base_date,
                 "fecha_fin_periodo": fecha_fin_nueva,
-                "comprobante_url": solicitud.get('comprobante_url'),
                 "registrado_por": str(superadmin_id),
-                "observaciones": f"Renovación aprobada desde solicitud: {solicitud_id}",
-                "tipo_pago": "RENOVACION"
+                "numero_comprobante": data.numero_comprobante,
+                "observaciones": f"Solicitud aprobada: {solicitud_id}. {tipo_pago}",
+                "tipo_pago": tipo_pago
             }
 
             empresa_data = {

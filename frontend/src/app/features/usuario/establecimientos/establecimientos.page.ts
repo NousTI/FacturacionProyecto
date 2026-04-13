@@ -155,7 +155,7 @@ interface EstablecimientoStats {
 })
 export class EstablecimientosPage implements OnInit, OnDestroy {
   get canView(): boolean {
-    return this.permissionsService.hasPermission(ESTABLECIMIENTOS_PERMISSIONS.VER);
+    return this.permissionsService.hasPermission(ESTABLECIMIENTOS_PERMISSIONS.GESTIONAR);
   }
 
   // Observables

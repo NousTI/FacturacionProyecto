@@ -49,21 +49,51 @@ import { EmpresaService } from '../../services/empresa.service';
               <h6 class="text-secondary mb-3 text-uppercase fw-bold" style="font-size: 0.75rem; letter-spacing: 0.5px;">
                 <i class="bi bi-credit-card me-2"></i>Detalles del Pago
               </h6>
+
+              <div class="col-12 mb-3">
+                <div class="d-flex align-items-center justify-content-between p-3 rounded-4 bg-light border">
+                  <div class="d-flex align-items-center gap-3">
+                    <div class="icon-payment" [class.active]="pagoRecibido">
+                      <i class="bi" [class.bi-cash-coin]="pagoRecibido" [class.bi-hourglass-split]="!pagoRecibido"></i>
+                    </div>
+                    <div>
+                      <div class="fw-bold text-dark" style="font-size: 0.9rem;">{{ pagoRecibido ? 'Pago Recibido' : 'Pago por Recibir' }}</div>
+                      <div class="small text-muted" style="font-size: 0.75rem;">{{ pagoRecibido ? 'El plan se activará como pagado.' : 'Se generará una deuda.' }}</div>
+                    </div>
+                  </div>
+                  <div class="form-check form-switch fs-4">
+                    <input class="form-check-input ms-0" type="checkbox" role="switch" [checked]="pagoRecibido" (change)="pagoRecibido = !pagoRecibido">
+                  </div>
+                </div>
+              </div>
               
               <div class="row g-3">
                  <div class="col-6">
-                  <label class="form-label small fw-bold text-secondary">Monto Recibido</label>
+                  <label class="form-label small fw-bold text-secondary">Monto a Cobrar</label>
                   <input type="number" [(ngModel)]="monto" class="form-control rounded-pill shadow-none" placeholder="0.00">
                 </div>
                 <div class="col-6">
-                   <label class="form-label small fw-bold text-secondary">Método</label>
-                   <input type="text" value="MANUAL_SUPERADMIN" readonly class="form-control rounded-pill bg-light text-muted shadow-none">
+                   <label class="form-label small fw-bold text-secondary">Concepto</label>
+                   <input type="text" [value]="pagoRecibido ? 'PAGO MANUAL' : 'DEUDA PENDIENTE'" readonly class="form-control rounded-pill bg-light text-muted shadow-none">
                 </div>
                 <div class="col-12">
-                  <label class="form-label small fw-bold text-secondary">Observaciones / Motivo</label>
+                  <label class="form-label small fw-bold text-secondary">Observaciones</label>
                   <textarea [(ngModel)]="observaciones" class="form-control rounded-3 shadow-none" rows="2" 
-                    placeholder="Ej: Upgrade autorizado por Gerencia..."></textarea>
+                    placeholder="Ej: Upgrade autorizado..."></textarea>
                 </div>
+
+                <ng-container *ngIf="pagoRecibido">
+                  <div class="col-6 animate__animated animate__fadeIn">
+                    <label class="form-label small fw-bold text-secondary">Método de Pago</label>
+                    <select [(ngModel)]="metodo_pago" class="form-select rounded-pill shadow-none">
+                      <option *ngFor="let m of metodosPago" [value]="m">{{ m }}</option>
+                    </select>
+                  </div>
+                  <div class="col-6 animate__animated animate__fadeIn">
+                    <label class="form-label small fw-bold text-secondary">Nº Comprobante</label>
+                    <input type="text" [(ngModel)]="numero_comprobante" class="form-control rounded-pill shadow-none" placeholder="TR-000123">
+                  </div>
+                </ng-container>
               </div>
             </div>
           </div>
@@ -73,7 +103,7 @@ import { EmpresaService } from '../../services/empresa.service';
         <div class="modal-footer-plan">
           <button (click)="onClose.emit()" class="btn-plan-secondary">Cancelar</button>
           <button (click)="submit()" [disabled]="!selectedNewPlanId" class="btn-plan-primary">
-            Actualizar Plan
+            {{ pagoRecibido ? 'Actualizar y Pagar' : 'Actualizar (Pendiente)' }}
           </button>
         </div>
 
@@ -82,137 +112,44 @@ import { EmpresaService } from '../../services/empresa.service';
   `,
   styles: [`
     .modal-overlay {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100vw;
-      height: 100vh;
-      background: rgba(15, 23, 53, 0.4);
-      backdrop-filter: blur(8px);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 10001;
+      position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+      background: rgba(15, 23, 53, 0.4); backdrop-filter: blur(8px);
+      display: flex; align-items: center; justify-content: center; z-index: 10001;
     }
     .modal-container-plan {
-      background: #ffffff;
-      width: 100%;
-      max-width: 550px;
-      border-radius: 28px;
-      overflow: hidden;
-      display: flex;
-      flex-direction: column;
-      max-height: 90vh;
+      background: #ffffff; width: 100%; max-width: 500px; border-radius: 28px;
+      overflow: hidden; display: flex; flex-direction: column; max-height: 90vh;
     }
-    .modal-header-plan {
-      padding: 1.5rem 2rem;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      background: #fff;
-    }
-    .modal-title-plan {
-      font-size: 1.15rem;
-      font-weight: 800;
-      color: #161d35;
-      margin: 0;
-    }
-    .plan-subtitle {
-      font-size: 0.9rem;
-      color: #64748b;
-    }
-    .btn-close-plan {
-      background: none;
-      border: none;
-      font-size: 1.5rem;
-      color: #94a3b8;
-      cursor: pointer;
-    }
-    .modal-body-plan {
-      padding: 0 2rem 2rem;
-      overflow-y: auto;
-    }
-    .plans-list {
-      display: flex;
-      flex-direction: column;
-      gap: 1rem;
-    }
-    .plan-card {
-      padding: 1rem 1.25rem;
-      border: 1px solid #e2e8f0;
-      border-radius: 16px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
+    .modal-header-plan { padding: 1.5rem 2rem; display: flex; justify-content: space-between; align-items: center; background: #fff; }
+    .modal-title-plan { font-size: 1.15rem; font-weight: 800; color: #161d35; margin: 0; }
+    .plan-subtitle { font-size: 0.9rem; color: #64748b; }
+    .btn-close-plan { background: none; border: none; font-size: 1.5rem; color: #94a3b8; cursor: pointer; }
+    .modal-body-plan { padding: 0 2rem 2rem; overflow-y: auto; }
+    .plans-list { display: flex; flex-direction: column; gap: 0.75rem; }
+    .plan-card { padding: 0.75rem 1.25rem; border: 1px solid #e2e8f0; border-radius: 16px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; transition: all 0.2s; }
     .plan-card:hover:not(.disabled) { border-color: #161d35; background: #f8fafc; }
-    .plan-card.selected {
-      border-color: #161d35;
-      background: rgba(22, 29, 53, 0.02);
-      box-shadow: 0 4px 15px rgba(22, 29, 53, 0.05);
-    }
-    .plan-card.disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
-      background: #f1f5f9;
-      border-color: #e2e8f0;
-    }
-    .badge-current {
-      font-size: 0.65rem;
-      background: #e2e8f0;
-      color: #64748b;
-      padding: 2px 8px;
-      border-radius: 6px;
-      font-weight: 700;
-      letter-spacing: 0.5px;
-    }
+    .plan-card.selected { border-color: #161d35; background: rgba(22, 29, 53, 0.02); box-shadow: 0 4px 15px rgba(22, 29, 53, 0.05); }
+    .plan-card.disabled { opacity: 0.6; cursor: not-allowed; background: #f1f5f9; border-color: #e2e8f0; }
+    .badge-current { font-size: 0.6rem; background: #e2e8f0; color: #64748b; padding: 2px 8px; border-radius: 6px; font-weight: 700; }
     .plan-info { display: flex; flex-direction: column; }
-    .plan-name { font-weight: 800; color: #1e293b; font-size: 1rem; }
-    .plan-desc { font-size: 0.8rem; color: #64748b; }
-    .plan-check { font-size: 1.25rem; color: #94a3b8; }
+    .plan-name { font-weight: 800; color: #1e293b; font-size: 0.95rem; }
+    .plan-desc { font-size: 0.75rem; color: #64748b; }
+    .plan-check { font-size: 1.1rem; color: #94a3b8; }
     .selected .plan-check { color: #161d35; }
     
-    /* Accordion styles */
-    .payment-wrapper {
-      max-height: 0;
-      overflow: hidden;
-      transition: max-height 0.3s ease-in-out, opacity 0.3s;
-      opacity: 0;
+    .icon-payment {
+      width: 38px; height: 38px; border-radius: 10px; display: flex; align-items: center; justify-content: center;
+      background: #f1f5f9; color: #94a3b8; font-size: 1.2rem; transition: all 0.2s;
     }
-    .payment-wrapper.open {
-      max-height: 500px;
-      opacity: 1;
-    }
+    .icon-payment.active { background: rgba(16, 185, 129, 0.1); color: #10b981; }
 
-    .modal-footer-plan {
-      padding: 1.5rem 2rem;
-      background: #f8fafc;
-      display: flex;
-      justify-content: flex-end;
-      gap: 1rem;
-      border-top: 1px solid #e2e8f0;
-      margin-top: auto;
-    }
-    .btn-plan-primary {
-      background: #161d35;
-      color: white;
-      border: none;
-      padding: 0.75rem 2rem;
-      border-radius: 12px;
-      font-weight: 700;
-      transition: all 0.2s;
-    }
+    .payment-wrapper { max-height: 0; overflow: hidden; transition: max-height 0.3s ease-in-out, opacity 0.3s; opacity: 0; }
+    .payment-wrapper.open { max-height: 500px; opacity: 1; }
+
+    .modal-footer-plan { padding: 1.5rem 2rem; background: #f8fafc; display: flex; justify-content: flex-end; gap: 1rem; border-top: 1px solid #e2e8f0; margin-top: auto; }
+    .btn-plan-primary { background: #161d35; color: white; border: none; padding: 0.75rem 2rem; border-radius: 12px; font-weight: 700; transition: all 0.2s; }
     .btn-plan-primary:disabled { opacity: 0.4; cursor: not-allowed; }
-    .btn-plan-secondary {
-      background: white;
-      color: #64748b;
-      border: 1px solid #e2e8f0;
-      padding: 0.75rem 1.5rem;
-      border-radius: 12px;
-      font-weight: 600;
-    }
+    .btn-plan-secondary { background: white; color: #64748b; border: 1px solid #e2e8f0; padding: 0.75rem 1.5rem; border-radius: 12px; font-weight: 600; }
     .shadow-premium { box-shadow: 0 40px 80px -20px rgba(22, 29, 53, 0.25); }
   `],
   standalone: true,
@@ -222,15 +159,26 @@ export class ChangePlanModalComponent implements OnInit {
   @Input() empresaName: string = '';
   @Input() selectedPlanId: string | null = null;
 
-  @Output() onSave = new EventEmitter<{ planId: string, monto: number, observaciones: string }>();
+  @Output() onSave = new EventEmitter<{ 
+    planId: string, 
+    monto: number, 
+    observaciones: string, 
+    estado: string,
+    metodo_pago?: string,
+    numero_comprobante?: string 
+  }>();
   @Output() onClose = new EventEmitter<void>();
 
   availablePlans: any[] = [];
+  metodosPago = ['TRANSFERENCIA', 'EFECTIVO', 'TARJETA', 'OTRO'];
 
   // Track the NEW plan selected by the user
   selectedNewPlanId: string | null = null;
   monto: number = 0;
   observaciones: string = '';
+  pagoRecibido: boolean = true;
+  metodo_pago: string = 'TRANSFERENCIA';
+  numero_comprobante: string = '';
 
   constructor(
     private empresaService: EmpresaService,
@@ -253,9 +201,7 @@ export class ChangePlanModalComponent implements OnInit {
   }
 
   selectPlan(plan: any) {
-    // Prevent selecting the current plan
     if (this.isCurrentPlan(plan)) return;
-
     this.selectedNewPlanId = plan.id;
     this.monto = plan.precio_anual || 0;
     this.observaciones = `Cambio de plan a ${plan.nombre}`;
@@ -266,7 +212,11 @@ export class ChangePlanModalComponent implements OnInit {
     this.onSave.emit({
       planId: this.selectedNewPlanId,
       monto: this.monto,
-      observaciones: this.observaciones
+      observaciones: this.observaciones,
+      estado: this.pagoRecibido ? 'PAGADO' : 'PENDIENTE',
+      metodo_pago: this.pagoRecibido ? this.metodo_pago : 'PENDIENTE',
+      numero_comprobante: this.pagoRecibido ? this.numero_comprobante : 'POR_RECIBIR'
     });
   }
 }
+

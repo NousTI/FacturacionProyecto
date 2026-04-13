@@ -11,11 +11,12 @@ class SolicitudRenovacionBase(BaseModel):
 class SolicitudRenovacionCreate(BaseModel):
     empresa_id: UUID
     plan_id: UUID
-    comprobante_url: Optional[str] = None
 
 class SolicitudRenovacionProcess(BaseModel):
     estado: str = Field(..., pattern="^(ACEPTADA|RECHAZADA)$")
     motivo_rechazo: Optional[str] = None
+    metodo_pago: Optional[str] = "TRANSFERENCIA"
+    numero_comprobante: Optional[str] = None
 
 class SolicitudRenovacionLectura(SolicitudRenovacionBase):
     id: UUID

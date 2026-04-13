@@ -32,6 +32,9 @@ class EmpresaCreacion(EmpresaBase):
     plan_id: Optional[UUID] = None
     monto_pago: Optional[Decimal] = Field(Decimal('0.00'), ge=0)
     observacion_pago: Optional[str] = Field(None, max_length=250)
+    estado_pago: str = "PAGADO"
+    metodo_pago: str = "EFECTIVO"
+    numero_comprobante: Optional[str] = None
 
 class EmpresaAsignarVendedor(BaseModel):
     vendedor_id: Optional[UUID] = None

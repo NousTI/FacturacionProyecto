@@ -11,7 +11,7 @@ export interface Suscripcion {
     fecha_inicio: string;
     fecha_fin: string;
     estado: 'ACTIVA' | 'CANCELADA' | 'SUSPENDIDA' | 'VENCIDA';
-    estado_pago?: 'PAGADO' | 'PENDIENTE' | 'ANULADO' | 'REEMBOLSADO'; // Added field
+    estado_pago?: 'PAGADO' | 'PENDIENTE' | 'ANULADO' | 'REEMBOLSADO' | 'ATRASADO'; // Added field
     created_at: string;
     updated_at: string;
     // Annotated fields from potential joins/view models
@@ -141,5 +141,9 @@ export class SuscripcionService {
         return this.http.get<any>(`${this.apiUrl}/${empresaId}/historial`).pipe(
             map(res => res.detalles || [])
         );
+    }
+
+    confirmarPago(pagoId: string, data: { numero_comprobante: string, metodo_pago: string }): Observable<any> {
+        return this.http.patch(`${this.apiUrl}/pagos/${pagoId}/confirmar`, data);
     }
 }
