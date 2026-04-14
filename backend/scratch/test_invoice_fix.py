@@ -4,7 +4,7 @@ import sys
 import os
 
 # Set up path to import from src
-sys.path.append(os.path.join(os.getcwd(), 'src'))
+sys.path.append(os.path.join(os.getcwd(), 'backend', 'src'))
 
 from modules.facturas.schemas import FacturaCreacion, FacturaDetalleCreacion
 
@@ -21,6 +21,7 @@ def test_validation():
         producto_id="79e474cb-6524-45e5-a561-bc2fcea1c5cd",
         codigo_producto="TEST-001",
         nombre="Producto Prueba",
+        descripcion="Producto de prueba",
         cantidad=100.0,
         precio_unitario=1.00,
         descuento=10.00,

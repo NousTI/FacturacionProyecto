@@ -33,7 +33,8 @@ def apply_db_fix():
         -- 1. Eliminar restricciones obsoletas e incompletas
         ALTER TABLE sistema_facturacion.facturas 
         DROP CONSTRAINT IF EXISTS facturas_total_check_v2,
-        DROP CONSTRAINT IF EXISTS chk_facturas_total_calculado;
+        DROP CONSTRAINT IF EXISTS chk_facturas_total_calculado,
+        DROP CONSTRAINT IF EXISTS facturas_total_check_sri;
 
         -- 2. Crear nueva restricción integral con todos los campos SRI
         ALTER TABLE sistema_facturacion.facturas
@@ -45,7 +46,6 @@ def apply_db_fix():
                  subtotal_no_objeto_iva + 
                  subtotal_exento_iva + 
                  iva + 
-                 ice + 
                  propina) - 
                 (descuento + 
                  retencion_iva + 

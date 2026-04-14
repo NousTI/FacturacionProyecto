@@ -136,15 +136,25 @@ class ServicioFactura:
         for key in ['forma_pago_sri', 'plazo', 'unidad_tiempo']:
             if key in payload:
                 pago_update[key] = payload.pop(key)
-                
-        # Solo ejecutar actualización de factura si sobraron campos
-        actualizada = self.core.actualizar_factura(id, payload) if payload else factura
-        
+
+        # Ignorar campos monetarios del frontend — los recalcula recalcular_totales()
+        CAMPOS_MONETARIOS = {
+            'subtotal_sin_iva', 'subtotal_con_iva', 'subtotal_no_objeto_iva',
+            'subtotal_exento_iva', 'iva', 'total', 'total_sin_impuestos', 'descuento'
+        }
+        payload_no_monetario = {k: v for k, v in payload.items() if k not in CAMPOS_MONETARIOS}
+
+        # Solo ejecutar actualización de cabecera si sobraron campos no monetarios
+        if payload_no_monetario:
+            self.core.actualizar_factura(id, payload_no_monetario)
+
         if pago_update:
             pagos_existentes = self.formas_pago_repo.listar_por_factura(id)
             if pagos_existentes:
                 self.formas_pago_repo.actualizar_pago(pagos_existentes[0]['id'], pago_update)
-            
+
+        # Recalcular totales desde detalles para garantizar CHECK CONSTRAINT
+        actualizada = self.core.recalcular_totales(id)
         return actualizada
 
     def eliminar_factura(self, id: UUID, usuario_actual: dict):
