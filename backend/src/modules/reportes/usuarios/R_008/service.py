@@ -13,11 +13,24 @@ class ServicioR008:
         top_clientes = self.repo.obtener_top_clientes_pendientes(empresa_id, fecha_inicio, fecha_fin)
         
         return {
-            "kpis": kpis,
-            "top_clientes": top_clientes,
+            "kpis": {
+                "total_por_cobrar": float(kpis['total_por_cobrar']),
+                "vencido_menor_30": float(kpis['vencido_menor_30']),
+                "cartera_critica": float(kpis['cartera_critica']),
+                "indice_morosidad": float(kpis['indice_morosidad']),
+            },
+            "top_clientes": [
+                {
+                    **row,
+                    "saldo_total": float(row["saldo_total"]),
+                    "dias_vencido": int(row["dias_vencido"]) if row["dias_vencido"] is not None else 0,
+                    "facturas_pendientes": int(row["facturas_pendientes"]),
+                }
+                for row in top_clientes
+            ],
             "grafica_morosidad": {
-                "vencido_30": float(kpis['vencido_menor_30']),
-                "critico_30": float(kpis['cartera_critica']),
-                "porcentaje_morosidad": kpis['indice_morosidad']
+                "labels": ["Vencido <30 días", "Cartera crítica >30 días"],
+                "valores": [float(kpis['vencido_menor_30']), float(kpis['cartera_critica'])],
+                "porcentaje_morosidad": float(kpis['indice_morosidad'])
             }
         }

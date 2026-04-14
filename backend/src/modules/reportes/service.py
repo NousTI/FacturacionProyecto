@@ -10,6 +10,7 @@ from .repository import RepositorioReportes
 from .superadmin.superadmin_reportes_service import SuperAdminReportesService
 from .vendedores.R_031.repository import RepositorioR031Vendedor
 from .vendedores.R_032.repository import RepositorioR032Vendedor
+from .usuarios.R_001.service import ServicioR001
 from .usuarios.R_026.service import ServicioR026
 from .usuarios.R_027.service import ServicioR027
 from .usuarios.R_028.service import ServicioR028
@@ -30,6 +31,7 @@ class ServicioReportes:
         svc_superadmin: SuperAdminReportesService = Depends(),
         repo_v_r031: RepositorioR031Vendedor = Depends(),
         repo_v_r032: RepositorioR032Vendedor = Depends(),
+        svc_r001: ServicioR001 = Depends(),
         svc_r026: ServicioR026 = Depends(),
         svc_r027: ServicioR027 = Depends(),
         svc_r028: ServicioR028 = Depends(),
@@ -42,6 +44,7 @@ class ServicioReportes:
         self.svc_superadmin = svc_superadmin
         self.repo_v_r031 = repo_v_r031
         self.repo_v_r032 = repo_v_r032
+        self.svc_r001 = svc_r001
         self.svc_r026 = svc_r026
         self.svc_r027 = svc_r027
         self.svc_r028 = svc_r028
@@ -368,20 +371,15 @@ class ServicioReportes:
         now_str = datetime.now().strftime('%Y-%m-%d %H:%M')
         
         if tipo == 'VENTAS_GENERAL':
-            data = self.obtener_ventas_general(empresa_id, params)
+            fecha_inicio = params.get("fecha_inicio")
+            fecha_fin = params.get("fecha_fin")
+            data = self.svc_r001.generar_reporte_ventas(empresa_id, fecha_inicio, fecha_fin)
             if formato == 'pdf':
                 context = inyectar_footer_contexto({"data": data, "params": params, "now": now_str})
-                return render_to_pdf("reports/ventas_general.html", context)
+                return render_to_pdf("reports/usuarios/reporte-r001.html", context)
             else:
-                headers = ["Categoría", "Valor"]
-                # Aplanar un poco para Excel
-                excel_data = [
-                    {"Categoría": "Cantidad Facturas", "Valor": data['resumen']['cantidad_facturas']},
-                    {"Categoría": "Subtotal Total", "Valor": data['resumen']['subtotal_total']},
-                    {"Categoría": "Total IVA", "Valor": data['resumen']['total_iva']},
-                    {"Categoría": "Total General", "Valor": data['resumen']['total_general']},
-                ]
-                return generate_excel_report("Reporte Ventas General", headers, excel_data, ["Categoría", "Valor"])
+                headers = ["Usuario", "Facturas", "Total Ventas", "Ticket Promedio", "Anuladas", "Devoluciones"]
+                return generate_excel_report("Ventas Generales R-001", headers, data["ventas_por_usuario"], ["usuario", "facturas", "total_ventas", "ticket_promedio", "anuladas", "devoluciones"])
 
         elif tipo == 'VENTAS_MENSUALES':
             anio = int(params.get('anio', datetime.now().year))

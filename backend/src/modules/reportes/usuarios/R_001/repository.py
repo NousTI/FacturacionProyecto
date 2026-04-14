@@ -77,11 +77,11 @@ class RepositorioR001:
         query = """
             SELECT
                 u.nombres || ' ' || u.apellidos as usuario,
-                COUNT(*) as facturas_totales,
-                COALESCE(SUM(f.total), 0) as total_ventas,
+                COALESCE(COUNT(*) FILTER (WHERE f.estado = 'AUTORIZADA'), 0) as facturas_totales,
+                COALESCE(SUM(f.total) FILTER (WHERE f.estado = 'AUTORIZADA'), 0) as total_ventas,
                 CASE
-                    WHEN COUNT(*) FILTER (WHERE f.estado != 'ANULADA') > 0 THEN
-                        ROUND(COALESCE(SUM(f.total) FILTER (WHERE f.estado != 'ANULADA'), 0)::numeric / COUNT(*) FILTER (WHERE f.estado != 'ANULADA'), 2)
+                    WHEN COUNT(*) FILTER (WHERE f.estado = 'AUTORIZADA') > 0 THEN
+                        ROUND(COALESCE(SUM(f.total) FILTER (WHERE f.estado = 'AUTORIZADA'), 0)::numeric / COUNT(*) FILTER (WHERE f.estado = 'AUTORIZADA'), 2)
                     ELSE 0
                 END as ticket_promedio,
                 COALESCE(COUNT(*) FILTER (WHERE f.estado = 'ANULADA'), 0) as anuladas,

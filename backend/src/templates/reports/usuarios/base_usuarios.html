@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.1.0/dist/chartjs-plugin-datalabels.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; color: #1f2937; line-height: 1.5; padding-bottom: 60px; }
+
+        /* Header */
+        .header { padding: 40px 30px; position: relative; color: white; }
+        .header h1 { margin: 0; font-size: 28px; letter-spacing: -0.025em; }
+        .header p { margin: 5px 0 0; opacity: 0.8; font-size: 14px; }
+        .meta-info { position: absolute; top: 40px; right: 30px; text-align: right; font-size: 12px; }
+
+        .content { padding: 30px; }
+
+        /* KPI Cards */
+        .kpi-grid { display: grid; gap: 15px; margin-bottom: 30px; }
+        .kpi-card { padding: 15px; border-radius: 8px; border: 1px solid #e5e7eb; background: #f9fafb; }
+        .kpi-card .label { font-size: 10px; text-transform: uppercase; font-weight: 700; color: #6b7280; }
+        .kpi-card .value { font-size: 24px; font-weight: 800; margin-top: 8px; color: #111827; }
+        .kpi-card .extra { font-size: 11px; margin-top: 4px; color: #6b7280; }
+        .kpi-card .trend-up   { color: #10b981; font-weight: 700; }
+        .kpi-card .trend-down { color: #ef4444; font-weight: 700; }
+
+        /* Tablas */
+        table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+        th { background: #f9fafb; padding: 12px 10px; text-align: left; font-size: 10px;
+             text-transform: uppercase; color: #4b5563; border-bottom: 2px solid #e5e7eb; font-weight: 700; }
+        td { padding: 12px 10px; font-size: 12px; border-bottom: 1px solid #f3f4f6; }
+        .text-right { text-align: right; }
+        .font-bold { font-weight: 700; color: #111827; }
+        .text-danger { color: #dc2626; font-weight: 700; }
+
+        /* Gráficas */
+        .charts-container { display: grid; grid-template-columns: 1fr; gap: 30px; margin: 30px auto; max-width: 500px; }
+        .chart-box { background: #f9fafb; padding: 20px; border-radius: 8px; border: 1px solid #e5e7eb; page-break-inside: avoid; }
+        .chart-box h3 { margin: 0 0 15px; font-size: 14px; font-weight: 700; color: #111827; }
+        .chart-box canvas { max-height: 350px; }
+
+        /* Footer */
+        #footer { position: fixed; bottom: 0; width: 100%; padding: 10px; text-align: center;
+                   font-size: 10px; color: #6b7280; background: white; border-top: 1px solid #e5e7eb; }
+
+        .page-break { page-break-after: always; }
+
+        .no-data-msg {
+            padding: 40px 20px; text-align: center; color: #94a3b8;
+            background: #f8fafc; border: 1px dashed #e2e8f0; border-radius: 8px;
+            font-weight: 600; font-size: 13px; margin: 10px 0;
+        }
+
+        {% block extra_styles %}{% endblock %}
+    </style>
+</head>
+<body>
+    <div class="header" style="background-color: {% block header_color %}#1e293b{% endblock %};">
+        {% block header_content %}{% endblock %}
+        <div class="meta-info" style="color: {% block meta_color %}#e5e7eb{% endblock %};">
+            Período: {{ params.fecha_inicio or 'Inicio' }} al {{ params.fecha_fin or 'Hoy' }}<br>
+            Generado: {{ now }}
+        </div>
+    </div>
+
+    <div class="content">
+        {% block content %}{% endblock %}
+    </div>
+
+    <div id="footer">
+        Generado por
+        {% if footer_b64 %}
+        <img src="{{ footer_b64 }}" style="vertical-align: middle; height: 16px; margin: 0 4px;" alt="NOUS">
+        {% else %}
+        NOUS
+        {% endif %}
+        www.nous.ec
+    </div>
+
+    <script>
+        Chart.register(ChartDataLabels);
+        {% block extra_scripts %}{% endblock %}
+    </script>
+</body>
+</html>

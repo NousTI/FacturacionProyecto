@@ -21,7 +21,7 @@ import { PygReportComponent } from './components/pyg-report.component';
 import { IvaReportComponent } from './components/iva-report.component';
 import { SalesGeneralComponent } from './components/sales-general.component';
 import { R001VentasGeneralesComponent } from './components/reporte_001/r001-ventas-generales.component';
-import { AccountsReceivableComponent } from './components/accounts-receivable.component';
+import { R008CuentasPorCobrarComponent } from './components/reporte_008/r008-cuentas-por-cobrar.component';
 
 export type RangoTipo = 'mes_actual' | 'mes_anterior' | 'anio_actual' | 'personalizado';
 type Tab = 'resumen' | 'ventas' | 'cartera' | 'pyg' | 'iva';
@@ -38,7 +38,7 @@ type Tab = 'resumen' | 'ventas' | 'cartera' | 'pyg' | 'iva';
     IvaReportComponent,
     SalesGeneralComponent,
     R001VentasGeneralesComponent,
-    AccountsReceivableComponent
+    R008CuentasPorCobrarComponent
   ],
   template: `
 <div class="reportes-page-container animate__animated animate__fadeIn">
@@ -115,10 +115,10 @@ type Tab = 'resumen' | 'ventas' | 'cartera' | 'pyg' | 'iva';
         [data]="r001Data">
       </app-r001-ventas-generales>
 
-      <app-accounts-receivable
+      <app-r008-cuentas-por-cobrar
         *ngIf="tabActivo === 'cartera' && carteraData"
         [data]="carteraData">
-      </app-accounts-receivable>
+      </app-r008-cuentas-por-cobrar>
 
       <app-pyg-report
         *ngIf="tabActivo === 'pyg' && pygData"
