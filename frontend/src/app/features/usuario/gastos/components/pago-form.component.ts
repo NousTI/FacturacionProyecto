@@ -3,39 +3,43 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { PagoGasto, PagoGastoCreate, PagoGastoUpdate } from '../../../../domain/models/pago-gasto.model';
 import { Gasto } from '../../../../domain/models/gasto.model';
+import { ModalFormLayoutComponent } from './modal-form-layout.component';
 
 @Component({
   selector: 'app-pago-form',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, ModalFormLayoutComponent],
   template: `
-    <div class="editorial-form-wrapper">
-      <h4 class="form-title-editorial">
-        {{ viewOnly ? 'Detalles del Pago' : (editMode ? 'Editar Pago Registrado' : 'Registrar Nuevo Pago') }}
-      </h4>
-
-      <div class="summary-ticket-premium mb-5" *ngIf="selectedGasto">
-        <label class="editorial-label-muted">Aplicar pago a:</label>
-        <div class="d-flex justify-content-between align-items-end mt-2">
-          <div class="summary-details">
-            <span class="summary-title">{{ selectedGasto.concepto }}</span>
-            <div class="summary-meta mt-1">
-              <span class="badge-code-editorial">FACTURA: {{ selectedGasto.numero_factura || 'S/N' }}</span>
-              <span class="badge-status-editorial ms-2" [ngClass]="'status-' + selectedGasto.estado_pago">{{ selectedGasto.estado_pago }}</span>
+    <app-modal-form-layout
+      [title]="viewOnly ? 'Detalles del Pago' : (editMode ? 'Editar Pago Registrado' : 'Registrar Nuevo Pago')"
+      [submitLabel]="viewOnly ? 'CERRAR DETALLES' : (editMode ? 'GUARDAR PAGO' : 'REGISTRAR PAGO')"
+      [loading]="loading"
+      [submitDisabled]="form.invalid || (editMode && !hasChanges)"
+      [viewOnly]="viewOnly"
+      (onCancel)="cancel.emit()"
+    >
+      <form [formGroup]="form" (ngSubmit)="submit()" id="formContent">
+        <div class="summary-ticket-premium mb-4" *ngIf="selectedGasto">
+          <label class="editorial-label-muted">Aplicar pago a:</label>
+          <div class="d-flex justify-content-between align-items-end mt-2">
+            <div class="summary-details">
+              <span class="summary-title">{{ selectedGasto.concepto }}</span>
+              <div class="summary-meta mt-1">
+                <span class="badge-code-editorial">FACTURA: {{ selectedGasto.numero_factura || 'S/N' }}</span>
+                <span class="badge-status-editorial ms-2" [ngClass]="'status-' + selectedGasto.estado_pago">{{ selectedGasto.estado_pago }}</span>
+              </div>
+            </div>
+            <div class="summary-total text-end">
+              <span class="total-label d-block text-uppercase">Total Gasto</span>
+              <span class="total-amount">\${{ selectedGasto.total | number:'1.2-2' }}</span>
             </div>
           </div>
-          <div class="summary-total text-end">
-            <span class="total-label d-block text-uppercase">Total Gasto</span>
-            <span class="total-amount">\${{ selectedGasto.total | number:'1.2-2' }}</span>
-          </div>
         </div>
-      </div>
 
-      <div class="alert-minimalist mb-4" *ngIf="editMode && gastoEsPagado">
-        <span>ESTE PAGO ESTÁ COMPLETADO. SE PERMITEN CAMBIOS EN NOTAS.</span>
-      </div>
+        <div class="alert-minimalist mb-4" *ngIf="editMode && gastoEsPagado">
+          <span>ESTE PAGO ESTÁ COMPLETADO. SE PERMITEN CAMBIOS EN NOTAS.</span>
+        </div>
 
-      <form [formGroup]="form" (ngSubmit)="submit()">
         <div class="editorial-grid-2">
           <div class="col-span-2" *ngIf="!selectedGasto">
             <label class="editorial-label">Seleccionar Gasto</label>
@@ -51,10 +55,10 @@ import { Gasto } from '../../../../domain/models/gasto.model';
             <label class="editorial-label">Monto del Pago</label>
             <div class="input-editorial-group">
               <span class="addon">$</span>
-              <input 
-                type="number" 
-                class="editorial-input addon-field" 
-                formControlName="monto" 
+              <input
+                type="number"
+                class="editorial-input addon-field"
+                formControlName="monto"
                 step="0.01"
                 (keydown)="onlyPositiveNumbers($event)"
                 [class.is-invalid]="isInvalid('monto')"
@@ -65,9 +69,9 @@ import { Gasto } from '../../../../domain/models/gasto.model';
 
           <div>
             <label class="editorial-label">Fecha de Pago</label>
-            <input 
-              type="date" 
-              class="editorial-input" 
+            <input
+              type="date"
+              class="editorial-input"
               formControlName="fecha_pago"
               [class.is-invalid]="isInvalid('fecha_pago')"
             >
@@ -99,33 +103,12 @@ import { Gasto } from '../../../../domain/models/gasto.model';
             <textarea class="editorial-input" formControlName="observaciones" rows="2" placeholder="Notas..."></textarea>
           </div>
         </div>
-
-        <div class="d-flex justify-content-end gap-3 mt-5 pt-3 border-top-editorial" *ngIf="!viewOnly">
-          <button type="button" class="btn-editorial-secondary" (click)="cancel.emit()">
-            Cancelar
-          </button>
-          <button type="submit" class="btn-system-action px-5" [disabled]="form.invalid || loading || (editMode && !hasChanges)">
-            <span *ngIf="loading" class="spinner-border spinner-border-sm me-2"></span>
-            {{ editMode ? 'GUARDAR PAGO' : 'REGISTRAR PAGO' }}
-          </button>
-        </div>
-
-        <div class="d-flex justify-content-end mt-5 pt-3 border-top-editorial" *ngIf="viewOnly">
-          <button type="button" class="btn-system-action px-5" (click)="cancel.emit()">
-            CERRAR DETALLES
-          </button>
-        </div>
       </form>
-    </div>
+    </app-modal-form-layout>
   `,
   styles: [`
-    :host { display: block; }
-    .editorial-form-wrapper { padding: 1.5rem; }
+    :host { display: contents; }
 
-    .form-title-editorial { 
-      font-size: 1.2rem; font-weight: 800; color: #161d35; margin-bottom: 2rem; padding-bottom: 1rem; border-bottom: 1.5px solid #f1f5f9;
-    }
-    
     .summary-ticket-premium {
       background: #f8fafc; padding: 1.5rem; border-radius: 20px; border: 1.5px solid #e2e8f0; border-left: 6px solid #161d35;
     }
@@ -133,46 +116,35 @@ import { Gasto } from '../../../../domain/models/gasto.model';
     .summary-title { font-size: 1.15rem; font-weight: 900; color: #1a1a1a; display: block; letter-spacing: -0.01em; }
     .total-label { font-size: 0.65rem; font-weight: 800; color: #64748b; margin-bottom: 0.25rem; }
     .total-amount { font-size: 1.5rem; font-weight: 900; color: #161d35; letter-spacing: -0.02em; }
-    
+
     .alert-minimalist {
       background: #f1f5f9; color: #475569; padding: 0.85rem 1rem; border-radius: 12px; font-size: 0.75rem; font-weight: 700; border: 1.5px solid #e2e8f0; text-align: center; letter-spacing: 0.05em;
     }
 
     .editorial-grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem; }
     .col-span-2 { grid-column: span 2; }
-    
-    .editorial-label { 
+
+    .editorial-label {
       display: block; font-size: 0.7rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; color: #64748b; margin-bottom: 0.5rem;
     }
-    
-    .editorial-input { 
+
+    .editorial-input {
       width: 100%; padding: 0.85rem 1.25rem; border-radius: 12px; border: 1.5px solid #e2e8f0; font-size: 0.95rem; font-weight: 500; color: #1a1a1a; transition: all 0.2s ease; background: #ffffff;
     }
     .editorial-input:focus { outline: none; border-color: #161d35; background-color: #ffffff; }
     .editorial-input.is-invalid { border-color: #ef4444; }
-    
+
     .input-editorial-group { display: flex; align-items: stretch; border-radius: 12px; overflow: hidden; border: 1.5px solid #e2e8f0; }
     .input-editorial-group:focus-within { border-color: #161d35; }
     .addon { background: #f8fafc; padding: 0 1rem; display: flex; align-items: center; border-right: 1.5px solid #e2e8f0; color: #64748b; font-weight: 700; }
     .addon-field { border: none !important; border-radius: 0; }
-    
+
     .badge-code-editorial { background: #ffffff; color: #475569; padding: 0.35rem 0.75rem; border-radius: 8px; font-weight: 700; font-size: 0.7rem; border: 1.5px solid #e2e8f0; }
     .badge-status-editorial { padding: 0.35rem 0.85rem; border-radius: 8px; font-weight: 800; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.05em; }
     .status-pendiente { background: #fff7ed; color: #9a3412; border: 1px solid #ffedd5; }
     .status-pagado { background: #f0fdf4; color: #166534; border: 1px solid #dcfce7; }
-    
+
     .invalid-feedback-minimal { font-size: 0.75rem; color: #ef4444; font-weight: 500; margin-top: 0.4rem; }
-    .border-top-editorial { border-top: 1px solid #f1f5f9; }
-    
-    .btn-system-action { 
-      background: #111827; color: #ffffff; border: none; padding: 1rem 2.5rem; border-radius: 12px; font-weight: 800; font-size: 0.85rem; letter-spacing: 0.05em; transition: all 0.2s; 
-    }
-    .btn-system-action:hover { background: #000000; transform: translateY(-1px); }
-    
-    .btn-editorial-secondary { 
-      background: #f8fafc; color: #64748b; border: 1.5px solid #e2e8f0; padding: 1rem 2.5rem; border-radius: 12px; font-weight: 800; font-size: 0.85rem; letter-spacing: 0.05em; transition: all 0.2s; 
-    }
-    .btn-editorial-secondary:hover { background: #f1f5f9; color: #1a1a1a; border-color: #cbd5e1; }
   `]
 })
 export class PagoFormComponent implements OnInit {

@@ -53,7 +53,7 @@ def requerir_gestion_roles(usuario: dict = Depends(get_current_user)):
     # 1. Check granular permission
     granular_perms = usuario.get("permisos", [])
     from ...constants.permissions import PermissionCodes
-    if PermissionCodes.ROLES_GESTIONAR in granular_perms:
+    if PermissionCodes.CONFIG_ROLES in granular_perms:
         return usuario
         
     # 2. Check if user has an ADMIN role code for their empresa

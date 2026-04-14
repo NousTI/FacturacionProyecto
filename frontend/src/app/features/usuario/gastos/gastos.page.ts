@@ -149,57 +149,42 @@ import { CategoriaFormComponent } from './components/categoria-form.component';
       <!-- Modal Gasto -->
       <div class="modal-overlay" *ngIf="showGastoModal" (click)="closeModals()">
         <div class="modal-content-container glass-modal" (click)="$event.stopPropagation()">
-          <div class="modal-header border-0">
-            <button class="btn-close" (click)="closeModals()"></button>
-          </div>
-          <div class="modal-body pt-0">
-            <app-gasto-form 
-              [editData]="selectedGasto" 
-              [categorias]="categorias" 
-              [proveedores]="proveedores"
-              [loading]="isSaving"
-              [viewOnly]="isViewOnlyGasto"
-              (onSubmit)="saveGasto($event)" 
-              (cancel)="showGastoModal = false"
-            ></app-gasto-form>
-          </div>
+          <app-gasto-form
+            [editData]="selectedGasto"
+            [categorias]="categorias"
+            [proveedores]="proveedores"
+            [loading]="isSaving"
+            [viewOnly]="isViewOnlyGasto"
+            (onSubmit)="saveGasto($event)"
+            (cancel)="showGastoModal = false"
+          ></app-gasto-form>
         </div>
       </div>
 
       <!-- Modal Pago -->
       <div class="modal-overlay" *ngIf="showPagoModal" (click)="closeModals()">
         <div class="modal-content-container glass-modal" (click)="$event.stopPropagation()">
-          <div class="modal-header border-0">
-            <button class="btn-close" (click)="closeModals()"></button>
-          </div>
-          <div class="modal-body pt-0">
-            <app-pago-form 
-              [editData]="selectedPago" 
-              [selectedGasto]="selectedGastoForPay"
-              [availableGastos]="gastosPendientes"
-              [loading]="isSaving"
-              [viewOnly]="isViewOnlyPago"
-              (onSubmit)="savePago($event)" 
-              (cancel)="showPagoModal = false"
-            ></app-pago-form>
-          </div>
+          <app-pago-form
+            [editData]="selectedPago"
+            [selectedGasto]="selectedGastoForPay"
+            [availableGastos]="gastosPendientes"
+            [loading]="isSaving"
+            [viewOnly]="isViewOnlyPago"
+            (onSubmit)="savePago($event)"
+            (cancel)="showPagoModal = false"
+          ></app-pago-form>
         </div>
       </div>
 
       <!-- Modal Categoría -->
       <div class="modal-overlay" *ngIf="showCategoriaModal" (click)="closeModals()">
         <div class="modal-content-container glass-modal" (click)="$event.stopPropagation()">
-          <div class="modal-header border-0">
-            <button class="btn-close" (click)="closeModals()"></button>
-          </div>
-          <div class="modal-body pt-0">
-            <app-categoria-form
-              [editData]="selectedCategoria"
-              [loading]="isSaving"
-              (onSubmit)="saveCategoria($event)"
-              (cancel)="closeModals()"
-            ></app-categoria-form>
-          </div>
+          <app-categoria-form
+            [editData]="selectedCategoria"
+            [loading]="isSaving"
+            (onSubmit)="saveCategoria($event)"
+            (cancel)="closeModals()"
+          ></app-categoria-form>
         </div>
       </div>
 
@@ -235,8 +220,8 @@ import { CategoriaFormComponent } from './components/categoria-form.component';
     .btn-system-action:hover { background: #1f2937; transform: translateY(-1px); shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1); }
     
     .glass-modal { backdrop-filter: blur(8px); border: 1px solid rgba(255,255,255,0.2); }
-    .modal-overlay { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.4); display: flex; align-items: center; justify-content: center; z-index: 1050; animation: fadeIn 0.2s; }
-    .modal-content-container { display: block; background: white; border-radius: 20px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); max-height: 90vh; overflow-y: auto; width: 95%; max-width: 700px; position: relative; }
+    .modal-overlay { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.4); display: flex; align-items: center; justify-content: center; z-index: 1050; animation: fadeIn 0.2s; padding: 1rem; }
+    .modal-content-container { display: flex; flex-direction: column; background: white; border-radius: 24px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); max-height: 90vh; width: 100%; max-width: 700px; position: relative; overflow: hidden; border: 1px solid #f1f5f9; }
     
     @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
     .icon-lock-wrapper {
