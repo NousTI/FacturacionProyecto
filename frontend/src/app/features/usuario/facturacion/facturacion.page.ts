@@ -88,8 +88,7 @@ import { SriConfigService } from '../certificado-sri/services/sri-config.service
             <!-- TABLE -->
             <app-factura-table
               [facturas]="filteredFacturas"
-              [consultingId]="consultingId"
-              [processingAction]="processingAction"
+              [processingStates]="processingStates"
               (onAction)="handleAction($event)"
             ></app-factura-table>
           </div>
@@ -276,9 +275,10 @@ export class FacturacionPage implements OnInit {
 
   selectedFactura: Factura | null = null;
   isLoading: boolean = false;
-  isProcessing: boolean = false; // Para modales de confirmación
-  consultingId: string | null = null; // Para seguimiento de fila individual
-  processingAction: 'consultar' | 'emitir' | null = null; // Tipo de acción activa
+  isProcessing: boolean = false; // Para modales de confirmación (uso único)
+  
+  // Mapa para tracking de estados SRI independientes por factura
+  processingStates: Map<string, 'consultar' | 'emitir'> = new Map();
 
   // MOdal Config
   showConfirmModal: boolean = false;
@@ -517,7 +517,13 @@ export class FacturacionPage implements OnInit {
   }
 
   handleModalConfirm() {
-    if (!this.selectedFactura || this.isProcessing) return; // Prevent double clicks
+    if (!this.selectedFactura) return; 
+    
+    // Evitar re-confirmar si la factura específica ya se está enviando
+    if (this.processingStates.has(this.selectedFactura.id)) {
+      this.showConfirmModal = false;
+      return;
+    }
 
     if (this.confirmModalConfig.action === 'delete') {
       this.deleteFactura();
@@ -544,19 +550,17 @@ export class FacturacionPage implements OnInit {
   }
 
   enviarSri() {
-    if (!this.selectedFactura || this.isProcessing) return; // Double protection
+    if (!this.selectedFactura) return; 
     
     const id = this.selectedFactura.id;
-    this.consultingId = id;
-    this.processingAction = 'emitir';
-    this.showConfirmModal = false; // Cerramos el modal inmediatamente
-    this.isProcessing = true; // Evitar disparos dobles internos
+    
+    // Marcar como procesando esta factura específica
+    this.processingStates.set(id, 'emitir');
+    this.showConfirmModal = false; 
 
     this.facturasService.enviarSri(id)
       .pipe(finalize(() => {
-        this.isProcessing = false;
-        this.consultingId = null;
-        this.processingAction = null;
+        this.processingStates.delete(id);
       }))
       .subscribe({
         next: (res: any) => {
@@ -623,14 +627,12 @@ export class FacturacionPage implements OnInit {
 
   consultarSri(facturaId?: string) {
     const id = facturaId || this.selectedFactura?.id;
-    if (!id || this.isProcessing) return;
+    if (!id || this.processingStates.has(id)) return;
 
-    this.consultingId = id;
-    this.processingAction = 'consultar';
+    this.processingStates.set(id, 'consultar');
     this.facturasService.consultarEstadoSri(id)
       .pipe(finalize(() => {
-        this.consultingId = null;
-        this.processingAction = null;
+        this.processingStates.delete(id);
       }))
       .subscribe({
         next: (res: any) => {
