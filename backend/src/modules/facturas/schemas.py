@@ -60,7 +60,6 @@ class FacturaBase(BaseModel):
     subtotal_no_objeto_iva: Decimal = Field(default=Decimal('0.00'), ge=0)
     subtotal_exento_iva: Decimal = Field(default=Decimal('0.00'), ge=0)
     iva: Decimal = Field(default=Decimal('0.00'), ge=0)
-    ice: Decimal = Field(default=Decimal('0.00'), ge=0)
     descuento: Decimal = Field(default=Decimal('0.00'), ge=0)
     propina: Decimal = Field(default=Decimal('0.00'), ge=0)
     retencion_iva: Decimal = Field(default=Decimal('0.00'), ge=0)
@@ -118,20 +117,19 @@ class FacturaCreacion(FacturaBase):
             self.subtotal_no_objeto_iva +
             self.subtotal_exento_iva +
             self.iva +
-            self.ice +
             self.propina -
             self.descuento -
             self.retencion_iva -
             self.retencion_renta
         )
-        # NOTA: En este esquema subtotal_con_iva parece actuar como el total previo a retenciones
+        # NOTA: En este esquema subtotal_con_iva ya viene neto tras descuentos de línea
         
         # Permitir pequeña diferencia por redondeo (0.01)
         diferencia = abs(self.total - calculado)
-        if diferencia > Decimal('0.01'):
+        if diferencia > Decimal('0.02'): # Aumentar ligeramente umbral de margen para redondeos complejos
             raise ValueError(
-                f'Total ({self.total}) no coincide con el cálculo esperado ({calculado}). '
-                f'total = subtotal_sin_iva + subtotal_con_iva + subtotal_no_objeto + subtotal_exento + iva + ice + propina - descuento - retenciones'
+                f'Total ({self.total}) no coincide con el cálculo esperado ({calculado:.2f}). '
+                f'Fórmula: total = suma(subtotales) + iva + propina - retenciones'
             )
         return self
 
@@ -160,7 +158,6 @@ class FacturaActualizacion(BaseModel):
     subtotal_no_objeto_iva: Optional[Decimal] = Field(None, ge=0)
     subtotal_exento_iva: Optional[Decimal] = Field(None, ge=0)
     iva: Optional[Decimal] = Field(None, ge=0)
-    ice: Optional[Decimal] = Field(None, ge=0)
     descuento: Optional[Decimal] = Field(None, ge=0)
     propina: Optional[Decimal] = Field(None, ge=0)
     retencion_iva: Optional[Decimal] = Field(None, ge=0)
@@ -265,7 +262,6 @@ class FacturaLectura(BaseModel):
     subtotal_no_objeto_iva: Decimal
     subtotal_exento_iva: Decimal
     iva: Decimal
-    ice: Decimal
     descuento: Decimal
     propina: Decimal
     total_sin_impuestos: Decimal

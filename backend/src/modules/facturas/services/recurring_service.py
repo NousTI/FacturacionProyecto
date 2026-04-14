@@ -286,7 +286,6 @@ class ServicioRecurringBilling:
                 subtotal_no_objeto_iva=plantilla['subtotal_no_objeto_iva'],
                 subtotal_exento_iva=plantilla['subtotal_exento_iva'],
                 iva=plantilla['iva'],
-                ice=plantilla.get('ice', 0),
                 descuento=plantilla['descuento'],
                 propina=plantilla.get('propina', 0),
                 total=plantilla['total'],

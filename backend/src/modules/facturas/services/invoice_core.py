@@ -81,7 +81,56 @@ class ServicioFacturaCore:
             
             payload['fecha_vencimiento'] = fecha_venc
 
+        # ===================================================================
+        # BLINDAJE: RECALCULAR CABECERA DESDE DETALLES ANTES DEL INSERT
+        # Esto previene errores de CHECK CONSTRAINT por inconsistencia del frontend
+        # ===================================================================
+        s_sin_iva = 0
+        s_con_iva = 0
+        s_no_objeto = 0
+        s_exento = 0
+        t_iva = 0
+        t_descuento = 0
+
+        for d in detalles_datos:
+            d_dict = d if isinstance(d, dict) else d.model_dump()
+            cant = float(d_dict.get('cantidad', 0))
+            prec = float(d_dict.get('precio_unitario', 0))
+            desc = float(d_dict.get('descuento', 0))
+            sub_neto = round((cant * prec) - desc, 2)
+            
+            t_iva_item = str(d_dict.get('tipo_iva', '0')).strip()
+            # Mapeo de porcentajes (Sincronizado con constants.py)
+            mapping = {'0': 0.0, '2': 12.0, '3': 14.0, '4': 15.0, '5': 5.0, '10': 13.0}
+            rate = mapping.get(t_iva_item, 0.0)
+            val_iva = round(sub_neto * (rate / 100.0), 2)
+
+            if t_iva_item in ['2', '3', '4', '5', '10']: s_con_iva += sub_neto
+            elif t_iva_item == '0': s_sin_iva += sub_neto
+            elif t_iva_item in ['6', 'NO_OBJETO']: s_no_objeto += sub_neto
+            elif t_iva_item in ['7', 'EXENTO']: s_exento += sub_neto
+            else: s_sin_iva += sub_neto
+            
+            t_iva += val_iva
+            t_descuento += desc
+
+        prop = float(payload.get('propina', 0))
+        ret_iva = float(payload.get('retencion_iva', 0))
+        ret_renta = float(payload.get('retencion_renta', 0))
+        
+        # Fórmula Maestra: Total = Suma de bases netas + IVA + Propina - Retenciones
+        # Nota: s_con_iva, s_sin_iva, etc. ya son NETOS (tras aplicar desc de línea)
+        total_calc = round((s_sin_iva + s_con_iva + s_no_objeto + s_exento + t_iva + prop) - (ret_iva + ret_renta), 2)
+        
         payload.update({
+            "subtotal_sin_iva": round(s_sin_iva, 2),
+            "subtotal_con_iva": round(s_con_iva, 2),
+            "subtotal_no_objeto_iva": round(s_no_objeto, 2),
+            "subtotal_exento_iva": round(s_exento, 2),
+            "total_sin_impuestos": round(s_sin_iva + s_con_iva + s_no_objeto + s_exento, 2),
+            "iva": round(t_iva, 2),
+            "descuento": round(t_descuento, 2),
+            "total": total_calc,
             "estado": 'BORRADOR',
             "estado_pago": datos.estado_pago or 'PENDIENTE',
             **snapshots_logic
@@ -195,21 +244,19 @@ class ServicioFacturaCore:
         
         # Otros valores actuales de la factura
         propina = float(factura.get('propina', 0))
-        ice = float(factura.get('ice', 0))
         retencion_iva = float(factura.get('retencion_iva', 0))
         retencion_renta = float(factura.get('retencion_renta', 0))
         descuento_global = float(factura.get('descuento', 0))
         
-        # Total = suma de subtotales + iva + ice + propina - descuento - retenciones
+        # Total = suma de subtotales netos + iva + propina - retenciones
+        # Se asume que subtotal_xxx ya son netos (procedentes de facturas_detalle.subtotal)
         total_calculado = (
             subtotal_sin_iva + 
             subtotal_con_iva + 
             subtotal_no_objeto_iva + 
             subtotal_exento_iva + 
             total_iva + 
-            ice + 
             propina - 
-            descuento_global - 
             retencion_iva - 
             retencion_renta
         )
@@ -224,7 +271,7 @@ class ServicioFacturaCore:
             "subtotal_exento_iva": round(subtotal_exento_iva, 2),
             "total_sin_impuestos": round(total_sin_impuestos, 2),
             "iva": round(total_iva, 2),
-            "ice": round(ice, 2),
+            "descuento": round(descuento_detalles, 2), # Sincronizar campo informativo
             "total": round(total_calculado, 2)
         }
         
