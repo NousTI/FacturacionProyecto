@@ -156,6 +156,7 @@ class ReactivacionEmpresa(BaseModel):
     plan_id: UUID
     monto: Decimal
     metodo_pago: str                         # EFECTIVO, TRANSFERENCIA, TARJETA, etc.
+    estado: Optional[str] = "PAGADO"         # PAGADO o PENDIENTE
     numero_comprobante: Optional[str] = None
     fecha_inicio_periodo: Optional[datetime] = None  # Por defecto: ahora
     fecha_fin_periodo: Optional[datetime] = None     # Por defecto: 1 año desde inicio

@@ -83,13 +83,21 @@ type RangoTipo = 'mes_actual' | 'mes_anterior' | 'anio_actual' | 'personalizado'
               </select>
             </div>
             <div class="form-group">
-              <label class="form-label-sm">Monto cobrado *</label>
-              <input type="number" class="form-control form-control-sm" [(ngModel)]="modalReactivar.monto" placeholder="0.00" min="0">
+              <label class="form-label-sm">Estado del pago *</label>
+              <select class="form-select form-select-sm" [(ngModel)]="modalReactivar.estado">
+                <option value="PAGADO">PAGADO (Confirmado)</option>
+                <option value="PENDIENTE">PENDIENTE (Cobro posterior)</option>
+              </select>
             </div>
           </div>
 
           <div class="form-row">
             <div class="form-group">
+              <label class="form-label-sm">Monto {{ modalReactivar.estado === 'PAGADO' ? 'cobrado' : 'a cobrar' }} *</label>
+              <input type="number" class="form-control form-control-sm" [(ngModel)]="modalReactivar.monto" placeholder="0.00" min="0">
+            </div>
+            <!-- Mostrar Método solo si es PAGADO -->
+            <div class="form-group" *ngIf="modalReactivar.estado === 'PAGADO'">
               <label class="form-label-sm">Método de pago *</label>
               <select class="form-select form-select-sm" [(ngModel)]="modalReactivar.metodo_pago">
                 <option value="EFECTIVO">Efectivo</option>
@@ -99,9 +107,16 @@ type RangoTipo = 'mes_actual' | 'mes_anterior' | 'anio_actual' | 'personalizado'
                 <option value="OTRO">Otro</option>
               </select>
             </div>
+          </div>
+
+          <!-- Mostrar Comprobante solo si es PAGADO -->
+          <div class="form-row" *ngIf="modalReactivar.estado === 'PAGADO'">
             <div class="form-group">
               <label class="form-label-sm">N° Comprobante</label>
               <input type="text" class="form-control form-control-sm" [(ngModel)]="modalReactivar.numero_comprobante" placeholder="Opcional">
+            </div>
+            <div class="form-group" style="visibility: hidden;"> <!-- Space keeping -->
+              <label class="form-label-sm">Space</label>
             </div>
           </div>
 
@@ -195,6 +210,7 @@ export class R031GlobalComponent implements OnInit, OnDestroy {
     numero_comprobante: '',
     fecha_inicio: new Date().toISOString().split('T')[0],
     fecha_fin: new Date(new Date().setFullYear(new Date().getFullYear() + 1) - 86400000).toISOString().split('T')[0],
+    estado: 'PAGADO',
     observaciones: ''
   };
   planesDisponibles: any[] = [];
@@ -288,7 +304,7 @@ export class R031GlobalComponent implements OnInit, OnDestroy {
 
     if (!this.planesDisponibles.length) {
       this.http.get<any>(`${environment.apiUrl}/suscripciones/planes`).subscribe({
-        next: (res) => { this.planesDisponibles = res.data || []; this.cd.detectChanges(); },
+        next: (res) => { this.planesDisponibles = res.detalles || []; this.cd.detectChanges(); },
         error: () => { this.planesDisponibles = []; }
       });
     }
@@ -313,6 +329,7 @@ export class R031GlobalComponent implements OnInit, OnDestroy {
       monto: this.modalReactivar.monto,
       metodo_pago: this.modalReactivar.metodo_pago,
       numero_comprobante: this.modalReactivar.numero_comprobante || null,
+      estado: this.modalReactivar.estado,
       fecha_inicio_periodo: this.modalReactivar.fecha_inicio ? new Date(this.modalReactivar.fecha_inicio).toISOString() : null,
       fecha_fin_periodo: this.modalReactivar.fecha_fin ? new Date(this.modalReactivar.fecha_fin).toISOString() : null,
       observaciones: this.modalReactivar.observaciones || null
@@ -320,7 +337,7 @@ export class R031GlobalComponent implements OnInit, OnDestroy {
     this.http.post<any>(`${environment.apiUrl}/suscripciones/${empresaId}/reactivar`, payload).subscribe({
       next: (res) => {
         this.loadingReactivar = false;
-        this.uiService.showToast('Empresa reactivada', 'success', res.data?.mensaje || 'Acceso restaurado correctamente');
+        this.uiService.showToast('Empresa reactivada', 'success', res.detalles?.mensaje || 'Acceso restaurado correctamente');
         this.cerrarModal();
         this.generar();
         this.cd.detectChanges();

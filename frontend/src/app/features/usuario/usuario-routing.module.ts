@@ -24,6 +24,7 @@ import { RolesPermisosPage } from './roles/roles.page';
 import { ProveedoresPage } from './proveedores/proveedores.page';
 import { GastosPage } from './gastos/gastos.page';
 import { ConfiguracionPage } from './configuracion/configuracion.page';
+import { AccesoRestringidoPage } from './acceso-restringido/acceso-restringido.page';
 
 import { CompanyActiveGuard } from '../../core/guards/company-active.guard';
 
@@ -36,6 +37,10 @@ const routes: Routes = [
     {
         path: 'sin-permisos',
         component: SinPermisosPage
+    },
+    {
+        path: 'acceso-restringido',
+        component: AccesoRestringidoPage
     },
     {
         path: 'dashboard',

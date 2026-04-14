@@ -230,11 +230,22 @@ class RepositorioSuscripciones:
             # 2. Registrar Comision
             if comision_data:
                 comision_data['pago_suscripcion_id'] = str(pago_id)
-                # ... same logic as in registrar_suscripcion_atomica ...
                 c_fields = list(comision_data.keys())
                 c_values = [str(v) if isinstance(v, UUID) else v for v in comision_data.values()]
                 placeholder_c = ["%s"] * len(c_fields)
-                cur.execute(f"INSERT INTO sistema_facturacion.comisiones ({', '.join(c_fields)}) VALUES ({', '.join(placeholder_c)}) RETURNING id", tuple(c_values))
+                
+                # Usar UPSERT para evitar UniqueViolation si la comisión ya existe (ej: desde Zona de Rescate)
+                update_set = [f"{f} = EXCLUDED.{f}" for f in c_fields if f not in ['pago_suscripcion_id', 'created_at']]
+                update_set.append("updated_at = NOW()")
+                
+                query = f"""
+                    INSERT INTO sistema_facturacion.comisiones ({', '.join(c_fields)}) 
+                    VALUES ({', '.join(placeholder_c)})
+                    ON CONFLICT (pago_suscripcion_id) DO UPDATE SET
+                    {', '.join(update_set)}
+                    RETURNING id
+                """
+                cur.execute(query, tuple(c_values))
                 comision_id = cur.fetchone()['id']
                 
                 # Snapshot and Log logic (reused from registrar_suscripcion_atomica)

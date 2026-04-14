@@ -500,7 +500,7 @@ class ServicioSuscripciones:
             "fecha_inicio_periodo": fecha_inicio,
             "fecha_fin_periodo": fecha_fin,
             "metodo_pago": datos.metodo_pago,
-            "estado": "PAGADO",
+            "estado": datos.estado or "PAGADO",
             "numero_comprobante": datos.numero_comprobante,
             "registrado_por": usuario_actual['id'],
             "tipo_pago": "REACTIVACION",
