@@ -67,6 +67,7 @@ import { UiService } from '../../../shared/services/ui.service';
       <app-registro-pago-modal
         *ngIf="showRegistroPagoModal"
         [suscripcion]="selectedSuscripcion"
+        [planes]="planes"
         [saving]="saving"
         (onSave)="handleRegistroPago($event)"
         (onClose)="showRegistroPagoModal = false"
@@ -136,6 +137,7 @@ import { UiService } from '../../../shared/services/ui.service';
 })
 export class SuscripcionesPage implements OnInit {
     suscripciones: Suscripcion[] = [];
+    planes: any[] = [];
     historialPagos: PagoHistorico[] = [];
 
     stats = {
@@ -200,6 +202,7 @@ export class SuscripcionesPage implements OnInit {
                         })))
                     )
                 );
+                this.planes = planes;
                 return { planes, requests };
             })
         ).subscribe({

@@ -60,11 +60,11 @@ class PermisoSchema(BaseModel):
 
 class EmpresaInfoSchema(BaseModel):
     id: UUID
-    ruc: str
-    razon_social: str
+    ruc: Optional[str] = None
+    razon_social: Optional[str] = None
     nombre_comercial: Optional[str] = None
-    email: str
-    direccion: str
+    email: Optional[str] = None
+    direccion: Optional[str] = None
     logo_url: Optional[str] = None
 
 class PerfilUsuarioLectura(BaseModel):

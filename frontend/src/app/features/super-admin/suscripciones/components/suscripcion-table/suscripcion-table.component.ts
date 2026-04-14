@@ -132,7 +132,7 @@ import { Suscripcion } from '../../services/suscripcion.service';
                           <span class="ms-3">Suspender Servicio</span>
                         </button>
                       </li>
-                      <li *ngIf="sub.estado === 'SUSPENDIDA' || sub.estado === 'CANCELADA'">
+                      <li *ngIf="sub.estado === 'SUSPENDIDA'">
                         <button class="dropdown-item rounded-3 py-2" (click)="onActivar.emit(sub)">
                           <i class="bi bi-play-circle-fill text-success"></i>
                           <span class="ms-3">Activar Servicio</span>

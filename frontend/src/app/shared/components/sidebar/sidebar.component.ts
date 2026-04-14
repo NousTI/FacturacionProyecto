@@ -128,7 +128,7 @@ import { SidebarService } from './sidebar.service';
               <a routerLink="/usuario/configuracion" routerLinkActive="active" class="menu-item px-3 mb-1" title="Configuración">
                 <i class="bi bi-gear"></i> <span class="menu-text ms-3">Configuración</span>
               </a>
-              <a routerLink="/usuario/perfil" routerLinkActive="active" class="menu-item px-3 mb-1" title="Mi Perfil">
+              <a *ngIf="isEmpresaActiva$ | async" routerLink="/usuario/perfil" routerLinkActive="active" class="menu-item px-3 mb-1" title="Mi Perfil">
                 <i class="bi bi-person-circle"></i> <span class="menu-text ms-3">Mi Perfil</span>
               </a>
             </ng-container>

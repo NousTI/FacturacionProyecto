@@ -11,7 +11,7 @@ import { Suscripcion } from '../../services/suscripcion.service';
         
         <!-- Header -->
         <div class="modal-header-final">
-          <h2 class="modal-title-final">Registrar Pago</h2>
+          <h2 class="modal-title-final">Renovar / Cambiar Plan</h2>
           <button (click)="close()" class="btn-close-final">
             <i class="bi bi-x"></i>
           </button>
@@ -21,16 +21,29 @@ import { Suscripcion } from '../../services/suscripcion.service';
           <form [formGroup]="pagoForm" (ngSubmit)="submit()">
             
             <div class="form-section-final border-0 mb-0 pb-0">
-              <div class="alert alert-info d-flex align-items-center mb-4">
-                  <i class="bi bi-info-circle-fill me-2 fs-5"></i>
-                  <div>
-                    Regristrando pago para <strong>{{ suscripcion?.empresa_nombre }}</strong>
-                    <div class="small">Plan: {{ suscripcion?.plan_nombre }}</div>
-                  </div>
+              <!-- Company Info Banner -->
+              <div class="company-banner mb-4">
+                <div class="company-icon"><i class="bi bi-building"></i></div>
+                <div>
+                  <div class="fw-bold text-dark">{{ suscripcion?.empresa_nombre }}</div>
+                  <div class="small text-muted">Plan actual: <strong>{{ suscripcion?.plan_nombre }}</strong></div>
+                </div>
               </div>
 
               <div class="row g-3">
-                
+
+                <!-- Plan Selector -->
+                <div class="col-md-12">
+                  <label class="label-final">Plan a registrar *</label>
+                  <select formControlName="plan_id" class="input-final" (change)="onPlanChange()">
+                    <option *ngFor="let p of planes" [value]="p.id">
+                      {{ p.nombre }} — {{ p.precio_anual | currency:'USD':'symbol':'1.0-0' }}/año
+                      {{ p.id === suscripcion?.plan_id ? '(Plan actual)' : '' }}
+                    </option>
+                  </select>
+                </div>
+
+                <!-- Payment Status Toggle -->
                 <div class="col-md-12 mb-2">
                   <div class="d-flex align-items-center justify-content-between p-3 rounded-4 bg-light border">
                     <div class="d-flex align-items-center gap-3">
@@ -97,7 +110,7 @@ import { Suscripcion } from '../../services/suscripcion.service';
       display: flex; align-items: center; justify-content: center; z-index: 10000; padding: 1rem;
     }
     .modal-container-final {
-      background: #ffffff; width: 500px; max-width: 95vw; height: auto;
+      background: #ffffff; width: 520px; max-width: 95vw; height: auto;
       border-radius: 28px; display: flex; flex-direction: column; overflow: hidden;
       box-shadow: 0 40px 80px -20px rgba(22, 29, 53, 0.25);
     }
@@ -110,13 +123,21 @@ import { Suscripcion } from '../../services/suscripcion.service';
     .input-final {
       width: 100%; border: 1px solid #e2e8f0; border-radius: 12px;
       padding: 0.75rem 1.5rem; font-size: 0.95rem; color: #475569; font-weight: 600; transition: all 0.2s;
+      background: #ffffff;
     }
     .input-final:focus {
       border-color: #161d35; outline: none;
       box-shadow: 0 0 0 4px rgba(22, 29, 53, 0.05);
     }
-    .alert-info {
-        background-color: #eff6ff; border-color: #bfdbfe; color: #1e40af; border-radius: 12px; font-size: 0.85rem;
+    .company-banner {
+      display: flex; align-items: center; gap: 1rem;
+      background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 16px; padding: 1rem 1.25rem;
+    }
+    .company-icon {
+      width: 42px; height: 42px; border-radius: 12px;
+      background: #161d35; color: #ffffff;
+      display: flex; align-items: center; justify-content: center; font-size: 1.2rem;
+      flex-shrink: 0;
     }
     .icon-payment {
       width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center;
@@ -138,6 +159,7 @@ import { Suscripcion } from '../../services/suscripcion.service';
 })
 export class RegistroPagoModalComponent implements OnInit, OnDestroy {
     @Input() suscripcion: Suscripcion | null = null;
+    @Input() planes: any[] = [];
     @Input() saving: boolean = false;
     @Output() onSave = new EventEmitter<any>();
     @Output() onClose = new EventEmitter<void>();
@@ -148,6 +170,7 @@ export class RegistroPagoModalComponent implements OnInit, OnDestroy {
 
     constructor(private fb: FormBuilder) {
         this.pagoForm = this.fb.group({
+            plan_id: ['', Validators.required],
             monto: [0, [Validators.required, Validators.min(0)]],
             metodo_pago: ['TRANSFERENCIA', Validators.required],
             numero_comprobante: ['', Validators.required],
@@ -159,6 +182,7 @@ export class RegistroPagoModalComponent implements OnInit, OnDestroy {
         document.body.style.overflow = 'hidden';
         if (this.suscripcion) {
             this.pagoForm.patchValue({
+                plan_id: this.suscripcion.plan_id || '',
                 monto: this.suscripcion.precio_plan || 0
             });
         }
@@ -166,6 +190,14 @@ export class RegistroPagoModalComponent implements OnInit, OnDestroy {
 
     ngOnDestroy() {
         document.body.style.overflow = 'auto';
+    }
+
+    onPlanChange() {
+        const selectedPlanId = this.pagoForm.get('plan_id')?.value;
+        const selectedPlan = this.planes.find(p => p.id === selectedPlanId);
+        if (selectedPlan) {
+            this.pagoForm.patchValue({ monto: selectedPlan.precio_anual });
+        }
     }
 
     togglePagoRecibido() {
@@ -187,7 +219,7 @@ export class RegistroPagoModalComponent implements OnInit, OnDestroy {
         const val = this.pagoForm.value;
         const payload = {
             empresa_id: this.suscripcion?.empresa_id,
-            plan_id: this.suscripcion?.plan_id,
+            plan_id: val.plan_id,
             monto: val.monto,
             metodo_pago: this.pagoRecibido ? val.metodo_pago : 'PENDIENTE',
             numero_comprobante: this.pagoRecibido ? val.numero_comprobante : 'POR_RECIBIR',
