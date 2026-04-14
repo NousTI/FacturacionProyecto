@@ -105,7 +105,7 @@ import { SidebarService } from './sidebar.service';
                   <a *hasPermission="'PROVEEDOR_VER'" routerLink="/usuario/proveedores" routerLinkActive="active" class="menu-item px-3 mb-1" title="Proveedores">
                     <i class="bi bi-truck"></i> <span class="menu-text ms-3">Proveedores</span>
                   </a>
-                  <a *hasPermission="'GASTOS_VER'" routerLink="/usuario/gastos" routerLinkActive="active" class="menu-item px-3 mb-1" title="Gastos">
+                  <a *hasPermission="['GESTIONAR_GASTOS', 'GESTIONAR_PAGOS', 'GESTIONAR_CATEGORIA_GASTO']" routerLink="/usuario/gastos" routerLinkActive="active" class="menu-item px-3 mb-1" title="Gastos">
                     <i class="bi bi-cash-stack"></i> <span class="menu-text ms-3">Gastos</span>
                   </a>
                   <a *hasPermission="'PRODUCTOS_VER'" routerLink="/usuario/productos" routerLinkActive="active" class="menu-item px-3 mb-1" title="Productos">

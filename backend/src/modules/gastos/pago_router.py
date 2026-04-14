@@ -14,7 +14,7 @@ router = APIRouter()
 @router.get("", response_model=RespuestaBase[List[PagoGastoLectura]])
 def listar_pagos(
     gasto_id: Optional[UUID] = None,
-    usuario: dict = Depends(requerir_permiso(PermissionCodes.PAGO_GASTO_VER)),
+    usuario: dict = Depends(requerir_permiso(PermissionCodes.GESTIONAR_PAGOS)),
     servicio: ServicioPagosGasto = Depends()
 ):
     return success_response(servicio.listar_pagos(gasto_id, usuario))
@@ -22,7 +22,7 @@ def listar_pagos(
 @router.post("", response_model=RespuestaBase[PagoGastoLectura], status_code=status.HTTP_201_CREATED)
 def crear_pago(
     datos: PagoGastoCreacion,
-    usuario: dict = Depends(requerir_permiso(PermissionCodes.PAGO_GASTO_CREAR)),
+    usuario: dict = Depends(requerir_permiso(PermissionCodes.GESTIONAR_PAGOS)),
     servicio: ServicioPagosGasto = Depends()
 ):
     return success_response(servicio.crear_pago(datos, usuario), "Pago registrado correctamente")
@@ -31,7 +31,7 @@ def crear_pago(
 def actualizar_pago(
     id: UUID,
     datos: PagoGastoActualizacion,
-    usuario: dict = Depends(requerir_permiso(PermissionCodes.PAGO_GASTO_EDITAR)),
+    usuario: dict = Depends(requerir_permiso(PermissionCodes.GESTIONAR_PAGOS)),
     servicio: ServicioPagosGasto = Depends()
 ):
     return success_response(servicio.actualizar_pago(id, datos, usuario), "Pago actualizado correctamente")
@@ -39,7 +39,7 @@ def actualizar_pago(
 @router.delete("/{id}")
 def eliminar_pago(
     id: UUID,
-    usuario: dict = Depends(requerir_permiso(PermissionCodes.PAGO_GASTO_ELIMINAR)),
+    usuario: dict = Depends(requerir_permiso(PermissionCodes.GESTIONAR_PAGOS)),
     servicio: ServicioPagosGasto = Depends()
 ):
     servicio.eliminar_pago(id, usuario)

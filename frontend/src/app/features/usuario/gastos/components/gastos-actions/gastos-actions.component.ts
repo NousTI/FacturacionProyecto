@@ -56,7 +56,7 @@ import { HasPermissionDirective } from '../../../../../shared/directives/has-per
           <!-- Botón de Acción -->
           <div class="col-lg-2 text-lg-end">
             <button 
-              *hasPermission="'GASTOS_CREAR'"
+              *hasPermission="'GESTIONAR_GASTOS'"
               (click)="onCreate.emit()"
               class="btn-system-action w-100"
             >

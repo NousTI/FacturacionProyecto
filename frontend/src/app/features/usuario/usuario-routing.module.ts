@@ -142,7 +142,7 @@ const routes: Routes = [
         path: 'gastos',
         component: GastosPage,
         canActivate: [RoleGuard, CompanyActiveGuard, permissionGuard],
-        data: { title: 'Gastos y Egresos', roles: [UserRole.USUARIO], permission: 'GASTOS_VER' }
+        data: { title: 'Gastos y Egresos', roles: [UserRole.USUARIO], permission: ['GESTIONAR_GASTOS', 'GESTIONAR_PAGOS', 'GESTIONAR_CATEGORIA_GASTO'] }
     }
 ];
 

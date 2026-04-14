@@ -53,7 +53,7 @@ import { HasPermissionDirective } from '../../../../../shared/directives/has-per
                     </button>
                     <ul class="dropdown-menu dropdown-menu-end border-0 p-2 rounded-4 shadow-sm" [attr.aria-labelledby]="'actions-cat-' + cat.id">
                       <li>
-                        <a *hasPermission="'CATEGORIA_GASTO_EDITAR'" class="dropdown-item rounded-3 py-2" (click)="onAction.emit({type: 'edit', data: cat})">
+                        <a *hasPermission="'GESTIONAR_CATEGORIA_GASTO'" class="dropdown-item rounded-3 py-2" (click)="onAction.emit({type: 'edit', data: cat})">
                           <i class="bi bi-pencil-square"></i>
                           <span class="ms-2">Editar</span>
                         </a>
@@ -62,7 +62,7 @@ import { HasPermissionDirective } from '../../../../../shared/directives/has-per
                       <li><hr class="dropdown-divider mx-2"></li>
                       
                       <li>
-                        <a *hasPermission="'CATEGORIA_GASTO_ELIMINAR'" class="dropdown-item rounded-3 py-2 text-danger" (click)="onAction.emit({type: 'delete', data: cat})">
+                        <a *hasPermission="'GESTIONAR_CATEGORIA_GASTO'" class="dropdown-item rounded-3 py-2 text-danger" (click)="onAction.emit({type: 'delete', data: cat})">
                           <i class="bi bi-trash"></i>
                           <span class="ms-2">Eliminar</span>
                         </a>

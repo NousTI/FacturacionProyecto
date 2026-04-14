@@ -94,7 +94,7 @@ import { CategoriaFormComponent } from './components/categoria-form.component';
               <ng-container *ngIf="canViewPagos">
                 <div class="d-flex justify-content-between align-items-center mb-2">
                    <h5 class="fw-bold mb-0">Historial de Pagos Registrados</h5>
-                   <button *hasPermission="'PAGO_GASTO_CREAR'" class="btn-system-action" (click)="openCreatePagoModal()">
+                   <button *hasPermission="'GESTIONAR_PAGOS'" class="btn-system-action" (click)="openCreatePagoModal()">
                       <i class="bi bi-plus-lg me-2"></i> Registrar Pago
                     </button>
                 </div>
@@ -112,7 +112,7 @@ import { CategoriaFormComponent } from './components/categoria-form.component';
               <ng-container *ngIf="canViewCategorias">
                 <div class="d-flex justify-content-between align-items-center mb-2">
                    <h5 class="fw-bold mb-0">Categorización de Egresos</h5>
-                   <button *hasPermission="'CATEGORIA_GASTO_CREAR'" class="btn-system-action" (click)="openCreateCategoriaModal()">
+                   <button *hasPermission="'GESTIONAR_CATEGORIA_GASTO'" class="btn-system-action" (click)="openCreateCategoriaModal()">
                       <i class="bi bi-plus-lg me-2"></i> Nueva Categoría
                     </button>
                 </div>
@@ -234,13 +234,13 @@ import { CategoriaFormComponent } from './components/categoria-form.component';
 export class GastosPage implements OnInit, OnDestroy {
   // Permission Getters
   get canViewGeneral(): boolean {
-    return this.permissionsService.hasPermission(GASTOS_PERMISSIONS.VER);
+    return this.permissionsService.hasPermission(GASTOS_PERMISSIONS.GESTIONAR);
   }
   get canViewPagos(): boolean {
-    return this.permissionsService.hasPermission(GASTOS_PERMISSIONS.PAGO_VER);
+    return this.permissionsService.hasPermission(GASTOS_PERMISSIONS.GESTIONAR_PAGOS);
   }
   get canViewCategorias(): boolean {
-    return this.permissionsService.hasPermission(GASTOS_PERMISSIONS.CATEGORIA_VER);
+    return this.permissionsService.hasPermission(GASTOS_PERMISSIONS.GESTIONAR_CATEGORIA);
   }
   get canViewModule(): boolean {
     return this.canViewGeneral || this.canViewPagos || this.canViewCategorias;

@@ -14,7 +14,7 @@ router = APIRouter()
 @router.get("/", response_model=RespuestaBase[List[GastoLectura]])
 def listar_gastos(
     empresa_id: Optional[UUID] = None,
-    usuario: dict = Depends(requerir_permiso(PermissionCodes.GASTOS_VER)),
+    usuario: dict = Depends(requerir_permiso(PermissionCodes.GESTIONAR_GASTOS)),
     servicio: ServicioGastos = Depends()
 ):
     return success_response(servicio.listar_gastos(usuario, empresa_id))
@@ -22,7 +22,7 @@ def listar_gastos(
 @router.post("/", response_model=RespuestaBase[GastoLectura], status_code=status.HTTP_201_CREATED)
 def crear_gasto(
     datos: GastoCreacion,
-    usuario: dict = Depends(requerir_permiso(PermissionCodes.GASTOS_CREAR)),
+    usuario: dict = Depends(requerir_permiso(PermissionCodes.GESTIONAR_GASTOS)),
     servicio: ServicioGastos = Depends()
 ):
     return success_response(servicio.crear_gasto(datos, usuario), "Gasto registrado correctamente")
@@ -30,7 +30,7 @@ def crear_gasto(
 @router.get("/{id}", response_model=RespuestaBase[GastoLectura])
 def obtener_gasto(
     id: UUID,
-    usuario: dict = Depends(requerir_permiso(PermissionCodes.GASTOS_VER)),
+    usuario: dict = Depends(requerir_permiso(PermissionCodes.GESTIONAR_GASTOS)),
     servicio: ServicioGastos = Depends()
 ):
     return success_response(servicio.obtener_gasto(id, usuario))
@@ -39,7 +39,7 @@ def obtener_gasto(
 def actualizar_gasto(
     id: UUID,
     datos: GastoActualizacion,
-    usuario: dict = Depends(requerir_permiso(PermissionCodes.GASTOS_EDITAR)),
+    usuario: dict = Depends(requerir_permiso(PermissionCodes.GESTIONAR_GASTOS)),
     servicio: ServicioGastos = Depends()
 ):
     return success_response(servicio.actualizar_gasto(id, datos, usuario), "Gasto actualizado correctamente")
@@ -47,7 +47,7 @@ def actualizar_gasto(
 @router.delete("/{id}")
 def eliminar_gasto(
     id: UUID,
-    usuario: dict = Depends(requerir_permiso(PermissionCodes.GASTOS_ELIMINAR)),
+    usuario: dict = Depends(requerir_permiso(PermissionCodes.GESTIONAR_GASTOS)),
     servicio: ServicioGastos = Depends()
 ):
     servicio.eliminar_gasto(id, usuario)

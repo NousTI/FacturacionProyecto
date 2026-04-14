@@ -65,7 +65,7 @@ import { HasPermissionDirective } from '../../../../../shared/directives/has-per
                       </li>
                       
                       <li *ngIf="isPagoEditable(pago)">
-                        <a *hasPermission="'PAGO_GASTO_EDITAR'" class="dropdown-item rounded-3 py-2" (click)="onAction.emit({type: 'edit', data: pago})">
+                        <a *hasPermission="'GESTIONAR_PAGOS'" class="dropdown-item rounded-3 py-2" (click)="onAction.emit({type: 'edit', data: pago})">
                           <i class="bi bi-pencil-square"></i>
                           <span class="ms-2">Editar</span>
                         </a>
@@ -74,7 +74,7 @@ import { HasPermissionDirective } from '../../../../../shared/directives/has-per
                       <li><hr class="dropdown-divider mx-2"></li>
                       
                       <li>
-                        <a *hasPermission="'PAGO_GASTO_ELIMINAR'" class="dropdown-item rounded-3 py-2 text-danger" (click)="onAction.emit({type: 'delete', data: pago})">
+                        <a *hasPermission="'GESTIONAR_PAGOS'" class="dropdown-item rounded-3 py-2 text-danger" (click)="onAction.emit({type: 'delete', data: pago})">
                           <i class="bi bi-trash"></i>
                           <span class="ms-2">Anular Pago</span>
                         </a>

@@ -73,14 +73,14 @@ import { HasPermissionDirective } from '../../../../../shared/directives/has-per
                       </li>
                       
                       <li *ngIf="gasto.estado_pago !== 'pagado'">
-                        <a *hasPermission="'GASTOS_EDITAR'" class="dropdown-item rounded-3 py-2" (click)="onAction.emit({type: 'edit', data: gasto})">
+                        <a *hasPermission="'GESTIONAR_GASTOS'" class="dropdown-item rounded-3 py-2" (click)="onAction.emit({type: 'edit', data: gasto})">
                           <i class="bi bi-pencil-square"></i>
                           <span class="ms-2">Editar</span>
                         </a>
                       </li>
 
                       <li *ngIf="gasto.estado_pago !== 'pagado'">
-                        <a *hasPermission="'PAGO_GASTO_CREAR'" class="dropdown-item rounded-3 py-2 text-success" (click)="onAction.emit({type: 'pay', data: gasto})">
+                        <a *hasPermission="'GESTIONAR_PAGOS'" class="dropdown-item rounded-3 py-2 text-success" (click)="onAction.emit({type: 'pay', data: gasto})">
                           <i class="bi bi-cash"></i>
                           <span class="ms-2">Registrar Pago</span>
                         </a>
@@ -89,7 +89,7 @@ import { HasPermissionDirective } from '../../../../../shared/directives/has-per
                       <li><hr class="dropdown-divider mx-2"></li>
                       
                       <li>
-                        <a *hasPermission="'GASTOS_ELIMINAR'" class="dropdown-item rounded-3 py-2 text-danger" (click)="onAction.emit({type: 'delete', data: gasto})">
+                        <a *hasPermission="'GESTIONAR_GASTOS'" class="dropdown-item rounded-3 py-2 text-danger" (click)="onAction.emit({type: 'delete', data: gasto})">
                           <i class="bi bi-trash"></i>
                           <span class="ms-2">Eliminar</span>
                         </a>
