@@ -47,28 +47,6 @@ Chart.register(...registerables);
 
       </div>
 
-      <!-- IVA DESGLOSADO -->
-      <div class="row g-4 mb-4">
-        <div class="col-12">
-          <div class="section-card">
-            <div class="section-header">
-              <h5>IVA Cobrado por Tarifa — A declarar al SRI</h5>
-              <p>Desglose de bases imponibles y valores de IVA por cada tarifa</p>
-            </div>
-            <div class="iva-grid">
-              <div class="iva-item" *ngFor="let iva of data.iva_desglosado">
-                <span class="iva-tarifa">IVA {{ iva.tarifa }}</span>
-                <span class="iva-monto">{{ iva.iva_cobrado | currency }}</span>
-                <span class="iva-base">Base: {{ iva.base_imponible | currency }}</span>
-              </div>
-              <div *ngIf="!data.iva_desglosado.length" class="text-muted py-3">
-                Sin datos de IVA para el período
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
       <!-- TABLA USUARIOS + GRÁFICA PIE -->
       <div class="row g-4">
 
