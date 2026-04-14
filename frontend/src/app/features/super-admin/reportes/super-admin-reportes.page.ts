@@ -152,13 +152,6 @@ export class SuperAdminReportesPage {
     comp.fechaFin = this.currentFilters.fechaFin;
     comp.rangoTipo = this.currentFilters.rangoTipo;
 
-    // Sincronizar parámetros específicos
-    if (this.tabActivo === 'comisiones') {
-      const c = comp as R032ComisionesComponent;
-      c.vendedorId = this.currentFilters.vendedorId;
-      c.estado = this.currentFilters.estado;
-    }
-    
     this.cd.detectChanges();
   }
 

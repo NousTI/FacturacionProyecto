@@ -4,18 +4,31 @@ import { FormsModule } from '@angular/forms';
 import { HttpClient, HttpClientModule } from '@angular/common/http';
 import { Subject, takeUntil } from 'rxjs';
 import {
-  ReportesService, ReporteGlobal
+  ReportesService, ReporteGlobal, EmpresaZonaRescate
 } from '../../services/reportes.service';
 import { UiService } from '../../../../../shared/services/ui.service';
-import { InfoTooltipComponent } from '../../../../../shared/components/info-tooltip/info-tooltip.component';
 import { environment } from '../../../../../../environments/environment';
+
+// Sub-componentes fragmentados
+import { R031KpisComponent } from './components/r031-kpis.component';
+import { R031GraficasComponent } from './components/r031-graficas.component';
+import { R031TablaRescateComponent } from './components/r031-tabla-rescate.component';
+import { R031TablaUpgradeComponent } from './components/r031-tabla-upgrade.component';
 
 type RangoTipo = 'mes_actual' | 'mes_anterior' | 'anio_actual' | 'personalizado';
 
 @Component({
   selector: 'app-r-031-global',
   standalone: true,
-  imports: [CommonModule, FormsModule, HttpClientModule, InfoTooltipComponent],
+  imports: [
+    CommonModule, 
+    FormsModule, 
+    HttpClientModule,
+    R031KpisComponent,
+    R031GraficasComponent,
+    R031TablaRescateComponent,
+    R031TablaUpgradeComponent
+  ],
   template: `
     <!-- Estado vacío/Loading -->
     <div class="empty-state" *ngIf="!datos && !loading">
@@ -28,170 +41,30 @@ type RangoTipo = 'mes_actual' | 'mes_anterior' | 'anio_actual' | 'personalizado'
       <p>Obteniendo datos del sistema...</p>
     </div>
 
-    <div *ngIf="datos" id="print-global" class="animate__animated animate__fadeIn">
-      <!-- KPIs -->
-      <div class="kpi-grid mb-4">
-        <div class="kpi-card">
-          <span class="kpi-label">Empresas activas</span>
-          <span class="kpi-value">{{ datos.empresas_activas }}</span>
-          <span class="kpi-sub text-success">+{{ datos.empresas_nuevas_mes }} este mes</span>
-        </div>
-        <div class="kpi-card">
-          <span class="kpi-label">Ingresos del año</span>
-          <span class="kpi-value">{{ datos.ingresos_anio | currency:'USD':'symbol':'1.0-0' }}</span>
-          <span class="kpi-sub" [class.text-success]="datos.variacion_ingresos_anio >= 0" [class.text-danger]="datos.variacion_ingresos_anio < 0">
-            {{ datos.variacion_ingresos_anio >= 0 ? '+' : '' }}{{ datos.variacion_ingresos_anio }}% vs anterior
-          </span>
-        </div>
-        <div class="kpi-card">
-          <span class="kpi-label">Ingresos del mes</span>
-          <span class="kpi-value">{{ datos.ingresos_mes | currency:'USD':'symbol':'1.0-0' }}</span>
-          <span class="kpi-sub" [class.text-success]="datos.variacion_ingresos_mes >= 0" [class.text-danger]="datos.variacion_ingresos_mes < 0">
-            {{ datos.variacion_ingresos_mes >= 0 ? '+' : '' }}{{ datos.variacion_ingresos_mes }}% vs anterior
-          </span>
-        </div>
-        <div class="kpi-card">
-          <span class="kpi-label">Usuarios nuevos</span>
-          <span class="kpi-value">{{ datos.usuarios_nuevos_mes }}</span>
-          <span class="kpi-sub text-muted">este mes</span>
-        </div>
-        <div class="kpi-card">
-          <span class="kpi-label">Crecimiento Neto</span>
-          <span class="kpi-value" [class.text-success]="datos.crecimiento_neto >= 0" [class.text-danger]="datos.crecimiento_neto < 0">
-            {{ datos.crecimiento_neto > 0 ? '+' : '' }}{{ datos.crecimiento_neto }}
-          </span>
-          <span class="kpi-sub text-muted">empresas (Neto)</span>
-        </div>
-        <div class="kpi-card">
-          <span class="kpi-label">Tasa de crecimiento</span>
-          <span class="kpi-value text-success">{{ datos.tasa_crecimiento }}%</span>
-          <span class="kpi-sub text-muted">mensual</span>
-        </div>
-        <div class="kpi-card">
-          <span class="kpi-label">Tasa de abandono</span>
-          <span class="kpi-value text-danger">{{ datos.tasa_abandono }}%</span>
-          <span class="kpi-sub text-muted">de usuarios</span>
-        </div>
-        <div class="kpi-card kpi-warning">
-          <span class="kpi-label">Zona upgrade</span>
-          <span class="kpi-value">{{ datos.zona_upgrade }}</span>
-          <span class="kpi-sub text-warning">empresas</span>
-        </div>
-        <div class="kpi-card kpi-danger">
-          <span class="kpi-label">Zona de rescate</span>
-          <span class="kpi-value">{{ datos.zona_rescate }}</span>
-          <span class="kpi-sub text-danger">empresas</span>
-        </div>
-      </div>
+    <div *ngIf="datos" id="print-global" class="report-content animate__animated animate__fadeIn">
+      
+      <!-- 1. KPIs Fragmentados -->
+      <app-r031-kpis [datos]="datos"></app-r031-kpis>
 
-      <!-- Gráficas row -->
-    <div class="row g-4 mb-4">
-        <!-- Donut: rescate vs upgrade -->
-        <div class="col-md-4">
-          <div class="card-graf">
-            <h6 class="graf-title">Zonas críticas</h6>
-            <div class="donut-wrap">
-              <div class="donut" [style.background]="donutGlobal()"></div>
-              <div class="donut-legend">
-                <span class="dot dot-danger"></span> Rescate ({{ datos.zona_rescate }})
-                <span class="dot dot-warning ms-3"></span> Upgrade ({{ datos.zona_upgrade }})
-              </div>
-            </div>
-          </div>
-        </div>
-        <!-- Barras: planes más vendidos -->
-        <div class="col-md-4">
-          <div class="card-graf">
-            <h6 class="graf-title">Planes más vendidos</h6>
-            <div class="bar-chart">
-              <div *ngFor="let p of datos.planes_mas_vendidos" class="bar-row">
-                <span class="bar-label">{{ p.plan }}</span>
-                <div class="bar-track">
-                  <div class="bar-fill bg-primary" [style.width.%]="barPct(p.ventas, maxPlanVentas)"></div>
-                </div>
-                <span class="bar-val">{{ p.ventas }}</span>
-              </div>
-            </div>
-          </div>
-        </div>
-        <!-- Barras: top vendedores -->
-        <div class="col-md-4">
-          <div class="card-graf">
-            <h6 class="graf-title">Top vendedores</h6>
-            <div class="bar-chart">
-              <div *ngFor="let v of datos.top_vendedores | slice:0:5" class="bar-row">
-                <span class="bar-label">{{ v.vendedor.split(' ')[0] }}</span>
-                <div class="bar-track">
-                  <div class="bar-fill bg-success" [style.width.%]="barPct(v.ingresos_generados, maxVendedorIngresos)"></div>
-                </div>
-                <span class="bar-val">{{ v.ingresos_generados | currency:'USD':'symbol':'1.0-0' }}</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+      <!-- 2. Gráficas Fragmentadas -->
+      <app-r031-graficas [datos]="datos"></app-r031-graficas>
 
-      <!-- Tabla: Zona de Rescate -->
-      <div class="card-tabla">
-        <div class="tabla-header">
-          <span><i class="bi bi-exclamation-triangle-fill text-danger me-2"></i>Zona de Rescate ({{ datos.zona_rescate }})</span>
-        </div>
-        <div class="table-responsive">
-          <table class="table table-hover align-middle mb-0">
-            <thead>
-              <tr>
-                <th>Empresa</th>
-                <th>Plan Vencido</th>
-                <th>Ult. Intento acceso</th>
-                <th>Venció</th>
-                <th>Correo empresa</th>
-                <th>Telefono empresa</th>
-                <th>Dead line</th>
-                <th class="text-center">Acción</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let e of datos.empresas_rescate">
-                <td>
-                  <div class="d-flex align-items-center gap-1">
-                    <span class="empresa-tooltip">{{ e.nombre_empresa }}</span>
-                    <app-info-tooltip
-                      [message]="getTooltipRescate(e)"
-                      icon="bi-info-circle">
-                    </app-info-tooltip>
-                  </div>
-                </td>
-                <td><span class="badge-plan">{{ e.plan_nombre }}</span></td>
-                <td class="text-muted small">{{ e.ultimo_acceso_fmt }}</td>
-                <td class="text-muted small">{{ formatVencimiento(e.fecha_vencimiento) }}</td>
-                <td class="small">{{ e.email || '—' }}</td>
-                <td class="small">{{ e.telefono || '—' }}</td>
-                <td>
-                  <span class="badge-deadline" [ngClass]="deadlineClass(e.deadline_fmt)">
-                    {{ e.deadline_fmt }}
-                  </span>
-                </td>
-                <td class="text-center">
-                  <div class="d-flex justify-content-center gap-1">
-                    <button class="btn-accion btn-reactivar" (click)="reactivarEmpresa(e)" title="Reactivar/Eliminar">
-                        <i class="bi bi-arrow-repeat"></i>
-                    </button>
-                    <button class="btn-accion btn-eliminar" (click)="eliminarEmpresa(e)" title="Eliminar">
-                        <i class="bi bi-trash"></i>
-                    </button>
-                  </div>
-                </td>
-              </tr>
-              <tr *ngIf="datos.empresas_rescate.length === 0">
-                <td colspan="8" class="text-center text-muted py-4">Sin empresas en zona de rescate</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
+      <!-- 3. Tabla Zona de Rescate -->
+      <app-r031-tabla-rescate 
+        [empresas]="datos.empresas_rescate"
+        (onReactivar)="reactivarEmpresa($event)"
+        (onEliminar)="eliminarEmpresa($event)">
+      </app-r031-tabla-rescate>
+
+      <!-- 4. Tabla Zona de Upgrade -->
+      <app-r031-tabla-upgrade 
+        [empresas]="datos.empresas_upgrade">
+      </app-r031-tabla-upgrade>
+      
     </div>
 
-    <!-- Modal Reactivación (fuera del bloque *ngIf="datos") -->
+    <!-- Modales de Acción -->
+    <!-- Modal Reactivación -->
     <div class="modal-overlay" *ngIf="modalReactivar.visible" (click)="cerrarModal()">
       <div class="modal-panel" (click)="$event.stopPropagation()">
         <div class="modal-header">
@@ -259,7 +132,7 @@ type RangoTipo = 'mes_actual' | 'mes_anterior' | 'anio_actual' | 'personalizado'
       </div>
     </div>
 
-    <!-- Modal Eliminar empresa (placeholder) -->
+    <!-- Modal Eliminar empresa -->
     <div class="modal-overlay" *ngIf="modalEliminar.visible" (click)="cerrarModalEliminar()">
       <div class="modal-panel" style="width:420px" (click)="$event.stopPropagation()">
         <div class="modal-header">
@@ -280,74 +153,29 @@ type RangoTipo = 'mes_actual' | 'mes_anterior' | 'anio_actual' | 'personalizado'
     </div>
   `,
   styles: [`
-    .section-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      gap: 1.5rem;
-    }
-    .section-title { font-size: 1.1rem; font-weight: 700; color: #161d35; margin: 0; }
-    .section-sub { color: #64748b; font-size: 0.85rem; margin: 0.25rem 0 0; }
-    .btn-generar { padding: 0.5rem 1rem; background: #3b82f6; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: 600; }
-    .btn-pdf { padding: 0.5rem 1rem; background: #10b981; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: 600; }
-    .btn-generar:disabled, .btn-pdf:disabled { opacity: 0.5; cursor: not-allowed; }
-    .filtros-card { background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 4px; padding: 1rem; }
-    .form-label-sm { font-size: 0.75rem; font-weight: 600; color: #374151; display: block; margin-bottom: 0.25rem; }
-    .form-select-sm, .form-control-sm { font-size: 0.8rem; padding: 0.25rem 0.5rem; border-radius: 4px; border: 1px solid #d1d5db; }
-    .rango-preview { color: #64748b; font-size: 0.8rem; }
-    .empty-state, .loading-state { text-align: center; padding: 3rem 1rem; color: #64748b; }
-    .empty-state i, .loading-state i { font-size: 2rem; margin-bottom: 1rem; }
-    .spinner-grow { width: 2rem; height: 2rem; }
-    .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 0.75rem; }
-    .kpi-card { border: 1px solid #e2e8f0; border-radius: 4px; padding: 0.75rem; background: #f8fafc; }
-    .kpi-label { font-size: 0.6rem; font-weight: 700; color: #64748b; text-transform: uppercase; display: block; margin-bottom: 0.25rem; }
-    .kpi-value { font-size: 1.1rem; font-weight: 800; color: #161d35; display: block; }
-    .kpi-sub { font-size: 0.7rem; color: #64748b; }
-    .kpi-warning { border-left: 3px solid #f59e0b; }
-    .kpi-danger { border-left: 3px solid #ef4444; }
-    .card-graf { border: 1px solid #e2e8f0; border-radius: 4px; padding: 1rem; background: #f8fafc; }
-    .graf-title { font-size: 0.85rem; font-weight: 700; color: #161d35; margin-bottom: 0.75rem; }
-    .donut-wrap { display: flex; flex-direction: column; align-items: center; gap: 0.75rem; }
-    .donut { width: 80px; height: 80px; border-radius: 50%; }
-    .donut-legend { font-size: 0.7rem; text-align: center; }
-    .dot { display: inline-block; width: 0.5rem; height: 0.5rem; border-radius: 50%; margin-right: 0.25rem; vertical-align: middle; }
-    .dot-danger { background: #ef4444; }
-    .dot-warning { background: #f59e0b; }
-    .bar-chart { display: flex; flex-direction: column; gap: 0.5rem; }
-    .bar-row { display: flex; align-items: center; gap: 0.5rem; font-size: 0.75rem; }
-    .bar-label { width: 60px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .bar-track { flex: 1; height: 1.5rem; background: #e2e8f0; border-radius: 3px; position: relative; }
-    .bar-fill { height: 100%; border-radius: 3px; }
-    .bar-val { width: 50px; text-align: right; font-weight: 600; }
-    .card-tabla { border: 1px solid #e2e8f0; border-radius: 4px; overflow: hidden; }
-    .tabla-header { background: #f1f5f9; padding: 0.75rem 1rem; font-weight: 700; font-size: 0.8rem; color: #475569; border-bottom: 1px solid #e2e8f0; }
-    table { margin-bottom: 0; }
-    th { background: #f1f5f9; padding: 0.6rem 0.75rem; font-size: 0.7rem; text-transform: uppercase; color: #475569; font-weight: 700; border-bottom: 1px solid #e2e8f0; }
-    td { padding: 0.6rem 0.75rem; border-bottom: 1px solid #f1f5f9; font-size: 0.8rem; }
-    tbody tr:nth-child(even) td { background: #fafbfc; }
-    .badge-plan { background: #dbeafe; color: #1e40af; padding: 0.2rem 0.4rem; border-radius: 3px; font-size: 0.7rem; font-weight: 600; }
-    .empresa-tooltip { cursor: help; color: #3b82f6; font-weight: 600; }
-    .btn-accion { padding: 0.25rem; background: none; border: none; cursor: pointer; font-size: 0.9rem; }
-    .btn-reactivar { color: #10b981; }
-    .btn-eliminar { color: #ef4444; }
-    .badge-deadline { padding: 0.2rem 0.4rem; border-radius: 3px; font-size: 0.7rem; font-weight: 600; }
-    .deadline-urgent { background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
-    .deadline-warning { background: #fef3c7; color: #92400e; border: 1px solid #fde68a; }
-    .deadline-ok { background: #dcfce7; color: #166534; border: 1px solid #bbf7d0; }
-    /* Modal */
-    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 9999; display: flex; align-items: center; justify-content: center; }
-    .modal-panel { background: #fff; border: 1px solid #e2e8f0; border-radius: 6px; width: 520px; max-width: 95vw; }
-    .modal-header { display: flex; justify-content: space-between; align-items: center; padding: 1rem 1.25rem; border-bottom: 1px solid #e2e8f0; }
-    .modal-title { font-size: 0.9rem; font-weight: 700; color: #161d35; }
-    .modal-close { background: none; border: none; cursor: pointer; color: #64748b; font-size: 1rem; }
-    .modal-body { padding: 1.25rem; }
-    .modal-empresa { font-size: 0.85rem; font-weight: 700; color: #3b82f6; margin-bottom: 1rem; }
-    .modal-footer { display: flex; justify-content: flex-end; gap: 0.5rem; padding: 0.75rem 1.25rem; border-top: 1px solid #e2e8f0; }
-    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 0.75rem; }
-    .form-group { display: flex; flex-direction: column; gap: 0.25rem; margin-bottom: 0.75rem; }
-    .btn-modal-cancel { padding: 0.4rem 1rem; background: #f1f5f9; color: #475569; border: 1px solid #e2e8f0; border-radius: 4px; cursor: pointer; font-weight: 600; font-size: 0.8rem; }
-    .btn-modal-confirm { padding: 0.4rem 1.25rem; background: #10b981; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: 600; font-size: 0.8rem; }
-    .btn-modal-confirm:disabled { opacity: 0.5; cursor: not-allowed; }
+    .report-content { padding: 0.5rem; }
+    .empty-state, .loading-state { text-align: center; padding: 4rem 1rem; color: #64748b; background: white; border-radius: 12px; border: 2px dashed #e2e8f0; margin: 2rem 0; }
+    .empty-state i { font-size: 2.5rem; margin-bottom: 1rem; color: #94a3b8; }
+    .spinner-grow { width: 2.5rem; height: 2.5rem; margin-bottom: 1rem; }
+    
+    /* Reutilización de estilos para modales */
+    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 9999; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(2px); }
+    .modal-panel { background: #fff; border-radius: 12px; width: 520px; max-width: 95vw; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); }
+    .modal-header { display: flex; justify-content: space-between; align-items: center; padding: 1.25rem; border-bottom: 1px solid #f1f5f9; }
+    .modal-title { font-size: 1rem; font-weight: 700; color: #1e293b; }
+    .modal-close { background: none; border: none; cursor: pointer; color: #94a3b8; font-size: 1.25rem; }
+    .modal-body { padding: 1.5rem; }
+    .modal-empresa { font-size: 1.1rem; font-weight: 800; color: #3b82f6; margin-bottom: 1.25rem; }
+    .modal-footer { display: flex; justify-content: flex-end; gap: 0.75rem; padding: 1rem 1.5rem; background: #f8fafc; border-bottom-left-radius: 12px; border-bottom-right-radius: 12px; }
+    
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem; }
+    .form-group { display: flex; flex-direction: column; gap: 0.4rem; }
+    .form-label-sm { font-size: 0.75rem; font-weight: 700; color: #475569; text-transform: uppercase; }
+    .form-select-sm, .form-control-sm { border-radius: 6px; border: 1px solid #e2e8f0; padding: 0.5rem; font-size: 0.85rem; }
+    
+    .btn-modal-cancel { padding: 0.5rem 1.25rem; background: #fff; color: #64748b; border: 1px solid #e2e8f0; border-radius: 6px; font-weight: 600; font-size: 0.85rem; }
+    .btn-modal-confirm { padding: 0.5rem 1.5rem; background: #10b981; color: white; border: none; border-radius: 6px; font-weight: 700; font-size: 0.85rem; }
+    .btn-modal-confirm:disabled { opacity: 0.6; cursor: not-allowed; }
   `]
 })
 export class R031GlobalComponent implements OnInit, OnDestroy {
@@ -390,9 +218,7 @@ export class R031GlobalComponent implements OnInit, OnDestroy {
     private http: HttpClient
   ) {}
 
-  ngOnInit() {
-    // La generación inicial se dispara desde el padre o al recibir filtros
-  }
+  ngOnInit() {}
 
   ngOnDestroy() {
     this.destroy$.next();
@@ -404,8 +230,16 @@ export class R031GlobalComponent implements OnInit, OnDestroy {
     this.reportesService.getReporteGlobal({ fecha_inicio: this.fechaInicio, fecha_fin: this.fechaFin })
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: (data) => { this.datos = data; this.loading = false; this.cd.detectChanges(); },
-        error: (err) => { this.loading = false; this.uiService.showError(err, 'Error al cargar reporte global'); this.cd.detectChanges(); }
+        next: (data) => { 
+          this.datos = data; 
+          this.loading = false; 
+          this.cd.detectChanges(); 
+        },
+        error: (err) => { 
+          this.loading = false; 
+          this.uiService.showError(err, 'Error al cargar reporte global'); 
+          this.cd.detectChanges(); 
+        }
       });
   }
 
@@ -437,52 +271,9 @@ export class R031GlobalComponent implements OnInit, OnDestroy {
     });
   }
 
-  get maxPlanVentas(): number {
-    return Math.max(...(this.datos?.planes_mas_vendidos.map(p => p.ventas) ?? [1]));
-  }
+  // --- Lógica de Modales (Manejada por el controlador padre) ---
 
-  get maxVendedorIngresos(): number {
-    return Math.max(...(this.datos?.top_vendedores.map(v => v.ingresos_generados) ?? [1]));
-  }
-
-  barPct(val: number, max: number): number {
-    return max > 0 ? Math.round((val / max) * 100) : 0;
-  }
-
-  donutGlobal(): string {
-    if (!this.datos) return '#e2e8f0';
-    const total = (this.datos.zona_rescate + this.datos.zona_upgrade) || 1;
-    const pctRescate = Math.round((this.datos.zona_rescate / total) * 100);
-    return `conic-gradient(#ef4444 0% ${pctRescate}%, #f59e0b ${pctRescate}% 100%)`;
-  }
-
-  deadlineClass(fmt: string | undefined): string {
-    if (!fmt) return '';
-    const text = fmt.toLowerCase();
-    if (text.includes('vencido') || text.includes('hora') || text.includes(' hoy')) return 'deadline-urgent';
-    if (text.includes('días')) {
-      const days = parseInt(text.split(' ')[0]);
-      if (days < 3) return 'deadline-urgent';
-      if (days < 8) return 'deadline-warning';
-    }
-    return 'deadline-ok';
-  }
-
-  formatVencimiento(fecha: string | null): string {
-    if (!fecha) return '—';
-    const d = new Date(fecha);
-    const now = new Date();
-    const diffMs = now.getTime() - d.getTime();
-    const diffDays = Math.floor(diffMs / 86400000);
-    if (diffDays >= 0 && diffDays < 31) return `Hace ${diffDays} día${diffDays !== 1 ? 's' : ''}`;
-    return d.toLocaleDateString('es-EC', { year: 'numeric', month: '2-digit', day: '2-digit' });
-  }
-
-  getTooltipRescate(e: any): string {
-    return `Vendedor: ${e.vendedor_nombre || 'N/A'} | Antigüedad: ${e.antiguedad || 'N/A'} | Rep: ${e.representante || 'N/A'}`;
-  }
-
-  reactivarEmpresa(e: any) {
+  reactivarEmpresa(e: EmpresaZonaRescate) {
     this.modalReactivar.empresa = e;
     this.modalReactivar.plan_id = '';
     this.modalReactivar.monto = null;
@@ -494,7 +285,7 @@ export class R031GlobalComponent implements OnInit, OnDestroy {
     this.modalReactivar.fecha_fin = fin.toISOString().split('T')[0];
     this.modalReactivar.visible = true;
     this.cd.detectChanges();
-    // Cargar planes si no están cargados
+
     if (!this.planesDisponibles.length) {
       this.http.get<any>(`${environment.apiUrl}/suscripciones/planes`).subscribe({
         next: (res) => { this.planesDisponibles = res.data || []; this.cd.detectChanges(); },
@@ -531,7 +322,7 @@ export class R031GlobalComponent implements OnInit, OnDestroy {
         this.loadingReactivar = false;
         this.uiService.showToast('Empresa reactivada', 'success', res.data?.mensaje || 'Acceso restaurado correctamente');
         this.cerrarModal();
-        this.generar(); // Recargar el reporte
+        this.generar();
         this.cd.detectChanges();
       },
       error: (err) => {

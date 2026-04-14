@@ -1,8 +1,7 @@
 import { Component, Input, Output, EventEmitter, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { VendedorService, Vendedor } from '../../vendedores/services/vendedor.service';
-import { Subject, takeUntil } from 'rxjs';
+import { Subject } from 'rxjs';
 
 export type RangoTipo = 'mes_actual' | 'mes_anterior' | 'anio_actual' | 'personalizado';
 
@@ -33,36 +32,18 @@ export type RangoTipo = 'mes_actual' | 'mes_anterior' | 'anio_actual' | 'persona
           </div>
         </ng-container>
 
-        <!-- Filtros Específicos: Comisiones (Vendedor) -->
-        <ng-container *ngIf="activeTab === 'comisiones'">
-          <div class="filter-group">
-            <select class="form-select select-compact vendor-select" [(ngModel)]="vendedorId" (change)="emitChanges()">
-              <option value="">Todos los Vendedores</option>
-              <option *ngFor="let v of vendedores" [value]="v.id">{{ v.nombres }} {{ v.apellidos }}</option>
-            </select>
-          </div>
-
-          <div class="filter-group">
-            <select class="form-select select-compact status-select" [(ngModel)]="estado" (change)="emitChanges()">
-              <option value="">Todos los Estados</option>
-              <option value="PENDIENTE">Pendientes</option>
-              <option value="APROBADA">Aprobadas</option>
-              <option value="PAGADA">Pagadas</option>
-            </select>
-          </div>
-        </ng-container>
 
         <!-- Botón Consultar -->
         <button class="btn-refresh-compact px-3" (click)="generate.emit()" [disabled]="loading">
           <i class="bi bi-search me-2" [class.bi-spin]="loading"></i>
-          {{ loading ? 'Buscando...' : 'Consultar' }}
+          {{ loading ? 'Generando...' : 'Generar Reporte' }}
         </button>
         
         <!-- Botón Exportar PDF -->
         <button class="btn-export-compact" (click)="export.emit()" [disabled]="loadingPDF">
           <i class="bi bi-file-earmark-pdf" *ngIf="!loadingPDF"></i>
           <span class="spinner-border spinner-border-sm me-2" *ngIf="loadingPDF"></span>
-          <span class="ms-1">{{ loadingPDF ? 'Generando...' : 'PDF' }}</span>
+          <span class="ms-1">{{ loadingPDF ? 'Generando...' : 'Exportar PDF' }}</span>
         </button>
       </div>
     </div>
@@ -86,8 +67,6 @@ export type RangoTipo = 'mes_actual' | 'mes_anterior' | 'anio_actual' | 'persona
     .select-compact:hover { border-color: #cbd5e1; background-color: #fff; }
     .select-compact:focus { outline: none; border-color: #1e293b; box-shadow: 0 0 0 2px rgba(30,41,59,0.05); }
 
-    .vendor-select { min-width: 180px; }
-    .status-select { min-width: 140px; }
 
     .control-compact {
       border-radius: 10px;
@@ -144,24 +123,12 @@ export class SuperAdminFiltersComponent implements OnInit {
   @Output() generate = new EventEmitter<void>();
   @Output() export = new EventEmitter<void>();
 
-  vendedores: Vendedor[] = [];
-  private destroy$ = new Subject<void>();
-
-  constructor(private vendedorService: VendedorService) {}
-
   ngOnInit() {
-    this.loadVendors();
     if (!this.fechaInicio || !this.fechaFin) {
         this.calculateDates();
     }
     // Emitir estado inicial para que el padre sincronice
     this.emitChanges();
-  }
-
-  loadVendors() {
-    this.vendedorService.getVendedores()
-      .pipe(takeUntil(this.destroy$))
-      .subscribe(data => this.vendedores = data);
   }
 
   onRangoChangeInternal() {
@@ -206,10 +173,5 @@ export class SuperAdminFiltersComponent implements OnInit {
       vendedorId: this.vendedorId,
       estado: this.estado
     });
-  }
-
-  ngOnDestroy() {
-    this.destroy$.next();
-    this.destroy$.complete();
   }
 }

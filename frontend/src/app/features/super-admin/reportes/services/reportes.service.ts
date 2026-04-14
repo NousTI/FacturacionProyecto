@@ -56,6 +56,7 @@ export interface ReporteGlobal {
   zona_upgrade: number;
   zona_rescate: number;
   crecimiento_neto: number;
+  variacion_empresas_activas_valor: number;
   empresas_rescate: EmpresaZonaRescate[];
   empresas_upgrade: EmpresaZonaUpgrade[];
   planes_mas_vendidos: { plan: string; ventas: number; ingresos: number }[];

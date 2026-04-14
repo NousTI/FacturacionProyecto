@@ -124,7 +124,7 @@ type RangoTipo = 'mes_actual' | 'mes_anterior' | 'anio_actual' | 'personalizado'
                     <app-info-tooltip
                       *ngIf="c.estado === 'PENDIENTE'"
                       message="En espera de ciclo de pago"
-                      icon="bi-clock-history">
+                      icon="bi-info-circle">
                     </app-info-tooltip>
                   </div>
                 </td>
@@ -168,7 +168,7 @@ type RangoTipo = 'mes_actual' | 'mes_anterior' | 'anio_actual' | 'personalizado'
     .graf-title { font-size: 0.85rem; font-weight: 700; color: #161d35; margin-bottom: 0.75rem; }
     .bar-chart { display: flex; flex-direction: column; gap: 0.5rem; }
     .bar-row { display: flex; align-items: center; gap: 0.5rem; font-size: 0.75rem; }
-    .bar-label { width: 60px; white-space: nowrap; }
+    .bar-label { width: 100px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .bar-track { flex: 1; height: 1.5rem; background: #e2e8f0; border-radius: 3px; position: relative; }
     .bar-fill { height: 100%; border-radius: 3px; transition: width 0.3s; }
     .bar-val { width: 50px; text-align: right; font-weight: 600; }
@@ -199,8 +199,6 @@ export class R032ComisionesComponent implements OnInit, OnDestroy {
   rangoTipo: RangoTipo = 'mes_actual';
   fechaInicio = '';
   fechaFin = '';
-  vendedorId = '';
-  estado = '';
 
   private destroy$ = new Subject<void>();
 
@@ -224,8 +222,6 @@ export class R032ComisionesComponent implements OnInit, OnDestroy {
     const params: any = {};
     if (this.fechaInicio) params.fecha_inicio = this.fechaInicio;
     if (this.fechaFin) params.fecha_fin = this.fechaFin;
-    if (this.vendedorId) params.vendedor_id = this.vendedorId;
-    if (this.estado) params.estado = this.estado;
 
     this.reportesService.getReporteComisiones(params)
       .pipe(takeUntil(this.destroy$))
@@ -244,8 +240,6 @@ export class R032ComisionesComponent implements OnInit, OnDestroy {
       fecha_inicio: this.fechaInicio,
       fecha_fin: this.fechaFin
     };
-    if (this.vendedorId) params.vendedor_id = this.vendedorId;
-    if (this.estado) params.estado = this.estado;
 
     this.reportesService.exportarPDF('SUPERADMIN_COMISIONES', params).subscribe({
       next: (blob) => {

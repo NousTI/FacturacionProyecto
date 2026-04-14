@@ -27,11 +27,11 @@ class RepositorioR031:
 
         query = """
             SELECT
-                -- Empresas activas (suscripción activa y vigente al final del periodo)
+                -- Empresas activas: TOTAL ACTUAL (Global)
                 (SELECT COUNT(DISTINCT e.id)
                  FROM sistema_facturacion.empresas e
                  JOIN sistema_facturacion.suscripciones s ON s.empresa_id = e.id
-                 WHERE s.estado = 'ACTIVA' AND s.fecha_inicio <= {f_fin_date} AND s.fecha_fin >= {f_fin_date}) as empresas_activas,
+                 WHERE s.estado = 'ACTIVA') as empresas_activas,
 
                 -- Nuevas empresas en el período
                 (SELECT COUNT(id)
@@ -74,36 +74,43 @@ class RepositorioR031:
                    AND s.fecha_inicio <= ({f_inicio_date} - INTERVAL '1 month') 
                    AND s.fecha_fin >= ({f_inicio_date} - INTERVAL '1 month')) as empresas_activas_mes_anterior,
 
-                -- Zona upgrade: empresas que usaron >=80 por ciento de facturas del plan en el período
-                (SELECT COUNT(DISTINCT f.empresa_id)
-                 FROM (
-                     SELECT f.empresa_id, COUNT(f.id) as facturas_periodo
-                     FROM sistema_facturacion.facturas f
-                     WHERE f.fecha_emision BETWEEN {f_inicio} AND {f_fin}
-                       AND f.estado != 'ANULADA'
-                     GROUP BY f.empresa_id
-                 ) f
-                 JOIN sistema_facturacion.suscripciones s ON s.empresa_id = f.empresa_id AND s.estado = 'ACTIVA'
-                 JOIN sistema_facturacion.planes p ON p.id = s.plan_id
-                 WHERE f.facturas_periodo >= (p.max_facturas_mes * 0.8)) as zona_upgrade,
+                -- Zona upgrade: empresas con >=80%% de uso en su suscripción activa (Facturas + Programadas)
+                (SELECT COUNT(DISTINCT s_up.empresa_id)
+                 FROM sistema_facturacion.suscripciones s_up
+                 JOIN sistema_facturacion.planes p_up ON p_up.id = s_up.plan_id
+                 WHERE s_up.estado = 'ACTIVA'
+                   AND p_up.max_facturas_mes > 0
+                   AND (
+                     -- Facturas emitidas en el periodo de la suscripción
+                     (SELECT COUNT(f_up.id) FROM sistema_facturacion.facturas f_up 
+                      WHERE f_up.empresa_id = s_up.empresa_id 
+                        AND f_up.fecha_emision >= s_up.fecha_inicio 
+                        AND (s_up.fecha_fin IS NULL OR f_up.fecha_emision <= s_up.fecha_fin)
+                        AND f_up.estado != 'ANULADA')
+                     +
+                     -- Facturas programadas activas
+                     (SELECT COUNT(fp_up.id) FROM sistema_facturacion.facturacion_programada fp_up
+                      WHERE fp_up.empresa_id = s_up.empresa_id 
+                        AND fp_up.activo = TRUE
+                        AND fp_up.created_at >= s_up.fecha_inicio
+                        AND (s_up.fecha_fin IS NULL OR fp_up.created_at <= s_up.fecha_fin))
+                   ) >= (p_up.max_facturas_mes * 0.8)) as zona_upgrade,
 
-                -- Zona rescate: empresas bloqueadas (suscripción VENCIDA/SUSPENDIDA y empresa inactiva)
+                -- Zona rescate: empresas bloqueadas (Global)
                 (SELECT COUNT(DISTINCT e.id)
                  FROM sistema_facturacion.empresas e
                  JOIN sistema_facturacion.suscripciones s ON s.empresa_id = e.id
-                 WHERE s.estado IN ('VENCIDA', 'SUSPENDIDA') AND e.activo = FALSE
-                   AND s.fecha_fin BETWEEN {f_inicio} AND {f_fin}) as zona_rescate,
+                 WHERE s.estado IN ('VENCIDA', 'SUSPENDIDA') AND e.activo = FALSE) as zona_rescate,
 
                 -- Total usuarios (denominador para tasa de abandono)
                 (SELECT COUNT(id) FROM sistema_facturacion.usuarios) as total_usuarios,
 
-                -- Usuarios en zona de rescate (numerador para tasa de abandono)
+                -- Usuarios en zona de rescate (Global)
                 (SELECT COUNT(u.id)
                  FROM sistema_facturacion.usuarios u
                  JOIN sistema_facturacion.empresas e ON u.empresa_id = e.id
                  JOIN sistema_facturacion.suscripciones s ON s.empresa_id = e.id
-                 WHERE s.estado IN ('VENCIDA', 'SUSPENDIDA') AND e.activo = FALSE
-                   AND s.fecha_fin BETWEEN {f_inicio} AND {f_fin}) as usuarios_en_rescate
+                 WHERE s.estado IN ('VENCIDA', 'SUSPENDIDA') AND e.activo = FALSE) as usuarios_en_rescate
         """
 
         query = query.format(
@@ -112,20 +119,14 @@ class RepositorioR031:
             f_fin_date=f_fin_date,
             f_inicio_date="%s::date"
         )
-
         params = [
-            ff_use, ff_use,           # empresas_activas
             fi_use, ff_use,           # empresas_nuevas_mes
             ff_use,                   # ingresos_anio
             ff_use,                   # ingresos_anio_anterior
             fi_use, ff_use,           # ingresos_mes
-            fi_anterior, ff_anterior, # ingresos_mes_anterior (BETWEEN %s AND %s)
+            fi_anterior, ff_anterior, # ingresos_mes_anterior
             fi_use, ff_use,           # usuarios_nuevos_mes
-            fi_use, fi_use,           # empresas_activas_mes_anterior
-            fi_use, ff_use,           # zona_upgrade
-            fi_use, ff_use,           # zona_rescate
-            # total_usuarios (sin params)
-            fi_use, ff_use            # usuarios_en_rescate
+            fi_use, fi_use            # empresas_activas_mes_anterior
         ]
 
         with self.db.cursor() as cur:
@@ -136,6 +137,7 @@ class RepositorioR031:
             # Calcular tasas y métricas adicionales
             emp_act = int(data.get('empresas_activas', 0))
             emp_ant = int(data.get('empresas_activas_mes_anterior', 0))
+            data['variacion_empresas_activas_valor'] = emp_act - emp_ant
             data['tasa_crecimiento'] = round(
                 ((emp_act - emp_ant) / emp_ant * 100) if emp_ant > 0 else (100.0 if emp_act > 0 else 0.0), 2
             )
@@ -195,15 +197,8 @@ class RepositorioR031:
             WHERE s.estado IN ('VENCIDA', 'SUSPENDIDA')
               AND e.activo = FALSE
         """
-        params = []
-        if fecha_inicio:
-            query += " AND s.fecha_fin >= %s"
-            params.append(fecha_inicio)
-        if fecha_fin:
-            query += " AND s.fecha_fin <= %s::timestamp + interval '1 day' - interval '1 second'"
-            params.append(fecha_fin)
-            
         query += " ORDER BY deadline ASC"
+        params = []
         with self.db.cursor() as cur:
             cur.execute(query, tuple(params))
             return [dict(row) for row in cur.fetchall()]
