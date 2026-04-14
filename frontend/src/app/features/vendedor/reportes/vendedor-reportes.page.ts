@@ -1,7 +1,7 @@
 import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Subject, takeUntil } from 'rxjs';
+import { Subject, takeUntil, finalize } from 'rxjs';
 import { VendedorReportesService, VendedorMetricas } from './services/vendedor-reportes.service';
 import { UiService } from '../../../shared/services/ui.service';
 import { HttpClient } from '@angular/common/http';
@@ -63,13 +63,13 @@ export type ReportTab = 'empresas' | 'comisiones';
       <div class="dashboard-top-section mt-4 animate__animated animate__fadeIn">
         <!-- Header R-031 -->
         <div class="page-header mb-4" *ngIf="tabActivo === 'empresas'">
-            <h1 class="page-title text-primary">R-031 (reducido) — Mis empresas</h1>
+            <h1 class="page-title text-primary">R-031 — Mis empresas</h1>
             <p class="page-subtitle text-muted">Vista filtrada automáticamente: solo las empresas asignadas a este vendedor.</p>
         </div>
 
         <!-- Header R-032 -->
         <div class="page-header mb-4" *ngIf="tabActivo === 'comisiones'">
-            <h1 class="page-title text-success">R-032 (reducido) — Mis comisiones</h1>
+            <h1 class="page-title text-success">R-032 — Mis comisiones</h1>
             <p class="page-subtitle text-muted">Resumen de ingresos acumulados y futuros para este vendedor.</p>
         </div>
 
@@ -262,29 +262,35 @@ export class VendedorReportesPage implements OnInit, OnDestroy {
     this.isLoading = true;
     if (this.tabActivo === 'empresas') {
       this.reportesService.getR031Data(this.fechaInicio, this.fechaFin)
-        .pipe(takeUntil(this.destroy$))
+        .pipe(
+          takeUntil(this.destroy$),
+          finalize(() => {
+            this.isLoading = false;
+            this.cd.detectChanges();
+          })
+        )
         .subscribe({
           next: (data) => {
             this.r031Data = data;
-            this.isLoading = false;
-            this.cd.detectChanges();
           },
           error: (err) => {
-            this.isLoading = false;
             this.uiService.showError(err, 'Error al cargar reporte de empresas');
           }
         });
     } else if (this.tabActivo === 'comisiones') {
       this.reportesService.getR032Data(this.fechaInicio, this.fechaFin)
-        .pipe(takeUntil(this.destroy$))
+        .pipe(
+          takeUntil(this.destroy$),
+          finalize(() => {
+            this.isLoading = false;
+            this.cd.detectChanges();
+          })
+        )
         .subscribe({
           next: (data) => {
             this.r032Data = data;
-            this.isLoading = false;
-            this.cd.detectChanges();
           },
           error: (err) => {
-            this.isLoading = false;
             this.uiService.showError(err, 'Error al cargar reporte de comisiones');
           }
         });
