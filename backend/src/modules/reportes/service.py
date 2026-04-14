@@ -7,9 +7,7 @@ import uuid
 from datetime import datetime, timedelta, date
 
 from .repository import RepositorioReportes
-from .superadmin.R_031.repository import RepositorioR031
-from .superadmin.R_032.repository import RepositorioR032
-from .superadmin.R_033.repository import RepositorioR033
+from .superadmin.superadmin_reportes_service import SuperAdminReportesService
 from .vendedores.R_031.repository import RepositorioR031Vendedor
 from .vendedores.R_032.repository import RepositorioR032Vendedor
 from .usuarios.R_026.service import ServicioR026
@@ -29,9 +27,7 @@ class ServicioReportes:
     def __init__(
         self, 
         repo: RepositorioReportes = Depends(),
-        repo_r031: RepositorioR031 = Depends(),
-        repo_r032: RepositorioR032 = Depends(),
-        repo_r033: RepositorioR033 = Depends(),
+        svc_superadmin: SuperAdminReportesService = Depends(),
         repo_v_r031: RepositorioR031Vendedor = Depends(),
         repo_v_r032: RepositorioR032Vendedor = Depends(),
         svc_r026: ServicioR026 = Depends(),
@@ -43,9 +39,7 @@ class ServicioReportes:
         repo_empresas: RepositorioEmpresas = Depends()
     ):
         self.repo = repo
-        self.repo_r031 = repo_r031
-        self.repo_r032 = repo_r032
-        self.repo_r033 = repo_r033
+        self.svc_superadmin = svc_superadmin
         self.repo_v_r031 = repo_v_r031
         self.repo_v_r032 = repo_v_r032
         self.svc_r026 = svc_r026
@@ -339,103 +333,13 @@ class ServicioReportes:
     # =========================================================
 
     def obtener_r_031_reporte_global(self, fecha_inicio: Optional[str] = None, fecha_fin: Optional[str] = None):
-        kpis = self.repo_r031.obtener_kpis_globales(fecha_inicio=fecha_inicio, fecha_fin=fecha_fin)
-        rescate_raw = self.repo_r031.obtener_zona_rescate(fecha_inicio=fecha_inicio, fecha_fin=fecha_fin)
-        planes = self.repo_r031.obtener_planes_mas_vendidos(fecha_inicio=fecha_inicio, fecha_fin=fecha_fin)
-        top_vendedores = self.repo_r031.obtener_top_vendedores(fecha_inicio=fecha_inicio, fecha_fin=fecha_fin)
-
-        now = datetime.now()
-        empresas_rescate = []
-
-        for e in rescate_raw:
-            # 1. Formatear Último Acceso
-            u_acceso = e.get('ultimo_acceso')
-            if u_acceso:
-                diff_acceso = (now - u_acceso).days
-                if diff_acceso > 30:
-                    e['ultimo_acceso_fmt'] = u_acceso.strftime('%Y-%m-%d')
-                else:
-                    e['ultimo_acceso_fmt'] = f"Hace {diff_acceso} días" if diff_acceso > 0 else "Hoy"
-            else:
-                e['ultimo_acceso_fmt'] = "Nunca"
-
-            # 2. Formatear Deadline
-            deadline = e.get('deadline')
-            if deadline:
-                if isinstance(deadline, datetime):
-                    deadline_date = deadline.date()
-                else:
-                    deadline_date = deadline
-
-                diff_deadline = (deadline_date - now.date()).days
-                if diff_deadline < 31:
-                    if diff_deadline < 0:
-                        e['deadline_fmt'] = "Vencido"
-                    elif diff_deadline == 0:
-                        e['deadline_fmt'] = "Hoy"
-                    else:
-                        e['deadline_fmt'] = f"{diff_deadline} días"
-                else:
-                    e['deadline_fmt'] = deadline_date.strftime('%Y-%m-%d')
-
-            # 3. Calcular Antigüedad
-            f_registro = e.get('fecha_registro')
-            if f_registro:
-                if isinstance(f_registro, datetime):
-                    f_reg_date = f_registro.date()
-                else:
-                    f_reg_date = f_registro
-
-                diff_ant = now.date() - f_reg_date
-                años = diff_ant.days // 365
-                meses = (diff_ant.days % 365) // 30
-                if años > 0:
-                    e['antiguedad'] = f"{años} año{'s' if años > 1 else ''}, {meses} mes{'es' if meses != 1 else ''}"
-                elif meses > 0:
-                    e['antiguedad'] = f"{meses} mes{'es' if meses > 1 else ''}"
-                else:
-                    e['antiguedad'] = f"{diff_ant.days} día{'s' if diff_ant.days != 1 else ''}"
-            else:
-                e['antiguedad'] = "Desconocida"
-
-            empresas_rescate.append(e)
-
-        return {
-            **kpis,
-            "empresas_rescate": empresas_rescate,
-            "planes_mas_vendidos": planes,
-            "top_vendedores": top_vendedores,
-        }
-
-    # =========================================================
-    # R-032: COMISIONES POR VENDEDOR (SUPERADMIN)
-    # =========================================================
+        return self.svc_superadmin.obtener_r_031_reporte_global(fecha_inicio, fecha_fin)
 
     def obtener_reporte_comisiones_superadmin(self, vendedor_id=None, estado=None, fecha_inicio=None, fecha_fin=None):
-        kpis = self.repo_r032.obtener_kpis_comisiones_superadmin(fecha_inicio=fecha_inicio, fecha_fin=fecha_fin, vendedor_id=vendedor_id, estado=estado)
-        detalle = self.repo_r032.obtener_detalle_comisiones_superadmin(vendedor_id, estado, fecha_inicio, fecha_fin)
-        top_vendedores = self.repo_r031.obtener_top_vendedores(fecha_inicio=fecha_inicio, fecha_fin=fecha_fin, vendedor_id=vendedor_id)
-        planes = self.repo_r031.obtener_planes_mas_vendidos(fecha_inicio=fecha_inicio, fecha_fin=fecha_fin, vendedor_id=vendedor_id)
-        return {
-            "kpis": kpis,
-            "detalle": detalle,
-            "top_vendedores": top_vendedores,
-            "planes_mas_vendidos": planes,
-        }
-
-    # =========================================================
-    # R-033: USO DEL SISTEMA POR EMPRESA (SUPERADMIN)
-    # =========================================================
+        return self.svc_superadmin.obtener_reporte_comisiones_superadmin(vendedor_id, estado, fecha_inicio, fecha_fin)
 
     def obtener_reporte_uso_sistema_superadmin(self, fecha_inicio: Optional[str] = None, fecha_fin: Optional[str] = None):
-        empresas = self.repo_r033.obtener_uso_sistema_por_empresa(fecha_inicio=fecha_inicio, fecha_fin=fecha_fin)
-        modulos = self.repo_r033.obtener_modulos_mas_usados(fecha_inicio=fecha_inicio, fecha_fin=fecha_fin)
-        promedio = self.repo_r033.obtener_promedio_usuarios_por_empresa(fecha_inicio=fecha_inicio, fecha_fin=fecha_fin)
-        return {
-            "empresas": empresas,
-            "modulos_mas_usados": modulos,
-            **promedio,
-        }
+        return self.svc_superadmin.obtener_reporte_uso_sistema_superadmin(fecha_inicio, fecha_fin)
 
     # =========================================================
     # NUEVOS REPORTES FINANCIEROS (R-026 a R-028)
@@ -586,15 +490,15 @@ class ServicioReportes:
             
             if tipo == 'SUPERADMIN_GLOBAL':
                 data = self.obtener_r_031_reporte_global(fecha_inicio, fecha_fin)
-                template = "reports/superadmin/global_report.html"
+                template = "reports/superadmin/reporte-r031.html"
             elif tipo == 'SUPERADMIN_COMISIONES':
                 vendedor_id = params.get('vendedor_id')
                 estado = params.get('estado')
                 data = self.obtener_reporte_comisiones_superadmin(vendedor_id, estado, fecha_inicio, fecha_fin)
-                template = "reports/superadmin/comisiones_superadmin.html"
+                template = "reports/superadmin/reporte-r032.html"
             elif tipo == 'SUPERADMIN_USO':
                 data = self.obtener_reporte_uso_sistema_superadmin(fecha_inicio, fecha_fin)
-                template = "reports/superadmin/uso_sistema_report.html"
+                template = "reports/superadmin/reporte-r033.html"
             else:
                 raise AppError(f"Tipo de reporte Superadmin desconocido: {tipo}", 400)
                 

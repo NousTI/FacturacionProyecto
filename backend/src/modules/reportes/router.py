@@ -5,8 +5,7 @@ from uuid import UUID
 
 from .service import ServicioReportes
 from .schemas import (
-    ReporteLectura, ReporteCreacion,
-    ReporteGlobalSuperadmin, ReporteComisionesSuperadmin, ReporteUsoSistemaSuperadmin
+    ReporteLectura, ReporteCreacion
 )
 from ..autenticacion.routes import obtener_usuario_actual, requerir_permiso, requerir_superadmin
 from ...constants.permissions import PermissionCodes
@@ -98,34 +97,14 @@ def eliminar_reporte_usuario(
     servicio.eliminar_reporte(id, usuario)
     return {"message": "Reporte eliminado correctamente"}
 
-# --- RUTAS DE VENDEDOR (MODULARIZADAS) ---
+# --- RUTAS MODULARIZADAS ---
 from .vendedores.router import router as vendedor_router
+from .superadmin.router import router as superadmin_router
+
 router.include_router(vendedor_router, prefix="/vendedor", tags=["Reportes Vendedor"])
+router.include_router(superadmin_router, prefix="/superadmin", tags=["Reportes Superadmin"])
 
-# --- RUTAS DE SUPERADMIN ---
-@router.get("/superadmin", response_model=List[ReporteLectura])
-def listar_reportes_superadmin(
-    usuario: dict = Depends(requerir_superadmin),
-    servicio: ServicioReportes = Depends()
-):
-    return servicio.listar_reportes(usuario)
 
-@router.post("/superadmin", response_model=ReporteLectura, status_code=status.HTTP_201_CREATED)
-def generar_reporte_superadmin(
-    datos: ReporteCreacion,
-    usuario: dict = Depends(requerir_superadmin),
-    servicio: ServicioReportes = Depends()
-):
-    return servicio.crear_reporte(datos, usuario)
-
-@router.delete("/superadmin/{id}")
-def eliminar_reporte_superadmin(
-    id: UUID,
-    usuario: dict = Depends(requerir_superadmin),
-    servicio: ServicioReportes = Depends()
-):
-    servicio.eliminar_reporte(id, usuario)
-    return {"message": "Reporte eliminado correctamente"}
 
 @router.post("/preview")
 def preview_reporte(
@@ -275,53 +254,7 @@ def obtener_reporte_cartera(
     empresa_id = usuario_actual.get("empresa_id")
     return servicio.obtener_cartera_usuario(empresa_id, fecha_inicio, fecha_fin)
 
-# =========================================================
-# R-031: REPORTE GLOBAL SUPERADMIN
-# =========================================================
-@router.get("/superadmin/global", response_model=ReporteGlobalSuperadmin)
-def obtener_r_031_reporte_global(
-    fecha_inicio: Optional[str] = None,
-    fecha_fin: Optional[str] = None,
-    usuario: dict = Depends(requerir_superadmin),
-    servicio: ServicioReportes = Depends()
-):
-    """R-031: Vista consolidada de todas las empresas, ingresos, zonas upgrade/rescate y gráficas globales."""
-    return servicio.obtener_r_031_reporte_global(fecha_inicio=fecha_inicio, fecha_fin=fecha_fin)
 
-
-# =========================================================
-# R-032: COMISIONES POR VENDEDOR (SUPERADMIN)
-# =========================================================
-@router.get("/superadmin/comisiones", response_model=ReporteComisionesSuperadmin)
-def obtener_reporte_comisiones_superadmin(
-    vendedor_id: Optional[UUID] = None,
-    estado: Optional[str] = None,
-    fecha_inicio: Optional[str] = None,
-    fecha_fin: Optional[str] = None,
-    usuario: dict = Depends(requerir_superadmin),
-    servicio: ServicioReportes = Depends()
-):
-    """R-032: KPIs y detalle de comisiones por vendedor con top vendedores y planes más vendidos."""
-    return servicio.obtener_reporte_comisiones_superadmin(
-        vendedor_id=str(vendedor_id) if vendedor_id else None,
-        estado=estado,
-        fecha_inicio=fecha_inicio,
-        fecha_fin=fecha_fin
-    )
-
-
-# =========================================================
-# R-033: USO DEL SISTEMA POR EMPRESA (SUPERADMIN)
-# =========================================================
-@router.get("/superadmin/uso-empresas", response_model=ReporteUsoSistemaSuperadmin)
-def obtener_reporte_uso_sistema(
-    fecha_inicio: Optional[str] = None,
-    fecha_fin: Optional[str] = None,
-    usuario: dict = Depends(requerir_superadmin),
-    servicio: ServicioReportes = Depends()
-):
-    """R-033: Métricas de uso por empresa: usuarios, facturas, % plan, módulos y último acceso."""
-    return servicio.obtener_reporte_uso_sistema_superadmin(fecha_inicio=fecha_inicio, fecha_fin=fecha_fin)
 
 
 

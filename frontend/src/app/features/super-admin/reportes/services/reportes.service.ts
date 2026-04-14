@@ -101,11 +101,13 @@ export interface UsoEmpresa {
   plan_nombre: string | null;
   estado_suscripcion: string | null;
   ultimo_acceso: string | null;
+  ultimo_acceso_fmt?: string;
 }
 
 export interface ReporteUso {
   empresas: UsoEmpresa[];
   modulos_mas_usados: { modulo: string; empresas_usando: number; porcentaje: number }[];
+  top_empresas_usuarios: { empresa: string; total_usuarios: number }[];
   promedio_usuarios: number | null;
   max_usuarios: number | null;
   min_usuarios: number | null;

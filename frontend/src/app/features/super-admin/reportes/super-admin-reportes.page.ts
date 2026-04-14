@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef, ViewChild, ElementRef, AfterViewInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Subject, takeUntil } from 'rxjs';
@@ -9,6 +9,9 @@ import {
 import { VendedorService, Vendedor } from '../vendedores/services/vendedor.service';
 import { UiService } from '../../../shared/services/ui.service';
 import { ToastComponent } from '../../../shared/components/toast/toast.component';
+import { Chart, registerables } from 'chart.js';
+
+Chart.register(...registerables);
 
 type Tab = 'global' | 'comisiones' | 'uso';
 type RangoTipo = 'mes_actual' | 'mes_anterior' | 'anio_actual' | 'mes_especifico' | 'anio_especifico' | 'personalizado';
@@ -584,32 +587,35 @@ type RangoTipo = 'mes_actual' | 'mes_anterior' | 'anio_actual' | 'mes_especifico
       </div>
 
       <!-- Gráficas -->
-      <div class="row g-4 mb-4">
-        <div class="col-md-5">
+      <div class="row g-4 mb-4" *ngIf="datosUso">
+        <!-- Módulos (Pastel) -->
+        <div class="col-md-6">
           <div class="card-graf">
             <h6 class="graf-title">Módulos más usados</h6>
-            <div class="donut-modulos-wrap">
-              <div *ngFor="let m of datosUso.modulos_mas_usados" class="modulo-row">
-                <span class="modulo-label">{{ m.modulo }}</span>
-                <div class="bar-track">
-                  <div class="bar-fill bg-primary" [style.width.%]="m.porcentaje"></div>
-                </div>
-                <span class="bar-val">{{ m.porcentaje }}%</span>
-              </div>
+            <div class="chart-container-page">
+              <canvas #modulosChartPage></canvas>
+            </div>
+            <div class="chart-legend-page mt-3" *ngIf="datosUso.modulos_mas_usados.length > 0">
+               <div *ngFor="let m of datosUso.modulos_mas_usados; let i = index" class="legend-item-page">
+                  <span class="dot-sm" [style.background-color]="chartColors[i]"></span>
+                  <span class="label-sm">{{ m.modulo }} ({{ m.empresas_usando }} emp.)</span>
+               </div>
             </div>
           </div>
         </div>
-        <div class="col-md-7">
+        
+        <!-- Usuarios (Pastel) -->
+        <div class="col-md-6">
           <div class="card-graf">
             <h6 class="graf-title">Empresas con más usuarios</h6>
-            <div class="bar-chart">
-              <div *ngFor="let e of topEmpresasPorUsuarios | slice:0:6" class="bar-row">
-                <span class="bar-label">{{ e.empresa | slice:0:14 }}</span>
-                <div class="bar-track">
-                  <div class="bar-fill bg-info" [style.width.%]="barPct(e.total_usuarios, maxUsuariosEmpresa)"></div>
-                </div>
-                <span class="bar-val">{{ e.total_usuarios }}</span>
-              </div>
+            <div class="chart-container-page">
+              <canvas #userChartPage></canvas>
+            </div>
+            <div class="chart-legend-page mt-3" *ngIf="topEmpresasPorUsuarios.length > 0">
+               <div *ngFor="let e of topEmpresasPorUsuarios | slice:0:6; let i = index" class="legend-item-page">
+                  <span class="dot-sm" [style.background-color]="chartColors[i]"></span>
+                  <span class="label-sm">{{ e.empresa | slice:0:12 }}... ({{ e.usuarios_activos }})</span>
+               </div>
             </div>
           </div>
         </div>
@@ -865,9 +871,15 @@ type RangoTipo = 'mes_actual' | 'mes_anterior' | 'anio_actual' | 'mes_especifico
       .card-graf, .card-tabla, .kpi-card { box-shadow: none !important; border: 1px solid #ddd !important; }
       .table thead th { background: #f0f0f0 !important; }
     }
+
+    .chart-container-page { position: relative; height: 180px; width: 100%; display: flex; justify-content: center; }
+    .chart-legend-page { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.4rem; border-top: 1px solid #f1f5f9; padding-top: 0.6rem; }
+    .legend-item-page { display: flex; align-items: center; gap: 0.4rem; font-size: 0.65rem; color: #64748b; }
+    .dot-sm { width: 6px; height: 6px; border-radius: 50%; }
+    .label-sm { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 600; }
   `]
 })
-export class SuperAdminReportesPage implements OnInit, OnDestroy {
+export class SuperAdminReportesPage implements OnInit, OnDestroy, AfterViewInit {
 
   tabActivo: Tab = 'global';
 
@@ -906,6 +918,13 @@ export class SuperAdminReportesPage implements OnInit, OnDestroy {
   vendedores: Vendedor[] = [];
   anioActual = new Date().getFullYear();
   meses = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+
+  @ViewChild('modulosChartPage') modulosChartPageRef!: ElementRef;
+  @ViewChild('userChartPage') userChartPageRef!: ElementRef;
+  
+  chartModulosP: Chart | null = null;
+  chartUsersP: Chart | null = null;
+  chartColors = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4', '#ec4899', '#6366f1'];
 
   private destroy$ = new Subject<void>();
 
@@ -989,9 +1008,62 @@ export class SuperAdminReportesPage implements OnInit, OnDestroy {
     this.reportesService.getReporteUso({ fecha_inicio: this.fechaInicioU, fecha_fin: this.fechaFinU })
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: (data) => { this.datosUso = data; this.loadingUso = false; this.cd.detectChanges(); },
+        next: (data) => { 
+          this.datosUso = data; 
+          this.loadingUso = false; 
+          this.cd.detectChanges(); 
+          setTimeout(() => this.initUsoCharts(), 100);
+        },
         error: (err) => { this.loadingUso = false; this.uiService.showError(err, 'Error al cargar uso del sistema'); this.cd.detectChanges(); }
       });
+  }
+
+  ngAfterViewInit() {
+    if (this.datosUso) {
+      setTimeout(() => this.initUsoCharts(), 200);
+    }
+  }
+
+  private initUsoCharts() {
+    if (this.tabActivo !== 'uso' || !this.datosUso) return;
+
+    // Destruir previos
+    if (this.chartModulosP) { this.chartModulosP.destroy(); this.chartModulosP = null; }
+    if (this.chartUsersP) { this.chartUsersP.destroy(); this.chartUsersP = null; }
+
+    // Módulos
+    if (this.modulosChartPageRef) {
+      const ctxM = this.modulosChartPageRef.nativeElement.getContext('2d');
+      this.chartModulosP = new Chart(ctxM, {
+        type: 'pie',
+        data: {
+          labels: this.datosUso.modulos_mas_usados.map(m => m.modulo),
+          datasets: [{
+            data: this.datosUso.modulos_mas_usados.map(m => m.empresas_usando),
+            backgroundColor: this.chartColors,
+            borderWidth: 1
+          }]
+        },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+      });
+    }
+
+    // Usuarios
+    if (this.userChartPageRef) {
+      const ctxU = this.userChartPageRef.nativeElement.getContext('2d');
+      this.chartUsersP = new Chart(ctxU, {
+        type: 'pie',
+        data: {
+          labels: this.topEmpresasPorUsuarios.slice(0, 6).map(e => e.empresa),
+          datasets: [{
+            data: this.topEmpresasPorUsuarios.slice(0, 6).map(e => e.usuarios_activos),
+            backgroundColor: this.chartColors,
+            borderWidth: 1
+          }]
+        },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+      });
+    }
   }
 
   // ---- Rango de fechas ----
@@ -1103,10 +1175,10 @@ export class SuperAdminReportesPage implements OnInit, OnDestroy {
     return Math.max(...(this.datosComisiones?.planes_mas_vendidos.map(p => p.ventas) ?? [1]));
   }
   get topEmpresasPorUsuarios() {
-    return [...(this.datosUso?.empresas ?? [])].sort((a,b) => b.total_usuarios - a.total_usuarios);
+    return [...(this.datosUso?.empresas ?? [])].sort((a,b) => b.usuarios_activos - a.usuarios_activos);
   }
   get maxUsuariosEmpresa(): number {
-    return Math.max(...(this.datosUso?.empresas.map(e => e.total_usuarios) ?? [1]));
+    return Math.max(...(this.datosUso?.empresas.map(e => e.usuarios_activos) ?? [1]));
   }
 
   barPct(val: number, max: number): number {

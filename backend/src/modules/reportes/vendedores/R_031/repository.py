@@ -102,23 +102,48 @@ class RepositorioR031Vendedor:
 
     def obtener_detalle_empresas(self, vendedor_id: UUID, fecha_inicio: Optional[str] = None, fecha_fin: Optional[str] = None) -> List[dict]:
         query = """
-            SELECT
+SELECT
                 e.id,
                 COALESCE(e.nombre_comercial, e.razon_social) as empresa,
                 p.nombre as plan,
                 p.max_facturas_mes, p.max_usuarios, p.max_establecimientos, p.max_programaciones,
+                
+                -- Facturas (Actual / Cupo)
                 (SELECT COUNT(f.id) FROM sistema_facturacion.facturas f
                  WHERE f.empresa_id = e.id AND f.estado != 'ANULADA'
                    AND f.fecha_emision >= s.fecha_inicio 
                    AND (s.fecha_fin IS NULL OR f.fecha_emision <= s.fecha_fin)) as facturas_actuales,
+                
+                -- Usuarios (Total Absoluto / Cupo)
                 (SELECT COUNT(*) FROM sistema_facturacion.usuarios 
-                 WHERE empresa_id = e.id AND estado = 'ACTIVO') as usuarios_actuales,
+                 WHERE empresa_id = e.id) as usuarios_actuales,
+                
+                -- Establecimientos (Actual / Cupo)
                 (SELECT COUNT(*) FROM sistema_facturacion.establecimientos 
                  WHERE empresa_id = e.id) as establecimientos_actuales,
+                
+                -- Programaciones (Dentro de suscripción / Cupo)
                 (SELECT COUNT(*) FROM sistema_facturacion.facturacion_programada 
                  WHERE empresa_id = e.id AND activo = TRUE
                    AND created_at >= s.fecha_inicio 
                    AND (s.fecha_fin IS NULL OR created_at <= s.fecha_fin)) as programadas_actuales,
+                
+                -- Cálculo unificado de Porcentaje de Uso (SQL)
+                ROUND(GREATEST(
+                    CASE WHEN p.max_facturas_mes > 0 THEN 
+                        ((SELECT COUNT(f2.id) FROM sistema_facturacion.facturas f2 WHERE f2.empresa_id = e.id AND f2.estado != 'ANULADA' AND f2.fecha_emision >= s.fecha_inicio AND (s.fecha_fin IS NULL OR f2.fecha_emision <= s.fecha_fin))::numeric / p.max_facturas_mes * 100)
+                    ELSE 0 END,
+                    CASE WHEN p.max_usuarios > 0 THEN 
+                        ((SELECT COUNT(*) FROM sistema_facturacion.usuarios u2 WHERE u2.empresa_id = e.id)::numeric / p.max_usuarios * 100)
+                    ELSE 0 END,
+                    CASE WHEN p.max_establecimientos > 0 THEN 
+                        ((SELECT COUNT(*) FROM sistema_facturacion.establecimientos est2 WHERE est2.empresa_id = e.id)::numeric / p.max_establecimientos * 100)
+                    ELSE 0 END,
+                    CASE WHEN p.max_programaciones > 0 THEN 
+                        ((SELECT COUNT(*) FROM sistema_facturacion.facturacion_programada fp2 WHERE fp2.empresa_id = e.id AND fp2.activo = TRUE AND fp2.created_at >= s.fecha_inicio AND (s.fecha_fin IS NULL OR fp2.created_at <= s.fecha_fin))::numeric / p.max_programaciones * 100)
+                    ELSE 0 END
+                ), 1) as porcentaje_uso,
+
                 (SELECT u.nombres || ' ' || u.apellidos FROM sistema_facturacion.usuarios u 
                  JOIN sistema_facturacion.users us ON u.user_id = us.id 
                  WHERE u.empresa_id = e.id ORDER BY us.created_at ASC LIMIT 1) as admin_nombre,
@@ -140,8 +165,8 @@ class RepositorioR031Vendedor:
             
             today = date.today()
             for row in rows:
-                row['porcentaje_uso'] = self._calcular_porcentaje_uso(row)
-                row['oportunidad_upgrade'] = "Si" if row['porcentaje_uso'] >= 80 else "No"
+                # El porcentaje_uso ya viene calculado desde SQL (GREATEST)
+                row['oportunidad_upgrade'] = "Si" if row.get('porcentaje_uso', 0) >= 80 else "No"
                 
                 # Info Administrador
                 admin_info = self._formatear_info_admin(row.get('admin_fecha_creacion'), today)

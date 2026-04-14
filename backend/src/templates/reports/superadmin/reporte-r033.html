@@ -1,0 +1,176 @@
+{% extends "reports/superadmin/base_superadmin.html" %}
+
+{% block header_content %}
+    <h1>Reporte de Uso del Sistema</h1>
+    <p>R-033 · Análisis de Adopción por Empresa</p>
+{% endblock %}
+
+{% block content %}
+    <!-- KPIs PRINCIPALES -->
+    <div class="kpi-grid">
+        <div class="kpi-card">
+            <span class="label">Promedio Usuarios / Empresa</span>
+            <span class="value">{{ "{:.1f}".format(data.promedio_usuarios or 0) }}</span>
+            <span class="extra">Basado en {{ data.empresas | length }} empresas</span>
+        </div>
+        <div class="kpi-card">
+            <span class="label">Máximo Usuarios (Top)</span>
+            <span class="value">{{ data.max_usuarios or 0 }}</span>
+            <span class="extra">Empresa con más carga</span>
+        </div>
+        <div class="kpi-card">
+            <span class="label">Módulos Promedio</span>
+            <span class="value">{{ data.modulos_mas_usados | length }}</span>
+            <span class="extra">Módulos en ecosistema</span>
+        </div>
+    </div>
+
+    <!-- GRÁFICAS (PASTEL) -->
+    <div class="charts-row">
+        <div class="chart-box">
+            <h3>Módulos más usados (%)</h3>
+            <div class="chart-container-pie">
+                <canvas id="chartModulosPie"></canvas>
+            </div>
+        </div>
+        <div class="chart-box">
+            <h3>Top Empresas por Usuarios</h3>
+            <div class="chart-container-pie">
+                <canvas id="chartUsuariosPie"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- DETALLE DE EMPRESAS -->
+    <h2>Detalle de Empresas</h2>
+    <table>
+        <thead>
+            <tr>
+                <th style="width: 25%;">Empresa</th>
+                <th style="width: 15%;">Plan</th>
+                <th class="text-right" style="width: 15%;">Usuarios (A/T)</th>
+                <th class="text-right" style="width: 12%;">Fact. Mes</th>
+                <th class="text-right" style="width: 12%;">% Uso Plan</th>
+                <th class="text-right" style="width: 11%;">Módulos</th>
+                <th style="width: 10%;">Último Acceso</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for e in data.empresas %}
+            <tr>
+                <td class="empresa-col">{{ e.empresa }}</td>
+                <td><span class="badge" style="background:#f1f5f9; color:#475569;">{{ e.plan_nombre or 'Sin Plan' }}</span></td>
+                <td class="text-right">{{ e.usuarios_activos }} / {{ e.total_usuarios }}</td>
+                <td class="text-right">{{ e.facturas_mes }}</td>
+                <td class="text-right">
+                    <span class="badge {% if e.porcentaje_uso > 80 %}badge-info{% else %}badge-success{% endif %}">
+                        {{ "{:.1f}%".format(e.porcentaje_uso) }}
+                    </span>
+                </td>
+                <td class="text-right">{{ e.modulos_usados }} / {{ e.modulos_total }}</td>
+                <td style="font-size: 8px;">{{ e.ultimo_acceso_fmt or '--' }}</td>
+            </tr>
+            {% endfor %}
+            {% if not data.empresas %}
+            <tr><td colspan="7" style="text-align:center; color:#94a3b8; padding: 20px;">Sin empresas registradas</td></tr>
+            {% endif %}
+        </tbody>
+    </table>
+
+    <div class="page-break"></div>
+
+    <!-- USO DE MÓDULOS -->
+    <h2>Uso de Módulos (Distribución)</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Módulo</th>
+                <th class="text-right">Empresas Usando</th>
+                <th class="text-right">Porcentaje de Adopción</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for m in data.modulos_mas_usados %}
+            <tr>
+                <td class="empresa-col">{{ m.modulo }}</td>
+                <td class="text-right">{{ m.empresas_usando }}</td>
+                <td class="text-right">
+                    <span class="badge badge-info" style="min-width: 45px; text-align: center;">
+                        {{ "{:.1f}%".format(m.porcentaje) }}
+                    </span>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}
+
+{% block extra_scripts %}
+    const colors = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4', '#ec4899', '#6366f1'];
+
+    // Datos Módulos
+    const modulosLabels = [{% for m in data.modulos_mas_usados %}'{{ m.modulo }}'{{ "," if not loop.last }}{% endfor %}];
+    const modulosData = [{% for m in data.modulos_mas_usados %}{{ m.empresas_usando }}{{ "," if not loop.last }}{% endfor %}];
+
+    // Datos Usuarios (Ranking)
+    const usersLabels = [{% for e in data.top_empresas_usuarios %}'{{ e.empresa[:15] }}'{{ "," if not loop.last }}{% endfor %}];
+    const usersData = [{% for e in data.top_empresas_usuarios %}{{ e.total_usuarios }}{{ "," if not loop.last }}{% endfor %}];
+
+    // Gráfica Módulos (Pie)
+    if (modulosLabels.length > 0) {
+        new Chart(document.getElementById('chartModulosPie'), {
+            type: 'pie',
+            data: {
+                labels: modulosLabels,
+                datasets: [{
+                    data: modulosData,
+                    backgroundColor: colors,
+                    borderWidth: 1,
+                    borderColor: '#fff'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: true, position: 'bottom', labels: { boxWidth: 10, font: { size: 9 } } },
+                    datalabels: {
+                        color: '#fff',
+                        font: { weight: 'bold', size: 10 },
+                        formatter: (val, ctx) => {
+                            let sum = ctx.dataset.data.reduce((a, b) => a + b, 0);
+                            return Math.round((val / sum) * 100) + '%';
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    // Gráfica Usuarios (Pie)
+    if (usersLabels.length > 0) {
+        new Chart(document.getElementById('chartUsuariosPie'), {
+            type: 'pie',
+            data: {
+                labels: usersLabels,
+                datasets: [{
+                    data: usersData,
+                    backgroundColor: colors,
+                    borderWidth: 1,
+                    borderColor: '#fff'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: true, position: 'bottom', labels: { boxWidth: 10, font: { size: 9 } } },
+                    datalabels: {
+                        color: '#fff',
+                        font: { weight: 'bold', size: 10 }
+                    }
+                }
+            }
+        });
+    }
+{% endblock %}
