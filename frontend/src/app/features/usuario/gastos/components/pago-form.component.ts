@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, OnInit } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnInit, OnChanges, SimpleChanges, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { PagoGasto, PagoGastoCreate, PagoGastoUpdate } from '../../../../domain/models/pago-gasto.model';
@@ -18,7 +18,7 @@ import { ModalFormLayoutComponent } from './modal-form-layout.component';
       [viewOnly]="viewOnly"
       (onCancel)="cancel.emit()"
     >
-      <form [formGroup]="form" (ngSubmit)="submit()" id="formContent">
+      <form [formGroup]="form" (ngSubmit)="submit()" id="formContent" [class.view-only-blocker]="viewOnly">
         <div class="summary-ticket-premium mb-4" *ngIf="selectedGasto">
           <label class="editorial-label-muted">Aplicar pago a:</label>
           <div class="d-flex justify-content-between align-items-end mt-2">
@@ -36,14 +36,14 @@ import { ModalFormLayoutComponent } from './modal-form-layout.component';
           </div>
         </div>
 
-        <div class="alert-minimalist mb-4" *ngIf="editMode && gastoEsPagado">
+        <div class="alert-minimalist mb-4" *ngIf="editMode && gastoEsPagado && !viewOnly">
           <span>ESTE PAGO ESTÁ COMPLETADO. SE PERMITEN CAMBIOS EN NOTAS.</span>
         </div>
 
         <div class="editorial-grid-2">
           <div class="col-span-2" *ngIf="!selectedGasto">
             <label class="editorial-label">Seleccionar Gasto</label>
-            <select class="editorial-input" formControlName="gasto_id" [class.is-invalid]="isInvalid('gasto_id')">
+            <select class="editorial-input" formControlName="gasto_id" [class.is-invalid]="isInvalid('gasto_id')" [attr.disabled]="viewOnly ? true : null">
               <option value="">Seleccione un gasto pendiente...</option>
               <option *ngFor="let g of availableGastos" [value]="g.id">
                 {{ g.concepto }} - {{ g.numero_factura || 'S/N' }} (\${{ g.total }})
@@ -62,6 +62,7 @@ import { ModalFormLayoutComponent } from './modal-form-layout.component';
                 step="0.01"
                 (keydown)="onlyPositiveNumbers($event)"
                 [class.is-invalid]="isInvalid('monto')"
+                [readonly]="viewOnly"
               >
             </div>
             <div class="invalid-feedback-minimal" *ngIf="isInvalid('monto')">Monto inválido o excede el total.</div>
@@ -74,12 +75,13 @@ import { ModalFormLayoutComponent } from './modal-form-layout.component';
               class="editorial-input"
               formControlName="fecha_pago"
               [class.is-invalid]="isInvalid('fecha_pago')"
+              [readonly]="viewOnly"
             >
           </div>
 
           <div>
             <label class="editorial-label">Método de Pago</label>
-            <select class="editorial-input" formControlName="metodo_pago" [class.is-invalid]="isInvalid('metodo_pago')">
+            <select class="editorial-input" formControlName="metodo_pago" [class.is-invalid]="isInvalid('metodo_pago')" [attr.disabled]="viewOnly ? true : null">
               <option value="transferencia">Transferencia Bancaria</option>
               <option value="efectivo">Efectivo</option>
               <option value="tarjeta">Tarjeta de Crédito/Débito</option>
@@ -90,17 +92,17 @@ import { ModalFormLayoutComponent } from './modal-form-layout.component';
 
           <div>
             <label class="editorial-label">Nº Referencia</label>
-            <input type="text" class="editorial-input" formControlName="numero_referencia" placeholder="Opcional">
+            <input type="text" class="editorial-input" formControlName="numero_referencia" placeholder="Ej: ID Transacción / Nº Depósito" [readonly]="viewOnly">
           </div>
 
           <div>
             <label class="editorial-label">Nº Comprobante</label>
-            <input type="text" class="editorial-input" formControlName="numero_comprobante" placeholder="Opcional">
+            <input type="text" class="editorial-input" formControlName="numero_comprobante" placeholder="Ej: Nº de Recibo / Operación" [readonly]="viewOnly">
           </div>
 
           <div class="col-span-2">
             <label class="editorial-label">Observaciones</label>
-            <textarea class="editorial-input" formControlName="observaciones" rows="2" placeholder="Notas..."></textarea>
+            <textarea class="editorial-input" formControlName="observaciones" rows="2" placeholder="Notas..." [readonly]="viewOnly"></textarea>
           </div>
         </div>
       </form>
@@ -145,9 +147,15 @@ import { ModalFormLayoutComponent } from './modal-form-layout.component';
     .status-pagado { background: #f0fdf4; color: #166534; border: 1px solid #dcfce7; }
 
     .invalid-feedback-minimal { font-size: 0.75rem; color: #ef4444; font-weight: 500; margin-top: 0.4rem; }
+
+    .view-only-blocker {
+      pointer-events: none !important;
+      user-select: none;
+      filter: grayscale(0.2);
+    }
   `]
 })
-export class PagoFormComponent implements OnInit {
+export class PagoFormComponent implements OnInit, OnChanges {
   @Input() editData: PagoGasto | null = null;
   @Input() selectedGasto: Gasto | null = null;
   @Input() availableGastos: Gasto[] = [];
@@ -161,7 +169,7 @@ export class PagoFormComponent implements OnInit {
   editMode = false;
   private initialValue: any;
 
-  constructor(private fb: FormBuilder) {
+  constructor(private fb: FormBuilder, private cd: ChangeDetectorRef) {
     this.form = this.fb.group({
       gasto_id: ['', Validators.required],
       monto: [0, [Validators.required, Validators.min(0.01)]],
@@ -173,16 +181,39 @@ export class PagoFormComponent implements OnInit {
     });
   }
 
+  ngOnChanges(changes: SimpleChanges) {
+    if (changes['editData'] || changes['viewOnly'] || changes['selectedGasto']) {
+      this.initForm();
+    }
+  }
+
   ngOnInit() {
     this.setupGastoSubscription();
+  }
+
+  private initForm() {
+    this.editMode = !!this.editData;
+    this.form.enable({ emitEvent: false });
 
     if (this.editData) {
-      this.editMode = true;
-      this.form.patchValue({
+      this.form.reset({
         ...this.editData,
         fecha_pago: this.editData.fecha_pago?.split('T')[0]
-      });
+      }, { emitEvent: false });
       this.initialValue = this.form.getRawValue();
+      
+      // BLOQUEO: No se puede editar el monto de un pago ya registrado
+      this.form.get('monto')?.disable({ emitEvent: false });
+    } else {
+      this.form.reset({
+        gasto_id: this.selectedGasto?.id || '',
+        monto: this.selectedGasto?.saldo ?? 0,
+        fecha_pago: new Date().toISOString().split('T')[0],
+        metodo_pago: 'transferencia',
+        numero_referencia: '',
+        numero_comprobante: '',
+        observaciones: ''
+      }, { emitEvent: false });
     }
 
     if (this.selectedGasto) {
@@ -193,18 +224,37 @@ export class PagoFormComponent implements OnInit {
 
     // Bloqueos de seguridad si el gasto ya está pagado
     if (this.selectedGasto?.estado_pago === 'pagado' && !this.viewOnly) {
-      ['gasto_id', 'monto', 'fecha_pago', 'metodo_pago'].forEach(ctrl => this.form.get(ctrl)?.disable());
+      if (this.editMode && this.editData) {
+        // Bloqueamos los campos core
+        ['monto', 'fecha_pago', 'metodo_pago', 'gasto_id'].forEach(ctrl => this.form.get(ctrl)?.disable({ emitEvent: false }));
+        
+        // Bloqueamos opcionales SOLO si ya tienen contenido (lo que pide el usuario)
+        const opcionales = ['numero_referencia', 'numero_comprobante', 'observaciones'];
+        opcionales.forEach(field => {
+          const val = (this.editData as any)[field];
+          if (val && val.toString().trim() !== '') {
+            this.form.get(field)?.disable({ emitEvent: false });
+          }
+        });
+      } else {
+        // En creación de un pago nuevo para un gasto ya pagado
+        ['gasto_id', 'monto', 'fecha_pago', 'metodo_pago'].forEach(ctrl => this.form.get(ctrl)?.disable({ emitEvent: false }));
+      }
     }
 
     if (this.viewOnly) {
-      this.form.disable();
+      this.form.disable({ emitEvent: false });
     }
+
+    this.cd.detectChanges();
   }
 
   get hasChanges(): boolean {
     if (!this.editMode || !this.initialValue) return true;
     const current = this.form.getRawValue();
-    return JSON.stringify(current) !== JSON.stringify(this.initialValue);
+    const initial = this.initialValue;
+    // Comparamos omitiendo el monto porque está deshabilitado y no cambia
+    return JSON.stringify({...current, monto: undefined}) !== JSON.stringify({...initial, monto: undefined});
   }
 
   get gastoEsPagado(): boolean {
@@ -225,26 +275,32 @@ export class PagoFormComponent implements OnInit {
 
   private onGastoSelected(gasto: Gasto) {
     this.selectedGasto = gasto;
-    this.togglePaymentFields(true);
+    if (!this.viewOnly && !this.editMode) this.togglePaymentFields(true);
     
     if (!this.editMode) {
       this.form.patchValue({ 
         gasto_id: gasto.id,
-        monto: gasto.total 
+        monto: gasto.saldo 
       }, { emitEvent: false });
     }
+
+    const maxLimit = this.editMode ? (this.editData?.monto || gasto.total) : gasto.saldo;
 
     this.form.get('monto')?.setValidators([
       Validators.required, 
       Validators.min(0.01), 
-      Validators.max(gasto.total)
+      Validators.max(maxLimit)
     ]);
-    this.form.get('monto')?.updateValueAndValidity();
+    this.form.get('monto')?.updateValueAndValidity({ emitEvent: false });
   }
 
   private togglePaymentFields(enabled: boolean) {
+    if (this.viewOnly) return;
     const fields = ['monto', 'fecha_pago', 'metodo_pago', 'numero_referencia', 'numero_comprobante', 'observaciones'];
     fields.forEach(field => {
+      // Si estamos en editMode, no queremos habilitar el monto aunque enabled sea true
+      if (this.editMode && field === 'monto') return;
+      
       enabled ? this.form.get(field)?.enable({ emitEvent: false }) : this.form.get(field)?.disable({ emitEvent: false });
     });
   }

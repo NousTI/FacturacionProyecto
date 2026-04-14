@@ -29,20 +29,39 @@ class RepositorioGastos:
             return dict(row) if row else None
 
     def obtener_por_id(self, id: UUID) -> Optional[dict]:
-        query = "SELECT * FROM gastos WHERE id = %s"
+        query = """
+            SELECT g.*, (g.total - COALESCE(SUM(pg.monto), 0)) as saldo
+            FROM gastos g
+            LEFT JOIN pago_gasto pg ON g.id = pg.gasto_id
+            WHERE g.id = %s
+            GROUP BY g.id
+        """
         with self.db.cursor() as cur:
             cur.execute(query, (str(id),))
             row = cur.fetchone()
             return dict(row) if row else None
 
     def listar_por_empresa(self, empresa_id: UUID) -> List[dict]:
-        query = "SELECT * FROM gastos WHERE empresa_id = %s ORDER BY fecha_emision DESC, created_at DESC"
+        query = """
+            SELECT g.*, (g.total - COALESCE(SUM(pg.monto), 0)) as saldo
+            FROM gastos g
+            LEFT JOIN pago_gasto pg ON g.id = pg.gasto_id
+            WHERE g.empresa_id = %s
+            GROUP BY g.id
+            ORDER BY g.fecha_emision DESC, g.created_at DESC
+        """
         with self.db.cursor() as cur:
             cur.execute(query, (str(empresa_id),))
             return [dict(row) for row in cur.fetchall()]
 
     def listar_todos(self) -> List[dict]:
-        query = "SELECT * FROM gastos ORDER BY fecha_emision DESC, created_at DESC"
+        query = """
+            SELECT g.*, (g.total - COALESCE(SUM(pg.monto), 0)) as saldo
+            FROM gastos g
+            LEFT JOIN pago_gasto pg ON g.id = pg.gasto_id
+            GROUP BY g.id
+            ORDER BY g.fecha_emision DESC, g.created_at DESC
+        """
         with self.db.cursor() as cur:
             cur.execute(query)
             return [dict(row) for row in cur.fetchall()]

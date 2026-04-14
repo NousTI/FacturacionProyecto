@@ -83,36 +83,38 @@ class ServicioPagosGasto:
         else:
             gasto = self.gasto_repo.obtener_por_id(pago['gasto_id'])
 
-        # Si el gasto está pagado, solo permitir editar campos opcionales vacíos
+        # Bloqueo estricto del monto para cualquier pago existente
         update_data = datos.model_dump(exclude_unset=True)
+        if 'monto' in update_data and Decimal(str(update_data['monto'])) != Decimal(str(pago['monto'])):
+             raise AppError("No se puede modificar el monto de un pago ya registrado", 400, "PAGO_AMOUNT_LOCKED")
 
         CAMPOS_OPCIONALES = {'numero_referencia', 'observaciones', 'numero_comprobante'}
-        CAMPOS_BLOQUEADOS = {'monto', 'fecha_pago', 'metodo_pago', 'gasto_id'}
+        CAMPOS_BLOQUEADOS = {'fecha_pago', 'metodo_pago', 'gasto_id'}
 
         if gasto and gasto.get('estado_pago') == 'pagado':
-            # Filtrar solo campos que realmente cambian (donde el nuevo valor != valor actual)
+            # Filtrar solo campos que realmente cambian
             update_data_cambios = {}
             for k, v in update_data.items():
-                if pago.get(k) != v:  # Solo incluir si hay cambio real
+                if pago.get(k) != v:
                     update_data_cambios[k] = v
 
-            # Rechazar si intenta modificar campos bloqueados (que sí cambian)
+            # Rechazar si intenta modificar campos bloqueados en un gasto ya pagado
             bloqueados_intentados = CAMPOS_BLOQUEADOS & set(update_data_cambios.keys())
             if bloqueados_intentados:
                 raise AppError(
-                    f"No se puede modificar {', '.join(sorted(bloqueados_intentados))} en un pago completado",
+                    f"No se puede modificar {', '.join(sorted(bloqueados_intentados))} en un pago que completa un gasto",
                     400, "PAGO_LOCKED"
                 )
 
-            # Solo permitir campos opcionales que actualmente estén vacíos en el pago
+            # Para gastos pagados, solo permitimos campos opcionales que actualmente estén vacíos
             update_data_filtrado = {}
             for k, v in update_data_cambios.items():
-                if k in CAMPOS_OPCIONALES and not pago.get(k):
+                if k in CAMPOS_OPCIONALES and not (pago.get(k) and str(pago.get(k)).strip()):
                     update_data_filtrado[k] = v
 
-            # Si no hay campos editables, rechazar la actualización
-            if not update_data_filtrado:
-                raise AppError("No hay campos editables disponibles. El pago está completo.", 400, "PAGO_COMPLETE")
+            if not update_data_filtrado and update_data_cambios:
+                 # Si intentó cambiar algo pero nada era opcional
+                 raise AppError("Los campos principales están bloqueados. El pago está completo.", 400, "PAGO_COMPLETE")
 
             update_data = update_data_filtrado
         else:

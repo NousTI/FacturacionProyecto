@@ -40,6 +40,7 @@ class GastoLectura(GastoBase):
     id: UUID
     empresa_id: UUID
     user_id: UUID
+    saldo: Decimal
     created_at: datetime
     updated_at: datetime
 

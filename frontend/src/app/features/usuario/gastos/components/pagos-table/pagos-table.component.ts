@@ -64,7 +64,7 @@ import { HasPermissionDirective } from '../../../../../shared/directives/has-per
                         </a>
                       </li>
                       
-                      <li *ngIf="getGastoStatus(pago.gasto_id) !== 'pagado'">
+                      <li *ngIf="isPagoEditable(pago)">
                         <a *hasPermission="'PAGO_GASTO_EDITAR'" class="dropdown-item rounded-3 py-2" (click)="onAction.emit({type: 'edit', data: pago})">
                           <i class="bi bi-pencil-square"></i>
                           <span class="ms-2">Editar</span>
@@ -143,5 +143,17 @@ export class PagosTableComponent {
 
   getGastoStatus(id: string): string {
     return this.gastos.find(x => x.id === id)?.estado_pago || 'pendiente';
+  }
+
+  isPagoEditable(pago: PagoGasto): boolean {
+    const status = this.getGastoStatus(pago.gasto_id);
+    if (status !== 'pagado') return true;
+
+    // Si está pagado, solo es editable si falta alguno de los campos opcionales
+    const lacksReferencia = !pago.numero_referencia || pago.numero_referencia.trim() === '';
+    const lacksComprobante = !pago.numero_comprobante || pago.numero_comprobante.trim() === '';
+    const lacksObservaciones = !pago.observaciones || pago.observaciones.trim() === '';
+
+    return lacksReferencia || lacksComprobante || lacksObservaciones;
   }
 }

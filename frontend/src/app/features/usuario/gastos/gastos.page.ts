@@ -474,6 +474,8 @@ export class GastosPage implements OnInit, OnDestroy {
   closeModals() {
     this.showGastoModal = this.showPagoModal = this.showCategoriaModal = false;
     this.selectedGasto = this.selectedPago = this.selectedCategoria = this.selectedGastoForPay = null;
+    this.isViewOnlyGasto = false;
+    this.isViewOnlyPago = false;
   }
 
   // --- Save Actions ---

@@ -20,7 +20,7 @@ import { SRI_IVA_TARIFAS } from '../../../../core/constants/sri-iva.constants';
       [viewOnly]="viewOnly"
       (onCancel)="cancel.emit()"
     >
-      <form [formGroup]="form" (ngSubmit)="submit()" id="formContent">
+      <form [formGroup]="form" (ngSubmit)="submit()" id="formContent" [class.view-only-blocker]="viewOnly">
         <div class="editorial-grid-2">
           <div class="col-span-2">
             <label class="editorial-label">Concepto / Descripción</label>
@@ -30,13 +30,14 @@ import { SRI_IVA_TARIFAS } from '../../../../core/constants/sri-iva.constants';
               formControlName="concepto"
               placeholder="Ej: Pago de servicios básicos - Marzo"
               [class.is-invalid]="isInvalid('concepto')"
+              [readonly]="viewOnly"
             >
             <div class="invalid-feedback-minimal" *ngIf="isInvalid('concepto')">Este campo es obligatorio.</div>
           </div>
 
           <div>
             <label class="editorial-label">Categoría</label>
-            <select class="editorial-input" formControlName="categoria_gasto_id" [class.is-invalid]="isInvalid('categoria_gasto_id')">
+            <select class="editorial-input" formControlName="categoria_gasto_id" [class.is-invalid]="isInvalid('categoria_gasto_id')" [attr.disabled]="viewOnly ? true : null">
               <option value="">Seleccionar...</option>
               <option *ngFor="let cat of categorias" [value]="cat.id">{{ cat.tipo | uppercase }} | {{ cat.nombre }}</option>
             </select>
@@ -44,7 +45,7 @@ import { SRI_IVA_TARIFAS } from '../../../../core/constants/sri-iva.constants';
 
           <div>
             <label class="editorial-label">Proveedor</label>
-            <select class="editorial-input" formControlName="proveedor_id">
+            <select class="editorial-input" formControlName="proveedor_id" [attr.disabled]="viewOnly ? true : null">
               <option value="">S/P | Ninguno</option>
               <option *ngFor="let prov of proveedores" [value]="prov.id">{{ prov.razon_social }}</option>
             </select>
@@ -52,12 +53,12 @@ import { SRI_IVA_TARIFAS } from '../../../../core/constants/sri-iva.constants';
 
           <div>
             <label class="editorial-label">Nº de Factura</label>
-            <input type="text" class="editorial-input" formControlName="numero_factura" placeholder="000-000-000000000">
+            <input type="text" class="editorial-input" formControlName="numero_factura" placeholder="000-000-000000000" [readonly]="viewOnly">
           </div>
 
           <div>
             <label class="editorial-label">Fecha de Emisión</label>
-            <input type="date" class="editorial-input" formControlName="fecha_emision" [class.is-invalid]="isInvalid('fecha_emision')">
+            <input type="date" class="editorial-input" formControlName="fecha_emision" [class.is-invalid]="isInvalid('fecha_emision')" [readonly]="viewOnly">
           </div>
 
           <div>
@@ -65,13 +66,13 @@ import { SRI_IVA_TARIFAS } from '../../../../core/constants/sri-iva.constants';
             <div class="input-editorial-group">
               <span class="addon">$</span>
               <input type="number" class="addon-field" formControlName="subtotal" step="0.01"
-                (keydown)="onlyPositiveNumbers($event)" (input)="limitDecimalInput($event); calculateTotal()">
+                (keydown)="onlyPositiveNumbers($event)" (input)="limitDecimalInput($event); calculateTotal()" [readonly]="viewOnly">
             </div>
           </div>
 
           <div>
             <label class="editorial-label">IVA (Tarifa SRI)</label>
-            <select class="editorial-input" formControlName="iva" (change)="calculateTotal()">
+            <select class="editorial-input" formControlName="iva" (change)="calculateTotal()" [attr.disabled]="viewOnly ? true : null">
               <option *ngFor="let t of sriTarifas" [ngValue]="t.percentage">{{ t.label }}</option>
             </select>
           </div>
@@ -84,17 +85,18 @@ import { SRI_IVA_TARIFAS } from '../../../../core/constants/sri-iva.constants';
             </div>
           </div>
 
-          <div>
-            <label class="editorial-label">Estado Inicial</label>
-            <select class="editorial-input" formControlName="estado_pago">
+          <div *ngIf="editMode || viewOnly">
+            <label class="editorial-label">Estado del Gasto</label>
+            <select class="editorial-input" formControlName="estado_pago" [attr.disabled]="true">
               <option value="pendiente">Pendiente</option>
+              <option value="parcial">Pago Parcial</option>
               <option value="pagado">Pagado Total</option>
             </select>
           </div>
 
           <div class="col-span-2">
             <label class="editorial-label">Observaciones</label>
-            <textarea class="editorial-input" formControlName="observaciones" rows="2" placeholder="Notas adicionales..."></textarea>
+            <textarea class="editorial-input" formControlName="observaciones" rows="2" placeholder="Notas adicionales..." [readonly]="viewOnly"></textarea>
           </div>
         </div>
       </form>
@@ -124,6 +126,12 @@ import { SRI_IVA_TARIFAS } from '../../../../core/constants/sri-iva.constants';
     .total-result-area { background: #161d35; padding: 1rem; border-radius: 16px; color: white; }
     .currency-symbol { font-size: 1rem; color: white; margin-right: 0.5rem; }
     .total-input-clean { background: transparent; border: none; font-size: 1.75rem; font-weight: 900; color: white; width: 100%; outline: none; }
+    
+    .view-only-blocker {
+      pointer-events: none !important;
+      user-select: none;
+      filter: grayscale(0.2);
+    }
   `]
 })
 export class GastoFormComponent implements OnInit, OnChanges {

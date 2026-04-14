@@ -11,6 +11,7 @@ export interface Gasto {
   subtotal: number;
   iva: number;
   total: number;
+  saldo: number;
   estado_pago: 'pendiente' | 'parcial' | 'pagado' | 'vencido' | 'cancelado' | 'reembolsado';
   comprobante_url?: string;
   observaciones?: string;
