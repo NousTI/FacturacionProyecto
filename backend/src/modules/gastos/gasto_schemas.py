@@ -12,7 +12,7 @@ class GastoBase(BaseModel):
     fecha_vencimiento: Optional[date] = None
     concepto: str
     subtotal: Decimal = Field(..., ge=0)
-    iva: Decimal = Field(default=Decimal('0.00'), ge=0)
+    iva: Decimal = Field(default=Decimal('0.00'), ge=0, le=100)
     total: Decimal = Field(..., ge=0)
     estado_pago: str = "pendiente" # pendiente | parcial | pagado | vencido | cancelado | reembolsado
     comprobante_url: Optional[str] = None
@@ -30,7 +30,7 @@ class GastoActualizacion(BaseModel):
     fecha_vencimiento: Optional[date] = None
     concepto: Optional[str] = None
     subtotal: Optional[Decimal] = Field(None, ge=0)
-    iva: Optional[Decimal] = Field(None, ge=0)
+    iva: Optional[Decimal] = Field(None, ge=0, le=100)
     total: Optional[Decimal] = Field(None, ge=0)
     estado_pago: Optional[str] = None
     comprobante_url: Optional[str] = None

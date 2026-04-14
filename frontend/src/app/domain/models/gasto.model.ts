@@ -54,6 +54,6 @@ export interface GastoUpdate {
 export interface GastoStats {
   total: number;
   pendientes: number;
-  pagados: number;
   total_monto: number;
+  pagados: number;
 }

@@ -33,7 +33,7 @@ class ServicioGastos:
 
         payload = datos.model_dump()
         payload['user_id'] = user_id
-        
+
         try:
             nuevo = self.repo.crear_gasto(payload)
             if not nuevo:
@@ -77,7 +77,7 @@ class ServicioGastos:
         try:
             payload = datos.model_dump(exclude_unset=True)
             if not payload: return self.repo.obtener_por_id(id)
-            
+
             actualizado = self.repo.actualizar_gasto(id, payload)
             if not actualizado:
                  raise AppError("Error al actualizar el gasto", 500, "DB_ERROR")

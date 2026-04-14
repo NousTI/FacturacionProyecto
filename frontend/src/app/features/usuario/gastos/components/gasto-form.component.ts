@@ -1,10 +1,11 @@
-import { Component, Input, Output, EventEmitter, OnInit } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnInit, OnChanges, SimpleChanges, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Gasto, GastoCreate, GastoUpdate } from '../../../../domain/models/gasto.model';
 import { CategoriaGasto } from '../../../../domain/models/categoria-gasto.model';
 import { Proveedor } from '../../../../domain/models/proveedor.model';
 import { ModalFormLayoutComponent } from './modal-form-layout.component';
+import { SRI_IVA_TARIFAS } from '../../../../core/constants/sri-iva.constants';
 
 @Component({
   selector: 'app-gasto-form',
@@ -63,18 +64,16 @@ import { ModalFormLayoutComponent } from './modal-form-layout.component';
             <label class="editorial-label">Subtotal</label>
             <div class="input-editorial-group">
               <span class="addon">$</span>
-              <input type="number" class="editorial-input addon-field" formControlName="subtotal" step="0.01"
+              <input type="number" class="addon-field" formControlName="subtotal" step="0.01"
                 (keydown)="onlyPositiveNumbers($event)" (input)="limitDecimalInput($event); calculateTotal()">
             </div>
           </div>
 
           <div>
-            <label class="editorial-label">IVA</label>
-            <div class="input-editorial-group">
-              <span class="addon">$</span>
-              <input type="number" class="editorial-input addon-field" formControlName="iva" step="0.01"
-                (keydown)="onlyPositiveNumbers($event)" (input)="limitDecimalInput($event); calculateTotal()">
-            </div>
+            <label class="editorial-label">IVA (Tarifa SRI)</label>
+            <select class="editorial-input" formControlName="iva" (change)="calculateTotal()">
+              <option *ngFor="let t of sriTarifas" [ngValue]="t.percentage">{{ t.label }}</option>
+            </select>
           </div>
 
           <div class="total-result-area">
@@ -118,15 +117,16 @@ import { ModalFormLayoutComponent } from './modal-form-layout.component';
     .editorial-input:focus { outline: none; border-color: #3b82f6; background: white; }
     .editorial-input.is-invalid { border-color: #f43f5e; background: #fff1f2; }
     .invalid-feedback-minimal { color: #f43f5e; font-size: 0.75rem; font-weight: 600; margin-top: 0.4rem; display: block; }
-    .input-editorial-group { display: flex; align-items: center; position: relative; }
-    .addon { position: absolute; left: 1rem; color: #64748b; font-weight: 600; }
-    .addon-field { padding-left: 2.5rem !important; }
+    .input-editorial-group { display: flex; align-items: stretch; border-radius: 12px; overflow: hidden; border: 1.5px solid #e2e8f0; }
+    .input-editorial-group:focus-within { border-color: #3b82f6; }
+    .addon { background: #f8fafc; padding: 0 1rem; display: flex; align-items: center; border-right: 1.5px solid #e2e8f0; color: #64748b; font-weight: 600; }
+    .addon-field { border: none !important; border-radius: 0; flex: 1; padding: 0.85rem 1.25rem; outline: none; font-weight: 500; }
     .total-result-area { background: #161d35; padding: 1rem; border-radius: 16px; color: white; }
     .currency-symbol { font-size: 1rem; color: white; margin-right: 0.5rem; }
     .total-input-clean { background: transparent; border: none; font-size: 1.75rem; font-weight: 900; color: white; width: 100%; outline: none; }
   `]
 })
-export class GastoFormComponent implements OnInit {
+export class GastoFormComponent implements OnInit, OnChanges {
   @Input() editData: Gasto | null = null;
   @Input() categorias: CategoriaGasto[] = [];
   @Input() proveedores: Proveedor[] = [];
@@ -138,9 +138,10 @@ export class GastoFormComponent implements OnInit {
 
   form: FormGroup;
   editMode = false;
+  readonly sriTarifas = SRI_IVA_TARIFAS;
   private initialValue: any;
 
-  constructor(private fb: FormBuilder) {
+  constructor(private fb: FormBuilder, private cd: ChangeDetectorRef) {
     this.form = this.fb.group({
       categoria_gasto_id: ['', Validators.required],
       proveedor_id: [''],
@@ -148,26 +149,70 @@ export class GastoFormComponent implements OnInit {
       concepto: ['', [Validators.required, Validators.minLength(3)]],
       fecha_emision: [new Date().toISOString().split('T')[0], Validators.required],
       subtotal: [0, [Validators.required, Validators.min(0.01)]],
-      iva: [0, [Validators.min(0)]],
-      total: [0],
+      iva: [0],
+      total: [{ value: 0, disabled: true }],
       estado_pago: ['pendiente'],
       observaciones: ['']
     });
   }
 
-  ngOnInit() {
-    if (this.editData) {
-      this.editMode = true;
-      this.form.patchValue({
-        ...this.editData,
-        fecha_emision: this.editData.fecha_emision?.split('T')[0]
-      });
-      this.initialValue = this.form.getRawValue();
-      if (this.editData.estado_pago === 'pagado') {
-        ['concepto', 'categoria_gasto_id', 'proveedor_id', 'subtotal', 'iva', 'total', 'fecha_emision', 'estado_pago'].forEach(ctrl => this.form.get(ctrl)?.disable());
-      }
+  ngOnChanges(changes: SimpleChanges) {
+    if (changes['editData'] || changes['viewOnly']) {
+      this.initForm();
     }
-    if (this.viewOnly) this.form.disable();
+  }
+
+  ngOnInit() {
+    // Ya se inicializa en ngOnChanges al recibir los inputs iniciales
+  }
+
+  private initForm() {
+    this.editMode = !!this.editData;
+    
+    // Valores base/por defecto
+    const baseValues = {
+      categoria_gasto_id: '',
+      proveedor_id: '',
+      numero_factura: '',
+      concepto: '',
+      fecha_emision: new Date().toISOString().split('T')[0],
+      subtotal: 0,
+      iva: 0,
+      total: 0,
+      estado_pago: 'pendiente',
+      observaciones: ''
+    };
+
+    // Aplicar habilitación base por si el componente fue reutilizado
+    this.form.enable({ emitEvent: false });
+    this.form.get('total')?.disable({ emitEvent: false });
+
+    if (this.editData) {
+      // Cargamos todo en una sola operación de reset para evitar estados intermedios vacíos
+      this.form.reset({
+        ...baseValues,
+        ...this.editData,
+        fecha_emision: this.editData.fecha_emision?.split('T')[0],
+        iva: Number(this.editData.iva),
+      }, { emitEvent: false });
+      
+      this.calculateTotal();
+      this.initialValue = this.form.getRawValue();
+
+      // Restricciones si el gasto ya está pagado totalmente
+      if (this.editData.estado_pago === 'pagado') {
+        ['concepto', 'categoria_gasto_id', 'proveedor_id', 'subtotal', 'iva', 'fecha_emision', 'estado_pago']
+          .forEach(ctrl => this.form.get(ctrl)?.disable({ emitEvent: false }));
+      }
+    } else {
+      this.form.reset(baseValues, { emitEvent: false });
+    }
+
+    if (this.viewOnly) {
+      this.form.disable({ emitEvent: false });
+    }
+    
+    this.cd.detectChanges();
   }
 
   get hasChanges(): boolean {
@@ -176,8 +221,9 @@ export class GastoFormComponent implements OnInit {
 
   calculateTotal() {
     const subtotal = this.form.get('subtotal')?.value || 0;
-    const iva = this.form.get('iva')?.value || 0;
-    this.form.patchValue({ total: Number((subtotal + iva).toFixed(2)) });
+    const ivaPct = this.form.get('iva')?.value || 0;
+    const ivaValor = Number(((subtotal * ivaPct) / 100).toFixed(2));
+    this.form.patchValue({ total: Number((subtotal + ivaValor).toFixed(2)) }, { emitEvent: false });
   }
 
   onlyPositiveNumbers(event: KeyboardEvent) {
@@ -195,6 +241,8 @@ export class GastoFormComponent implements OnInit {
   }
 
   submit() {
-    if (this.form.valid) this.onSubmit.emit(this.form.getRawValue());
+    if (this.form.valid) {
+      this.onSubmit.emit(this.form.getRawValue());
+    }
   }
 }

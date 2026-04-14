@@ -314,16 +314,22 @@ export class GastosPage implements OnInit, OnDestroy {
     }
 
     this.service.loadInitialData();
-    
+
     // Subscripciones para data local (dropdowns, etc)
     this.gastos$.pipe(takeUntil(this.destroy$)).subscribe(g => {
       this.gastos = g;
       this.gastosPendientes = g.filter(x => x.estado_pago !== 'pagado');
-      this.cd.markForCheck();
+      setTimeout(() => this.cd.detectChanges());
     });
 
-    this.categorias$.pipe(takeUntil(this.destroy$)).subscribe(c => this.categorias = c);
-    this.service.proveedores$.pipe(takeUntil(this.destroy$)).subscribe(p => this.proveedores = p);
+    this.categorias$.pipe(takeUntil(this.destroy$)).subscribe(c => {
+      this.categorias = c;
+      setTimeout(() => this.cd.detectChanges());
+    });
+    this.service.proveedores$.pipe(takeUntil(this.destroy$)).subscribe(p => {
+      this.proveedores = p;
+      setTimeout(() => this.cd.detectChanges());
+    });
   }
 
   ngOnDestroy() {
@@ -416,16 +422,18 @@ export class GastosPage implements OnInit, OnDestroy {
     this.showGastoModal = true; 
   }
 
-  handleEditGasto(g: Gasto) { 
-    this.selectedGasto = g; 
+  handleEditGasto(g: Gasto) {
+    this.selectedGasto = g;
     this.isViewOnlyGasto = false;
-    this.showGastoModal = true; 
+    this.showGastoModal = true;
+    this.cd.detectChanges();
   }
 
   handleViewGasto(g: Gasto) {
     this.selectedGasto = g;
     this.isViewOnlyGasto = true;
     this.showGastoModal = true;
+    this.cd.detectChanges();
   }
 
   openCreatePagoModal() { 
@@ -435,11 +443,12 @@ export class GastosPage implements OnInit, OnDestroy {
     this.showPagoModal = true; 
   }
 
-  handleEditPago(p: PagoGasto) { 
-    this.selectedPago = p; 
+  handleEditPago(p: PagoGasto) {
+    this.selectedPago = p;
     this.selectedGastoForPay = this.gastos.find(g => g.id === p.gasto_id) || null;
     this.isViewOnlyPago = false;
-    this.showPagoModal = true; 
+    this.showPagoModal = true;
+    this.cd.detectChanges();
   }
 
   handleViewPago(p: PagoGasto) {
@@ -447,6 +456,7 @@ export class GastosPage implements OnInit, OnDestroy {
     this.selectedGastoForPay = this.gastos.find(g => g.id === p.gasto_id) || null;
     this.isViewOnlyPago = true;
     this.showPagoModal = true;
+    this.cd.detectChanges();
   }
 
   handleQuickPay(g: Gasto) {
@@ -454,11 +464,12 @@ export class GastosPage implements OnInit, OnDestroy {
     this.selectedPago = null;
     this.isViewOnlyPago = false;
     this.showPagoModal = true;
+    this.cd.detectChanges();
   }
 
-  openCreateCategoriaModal() { this.selectedCategoria = null; this.showCategoriaModal = true; }
+  openCreateCategoriaModal() { this.selectedCategoria = null; this.showCategoriaModal = true; this.cd.detectChanges(); }
 
-  handleEditCategoria(c: CategoriaGasto) { this.selectedCategoria = c; this.showCategoriaModal = true; }
+  handleEditCategoria(c: CategoriaGasto) { this.selectedCategoria = c; this.showCategoriaModal = true; this.cd.detectChanges(); }
 
   closeModals() {
     this.showGastoModal = this.showPagoModal = this.showCategoriaModal = false;
@@ -468,8 +479,9 @@ export class GastosPage implements OnInit, OnDestroy {
   // --- Save Actions ---
   saveGasto(data: any) {
     this.isSaving = true;
+    this.cd.detectChanges();
     const op = this.selectedGasto ? this.service.updateGasto(this.selectedGasto.id, data) : this.service.createGasto(data);
-    op.pipe(finalize(() => this.isSaving = false)).subscribe({
+    op.pipe(finalize(() => { this.isSaving = false; this.cd.detectChanges(); })).subscribe({
       next: () => { 
         this.uiService.showToast(this.selectedGasto ? 'Gasto actualizado' : 'Gasto registrado', 'success'); 
         this.closeModals(); 
@@ -480,8 +492,9 @@ export class GastosPage implements OnInit, OnDestroy {
 
   savePago(data: any) {
     this.isSaving = true;
+    this.cd.detectChanges();
     const op = this.selectedPago ? this.service.updatePago(this.selectedPago.id, data) : this.service.createPago(data);
-    op.pipe(finalize(() => this.isSaving = false)).subscribe({
+    op.pipe(finalize(() => { this.isSaving = false; this.cd.detectChanges(); })).subscribe({
       next: (p) => { 
         this.uiService.showToast('Pago procesado correctamente', 'success'); 
         this.closeModals();
@@ -494,8 +507,9 @@ export class GastosPage implements OnInit, OnDestroy {
 
   saveCategoria(data: any) {
     this.isSaving = true;
+    this.cd.detectChanges();
     const op = this.selectedCategoria ? this.service.updateCategoria(this.selectedCategoria.id, data) : this.service.createCategoria(data);
-    op.pipe(finalize(() => this.isSaving = false)).subscribe({
+    op.pipe(finalize(() => { this.isSaving = false; this.cd.detectChanges(); })).subscribe({
       next: () => { 
         this.uiService.showToast('Categoría guardada', 'success'); 
         this.closeModals(); 
@@ -538,7 +552,10 @@ export class GastosPage implements OnInit, OnDestroy {
     else return;
 
     op.subscribe({
-      next: () => this.uiService.showToast('Registro eliminado con éxito', 'success'),
+      next: () => {
+        this.uiService.showToast('Registro eliminado con éxito', 'success');
+        this.cd.detectChanges();
+      },
       error: (e) => this.uiService.showError(e, 'No se pudo completar la eliminación')
     });
   }

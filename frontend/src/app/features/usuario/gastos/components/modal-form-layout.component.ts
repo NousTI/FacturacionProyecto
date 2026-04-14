@@ -63,6 +63,7 @@ import { CommonModule } from '@angular/common';
 
     .modal-form-body {
       flex: 1;
+      min-height: 0;
       overflow-y: auto;
       padding: 1.5rem;
       scrollbar-width: thin;
