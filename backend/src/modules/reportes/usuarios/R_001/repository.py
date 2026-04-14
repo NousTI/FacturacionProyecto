@@ -13,14 +13,14 @@ class RepositorioR001:
         query = """
             SELECT
                 COUNT(*) as facturas_emitidas,
-                COALESCE(SUM(subtotal_sin_iva), 0) as subtotal_sin_iva,
+                COALESCE(SUM(subtotal_sin_iva) FILTER (WHERE estado = 'AUTORIZADA'), 0) as subtotal_sin_iva,
                 COALESCE(SUM(iva), 0) as iva_total,
                 COALESCE(SUM(descuento), 0) as descuentos_totales,
                 COALESCE(SUM(total), 0) as total_facturado,
                 -- Cantidad de anuladas
                 COALESCE(COUNT(*) FILTER (WHERE estado = 'ANULADA'), 0) as anuladas,
-                -- Cantidad válidas para cálculos
-                COALESCE(COUNT(*) FILTER (WHERE estado != 'ANULADA'), 0) as facturas_validas
+                -- Cantidad autorizadas (para el KPI principal)
+                COALESCE(COUNT(*) FILTER (WHERE estado = 'AUTORIZADA'), 0) as facturas_validas
             FROM sistema_facturacion.facturas
             WHERE empresa_id = %s
               AND fecha_emision BETWEEN %s AND %s::timestamp + interval '1 day' - interval '1 second'
@@ -46,10 +46,10 @@ class RepositorioR001:
             SELECT
                 -- Determinar tarifa de acuerdo a los valores en la tabla
                 CASE
-                    WHEN (fd.tarifa_iva = 0 OR fd.tarifa_iva IS NULL) THEN '0%'
-                    WHEN fd.tarifa_iva = 5 THEN '5%'
-                    WHEN fd.tarifa_iva = 8 THEN '8%'
-                    WHEN fd.tarifa_iva = 15 THEN '15%'
+                    WHEN (fd.tarifa_iva = 0 OR fd.tarifa_iva IS NULL) THEN '0%%'
+                    WHEN fd.tarifa_iva = 5 THEN '5%%'
+                    WHEN fd.tarifa_iva = 8 THEN '8%%'
+                    WHEN fd.tarifa_iva = 15 THEN '15%%'
                     ELSE 'Otro'
                 END as tarifa,
                 COALESCE(SUM(fd.cantidad * fd.precio_unitario * (COALESCE(fd.tarifa_iva, 0) / 100)), 0) as iva_cobrado,
@@ -60,10 +60,10 @@ class RepositorioR001:
               AND f.fecha_emision BETWEEN %s AND %s::timestamp + interval '1 day' - interval '1 second'
               AND f.estado != 'ANULADA'
             GROUP BY CASE
-                WHEN (fd.tarifa_iva = 0 OR fd.tarifa_iva IS NULL) THEN '0%'
-                WHEN fd.tarifa_iva = 5 THEN '5%'
-                WHEN fd.tarifa_iva = 8 THEN '8%'
-                WHEN fd.tarifa_iva = 15 THEN '15%'
+                WHEN (fd.tarifa_iva = 0 OR fd.tarifa_iva IS NULL) THEN '0%%'
+                WHEN fd.tarifa_iva = 5 THEN '5%%'
+                WHEN fd.tarifa_iva = 8 THEN '8%%'
+                WHEN fd.tarifa_iva = 15 THEN '15%%'
                 ELSE 'Otro'
             END
             ORDER BY tarifa
@@ -125,12 +125,12 @@ class RepositorioR001:
         query_actual = """
             SELECT
                 CASE
-                    WHEN COUNT(*) FILTER (WHERE estado != 'ANULADA') > 0 THEN
-                        ROUND(COALESCE(SUM(total) FILTER (WHERE estado != 'ANULADA'), 0)::numeric /
-                              COUNT(*) FILTER (WHERE estado != 'ANULADA'), 2)
+                    WHEN COUNT(*) FILTER (WHERE estado = 'AUTORIZADA') > 0 THEN
+                        ROUND(COALESCE(SUM(total) FILTER (WHERE estado = 'AUTORIZADA'), 0)::numeric /
+                              COUNT(*) FILTER (WHERE estado = 'AUTORIZADA'), 2)
                     ELSE 0
                 END as ticket_promedio_actual,
-                COUNT(*) FILTER (WHERE estado != 'ANULADA') as facturas_validas
+                COUNT(*) FILTER (WHERE estado = 'AUTORIZADA') as facturas_validas
             FROM sistema_facturacion.facturas
             WHERE empresa_id = %s
               AND fecha_emision BETWEEN %s AND %s::timestamp + interval '1 day' - interval '1 second'

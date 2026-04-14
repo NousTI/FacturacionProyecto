@@ -93,6 +93,36 @@ export interface SalesGeneralReport {
   ventas_usuario?: any; // Para R-003 si se requiere integrar
 }
 
+export interface R001IvaDesglosado {
+  tarifa: string;
+  iva_cobrado: number;
+  base_imponible: number;
+}
+
+export interface R001UsuarioVenta {
+  usuario: string;
+  facturas: number;
+  total_ventas: number;
+  ticket_promedio: number;
+  anuladas: number;
+  devoluciones: number;
+}
+
+export interface R001TopUsuario {
+  usuario: string;
+  total_ventas: number;
+  facturas: number;
+}
+
+export interface R001Report {
+  facturas_emitidas: { valor: number; variacion: number };
+  subtotal_sin_iva: number;
+  iva_desglosado: R001IvaDesglosado[];
+  ticket_promedio: { valor: number; variacion: number };
+  ventas_por_usuario: R001UsuarioVenta[];
+  top_usuarios: R001TopUsuario[];
+}
+
 export interface AccountsReceivableReport {
   kpis: {
     total_por_cobrar: number;
@@ -144,6 +174,11 @@ export class FinancialReportsService {
   getAccountsReceivable(fecha_inicio: string, fecha_fin: string): Observable<AccountsReceivableReport> {
     const params = new HttpParams().set('fecha_inicio', fecha_inicio).set('fecha_fin', fecha_fin);
     return this.http.get<AccountsReceivableReport>(`${this.base}/cartera`, { params });
+  }
+
+  getR001Report(fecha_inicio: string, fecha_fin: string): Observable<R001Report> {
+    const params = new HttpParams().set('fecha_inicio', fecha_inicio).set('fecha_fin', fecha_fin);
+    return this.http.get<R001Report>(`${environment.apiUrl}/reportes/ventas/r001`, { params });
   }
 
   getSalesByUser(fecha_inicio: string, fecha_fin: string): Observable<any> {

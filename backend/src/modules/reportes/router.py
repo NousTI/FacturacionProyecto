@@ -114,6 +114,21 @@ def preview_reporte(
 ):
     return servicio.obtener_datos_preview(datos, usuario)
 
+# --- R-001: VENTAS GENERALES (módulo dedicado) ---
+
+from .usuarios.R_001.service import ServicioR001
+
+@router.get("/ventas/r001")
+def obtener_reporte_r001(
+    fecha_inicio: str,
+    fecha_fin: str,
+    usuario_actual: dict = Depends(requerir_permiso([PermissionCodes.REPORTES_VER])),
+    svc_r001: ServicioR001 = Depends()
+):
+    """R-001: Ventas Generales — desglose por usuario, IVA y comparación período anterior."""
+    empresa_id = usuario_actual.get("empresa_id")
+    return svc_r001.generar_reporte_ventas(empresa_id, fecha_inicio, fecha_fin)
+
 # --- RUTAS DE VENTAS Y FACTURACIÓN (R-001 a R-005) ---
 
 @router.get("/ventas/general")

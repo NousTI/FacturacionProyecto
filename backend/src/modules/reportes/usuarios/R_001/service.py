@@ -18,6 +18,7 @@ class ServicioR001:
         # Obtener datos actuales
         kpis = self.repo.obtener_kpis_ventas(empresa_id, fecha_inicio, fecha_fin)
         iva_desglosado = self.repo.obtener_iva_desglosado(empresa_id, fecha_inicio, fecha_fin)
+        iva_map = {item["tarifa"]: item for item in iva_desglosado}
         ventas_por_usuario = self.repo.obtener_ventas_por_usuario(empresa_id, fecha_inicio, fecha_fin)
         top_usuarios = self.repo.obtener_top_usuarios_ventas(empresa_id, fecha_inicio, fecha_fin)
         ticket_promedio = self.repo.obtener_ticket_promedio(empresa_id, fecha_inicio, fecha_fin)
@@ -49,14 +50,14 @@ class ServicioR001:
                 )
             },
             "subtotal_sin_iva": float(kpis.get("subtotal_sin_iva", 0)),
-            # IVA desglosado por tarifa
+            # IVA desglosado por tarifa — siempre las 4 tarifas
             "iva_desglosado": [
                 {
-                    "tarifa": item["tarifa"],
-                    "iva_cobrado": float(item["iva_cobrado"]),
-                    "base_imponible": float(item["base_imponible"])
+                    "tarifa": tarifa,
+                    "iva_cobrado": float(iva_map.get(tarifa, {}).get("iva_cobrado", 0)),
+                    "base_imponible": float(iva_map.get(tarifa, {}).get("base_imponible", 0))
                 }
-                for item in iva_desglosado
+                for tarifa in ["15%", "8%", "5%", "0%"]
             ],
             "ticket_promedio": {
                 "valor": float(ticket_promedio.get("ticket_promedio_actual", 0)),
