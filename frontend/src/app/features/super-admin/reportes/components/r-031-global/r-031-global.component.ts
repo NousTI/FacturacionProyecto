@@ -10,81 +10,25 @@ import { UiService } from '../../../../../shared/services/ui.service';
 import { InfoTooltipComponent } from '../../../../../shared/components/info-tooltip/info-tooltip.component';
 import { environment } from '../../../../../../environments/environment';
 
-type RangoTipo = 'mes_actual' | 'mes_anterior' | 'anio_actual' | 'mes_especifico' | 'anio_especifico' | 'personalizado';
+type RangoTipo = 'mes_actual' | 'mes_anterior' | 'anio_actual' | 'personalizado';
 
 @Component({
   selector: 'app-r-031-global',
   standalone: true,
   imports: [CommonModule, FormsModule, HttpClientModule, InfoTooltipComponent],
   template: `
-    <div class="section-header mb-4">
-      <div>
-        <h5 class="section-title">R-031 — Reporte Global del Sistema</h5>
-        <p class="section-sub">Vista consolidada de todas las empresas, ingresos y zonas críticas</p>
-      </div>
-      <div class="d-flex gap-2">
-        <button class="btn-generar" (click)="generar()" [disabled]="loading">
-          <span *ngIf="loading" class="spinner-border spinner-border-sm me-2"></span>
-          <i *ngIf="!loading" class="bi bi-arrow-clockwise me-2"></i>
-          {{ loading ? 'Generando...' : 'Generar Reporte' }}
-        </button>
-        <button class="btn-pdf" (click)="exportarPDF()" [disabled]="!datos || loadingPDF">
-          <span *ngIf="loadingPDF" class="spinner-border spinner-border-sm me-2"></span>
-          <i *ngIf="!loadingPDF" class="bi bi-file-earmark-pdf me-2"></i>
-          {{ loadingPDF ? 'Generando PDF...' : 'Exportar PDF' }}
-        </button>
-      </div>
-    </div>
-
-    <!-- Filtros -->
-    <div class="filtros-card mb-4">
-      <div class="row g-3 align-items-end">
-        <div class="col-md-3">
-          <label class="form-label-sm">Rango</label>
-          <select class="form-select form-select-sm" [(ngModel)]="rangoTipo" (change)="onRangoChange()">
-            <option value="mes_actual">Mes actual</option>
-            <option value="mes_anterior">Mes anterior</option>
-            <option value="anio_actual">Año actual</option>
-            <option value="mes_especifico">Mes específico</option>
-            <option value="anio_especifico">Año específico</option>
-            <option value="personalizado">Personalizado</option>
-          </select>
-        </div>
-        <div class="col-md-2" *ngIf="rangoTipo === 'mes_especifico'">
-          <label class="form-label-sm">Mes</label>
-          <select class="form-select form-select-sm" [(ngModel)]="mesFiltro" (change)="onRangoChange()">
-            <option *ngFor="let m of meses; let i = index" [value]="i+1">{{ m }}</option>
-          </select>
-        </div>
-        <div class="col-md-2" *ngIf="rangoTipo === 'mes_especifico' || rangoTipo === 'anio_especifico'">
-          <label class="form-label-sm">Año</label>
-          <input type="number" class="form-control form-control-sm" [(ngModel)]="anioFiltro" (change)="onRangoChange()" [min]="2020" [max]="anioActual">
-        </div>
-        <div class="col-md-2" *ngIf="rangoTipo === 'personalizado'">
-          <label class="form-label-sm">Desde</label>
-          <input type="date" class="form-control form-control-sm" [(ngModel)]="fechaInicio">
-        </div>
-        <div class="col-md-2" *ngIf="rangoTipo === 'personalizado'">
-          <label class="form-label-sm">Hasta</label>
-          <input type="date" class="form-control form-control-sm" [(ngModel)]="fechaFin">
-        </div>
-        <div class="col-auto">
-          <span class="rango-preview">{{ fechaInicio }} → {{ fechaFin }}</span>
-        </div>
-      </div>
-    </div>
-
     <!-- Estado vacío/Loading -->
     <div class="empty-state" *ngIf="!datos && !loading">
       <i class="bi bi-graph-up-arrow"></i>
-      <p>Presiona <strong>Generar Reporte</strong> para cargar los datos</p>
+      <p>Configura los filtros y presiona <strong>Consultar</strong></p>
     </div>
+
     <div class="loading-state" *ngIf="loading">
       <div class="spinner-grow text-primary" role="status"></div>
       <p>Obteniendo datos del sistema...</p>
     </div>
 
-    <div *ngIf="datos" id="print-global">
+    <div *ngIf="datos" id="print-global" class="animate__animated animate__fadeIn">
       <!-- KPIs -->
       <div class="kpi-grid mb-4">
         <div class="kpi-card">
@@ -434,13 +378,8 @@ export class R031GlobalComponent implements OnInit, OnDestroy {
   };
 
   rangoTipo: RangoTipo = 'mes_actual';
-  mesFiltro = new Date().getMonth() + 1;
-  anioFiltro = new Date().getFullYear();
   fechaInicio = '';
   fechaFin = '';
-
-  anioActual = new Date().getFullYear();
-  meses = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
 
   private destroy$ = new Subject<void>();
 
@@ -452,45 +391,12 @@ export class R031GlobalComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit() {
-    this.onRangoChange();
-    this.generar();
+    // La generación inicial se dispara desde el padre o al recibir filtros
   }
 
   ngOnDestroy() {
     this.destroy$.next();
     this.destroy$.complete();
-  }
-
-  onRangoChange() {
-    const now = new Date();
-    switch (this.rangoTipo) {
-      case 'mes_actual':
-        this.fechaInicio = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0];
-        this.fechaFin = now.toISOString().split('T')[0];
-        break;
-      case 'mes_anterior': {
-        const prev = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-        const prevEnd = new Date(now.getFullYear(), now.getMonth(), 0);
-        this.fechaInicio = prev.toISOString().split('T')[0];
-        this.fechaFin = prevEnd.toISOString().split('T')[0];
-        break;
-      }
-      case 'anio_actual':
-        this.fechaInicio = `${now.getFullYear()}-01-01`;
-        this.fechaFin = now.toISOString().split('T')[0];
-        break;
-      case 'mes_especifico': {
-        const y = this.anioFiltro, m = this.mesFiltro;
-        this.fechaInicio = `${y}-${String(m).padStart(2,'0')}-01`;
-        const lastDay = new Date(y, m, 0).getDate();
-        this.fechaFin = `${y}-${String(m).padStart(2,'0')}-${String(lastDay).padStart(2,'0')}`;
-        break;
-      }
-      case 'anio_especifico':
-        this.fechaInicio = `${this.anioFiltro}-01-01`;
-        this.fechaFin = `${this.anioFiltro}-12-31`;
-        break;
-    }
   }
 
   generar() {

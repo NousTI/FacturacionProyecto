@@ -33,13 +33,13 @@ export type RangoTipo = 'mes_actual' | 'mes_anterior' | 'anio_actual' | 'persona
         <!-- Botón Consultar -->
         <button class="btn-refresh-compact px-3 w-auto" (click)="generate.emit()" [disabled]="loading">
           <i class="bi bi-search me-2" [class.bi-spin]="loading"></i>
-          {{ loading ? 'Buscando...' : 'Consultar' }}
+          {{ loading ? 'Generando...' : 'Generar Reporte' }}
         </button>
         
         <!-- Botón Exportar PDF -->
         <button class="btn-export-compact" (click)="export.emit()">
           <i class="bi bi-file-earmark-pdf"></i>
-          <span class="ms-2">Descargar PDF</span>
+          <span class="ms-2">Exportar PDF</span>
         </button>
       </div>
     </div>

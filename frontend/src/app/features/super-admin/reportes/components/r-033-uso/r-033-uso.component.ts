@@ -15,45 +15,18 @@ import { R033TablaComponent } from './components/r-033-tabla.component';
   selector: 'app-r-033-uso',
   standalone: true,
   imports: [
-    CommonModule, 
-    FormsModule, 
-    R033FiltrosComponent, 
+    CommonModule,
+    FormsModule,
     R033KpisComponent, 
     R033GraficasComponent, 
     R033TablaComponent
   ],
   template: `
-    <div class="report-container">
-      <!-- Encabezado y Acciones -->
-      <div class="section-header mb-4">
-        <div>
-          <h5 class="section-title">R-033 — Uso del Sistema por Empresa</h5>
-          <p class="section-sub">Snapshot en tiempo real para detección de necesidades de Upgrade</p>
-        </div>
-        <div class="d-flex gap-2">
-          <button class="btn-generar" (click)="generar()" [disabled]="loading">
-            <span *ngIf="loading" class="spinner-border spinner-border-sm me-2"></span>
-            <i *ngIf="!loading" class="bi bi-arrow-clockwise me-2"></i>
-            {{ loading ? 'Sincronizando...' : 'Actualizar Datos' }}
-          </button>
-          <button class="btn-pdf" (click)="exportarPDF()" [disabled]="!datos || loadingPDF">
-            <span *ngIf="loadingPDF" class="spinner-border spinner-border-sm me-2"></span>
-            <i *ngIf="!loadingPDF" class="bi bi-file-earmark-pdf me-2"></i>
-            {{ loadingPDF ? 'Generando PDF...' : 'Descargar PDF' }}
-          </button>
-        </div>
-      </div>
-
-      <!-- Filtros Fragmentados (Solo afectan a gráficas y reportes) -->
-      <app-r-033-filtros 
-        (cambioFiltros)="onFiltrosCalculados($event)"
-        [initialRango]="'mes_actual'">
-      </app-r-033-filtros>
-
+    <div class="report-container animate__animated animate__fadeIn">
       <!-- Estados de Carga -->
       <div class="empty-state" *ngIf="!datos && !loading">
         <i class="bi bi-speedometer2"></i>
-        <p>Cargando información estratégica de uso...</p>
+        <p>Configura los filtros y presiona <strong>Consultar</strong></p>
       </div>
       
       <div class="loading-state" *ngIf="loading">
@@ -88,21 +61,8 @@ import { R033TablaComponent } from './components/r-033-tabla.component';
   `,
   styles: [`
     .report-container { padding: 0.5rem; }
-    .section-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 1.5rem; }
-    .section-title { font-size: 1.25rem; font-weight: 800; color: #0f172a; margin: 0; letter-spacing: -0.5px; }
-    .section-sub { color: #64748b; font-size: 0.875rem; margin: 0.25rem 0 0; }
-    
-    .btn-generar { padding: 0.6rem 1.2rem; background: #0f172a; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 0.875rem; transition: all 0.2s; }
-    .btn-generar:hover { background: #1e293b; transform: translateY(-1px); }
-    
-    .btn-pdf { padding: 0.6rem 1.2rem; background: #ffffff; color: #0f172a; border: 1px solid #e2e8f0; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 0.875rem; transition: all 0.2s; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
-    .btn-pdf:hover:not(:disabled) { background: #f8fafc; border-color: #cbd5e1; }
-    
-    .btn-generar:disabled, .btn-pdf:disabled { opacity: 0.5; cursor: not-allowed; }
-    
     .empty-state, .loading-state { text-align: center; padding: 4rem 1rem; color: #64748b; background: white; border-radius: 12px; border: 2px dashed #e2e8f0; margin: 2rem 0; }
     .spinner-grow { width: 2.5rem; height: 2.5rem; margin-bottom: 1rem; }
-    
     .animate-fade-in { animation: fadeIn 0.4s ease-out; }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
   `]
@@ -113,6 +73,7 @@ export class R033UsoComponent implements OnInit, OnDestroy {
   loading = false;
   loadingPDF = false;
 
+  rangoTipo = 'mes_actual';
   fechaInicio = '';
   fechaFin = '';
 
@@ -125,18 +86,12 @@ export class R033UsoComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit() {
-    // La carga inicial se disparará después de que el componente de filtros emita su valor inicial
+    // La generación inicial se dispara desde el padre
   }
 
   ngOnDestroy() {
     this.destroy$.next();
     this.destroy$.complete();
-  }
-
-  onFiltrosCalculados(rango: { fechaInicio: string, fechaFin: string }) {
-    this.fechaInicio = rango.fechaInicio;
-    this.fechaFin = rango.fechaFin;
-    this.generar();
   }
 
   generar() {
