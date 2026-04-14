@@ -90,8 +90,17 @@ import { EmpresaService } from '../../services/empresa.service';
                     </select>
                   </div>
                   <div class="col-6 animate__animated animate__fadeIn">
-                    <label class="form-label small fw-bold text-secondary">Nº Comprobante</label>
-                    <input type="text" [(ngModel)]="numero_comprobante" class="form-control rounded-pill shadow-none" placeholder="TR-000123">
+                    <label class="form-label small fw-bold text-secondary">Nº Comprobante *</label>
+                    <input
+                      type="text"
+                      [(ngModel)]="numero_comprobante"
+                      class="form-control rounded-pill shadow-none"
+                      [class.is-invalid]="(submitted || comprobanteTouched) && pagoRecibido && !numero_comprobante"
+                      (blur)="comprobanteTouched = true"
+                      placeholder="TR-000123">
+                    <div class="invalid-feedback" *ngIf="(submitted || comprobanteTouched) && pagoRecibido && !numero_comprobante">
+                      El Nº Comprobante es obligatorio.
+                    </div>
                   </div>
                 </ng-container>
               </div>
@@ -102,7 +111,7 @@ import { EmpresaService } from '../../services/empresa.service';
 
         <div class="modal-footer-plan">
           <button (click)="onClose.emit()" class="btn-plan-secondary">Cancelar</button>
-          <button (click)="submit()" [disabled]="!selectedNewPlanId" class="btn-plan-primary">
+          <button (click)="submit()" [disabled]="!selectedNewPlanId || (pagoRecibido && !numero_comprobante)" class="btn-plan-primary">
             {{ pagoRecibido ? 'Actualizar y Pagar' : 'Actualizar (Pendiente)' }}
           </button>
         </div>
@@ -179,6 +188,8 @@ export class ChangePlanModalComponent implements OnInit {
   pagoRecibido: boolean = true;
   metodo_pago: string = 'TRANSFERENCIA';
   numero_comprobante: string = '';
+  submitted: boolean = false;
+  comprobanteTouched: boolean = false;
 
   constructor(
     private empresaService: EmpresaService,
@@ -208,7 +219,9 @@ export class ChangePlanModalComponent implements OnInit {
   }
 
   submit() {
+    this.submitted = true;
     if (!this.selectedNewPlanId) return;
+    if (this.pagoRecibido && !this.numero_comprobante) return;
     this.onSave.emit({
       planId: this.selectedNewPlanId,
       monto: this.monto,
@@ -219,4 +232,3 @@ export class ChangePlanModalComponent implements OnInit {
     });
   }
 }
-

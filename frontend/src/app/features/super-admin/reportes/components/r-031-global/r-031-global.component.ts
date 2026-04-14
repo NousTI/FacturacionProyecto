@@ -112,8 +112,16 @@ type RangoTipo = 'mes_actual' | 'mes_anterior' | 'anio_actual' | 'personalizado'
           <!-- Mostrar Comprobante solo si es PAGADO -->
           <div class="form-row" *ngIf="modalReactivar.estado === 'PAGADO'">
             <div class="form-group">
-              <label class="form-label-sm">N° Comprobante</label>
-              <input type="text" class="form-control form-control-sm" [(ngModel)]="modalReactivar.numero_comprobante" placeholder="Opcional">
+              <label class="form-label-sm">N° Comprobante *</label>
+              <input type="text" class="form-control form-control-sm"
+                [(ngModel)]="modalReactivar.numero_comprobante"
+                [class.is-invalid]="(comprobanteTouched || reactivarSubmitted) && modalReactivar.estado === 'PAGADO' && !modalReactivar.numero_comprobante"
+                (blur)="comprobanteTouched = true"
+                placeholder="Ej: TR-000123">
+              <div class="invalid-feedback" style="font-size:0.75rem;"
+                *ngIf="(comprobanteTouched || reactivarSubmitted) && modalReactivar.estado === 'PAGADO' && !modalReactivar.numero_comprobante">
+                El N° Comprobante es obligatorio.
+              </div>
             </div>
             <div class="form-group" style="visibility: hidden;"> <!-- Space keeping -->
               <label class="form-label-sm">Space</label>
@@ -138,7 +146,8 @@ type RangoTipo = 'mes_actual' | 'mes_anterior' | 'anio_actual' | 'personalizado'
         </div>
         <div class="modal-footer">
           <button class="btn-modal-cancel" (click)="cerrarModal()">Cancelar</button>
-          <button class="btn-modal-confirm" (click)="confirmarReactivacion()" [disabled]="loadingReactivar || !modalReactivar.plan_id || !modalReactivar.monto">
+          <button class="btn-modal-confirm" (click)="confirmarReactivacion()"
+            [disabled]="loadingReactivar || !modalReactivar.plan_id || !modalReactivar.monto || (modalReactivar.estado === 'PAGADO' && !modalReactivar.numero_comprobante)">
             <span *ngIf="loadingReactivar" class="spinner-border spinner-border-sm me-1"></span>
             <i *ngIf="!loadingReactivar" class="bi bi-check-circle me-1"></i>
             {{ loadingReactivar ? 'Procesando...' : 'Confirmar Reactivación' }}
@@ -199,6 +208,8 @@ export class R031GlobalComponent implements OnInit, OnDestroy {
   loading = false;
   loadingPDF = false;
   loadingReactivar = false;
+  comprobanteTouched = false;
+  reactivarSubmitted = false;
 
   // Modal reactivación
   modalReactivar = {
@@ -300,6 +311,8 @@ export class R031GlobalComponent implements OnInit, OnDestroy {
     const fin = new Date(); fin.setFullYear(fin.getFullYear() + 1); fin.setDate(fin.getDate() - 1);
     this.modalReactivar.fecha_fin = fin.toISOString().split('T')[0];
     this.modalReactivar.visible = true;
+    this.comprobanteTouched = false;
+    this.reactivarSubmitted = false;
     this.cd.detectChanges();
 
     if (!this.planesDisponibles.length) {
@@ -321,7 +334,9 @@ export class R031GlobalComponent implements OnInit, OnDestroy {
   }
 
   confirmarReactivacion() {
+    this.reactivarSubmitted = true;
     if (!this.modalReactivar.plan_id || !this.modalReactivar.monto) return;
+    if (this.modalReactivar.estado === 'PAGADO' && !this.modalReactivar.numero_comprobante) return;
     this.loadingReactivar = true;
     const empresaId = this.modalReactivar.empresa?.id;
     const payload = {

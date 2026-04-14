@@ -76,7 +76,7 @@ import { Suscripcion } from '../../services/suscripcion.service';
                   </div>
 
                   <div class="col-md-6 animate__animated animate__fadeIn">
-                     <label class="label-final">Número de Comprobante / Referencia *</label>
+                     <label class="label-final">Nº Comprobante / Referencia *</label>
                      <input type="text" formControlName="numero_comprobante" class="input-final" placeholder="Ej: TR-123456789">
                   </div>
                 </ng-container>
