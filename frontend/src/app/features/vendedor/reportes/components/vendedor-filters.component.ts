@@ -9,11 +9,11 @@ export type RangoTipo = 'mes_actual' | 'mes_anterior' | 'anio_actual' | 'persona
   standalone: true,
   imports: [CommonModule, FormsModule],
   template: `
-    <div class="filters-card mb-4 animate__animated animate__fadeIn">
-      <div class="row g-3 align-items-end">
-        <div class="col-md-3">
-          <label class="filter-label">Rango de Consulta</label>
-          <select class="form-select" [(ngModel)]="rangoTipo" (change)="onRangoChangeInternal()">
+    <div class="compact-filters animate__animated animate__fadeIn">
+      <div class="d-flex align-items-center gap-2">
+        <!-- Selector de Rango -->
+        <div class="filter-group">
+          <select class="form-select select-compact" [(ngModel)]="rangoTipo" (change)="onRangoChangeInternal()">
             <option value="mes_actual">Mes Actual</option>
             <option value="mes_anterior">Mes Anterior</option>
             <option value="anio_actual">Año Actual</option>
@@ -21,121 +21,79 @@ export type RangoTipo = 'mes_actual' | 'mes_anterior' | 'anio_actual' | 'persona
           </select>
         </div>
         
-        <div class="col-md-3" *ngIf="rangoTipo === 'personalizado'">
-          <label class="filter-label">Desde</label>
-          <input type="date" class="form-control" [(ngModel)]="fechaInicio" (change)="emitDates()">
-        </div>
-        
-        <div class="col-md-3" *ngIf="rangoTipo === 'personalizado'">
-          <label class="filter-label">Hasta</label>
-          <input type="date" class="form-control" [(ngModel)]="fechaFin" (change)="emitDates()">
-        </div>
+        <!-- Rango Personalizado -->
+        <ng-container *ngIf="rangoTipo === 'personalizado'">
+          <div class="filter-group d-flex align-items-center gap-1">
+            <input type="date" class="form-control control-compact date-small" [(ngModel)]="fechaInicio" (change)="emitDates()">
+            <span class="to-text">-</span>
+            <input type="date" class="form-control control-compact date-small" [(ngModel)]="fechaFin" (change)="emitDates()">
+          </div>
+        </ng-container>
 
-        <!-- Filtro adicional para Renovaciones (Próximos días) -->
-        <div class="col-md-2" *ngIf="showDiasRenovacion">
-            <label class="filter-label">Días a vencer</label>
-            <input type="number" class="form-control" [(ngModel)]="diasRenovacion" (change)="emitDates()" min="1" max="90">
-        </div>
-
-        <div class="col-auto">
-          <button class="btn-refresh" (click)="generate.emit()" [disabled]="loading">
-            <i class="bi bi-search me-2" [class.bi-spin]="loading"></i>
-            {{ loading ? 'Buscando...' : 'Consultar' }}
-          </button>
-        </div>
+        <!-- Botón Consultar -->
+        <button class="btn-refresh-compact px-3 w-auto" (click)="generate.emit()" [disabled]="loading">
+          <i class="bi bi-search me-2" [class.bi-spin]="loading"></i>
+          {{ loading ? 'Buscando...' : 'Consultar' }}
+        </button>
         
-        <div class="col-auto ms-auto">
-          <button class="btn-export" (click)="export.emit()">
-            <i class="bi bi-file-earmark-pdf me-2"></i>Descargar PDF
-          </button>
-        </div>
-      </div>
-      
-      <div class="rango-info mt-3" *ngIf="fechaInicio && fechaFin">
-        <i class="bi bi-calendar-check me-2 text-primary"></i>
-        <span>Consulta del <strong>{{ fechaInicio | date:'mediumDate' }}</strong> al <strong>{{ fechaFin | date:'mediumDate' }}</strong></span>
+        <!-- Botón Exportar PDF -->
+        <button class="btn-export-compact" (click)="export.emit()">
+          <i class="bi bi-file-earmark-pdf"></i>
+          <span class="ms-2">Descargar PDF</span>
+        </button>
       </div>
     </div>
   `,
   styles: [`
-    .filters-card { 
-      background: #fff; 
-      border: 1px solid #e2e8f0; 
-      border-radius: 20px; 
-      padding: 1.5rem; 
-      box-shadow: 0 10px 15px -3px rgba(0,0,0,0.05); 
-    }
+    .compact-filters { padding: 0.25rem 0; }
     
-    .filter-label { 
-      font-size: 0.75rem; 
-      font-weight: 800; 
-      text-transform: uppercase; 
-      color: #64748b; 
-      letter-spacing: 0.05em; 
-      display: block; 
-      margin-bottom: 0.5rem; 
-    }
-    
-    .form-select, .form-control {
+    .select-compact {
       border-radius: 10px;
       border: 1px solid #e2e8f0;
-      padding: 0.65rem 1rem;
-      font-weight: 500;
+      padding: 0.4rem 0.6rem;
+      font-weight: 700;
+      font-size: 0.8rem;
       color: #1e293b;
+      background-color: #f8fafc;
+      min-width: 120px;
+      cursor: pointer;
+    }
+
+    .control-compact {
+      border-radius: 10px;
+      border: 1px solid #e2e8f0;
+      padding: 0.4rem 0.5rem;
+      font-weight: 600;
+      font-size: 0.75rem;
+      color: #1e293b;
+      background-color: #f8fafc;
     }
     
-    .form-select:focus, .form-control:focus {
-      border-color: #3b82f6;
-      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-    }
-    
-    .btn-refresh {
-      background: #1e293b; 
-      color: #fff; 
-      border: none; 
-      padding: 0.75rem 1.5rem; 
-      border-radius: 12px; 
-      font-weight: 700;
-      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-      display: flex;
-      align-items: center;
-    }
-    
-    .btn-refresh:hover:not(:disabled) { 
-      background: #0f172a; 
-      transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(30, 41, 59, 0.2);
-    }
-    
-    .btn-refresh:disabled { opacity: 0.7; cursor: not-allowed; }
-    
-    .btn-export {
-      background: #fef2f2; 
-      color: #ef4444; 
-      border: 1px solid #fee2e2; 
-      padding: 0.75rem 1.5rem; 
-      border-radius: 12px; 
-      font-weight: 700;
+    .date-small { width: 110px; }
+
+    .to-text { font-size: 0.75rem; font-weight: 900; color: #cbd5e1; }
+
+    .btn-refresh-compact {
+      background: #1e293b; color: #fff; border: none; 
+      height: 32px; border-radius: 10px; 
+      display: flex; align-items: center; justify-content: center;
       transition: all 0.2s;
+      white-space: nowrap;
+      cursor: pointer;
     }
-    
-    .btn-export:hover { 
-      background: #fee2e2; 
-      border-color: #fecaca;
-      transform: translateY(-2px);
+    .btn-refresh-compact:hover { background: #000; transform: scale(1.05); }
+
+    .btn-export-compact {
+      background: #fee2e2; color: #dc2626; border: 1px solid #fecaca;
+      padding: 0.4rem 0.75rem; border-radius: 10px; font-weight: 800;
+      font-size: 0.75rem; display: flex; align-items: center;
+      transition: all 0.2s;
+      cursor: pointer;
     }
-    
-    .rango-info {
-      font-size: 0.85rem;
-      color: #64748b;
-      display: flex;
-      align-items: center;
-      padding-top: 0.5rem;
-      border-top: 1px solid #f1f5f9;
-    }
-    
+    .btn-export-compact:hover { background: #fef2f2; transform: translateY(-1px); border-color: #fca5a5; }
+
     @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-    .bi-spin { animation: spin 1.5s linear infinite; display: inline-block; }
+    .bi-spin { animation: spin 1.5s linear infinite; }
   `]
 })
 export class VendedorFiltersComponent {

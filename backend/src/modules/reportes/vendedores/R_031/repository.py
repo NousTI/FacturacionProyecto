@@ -92,7 +92,8 @@ class RepositorioR031Vendedor:
             row = cur.fetchone()
             data = dict(row) if row else {}
 
-            # Calcular porcentajes de cambio
+            # Asegurar tipos serializables (Decimal -> float)
+            data['comision_pendiente'] = float(data.get('comision_pendiente', 0))
             data['planes_nuevos_pct'] = self._calc_pct(data.get('planes_nuevos_mes', 0), data.get('planes_nuevos_mes_ant', 0))
             data['upgrades_pct'] = self._calc_pct(data.get('upgrades_mes', 0), data.get('upgrades_mes_ant', 0))
             data['renovaciones_pct'] = self._calc_pct(data.get('renovaciones_mes', 0), data.get('renovaciones_mes_ant', 0))
@@ -170,33 +171,56 @@ class RepositorioR031Vendedor:
         """
         with self.db.cursor() as cur:
             cur.execute(query, (vendedor_id, fecha_inicio, fecha_fin))
-            return [dict(row) for row in cur.fetchall()]
+            return [{"nombre": row['nombre'], "cantidad": int(row['cantidad'])} for row in cur.fetchall()]
 
     def obtener_grafica_ventas_mes(self, vendedor_id: UUID, fecha_inicio: Optional[str] = None, fecha_fin: Optional[str] = None) -> List[dict]:
         f_ini, f_fin = self._calcular_rango_grafica_ventas(fecha_inicio, fecha_fin)
         
-        # Calcular duración para decidir agrupamiento (Diario si <= 31 días)
-        d1 = datetime.strptime(f_ini, '%Y-%m-%d').date()
-        d2 = datetime.strptime(f_fin, '%Y-%m-%d').date()
-        es_rango_corto = (d2 - d1).days <= 31
-
-        trunc_formato = "day" if es_rango_corto else "month"
-        label_formato = "DD Mon" if es_rango_corto else "Mon YYYY"
-
-        query = f"""
-            SELECT TO_CHAR(DATE_TRUNC('{trunc_formato}', ps.fecha_pago), '{label_formato}') as label, 
-                   SUM(ps.monto) as total
+        # 1. Obtener el rango real de los datos para decidir adaptabilidad
+        range_query = """
+            SELECT MIN(ps.fecha_pago) as min_fecha, MAX(ps.fecha_pago) as max_fecha
             FROM sistema_facturacion.pagos_suscripciones ps
             JOIN sistema_facturacion.empresas e ON ps.empresa_id = e.id
             WHERE e.vendedor_id = %s AND ps.estado = 'PAGADO'
               AND ps.fecha_pago BETWEEN %s AND %s::timestamp + interval '1 day' - interval '1 second'
-            GROUP BY DATE_TRUNC('{trunc_formato}', ps.fecha_pago)
-            ORDER BY DATE_TRUNC('{trunc_formato}', ps.fecha_pago) ASC
         """
-
+        
         with self.db.cursor() as cur:
+            cur.execute(range_query, (vendedor_id, f_ini, f_fin))
+            range_res = cur.fetchone()
+            
+            # Decidir si mostrar detalle diario
+            # Caso A: El filtro de fechas ya es corto (<= 31 días)
+            d1 = datetime.strptime(f_ini, '%Y-%m-%d').date()
+            d2 = datetime.strptime(f_fin, '%Y-%m-%d').date()
+            es_filtro_corto = (d2 - d1).days <= 31
+            
+            # Caso B: Los datos reales están concentrados en un mes o menos
+            es_data_concentrada = False
+            if range_res and range_res['min_fecha'] and range_res['max_fecha']:
+                d_min = range_res['min_fecha'].date() if isinstance(range_res['min_fecha'], (datetime, date)) else range_res['min_fecha']
+                d_max = range_res['max_fecha'].date() if isinstance(range_res['max_fecha'], (datetime, date)) else range_res['max_fecha']
+                if (d_max - d_min).days <= 31:
+                    es_data_concentrada = True
+
+            es_rango_corto = es_filtro_corto or es_data_concentrada
+
+            trunc_formato = "day" if es_rango_corto else "month"
+            label_formato = "DD Mon" if es_rango_corto else "Mon YYYY"
+
+            query = f"""
+                SELECT TO_CHAR(DATE_TRUNC('{trunc_formato}', ps.fecha_pago), '{label_formato}') as label, 
+                       SUM(ps.monto) as total
+                FROM sistema_facturacion.pagos_suscripciones ps
+                JOIN sistema_facturacion.empresas e ON ps.empresa_id = e.id
+                WHERE e.vendedor_id = %s AND ps.estado = 'PAGADO'
+                  AND ps.fecha_pago BETWEEN %s AND %s::timestamp + interval '1 day' - interval '1 second'
+                GROUP BY DATE_TRUNC('{trunc_formato}', ps.fecha_pago)
+                ORDER BY DATE_TRUNC('{trunc_formato}', ps.fecha_pago) ASC
+            """
+
             cur.execute(query, (vendedor_id, f_ini, f_fin))
-            return [{"mes": row['label'], "total": row['total']} for row in cur.fetchall()]
+            return [{"mes": row['label'], "total": float(row['total'])} for row in cur.fetchall()]
 
     # =========================================================
     # FUNCIONES AUXILIARES (LÓGICA INTERNA)

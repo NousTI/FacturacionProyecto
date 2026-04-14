@@ -7,16 +7,14 @@ import { UiService } from '../../../shared/services/ui.service';
 import { HttpClient } from '@angular/common/http';
 import { ToastComponent } from '../../../shared/components/toast/toast.component';
 import { R031StatsComponent } from './components/reporte_031/r031-stats.component';
-import { R032StatsComponent } from './components/r032-stats.component';
+import { R032StatsComponent } from './components/reporte_032/r032-stats.component';
 import { VendorChartComponent } from './components/vendor-chart.component';
 import { EmpresasListComponent } from './components/reporte_031/empresas-list.component';
-import { VencidasListComponent } from './components/vencidas-list.component';
-import { ProximasListComponent } from './components/proximas-list.component';
-import { ComisionesListComponent } from './components/comisiones-list.component';
+import { ComisionesListComponent } from './components/reporte_032/comisiones-list.component';
 import { VendedorFiltersComponent, RangoTipo } from './components/vendedor-filters.component';
 import { environment } from '../../../../environments/environment';
 
-export type ReportTab = 'empresas' | 'vencidas' | 'proximas' | 'comisiones';
+export type ReportTab = 'empresas' | 'comisiones';
 
 @Component({
   selector: 'app-vendedor-reportes',
@@ -30,62 +28,60 @@ export type ReportTab = 'empresas' | 'vencidas' | 'proximas' | 'comisiones';
     VendorChartComponent,
     VendedorFiltersComponent,
     EmpresasListComponent,
-    VencidasListComponent,
-    ProximasListComponent,
     ComisionesListComponent
   ],
   template: `
     <div class="reportes-page-container animate__animated animate__fadeIn">
-      <div class="page-header mb-4" *ngIf="tabActivo === 'empresas'">
-          <h1 class="page-title text-primary">R-031 (reducido) — Mis empresas</h1>
-          <p class="page-subtitle text-muted">Vista filtrada automáticamente: solo las empresas asignadas a este vendedor.</p>
-      </div>
-      <!-- DASHBOARD DINÁMICO POR PESTAÑA -->
-      <div class="stats-container animate__animated animate__fadeIn">
-          <!-- R-031 Stats (Empresas) -->
-          <app-r031-stats *ngIf="tabActivo === 'empresas'" [data]="r031Data"></app-r031-stats>
-          
-          <!-- R-032 Stats (Comisiones) -->
-          <app-r032-stats *ngIf="tabActivo === 'comisiones'" [data]="r032Data"></app-r032-stats>
-          
-          <!-- Default Stats (Proximas/Vencidas) -->
-          <div *ngIf="tabActivo === 'proximas' || tabActivo === 'vencidas'" class="mb-4">
-              <div class="alert alert-info border-0 shadow-sm rounded-4">
-                  <i class="bi bi-info-circle-fill me-2"></i>
-                  Mostrando resumen de suscripciones en estado <strong>{{ tabActivo === 'proximas' ? 'Por Renovar' : 'Suspendidas' }}</strong>.
-              </div>
-          </div>
+      <!-- BARRA DE NAVEGACIÓN Y ACCIONES -->
+      <div class="header-actions-bar mb-4">
+        <div class="tabs-navigation">
+          <button class="nav-btn" [class.active]="tabActivo === 'empresas'" (click)="setTab('empresas')">
+            <i class="bi bi-buildings me-2"></i>Mis Empresas (R-031)
+          </button>
+          <button class="nav-btn" [class.active]="tabActivo === 'comisiones'" (click)="setTab('comisiones')">
+            <i class="bi bi-cash-stack me-2"></i>Mis Comisiones (R-032)
+          </button>
+        </div>
+
+        <div class="filters-actions">
+          <app-vendedor-filters
+            *ngIf="tabActivo === 'empresas' || tabActivo === 'comisiones'"
+            [loading]="isLoading"
+            [rangoTipo]="rangoTipo"
+            [fechaInicio]="fechaInicio"
+            [fechaFin]="fechaFin"
+            [diasRenovacion]="diasRenovacion"
+            [showDiasRenovacion]="false"
+            (rangoChange)="onRangoChange($event)"
+            (generate)="handleGenerate()"
+            (export)="exportarPDF()">
+          </app-vendedor-filters>
+        </div>
       </div>
 
-      <!-- NAVEGACIÓN POR PESTAÑAS -->
-      <div class="tabs-navigation mb-4">
-        <button class="nav-btn" [class.active]="tabActivo === 'empresas'" (click)="setTab('empresas')">
-          <i class="bi bi-buildings me-2"></i>Mis Empresas (R-031)
-        </button>
-        <button class="nav-btn" [class.active]="tabActivo === 'comisiones'" (click)="setTab('comisiones')">
-          <i class="bi bi-cash-stack me-2"></i>Mis Comisiones (R-032)
-        </button>
-        <button class="nav-btn" [class.active]="tabActivo === 'proximas'" (click)="setTab('proximas')">
-          <i class="bi bi-calendar-event me-2"></i>Por Renovar
-        </button>
-        <button class="nav-btn" [class.active]="tabActivo === 'vencidas'" (click)="setTab('vencidas')">
-          <i class="bi bi-exclamation-triangle me-2"></i>Suspendidas
-        </button>
-      </div>
+      <!-- CABECERAS Y DASHBOARD (Debajo del Rango de Consulta) -->
+      <div class="dashboard-top-section mt-4 animate__animated animate__fadeIn">
+        <!-- Header R-031 -->
+        <div class="page-header mb-4" *ngIf="tabActivo === 'empresas'">
+            <h1 class="page-title text-primary">R-031 (reducido) — Mis empresas</h1>
+            <p class="page-subtitle text-muted">Vista filtrada automáticamente: solo las empresas asignadas a este vendedor.</p>
+        </div>
 
-      <!-- FILTROS (Para todos los tabs con rango de fechas) -->
-      <app-vendedor-filters
-        *ngIf="tabActivo === 'empresas' || tabActivo === 'comisiones' || tabActivo === 'proximas' || tabActivo === 'vencidas'"
-        [loading]="isLoading"
-        [rangoTipo]="rangoTipo"
-        [fechaInicio]="fechaInicio"
-        [fechaFin]="fechaFin"
-        [diasRenovacion]="diasRenovacion"
-        [showDiasRenovacion]="tabActivo === 'proximas'"
-        (rangoChange)="onRangoChange($event)"
-        (generate)="handleGenerate()"
-        (export)="exportarPDF()">
-      </app-vendedor-filters>
+        <!-- Header R-032 -->
+        <div class="page-header mb-4" *ngIf="tabActivo === 'comisiones'">
+            <h1 class="page-title text-success">R-032 (reducido) — Mis comisiones</h1>
+            <p class="page-subtitle text-muted">Resumen de ingresos acumulados y futuros para este vendedor.</p>
+        </div>
+
+        <!-- KPIs / Stats -->
+        <div class="stats-container mb-4">
+            <!-- R-031 Stats (Empresas) -->
+            <app-r031-stats *ngIf="tabActivo === 'empresas'" [data]="r031Data"></app-r031-stats>
+            
+            <!-- R-032 Stats (Comisiones) -->
+            <app-r032-stats *ngIf="tabActivo === 'comisiones'" [data]="r032Data"></app-r032-stats>
+        </div>
+      </div>
 
       <!-- GRÁFICAS R-031 / R-032 -->
       <div class="row mb-4 animate__animated animate__fadeIn" *ngIf="tabActivo === 'empresas'">
@@ -111,15 +107,16 @@ export type ReportTab = 'empresas' | 'vencidas' | 'proximas' | 'comisiones';
           </div>
       </div>
 
+
       <div class="row mb-4 animate__animated animate__fadeIn" *ngIf="tabActivo === 'comisiones'">
           <div class="col-md-6 offset-md-3">
               <app-vendor-chart
-                  [title]="'Rendimiento: ' + (r032Data?.grafica_comparativa?.periodo_actual || 'Período Actual') + ' vs ' + (r032Data?.grafica_comparativa?.periodo_anterior || 'Período Anterior')"
-                  [subtitle]="'Comparativa de comisiones entre períodos'"
+                  title="Rendimiento: Este Mes vs Mes Anterior"
+                  subtitle="Comparativa de comisiones generadas"
                   type="doughnut"
                   [data]="[
-                      {label: r032Data?.grafica_comparativa?.periodo_actual, value: r032Data?.grafica_comparativa?.mes_actual},
-                      {label: r032Data?.grafica_comparativa?.periodo_anterior, value: r032Data?.grafica_comparativa?.mes_anterior}
+                      {label: 'Este Mes', value: r032Data?.grafica_comparativa?.total_actual},
+                      {label: 'Mes Anterior', value: r032Data?.grafica_comparativa?.total_anterior}
                   ]"
                   labelKey="label"
                   valueKey="value"
@@ -127,7 +124,6 @@ export type ReportTab = 'empresas' | 'vencidas' | 'proximas' | 'comisiones';
               </app-vendor-chart>
           </div>
       </div>
-
       <!-- SECCIONES DE REPORTE (Tablas de Datos) -->
       <div class="report-content-area">
           <div *ngIf="isLoading" class="loading-state py-5 text-center">
@@ -140,16 +136,6 @@ export type ReportTab = 'empresas' | 'vencidas' | 'proximas' | 'comisiones';
                 *ngIf="tabActivo === 'empresas'" 
                 [data]="r031Data?.empresas || []">
               </app-empresas-list>
-
-              <app-vencidas-list 
-                *ngIf="tabActivo === 'vencidas'" 
-                [data]="previewData">
-              </app-vencidas-list>
-
-              <app-proximas-list 
-                *ngIf="tabActivo === 'proximas'" 
-                [data]="previewData">
-              </app-proximas-list>
 
               <app-comisiones-list 
                 *ngIf="tabActivo === 'comisiones'" 
@@ -166,9 +152,23 @@ export type ReportTab = 'empresas' | 'vencidas' | 'proximas' | 'comisiones';
     
     .page-title { font-weight: 900; color: #0f172a; margin: 0; font-size: 1.75rem; letter-spacing: -0.025em; }
     .page-subtitle { color: #64748b; font-size: 0.95rem; font-weight: 500; margin-top: 0.25rem; }
+    
+    .header-actions-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: white;
+      padding: 0.5rem 1rem;
+      border-radius: 20px;
+      border: 1px solid #e2e8f0;
+      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+      gap: 1.5rem;
+      flex-wrap: nowrap;
+      overflow: hidden;
+    }
 
     /* TABS MODERNOS */
-    .tabs-navigation { display: flex; gap: 0.5rem; border-bottom: 2px solid #e2e8f0; padding-bottom: 0.5rem; overflow-x: auto; }
+    .tabs-navigation { display: flex; gap: 0.5rem; overflow-x: auto; }
     .nav-btn {
       background: none; border: none; padding: 0.75rem 1.25rem; font-weight: 700; color: #64748b;
       border-radius: 12px; transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); cursor: pointer;
@@ -247,13 +247,7 @@ export class VendedorReportesPage implements OnInit, OnDestroy {
   setTab(tab: ReportTab) {
     if (this.tabActivo === tab) return;
     this.tabActivo = tab;
-    this.previewData = [];
-    
-    if (tab === 'empresas' || tab === 'comisiones') {
-      this.cargarDatosConsolidados();
-    } else {
-      this.cargarPreview();
-    }
+    this.cargarDatosConsolidados();
   }
 
   onRangoChange(event: {tipo: RangoTipo, inicio: string, fin: string, dias?: number}) {
@@ -298,35 +292,9 @@ export class VendedorReportesPage implements OnInit, OnDestroy {
   }
 
   handleGenerate() {
-    if (this.tabActivo === 'empresas' || this.tabActivo === 'comisiones') {
-      this.cargarDatosConsolidados();
-    } else {
-      this.cargarPreview();
-    }
+    this.cargarDatosConsolidados();
   }
 
-  cargarPreview() {
-    this.isLoading = true;
-    this.previewData = [];
-    
-    const tipo = this.getBackendTipo();
-    const params = this.getParams();
-
-    this.reportesService.getPreviewData(tipo, params)
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: (data) => {
-          this.previewData = data;
-          this.isLoading = false;
-          this.cd.detectChanges();
-        },
-        error: (err) => {
-          this.isLoading = false;
-          this.uiService.showError(err, 'Error al cargar previsualización');
-          this.cd.detectChanges();
-        }
-      });
-  }
 
   exportarPDF() {
     this.uiService.showToast('Generando reporte PDF...', 'info');
@@ -352,29 +320,23 @@ export class VendedorReportesPage implements OnInit, OnDestroy {
   private getBackendTipo(): string {
     switch (this.tabActivo) {
         case 'empresas': return 'MIS_EMPRESAS';
-        case 'vencidas': return 'SUSCRIPCIONES_VENCIDAS';
-        case 'proximas': return 'SUSCRIPCIONES_PROXIMAS';
         case 'comisiones': return 'COMISIONES_MES';
         default: return '';
     }
   }
 
   private getParams(): any {
-    const params: any = {
+    return {
         fecha_inicio: this.fechaInicio,
         fecha_fin: this.fechaFin
     };
-    if (this.tabActivo === 'proximas') {
-        params.dias = this.diasRenovacion;
-    }
-    return params;
   }
 
   private downloadLinkExtracted(url_descarga?: string) {
       if (url_descarga) {
           const filename = url_descarga.split('/').pop() || 'reporte.pdf';
           const apiUrl = environment.apiUrl;
-          const downloadLink = `${apiUrl}/reportes/descargar/${filename}`;
+          const downloadLink = `${apiUrl}/reportes/vendedor/descargar/${filename}`;
 
           // Descargar con HttpClient (que incluye el token automáticamente)
           this.http.get(downloadLink, { responseType: 'blob' })

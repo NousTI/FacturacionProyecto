@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.1.0/dist/chartjs-plugin-datalabels.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; color: #1f2937; line-height: 1.5; padding-bottom: 60px; }
+
+        /* Header General */
+        .header { padding: 40px 30px; position: relative; color: white; }
+        .header h1 { margin: 0; font-size: 28px; letter-spacing: -0.025em; }
+        .header p { margin: 5px 0 0; opacity: 0.8; font-size: 14px; }
+        .meta-info { position: absolute; top: 40px; right: 30px; text-align: right; font-size: 12px; }
+
+        .content { padding: 30px; }
+
+        /* KPI Cards Grid */
+        .kpi-grid { display: grid; gap: 15px; margin-bottom: 30px; }
+        .kpi-card { padding: 15px; border-radius: 8px; border: 1px solid #e5e7eb; }
+        .kpi-card .label { font-size: 10px; text-transform: uppercase; font-weight: 700; }
+        .kpi-card .value { font-size: 24px; font-weight: 800; margin-top: 8px; }
+        .kpi-card .extra { font-size: 11px; margin-top: 4px; }
+
+        /* Tablas Estándar */
+        table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+        th { background: #f9fafb; padding: 12px 10px; text-align: left; font-size: 10px; text-transform: uppercase;
+             color: #4b5563; border-bottom: 2px solid #e5e7eb; font-weight: 700; }
+        td { padding: 12px 10px; font-size: 12px; border-bottom: 1px solid #f3f4f6; }
+        .empresa-col { font-weight: 600; color: #111827; }
+        .plan-badge { display: inline-block; background: #f1f5f9; color: #475569; padding: 2px 8px;
+                       border-radius: 4px; font-weight: 700; font-size: 10px; }
+        .text-right { text-align: right; }
+        .badge { padding: 2px 8px; border-radius: 4px; font-weight: 700; font-size: 10px; }
+        .badge-success { background: #dcfce7; color: #166534; }
+        .badge-danger { background: #fee2e2; color: #991b1b; }
+        .badge-info { background: #dbeafe; color: #1e40af; }
+        .badge-warning { background: #fef9c3; color: #854d0e; }
+
+        /* Gráficas */
+        .charts-container { display: grid; grid-template-columns: 1fr; gap: 30px; margin: 30px auto; max-width: 600px; }
+        .chart-box { background: #f9fafb; padding: 20px; border-radius: 8px; border: 1px solid #e5e7eb; page-break-inside: avoid; }
+        .chart-box h3 { margin: 0 0 15px; font-size: 14px; font-weight: 700; color: #111827; }
+        .chart-box canvas { max-height: 350px; }
+
+        /* Footer */
+        #footer { position: fixed; bottom: 0; width: 100%; padding: 10px; text-align: center;
+                   font-size: 10px; color: #6b7280; background: white; border-top: 1px solid #e5e7eb; }
+
+        .page-break { page-break-after: always; }
+
+        {% block extra_styles %}{% endblock %}
+    </style>
+</head>
+<body>
+    <div class="header" style="background-color: {% block header_color %}#111827{% endblock %};">
+        {% block header_content %}{% endblock %}
+        <div class="meta-info" style="color: {% block meta_color %}#e5e7eb{% endblock %};">
+            Período: {{ params.fecha_inicio or 'Inicio' }} a {{ params.fecha_fin or 'Hoy' }}<br>
+            Vendedor: {{ vendedor_nombre }}<br>
+            Generado: {{ now }}
+        </div>
+    </div>
+
+    <div class="content">
+        {% block content %}{% endblock %}
+    </div>
+
+    <div id="footer">
+        Generado por
+        {% if footer_b64 %}
+        <img src="{{ footer_b64 }}" style="vertical-align: middle; height: 16px; margin: 0 4px;" alt="NOUS">
+        {% else %}
+        NOUS
+        {% endif %}
+        www.nous.ec
+    </div>
+
+    <script>
+        // Registrar plugin de etiquetas para todas las gráficas del reporte
+        Chart.register(ChartDataLabels);
+        
+        {% block extra_scripts %}{% endblock %}
+    </script>
+</body>
+</html>

@@ -17,6 +17,7 @@ from .usuarios.R_027.service import ServicioR027
 from .usuarios.R_028.service import ServicioR028
 from .usuarios.R_008.service import ServicioR008
 from .vendedores.dashboard.service import ServicioDashboardVendedor
+from .vendedores.vendedor_reportes_service import VendedorReportesService
 from ..empresas.repositories import RepositorioEmpresas
 from .schemas import ReporteCreacion
 from ...constants.enums import AuthKeys
@@ -38,6 +39,7 @@ class ServicioReportes:
         svc_r028: ServicioR028 = Depends(),
         svc_r008: ServicioR008 = Depends(),
         svc_dashboard_vendedor: ServicioDashboardVendedor = Depends(),
+        svc_vendedor_reportes: VendedorReportesService = Depends(),
         repo_empresas: RepositorioEmpresas = Depends()
     ):
         self.repo = repo
@@ -51,6 +53,7 @@ class ServicioReportes:
         self.svc_r028 = svc_r028
         self.svc_r008 = svc_r008
         self.svc_dashboard_vendedor = svc_dashboard_vendedor
+        self.svc_vendedor_reportes = svc_vendedor_reportes
         self.repo_empresas = repo_empresas
 
     def crear_reporte(self, datos: ReporteCreacion, usuario_actual: dict):
@@ -71,15 +74,12 @@ class ServicioReportes:
             parametros = datos.parametros or {}
 
             if datos.tipo == 'MIS_EMPRESAS':
-                filename = self.svc_rv001.generar_reporte(vendedor_id, vendedor_nombre, parametros)
-            elif datos.tipo == 'SUSCRIPCIONES_VENCIDAS':
-                filename = self.svc_rv002.generar_reporte(vendedor_id, vendedor_nombre)
-            elif datos.tipo == 'SUSCRIPCIONES_PROXIMAS':
-                filename = self.svc_rv003.generar_reporte(vendedor_id, vendedor_nombre, parametros)
+                filename = self.svc_vendedor_reportes.generar_reporte_mis_empresas(str(vendedor_id), vendedor_nombre, parametros)
             elif datos.tipo == 'COMISIONES_MES':
-                filename = self.svc_rv004.generar_reporte(vendedor_id, vendedor_nombre, parametros)
+                filename = self.svc_vendedor_reportes.generar_reporte_mis_comisiones(str(vendedor_id), vendedor_nombre, parametros)
             else:
-                raise AppError("Tipo de reporte no soportado", 400)
+                # Otros reportes de vendedor si existieran
+                raise AppError(f"Tipo de reporte no soportado para vendedor: {datos.tipo}", 400)
             
             datos_dict['url_descarga'] = f"/static/reportes/{filename}"
             datos_dict['estado'] = 'COMPLETADO'
@@ -635,10 +635,19 @@ class ServicioReportes:
     def obtener_reporte_vendedor_mis_comisiones(self, vendedor_id: UUID, fecha_inicio: Optional[str] = None, fecha_fin: Optional[str] = None):
         kpis = self.repo_v_r032.obtener_kpis(vendedor_id, fecha_inicio, fecha_fin)
         detalle = self.repo_v_r032.obtener_detalle_comisiones(vendedor_id, fecha_inicio, fecha_fin)
-        comparativa = self.repo_v_r032.obtener_grafica_comparativa(vendedor_id, fecha_inicio, fecha_fin)
+        grafica = self.repo_v_r032.obtener_grafica_comparativa(vendedor_id, fecha_inicio, fecha_fin)
+
+        # Mapeo de estados para la UI
+        for d in detalle:
+            raw = d.get('estado', '')
+            d['estado_display'] = {
+                'PAGADA': 'Pagada',
+                'APROBADA': 'Aprobada',
+                'PENDIENTE': 'Pendiente'
+            }.get(raw, raw)
 
         return {
             **kpis,
             "detalle": detalle,
-            "grafica_comparativa": comparativa
+            "grafica_comparativa": grafica
         }

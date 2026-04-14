@@ -1,0 +1,153 @@
+{% extends "reports/vendedores/base_vendedores.html" %}
+
+{% block header_color %}#047857{% endblock %}
+{% block meta_color %}#d1fae5{% endblock %}
+
+{% block header_content %}
+    <h1>R-032 (reducido) — Mis comisiones</h1>
+    <p>Reporte de ingresos generados por ventas y renovaciones</p>
+{% endblock %}
+
+{% block extra_styles %}
+    .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+    .kpi-card { background: #f0fdf4; border: 1px solid #dcfce7; }
+    .kpi-card .label { color: #166534; }
+    .kpi-card .value { color: #064e3b; }
+    .kpi-card .extra { color: #166534; }
+    
+    .amount { font-weight: 700; color: #047857; }
+    
+    .chart-container { background: #f9fafb; padding: 20px; border-radius: 8px; border: 1px solid #e5e7eb;
+                       margin: 30px auto; display: flex; flex-direction: column; align-items: center;
+                       max-width: 400px; page-break-inside: avoid; }
+    .chart-container h3 { margin: 0 0 15px; font-size: 14px; font-weight: 700; color: #111827; }
+    .chart-container canvas { max-width: 100%; max-height: 250px; }
+
+    .pending-tooltip { position: relative; }
+    /* Tooltip logic simplified for PDF as interaction is not possible */
+{% endblock %}
+
+{% block content %}
+    <!-- KPI Grid (4 Cards) -->
+    <div class="kpi-grid">
+        <div class="kpi-card">
+            <div class="label">Por cobrar</div>
+            <div class="value">${{ "{:,.2f}".format(data.kpis.por_cobrar or 0) }}</div>
+            <div class="extra">ya depositado</div>
+        </div>
+
+        <div class="kpi-card">
+            <div class="label">Pendiente aprobación</div>
+            <div class="value">${{ "{:,.2f}".format(data.kpis.pendiente_aprobacion or 0) }}</div>
+            <div class="extra">en revisión</div>
+        </div>
+
+        <div class="kpi-card">
+            <div class="label">Total histórico</div>
+            <div class="value">${{ "{:,.2f}".format(data.kpis.total_historico or 0) }}</div>
+            <div class="extra">acumulado</div>
+        </div>
+
+        <div class="kpi-card">
+            <div class="label">Futuras comisiones en riesgo</div>
+            <div class="value">${{ "{:,.2f}".format(data.kpis.comisiones_en_riesgo or 0) }}</div>
+            <div class="extra">planes que vencen &lt; 30 días</div>
+        </div>
+    </div>
+
+    <!-- Tabla de Comisiones -->
+    <table>
+        <thead>
+            <tr>
+                <th>Empresa</th>
+                <th>Fecha de la venta</th>
+                <th>Plan</th>
+                <th class="text-right">Mi comisión</th>
+                <th>Estado</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for c in data.detalle %}
+            <tr>
+                <td><span class="empresa-col">{{ c.empresa }}</span></td>
+                <td>
+                    {% if c.fecha_venta %}
+                        {% if c.fecha_venta is string %}
+                            {{ c.fecha_venta }}
+                        {% else %}
+                            {{ c.fecha_venta.strftime('%Y-%m-%d') }}
+                        {% endif %}
+                    {% else %}
+                        N/A
+                    {% endif %}
+                </td>
+                <td><span class="plan-badge">{{ c.plan }}</span></td>
+                <td class="text-right amount">${{ "{:,.2f}".format(c.mi_comision or 0) }}</td>
+                <td>
+                    {% if c.estado == 'PAGADA' %}
+                    <span class="badge badge-success">Pagada</span>
+                    {% elif c.estado == 'PENDIENTE' %}
+                    <span class="badge badge-warning">Pendiente</span>
+                    {% elif c.estado == 'APROBADA' %}
+                    <span class="badge badge-info">Aprobada</span>
+                    {% else %}
+                    <span style="color: #9ca3af;">{{ c.estado_display or c.estado }}</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+            {% if not data.detalle or data.detalle|length == 0 %}
+            <tr>
+                <td colspan="5" style="text-align: center; padding: 30px; color: #9ca3af;">
+                    No hay comisiones en este período
+                </td>
+            </tr>
+            {% endif %}
+        </tbody>
+    </table>
+
+    <!-- Gráfica Comparativa -->
+    <div class="chart-container">
+        <h3>Rendimiento: {{ data.grafica_comparativa.periodo_actual }} vs {{ data.grafica_comparativa.periodo_anterior }}</h3>
+        <canvas id="chartComparativa"></canvas>
+    </div>
+{% endblock %}
+
+{% block extra_scripts %}
+    const comparativa = {{ data.grafica_comparativa | tojson }};
+
+    const ctxComparativa = document.getElementById('chartComparativa').getContext('2d');
+    new Chart(ctxComparativa, {
+        type: 'doughnut',
+        data: {
+            labels: ['{{ data.grafica_comparativa.periodo_actual }}', '{{ data.grafica_comparativa.periodo_anterior }}'],
+            datasets: [{
+                data: [
+                    {{ data.grafica_comparativa.mes_actual or 0 }},
+                    {{ data.grafica_comparativa.mes_anterior or 0 }}
+                ],
+                backgroundColor: ['#10b981', '#cbd5e1'],
+                borderColor: ['#065f46', '#64748b'],
+                borderWidth: 2
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: { font: { size: 10 }, padding: 10, color: '#475569' }
+                },
+                datalabels: {
+                    color: '#fff',
+                    font: { weight: 'bold', size: 14 },
+                    formatter: (value) => {
+                        if (!value) return '$0';
+                        return '$' + value.toLocaleString();
+                    }
+                }
+            }
+        }
+    });
+{% endblock %}

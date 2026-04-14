@@ -1,10 +1,11 @@
 import { Component, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { InfoTooltipComponent } from '../../../../../shared/components/info-tooltip/info-tooltip.component';
 
 @Component({
   selector: 'app-comisiones-list',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, InfoTooltipComponent],
   template: `
     <div class="table-container animate__animated animate__fadeIn">
       <div class="table-header-info mb-3">
@@ -35,11 +36,14 @@ import { CommonModule } from '@angular/common';
                         [class.pagada]="c.estado === 'PAGADA'"
                         [class.aprobada]="c.estado === 'APROBADA'"
                         [class.pendiente]="c.estado === 'PENDIENTE'">
-                    {{ c.estado }}
+                    {{ c.estado_display || c.estado }}
                   </span>
-                  <i *ngIf="c.estado === 'PENDIENTE'" 
-                     class="bi bi-info-circle ms-2 text-warning cursor-pointer"
-                     title="en espera de ciclo de pago"></i>
+                  
+                  <app-info-tooltip 
+                    *ngIf="c.estado === 'PENDIENTE'"
+                    message="en espera de ciclo de pago"
+                    icon="bi-info-circle">
+                  </app-info-tooltip>
                 </div>
               </td>
             </tr>

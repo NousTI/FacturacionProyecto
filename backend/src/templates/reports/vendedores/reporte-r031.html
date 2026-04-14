@@ -1,0 +1,193 @@
+{% extends "reports/vendedores/base_vendedores.html" %}
+
+{% block header_color %}#111827{% endblock %}
+{% block meta_color %}#e5e7eb{% endblock %}
+
+{% block header_content %}
+    <h1>R-031 (reducido) — Mis empresas</h1>
+    <p>Reporte consolidado de cartera y gestión de clientes</p>
+{% endblock %}
+
+{% block extra_styles %}
+    .kpi-grid { grid-template-columns: repeat(3, 1fr); }
+    .kpi-card { background: #f9fafb; }
+    .kpi-card .label { color: #6b7280; }
+    .kpi-card .value { color: #111827; }
+    .kpi-card .extra { color: #6b7280; }
+{% endblock %}
+
+{% block content %}
+    <!-- KPI Grid (6 Cards) -->
+    <div class="kpi-grid">
+        <div class="kpi-card">
+            <div class="label">Mis empresas activas</div>
+            <div class="value">{{ data.kpis.activas_total or 0 }}</div>
+            <div class="extra">+{{ data.kpis.activas_este_mes or 0 }} este mes</div>
+        </div>
+
+        <div class="kpi-card">
+            <div class="label">Comisión pendiente</div>
+            <div class="value">${{ "{:,.2f}".format(data.kpis.comision_pendiente or 0) }}</div>
+            <div class="extra">pend. aprobación</div>
+        </div>
+
+        <div class="kpi-card">
+            <div class="label">Vencen pronto</div>
+            <div class="value">{{ data.kpis.vencen_pronto or 0 }}</div>
+            <div class="extra">&lt; de 30 días</div>
+        </div>
+
+        <div class="kpi-card">
+            <div class="label">Planes nuevos</div>
+            <div class="value">{{ data.kpis.planes_nuevos_mes or 0 }}</div>
+            <div class="extra">{{ data.kpis.planes_nuevos_pct or 0 }}% vs mes ant.</div>
+        </div>
+
+        <div class="kpi-card">
+            <div class="label">Upgrades</div>
+            <div class="value">{{ data.kpis.upgrades_mes or 0 }}</div>
+            <div class="extra">{{ data.kpis.upgrades_pct or 0 }}% vs mes ant.</div>
+        </div>
+
+        <div class="kpi-card">
+            <div class="label">Renovaciones</div>
+            <div class="value">{{ data.kpis.renovaciones_mes or 0 }}</div>
+            <div class="extra">{{ data.kpis.renovaciones_pct or 0 }}% vs mes ant.</div>
+        </div>
+    </div>
+
+    <!-- Tabla de Empresas -->
+    <table>
+        <thead>
+            <tr>
+                <th>Empresa</th>
+                <th>Plan</th>
+                <th class="text-right">% Uso</th>
+                <th class="text-right">Oportunidad Upgrade</th>
+                <th>Próx. Venc.</th>
+                <th>Estado</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for e in data.empresas %}
+            <tr>
+                <td>
+                    <div class="empresa-col">{{ e.empresa }}</div>
+                    <div style="font-size: 10px; color: #6b7280;">Antigüedad: {{ e.antiguedad or 'N/A' }}</div>
+                </td>
+                <td><span class="plan-badge">{{ e.plan }}</span></td>
+                <td class="text-right"><strong>{{ e.porcentaje_uso or 0 }}%</strong></td>
+                <td class="text-right">
+                    {% if e.oportunidad_upgrade == 'Si' %}
+                    <span class="badge badge-success">{{ e.oportunidad_upgrade }}</span>
+                    {% else %}
+                    <span style="color: #9ca3af;">{{ e.oportunidad_upgrade }}</span>
+                    {% endif %}
+                </td>
+                <td>{{ e.prox_venc_fmt or 'N/A' }}</td>
+                <td>
+                    <span class="badge {% if e.estado == 'ACTIVA' %}badge-success{% else %}badge-danger{% endif %}">
+                        {{ e.estado }}
+                    </span>
+                </td>
+            </tr>
+            {% endfor %}
+            {% if not data.empresas or data.empresas|length == 0 %}
+            <tr>
+                <td colspan="6" style="text-align: center; padding: 30px; color: #9ca3af;">
+                    No hay empresas en este período
+                </td>
+            </tr>
+            {% endif %}
+        </tbody>
+    </table>
+
+    <!-- Gráficas -->
+    <div class="charts-container">
+        <div class="chart-box">
+            <h3>Planes más vendidos</h3>
+            <canvas id="chartPlanes"></canvas>
+        </div>
+        <div class="chart-box">
+            <h3>Ventas por períodos</h3>
+            <canvas id="chartVentas"></canvas>
+        </div>
+    </div>
+{% endblock %}
+
+{% block extra_scripts %}
+    // Gráfica 1: Planes más vendidos (Pie)
+    const blancasData = {{ data.grafica_planes | tojson }};
+    const planeLabels = blancasData.map(p => `${p.nombre} (${p.cantidad})`);
+    const planeCantidades = blancasData.map(p => p.cantidad);
+
+    const ctxPlanes = document.getElementById('chartPlanes').getContext('2d');
+    new Chart(ctxPlanes, {
+        type: 'pie',
+        data: {
+            labels: planeLabels,
+            datasets: [{
+                data: planeCantidades,
+                backgroundColor: ['#10b981', '#3b82f6', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4'],
+                borderColor: ['#065f46', '#1e40af', '#b45309', '#991b1b', '#6d28d9', '#0e7490'],
+                borderWidth: 2
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: { font: { size: 9 }, padding: 10, color: '#475569' }
+                },
+                datalabels: {
+                    color: '#fff',
+                    font: { weight: 'bold', size: 12 },
+                    formatter: (value) => value
+                }
+            }
+        }
+    });
+
+    // Gráfica 2: Ventas por períodos (Line)
+    const ventasData = {{ data.grafica_ventas_mes | tojson }};
+    const mesesLabels = ventasData.map(v => v.mes);
+    const ventasTotales = ventasData.map(v => v.total);
+
+    const ctxVentas = document.getElementById('chartVentas').getContext('2d');
+    new Chart(ctxVentas, {
+        type: 'line',
+        data: {
+            labels: mesesLabels,
+            datasets: [{
+                label: 'Ingresos ($)',
+                data: ventasTotales,
+                borderColor: '#10b981',
+                backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                borderWidth: 2,
+                fill: true,
+                tension: 0.4,
+                pointBackgroundColor: '#10b981',
+                pointBorderColor: '#065f46',
+                pointRadius: 4,
+                pointBorderWidth: 2
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: {
+                legend: { display: true, labels: { font: { size: 9 }, padding: 10 } },
+                datalabels: { display: false }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: { font: { size: 9 }, color: '#64748b' }
+                },
+                x: { ticks: { font: { size: 9 }, color: '#64748b' } }
+            }
+        }
+    });
+{% endblock %}

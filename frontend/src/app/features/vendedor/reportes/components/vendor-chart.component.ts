@@ -129,6 +129,35 @@ export class VendorChartComponent implements AfterViewInit, OnChanges {
       }
     };
 
-    this.chart = new Chart(this.chartCanvas.nativeElement, config);
+    const customLabelsPlugin = {
+      id: 'customLabels',
+      afterDraw: (chart: any) => {
+        const { ctx, data, type } = chart;
+        if (type !== 'pie' && type !== 'doughnut') return;
+        
+        ctx.save();
+        chart.data.datasets.forEach((dataset: any, i: number) => {
+          chart.getDatasetMeta(i).data.forEach((datapoint: any, index: number) => {
+            const { x, y } = datapoint.tooltipPosition();
+            const value = dataset.data[index];
+            if (!value) return;
+            
+            ctx.fillStyle = '#fff';
+            ctx.shadowColor = 'rgba(0, 0, 0, 0.5)';
+            ctx.shadowBlur = 4;
+            ctx.font = 'bold 13px Inter, sans-serif';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(value.toString(), x, y);
+          });
+        });
+        ctx.restore();
+      }
+    };
+
+    this.chart = new Chart(this.chartCanvas.nativeElement, {
+      ...config,
+      plugins: [customLabelsPlugin]
+    });
   }
 }
