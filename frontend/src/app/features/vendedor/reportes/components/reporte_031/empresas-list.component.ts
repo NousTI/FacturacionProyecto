@@ -1,10 +1,11 @@
 import { Component, Input } from '@angular/core';
+import { InfoTooltipComponent } from '../../../../../shared/components/info-tooltip/info-tooltip.component';
 import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-empresas-list',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, InfoTooltipComponent],
   template: `
     <div class="table-container animate__animated animate__fadeIn">
       <div class="table-header-info">
@@ -29,15 +30,21 @@ import { CommonModule } from '@angular/common';
               <td>
                 <div class="d-flex align-items-center">
                   <span class="fw-bold me-2">{{ e.empresa }}</span>
-                  <i class="bi bi-info-circle text-primary cursor-pointer" 
-                     [title]="'Antigüedad: ' + e.antiguedad"></i>
+                  <app-info-tooltip 
+                    [message]="'Administrador principal:\n• ' + e.admin_nombre + '\n• Creado: ' + e.admin_fecha_fmt + '\n• Tiempo: ' + e.admin_antiguedad">
+                  </app-info-tooltip>
                 </div>
               </td>
               <td>
                 <span class="plan-badge">{{ e.plan }}</span>
               </td>
               <td class="text-center">
-                <div class="usage-container">
+                <div class="usage-container" 
+                     [title]="'Uso Detallado:\n' + 
+                              '• Facturas: ' + e.facturas_actuales + '/' + e.max_facturas_mes + '\n' +
+                              '• Usuarios: ' + e.usuarios_actuales + '/' + e.max_usuarios + '\n' +
+                              '• Establecimientos: ' + e.establecimientos_actuales + '/' + e.max_establecimientos + '\n' +
+                              '• Programadas: ' + e.programadas_actuales + '/' + e.max_programaciones">
                   <div class="progress" style="height: 6px;">
                     <div class="progress-bar" 
                          [ngClass]="getUsageClass(e.porcentaje_uso)"
@@ -112,7 +119,7 @@ export class EmpresasListComponent {
 
   getExpiracyClass(fmt: string): string {
     if (fmt.includes('menos de 5 días')) return 'text-danger-strong';
-    if (fmt.includes('menos de 1 mes')) return 'text-warning-strong';
+    if (fmt.includes('menos de 30 días')) return 'text-warning-strong';
     return '';
   }
 }

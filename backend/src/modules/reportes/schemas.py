@@ -148,6 +148,9 @@ class DetalleEmpresaVendedor(BaseModel):
     oportunidad_upgrade: str # "Si" / "No"
     prox_venc_fmt: str
     estado: str
+    admin_nombre: Optional[str] = None
+    admin_fecha_fmt: Optional[str] = None
+    admin_antiguedad: Optional[str] = None
     antiguedad: Optional[str] = None
 
 class ReporteEmpresasVendedor(BaseModel):

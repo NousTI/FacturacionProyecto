@@ -1,10 +1,11 @@
 import { Component, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { InfoTooltipComponent } from '../../../../../shared/components/info-tooltip/info-tooltip.component';
 
 @Component({
   selector: 'app-r031-stats',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, InfoTooltipComponent],
   template: `
     <div class="stats-grid">
       <!-- Mis empresas activas -->

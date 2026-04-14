@@ -14,21 +14,42 @@ Chart.register(...registerables);
         <h4 class="chart-title">{{ title }}</h4>
         <p class="chart-subtitle" *ngIf="subtitle">{{ subtitle }}</p>
       </div>
-      <div class="canvas-container">
+      
+      <div class="canvas-container" *ngIf="data && data.length > 0; else noData">
         <canvas #chartCanvas></canvas>
       </div>
+
+      <ng-template #noData>
+        <div class="no-data-msg animate__animated animate__fadeIn">
+          <div class="icon-circle mb-3">
+            <i class="bi" [ngClass]="type === 'pie' || type === 'doughnut' ? 'bi-pie-chart' : 'bi-graph-up'"></i>
+          </div>
+          <p class="mb-1 fw-bold">Sin datos disponibles</p>
+          <small class="text-muted">No hay registros para este período</small>
+        </div>
+      </ng-template>
     </div>
   `,
   styles: [`
     .chart-wrapper {
       background: white; border-radius: 24px; padding: 1.5rem;
       box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); border: 1px solid #f1f5f9;
-      height: 100%; display: flex; flex-direction: column;
+      height: 100%; display: flex; flex-direction: column; min-height: 350px;
     }
     .chart-header { margin-bottom: 1.5rem; }
     .chart-title { font-size: 1.1rem; font-weight: 800; color: #1e293b; margin: 0; }
     .chart-subtitle { font-size: 0.8rem; color: #64748b; margin-top: 0.25rem; }
-    .canvas-container { position: relative; flex-grow: 1; min-height: 250px; }
+    .canvas-container { position: relative; flex-grow: 1; height: 100%; }
+    
+    .no-data-msg {
+      flex-grow: 1; display: flex; flex-direction: column; align-items: center;
+      justify-content: center; text-align: center; color: #64748b;
+    }
+    .icon-circle {
+      width: 60px; height: 60px; background: #f8fafc; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.5rem; color: #cbd5e1;
+    }
   `]
 })
 export class VendorChartComponent implements AfterViewInit, OnChanges {
@@ -49,13 +70,19 @@ export class VendorChartComponent implements AfterViewInit, OnChanges {
   }
 
   ngOnChanges(changes: SimpleChanges) {
-    if ((changes['data'] || changes['type']) && !changes['data'].firstChange) {
+    if (changes['data'] || changes['type']) {
       this.initChart();
     }
   }
 
   private initChart() {
-    if (!this.chartCanvas) return;
+    if (!this.chartCanvas) {
+      // Si el canvas no está listo, re-intentar en el siguiente ciclo (caso de carga muy rápida)
+      setTimeout(() => {
+        if (this.chartCanvas) this.initChart();
+      }, 0);
+      return;
+    }
     if (this.chart) this.chart.destroy();
 
     const labels = this.data.map(item => item[this.labelKey]);

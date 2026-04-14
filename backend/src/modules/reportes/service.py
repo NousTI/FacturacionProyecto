@@ -17,10 +17,6 @@ from .usuarios.R_027.service import ServicioR027
 from .usuarios.R_028.service import ServicioR028
 from .usuarios.R_008.service import ServicioR008
 from .vendedores.dashboard.service import ServicioDashboardVendedor
-from .vendedores.RV_001.service import ServicioRV001
-from .vendedores.RV_002.service import ServicioRV002
-from .vendedores.RV_003.service import ServicioRV003
-from .vendedores.RV_004.service import ServicioRV004
 from ..empresas.repositories import RepositorioEmpresas
 from .schemas import ReporteCreacion
 from ...constants.enums import AuthKeys
@@ -42,10 +38,6 @@ class ServicioReportes:
         svc_r028: ServicioR028 = Depends(),
         svc_r008: ServicioR008 = Depends(),
         svc_dashboard_vendedor: ServicioDashboardVendedor = Depends(),
-        svc_rv001: ServicioRV001 = Depends(),
-        svc_rv002: ServicioRV002 = Depends(),
-        svc_rv003: ServicioRV003 = Depends(),
-        svc_rv004: ServicioRV004 = Depends(),
         repo_empresas: RepositorioEmpresas = Depends()
     ):
         self.repo = repo
@@ -59,10 +51,6 @@ class ServicioReportes:
         self.svc_r028 = svc_r028
         self.svc_r008 = svc_r008
         self.svc_dashboard_vendedor = svc_dashboard_vendedor
-        self.svc_rv001 = svc_rv001
-        self.svc_rv002 = svc_rv002
-        self.svc_rv003 = svc_rv003
-        self.svc_rv004 = svc_rv004
         self.repo_empresas = repo_empresas
 
     def crear_reporte(self, datos: ReporteCreacion, usuario_actual: dict):
@@ -632,24 +620,6 @@ class ServicioReportes:
     def obtener_reporte_vendedor_mis_empresas(self, vendedor_id: UUID, fecha_inicio: Optional[str] = None, fecha_fin: Optional[str] = None):
         kpis = self.repo_v_r031.obtener_kpis(vendedor_id, fecha_inicio, fecha_fin)
         empresas = self.repo_v_r031.obtener_detalle_empresas(vendedor_id, fecha_inicio, fecha_fin)
-
-        # Calcular antigüedad para cada empresa
-        now = date.today()
-        for e in empresas:
-            f_reg = e.get('fecha_registro')
-            if f_reg:
-                if isinstance(f_reg, datetime): f_reg = f_reg.date()
-                diff = now - f_reg
-                años = diff.days // 365
-                meses = (diff.days % 365) // 30
-                if años > 0:
-                    e['antiguedad'] = f"{años} año{'s' if años > 1 else ''}, {meses} mes{'es' if meses != 1 else ''}"
-                elif meses > 0:
-                    e['antiguedad'] = f"{meses} mes{'es' if meses > 1 else ''}"
-                else:
-                    e['antiguedad'] = f"{diff.days} día{'s' if diff.days != 1 else ''}"
-            else:
-                e['antiguedad'] = "N/A"
 
         return {
             **kpis,

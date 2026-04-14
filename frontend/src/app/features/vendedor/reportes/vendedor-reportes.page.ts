@@ -6,10 +6,10 @@ import { VendedorReportesService, VendedorMetricas } from './services/vendedor-r
 import { UiService } from '../../../shared/services/ui.service';
 import { HttpClient } from '@angular/common/http';
 import { ToastComponent } from '../../../shared/components/toast/toast.component';
-import { R031StatsComponent } from './components/r031-stats.component';
+import { R031StatsComponent } from './components/reporte_031/r031-stats.component';
 import { R032StatsComponent } from './components/r032-stats.component';
 import { VendorChartComponent } from './components/vendor-chart.component';
-import { EmpresasListComponent } from './components/empresas-list.component';
+import { EmpresasListComponent } from './components/reporte_031/empresas-list.component';
 import { VencidasListComponent } from './components/vencidas-list.component';
 import { ProximasListComponent } from './components/proximas-list.component';
 import { ComisionesListComponent } from './components/comisiones-list.component';
@@ -36,6 +36,10 @@ export type ReportTab = 'empresas' | 'vencidas' | 'proximas' | 'comisiones';
   ],
   template: `
     <div class="reportes-page-container animate__animated animate__fadeIn">
+      <div class="page-header mb-4" *ngIf="tabActivo === 'empresas'">
+          <h1 class="page-title text-primary">R-031 (reducido) — Mis empresas</h1>
+          <p class="page-subtitle text-muted">Vista filtrada automáticamente: solo las empresas asignadas a este vendedor.</p>
+      </div>
       <!-- DASHBOARD DINÁMICO POR PESTAÑA -->
       <div class="stats-container animate__animated animate__fadeIn">
           <!-- R-031 Stats (Empresas) -->
@@ -98,7 +102,7 @@ export type ReportTab = 'empresas' | 'vencidas' | 'proximas' | 'comisiones';
           <div class="col-md-6">
               <app-vendor-chart 
                   title="Ventas por meses" 
-                  subtitle="Ingresos generados este año"
+                  subtitle="Evolución mensual de ingresos"
                   type="line" 
                   [data]="r031Data?.grafica_ventas_mes || []"
                   labelKey="mes"
@@ -215,7 +219,10 @@ export class VendedorReportesPage implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.initDefaultDates();
-    this.cargarDatosConsolidados();
+    // Ejecutar carga en el siguiente ciclo de eventos para asegurar sincronización de componentes hijos
+    setTimeout(() => {
+      this.cargarDatosConsolidados();
+    }, 0);
   }
 
   ngOnDestroy() {

@@ -95,6 +95,3 @@ api_router.include_router(logs_router, prefix="/logs", tags=["Logs de Emisión"]
 
 from ..modules.facturas.routers.router_recurrentes import router as programaciones_router
 api_router.include_router(programaciones_router, prefix="/facturacion-programada", tags=["Facturación Programada"], dependencies=operativo)
-
-from ..modules.reporte_generado.router import router as reporte_generado_router
-api_router.include_router(reporte_generado_router, prefix="/reportes-generados", tags=["Reportes Generados"], dependencies=operativo)
