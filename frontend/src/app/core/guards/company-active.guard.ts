@@ -3,12 +3,17 @@ import { CanActivate, Router, ActivatedRouteSnapshot, RouterStateSnapshot, UrlTr
 import { Observable, map, take } from 'rxjs';
 import { AuthFacade } from '../auth/auth.facade';
 import { UserRole } from '../../domain/enums/role.enum';
+import { LockStatusService } from '../services/lock-status.service';
 
 @Injectable({
     providedIn: 'root'
 })
 export class CompanyActiveGuard implements CanActivate {
-    constructor(private authFacade: AuthFacade, private router: Router) { }
+    constructor(
+        private authFacade: AuthFacade,
+        private router: Router,
+        private lockStatusService: LockStatusService
+    ) { }
 
     canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): Observable<boolean | UrlTree> {
         // 1. Escapar de inmediato si ya estamos en la página segura para evitar bucles
@@ -27,8 +32,6 @@ export class CompanyActiveGuard implements CanActivate {
 
                 // 3. Rutas permitidas incluso si la empresa está inactiva
                 const allowedPaths = [
-                    '/usuario/empresa',
-                    '/usuario/perfil',
                     '/usuario/acceso-restringido',
                     '/auth/login',
                     '/auth/logout'
@@ -41,9 +44,18 @@ export class CompanyActiveGuard implements CanActivate {
 
                 // 4. Verificación de Empresa y Suscripción
                 const isEmpresaInactiva = user?.empresa_activa === false;
-                const isSuscripcionInactiva = user?.empresa_suscripcion_estado && user.empresa_suscripcion_estado !== 'ACTIVA';
-                
-                if ((isEmpresaInactiva || isSuscripcionInactiva) && user?.role === UserRole.USUARIO) {
+                const estado = user?.empresa_suscripcion_estado;
+                const isSuscripcionBloqueada = estado === 'CANCELADA' || estado === 'SUSPENDIDA';
+
+                if ((isEmpresaInactiva || isSuscripcionBloqueada) && user?.role === UserRole.USUARIO) {
+                    // Determinar el tipo de bloqueo exacto
+                    if (isEmpresaInactiva) {
+                        this.lockStatusService.setLock('COMPANY_DISABLED');
+                    } else if (estado === 'SUSPENDIDA') {
+                        this.lockStatusService.setLock('SUBSCRIPTION_SUSPENDIDA');
+                    } else if (estado === 'CANCELADA') {
+                        this.lockStatusService.setLock('SUBSCRIPTION_CANCELADA');
+                    }
                     console.warn('[CompanyActiveGuard] Acceso restringido por estado de cuenta/suscripción');
                     return this.router.createUrlTree(['/usuario/acceso-restringido']);
                 }

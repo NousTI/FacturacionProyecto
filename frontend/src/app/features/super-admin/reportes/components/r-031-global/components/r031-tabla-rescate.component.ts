@@ -132,10 +132,15 @@ export class R031TablaRescateComponent {
   }
 
   formatUltimoAcceso(e: EmpresaZonaRescate): string {
-    if (this.isOver30Days(e.ultimo_acceso)) {
-      return new Date(e.ultimo_acceso!).toLocaleDateString();
+    if (!e.ultimo_acceso) return 'Nunca';
+    const diffMs = new Date().getTime() - new Date(e.ultimo_acceso).getTime();
+    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+    if (diffDays > 30) {
+      return new Date(e.ultimo_acceso).toLocaleDateString();
     }
-    return e.ultimo_acceso_fmt || 'Nunca';
+    if (diffDays === 0) return 'Hoy';
+    if (diffDays === 1) return '1 día';
+    return `${diffDays} días`;
   }
 
   getDeadlineClass(fmt: string): string {

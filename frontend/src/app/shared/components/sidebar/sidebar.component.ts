@@ -85,6 +85,7 @@ import { SidebarService } from './sidebar.service';
 
             <!-- Usuario Menu -->
             <ng-container *ngIf="isUsuario$ | async">
+              <ng-container *ngIf="!(isAccountLocked$ | async)">
               <ng-container *ngIf="isEmpresaActiva$ | async">
                 <ng-container *ngIf="isSuscripcionActiva$ | async">
                   <a *hasPermission="'DASHBOARD_VER'" routerLink="/usuario/dashboard" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" class="menu-item px-3 mb-1" title="Dashboard">
@@ -128,10 +129,11 @@ import { SidebarService } from './sidebar.service';
               <a routerLink="/usuario/configuracion" routerLinkActive="active" class="menu-item px-3 mb-1" title="Configuración">
                 <i class="bi bi-gear"></i> <span class="menu-text ms-3">Configuración</span>
               </a>
-              <a *ngIf="isEmpresaActiva$ | async" routerLink="/usuario/perfil" routerLinkActive="active" class="menu-item px-3 mb-1" title="Mi Perfil">
+              <a routerLink="/usuario/perfil" routerLinkActive="active" class="menu-item px-3 mb-1" title="Mi Perfil">
                 <i class="bi bi-person-circle"></i> <span class="menu-text ms-3">Mi Perfil</span>
               </a>
-            </ng-container>
+              </ng-container><!-- end isAccountLocked -->
+            </ng-container><!-- end isUsuario -->
           </div>
         </div>
 
@@ -282,6 +284,7 @@ export class SidebarComponent {
   isUsuario$: Observable<boolean>;
   isSuscripcionActiva$: Observable<boolean>;
   isEmpresaActiva$: Observable<boolean>;
+  isAccountLocked$: Observable<boolean>;
   homeLink$: Observable<string>;
 
   constructor(
@@ -316,6 +319,15 @@ export class SidebarComponent {
         if (!user) return true;
         if (user.role === UserRole.SUPERADMIN || user.role === UserRole.VENDEDOR) return true;
         return user.empresa_activa !== false;
+      })
+    );
+
+    this.isAccountLocked$ = this.authFacade.user$.pipe(
+      map(user => {
+        if (!user || user.role === UserRole.SUPERADMIN || user.role === UserRole.VENDEDOR) return false;
+        if (user.empresa_activa === false) return true;
+        const estado = user.empresa_suscripcion_estado;
+        return estado === 'CANCELADA' || estado === 'SUSPENDIDA';
       })
     );
   }
