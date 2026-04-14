@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { AuthFacade } from '../../../core/auth/auth.facade';
-import { Observable, take } from 'rxjs';
+import { Observable, take, retry, catchError, of } from 'rxjs';
 import { LockStatusService, LockInfo } from '../../../core/services/lock-status.service';
 import { environment } from '../../../../environments/environment';
 
@@ -41,6 +41,10 @@ import { environment } from '../../../../environments/environment';
             <a *ngIf="whatsappUrl" [href]="whatsappUrl" target="_blank" class="btn-whatsapp">
               <i class="bi bi-whatsapp me-2"></i>Contactar por WhatsApp
             </a>
+
+            <a *ngIf="whatsappUrl" [href]="whatsappUrl" target="_blank" class="btn-whatsapp-secondary mt-2">
+              <i class="bi bi-whatsapp me-2"></i>Contactar Superadmin
+            </a>
           </div>
 
           <div class="actions">
@@ -65,6 +69,9 @@ import { environment } from '../../../../environments/environment';
             <div class="reason-box reason-danger">
               <i class="bi bi-info-circle me-2"></i>Contacte al administrador del sistema.
             </div>
+            <a *ngIf="whatsappUrl" [href]="whatsappUrl" target="_blank" class="btn-whatsapp">
+              <i class="bi bi-whatsapp me-2"></i>Contactar Superadmin
+            </a>
           </div>
           <div class="actions">
             <button (click)="logout()" class="btn-logout">
@@ -156,6 +163,15 @@ import { environment } from '../../../../environments/environment';
     }
     .btn-whatsapp:hover { background: #1da851; transform: translateY(-2px); }
 
+    .btn-whatsapp-secondary {
+      display: flex; align-items: center; justify-content: center;
+      width: 100%; padding: 0.7rem 1.5rem; margin-bottom: 1rem;
+      background: #25d366; color: white; border: none; border-radius: 12px;
+      font-weight: 700; font-size: 0.95rem; text-decoration: none;
+      transition: all 0.2s ease;
+    }
+    .btn-whatsapp-secondary:hover { background: #1da851; transform: translateY(-2px); }
+
     .actions { margin-bottom: 1.5rem; }
 
     .btn-logout {
@@ -220,16 +236,22 @@ export class AccesoRestringidoPage implements OnInit {
     });
 
     // Obtener teléfono del superadmin
-    this.http.get<any>(`${environment.apiUrl}/configuracion/contacto`).subscribe({
-      next: (res) => {
-        const tel = res?.detalles?.telefono;
-        if (tel) {
-          const cleaned = tel.replace(/\D/g, '');
-          this.whatsappUrl = `https://wa.me/${cleaned}`;
+    this.http.get<any>(`${environment.apiUrl}/configuracion/contacto`)
+      .pipe(
+        retry(2),
+        catchError(() => of(null))
+      )
+      .subscribe({
+        next: (res) => {
+          if (res && res.detalles && res.detalles.telefono) {
+            const tel = res.detalles.telefono;
+            const cleaned = tel.replace(/\D/g, '');
+            if (cleaned) {
+              this.whatsappUrl = `https://wa.me/${cleaned}`;
+            }
+          }
         }
-      },
-      error: () => { this.whatsappUrl = null; }
-    });
+      });
   }
 
   getReasonClass(type: string | null): string {

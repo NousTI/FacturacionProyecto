@@ -21,6 +21,9 @@ export class LockStatusService {
   private _lock$ = new BehaviorSubject<LockInfo | null>(null);
   lock$ = this._lock$.asObservable();
 
+  private _showModal$ = new BehaviorSubject<boolean>(false);
+  showModal$ = this._showModal$.asObservable();
+
   setLock(type: LockType, data?: { phone?: string; message?: string }) {
     if (!type) {
       this._lock$.next(null);
@@ -33,6 +36,10 @@ export class LockStatusService {
       if (data.message) info.whatsappMessage = data.message;
     }
     this._lock$.next(info);
+  }
+
+  getLockInfoSync(type: LockType): LockInfo {
+    return this.getLockInfo(type);
   }
 
   private getLockInfo(type: LockType): LockInfo {
@@ -91,5 +98,13 @@ export class LockStatusService {
 
   clearLock() {
     this._lock$.next(null);
+  }
+
+  setShowModal(show: boolean) {
+    this._showModal$.next(show);
+  }
+
+  closeModal() {
+    this._showModal$.next(false);
   }
 }

@@ -1,8 +1,10 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Observable, take } from 'rxjs';
+import { Observable, take, retry, catchError, of } from 'rxjs';
 import { LockStatusService, LockInfo } from '../../../core/services/lock-status.service';
 import { Router } from '@angular/router';
+import { HttpClient } from '@angular/common/http';
+import { environment } from '../../../../environments/environment';
 
 @Component({
   selector: 'app-lock-overlay',
@@ -21,22 +23,17 @@ import { Router } from '@angular/router';
         </p>
         
         <div class="d-grid gap-3 px-4">
-          <button *ngIf="lock.showPayments" 
-                  class="btn btn-primary fw-bold py-3 shadow-sm border-0"
-                  style="background: linear-gradient(135deg, #10b981 0%, #059669 100%);"
-                  (click)="goToPayments()">
-            <i class="bi bi-whatsapp me-2"></i>Renovar Plan ahora
-          </button>
-          
+          <a *ngIf="whatsappUrl"
+             [href]="whatsappUrl"
+             target="_blank"
+             class="btn btn-success fw-bold py-3 shadow-sm border-0"
+             style="background: #25d366; color: white; text-decoration: none;">
+            <i class="bi bi-whatsapp me-2"></i>Contactar por WhatsApp
+          </a>
+
           <button class="btn btn-outline-secondary fw-bold py-2 border-0 bg-light-subtle"
                   (click)="close()">
-            <i class="bi bi-x-lg me-2"></i>Cerrar y ver mi cuenta
-          </button>
-          
-          <button *ngIf="lock.showSupport" 
-                  class="btn btn-link text-muted fw-bold py-2 text-decoration-none"
-                  (click)="goToSupport()">
-            <i class="bi bi-chat-left-dots me-2"></i>Contactar Soporte
+            <i class="bi bi-x-lg me-2"></i>Cerrar
           </button>
         </div>
       </div>
@@ -86,45 +83,42 @@ import { Router } from '@angular/router';
     .btn:hover { transform: translateY(-2px); }
   `]
 })
-export class LockOverlayComponent {
+export class LockOverlayComponent implements OnInit {
   lock$: Observable<LockInfo | null>;
+  whatsappUrl: string | null = null;
 
   constructor(
     private lockService: LockStatusService,
-    private router: Router
+    private router: Router,
+    private http: HttpClient
   ) {
     this.lock$ = this.lockService.lock$;
   }
 
-  goToPayments() {
-    this.lockService.lock$.pipe(take(1)).subscribe(lock => {
-      if (lock?.phone && lock?.whatsappMessage) {
-        const url = `https://wa.me/${lock.phone}?text=${encodeURIComponent(lock.whatsappMessage)}`;
-        window.open(url, '_blank');
-      } else {
-        this.lockService.clearLock();
-        this.router.navigate(['/usuario/empresa']);
-      }
-    });
+  ngOnInit() {
+    this.loadSuperadminPhone();
   }
 
-  goToSupport() {
-    this.lockService.lock$.pipe(take(1)).subscribe(lock => {
-      if (lock?.phone && lock?.whatsappMessage) {
-        const url = `https://wa.me/${lock.phone}?text=${encodeURIComponent(lock.whatsappMessage)}`;
-        window.open(url, '_blank');
-      } else {
-        window.open('mailto:soporte@tuempresa.com', '_blank');
-      }
-    });
+  private loadSuperadminPhone() {
+    this.http.get<any>(`${environment.apiUrl}/configuracion/contacto`)
+      .pipe(
+        retry(2),
+        catchError(() => of(null))
+      )
+      .subscribe({
+        next: (res) => {
+          if (res && res.detalles && res.detalles.telefono) {
+            const tel = res.detalles.telefono;
+            const cleaned = tel.replace(/\D/g, '');
+            if (cleaned) {
+              this.whatsappUrl = `https://wa.me/${cleaned}`;
+            }
+          }
+        }
+      });
   }
 
   close() {
     this.lockService.clearLock();
-  }
-
-  logout() {
-    this.lockService.clearLock();
-    this.router.navigate(['/auth/logout']);
   }
 }

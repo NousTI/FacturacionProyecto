@@ -49,13 +49,18 @@ export class CompanyActiveGuard implements CanActivate {
 
                 if ((isEmpresaInactiva || isSuscripcionBloqueada) && user?.role === UserRole.USUARIO) {
                     // Determinar el tipo de bloqueo exacto
+                    let lockType: 'COMPANY_DISABLED' | 'SUBSCRIPTION_SUSPENDIDA' | 'SUBSCRIPTION_CANCELADA' = 'COMPANY_DISABLED';
                     if (isEmpresaInactiva) {
-                        this.lockStatusService.setLock('COMPANY_DISABLED');
+                        lockType = 'COMPANY_DISABLED';
                     } else if (estado === 'SUSPENDIDA') {
-                        this.lockStatusService.setLock('SUBSCRIPTION_SUSPENDIDA');
+                        lockType = 'SUBSCRIPTION_SUSPENDIDA';
                     } else if (estado === 'CANCELADA') {
-                        this.lockStatusService.setLock('SUBSCRIPTION_CANCELADA');
+                        lockType = 'SUBSCRIPTION_CANCELADA';
                     }
+
+                    this.lockStatusService.setLock(lockType);
+                    this.lockStatusService.setShowModal(true);
+
                     console.warn('[CompanyActiveGuard] Acceso restringido por estado de cuenta/suscripción');
                     return this.router.createUrlTree(['/usuario/acceso-restringido']);
                 }

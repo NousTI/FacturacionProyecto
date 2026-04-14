@@ -11,7 +11,7 @@ import { Notificacion } from '../../../domain/models/notificacion.model';
 @Component({
   selector: 'app-navbar',
   template: `
-    <nav class="navbar navbar-expand-lg bg-white">
+    <nav class="navbar navbar-expand-lg bg-white" *ngIf="!(isAccountLocked$ | async)">
       <div class="container-fluid p-0">
         <!-- Page Header Info -->
         <div class="page-header-info d-none d-lg-block me-auto">
@@ -216,6 +216,7 @@ import { Notificacion } from '../../../domain/models/notificacion.model';
 })
 export class NavbarComponent implements OnInit, OnDestroy {
   user$: Observable<User | null>;
+  isAccountLocked$: Observable<boolean>;
   pageTitle: string = 'Inicio';
   pageDescription: string = 'Bienvenido al sistema';
   today = new Date();
@@ -231,6 +232,14 @@ export class NavbarComponent implements OnInit, OnDestroy {
     private notifFacade: NotificacionesFacade
   ) {
     this.user$ = this.authFacade.user$;
+    this.isAccountLocked$ = this.user$.pipe(
+      map(user => {
+        if (!user) return false;
+        if (user.empresa_activa === false) return true;
+        const estado = user.empresa_suscripcion_estado;
+        return estado === 'CANCELADA' || estado === 'SUSPENDIDA';
+      })
+    );
   }
 
   get notificaciones$(): Observable<Notificacion[]> {
