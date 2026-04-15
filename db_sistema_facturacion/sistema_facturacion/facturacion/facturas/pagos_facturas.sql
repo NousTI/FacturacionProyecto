@@ -17,6 +17,13 @@ CREATE TABLE IF NOT EXISTS sistema_facturacion.pagos_factura (
 
     monto NUMERIC(12,2) NOT NULL CHECK (monto > 0),
 
+    -- 01   Efectivo            No
+    -- 16	Tarjeta de Débito	No
+    -- 17	Dinero Electrónico	No
+    -- 18	Tarjeta Prepago	No
+    -- 19	Tarjeta de Crédito	SÍ
+    -- 20	Transferencia / Cheque	No
+    -- 21	Endoso de Títulos	SÍ
     metodo_pago_sri CHAR(2) NOT NULL
         CHECK (metodo_pago_sri IN ('01','15','16','17','18','19','20','21')),
 

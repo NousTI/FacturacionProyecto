@@ -7,6 +7,7 @@ import { UiService } from '../../../../../shared/services/ui.service';
 import { PermissionsService } from '../../../../../core/auth/permissions.service';
 import { FACTURAS_PERMISSIONS } from '../../../../../constants/permission-codes';
 import { finalize } from 'rxjs';
+import { SRI_FORMAS_PAGO } from '../../../../../core/constants/sri-iva.constants';
 
 @Component({
   selector: 'app-pagos-factura-modal',
@@ -70,12 +71,7 @@ import { finalize } from 'rxjs';
                     <div class="col-md-4">
                       <label class="form-label small text-muted fw-bold">Método SRI</label>
                       <select class="form-select form-select-sm" name="metodo" [(ngModel)]="nuevoPago.metodo_pago_sri" required>
-                        <option value="01">Efectivo (01)</option>
-                        <option value="15">Compensación (15)</option>
-                        <option value="16">Tarjeta Débito (16)</option>
-                        <option value="17">Dinero Electrónico (17)</option>
-                        <option value="19">Tarjeta Crédito (19)</option>
-                        <option value="20">Transferencia / Otros (20)</option>
+                        <option *ngFor="let fp of formasPago" [value]="fp.codigo">{{ fp.label | uppercase }} ({{ fp.codigo }})</option>
                       </select>
                     </div>
                     <div class="col-md-4">
@@ -169,6 +165,7 @@ export class PagosFacturaModalComponent implements OnInit {
   @Input() factura!: Factura;
   @Output() close = new EventEmitter<boolean>();
 
+  readonly formasPago = SRI_FORMAS_PAGO;
   resumen: any = null;
   pagos: any[] = [];
   isProcessing: boolean = false;
@@ -206,17 +203,7 @@ export class PagosFacturaModalComponent implements OnInit {
   }
 
   getMetodoPagoLabel(code: string): string {
-    const map: Record<string, string> = {
-      '01': 'Efectivo',
-      '15': 'Compensación de deudas',
-      '16': 'Tarjeta de Débito',
-      '17': 'Dinero Electrónico',
-      '18': 'Tarjeta Prepago',
-      '19': 'Tarjeta de Crédito',
-      '20': 'Transferencia / Banco',
-      '21': 'Endoso de Títulos'
-    };
-    return map[code] || 'Otros (' + code + ')';
+    return SRI_FORMAS_PAGO.find(fp => fp.codigo === code)?.label ?? `Otros (${code})`;
   }
 
   cargarDatos() {

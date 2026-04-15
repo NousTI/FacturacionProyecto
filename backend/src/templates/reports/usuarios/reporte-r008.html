@@ -1,0 +1,182 @@
+{% extends "reports/usuarios/base_usuarios.html" %}
+
+{% block header_color %}#1e293b{% endblock %}
+{% block meta_color %}#e5e7eb{% endblock %}
+
+{% block header_content %}
+    <h1>R-008 — Cuentas por Cobrar</h1>
+    <p>Análisis de cartera pendiente: morosidad, antigüedad y top deudores</p>
+{% endblock %}
+
+{% block extra_styles %}
+    .kpi-grid { grid-template-columns: repeat(4, 1fr); }
+
+    .kpi-card { border-top: 3px solid #e5e7eb; }
+    .kpi-card.indigo { border-top-color: #6366f1; }
+    .kpi-card.amber  { border-top-color: #f59e0b; }
+    .kpi-card.red    { border-top-color: #ef4444; }
+    .kpi-card.green  { border-top-color: #10b981; }
+    .kpi-card.high-risk { border-top-color: #ef4444 !important; }
+
+    .section-title {
+        font-size: 14px; font-weight: 700; color: #111827;
+        margin: 30px 0 10px; border-bottom: 2px solid #e5e7eb; padding-bottom: 8px;
+    }
+
+    .charts-container { display: grid; grid-template-columns: 1fr; gap: 30px; margin: 20px auto; max-width: 360px; }
+
+    .badge {
+        display: inline-block; padding: 3px 10px; border-radius: 6px;
+        font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;
+    }
+    .badge-critico  { background: #fee2e2; color: #991b1b; }
+    .badge-vencido  { background: #fef9c3; color: #854d0e; }
+    .badge-vigente  { background: #dcfce7; color: #166534; }
+
+    .text-danger { color: #dc2626; font-weight: 700; }
+    .text-warn   { color: #d97706; font-weight: 600; }
+    .font-mono   { font-family: monospace; font-size: 11px; }
+
+    .footer-notes {
+        margin-top: 30px; padding: 16px 20px; background: #f8fafc;
+        border: 1px solid #e2e8f0; border-radius: 8px; font-size: 10px; color: #64748b; line-height: 1.7;
+    }
+    .footer-notes strong { color: #334155; }
+{% endblock %}
+
+{% block content %}
+
+    <!-- KPIs -->
+    <div class="kpi-grid">
+
+        <div class="kpi-card indigo">
+            <div class="label">Total por Cobrar</div>
+            <div class="value">${{ "{:,.2f}".format(data.kpis.total_por_cobrar) }}</div>
+            <div class="extra">Saldo pendiente global</div>
+        </div>
+
+        <div class="kpi-card amber">
+            <div class="label">Vencido &lt; 30 días</div>
+            <div class="value">${{ "{:,.2f}".format(data.kpis.vencido_menor_30) }}</div>
+            <div class="extra">Requiere gestión</div>
+        </div>
+
+        <div class="kpi-card red">
+            <div class="label">Cartera Crítica &gt; 30 días</div>
+            <div class="value">${{ "{:,.2f}".format(data.kpis.cartera_critica) }}</div>
+            <div class="extra">En riesgo de pérdida</div>
+        </div>
+
+        <div class="kpi-card green{% if data.kpis.indice_morosidad > 50 %} high-risk{% endif %}">
+            <div class="label">Índice de Morosidad</div>
+            <div class="value">{{ "{:.2f}".format(data.kpis.indice_morosidad) }}%</div>
+            <div class="extra">De riesgo total</div>
+        </div>
+
+    </div>
+
+    <!-- Gráfica de Anillo -->
+    {% if data.kpis.total_por_cobrar > 0 %}
+    <div class="section-title">Análisis de Cartera — Vencido vs Crítico</div>
+    <div class="charts-container">
+        <div class="chart-box">
+            <h3>Distribución de Morosidad</h3>
+            <canvas id="chartCartera"></canvas>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Tabla Top Clientes -->
+    <div class="section-title">Top Clientes con Saldo Pendiente</div>
+    {% if data.top_clientes %}
+    <table>
+        <thead>
+            <tr>
+                <th>Cliente</th>
+                <th># Factura</th>
+                <th class="text-right">Saldo Pendiente</th>
+                <th class="text-right">Días Vencido</th>
+                <th>Responsable</th>
+                <th>Estado</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for c in data.top_clientes %}
+            <tr>
+                <td class="font-bold">{{ c.cliente }}</td>
+                <td class="font-mono">{{ c.numero_factura }}</td>
+                <td class="text-right font-bold">${{ "{:,.2f}".format(c.saldo_total) }}</td>
+                <td class="text-right {% if c.dias_vencido > 30 %}text-danger{% elif c.dias_vencido > 0 %}text-warn{% endif %}">
+                    {{ c.dias_vencido }} días
+                </td>
+                <td>{{ c.responsable }}</td>
+                <td>
+                    {% if c.estado == 'CRÍTICO' %}
+                        <span class="badge badge-critico">{{ c.estado }}</span>
+                    {% elif c.estado == 'VENCIDO' %}
+                        <span class="badge badge-vencido">{{ c.estado }}</span>
+                    {% else %}
+                        <span class="badge badge-vigente">{{ c.estado }}</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <div class="no-data-msg">✓ No hay cuentas pendientes. Cartera saludable.</div>
+    {% endif %}
+
+    <!-- Notas explicativas -->
+    <div class="footer-notes">
+        <strong>Notas:</strong>
+        <ul style="margin: 6px 0 0 18px; padding: 0;">
+            <li><strong>Total por Cobrar:</strong> Suma de saldos pendientes de facturas autorizadas.</li>
+            <li><strong>Vencido &lt; 30 días:</strong> Facturas vencidas hace menos de 30 días. Estado de alerta.</li>
+            <li><strong>Cartera Crítica &gt; 30 días:</strong> Facturas vencidas por más de 30 días. Requiere gestión inmediata.</li>
+            <li><strong>Índice de Morosidad:</strong> % que representa la cartera crítica sobre el total por cobrar.</li>
+            <li><strong>CRÍTICO:</strong> Deuda vencida más de 30 días. <strong>VENCIDO:</strong> Deuda vencida, aún dentro de los 30 días. <strong>VIGENTE:</strong> Aún dentro del plazo pactado.</li>
+        </ul>
+    </div>
+
+{% endblock %}
+
+{% block extra_scripts %}
+    const carteraData = {
+        vencido: {{ data.grafica_morosidad.valores[0] }},
+        critico: {{ data.grafica_morosidad.valores[1] }}
+    };
+    const ctxCartera = document.getElementById('chartCartera');
+
+    if (ctxCartera && (carteraData.vencido > 0 || carteraData.critico > 0)) {
+        new Chart(ctxCartera.getContext('2d'), {
+            type: 'doughnut',
+            data: {
+                labels: ['Vencido <30d', 'Crítico >30d'],
+                datasets: [{
+                    data: [carteraData.vencido, carteraData.critico],
+                    backgroundColor: ['#f59e0b', '#ef4444'],
+                    borderColor: '#ffffff',
+                    borderWidth: 4,
+                    hoverOffset: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                cutout: '70%',
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: { font: { size: 10 }, padding: 14, color: '#475569' }
+                    },
+                    datalabels: {
+                        color: '#fff',
+                        font: { weight: 'bold', size: 11 },
+                        formatter: (value) => value > 0 ? '$' + value.toLocaleString('es-ES', { maximumFractionDigits: 0 }) : ''
+                    }
+                }
+            }
+        });
+    }
+{% endblock %}

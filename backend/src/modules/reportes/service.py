@@ -462,8 +462,8 @@ class ServicioReportes:
                 data = self.obtener_iva_ventas_usuario(empresa_id, fecha_inicio, fecha_fin)
                 template = "reports/iva_report.html"
             elif tipo == 'FINANCIERO_CARTERA':
-                data = self.obtener_cartera_usuario(empresa_id)
-                template = "reports/cartera_report.html"
+                data = self.obtener_cartera_usuario(empresa_id, fecha_inicio, fecha_fin)
+                template = "reports/usuarios/reporte-r008.html"
             else: # FINANCIERO_RESUMEN
                 data = self.obtener_resumen_ejecutivo_usuario(empresa_id, fecha_inicio, fecha_fin)
                 template = "reports/resumen_report.html"
