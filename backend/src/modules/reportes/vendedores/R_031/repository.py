@@ -19,14 +19,14 @@ class RepositorioR031Vendedor:
         query = """
             SELECT
                 -- 1. Mis empresas activas
-                (SELECT COUNT(DISTINCT e.id)
-                 FROM sistema_facturacion.empresas e
-                 JOIN sistema_facturacion.suscripciones s ON s.empresa_id = e.id
-                 WHERE e.vendedor_id = %s AND s.estado = 'ACTIVA' AND s.fecha_fin >= NOW()) as activas_total,
-                 
                 (SELECT COUNT(id)
                  FROM sistema_facturacion.empresas
-                 WHERE vendedor_id = %s AND created_at BETWEEN %s AND %s::timestamp + interval '1 day' - interval '1 second') as activas_este_mes,
+                 WHERE vendedor_id = %s AND activo = TRUE) as activas_total,
+
+                (SELECT COUNT(id)
+                 FROM sistema_facturacion.empresas
+                 WHERE vendedor_id = %s AND activo = TRUE
+                   AND created_at BETWEEN %s AND %s::timestamp + interval '1 day' - interval '1 second') as activas_este_mes,
 
                 -- 2. Comisión pendiente
                 (SELECT COALESCE(SUM(monto), 0)

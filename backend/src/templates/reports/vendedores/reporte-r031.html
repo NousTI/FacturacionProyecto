@@ -73,7 +73,7 @@
             <tr>
                 <td>
                     <div class="empresa-col">{{ e.empresa }}</div>
-                    <div style="font-size: 10px; color: #6b7280;">Antigüedad: {{ e.antiguedad or 'N/A' }}</div>
+                    <div style="font-size: 10px; color: #6b7280;">Antigüedad: {{ e.admin_antiguedad or 'N/A' }}</div>
                 </td>
                 <td><span class="plan-badge">{{ e.plan }}</span></td>
                 <td class="text-right"><strong>{{ e.porcentaje_uso or 0 }}%</strong></td>

@@ -113,7 +113,13 @@ export class VendorChartComponent implements AfterViewInit, OnChanges {
           },
           tooltip: {
             backgroundColor: '#1e293b', padding: 12, borderRadius: 12,
-            titleFont: { size: 14, weight: '700' }, bodyFont: { size: 13 }
+            titleFont: { size: 14, weight: '700' }, bodyFont: { size: 13 },
+            callbacks: {
+              label: (context: any) => {
+                const value = context.parsed ?? context.raw ?? 0;
+                return ' $' + Number(value).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+              }
+            }
           }
         },
         scales: this.type === 'pie' || this.type === 'doughnut' ? {} : {

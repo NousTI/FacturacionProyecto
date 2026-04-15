@@ -127,7 +127,24 @@ class KpiRepository(BaseRepository):
                 """)
                 kpis['ingresos_mensuales'] = float(cur.fetchone()['total'])
 
-                cur.execute("SELECT COALESCE(SUM(monto), 0) as total FROM sistema_facturacion.comisiones WHERE estado = 'PENDIENTE'")
+                # Construir filtro de fecha para comisiones (usa fecha_generacion)
+                if periodo in ['today', 'day']:
+                    comision_filter = "fecha_generacion::date = CURRENT_DATE"
+                elif periodo == 'week':
+                    comision_filter = "fecha_generacion >= CURRENT_DATE - INTERVAL '6 days'"
+                elif periodo == 'all':
+                    comision_filter = "1=1"
+                elif periodo == 'year':
+                    comision_filter = "DATE_TRUNC('year', fecha_generacion) = DATE_TRUNC('year', CURRENT_DATE)"
+                else:  # month / last_month
+                    comision_filter = f"DATE_TRUNC('month', fecha_generacion) = {period_condition}"
+
+                cur.execute(f"""
+                    SELECT COALESCE(SUM(monto), 0) as total
+                    FROM sistema_facturacion.comisiones
+                    WHERE estado = 'PENDIENTE'
+                    AND {comision_filter}
+                """)
                 kpis['comisiones_pendientes'] = float(cur.fetchone()['total'])
 
                 cur.execute("""

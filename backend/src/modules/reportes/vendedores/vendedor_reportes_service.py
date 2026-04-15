@@ -57,8 +57,8 @@ class VendedorReportesService:
 
         # Mapeo de datos para la plantilla (específicamente la gráfica)
         grafica_context = {
-            "mes_actual": grafica_raw.get('total_actual', 0),
-            "mes_anterior": grafica_raw.get('total_anterior', 0),
+            "total_actual": grafica_raw.get('total_actual', 0),
+            "total_anterior": grafica_raw.get('total_anterior', 0),
             "periodo_actual": "Este Mes",
             "periodo_anterior": "Mes Anterior"
         }

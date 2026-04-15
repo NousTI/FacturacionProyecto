@@ -60,18 +60,6 @@ export type ReportTab = 'empresas' | 'comisiones';
 
       <!-- CABECERAS Y DASHBOARD (Debajo del Rango de Consulta) -->
       <div class="dashboard-top-section mt-4 animate__animated animate__fadeIn">
-        <!-- Header R-031 -->
-        <div class="page-header mb-4" *ngIf="tabActivo === 'empresas'">
-            <h1 class="page-title text-primary">R-031 — Mis empresas</h1>
-            <p class="page-subtitle text-muted">Vista filtrada automáticamente: solo las empresas asignadas a este vendedor.</p>
-        </div>
-
-        <!-- Header R-032 -->
-        <div class="page-header mb-4" *ngIf="tabActivo === 'comisiones'">
-            <h1 class="page-title text-success">R-032 — Mis comisiones</h1>
-            <p class="page-subtitle text-muted">Resumen de ingresos acumulados y futuros para este vendedor.</p>
-        </div>
-
         <!-- KPIs / Stats -->
         <div class="stats-container mb-4">
             <!-- R-031 Stats (Empresas) -->
@@ -210,10 +198,7 @@ export class VendedorReportesPage implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.initDefaultDates();
-    // Ejecutar carga en el siguiente ciclo de eventos para asegurar sincronización de componentes hijos
-    setTimeout(() => {
-      this.cargarDatosConsolidados();
-    }, 0);
+    this.cargarDatosConsolidados();
   }
 
   ngOnDestroy() {
@@ -262,6 +247,7 @@ export class VendedorReportesPage implements OnInit, OnDestroy {
         .subscribe({
           next: (data) => {
             this.r031Data = data;
+            this.cd.detectChanges();
           },
           error: (err) => {
             this.uiService.showError(err, 'Error al cargar reporte de empresas');
@@ -279,6 +265,7 @@ export class VendedorReportesPage implements OnInit, OnDestroy {
         .subscribe({
           next: (data) => {
             this.r032Data = data;
+            this.cd.detectChanges();
           },
           error: (err) => {
             this.uiService.showError(err, 'Error al cargar reporte de comisiones');
@@ -294,21 +281,25 @@ export class VendedorReportesPage implements OnInit, OnDestroy {
 
   exportarPDF() {
     this.uiService.showToast('Generando reporte PDF...', 'info');
-    
+    this.isLoading = true;
+    this.cd.detectChanges();
+
     const tipo = this.getBackendTipo();
     const nombre = `Reporte ${this.tabActivo.toUpperCase()}`;
     const params = this.getParams();
 
     this.reportesService.generarReporte(tipo, nombre, params)
+      .pipe(finalize(() => {
+        this.isLoading = false;
+        this.cd.detectChanges();
+      }))
       .subscribe({
         next: (res) => {
           this.uiService.showToast('Reporte generado exitosamente', 'success');
           this.downloadLinkExtracted(res.url_descarga);
-          this.cd.detectChanges();
         },
         error: (err) => {
           this.uiService.showError(err, 'Error al generar el reporte');
-          this.cd.detectChanges();
         }
       });
   }

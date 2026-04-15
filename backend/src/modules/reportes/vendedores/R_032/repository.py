@@ -55,7 +55,17 @@ class RepositorioR032Vendedor:
             }
 
     def obtener_detalle_comisiones(self, vendedor_id: UUID, fecha_inicio: Optional[str] = None, fecha_fin: Optional[str] = None) -> List[dict]:
-        query = """
+        conditions = ["c.vendedor_id = %s"]
+        params = [vendedor_id]
+
+        if fecha_inicio:
+            conditions.append("c.fecha_generacion >= %s")
+            params.append(fecha_inicio)
+        if fecha_fin:
+            conditions.append("c.fecha_generacion <= %s::timestamp + interval '1 day' - interval '1 second'")
+            params.append(fecha_fin)
+
+        query = f"""
             SELECT
                 COALESCE(e.nombre_comercial, e.razon_social) as empresa,
                 c.fecha_generacion as fecha_venta,
@@ -66,11 +76,11 @@ class RepositorioR032Vendedor:
             JOIN sistema_facturacion.pagos_suscripciones ps ON c.pago_suscripcion_id = ps.id
             JOIN sistema_facturacion.empresas e ON ps.empresa_id = e.id
             JOIN sistema_facturacion.planes p ON ps.plan_id = p.id
-            WHERE c.vendedor_id = %s
+            WHERE {' AND '.join(conditions)}
             ORDER BY c.fecha_generacion DESC
         """
         with self.db.cursor() as cur:
-            cur.execute(query, (vendedor_id,))
+            cur.execute(query, tuple(params))
             rows = [dict(row) for row in cur.fetchall()]
             
             # Formatear estados para visualización y asegurar tipos serializables
