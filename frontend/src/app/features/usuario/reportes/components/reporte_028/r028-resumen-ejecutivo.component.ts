@@ -453,8 +453,10 @@ export class R028ResumenEjecutivoComponent implements OnChanges {
   }
 
   get tarjetaFormasPagoRows(): Array<{ label: string; value: string }> {
+    // Definición de códigos de tarjetas según SRI (Débito:16, Prepago:18, Crédito:19)
+    const codigosTarjetas = ['16', '18', '19'];
     return (this.data?.ingreso_otras?.formas_pago_detalle ?? [])
-      .filter(fp => ['16', '18', '19'].includes(fp.metodo_pago))
+      .filter(fp => codigosTarjetas.includes(fp.metodo_pago))
       .map(fp => ({
         label: fp.label,
         value: `$${(fp.total).toFixed(2)}`
@@ -462,8 +464,10 @@ export class R028ResumenEjecutivoComponent implements OnChanges {
   }
 
   get otrasFormasPagoRows(): Array<{ label: string; value: string }> {
+    const codigosEfectivo = ['01'];
+    const codigosTarjetas = ['16', '18', '19'];
     return (this.data?.ingreso_otras?.formas_pago_detalle ?? [])
-      .filter(fp => !['01', '16', '18', '19'].includes(fp.metodo_pago))
+      .filter(fp => !codigosEfectivo.includes(fp.metodo_pago) && !codigosTarjetas.includes(fp.metodo_pago))
       .map(fp => ({
         label: fp.label,
         value: `$${(fp.total).toFixed(2)}`

@@ -4,6 +4,7 @@ import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angula
 import { PagoGasto, PagoGastoCreate, PagoGastoUpdate } from '../../../../domain/models/pago-gasto.model';
 import { Gasto } from '../../../../domain/models/gasto.model';
 import { ModalFormLayoutComponent } from './modal-form-layout.component';
+import { SRI_FORMAS_PAGO } from '../../../../core/constants/sri-iva.constants';
 
 @Component({
   selector: 'app-pago-form',
@@ -82,11 +83,7 @@ import { ModalFormLayoutComponent } from './modal-form-layout.component';
           <div>
             <label class="editorial-label">Método de Pago</label>
             <select class="editorial-input" formControlName="metodo_pago" [class.is-invalid]="isInvalid('metodo_pago')" [attr.disabled]="viewOnly ? true : null">
-              <option value="transferencia">Transferencia Bancaria</option>
-              <option value="efectivo">Efectivo</option>
-              <option value="tarjeta">Tarjeta de Crédito/Débito</option>
-              <option value="cheque">Cheque</option>
-              <option value="otro">Otro</option>
+              <option *ngFor="let fp of sriMetodosPago" [value]="fp.codigo">{{ fp.label }}</option>
             </select>
           </div>
 
@@ -167,6 +164,7 @@ export class PagoFormComponent implements OnInit, OnChanges {
 
   form: FormGroup;
   editMode = false;
+  readonly sriMetodosPago = SRI_FORMAS_PAGO;
   private initialValue: any;
 
   constructor(private fb: FormBuilder, private cd: ChangeDetectorRef) {
@@ -174,7 +172,7 @@ export class PagoFormComponent implements OnInit, OnChanges {
       gasto_id: ['', Validators.required],
       monto: [0, [Validators.required, Validators.min(0.01)]],
       fecha_pago: [new Date().toISOString().split('T')[0], Validators.required],
-      metodo_pago: ['transferencia', Validators.required],
+      metodo_pago: ['01', Validators.required],
       numero_referencia: [''],
       numero_comprobante: [''],
       observaciones: ['']
@@ -209,7 +207,7 @@ export class PagoFormComponent implements OnInit, OnChanges {
         gasto_id: this.selectedGasto?.id || '',
         monto: this.selectedGasto?.saldo ?? 0,
         fecha_pago: new Date().toISOString().split('T')[0],
-        metodo_pago: 'transferencia',
+        metodo_pago: '01',
         numero_referencia: '',
         numero_comprobante: '',
         observaciones: ''

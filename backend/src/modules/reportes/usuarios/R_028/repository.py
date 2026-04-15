@@ -2,6 +2,7 @@ from uuid import UUID
 from typing import Dict, Any, List
 from .....database.session import get_db
 from fastapi import Depends
+from .....constants.sri_constants import SRI_FORMAS_PAGO
 
 class RepositorioR028:
     def __init__(self, db=Depends(get_db)):
@@ -255,17 +256,7 @@ class RepositorioR028:
 
     def obtener_formas_pago_detalle(self, empresa_id: UUID, fecha_inicio: str, fecha_fin: str) -> List[Dict[str, Any]]:
         """Detalle de todas las formas de pago reales registradas en el periodo."""
-        # Mapeo completo según SRI_FORMAS_PAGO del sistema
-        METODOS_SRI = {
-            '01': 'Efectivo',
-            '15': 'Compensación de deudas',
-            '16': 'Tarjeta de Débito',
-            '17': 'Dinero Electrónico',
-            '18': 'Tarjeta Prepago',
-            '19': 'Tarjeta de Crédito',
-            '20': 'Otros con utilización del sistema financiero',
-            '21': 'Endoso de Títulos'
-        }
+        # Se utilizan las constantes globales para evitar hardcodeo
         query = """
             SELECT
                 p.metodo_pago_sri,
@@ -283,8 +274,8 @@ class RepositorioR028:
             totales = {row['metodo_pago_sri']: float(row['total']) for row in cur.fetchall()}
 
         return [
-            {"metodo_pago": cod, "label": label, "total": totales.get(cod, 0.0)}
-            for cod, label in METODOS_SRI.items()
+            {"metodo_pago": fp["codigo"], "label": fp["label"], "total": totales.get(fp["codigo"], 0.0)}
+            for fp in SRI_FORMAS_PAGO
         ]
 
     def obtener_costo_ventas(self, empresa_id: UUID, fecha_inicio: str, fecha_fin: str) -> float:
