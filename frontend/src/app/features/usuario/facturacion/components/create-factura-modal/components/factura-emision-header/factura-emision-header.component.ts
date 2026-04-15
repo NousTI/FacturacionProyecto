@@ -1,8 +1,9 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormGroup } from '@angular/forms';
 import { Establecimiento } from '../../../../../../../domain/models/establecimiento.model';
 import { PuntoEmision } from '../../../../../../../domain/models/punto-emision.model';
+import { SRI_FORMAS_PAGO, FORMA_PAGO_REQUIERE_PLAZO } from '../../../../../../../core/constants/sri-iva.constants';
 
 @Component({
   selector: 'app-factura-emision-header',
@@ -13,7 +14,7 @@ import { PuntoEmision } from '../../../../../../../domain/models/punto-emision.m
       <div class="section-title-lux mb-3 border-0 p-0" style="color: #1e293b;">
         <i class="bi bi-file-earmark-text-fill me-2 text-primary"></i> Información de Emisión
       </div>
-      
+
       <div class="row g-2">
         <div class="col-md-6">
           <label class="form-label-lux">Establecimiento</label>
@@ -24,7 +25,7 @@ import { PuntoEmision } from '../../../../../../../domain/models/punto-emision.m
             </select>
           </div>
         </div>
-        
+
         <div class="col-md-6">
           <label class="form-label-lux">Punto Emisión</label>
           <div class="select-lux-wrapper">
@@ -47,17 +48,31 @@ import { PuntoEmision } from '../../../../../../../domain/models/punto-emision.m
           <label class="form-label-lux">Forma de Pago SRI</label>
           <div class="select-lux-wrapper">
             <select class="select-lux input-sm" formControlName="forma_pago_sri">
-              <option value="01">EFECTIVO</option>
-              <option value="15">COMPENSACIÓN DE DEUDAS</option>
-              <option value="16">TARJETA DE DÉBITO</option>
-              <option value="17">DINERO ELECTRÓNICO</option>
-              <option value="18">TARJETA PREPAGO</option>
-              <option value="19">TARJETA DE CRÉDITO</option>
-              <option value="20">SISTEMA FINANCIERO (OTROS)</option>
-              <option value="21">ENDOSO DE TÍTULOS</option>
+              <option *ngFor="let fp of formasPago" [value]="fp.codigo">{{ fp.label | uppercase }}</option>
             </select>
           </div>
         </div>
+
+        <!-- Plazo y unidad: solo cuando la forma de pago lo requiere -->
+        <ng-container *ngIf="requierePlazo">
+          <div class="col-md-4">
+            <label class="form-label-lux">Plazo</label>
+            <div class="input-lux-wrapper input-sm">
+              <i class="bi bi-clock"></i>
+              <input type="number" class="input-lux" formControlName="plazo" min="0" placeholder="0">
+            </div>
+          </div>
+          <div class="col-md-8">
+            <label class="form-label-lux">Unidad de Tiempo</label>
+            <div class="select-lux-wrapper">
+              <select class="select-lux input-sm" formControlName="unidad_tiempo">
+                <option value="DIAS">Días</option>
+                <option value="MESES">Meses</option>
+                <option value="ANIOS">Años</option>
+              </select>
+            </div>
+          </div>
+        </ng-container>
 
         <div class="col-12 mt-1">
           <label class="form-label-lux">Guía Remisión</label>
@@ -70,8 +85,16 @@ import { PuntoEmision } from '../../../../../../../domain/models/punto-emision.m
     </div>
   `
 })
-export class FacturaEmisionHeaderComponent {
+export class FacturaEmisionHeaderComponent implements OnInit {
   @Input() parentForm!: FormGroup;
   @Input() establecimientos: Establecimiento[] = [];
   @Input() puntosEmisionFiltered: PuntoEmision[] = [];
+
+  readonly formasPago = SRI_FORMAS_PAGO;
+
+  get requierePlazo(): boolean {
+    return FORMA_PAGO_REQUIERE_PLAZO(this.parentForm?.get('forma_pago_sri')?.value);
+  }
+
+  ngOnInit() {}
 }

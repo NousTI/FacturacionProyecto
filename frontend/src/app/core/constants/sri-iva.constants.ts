@@ -14,6 +14,24 @@ export const SRI_IVA_TARIFAS = [
     { code: '10', label: 'Tarifa 13% (Materiales de Construcción)', percentage: 13, description: 'Tarifa temporal previo al incremento al 15% o aplicada a esquemas específicos de materiales.' },
 ];
 
+/**
+ * Formas de pago SRI con indicador de si requieren plazo de crédito.
+ * Sincronizado con backend: sri_constants.py → SRI_FORMAS_PAGO
+ */
+export const SRI_FORMAS_PAGO = [
+    { codigo: '01', label: 'Efectivo',                                       requierePlazo: false },
+    { codigo: '15', label: 'Compensación de deudas',                         requierePlazo: false },
+    { codigo: '16', label: 'Tarjeta de débito',                              requierePlazo: false },
+    { codigo: '17', label: 'Dinero electrónico',                             requierePlazo: false },
+    { codigo: '18', label: 'Tarjeta prepago',                                requierePlazo: false },
+    { codigo: '19', label: 'Tarjeta de crédito',                             requierePlazo: true  },
+    { codigo: '20', label: 'Otros con utilización del sistema financiero',   requierePlazo: false },
+    { codigo: '21', label: 'Endoso de títulos',                              requierePlazo: true  },
+];
+
+export const FORMA_PAGO_REQUIERE_PLAZO = (codigo: string): boolean =>
+    SRI_FORMAS_PAGO.find(fp => fp.codigo === codigo)?.requierePlazo ?? false;
+
 export const GET_IVA_PERCENTAGE = (code: string): number => {
     const tarifa = SRI_IVA_TARIFAS.find(t => t.code === code);
     return tarifa ? tarifa.percentage : 0;

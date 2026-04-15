@@ -73,6 +73,21 @@ SRI_URLS = {
     }
 }
 
+# Formas de pago SRI con indicador de si requieren plazo de crédito
+# requiere_plazo=True → el pago no es inmediato, se debe registrar plazo y unidad_tiempo
+SRI_FORMAS_PAGO = [
+    {"codigo": "01", "label": "Efectivo",                                        "requiere_plazo": False},
+    {"codigo": "15", "label": "Compensación de deudas",                          "requiere_plazo": False},
+    {"codigo": "16", "label": "Tarjeta de débito",                               "requiere_plazo": False},
+    {"codigo": "17", "label": "Dinero electrónico",                              "requiere_plazo": False},
+    {"codigo": "18", "label": "Tarjeta prepago",                                 "requiere_plazo": False},
+    {"codigo": "19", "label": "Tarjeta de crédito",                              "requiere_plazo": True},
+    {"codigo": "20", "label": "Otros con utilización del sistema financiero",    "requiere_plazo": False},
+    {"codigo": "21", "label": "Endoso de títulos",                               "requiere_plazo": True},
+]
+
+SRI_FORMAS_PAGO_CON_PLAZO = {fp["codigo"] for fp in SRI_FORMAS_PAGO if fp["requiere_plazo"]}
+
 SRI_TIMEOUT_SECONDS = 30
 SRI_TIME_SLEEP_AUTORIZACION = 3
 

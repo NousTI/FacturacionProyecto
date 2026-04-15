@@ -52,7 +52,7 @@ class RepositorioR008:
                 f.numero_factura,
                 ROUND(cc.saldo_pendiente::numeric, 2) as saldo_total,
                 GREATEST(CURRENT_DATE - cc.fecha_vencimiento, 0) as dias_vencido,
-                COALESCE(u.nombres || ' ' || u.apellidos, 'No asignado') as responsable,
+                COALESCE(er.nombre, 'Sin rol') || ' / ' || COALESCE(u.nombres || ' ' || u.apellidos, 'No asignado') as responsable,
                 CASE
                     WHEN CURRENT_DATE - cc.fecha_vencimiento > 30 THEN 'CRÍTICO'
                     WHEN CURRENT_DATE - cc.fecha_vencimiento > 0  THEN 'VENCIDO'
@@ -62,6 +62,7 @@ class RepositorioR008:
             JOIN sistema_facturacion.clientes c ON cc.cliente_id = c.id
             JOIN sistema_facturacion.facturas f ON cc.factura_id = f.id
             LEFT JOIN sistema_facturacion.usuarios u ON f.usuario_id = u.id
+            LEFT JOIN sistema_facturacion.empresa_roles er ON u.empresa_rol_id = er.id
             WHERE cc.empresa_id = %s AND cc.saldo_pendiente > 0 AND f.estado = 'AUTORIZADA'
         """
         params = [str(empresa_id)]
