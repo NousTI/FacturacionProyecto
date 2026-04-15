@@ -12,6 +12,7 @@ import { RenovacionesTableComponent } from './components/renovaciones-table/reno
 import { RenovacionDetailModalComponent } from './components/modals/renovacion-detail-modal.component';
 import { RenovacionProcessModalComponent } from './components/modals/renovacion-process-modal.component';
 import { RenovacionRejectModalComponent } from './components/modals/renovacion-reject-modal.component';
+import { RenovacionesPaginacionComponent, PaginationState } from './components/renovaciones-paginacion/renovaciones-paginacion.component';
 
 // Services
 import { RenovacionesApiService } from '../../../core/api/renovaciones-api.service';
@@ -31,7 +32,8 @@ import { UserRole } from '../../../domain/enums/role.enum';
     RenovacionesTableComponent,
     RenovacionDetailModalComponent,
     RenovacionProcessModalComponent,
-    RenovacionRejectModalComponent
+    RenovacionRejectModalComponent,
+    RenovacionesPaginacionComponent
   ],
   template: `
     <div class="renovaciones-page-container animate__animated animate__fadeIn">
@@ -42,20 +44,28 @@ import { UserRole } from '../../../domain/enums/role.enum';
       <!-- 2. Actions (Search & Status Filter) -->
       <app-renovaciones-actions
         [(searchQuery)]="searchQuery"
+        (searchQueryChange)="onSearchOrFilterChange()"
         [currentStatus]="statusFilter"
-        (onStatusChange)="statusFilter = $event"
+        (onStatusChange)="statusFilter = $event; onSearchOrFilterChange()"
       ></app-renovaciones-actions>
 
       <!-- 3. Table -->
       <app-renovaciones-table
-        [solicitudes]="filteredSolicitudes"
+        [solicitudes]="paginatedSolicitudes"
         [highlightedId]="highlightedId"
         [isVendedor]="isVendedor"
         (onVerDetalle)="abrirDetalle($event)"
         (onRechazar)="abrirRechazo($event)"
       ></app-renovaciones-table>
 
-      <!-- 4. Modals -->
+      <!-- 4. Paginación -->
+      <app-renovaciones-paginacion
+        [pagination]="pagination"
+        (pageChange)="onPageChange($event)"
+        (pageSizeChange)="onPageSizeChange($event)"
+      ></app-renovaciones-paginacion>
+
+      <!-- 5. Modals -->
       <app-renovacion-detail-modal
         *ngIf="showDetailModal"
         [seleccionada]="seleccionada"
@@ -118,6 +128,13 @@ export class RenovacionesAdminPage implements OnInit, OnDestroy {
   // Stats
   stats = { pending: 0, accepted: 0, rejected: 0 };
 
+  // Pagination
+  pagination: PaginationState = {
+    currentPage: 1,
+    pageSize: 10,
+    totalItems: 0
+  };
+
   // UI States
   showDetailModal = false;
   showProcessModal = false;
@@ -142,6 +159,7 @@ export class RenovacionesAdminPage implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe(data => {
         this.solicitudes = data;
+        this.pagination.totalItems = this.filteredSolicitudes.length;
         this.calculateStats();
         this.checkHighlight(data);
         this.cd.detectChanges();
@@ -198,6 +216,29 @@ export class RenovacionesAdminPage implements OnInit, OnDestroy {
     }
 
     return temp;
+  }
+
+  get paginatedSolicitudes() {
+    const inicio = (this.pagination.currentPage - 1) * this.pagination.pageSize;
+    const fin = inicio + this.pagination.pageSize;
+    return this.filteredSolicitudes.slice(inicio, fin);
+  }
+
+  onPageChange(page: number) {
+    this.pagination.currentPage = page;
+    this.cd.detectChanges();
+  }
+
+  onPageSizeChange(pageSize: number) {
+    this.pagination.pageSize = pageSize;
+    this.pagination.currentPage = 1;
+    this.cd.detectChanges();
+  }
+
+  onSearchOrFilterChange() {
+    this.pagination.currentPage = 1;
+    this.pagination.totalItems = this.filteredSolicitudes.length;
+    this.cd.detectChanges();
   }
 
   private checkHighlight(data: SolicitudRenovacion[]) {
