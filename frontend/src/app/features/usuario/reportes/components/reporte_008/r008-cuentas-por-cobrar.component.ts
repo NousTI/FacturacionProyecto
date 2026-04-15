@@ -76,29 +76,29 @@ Chart.register(...registerables);
                 <thead>
                   <tr>
                     <th>Cliente</th>
-                    <th>Saldo Total</th>
+                    <th># Factura</th>
+                    <th>Saldo Pendiente</th>
                     <th>Días Vencido</th>
-                    <th># Fact. Pend.</th>
                     <th>Responsable</th>
                     <th>Estado</th>
                   </tr>
                 </thead>
                 <tbody>
                   <tr *ngFor="let c of data.top_clientes" class="hover-row">
-                    <td class="font-medium">{{ c.cliente }}</td>
+                    <td class="font-medium">
+                      <div class="d-flex align-items-center">
+                        {{ c.cliente }}
+                        <app-info-tooltip [message]="'Vendedor responsable: ' + c.responsable"></app-info-tooltip>
+                      </div>
+                    </td>
+                    <td class="font-mono">{{ c.numero_factura }}</td>
                     <td class="font-bold">{{ c.saldo_total | currency }}</td>
                     <td>
                       <span [class.text-danger]="c.dias_vencido > 30" [class.text-warning]="c.dias_vencido > 0 && c.dias_vencido <= 30">
                         {{ c.dias_vencido }} días
                       </span>
                     </td>
-                    <td>{{ c.facturas_pendientes }}</td>
-                    <td>
-                      <div class="d-flex align-items-center">
-                        <span class="text-truncate" style="max-width: 120px;">{{ c.responsable }}</span>
-                        <app-info-tooltip [message]="'Vendedor responsable: ' + c.responsable"></app-info-tooltip>
-                      </div>
-                    </td>
+                    <td>{{ c.responsable }}</td>
                     <td>
                       <span class="badge" [ngClass]="{
                         'bg-danger-subtle text-danger': c.estado === 'CRÍTICO',
@@ -157,6 +157,7 @@ Chart.register(...registerables);
     .hover-row:hover { background: #f8fafc; }
     .font-medium { font-weight: 600; color: #334155; }
     .font-bold   { font-weight: 800; color: #1e293b; }
+    .font-mono   { font-family: monospace; font-size: 0.85rem; color: #334155; }
 
     .badge { padding: 0.5rem 0.75rem; border-radius: 8px; font-weight: 600; font-size: 0.75rem; }
     .bg-danger-subtle { background-color: #fef2f2 !important; }

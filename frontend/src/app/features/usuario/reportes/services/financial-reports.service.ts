@@ -132,9 +132,9 @@ export interface AccountsReceivableReport {
   };
   top_clientes: Array<{
     cliente: string;
+    numero_factura: string;
     saldo_total: number;
     dias_vencido: number;
-    facturas_pendientes: number;
     responsable: string;
     estado: string;
   }>;

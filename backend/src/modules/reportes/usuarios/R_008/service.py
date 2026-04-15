@@ -24,7 +24,6 @@ class ServicioR008:
                     **row,
                     "saldo_total": float(row["saldo_total"]),
                     "dias_vencido": int(row["dias_vencido"]) if row["dias_vencido"] is not None else 0,
-                    "facturas_pendientes": int(row["facturas_pendientes"]),
                 }
                 for row in top_clientes
             ],
