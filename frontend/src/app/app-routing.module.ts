@@ -6,6 +6,8 @@ import { AuthGuard } from './core/guards/auth.guard';
 
 import { RoleGuard } from './core/guards/role.guard';
 import { UserRole } from './domain/enums/role.enum';
+import { UserActiveGuard } from './core/guards/user-active.guard';
+import { AccesoDenegadoPage } from './features/usuario/acceso-denegado/acceso-denegado.page';
 
 const routes: Routes = [
     {
@@ -21,6 +23,10 @@ const routes: Routes = [
         loadChildren: () => import('./features/auth/auth.module').then(m => m.AuthModule)
     },
     {
+        path: 'acceso-denegado',
+        component: AccesoDenegadoPage
+    },
+    {
         path: 'vendedor',
         component: PrivateLayoutComponent,
         canActivate: [AuthGuard, RoleGuard],
@@ -30,7 +36,7 @@ const routes: Routes = [
     {
         path: 'usuario',
         component: PrivateLayoutComponent,
-        canActivate: [AuthGuard, RoleGuard],
+        canActivate: [AuthGuard, RoleGuard, UserActiveGuard],
         data: { roles: [UserRole.USUARIO] },
         loadChildren: () => import('./features/usuario/usuario.module').then(m => m.UsuarioModule)
     },

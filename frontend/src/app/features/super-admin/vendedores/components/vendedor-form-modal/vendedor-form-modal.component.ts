@@ -7,7 +7,7 @@ import { SRI_TIPOS_IDENTIFICACION } from '../../../../../core/constants/sri-iva.
 @Component({
   selector: 'app-vendedor-form-modal',
   template: `
-    <div class="modal-overlay animate__animated animate__fadeIn animate__faster" (click)="onClose.emit()">
+    <div class="modal-overlay animate__animated animate__fadeIn animate__faster">
       <div class="modal-content-premium shadow-premium" (click)="$event.stopPropagation()">
         
         <div class="modal-header-premium flex-column align-items-stretch">
@@ -71,14 +71,17 @@ import { SRI_TIPOS_IDENTIFICACION } from '../../../../../core/constants/sri-iva.
                 </div>
               </div>
 
-                <label class="form-label-premium">Tipo de Identificación *</label>
-                <div class="input-premium-group mb-2">
-                  <i class="bi bi-tag input-icon"></i>
+              <!-- Identificación -->
+              <div class="col-md-6">
+                <label class="form-label-premium text-nowrap">Tipo de Identificación *</label>
+                <div class="input-premium-group">
                   <select formControlName="tipoIdentificacion" class="form-select-premium" (change)="onTipoIdChange()">
                     <option *ngFor="let tipo of sriTipos" [value]="tipo.code">{{ tipo.label }}</option>
                   </select>
                 </div>
+              </div>
 
+              <div class="col-md-6">
                 <label class="form-label-premium">Número de Identificación *</label>
                 <div class="input-premium-group">
                   <i class="bi bi-card-text input-icon"></i>
@@ -91,9 +94,10 @@ import { SRI_TIPOS_IDENTIFICACION } from '../../../../../core/constants/sri-iva.
                 <div class="error-feedback" *ngIf="vendedorForm.get('identificacion')?.invalid && vendedorForm.get('identificacion')?.touched">
                   {{ vendedorForm.get('identificacion')?.errors?.['message'] || 'Identificación inválida o incompleta' }}
                 </div>
-                <small class="text-muted d-block mt-1">
+                <small class="text-muted d-block mt-1" style="font-size: 0.65rem;">
                   {{ getIdHint() }}
                 </small>
+              </div>
 
               <!-- Email -->
               <div class="col-md-6" *ngIf="editing">
@@ -126,7 +130,6 @@ import { SRI_TIPOS_IDENTIFICACION } from '../../../../../core/constants/sri-iva.
               <div class="col-md-12">
                 <label class="form-label-premium">Tipo de Comisión</label>
                 <div class="input-premium-group">
-                  <i class="bi bi-gear input-icon"></i>
                   <select formControlName="tipoComision" class="form-select-premium">
                     <option value="PORCENTAJE">Porcentaje (%)</option>
                     <option value="FIJA">Monto Fijo ($)</option>
@@ -135,26 +138,34 @@ import { SRI_TIPOS_IDENTIFICACION } from '../../../../../core/constants/sri-iva.
               </div>
 
               <div class="col-md-6">
-                <label class="form-label-premium">Comisión Inicial (Primer Pago)</label>
+                <label class="form-label-premium text-nowrap">Comisión Inicial (Primer Pago) *</label>
                 <div class="input-premium-group">
                   <i class="bi bi-star input-icon"></i>
                   <input type="number" formControlName="porcentajeComisionInicial" class="form-control-premium"
+                    (keypress)="onlyNumbers($event)"
+                    (input)="onCommissionInput($event, 'porcentajeComisionInicial')"
+                    [class.is-invalid]="vendedorForm.get('porcentajeComisionInicial')?.invalid && vendedorForm.get('porcentajeComisionInicial')?.touched"
                     placeholder="0">
                   <span class="input-suffix-premium">{{ vendedorForm.get('tipoComision')?.value === 'PORCENTAJE' ? '%' : '$' }}</span>
+                </div>
+                <div class="error-feedback" *ngIf="vendedorForm.get('porcentajeComisionInicial')?.invalid && vendedorForm.get('porcentajeComisionInicial')?.touched">
+                  {{ vendedorForm.get('tipoComision')?.value === 'PORCENTAJE' ? 'Rango 1 - 100%' : 'Rango 1 - 1000$' }}
                 </div>
               </div>
 
               <div class="col-md-6">
-                <label class="form-label-premium">Comisión Recurrente (Renovaciones)</label>
+                <label class="form-label-premium text-nowrap">Comisión Recurrente (Renovaciones) *</label>
                 <div class="input-premium-group">
                   <i class="bi bi-arrow-repeat input-icon"></i>
                   <input type="number" formControlName="porcentajeComisionRecurrente" class="form-control-premium"
+                    (keypress)="onlyNumbers($event)"
+                    (input)="onCommissionInput($event, 'porcentajeComisionRecurrente')"
                     [class.is-invalid]="vendedorForm.get('porcentajeComisionRecurrente')?.invalid && vendedorForm.get('porcentajeComisionRecurrente')?.touched"
                     placeholder="0">
                   <span class="input-suffix-premium">{{ vendedorForm.get('tipoComision')?.value === 'PORCENTAJE' ? '%' : '$' }}</span>
                 </div>
                 <div class="error-feedback" *ngIf="vendedorForm.get('porcentajeComisionRecurrente')?.invalid && vendedorForm.get('porcentajeComisionRecurrente')?.touched">
-                  {{ vendedorForm.get('tipoComision')?.value === 'PORCENTAJE' ? 'Máximo 100%' : 'Monto inválido' }}
+                    {{ vendedorForm.get('tipoComision')?.value === 'PORCENTAJE' ? 'Rango 1 - 100%' : 'Rango 1 - 1000$' }}
                 </div>
               </div>
             </div>
@@ -309,10 +320,29 @@ import { SRI_TIPOS_IDENTIFICACION } from '../../../../../core/constants/sri-iva.
     .input-icon { position: absolute; left: 1rem; color: #94a3b8; font-size: 1rem; }
     
     .form-control-premium, .form-select-premium {
-      padding: 0.85rem 3rem 0.85rem 3.25rem; border-radius: 14px;
+      height: 55px;
+      padding: 0 1.25rem 0 3.25rem; 
+      border-radius: 14px;
       background: #f8fafc; border: 1px solid rgba(0, 0, 0, 0.05);
       font-size: 0.95rem; font-weight: 500; width: 100%; transition: all 0.2s;
       color: #1e293b;
+      line-height: 48px;
+    }
+    
+    .form-select-premium {
+      padding-left: 1.25rem !important;
+      padding-right: 2.5rem !important;
+      font-size: 0.85rem !important;
+      cursor: pointer;
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%2364748b' class='bi bi-chevron-down' viewBox='0 0 16 16'%3E%3Cpath fill-rule='evenodd' d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 1rem center;
+      background-size: 14px;
+    }
+    /* El padding derecho extra solo es necesario si hay un sufijo (%, $) */
+    .form-control-premium:has(+ .input-suffix-premium) {
+      padding-right: 3rem;
     }
     .form-control-premium:focus, .form-select-premium:focus {
       background: #ffffff; border-color: #161d35; box-shadow: 0 0 0 4px rgba(22, 29, 53, 0.05); outline: none;
@@ -532,9 +562,11 @@ export class VendedorFormModalComponent {
     fields.forEach(field => {
       const control = this.vendedorForm.get(field);
       if (control) {
-        const validators = [Validators.required, Validators.min(0)];
+        const validators = [Validators.required, Validators.min(1)];
         if (tipo === 'PORCENTAJE') {
           validators.push(Validators.max(100));
+        } else {
+          validators.push(Validators.max(1000));
         }
         control.setValidators(validators);
         control.updateValueAndValidity();
@@ -582,6 +614,24 @@ export class VendedorFormModalComponent {
     const inputChar = String.fromCharCode(event.charCode);
     if (!pattern.test(inputChar)) {
       event.preventDefault();
+    }
+  }
+
+  onCommissionInput(event: any, controlName: string) {
+    const input = event.target as HTMLInputElement;
+    let value = parseInt(input.value);
+    
+    if (isNaN(value)) return;
+
+    const tipo = this.vendedorForm.get('tipoComision')?.value;
+    const max = tipo === 'PORCENTAJE' ? 100 : 1000;
+
+    if (value > max) {
+      input.value = max.toString();
+      this.vendedorForm.get(controlName)?.setValue(max, { emitEvent: false });
+    } else if (value < 0) {
+      input.value = '0';
+      this.vendedorForm.get(controlName)?.setValue(0, { emitEvent: false });
     }
   }
 

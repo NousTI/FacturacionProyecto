@@ -212,6 +212,10 @@ export class RegistroPagoModalComponent implements OnInit, OnDestroy {
     }
 
     isPlanDisabled(planId: string): boolean {
+        // Si la suscripción no está ACTIVA (ej: SUSPENDIDA/CANCELADA), permitimos elegir cualquier plan para reactivar/renovar
+        if (this.suscripcion?.estado !== 'ACTIVA') {
+            return false;
+        }
         // Solo deshabilitar si es el plan actual Y faltan más de 30 días
         if (planId !== this.suscripcion?.plan_id) return false;
         return this.daysRemaining > 30;
@@ -219,10 +223,15 @@ export class RegistroPagoModalComponent implements OnInit, OnDestroy {
 
     getPlanLabel(p: any): string {
         const isCurrent = p.id === this.suscripcion?.plan_id;
-        if (isCurrent && this.daysRemaining > 30) {
-            return `${p.nombre} (Vigente - ${this.daysRemaining} días restantes)`;
+        const estado = this.suscripcion?.estado;
+
+        if (isCurrent) {
+            if (estado === 'SUSPENDIDA') return `${p.nombre} (Plan actual - Reactivar)`;
+            if (estado === 'CANCELADA') return `${p.nombre} (Plan anterior - Recontratar)`;
+            if (this.daysRemaining > 30) return `${p.nombre} (Vigente - ${this.daysRemaining} días restantes)`;
+            return `${p.nombre} (Plan actual - Renovable)`;
         }
-        return isCurrent ? `${p.nombre} (Plan actual - Renovable)` : p.nombre;
+        return p.nombre;
     }
 
     togglePagoRecibido() {

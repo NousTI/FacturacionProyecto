@@ -233,8 +233,12 @@ export class SuscripcionesPage implements OnInit {
     }
 
     mapCompanyToSuscripcion(c: any): Suscripcion {
-        // Real state from DB
-        let estado: any = c.estado || (c.activo ? 'ACTIVA' : 'SUSPENDIDA');
+        // Real state from DB (Priorizamos el estado de la suscripción sobre el activo de la empresa)
+        let estado: any = c.estado || c.suscripcion_estado;
+        
+        if (!estado) {
+            estado = c.activo ? 'ACTIVA' : 'SUSPENDIDA';
+        }
         
         // Logical check for UI indicators (overdue badge)
         const isOverdue = c.fecha_fin ? new Date(c.fecha_fin) < new Date() : false;

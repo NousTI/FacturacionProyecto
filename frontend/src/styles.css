@@ -99,6 +99,14 @@ body {
   transform: translateY(-1px);
 }
 
+.btn-editorial:disabled {
+  background-color: #e2e8f0;
+  color: #94a3b8;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
 /* Layout Utilities */
 .vh-center {
   display: flex;

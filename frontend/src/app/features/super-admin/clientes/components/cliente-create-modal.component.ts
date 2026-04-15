@@ -71,6 +71,21 @@ import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } 
                   Formato inválido (Ej: 09XXXXXXXX, 10 dígitos)
                 </div>
               </div>
+
+              <!-- Email -->
+              <div class="col-12">
+                <label class="editorial-label">Correo Electrónico *</label>
+                <input 
+                  type="email"
+                  class="editorial-input"
+                  formControlName="email" 
+                  placeholder="ejemplo@correo.com"
+                  [class.is-invalid]="clienteForm.get('email')?.invalid && clienteForm.get('email')?.touched"
+                >
+                <div class="invalid-feedback" *ngIf="clienteForm.get('email')?.invalid && clienteForm.get('email')?.touched">
+                  Ingrese un correo electrónico válido
+                </div>
+              </div>
               
               <!-- Empresa -->
               <div class="col-12">
@@ -265,6 +280,7 @@ export class ClienteCreateModalComponent implements OnInit {
     this.clienteForm = this.fb.group({
       nombres: ['', [Validators.required, Validators.minLength(3)]],
       apellidos: ['', [Validators.required, Validators.minLength(3)]],
+      email: ['', [Validators.required, Validators.email]],
       telefono: ['', [Validators.required, Validators.pattern(/^09[0-9]{8}$/)]],
       empresa_id: [null, Validators.required],
       avatar_url: [null],

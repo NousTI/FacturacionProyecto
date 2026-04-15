@@ -6,7 +6,7 @@ import { Vendedor } from '../../services/vendedor.service';
 @Component({
   selector: 'app-reassign-modal',
   template: `
-    <div class="modal-overlay animate__animated animate__fadeIn animate__faster" (click)="!saving && onClose.emit()">
+    <div class="modal-overlay animate__animated animate__fadeIn animate__faster">
       <div class="modal-content-premium shadow-premium selective-modal" (click)="$event.stopPropagation()">
         
         <div class="modal-header-premium">

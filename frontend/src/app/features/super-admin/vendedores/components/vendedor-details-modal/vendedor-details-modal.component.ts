@@ -6,7 +6,7 @@ import { GET_IDENTIFICACION_LABEL } from '../../../../../core/constants/sri-iva.
 @Component({
   selector: 'app-vendedor-details-modal',
   template: `
-    <div class="modal-overlay animate__animated animate__fadeIn animate__faster" (click)="onClose.emit()">
+    <div class="modal-overlay animate__animated animate__fadeIn animate__faster">
       <div class="modal-content-premium shadow-premium" (click)="$event.stopPropagation()">
         
         <div class="modal-header-premium" *ngIf="vendedor">
