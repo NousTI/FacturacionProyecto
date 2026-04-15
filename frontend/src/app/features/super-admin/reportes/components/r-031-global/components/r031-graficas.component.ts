@@ -63,12 +63,13 @@ export class R031GraficasComponent {
   get dataVendedores(): PieChartData[] {
     const total = this.datos.top_vendedores.reduce((acc, v) => acc + Number(v.ingresos_generados || 0), 0);
     if (total <= 0) return [];
-    
+
     return this.datos.top_vendedores.map(v => {
       const val = Number(v.ingresos_generados || 0);
       return {
         label: v.vendedor.split(' ')[0],
         value: val,
+        valueLabel: '$' + val.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
         percent: Math.round((val / total) * 100)
       };
     });

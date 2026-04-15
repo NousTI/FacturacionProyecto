@@ -41,18 +41,16 @@
     </div>
 
     <!-- GRÁFICAS -->
-    <div class="charts-row">
-        <div class="chart-box">
-            <h3>Top Vendedores (Ingresos)</h3>
-            <div class="chart-container-pie" style="height: 250px;">
-                <canvas id="chartTopVendedores"></canvas>
-            </div>
+    <div class="chart-box" style="margin-bottom: 14px;">
+        <h3>Top Vendedores (Ingresos)</h3>
+        <div class="chart-container-pie">
+            <canvas id="chartTopVendedores"></canvas>
         </div>
-        <div class="chart-box">
-            <h3>Planes Más Vendidos</h3>
-            <div class="chart-container-pie" style="height: 250px;">
-                <canvas id="chartPlanes"></canvas>
-            </div>
+    </div>
+    <div class="chart-box" style="margin-bottom: 14px;">
+        <h3>Planes Más Vendidos</h3>
+        <div class="chart-container-pie">
+            <canvas id="chartPlanes"></canvas>
         </div>
     </div>
 
@@ -66,13 +64,18 @@
                 <th style="width: 15%;">Tipo de Venta</th>
                 <th style="width: 15%;">Plan</th>
                 <th class="text-right" style="width: 12%;">Comisión</th>
-                <th style="width: 13%;">Estado <span class="tooltip-icon">(i)</span></th>
+                <th style="width: 13%;">Estado</th>
             </tr>
         </thead>
         <tbody>
             {% for c in data.detalle %}
             <tr>
-                <td class="empresa-col">{{ c.vendedor }}</td>
+                <td class="empresa-col">
+                    {{ c.vendedor }}
+                    {% if data.top_vendedores and c.vendedor == data.top_vendedores[0].vendedor %}
+                        <span style="color:#ef4444; font-size:10px;">🔺</span>
+                    {% endif %}
+                </td>
                 <td>{{ c.empresa }}</td>
                 <td><span class="badge" style="background:#f1f5f9; color:#475569;">{{ c.tipo_venta }}</span></td>
                 <td>{{ c.plan }}</td>
@@ -81,6 +84,9 @@
                     <span class="badge status-badge {% if c.estado == 'PAGADA' %}badge-success{% elif c.estado == 'PENDIENTE' %}badge-warning{% else %}badge-info{% endif %}">
                         {{ c.estado }}
                     </span>
+                    {% if c.estado == 'PENDIENTE' %}
+                        <span class="tooltip-icon" title="En espera de ciclo de pago">(i)</span>
+                    {% endif %}
                 </td>
             </tr>
             {% endfor %}
@@ -92,86 +98,61 @@
 {% endblock %}
 
 {% block extra_scripts %}
-    const CHART_COLORS = {
-        primary: '#3b82f6',
-        success: '#10b981',
-        warning: '#f59e0b',
-        danger: '#ef4444'
-    };
+    const colors = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4', '#ec4899', '#6366f1'];
 
-    // Datos para gráficas
     const topVendedoresLabels = [{% for v in data.top_vendedores %}'{{ v.vendedor.split(' ')[0] }}'{{ "," if not loop.last }}{% endfor %}];
     const topVendedoresData = [{% for v in data.top_vendedores %}{{ v.ingresos_generados }}{{ "," if not loop.last }}{% endfor %}];
 
     const planesLabels = [{% for p in data.planes_mas_vendidos %}'{{ p.plan }}'{{ "," if not loop.last }}{% endfor %}];
     const planesData = [{% for p in data.planes_mas_vendidos %}{{ p.ventas }}{{ "," if not loop.last }}{% endfor %}];
 
-    // Gráfica Top Vendedores (Bar Horizontal)
+    // Gráfica Top Vendedores (Pie)
     if (topVendedoresLabels.length > 0) {
         new Chart(document.getElementById('chartTopVendedores'), {
-            type: 'bar',
+            type: 'pie',
             data: {
                 labels: topVendedoresLabels,
-                datasets: [{
-                    label: 'Ingresos ($)',
-                    data: topVendedoresData,
-                    backgroundColor: CHART_COLORS.primary,
-                    borderRadius: 4
-                }]
+                datasets: [{ data: topVendedoresData, backgroundColor: colors, borderWidth: 1, borderColor: '#fff' }]
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
-                indexAxis: 'y',
                 plugins: {
-                    legend: { display: false },
+                    legend: { display: true, position: 'bottom', labels: { boxWidth: 10, font: { size: 9 } } },
                     datalabels: {
-                        color: '#1e293b',
-                        anchor: 'end',
-                        align: 'right',
-                        offset: 4,
-                        font: { size: 9, weight: 'bold' },
-                        formatter: (val) => '$' + Math.round(val)
+                        color: '#fff',
+                        font: { weight: 'bold', size: 10 },
+                        formatter: (val, ctx) => {
+                            let sum = ctx.dataset.data.reduce((a, b) => a + b, 0);
+                            return Math.round((val / sum) * 100) + '%';
+                        }
                     }
-                },
-                scales: {
-                    x: { display: false, grid: { display: false } },
-                    y: { grid: { display: false }, ticks: { font: { size: 9 } } }
                 }
             }
         });
     }
 
-    // Gráfica Planes (Bar Horizontal)
+    // Gráfica Planes (Pie)
     if (planesLabels.length > 0) {
         new Chart(document.getElementById('chartPlanes'), {
-            type: 'bar',
+            type: 'pie',
             data: {
                 labels: planesLabels,
-                datasets: [{
-                    label: 'Ventas',
-                    data: planesData,
-                    backgroundColor: CHART_COLORS.success,
-                    borderRadius: 4
-                }]
+                datasets: [{ data: planesData, backgroundColor: colors, borderWidth: 1, borderColor: '#fff' }]
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
-                indexAxis: 'y',
                 plugins: {
-                    legend: { display: false },
+                    legend: { display: true, position: 'bottom', labels: { boxWidth: 10, font: { size: 9 } } },
                     datalabels: {
-                        color: '#1e293b',
-                        anchor: 'end',
-                        align: 'right',
-                        offset: 4,
-                        font: { size: 9, weight: 'bold' }
+                        color: '#fff',
+                        font: { weight: 'bold', size: 10 },
+                        formatter: (val, ctx) => {
+                            let sum = ctx.dataset.data.reduce((a, b) => a + b, 0);
+                            return Math.round((val / sum) * 100) + '%';
+                        }
                     }
-                },
-                scales: {
-                    x: { display: false, grid: { display: false } },
-                    y: { grid: { display: false }, ticks: { font: { size: 9 } } }
                 }
             }
         });

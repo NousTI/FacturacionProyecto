@@ -44,7 +44,7 @@ type RangoTipo = 'mes_actual' | 'mes_anterior' | 'anio_actual' | 'personalizado'
     <div *ngIf="datos" id="print-global" class="report-content animate__animated animate__fadeIn">
       
       <!-- 1. KPIs Fragmentados -->
-      <app-r031-kpis [datos]="datos"></app-r031-kpis>
+      <app-r031-kpis [datos]="datos" [rangoTipo]="rangoTipo"></app-r031-kpis>
 
       <!-- 2. Gráficas Fragmentadas -->
       <app-r031-graficas [datos]="datos"></app-r031-graficas>

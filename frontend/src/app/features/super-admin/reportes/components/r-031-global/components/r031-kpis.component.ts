@@ -2,6 +2,8 @@ import { Component, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReporteGlobal } from '../../../services/reportes.service';
 
+type RangoTipo = 'mes_actual' | 'mes_anterior' | 'anio_actual' | 'personalizado';
+
 @Component({
   selector: 'app-r031-kpis',
   standalone: true,
@@ -13,14 +15,14 @@ import { ReporteGlobal } from '../../../services/reportes.service';
         <span class="kpi-label">Empresas activas</span>
         <span class="kpi-value">{{ datos.empresas_activas }}</span>
         <span class="kpi-sub" [class.text-success]="datos.variacion_empresas_activas_valor >= 0" [class.text-danger]="datos.variacion_empresas_activas_valor < 0">
-          {{ datos.variacion_empresas_activas_valor >= 0 ? '+' : '' }}{{ datos.variacion_empresas_activas_valor }} este mes
+          {{ datos.variacion_empresas_activas_valor >= 0 ? '+' : '' }}{{ datos.variacion_empresas_activas_valor }} {{ periodoLabel }}
         </span>
       </div>
 
       <!-- Ingresos del Año -->
       <div class="kpi-card">
         <span class="kpi-label">Ingresos del año</span>
-        <span class="kpi-value">{{ datos.ingresos_anio | currency:'USD':'symbol':'1.0-0' }}</span>
+        <span class="kpi-value">{{ datos.ingresos_anio | currency:'USD':'symbol':'1.0-2' }}</span>
         <span class="kpi-sub" [class.text-success]="datos.variacion_ingresos_anio >= 0" [class.text-danger]="datos.variacion_ingresos_anio < 0">
           {{ datos.variacion_ingresos_anio >= 0 ? '+' : '' }}{{ datos.variacion_ingresos_anio }}% vs anterior
         </span>
@@ -29,7 +31,7 @@ import { ReporteGlobal } from '../../../services/reportes.service';
       <!-- Ingresos del Mes -->
       <div class="kpi-card">
         <span class="kpi-label">Ingresos del mes</span>
-        <span class="kpi-value">{{ datos.ingresos_mes | currency:'USD':'symbol':'1.0-0' }}</span>
+        <span class="kpi-value">{{ datos.ingresos_mes | currency:'USD':'symbol':'1.0-2' }}</span>
         <span class="kpi-sub" [class.text-success]="datos.variacion_ingresos_mes >= 0" [class.text-danger]="datos.variacion_ingresos_mes < 0">
           {{ datos.variacion_ingresos_mes >= 0 ? '+' : '' }}{{ datos.variacion_ingresos_mes }}% vs anterior
         </span>
@@ -95,7 +97,7 @@ import { ReporteGlobal } from '../../../services/reportes.service';
     }
     .kpi-card:hover { transform: translateY(-2px); box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
     .kpi-label { font-size: 0.65rem; font-weight: 700; color: #64748b; text-transform: uppercase; display: block; margin-bottom: 0.35rem; letter-spacing: 0.5px; }
-    .kpi-value { font-size: 1.25rem; font-weight: 800; color: #1e293b; display: block; line-height: 1; margin-bottom: 0.25rem; }
+    .kpi-value { font-size: 1.1rem; font-weight: 800; color: #1e293b; display: block; line-height: 1; margin-bottom: 0.25rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .kpi-sub { font-size: 0.75rem; font-weight: 600; }
     .kpi-warning { border-bottom: 3px solid #f59e0b; background: #fffbeb; }
     .kpi-danger { border-bottom: 3px solid #ef4444; background: #fef2f2; }
@@ -103,4 +105,14 @@ import { ReporteGlobal } from '../../../services/reportes.service';
 })
 export class R031KpisComponent {
   @Input() datos!: ReporteGlobal;
+  @Input() rangoTipo: RangoTipo = 'mes_actual';
+
+  get periodoLabel(): string {
+    switch (this.rangoTipo) {
+      case 'anio_actual': return 'este año';
+      case 'mes_anterior': return 'mes anterior';
+      case 'personalizado': return 'en el período';
+      default: return 'este mes';
+    }
+  }
 }

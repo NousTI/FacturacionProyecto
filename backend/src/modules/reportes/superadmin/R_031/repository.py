@@ -171,10 +171,10 @@ class RepositorioR031:
                 COALESCE(e.nombre_comercial, e.razon_social) as nombre_empresa,
                 p.nombre as plan_nombre,
                 -- Último intento de acceso: max de ultimo_acceso de todos los usuarios de la empresa
-                (SELECT MAX(u2.ultimo_acceso)
-                 FROM sistema_facturacion.users u2
-                 JOIN sistema_facturacion.usuarios us2 ON us2.user_id = u2.id
-                 WHERE us2.empresa_id = e.id) as ultimo_acceso,
+                (SELECT MAX(au.ultimo_acceso)
+                 FROM sistema_facturacion.usuarios u2
+                 JOIN sistema_facturacion.users au ON au.id = u2.user_id
+                 WHERE u2.empresa_id = e.id) as ultimo_acceso,
                 s.fecha_fin as fecha_vencimiento,
                 e.email,
                 e.telefono,

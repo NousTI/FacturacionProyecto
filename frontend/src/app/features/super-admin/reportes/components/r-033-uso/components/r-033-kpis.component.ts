@@ -23,7 +23,7 @@ import { CommonModule } from '@angular/common';
         <span class="kpi-sub text-muted">usuarios</span>
       </div>
       <div class="kpi-card">
-        <span class="kpi-label">Empresas activas analizadas</span>
+        <span class="kpi-label">Total empresas en el sistema</span>
         <span class="kpi-value">{{ totalEmpresas }}</span>
         <span class="kpi-sub text-muted">en el sistema</span>
       </div>

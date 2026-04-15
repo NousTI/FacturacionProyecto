@@ -6,6 +6,7 @@ export interface PieChartData {
     value: number;
     percent: number;
     color?: string;
+    valueLabel?: string; // etiqueta formateada opcional (ej: "$1,304.83")
 }
 
 @Component({
@@ -33,14 +34,20 @@ export interface PieChartData {
                 [attr.stroke-dasharray]="slice.dashArray"
                 [attr.stroke-dashoffset]="slice.dashOffset"
                 class="pie-slice"
-                (mouseenter)="activeLabel = slice.label"
-                (mouseleave)="activeLabel = null"
+                (mouseenter)="activeSlice = slice"
+                (mouseleave)="activeSlice = null"
               >
-                <title>{{ slice.label }}: {{ slice.percent }}%</title>
+                <title>{{ slice.label }}: {{ slice.valueLabel || slice.value }} ({{ slice.percent }}%)</title>
               </circle>
             </ng-container>
           </svg>
-          <div class="center-hole"></div>
+          <div class="center-hole">
+            <div class="center-tooltip" *ngIf="activeSlice">
+              <span class="ct-label">{{ activeSlice.label }}</span>
+              <span class="ct-value">{{ activeSlice.valueLabel || activeSlice.value }}</span>
+              <span class="ct-pct">{{ activeSlice.percent }}%</span>
+            </div>
+          </div>
         </div>
 
         <div class="legend w-100 mt-2">
@@ -84,12 +91,26 @@ export interface PieChartData {
         top: 50%;
         left: 50%;
         transform: translate(-50%, -50%);
-        width: 40px;
-        height: 40px;
+        width: 80px;
+        height: 80px;
         background: white;
         border-radius: 50%;
         z-index: 2;
+        display: flex;
+        align-items: center;
+        justify-content: center;
     }
+    .center-tooltip {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        padding: 0.2rem;
+    }
+    .ct-label { font-size: 0.55rem; color: #64748b; font-weight: 600; text-transform: uppercase; line-height: 1.1; }
+    .ct-value { font-size: 0.75rem; color: #1e293b; font-weight: 800; line-height: 1.2; }
+    .ct-pct { font-size: 0.6rem; color: #94a3b8; font-weight: 600; }
     .color-dot {
         width: 10px;
         height: 10px;
@@ -102,7 +123,7 @@ export class PieChartComponent {
     @Input() title: string = '';
     @Input() data: PieChartData[] = [];
     @Input() colors: string[] = [];
-    activeLabel: string | null = null;
+    activeSlice: any = null;
 
     get slices() {
         let cumulativePercent = 0;

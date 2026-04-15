@@ -87,45 +87,40 @@
     </div>
 
     <!-- GRÁFICAS -->
-    <div class="charts-row">
-        <div class="chart-box">
-            <h3>Rescate vs Upgrade (%)</h3>
-            <div class="chart-container-pie">
-                {% if data.zona_rescate > 0 or data.zona_upgrade > 0 %}
-                    <canvas id="chartRescateUpgrade"></canvas>
-                {% else %}
-                    <div style="text-align: center; color: #94a3b8; padding-top: 80px; font-size: 11px;">
-                        ⚠️ Sin datos en el periodo
-                    </div>
-                {% endif %}
-            </div>
-        </div>
-        <div class="chart-box">
-            <h3>Planes Más Vendidos</h3>
-            <div class="chart-container-pie">
-                {% if data.planes_mas_vendidos %}
-                    <canvas id="chartPlanes"></canvas>
-                {% else %}
-                    <div style="text-align: center; color: #94a3b8; padding-top: 80px; font-size: 11px;">
-                        📅 Sin ventas registradas
-                    </div>
-                {% endif %}
-            </div>
+    <div class="chart-box" style="margin-bottom: 14px;">
+        <h3>Rescate vs Upgrade (%)</h3>
+        <div class="chart-container-pie">
+            {% if data.zona_rescate > 0 or data.zona_upgrade > 0 %}
+                <canvas id="chartRescateUpgrade"></canvas>
+            {% else %}
+                <div style="text-align: center; color: #94a3b8; padding-top: 80px; font-size: 11px;">
+                    Sin datos en el periodo
+                </div>
+            {% endif %}
         </div>
     </div>
-
-    <div class="charts-row">
-        <div class="chart-box" style="margin-bottom: 30px; grid-column: span 2;">
-            <h3>Ingresos por Vendedor</h3>
-            <div class="chart-container-pie" style="height: 280px;">
-                {% if data.top_vendedores %}
-                    <canvas id="chartVendedores"></canvas>
-                {% else %}
-                    <div style="text-align: center; color: #94a3b8; padding-top: 100px; font-size: 11px;">
-                        👤 Sin ingresos por vendedores
-                    </div>
-                {% endif %}
-            </div>
+    <div class="chart-box" style="margin-bottom: 14px;">
+        <h3>Planes Más Vendidos</h3>
+        <div class="chart-container-pie">
+            {% if data.planes_mas_vendidos %}
+                <canvas id="chartPlanes"></canvas>
+            {% else %}
+                <div style="text-align: center; color: #94a3b8; padding-top: 80px; font-size: 11px;">
+                    Sin ventas registradas
+                </div>
+            {% endif %}
+        </div>
+    </div>
+    <div class="chart-box" style="margin-bottom: 14px;">
+        <h3>Ingresos por Vendedor</h3>
+        <div class="chart-container-pie">
+            {% if data.top_vendedores %}
+                <canvas id="chartVendedores"></canvas>
+            {% else %}
+                <div style="text-align: center; color: #94a3b8; padding-top: 80px; font-size: 11px;">
+                    Sin ingresos por vendedores
+                </div>
+            {% endif %}
         </div>
     </div>
 

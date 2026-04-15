@@ -26,13 +26,13 @@ type Tab = 'global' | 'comisiones' | 'uso';
   <div class="header-actions-bar mb-4">
     <div class="tabs-navigation">
       <button class="nav-btn" [class.active]="tabActivo === 'global'" (click)="setTab('global')">
-        <i class="bi bi-globe2 me-2"></i>Reporte Global
+        <i class="bi bi-globe2 me-2"></i>Reporte Global (R-031)
       </button>
       <button class="nav-btn" [class.active]="tabActivo === 'comisiones'" (click)="setTab('comisiones')">
-        <i class="bi bi-cash-coin me-2"></i>Comisiones
+        <i class="bi bi-cash-coin me-2"></i>Comisiones (R-032)
       </button>
       <button class="nav-btn" [class.active]="tabActivo === 'uso'" (click)="setTab('uso')">
-        <i class="bi bi-bar-chart-line me-2"></i>Uso por Empresa
+        <i class="bi bi-bar-chart-line me-2"></i>Uso por Empresa (R-033)
       </button>
     </div>
 

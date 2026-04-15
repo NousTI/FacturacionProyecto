@@ -71,7 +71,7 @@ import { InfoTooltipComponent } from '../../../../../../shared/components/info-t
               </td>
             </tr>
             <tr *ngIf="empresas.length === 0">
-              <td colspan="7" class="text-center py-5 text-muted">
+              <td colspan="8" class="text-center py-5 text-muted">
                 <i class="bi bi-check-circle fs-1 d-block mb-2 text-success"></i>
                 No hay empresas en zona de rescate actualmente.
               </td>

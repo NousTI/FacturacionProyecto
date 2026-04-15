@@ -1,12 +1,15 @@
-import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, AfterViewInit, ChangeDetectorRef, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Subject, takeUntil } from 'rxjs';
+import { Chart, registerables } from 'chart.js';
 import {
   ReportesService, ReporteComisiones
 } from '../../services/reportes.service';
 import { UiService } from '../../../../../shared/services/ui.service';
 import { InfoTooltipComponent } from '../../../../../shared/components/info-tooltip/info-tooltip.component';
+
+Chart.register(...registerables);
 
 type RangoTipo = 'mes_actual' | 'mes_anterior' | 'anio_actual' | 'personalizado';
 
@@ -59,13 +62,13 @@ type RangoTipo = 'mes_actual' | 'mes_anterior' | 'anio_actual' | 'personalizado'
         <div class="col-md-6">
           <div class="card-graf">
             <h6 class="graf-title">Top vendedores por ingresos</h6>
-            <div class="bar-chart">
-              <div *ngFor="let v of datos.top_vendedores | slice:0:5" class="bar-row">
-                <span class="bar-label">{{ v.vendedor.split(' ')[0] }}</span>
-                <div class="bar-track">
-                  <div class="bar-fill bg-primary" [style.width.%]="barPct(v.ingresos_generados, maxVendedorIngresos)"></div>
-                </div>
-                <span class="bar-val">{{ v.ingresos_generados | currency:'USD':'symbol':'1.0-0' }}</span>
+            <div class="chart-container-pie">
+              <canvas #vendedoresChart></canvas>
+            </div>
+            <div class="chart-legend mt-2" *ngIf="datos.top_vendedores.length > 0">
+              <div *ngFor="let v of datos.top_vendedores | slice:0:5; let i = index" class="legend-item">
+                <span class="dot" [style.background-color]="colors[i]"></span>
+                <span class="lbl">{{ v.vendedor.split(' ')[0] }} ({{ v.ingresos_generados | currency:'USD':'symbol':'1.0-0' }})</span>
               </div>
             </div>
           </div>
@@ -73,13 +76,13 @@ type RangoTipo = 'mes_actual' | 'mes_anterior' | 'anio_actual' | 'personalizado'
         <div class="col-md-6">
           <div class="card-graf">
             <h6 class="graf-title">Planes más vendidos</h6>
-            <div class="bar-chart">
-              <div *ngFor="let p of datos.planes_mas_vendidos" class="bar-row">
-                <span class="bar-label">{{ p.plan }}</span>
-                <div class="bar-track">
-                  <div class="bar-fill bg-success" [style.width.%]="barPct(p.ventas, maxPlanVentas)"></div>
-                </div>
-                <span class="bar-val">{{ p.ventas }}</span>
+            <div class="chart-container-pie">
+              <canvas #planesChart></canvas>
+            </div>
+            <div class="chart-legend mt-2" *ngIf="datos.planes_mas_vendidos.length > 0">
+              <div *ngFor="let p of datos.planes_mas_vendidos; let i = index" class="legend-item">
+                <span class="dot" [style.background-color]="colors[i]"></span>
+                <span class="lbl">{{ p.plan }} ({{ p.ventas }})</span>
               </div>
             </div>
           </div>
@@ -110,6 +113,8 @@ type RangoTipo = 'mes_actual' | 'mes_anterior' | 'anio_actual' | 'personalizado'
                   <div class="d-flex align-items-center gap-2">
                     <div class="avatar-sm">{{ c.vendedor.charAt(0) }}</div>
                     {{ c.vendedor }}
+                    <span *ngIf="datos.top_vendedores.length > 0 && c.vendedor === datos.top_vendedores[0].vendedor"
+                          class="top-vendedor-icon" title="Top vendedor">🔺</span>
                   </div>
                 </td>
                 <td class="text-muted small">{{ c.empresa }}</td>
@@ -164,14 +169,13 @@ type RangoTipo = 'mes_actual' | 'mes_anterior' | 'anio_actual' | 'personalizado'
     .kpi-warning { border-left: 3px solid #f59e0b; }
     .kpi-danger { border-left: 3px solid #ef4444; }
     .kpi-success { border-left: 3px solid #10b981; }
-    .card-graf { border: 1px solid #e2e8f0; border-radius: 6px; padding: 1rem; background: #f8fafc; }
-    .graf-title { font-size: 0.85rem; font-weight: 700; color: #161d35; margin-bottom: 0.75rem; }
-    .bar-chart { display: flex; flex-direction: column; gap: 0.5rem; }
-    .bar-row { display: flex; align-items: center; gap: 0.5rem; font-size: 0.75rem; }
-    .bar-label { width: 100px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .bar-track { flex: 1; height: 1.5rem; background: #e2e8f0; border-radius: 3px; position: relative; }
-    .bar-fill { height: 100%; border-radius: 3px; transition: width 0.3s; }
-    .bar-val { width: 50px; text-align: right; font-weight: 600; }
+    .card-graf { border: 1px solid #e2e8f0; border-radius: 6px; padding: 1rem; background: #ffffff; height: 100%; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+    .graf-title { font-size: 0.85rem; font-weight: 700; color: #161d35; margin-bottom: 1rem; text-transform: uppercase; letter-spacing: 0.5px; text-align: center; }
+    .chart-container-pie { position: relative; height: 200px; width: 100%; display: flex; justify-content: center; }
+    .chart-legend { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.5rem; border-top: 1px solid #f1f5f9; padding-top: 0.75rem; }
+    .legend-item { display: flex; align-items: center; gap: 0.5rem; font-size: 0.65rem; color: #4b5563; }
+    .dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+    .lbl { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 500; }
     .card-tabla { border: 1px solid #e2e8f0; border-radius: 6px; overflow: hidden; }
     .tabla-header { background: #f1f5f9; padding: 0.75rem 1rem; font-weight: 700; font-size: 0.8rem; color: #475569; }
     table { margin-bottom: 0; }
@@ -185,6 +189,7 @@ type RangoTipo = 'mes_actual' | 'mes_anterior' | 'anio_actual' | 'personalizado'
     .tipo-renovacion { background: #dbeafe; color: #1e40af; }
     .badge-plan { background: #dbeafe; color: #1e40af; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.7rem; font-weight: 600; }
     .badge-estado { padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.7rem; font-weight: 600; cursor: help; }
+    .top-vendedor-icon { font-size: 0.75rem; line-height: 1; }
     .estado-pendiente { background: #fef3c7; color: #92400e; }
     .estado-aprobada { background: #dbeafe; color: #1e40af; }
     .estado-pagada { background: #dcfce7; color: #166534; }
@@ -200,6 +205,13 @@ export class R032ComisionesComponent implements OnInit, OnDestroy {
   fechaInicio = '';
   fechaFin = '';
 
+  colors = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4', '#ec4899', '#6366f1'];
+
+  @ViewChild('vendedoresChart') vendedoresChartRef!: ElementRef;
+  @ViewChild('planesChart') planesChartRef!: ElementRef;
+
+  private chartVendedores: Chart | null = null;
+  private chartPlanes: Chart | null = null;
   private destroy$ = new Subject<void>();
 
   constructor(
@@ -208,11 +220,11 @@ export class R032ComisionesComponent implements OnInit, OnDestroy {
     private cd: ChangeDetectorRef
   ) {}
 
-  ngOnInit() {
-    // La generación inicial se dispara desde el padre
-  }
+  ngOnInit() {}
 
   ngOnDestroy() {
+    this.chartVendedores?.destroy();
+    this.chartPlanes?.destroy();
     this.destroy$.next();
     this.destroy$.complete();
   }
@@ -226,9 +238,48 @@ export class R032ComisionesComponent implements OnInit, OnDestroy {
     this.reportesService.getReporteComisiones(params)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: (data) => { this.datos = data; this.loading = false; this.cd.detectChanges(); },
+        next: (data) => {
+          this.datos = data;
+          this.loading = false;
+          this.cd.detectChanges();
+          setTimeout(() => this.initCharts(), 100);
+        },
         error: (err) => { this.loading = false; this.uiService.showError(err, 'Error al cargar comisiones'); this.cd.detectChanges(); }
       });
+  }
+
+  private initCharts() {
+    this.chartVendedores?.destroy();
+    this.chartPlanes?.destroy();
+
+    if (this.vendedoresChartRef && this.datos?.top_vendedores.length) {
+      const top5 = this.datos.top_vendedores.slice(0, 5);
+      this.chartVendedores = new Chart(this.vendedoresChartRef.nativeElement.getContext('2d'), {
+        type: 'pie',
+        data: {
+          labels: top5.map(v => v.vendedor.split(' ')[0]),
+          datasets: [{ data: top5.map(v => v.ingresos_generados), backgroundColor: this.colors, borderWidth: 1, borderColor: '#fff' }]
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          plugins: { legend: { display: false }, tooltip: { enabled: true } }
+        }
+      });
+    }
+
+    if (this.planesChartRef && this.datos?.planes_mas_vendidos.length) {
+      this.chartPlanes = new Chart(this.planesChartRef.nativeElement.getContext('2d'), {
+        type: 'pie',
+        data: {
+          labels: this.datos.planes_mas_vendidos.map(p => p.plan),
+          datasets: [{ data: this.datos.planes_mas_vendidos.map(p => p.ventas), backgroundColor: this.colors, borderWidth: 1, borderColor: '#fff' }]
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          plugins: { legend: { display: false }, tooltip: { enabled: true } }
+        }
+      });
+    }
   }
 
   exportarPDF() {
@@ -259,18 +310,6 @@ export class R032ComisionesComponent implements OnInit, OnDestroy {
       this.loadingPDF = false;
       this.cd.detectChanges();
     });
-  }
-
-  get maxVendedorIngresos(): number {
-    return Math.max(...(this.datos?.top_vendedores.map(v => v.ingresos_generados) ?? [1]));
-  }
-
-  get maxPlanVentas(): number {
-    return Math.max(...(this.datos?.planes_mas_vendidos.map(p => p.ventas) ?? [1]));
-  }
-
-  barPct(val: number, max: number): number {
-    return max > 0 ? Math.round((val / max) * 100) : 0;
   }
 
   tipoVentaClass(tipo: string): string {

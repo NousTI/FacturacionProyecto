@@ -11,33 +11,36 @@
         <div class="kpi-card">
             <span class="label">Promedio Usuarios / Empresa</span>
             <span class="value">{{ "{:.1f}".format(data.promedio_usuarios or 0) }}</span>
-            <span class="extra">Basado en {{ data.empresas | length }} empresas</span>
+            <span class="extra">usuarios por empresa</span>
         </div>
         <div class="kpi-card">
-            <span class="label">Máximo Usuarios (Top)</span>
+            <span class="label">Máx. Usuarios</span>
             <span class="value">{{ data.max_usuarios or 0 }}</span>
-            <span class="extra">Empresa con más carga</span>
+            <span class="extra">usuarios</span>
         </div>
         <div class="kpi-card">
-            <span class="label">Módulos Promedio</span>
-            <span class="value">{{ data.modulos_mas_usados | length }}</span>
-            <span class="extra">Módulos en ecosistema</span>
+            <span class="label">Mín. Usuarios</span>
+            <span class="value">{{ data.min_usuarios or 0 }}</span>
+            <span class="extra">usuarios</span>
+        </div>
+        <div class="kpi-card">
+            <span class="label">Total Empresas en el Sistema</span>
+            <span class="value">{{ data.empresas | length }}</span>
+            <span class="extra">en el sistema</span>
         </div>
     </div>
 
     <!-- GRÁFICAS (PASTEL) -->
-    <div class="charts-row">
-        <div class="chart-box">
-            <h3>Módulos más usados (%)</h3>
-            <div class="chart-container-pie">
-                <canvas id="chartModulosPie"></canvas>
-            </div>
+    <div class="chart-box" style="margin-bottom: 14px;">
+        <h3>Módulos más usados (%)</h3>
+        <div class="chart-container-pie">
+            <canvas id="chartModulosPie"></canvas>
         </div>
-        <div class="chart-box">
-            <h3>Top Empresas por Usuarios</h3>
-            <div class="chart-container-pie">
-                <canvas id="chartUsuariosPie"></canvas>
-            </div>
+    </div>
+    <div class="chart-box" style="margin-bottom: 14px;">
+        <h3>Top Empresas por Usuarios</h3>
+        <div class="chart-container-pie">
+            <canvas id="chartUsuariosPie"></canvas>
         </div>
     </div>
 

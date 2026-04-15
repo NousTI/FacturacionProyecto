@@ -66,29 +66,17 @@ class RepositorioR032:
         """
         fi = fecha_inicio or date(date.today().year, date.today().month, 1).isoformat()
         ff = fecha_fin or date.today().isoformat()
-        
-        # Filtros básicos
+
         f_inicio = "%s"
         f_fin = "%s::timestamp + interval '1 day' - interval '1 second'"
-        v_filter_c1 = ""
-        v_filter_c2 = ""
-        v_filter_v3 = ""
-        v_filter_ps = ""
-        v_filter_ps3 = ""
-        v_filter_e = ""
-        v_filter_e2 = ""
-        
-        params = [ff, fi, ff, ff, ff, fi, ff, ff] # f_fin (c1), f_inicio, f_fin (c2), f_fin (v3), f_fin (ps3), f_inicio, f_fin (ps), f_fin (e2)
+        v_filter_c1 = " AND c1.vendedor_id = %s" if vendedor_id else ""
+        v_filter_c2 = " AND c2.vendedor_id = %s" if vendedor_id else ""
+        v_filter_v3 = " AND v3.id = %s" if vendedor_id else ""
+        v_filter_ps = " AND emp_up.vendedor_id = %s" if vendedor_id else ""
+        v_filter_ps3 = " AND emp3.vendedor_id = %s" if vendedor_id else ""
+        v_filter_e  = " AND e.vendedor_id = %s" if vendedor_id else ""
+        v_filter_e2 = " AND e2.vendedor_id = %s" if vendedor_id else ""
 
-        if vendedor_id:
-            v_filter_c1 = f" AND c1.vendedor_id = '{vendedor_id}'"
-            v_filter_c2 = f" AND c2.vendedor_id = '{vendedor_id}'"
-            v_filter_v3 = f" AND v3.id = '{vendedor_id}'"
-            v_filter_ps = f" AND emp_up.vendedor_id = '{vendedor_id}'"
-            v_filter_ps3 = f" AND emp3.vendedor_id = '{vendedor_id}'"
-            v_filter_e = f" AND e.vendedor_id = '{vendedor_id}'"
-            v_filter_e2 = f" AND e2.vendedor_id = '{vendedor_id}'"
-        
         query = query.format(
             f_inicio=f_inicio,
             f_fin=f_fin,
@@ -100,6 +88,27 @@ class RepositorioR032:
             v_filter_e=v_filter_e,
             v_filter_e2=v_filter_e2
         )
+
+        # Orden de parámetros según la query:
+        # c1: ff [, vid]
+        # c2: fi, ff [, vid]
+        # v3: ff [, vid]
+        # ps3: ff [, vid]
+        # ps: fi, ff [, vid]
+        # e2: ff [, vid]
+        params: list = []
+        params.append(ff)
+        if vendedor_id: params.append(vendedor_id)
+        params += [fi, ff]
+        if vendedor_id: params.append(vendedor_id)
+        params.append(ff)
+        if vendedor_id: params.append(vendedor_id)
+        params.append(ff)
+        if vendedor_id: params.append(vendedor_id)
+        params += [fi, ff]
+        if vendedor_id: params.append(vendedor_id)
+        params.append(ff)
+        if vendedor_id: params.append(vendedor_id)
 
         with self.db.cursor() as cur:
             cur.execute(query, tuple(params))
