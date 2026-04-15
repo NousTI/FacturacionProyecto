@@ -27,7 +27,7 @@ import { InfoTooltipComponent } from '../../../../../shared/components/info-tool
           <tbody>
             <tr *ngFor="let c of data">
               <td><span class="fw-bold">{{ c.empresa }}</span></td>
-              <td><span class="text-muted">{{ c.fecha_venta | date:'yyyy-MM-dd' }}</span></td>
+              <td><span class="text-muted">{{ formatFechaRelativa(c.fecha_venta) }}</span></td>
               <td><span class="plan-badge">{{ c.plan }}</span></td>
               <td class="text-end fw-bold text-success">{{ c.mi_comision | currency }}</td>
               <td class="text-center">
@@ -84,4 +84,18 @@ import { InfoTooltipComponent } from '../../../../../shared/components/info-tool
 })
 export class ComisionesListComponent {
   @Input() data: any[] = [];
+
+  formatFechaRelativa(fecha: string | Date | null): string {
+    if (!fecha) return '—';
+    const d = new Date(fecha);
+    if (isNaN(d.getTime())) return '—';
+    const hoy = new Date();
+    hoy.setHours(0, 0, 0, 0);
+    d.setHours(0, 0, 0, 0);
+    const diff = Math.round((hoy.getTime() - d.getTime()) / 86400000);
+    if (diff === 0) return 'hoy';
+    if (diff === 1) return 'ayer';
+    if (diff > 1 && diff <= 30) return `hace ${diff} días`;
+    return new Date(fecha).toLocaleDateString('es-EC', { year: 'numeric', month: 'short', day: 'numeric' });
+  }
 }

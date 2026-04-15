@@ -63,7 +63,7 @@ class DetalleComisionVendedor(BaseModel):
 
 class ReporteComisionesVendedor(BaseModel):
     # KPIs
-    por_cobrar: float = 0.0
+    ya_depositado: float = 0.0
     pendiente_aprobacion: float = 0.0
     total_historico: float = 0.0
     comisiones_en_riesgo: float = 0.0

@@ -26,7 +26,7 @@ from .schemas_logs import AutorizacionSRIResumen, ResumenPagos
 # ===================================================================
 
 EstadoFactura = Literal['BORRADOR', 'EN_PROCESO', 'AUTORIZADA', 'DEVUELTA', 'NO_AUTORIZADA', 'RECHAZADA', 'ANULADA', 'ERROR_TECNICO']
-EstadoPago = Literal['PENDIENTE', 'PAGADO', 'PARCIAL', 'VENCIDO']
+EstadoPago = Literal['PENDIENTE', 'PAGADO', 'PARCIAL', 'VENCIDO', 'ANULADO']
 # Ambiente: 1=Prueba, 2=Produccion
 # TipoEmision: 1=Normal, 2=Contingencia
 

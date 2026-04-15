@@ -61,6 +61,9 @@ api_router.include_router(formas_pago_router, prefix="/formas-pago", tags=["Form
 from ..modules.facturas.router import router as facturas_router
 api_router.include_router(facturas_router, prefix="/facturas", tags=["Facturas"], dependencies=operativo)
 
+from ..modules.notas_credito.router import router as notas_credito_router
+api_router.include_router(notas_credito_router, prefix="/notas-credito", tags=["Notas de Crédito"], dependencies=operativo)
+
 # Consolidated Expenses Module (includes categories and payments)
 from ..modules.gastos import router as gastos_router
 api_router.include_router(gastos_router, prefix="/gastos", dependencies=operativo)

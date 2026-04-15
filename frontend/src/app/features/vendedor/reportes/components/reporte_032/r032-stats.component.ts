@@ -7,15 +7,15 @@ import { CommonModule } from '@angular/common';
   imports: [CommonModule],
   template: `
     <div class="stats-grid">
-      <!-- Por cobrar -->
+      <!-- Ya depositado -->
       <div class="stat-card success">
         <div class="stat-header">
-          <span class="stat-label">Por cobrar</span>
+          <span class="stat-label">Ya depositado</span>
           <div class="stat-icon"><i class="bi bi-wallet2"></i></div>
         </div>
         <div class="stat-body">
-          <h2 class="stat-value">{{ (data?.por_cobrar || 0) | currency }}</h2>
-          <div class="stat-badge success">ya depositado</div>
+          <h2 class="stat-value">{{ (data?.ya_depositado || 0) | currency }}</h2>
+          <div class="stat-badge success">cobrado</div>
         </div>
       </div>
 

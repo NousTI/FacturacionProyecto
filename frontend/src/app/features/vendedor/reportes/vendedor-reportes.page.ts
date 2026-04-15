@@ -2,7 +2,7 @@ import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Subject, takeUntil, finalize } from 'rxjs';
-import { VendedorReportesService, VendedorMetricas } from './services/vendedor-reportes.service';
+import { VendedorReportesService } from './services/vendedor-reportes.service';
 import { UiService } from '../../../shared/services/ui.service';
 import { HttpClient } from '@angular/common/http';
 import { ToastComponent } from '../../../shared/components/toast/toast.component';
@@ -50,7 +50,6 @@ export type ReportTab = 'empresas' | 'comisiones';
             [rangoTipo]="rangoTipo"
             [fechaInicio]="fechaInicio"
             [fechaFin]="fechaFin"
-            [diasRenovacion]="diasRenovacion"
             [showDiasRenovacion]="false"
             (rangoChange)="onRangoChange($event)"
             (generate)="handleGenerate()"
@@ -192,21 +191,13 @@ export type ReportTab = 'empresas' | 'comisiones';
   `]
 })
 export class VendedorReportesPage implements OnInit, OnDestroy {
-  // Estado de navegación
   tabActivo: ReportTab = 'empresas';
-  
-  // Datos y carga
-  metricas: any = null;
   r031Data: any = null;
   r032Data: any = null;
-  previewData: any[] = [];
   isLoading = false;
-  
-  // Filtros
   rangoTipo: RangoTipo = 'mes_actual';
   fechaInicio = '';
   fechaFin = '';
-  diasRenovacion = 15;
 
   private destroy$ = new Subject<void>();
 
@@ -250,11 +241,10 @@ export class VendedorReportesPage implements OnInit, OnDestroy {
     this.cargarDatosConsolidados();
   }
 
-  onRangoChange(event: {tipo: RangoTipo, inicio: string, fin: string, dias?: number}) {
+  onRangoChange(event: {tipo: RangoTipo, inicio: string, fin: string}) {
     this.rangoTipo = event.tipo;
     this.fechaInicio = event.inicio;
     this.fechaFin = event.fin;
-    if (event.dias !== undefined) this.diasRenovacion = event.dias;
     this.cd.detectChanges();
   }
 

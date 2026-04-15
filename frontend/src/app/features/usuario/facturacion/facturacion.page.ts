@@ -137,7 +137,7 @@ import { SriConfigService } from '../certificado-sri/services/sri-config.service
            <app-anular-factura-modal
               *ngIf="showAnularModal && selectedFactura"
               [factura]="selectedFactura"
-              (close)="showAnularModal = false"
+              (close)="onAnularModalClose($event)"
            ></app-anular-factura-modal>
 
            <app-toast></app-toast>
@@ -450,6 +450,16 @@ export class FacturacionPage implements OnInit {
     this.selectedFactura = null;
     if (hasChanges) {
       this.loadData();
+    }
+  }
+
+  onAnularModalClose(success: boolean) {
+    this.showAnularModal = false;
+    this.selectedFactura = null;
+    if (success) {
+      this.loadData();
+      // El toast ya lo muestra el modal, pero podemos forzar un refresh de las estadísticas
+      this.calculateStats();
     }
   }
 

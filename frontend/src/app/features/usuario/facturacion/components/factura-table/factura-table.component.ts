@@ -308,6 +308,7 @@ import { HasPermissionDirective } from '../../../../../shared/directives/has-per
     .payment-pendiente { background: #fff7ed; color: #9a3412; }
     .payment-pagado { background: #ecfdf5; color: #047857; }
     .payment-parcial { background: #eff6ff; color: #1e40af; }
+    .payment-anulado { background: #f1f5f9; color: #334155; border: 1px solid #e2e8f0; }
 
     .btn-trigger-lux {
       background: transparent;
@@ -424,6 +425,7 @@ export class FacturaTableComponent {
       case 'PENDIENTE': return 'payment-pendiente';
       case 'PAGADO': return 'payment-pagado';
       case 'PARCIAL': return 'payment-parcial';
+      case 'ANULADO': return 'payment-anulado';
       default: return '';
     }
   }

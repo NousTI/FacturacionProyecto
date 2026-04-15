@@ -16,20 +16,20 @@ class RepositorioR032Vendedor:
         
         query = """
             SELECT
-                -- 1. Ya depositado (PAGADA)
+                -- 1. Ya depositado (PAGADA = cobrado/depositado)
                 (SELECT COALESCE(SUM(monto), 0)
                  FROM sistema_facturacion.comisiones
-                 WHERE vendedor_id = %s AND estado = 'PAGADA') as por_cobrar,
+                 WHERE vendedor_id = %s AND estado = 'PAGADA') as ya_depositado,
 
                 -- 2. Pendiente aprobación (PENDIENTE)
                 (SELECT COALESCE(SUM(monto), 0)
                  FROM sistema_facturacion.comisiones
                  WHERE vendedor_id = %s AND estado = 'PENDIENTE') as pendiente_aprobacion,
 
-                -- 3. Total histórico (PAGADA)
+                -- 3. Total histórico (todas las comisiones: PAGADA + APROBADA + PENDIENTE)
                 (SELECT COALESCE(SUM(monto), 0)
                  FROM sistema_facturacion.comisiones
-                 WHERE vendedor_id = %s AND estado = 'PAGADA') as total_historico,
+                 WHERE vendedor_id = %s) as total_historico,
 
                 -- 4. Futuras comisiones en riesgo
                 (SELECT COALESCE(SUM(c.monto), 0)
@@ -48,7 +48,7 @@ class RepositorioR032Vendedor:
             if not row: return {}
             
             return {
-                "por_cobrar": float(row['por_cobrar']),
+                "ya_depositado": float(row['ya_depositado']),
                 "pendiente_aprobacion": float(row['pendiente_aprobacion']),
                 "total_historico": float(row['total_historico']),
                 "comisiones_en_riesgo": float(row['comisiones_en_riesgo'])
