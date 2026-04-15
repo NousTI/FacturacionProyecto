@@ -83,11 +83,30 @@ def main():
         )
         cur = conn.cursor()
         
-        tables = [
-            "suscripciones", 
-            "pagos_suscripciones", 
-            "comisiones"
+        # Primero listar todas las tablas del schema
+        cur.execute("""
+            SELECT table_name
+            FROM information_schema.tables
+            WHERE table_schema = 'sistema_facturacion'
+            ORDER BY table_name;
+        """)
+        all_tables = [r['table_name'] for r in cur.fetchall()]
+        print("\n" + "="*60)
+        print("TABLAS DISPONIBLES EN schema sistema_facturacion:")
+        print("="*60)
+        for t in all_tables:
+            print(f"  - {t}")
+
+        # Luego mostrar columnas de las tablas clave para R-027
+        tables_r027 = [
+            "empresas",
+            "facturas",
+            "facturas_detalle",
+            "gastos",
+            "cuentas_cobrar",
         ]
+
+        tables = tables_r027
         
         for table in tables:
             try:

@@ -158,7 +158,7 @@ import { Chart, ChartConfiguration } from 'chart.js';
                   <tr *ngFor="let item of data.radar_gestion" class="hover-row">
                     <td><span class="badge-dot" [class.venta]="item.origen === 'Venta'" [class.inventario]="item.origen === 'Inventario'" [class.caja]="item.origen === 'Caja'"></span> {{ item.origen }}</td>
                     <td class="font-medium">{{ item.detalle }}</td>
-                    <td class="font-bold">{{ item.monto > 0 ? (item.monto | currency) : '—' }}</td>
+                    <td class="font-bold">{{ (item.monto ?? 0) > 0 ? (item.monto! | currency) : '—' }}</td>
                     <td><span class="status-chip" [class.danger]="item.estado.includes('Mora') || item.estado.includes('Crítico')" [class.warning]="item.estado.includes('Pendiente')">{{ item.estado }}</span></td>
                     <td class="text-muted">{{ item.responsable }}</td>
                   </tr>

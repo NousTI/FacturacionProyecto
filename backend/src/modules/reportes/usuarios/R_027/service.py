@@ -52,10 +52,23 @@ class ServicioR027:
         regimen = empresa.get("regimen_tributario", "general")
         fecha_limite_info = _calcular_fecha_limite(ruc, fecha_fin)
 
+        # ── PERÍODO ANTERIOR (para comparativas) ────────────────────────
+        d1 = datetime.strptime(fecha_inicio, '%Y-%m-%d')
+        d2 = datetime.strptime(fecha_fin, '%Y-%m-%d')
+        delta_dias = (d2 - d1).days + 1
+        from datetime import timedelta
+        prev_inicio = (d1 - timedelta(days=delta_dias)).strftime('%Y-%m-%d')
+        prev_fin    = (d1 - timedelta(days=1)).strftime('%Y-%m-%d')
+
         # ── BLOQUE 400: VENTAS ──────────────────────────────────────────
-        ventas_grav  = self.repo.obtener_ventas_gravadas(empresa_id, fecha_inicio, fecha_fin)
-        ventas_0     = self.repo.obtener_ventas_tarifa_cero(empresa_id, fecha_inicio, fecha_fin)
-        nc_emitidas  = self.repo.obtener_notas_credito_emitidas(empresa_id, fecha_inicio, fecha_fin)
+        ventas_grav      = self.repo.obtener_ventas_gravadas(empresa_id, fecha_inicio, fecha_fin)
+        ventas_0         = self.repo.obtener_ventas_tarifa_cero(empresa_id, fecha_inicio, fecha_fin)
+        nc_emitidas      = self.repo.obtener_notas_credito_emitidas(empresa_id, fecha_inicio, fecha_fin)
+        ventas_por_tarifa = self.repo.obtener_ventas_por_tarifa(empresa_id, fecha_inicio, fecha_fin)
+
+        # Período anterior — para factor comparativo
+        ventas_grav_prev = self.repo.obtener_ventas_gravadas(empresa_id, prev_inicio, prev_fin)
+        ventas_0_prev    = self.repo.obtener_ventas_tarifa_cero(empresa_id, prev_inicio, prev_fin)
 
         # Casillero 401 (bruto antes de NC) / 411
         c401_bruto = round(float(ventas_grav['base_imponible']), 2)
@@ -73,11 +86,23 @@ class ServicioR027:
         c411_neto = round(c411_bruto - c412, 2)
 
         # Casillero 403 (tarifa 0% sin derecho a crédito)
-        # 405 omitido — no existe flag 'con_derecho_credito' en productos
         c403 = round(ventas_0, 2)
 
         # Casillero 499 = IVA total generado en ventas (neto)
         c499 = round(c411_neto, 2)
+
+        # KPI: base imponible de la tarifa principal (mayor base del período)
+        tarifa_principal = max(ventas_por_tarifa.items(), key=lambda x: x[1]['base_imponible'], default=('15', {'base_imponible': 0.0}))[0] if ventas_por_tarifa else '15'
+        kpi_tarifa_principal = {
+            "tarifa": tarifa_principal,
+            "base_imponible": ventas_por_tarifa.get(tarifa_principal, {}).get('base_imponible', 0.0),
+        }
+
+        # Factor del período anterior (para comparativa en KPI)
+        c401_bruto_prev = round(float(ventas_grav_prev['base_imponible']), 2)
+        c403_prev       = round(ventas_0_prev, 2)
+        denom_prev      = c401_bruto_prev + c403_prev
+        c563_prev       = round(c401_bruto_prev / denom_prev, 4) if denom_prev > 0 else 1.0
 
         # ── BLOQUE 500: COMPRAS (desde gastos) ─────────────────────────
         compras_grav = self.repo.obtener_compras_gravadas(empresa_id, fecha_inicio, fecha_fin)
@@ -129,18 +154,9 @@ class ServicioR027:
         c999 = c801
 
         # ── BLOQUE 700: RETENCIONES EFECTUADAS ─────────────────────────
-        # No existe tabla de retenciones efectuadas a proveedores.
-        # Se muestra el bloque vacío con nota informativa.
+        # Sin tabla de retenciones efectuadas a proveedores — bloque vacío.
         bloque_700 = {
             "disponible": False,
-            "nota": "No se encontraron retenciones efectuadas a proveedores en el período. "
-                    "Si realizaste retenciones, ingrésalas manualmente en el formulario 104.",
-            "c721": 0.0,  # 10%
-            "c723": 0.0,  # 20%
-            "c725": 0.0,  # 30%
-            "c727": 0.0,  # 70%
-            "c729": 0.0,  # 100%
-            "c799": 0.0,  # total
         }
 
         # ── KPIs superiores ─────────────────────────────────────────────
@@ -168,8 +184,19 @@ class ServicioR027:
             "kpis": {
                 "iva_a_pagar":        {"valor": c699,  "label": "IVA a pagar SRI",       "sublabel": "proyectado"},
                 "credito_tributario": {"valor": c602,  "label": "Crédito tributario",     "sublabel": "disponible"},
-                "ventas_gravadas":    {"valor": c401_neto, "label": "Ventas gravadas",    "sublabel": "base imponible"},
-                "factor":             {"valor": c563,  "label": "Factor de este mes",     "sublabel": "proporcionalidad", "tooltip": factor_tooltip},
+                "ventas_tarifa_principal": {
+                    "tarifa":         tarifa_principal,
+                    "valor":          kpi_tarifa_principal["base_imponible"],
+                    "label":          f"Ventas tarifa {tarifa_principal}%",
+                    "sublabel":       "base imponible",
+                },
+                "factor": {
+                    "valor":          c563,
+                    "valor_anterior": c563_prev,
+                    "label":          "Factor de este mes",
+                    "sublabel":       "proporcionalidad",
+                    "tooltip":        factor_tooltip,
+                },
             },
 
             # BLOQUE 400
@@ -196,10 +223,6 @@ class ServicioR027:
                 "c563":  c563,
                 "c564":  c564,
                 "c599":  c599,
-                # Omitidos por falta de data: 509/519 (sin derecho), 503/504 (exterior), 520/521 (NC compras)
-                "nota_compras": "Compras calculadas desde el módulo de Gastos. "
-                                "Compras con factura física exterior (ej. publicidad Facebook) "
-                                "deben ingresarse manualmente en el formulario 104, casilleros 503/504.",
             },
 
             # BLOQUE 600
@@ -210,10 +233,6 @@ class ServicioR027:
                 "c606":  c606,
                 "c609":  c609,
                 "c699":  c699,
-                "nota_arrastre": "Los casilleros 605 y 606 (arrastre del mes anterior) están en cero. "
-                                 "Verifícalos con tu declaración del mes anterior.",
-                "nota_retenciones_recibidas": "Casillero 609 (retenciones recibidas) en cero. "
-                                              "No se encontraron comprobantes de retención recibidos.",
             },
 
             # BLOQUE 700

@@ -1,111 +1,443 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <title>Reporte de IVA (Ventas)</title>
-    <style>
-        body { font-family: 'Helvetica', sans-serif; color: #333; margin: 0; padding: 20px; line-height: 1.4; }
-        .header { text-align: center; border-bottom: 2px solid #3b82f6; padding-bottom: 10px; margin-bottom: 20px; }
-        .header h1 { margin: 0; color: #1e3a8a; font-size: 24px; }
-        .header p { margin: 5px 0; color: #64748b; font-size: 14px; }
-        
-        .section-title { font-size: 16px; font-weight: bold; color: #1e3a8a; margin: 25px 0 10px; border-left: 4px solid #3b82f6; padding-left: 10px; }
-        
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-        th { background: #f8fafc; padding: 12px; font-size: 12px; font-weight: bold; color: #475569; text-align: left; border-bottom: 2px solid #e2e8f0; }
-        td { padding: 12px; font-size: 13px; border-bottom: 1px solid #f1f5f9; }
-        
-        .resumen-card { background: #f1f5f9; border-radius: 12px; padding: 20px; margin-top: 30px; }
-        .resumen-item { display: flex; justify-content: space-between; margin-bottom: 10px; }
-        .resumen-total { border-top: 2px solid #1e3a8a; margin-top: 10px; padding-top: 10px; font-weight: bold; font-size: 18px; color: #1e3a8a; }
-        
-        .text-right { text-align: right; }
-        .text-danger { color: #dc2626; }
-        
-        #footer {
-            position: fixed;
-            bottom: 0px;
-            left: 0;
-            width: 100%;
-            text-align: center;
-            font-size: 10px;
-            color: #6b7280;
-        }
-    </style>
-</head>
-<body>
-    <div class="header">
-        <h1>Reporte Detallado de IVA (Ventas)</h1>
-        <p>Periodo: {{ params.fecha_inicio }} al {{ params.fecha_fin }}</p>
-        <p>Empresa: {{ empresa.nombre_comercial or empresa.razon_social }}</p>
+{% extends "reports/usuarios/base_usuarios.html" %}
+
+{% block header_color %}#0f172a{% endblock %}
+{% block meta_color %}#94a3b8{% endblock %}
+
+{% block header_content %}
+    <h1>R-027 — Formulario 104 IVA</h1>
+    <p>
+        {{ data.empresa.razon_social }} &nbsp;·&nbsp; RUC {{ data.empresa.ruc }}
+        &nbsp;·&nbsp;
+        {% if data.empresa.regimen == 'rimpe' %}Régimen RIMPE — Declaración semestral{% else %}Régimen General — Declaración mensual{% endif %}
+    </p>
+{% endblock %}
+
+{% block extra_styles %}
+    .kpi-grid { grid-template-columns: repeat(3, 1fr); }
+
+    /* Fecha límite banner */
+    .deadline-banner {
+        border-radius: 8px; padding: 12px 16px; margin-bottom: 24px;
+        display: flex; justify-content: space-between; align-items: center;
+        font-size: 12px; font-weight: 600;
+    }
+    .deadline-ok      { background: #f0fdf4; border: 1px solid #bbf7d0; color: #166534; }
+    .deadline-urgent  { background: #fffbeb; border: 1px solid #fde68a; color: #854d0e; }
+    .deadline-vencida { background: #fef2f2; border: 1px solid #fecaca; color: #991b1b; }
+
+    /* Alerta NC */
+    .alert-banner {
+        background: #fef2f2; border: 1px solid #fecaca; border-radius: 8px;
+        padding: 10px 14px; margin-bottom: 16px; font-size: 11px; color: #991b1b; font-weight: 600;
+    }
+
+    /* Sección bloque */
+    .bloque-title {
+        font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em;
+        color: #fff; padding: 6px 14px; border-radius: 6px; display: inline-block; margin-bottom: 6px;
+    }
+    .bg-ventas      { background: #3b82f6; }
+    .bg-compras     { background: #14b8a6; }
+    .bg-liquidacion { background: #f59e0b; }
+    .bg-retenciones { background: #8b5cf6; }
+    .bg-totales     { background: #ef4444; }
+
+    /* Tabla F104 */
+    .f104 th { font-size: 9px; text-transform: uppercase; background: #f8fafc; color: #475569; padding: 8px 10px; }
+    .f104 td { font-size: 11px; padding: 9px 10px; }
+    .f104 .cas { font-family: monospace; font-weight: 800; font-size: 10px;
+                 background: #f1f5f9; color: #475569; padding: 2px 6px; border-radius: 4px; }
+    .f104 .cas-azul   { background: #eff6ff; color: #1d4ed8; }
+    .f104 .cas-verde  { background: #f0fdf4; color: #166534; }
+    .f104 .cas-rojo   { background: #fef2f2; color: #991b1b; }
+    .f104 .cas-indigo { background: #eef2ff; color: #4338ca; }
+    .f104 .total-row  { background: #f8fafc; border-top: 2px solid #e2e8f0; font-weight: 700; }
+    .f104 .nd         { color: #94a3b8; font-style: italic; }
+    .f104 .no-info    { color: #94a3b8; font-size: 10px; font-style: italic; }
+    .f104 .nc-row     { background: #fff5f5; }
+    .grand-total-row  { background: #0f172a !important; }
+    .grand-total-row td { color: #22c55e !important; font-weight: 900; font-size: 13px; }
+
+    /* Nota */
+    .nota-box {
+        background: #fffbeb; border: 1px solid #fde68a; border-radius: 6px;
+        padding: 8px 12px; font-size: 10px; color: #854d0e; margin-bottom: 12px;
+    }
+
+    /* Calendarización */
+    .cal-grid { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0; }
+    .cal-item { border: 1px solid #e2e8f0; border-radius: 8px; padding: 6px 10px;
+                text-align: center; min-width: 52px; background: #f8fafc; }
+    .cal-item.active { background: #1e293b; border-color: #1e293b; }
+    .cal-item .dig { font-size: 15px; font-weight: 900; color: #1e293b; display: block; }
+    .cal-item.active .dig { color: #fff; }
+    .cal-item .dia { font-size: 9px; font-weight: 700; color: #64748b; text-transform: uppercase; display: block; }
+    .cal-item.active .dia { color: #94a3b8; }
+
+    .section-title { font-size: 13px; font-weight: 700; color: #111827; margin: 24px 0 8px;
+                     border-bottom: 2px solid #e5e7eb; padding-bottom: 6px; }
+    .discl { font-size: 10px; color: #94a3b8; margin-top: 24px; }
+{% endblock %}
+
+{% block content %}
+
+    <!-- FECHA LÍMITE -->
+    <div class="deadline-banner
+        {% if data.fecha_limite.vencida %}deadline-vencida
+        {% elif data.fecha_limite.urgente %}deadline-urgent
+        {% else %}deadline-ok{% endif %}">
+        <span>
+            {% if data.fecha_limite.vencida %}
+                ⚠ Declaración vencida —
+            {% else %}
+                ✓ Fecha límite de declaración:
+            {% endif %}
+            <strong>{{ data.fecha_limite.fecha_limite }}</strong>
+        </span>
+        <span>Noveno dígito RUC: <strong>{{ data.fecha_limite.noveno_digito }}</strong>
+            {% if data.fecha_limite.dias_restantes is not none and not data.fecha_limite.vencida %}
+                &nbsp;·&nbsp; Quedan <strong>{{ data.fecha_limite.dias_restantes }}</strong> día(s)
+            {% endif %}
+        </span>
     </div>
 
-    <div class="section-title">DETALLE DE VENTAS POR TARIFA</div>
-    <table>
+    {% if data.bloque_400.alertas.nc_supera_ventas %}
+    <div class="alert-banner">
+        ⚠ Las notas de crédito emitidas (casillero 402) superan las ventas del período (casillero 401). Verifique con su contador.
+    </div>
+    {% endif %}
+
+    <!-- KPIs -->
+    <div class="kpi-grid">
+        <div class="kpi-card" style="border-top: 3px solid #ef4444;">
+            <div class="label">IVA a pagar SRI</div>
+            <div class="value">${{ "{:,.2f}".format(data.kpis.iva_a_pagar.valor) }}</div>
+            <div class="extra">proyectado</div>
+        </div>
+        <div class="kpi-card" style="border-top: 3px solid #14b8a6;">
+            <div class="label">Crédito tributario</div>
+            <div class="value">${{ "{:,.2f}".format(data.kpis.credito_tributario.valor) }}</div>
+            <div class="extra">disponible</div>
+        </div>
+        <div class="kpi-card" style="border-top: 3px solid #6366f1;">
+            <div class="label">Factor de proporcionalidad</div>
+            <div class="value">{{ "%.4f"|format(data.kpis.factor.valor) }}</div>
+            <div class="extra">vs {{ "%.4f"|format(data.kpis.factor.valor_anterior) }} período anterior</div>
+        </div>
+        <div class="kpi-card" style="border-top: 3px solid #3b82f6;">
+            <div class="label">Ventas tarifa {{ data.kpis.ventas_tarifa_principal.tarifa }}%</div>
+            <div class="value">${{ "{:,.2f}".format(data.kpis.ventas_tarifa_principal.valor) }}</div>
+            <div class="extra">base imponible</div>
+        </div>
+        <div class="kpi-card" style="border-top: 3px solid #f59e0b;">
+            <div class="label">Ventas tarifa 8%</div>
+            <div class="value" style="font-size:14px; color:#94a3b8; font-style:italic;">Sin información</div>
+            <div class="extra">base imponible</div>
+        </div>
+        <div class="kpi-card" style="border-top: 3px solid #8b5cf6;">
+            <div class="label">Retenciones recibidas</div>
+            <div class="value" style="font-size:14px; color:#94a3b8; font-style:italic;">Sin información</div>
+            <div class="extra">a favor</div>
+        </div>
+    </div>
+
+    <!-- ═══ BLOQUE 400 — VENTAS ═══ -->
+    <div class="section-title">
+        <span class="bloque-title bg-ventas">Sección 400</span>
+        &nbsp; Resumen de Ventas
+    </div>
+    <table class="f104">
         <thead>
             <tr>
-                <th>Concepto / Tarifa de Impuesto</th>
-                <th class="text-right">Base Imponible</th>
-                <th class="text-right">Valor Impuesto (IVA)</th>
-                <th class="text-right">Total Ventas</th>
+                <th>Descripción</th>
+                <th style="text-align:center;">Casillero</th>
+                <th class="text-right">Valor Bruto</th>
+                <th class="text-right">Valor Neto (Base)</th>
+                <th class="text-right">Impuesto generado</th>
             </tr>
         </thead>
         <tbody>
             <tr>
-                <td>Ventas Locales Tarifa 0%</td>
-                <td class="text-right">${{ "{:,.2f}".format(data.ventas.tarifa_0) }}</td>
-                <td class="text-right">$0.00</td>
-                <td class="text-right">${{ "{:,.2f}".format(data.ventas.tarifa_0) }}</td>
+                <td>
+                    Ventas locales tarifa 0% con derecho a crédito tributario<br>
+                    <span class="no-info">Sin información disponible</span>
+                </td>
+                <td style="text-align:center;"><span class="cas">405 / 415</span></td>
+                <td class="text-right nd">—</td>
+                <td class="text-right nd">—</td>
+                <td class="text-right nd">—</td>
             </tr>
             <tr>
-                <td>Ventas Locales Tarifa Vigente (15%)</td>
-                <td class="text-right">${{ "{:,.2f}".format(data.ventas.base_imponible_15) }}</td>
-                <td class="text-right">${{ "{:,.2f}".format(data.ventas.iva_cobrado_15) }}</td>
-                <td class="text-right">${{ "{:,.2f}".format(data.ventas.tarifa_15) }}</td>
+                <td>Ventas locales tarifa 0% sin derecho a crédito tributario</td>
+                <td style="text-align:center;"><span class="cas">403 / 413</span></td>
+                <td class="text-right">${{ "{:,.2f}".format(data.bloque_400.c403) }}</td>
+                <td class="text-right font-bold">${{ "{:,.2f}".format(data.bloque_400.c403) }}</td>
+                <td class="text-right nd">$0.00</td>
+            </tr>
+            <tr>
+                <td>Ventas locales gravadas tarifa diferente de cero (15% / 8% / 5%)</td>
+                <td style="text-align:center;"><span class="cas cas-azul">401 / 411</span></td>
+                <td class="text-right">${{ "{:,.2f}".format(data.bloque_400.c401_bruto) }}</td>
+                <td class="text-right font-bold">${{ "{:,.2f}".format(data.bloque_400.c401_neto) }}</td>
+                <td class="text-right" style="color:#1d4ed8; font-weight:700;">${{ "{:,.2f}".format(data.bloque_400.c411_neto) }}</td>
+            </tr>
+            <tr>
+                <td>
+                    Exportaciones de Bienes (407) / Exportaciones de Servicios (408)<br>
+                    <span class="no-info">Sin información disponible</span>
+                </td>
+                <td style="text-align:center;"><span class="cas">407/417<br>408/418</span></td>
+                <td class="text-right nd">—</td>
+                <td class="text-right nd">—</td>
+                <td class="text-right nd">—</td>
+            </tr>
+            <tr>
+                <td>
+                    Transferencias no objeto o exentas de IVA<br>
+                    <span class="no-info">Sin información disponible</span>
+                </td>
+                <td style="text-align:center;"><span class="cas">431</span></td>
+                <td class="text-right nd">—</td>
+                <td class="text-right nd">—</td>
+                <td class="text-right nd">—</td>
+            </tr>
+            <tr class="nc-row">
+                <td>(-) Notas de crédito emitidas tarifa diferente de cero</td>
+                <td style="text-align:center;"><span class="cas cas-rojo">402 / 412</span></td>
+                <td class="text-right text-danger">${{ "{:,.2f}".format(data.bloque_400.c402) }}</td>
+                <td class="text-right text-danger font-bold">${{ "{:,.2f}".format(data.bloque_400.c402) }}</td>
+                <td class="text-right text-danger">${{ "{:,.2f}".format(data.bloque_400.c412) }}</td>
+            </tr>
+            <tr class="total-row">
+                <td class="font-bold">TOTAL IVA GENERADO EN VENTAS</td>
+                <td style="text-align:center;"><span class="cas cas-verde">499</span></td>
+                <td class="text-right">—</td>
+                <td class="text-right">—</td>
+                <td class="text-right font-bold">${{ "{:,.2f}".format(data.bloque_400.c499) }}</td>
             </tr>
         </tbody>
-        <tfoot>
-            <tr style="font-weight: bold; background: #f8fafc;">
-                <td>TOTAL VENTAS</td>
-                <td class="text-right">${{ "{:,.2f}".format(data.ventas.tarifa_0 + data.ventas.base_imponible_15) }}</td>
-                <td class="text-right">${{ "{:,.2f}".format(data.ventas.iva_cobrado_15) }}</td>
-                <td class="text-right">${{ "{:,.2f}".format(data.ventas.tarifa_0 + data.ventas.tarifa_15) }}</td>
-            </tr>
-        </tfoot>
     </table>
 
-    <div class="section-title">CONSOLIDADO FISCAL</div>
-    <div class="resumen-card">
-        <div style="width: 100%;">
-            <table style="background: transparent;">
-                <tr>
-                    <td>IVA Cobrado en Ventas (+)</td>
-                    <td class="text-right fw-bold">${{ "{:,.2f}".format(data.resumen.iva_cobrado) }}</td>
-                </tr>
-                <tr>
-                    <td class="text-danger">IVA Pagado en Compras (-)</td>
-                    <td class="text-right text-danger">(${{ "{:,.2f}".format(data.resumen.iva_pagado) }})</td>
-                </tr>
-                <tr class="resumen-total">
-                    <td style="border: none;">IMPUESTO A LIQUIDAR (IVA A PAGAR)</td>
-                    <td class="text-right" style="border: none;">${{ "{:,.2f}".format(data.resumen.iva_a_pagar) }}</td>
-                </tr>
-            </table>
+    <!-- ═══ BLOQUE 500 — COMPRAS ═══ -->
+    <div class="section-title">
+        <span class="bloque-title bg-compras">Sección 500</span>
+        &nbsp; Resumen de Adquisiciones y Pagos
+    </div>
+    <div class="nota-box">Compras calculadas desde el módulo de Gastos.</div>
+    <table class="f104">
+        <thead>
+            <tr>
+                <th>Descripción</th>
+                <th style="text-align:center;">Casillero</th>
+                <th class="text-right">Valor Bruto</th>
+                <th class="text-right">Valor Neto (Base)</th>
+                <th class="text-right">IVA pagado</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>Adquisiciones tarifa 0% / RIMPE (negocios populares)</td>
+                <td style="text-align:center;"><span class="cas">507</span></td>
+                <td class="text-right">${{ "{:,.2f}".format(data.bloque_500.c507) }}</td>
+                <td class="text-right font-bold">${{ "{:,.2f}".format(data.bloque_500.c507) }}</td>
+                <td class="text-right nd">$0.00</td>
+            </tr>
+            <tr>
+                <td>Adquisiciones gravadas con derecho a crédito tributario</td>
+                <td style="text-align:center;"><span class="cas cas-azul">500 / 510</span></td>
+                <td class="text-right">${{ "{:,.2f}".format(data.bloque_500.c500) }}</td>
+                <td class="text-right font-bold">${{ "{:,.2f}".format(data.bloque_500.c500) }}</td>
+                <td class="text-right" style="color:#1d4ed8; font-weight:700;">${{ "{:,.2f}".format(data.bloque_500.c510) }}</td>
+            </tr>
+            <tr>
+                <td>
+                    Adquisiciones gravadas sin derecho a crédito tributario<br>
+                    <span class="no-info">Sin información disponible</span>
+                </td>
+                <td style="text-align:center;"><span class="cas">509 / 519</span></td>
+                <td class="text-right nd">—</td>
+                <td class="text-right nd">—</td>
+                <td class="text-right nd">—</td>
+            </tr>
+            <tr>
+                <td>
+                    Compras en el exterior (ej. publicidad Facebook / Google Ads)<br>
+                    <span class="no-info">Sin información disponible</span>
+                </td>
+                <td style="text-align:center;"><span class="cas">503 / 504</span></td>
+                <td class="text-right nd">—</td>
+                <td class="text-right nd">—</td>
+                <td class="text-right nd">—</td>
+            </tr>
+            <tr>
+                <td>
+                    (-) Notas de crédito en adquisiciones<br>
+                    <span class="no-info">Sin información disponible</span>
+                </td>
+                <td style="text-align:center;"><span class="cas">520 / 521</span></td>
+                <td class="text-right nd">—</td>
+                <td class="text-right nd">—</td>
+                <td class="text-right nd">—</td>
+            </tr>
+            <tr style="background:#faf5ff;">
+                <td>Factor de proporcionalidad &nbsp; <span style="font-size:9px; color:#6b7280;">(401+405+407+408) / (401+403+405+407+408)</span></td>
+                <td style="text-align:center;"><span class="cas cas-indigo">563</span></td>
+                <td class="text-right nd">—</td>
+                <td class="text-right font-bold">{{ "%.4f"|format(data.bloque_500.c563) }}</td>
+                <td class="text-right nd">—</td>
+            </tr>
+            <tr>
+                <td>Crédito tributario aplicable &nbsp; <span style="font-size:9px; color:#6b7280;">(510 + 511 + 513 + 514 + 515) × 563</span></td>
+                <td style="text-align:center;"><span class="cas cas-verde">564</span></td>
+                <td class="text-right nd">—</td>
+                <td class="text-right" style="color:#166534; font-weight:700;">${{ "{:,.2f}".format(data.bloque_500.c564) }}</td>
+                <td class="text-right nd">—</td>
+            </tr>
+            <tr class="total-row">
+                <td class="font-bold">TOTAL IVA PAGADO EN COMPRAS</td>
+                <td style="text-align:center;"><span class="cas cas-verde">599</span></td>
+                <td class="text-right">—</td>
+                <td class="text-right">—</td>
+                <td class="text-right font-bold">${{ "{:,.2f}".format(data.bloque_500.c599) }}</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <!-- ═══ BLOQUE 600 — LIQUIDACIÓN ═══ -->
+    <div class="section-title">
+        <span class="bloque-title bg-liquidacion">Sección 600</span>
+        &nbsp; Resumen Impositivo — Liquidación
+    </div>
+    <table class="f104">
+        <thead>
+            <tr>
+                <th>Descripción</th>
+                <th style="text-align:center;">Casillero</th>
+                <th class="text-right">Valor</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr {% if data.bloque_600.c601 > 0 %}style="background:#fff7ed;"{% endif %}>
+                <td>Impuesto causado (499 − 564, solo si positivo)</td>
+                <td style="text-align:center;"><span class="cas cas-rojo">601</span></td>
+                <td class="text-right font-bold">${{ "{:,.2f}".format(data.bloque_600.c601) }}</td>
+            </tr>
+            <tr {% if data.bloque_600.c602 > 0 %}style="background:#f0fdf4;"{% endif %}>
+                <td>Crédito tributario para el próximo mes (564 − 499, solo si positivo)</td>
+                <td style="text-align:center;"><span class="cas cas-verde">602</span></td>
+                <td class="text-right" style="color:#166534; font-weight:700;">${{ "{:,.2f}".format(data.bloque_600.c602) }}</td>
+            </tr>
+            <tr>
+                <td>Arrastre de crédito tributario por adquisiciones (mes anterior)<br><span class="no-info">Sin información disponible</span></td>
+                <td style="text-align:center;"><span class="cas">605</span></td>
+                <td class="text-right nd">—</td>
+            </tr>
+            <tr>
+                <td>Arrastre de crédito tributario por retenciones (mes anterior)<br><span class="no-info">Sin información disponible</span></td>
+                <td style="text-align:center;"><span class="cas">606</span></td>
+                <td class="text-right nd">—</td>
+            </tr>
+            <tr>
+                <td>Retenciones en la fuente de IVA recibidas en el período<br><span class="no-info">Sin información disponible</span></td>
+                <td style="text-align:center;"><span class="cas">609</span></td>
+                <td class="text-right nd">—</td>
+            </tr>
+            <tr class="total-row">
+                <td class="font-bold">TOTAL IMPUESTO A PAGAR (601 − 605 − 606 − 609)</td>
+                <td style="text-align:center;"><span class="cas cas-rojo">699</span></td>
+                <td class="text-right font-bold">${{ "{:,.2f}".format(data.bloque_600.c699) }}</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <!-- ═══ BLOQUE 700 — RETENCIONES ═══ -->
+    <div class="section-title">
+        <span class="bloque-title bg-retenciones">Sección 700</span>
+        &nbsp; Agentes de Retención
+    </div>
+    <table class="f104">
+        <thead>
+            <tr>
+                <th>Descripción</th>
+                <th style="text-align:center;">Casillero</th>
+                <th class="text-right">%</th>
+                <th class="text-right">Valor</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for ret in [('721','10%','Servicios profesionales / arrendamiento'),('723','20%','Otros servicios'),('725','30%','Bienes muebles'),('727','70%','Servicios / comisiones'),('729','100%','Publicidad, pagos al exterior, Negocio Popular')] %}
+            <tr>
+                <td>{{ ret[2] }}<br><span class="no-info">Sin información disponible</span></td>
+                <td style="text-align:center;"><span class="cas">{{ ret[0] }}</span></td>
+                <td class="text-right nd">{{ ret[1] }}</td>
+                <td class="text-right nd">—</td>
+            </tr>
+            {% endfor %}
+            <tr class="total-row">
+                <td class="font-bold">TOTAL RETENCIONES A PAGAR AL SRI</td>
+                <td style="text-align:center;"><span class="cas">799</span></td>
+                <td class="text-right">—</td>
+                <td class="text-right nd">—</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <!-- ═══ BLOQUE 900 — TOTALES ═══ -->
+    <div class="section-title">
+        <span class="bloque-title bg-totales">Sección 800 / 900</span>
+        &nbsp; Totales y Pago
+    </div>
+    <table class="f104">
+        <thead>
+            <tr>
+                <th>Descripción</th>
+                <th style="text-align:center;">Casillero</th>
+                <th class="text-right">Valor</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>Impuesto a pagar por percepción (viene del 699)</td>
+                <td style="text-align:center;"><span class="cas cas-rojo">801</span></td>
+                <td class="text-right font-bold">${{ "{:,.2f}".format(data.bloque_900.c801) }}</td>
+            </tr>
+            <tr>
+                <td>Impuesto a pagar por retención (viene del 799)<br><span class="no-info">Sin información disponible</span></td>
+                <td style="text-align:center;"><span class="cas">802</span></td>
+                <td class="text-right nd">—</td>
+            </tr>
+            <tr>
+                <td>Interés por mora<br><span class="no-info">Sin información disponible</span></td>
+                <td style="text-align:center;"><span class="cas">897</span></td>
+                <td class="text-right nd">—</td>
+            </tr>
+            <tr>
+                <td>Multas<br><span class="no-info">Sin información disponible</span></td>
+                <td style="text-align:center;"><span class="cas">898</span></td>
+                <td class="text-right nd">—</td>
+            </tr>
+            <tr class="grand-total-row">
+                <td>TOTAL PAGADO AL SRI (801 + 802 + 897 + 898)</td>
+                <td style="text-align:center;"><span style="font-family:monospace; font-weight:800; font-size:11px; background:#22c55e; color:#fff; padding:2px 6px; border-radius:4px;">999</span></td>
+                <td class="text-right">${{ "{:,.2f}".format(data.bloque_900.c999) }}</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <!-- CALENDARIZACIÓN SRI -->
+    <div class="section-title">Calendarización SRI — Fechas Límite de Declaración</div>
+    <div class="cal-grid">
+        {% for d, dia in [('1',10),('2',12),('3',14),('4',16),('5',18),('6',20),('7',22),('8',24),('9',26),('0',28)] %}
+        <div class="cal-item {% if d == data.fecha_limite.noveno_digito %}active{% endif %}">
+            <span class="dig">{{ d }}</span>
+            <span class="dia">Día {{ dia }}</span>
         </div>
+        {% endfor %}
     </div>
+    <p style="font-size:10px; color:#94a3b8; margin-top:4px;">Si el día cae en feriado o fin de semana, se traslada al siguiente día hábil.</p>
 
-    <div style="margin-top: 30px; font-size: 11px; color: #64748b;">
-        * Este reporte es informativo y se basa exclusivamente en las facturas emitidas y autorizadas a través del sistema. No constituye una declaración jurada ante el SRI.
-    </div>
+    <p class="discl">* Este reporte es informativo. Los casilleros marcados con "Sin información disponible" requieren ingreso manual en el Formulario 104 del portal del SRI. No constituye una declaración jurada.</p>
 
-    <div id="footer">
-        Generado por 
-        {% if footer_b64 %}
-        <img src="{{ footer_b64 }}" style="vertical-align: middle; height: 16px; margin: 0 4px;" alt="NOUS"> 
-        {% else %}
-        NOUS
-        {% endif %}
-        www.nous.ec
-    </div>
-</body>
-</html>
+{% endblock %}
+
+{% block extra_scripts %}{% endblock %}

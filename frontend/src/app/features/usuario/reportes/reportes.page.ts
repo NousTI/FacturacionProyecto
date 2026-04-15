@@ -5,6 +5,7 @@ import {
   FinancialReportsService,
   PyGReport,
   IVAReport,
+  IvaR027Report,
   ExecutiveSummary,
   SalesGeneralReport,
   AccountsReceivableReport,
@@ -21,13 +22,14 @@ import { REPORTES_PERMISSIONS } from '../../../constants/permission-codes';
 import { ExecutiveSummaryComponent } from './components/executive-summary.component';
 import { PygReportComponent } from './components/pyg-report.component';
 import { IvaReportComponent } from './components/iva-report.component';
+import { R027IvaComponent } from './components/reporte_027/r027-iva.component';
 import { SalesGeneralComponent } from './components/sales-general.component';
 import { R001VentasGeneralesComponent } from './components/reporte_001/r001-ventas-generales.component';
 import { R008CuentasPorCobrarComponent } from './components/reporte_008/r008-cuentas-por-cobrar.component';
 import { R028ResumenEjecutivoComponent } from './components/reporte_028/r028-resumen-ejecutivo.component';
 import { R001MisVentasComponent } from './components/reporte_001_empleados/r001-mis-ventas.component';
 
-export type RangoTipo = 'mes_actual' | 'mes_anterior' | 'anio_actual' | 'personalizado';
+export type RangoTipo = 'mes_actual' | 'mes_anterior' | 'anio_actual' | 'semestre_1' | 'semestre_2' | 'personalizado';
 type Tab = 'resumen' | 'ventas' | 'cartera' | 'pyg' | 'iva' | 'mis_ventas';
 
 @Component({
@@ -44,7 +46,8 @@ type Tab = 'resumen' | 'ventas' | 'cartera' | 'pyg' | 'iva' | 'mis_ventas';
     R001VentasGeneralesComponent,
     R008CuentasPorCobrarComponent,
     R028ResumenEjecutivoComponent,
-    R001MisVentasComponent
+    R001MisVentasComponent,
+    R027IvaComponent
   ],
   template: `
 <div class="reportes-page-container animate__animated animate__fadeIn">
@@ -80,12 +83,21 @@ type Tab = 'resumen' | 'ventas' | 'cartera' | 'pyg' | 'iva' | 'mis_ventas';
 
       <div class="filters-actions">
         <div class="d-flex align-items-center gap-2">
-          <!-- Selector de rango -->
+          <!-- Selector de rango — R-027 tiene opciones específicas -->
           <select class="select-compact" [(ngModel)]="rangoTipo" (change)="onRangoChangeInternal()">
-            <option value="mes_actual">Mes Actual</option>
-            <option value="mes_anterior">Mes Anterior</option>
-            <option value="anio_actual">Año Actual</option>
-            <option value="personalizado">Personalizado</option>
+            <ng-container *ngIf="tabActivo === 'iva'; else otrosRangos">
+              <option value="mes_anterior">Mes Anterior</option>
+              <option value="mes_actual">Mes Actual</option>
+              <option value="semestre_1">Semestre 1 (Ene–Jun)</option>
+              <option value="semestre_2">Semestre 2 (Jul–Dic)</option>
+              <option value="personalizado">Personalizado</option>
+            </ng-container>
+            <ng-template #otrosRangos>
+              <option value="mes_actual">Mes Actual</option>
+              <option value="mes_anterior">Mes Anterior</option>
+              <option value="anio_actual">Año Actual</option>
+              <option value="personalizado">Personalizado</option>
+            </ng-template>
           </select>
 
           <!-- Fechas personalizadas -->
@@ -138,10 +150,10 @@ type Tab = 'resumen' | 'ventas' | 'cartera' | 'pyg' | 'iva' | 'mis_ventas';
         [data]="pygData">
       </app-pyg-report>
 
-      <app-iva-report
-        *ngIf="tabActivo === 'iva' && ivaData"
-        [data]="ivaData">
-      </app-iva-report>
+      <app-r027-iva
+        *ngIf="tabActivo === 'iva' && ivaR027Data"
+        [data]="ivaR027Data">
+      </app-r027-iva>
 
       <app-r001-mis-ventas
         *ngIf="tabActivo === 'mis_ventas' && misVentasData"
@@ -264,6 +276,7 @@ export class ReportesPage implements OnInit {
   carteraData?: AccountsReceivableReport;
   pygData?: PyGReport;
   ivaData?: IVAReport;
+  ivaR027Data?: IvaR027Report;
   misVentasData?: MisVentasReport;
 
   private permissionsService = inject(PermissionsService);
@@ -322,6 +335,14 @@ export class ReportesPage implements OnInit {
         this.fechaInicio = this.formatDate(new Date(today.getFullYear(), 0, 1));
         this.fechaFin = this.formatDate(today);
         break;
+      case 'semestre_1':
+        this.fechaInicio = this.formatDate(new Date(today.getFullYear(), 0, 1));
+        this.fechaFin = this.formatDate(new Date(today.getFullYear(), 5, 30));
+        break;
+      case 'semestre_2':
+        this.fechaInicio = this.formatDate(new Date(today.getFullYear(), 6, 1));
+        this.fechaFin = this.formatDate(new Date(today.getFullYear(), 11, 31));
+        break;
     }
     this.cdr.detectChanges();
   }
@@ -329,6 +350,11 @@ export class ReportesPage implements OnInit {
   setTab(tab: Tab) {
     if (this.tabActivo === tab) return;
     this.tabActivo = tab;
+    // Al entrar al R-027 IVA, cambiar a mes anterior por defecto
+    if (tab === 'iva' && this.rangoTipo !== 'personalizado' && this.rangoTipo !== 'semestre_1' && this.rangoTipo !== 'semestre_2') {
+      this.rangoTipo = 'mes_anterior';
+      this.onRangoChangeInternal();
+    }
     this.cargarDatos();
   }
 
@@ -371,9 +397,9 @@ export class ReportesPage implements OnInit {
         break;
 
       case 'iva':
-        this.ivaData = undefined;
-        this.reportsSvc.getIVAReport(this.fechaInicio, this.fechaFin).subscribe({
-          next: (d) => { this.ivaData = d; this.finishLoading(); },
+        this.ivaR027Data = undefined;
+        this.reportsSvc.getIvaR027(this.fechaInicio, this.fechaFin).subscribe({
+          next: (d) => { this.ivaR027Data = d; this.finishLoading(); },
           error: () => this.handleError('Error al cargar IVA')
         });
         break;

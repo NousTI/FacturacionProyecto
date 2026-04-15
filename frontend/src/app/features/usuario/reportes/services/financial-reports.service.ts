@@ -162,6 +162,45 @@ export interface MisVentasReport {
   }>;
 }
 
+export interface IvaR027Report {
+  empresa: { ruc: string; razon_social: string; regimen: string };
+  periodo:  { inicio: string; fin: string };
+  fecha_limite: {
+    noveno_digito: string;
+    dia_limite: number;
+    fecha_limite: string;
+    dias_restantes: number | null;
+    vencida: boolean;
+    urgente: boolean;
+  };
+  kpis: {
+    iva_a_pagar:        { valor: number; label: string; sublabel: string };
+    credito_tributario: { valor: number; label: string; sublabel: string };
+    ventas_tarifa_principal: { tarifa: string; valor: number; label: string; sublabel: string };
+    factor:             { valor: number; valor_anterior: number; label: string; sublabel: string; tooltip: string };
+  };
+  bloque_400: {
+    c401_bruto: number; c401_neto: number;
+    c411_bruto: number; c411_neto: number;
+    c403: number; c402: number; c412: number; c499: number;
+    alertas: { nc_supera_ventas: boolean };
+  };
+  bloque_500: {
+    c500: number; c510: number; c507: number;
+    c563: number; c564: number; c599: number;
+  };
+  bloque_600: {
+    c601: number; c602: number; c605: number;
+    c606: number; c609: number; c699: number;
+  };
+  bloque_700: {
+    disponible: boolean;
+  };
+  bloque_900: {
+    c801: number; c802: number; c897: number; c898: number; c999: number;
+  };
+}
+
 export interface AccountsReceivableReport {
   kpis: {
     total_por_cobrar: number;
@@ -198,6 +237,11 @@ export class FinancialReportsService {
   getIVAReport(fecha_inicio: string, fecha_fin: string): Observable<IVAReport> {
     const params = new HttpParams().set('fecha_inicio', fecha_inicio).set('fecha_fin', fecha_fin);
     return this.http.get<IVAReport>(`${this.base}/iva`, { params });
+  }
+
+  getIvaR027(fecha_inicio: string, fecha_fin: string): Observable<IvaR027Report> {
+    const params = new HttpParams().set('fecha_inicio', fecha_inicio).set('fecha_fin', fecha_fin);
+    return this.http.get<IvaR027Report>(`${this.base}/iva`, { params });
   }
 
   getExecutiveSummary(fecha_inicio: string, fecha_fin: string): Observable<ExecutiveSummary> {

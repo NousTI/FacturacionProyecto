@@ -1,5 +1,5 @@
 from uuid import UUID
-from typing import Dict, Any, List
+from typing import Dict, Any
 from .....database.session import get_db
 from fastapi import Depends
 
@@ -34,6 +34,35 @@ class RepositorioR027:
             cur.execute(query, (str(empresa_id), fecha_inicio, fecha_fin))
             row = cur.fetchone()
             return dict(row) if row else {"base_imponible": 0.0, "valor_iva": 0.0}
+
+    def obtener_ventas_por_tarifa(self, empresa_id: UUID, fecha_inicio: str, fecha_fin: str) -> Dict[str, Any]:
+        """Desglose de base imponible e IVA por cada tarifa (5, 8, 12, 15, etc.)."""
+        query = """
+            SELECT
+                fd.tarifa_iva,
+                ROUND(COALESCE(SUM(fd.base_imponible), 0)::numeric, 2) AS base_imponible,
+                ROUND(COALESCE(SUM(fd.valor_iva), 0)::numeric, 2)       AS valor_iva
+            FROM sistema_facturacion.facturas_detalle fd
+            JOIN sistema_facturacion.facturas f ON fd.factura_id = f.id
+            WHERE f.empresa_id = %s
+              AND f.estado = 'AUTORIZADA'
+              AND f.tipo_documento = '01'
+              AND fd.tarifa_iva > 0
+              AND f.fecha_emision BETWEEN %s AND %s::timestamp + interval '1 day' - interval '1 second'
+            GROUP BY fd.tarifa_iva
+            ORDER BY fd.tarifa_iva DESC
+        """
+        with self.db.cursor() as cur:
+            cur.execute(query, (str(empresa_id), fecha_inicio, fecha_fin))
+            rows = cur.fetchall()
+            result: Dict[str, Any] = {}
+            for row in rows:
+                tarifa = int(row['tarifa_iva'])
+                result[str(tarifa)] = {
+                    "base_imponible": float(row['base_imponible']),
+                    "valor_iva":      float(row['valor_iva']),
+                }
+            return result
 
     def obtener_ventas_tarifa_cero(self, empresa_id: UUID, fecha_inicio: str, fecha_fin: str) -> float:
         """
@@ -134,11 +163,17 @@ class RepositorioR027:
     def obtener_info_empresa(self, empresa_id: UUID) -> Dict[str, Any]:
         """RUC y régimen tributario de la empresa para el banner de fecha límite."""
         query = """
-            SELECT ruc, razon_social, regimen_tributario
+            SELECT ruc, razon_social, tipo_contribuyente
             FROM sistema_facturacion.empresas
             WHERE id = %s
         """
         with self.db.cursor() as cur:
             cur.execute(query, (str(empresa_id),))
             row = cur.fetchone()
-            return dict(row) if row else {"ruc": "", "razon_social": "", "regimen_tributario": "general"}
+            if row:
+                d = dict(row)
+                # Normalizar: tipo_contribuyente puede ser "RIMPE", "GENERAL", etc.
+                tc = (d.get("tipo_contribuyente") or "").upper()
+                d["regimen_tributario"] = "rimpe" if "RIMPE" in tc else "general"
+                return d
+            return {"ruc": "", "razon_social": "", "tipo_contribuyente": "", "regimen_tributario": "general"}
