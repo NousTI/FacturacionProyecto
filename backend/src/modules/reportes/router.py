@@ -65,7 +65,9 @@ def exportar_reporte_ventas(
         "establecimiento_id": establecimiento_id,
         "punto_emision_id": punto_emision_id,
         "usuario_id": usuario_id,
-        "estado": estado
+        "estado": estado,
+        # Para MIS_VENTAS: usuario del token (no query param)
+        "_token_usuario_id": usuario_actual.get("usuario_id"),
     }
     
     file_stream = servicio.exportar_reporte(empresa_id, tipo, formato, params)

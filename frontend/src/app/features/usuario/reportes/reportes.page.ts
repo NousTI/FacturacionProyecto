@@ -401,6 +401,28 @@ export class ReportesPage implements OnInit {
 
   exportarPDF() {
     if (!this.fechaInicio || !this.fechaFin) return;
+
+    // Mis Ventas usa su propio endpoint (filtra por usuario del token)
+    if (this.tabActivo === 'mis_ventas') {
+      this.ui.showToast('Optimizando documento...', 'info');
+      this.reportsSvc.exportarMisVentasPDF(this.fechaInicio, this.fechaFin).subscribe({
+        next: (blob) => {
+          const url = window.URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `mis-ventas_${this.fechaInicio}.pdf`;
+          document.body.appendChild(a);
+          a.click();
+          window.URL.revokeObjectURL(url);
+          document.body.removeChild(a);
+          this.ui.showToast('Documento descargado con éxito', 'success');
+          this.cdr.detectChanges();
+        },
+        error: () => { this.ui.showToast('Error al generar el documento', 'danger'); this.cdr.detectChanges(); }
+      });
+      return;
+    }
+
     let tipo = '';
     switch (this.tabActivo) {
       case 'resumen': tipo = 'FINANCIERO_RESUMEN'; break;
@@ -409,6 +431,7 @@ export class ReportesPage implements OnInit {
       case 'pyg':     tipo = 'FINANCIERO_PYG'; break;
       case 'iva':     tipo = 'FINANCIERO_IVA'; break;
     }
+    if (!tipo) return;
 
     this.ui.showToast('Optimizando documento...', 'info');
     this.reportsSvc.exportarReportePDF(tipo, this.fechaInicio, this.fechaFin).subscribe({

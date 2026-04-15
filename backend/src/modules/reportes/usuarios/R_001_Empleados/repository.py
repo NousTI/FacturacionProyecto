@@ -9,24 +9,23 @@ class RepositorioR001Empleados:
         self.db = db
 
     def obtener_kpis_propios(self, empresa_id: UUID, usuario_id: UUID, fecha_inicio: str, fecha_fin: str) -> Dict[str, Any]:
-        """KPIs del empleado: solo sus facturas emitidas en el período."""
+        """KPIs del empleado: solo sus facturas emitidas en el período (totales desde cuentas_cobrar)."""
         query = """
             SELECT
-                COALESCE(COUNT(*) FILTER (WHERE estado = 'AUTORIZADA'), 0) as mis_facturas,
-                COALESCE(SUM(total) FILTER (WHERE estado = 'AUTORIZADA'), 0) as total_vendido,
-                COALESCE(COUNT(*) FILTER (WHERE tipo_documento = '04'), 0) as devoluciones,
+                COUNT(cc.id) as mis_facturas,
+                COALESCE(SUM(cc.monto_total), 0) as total_vendido,
+                COALESCE(COUNT(*) FILTER (WHERE f.tipo_documento = '04'), 0) as devoluciones,
                 CASE
-                    WHEN COUNT(*) FILTER (WHERE estado = 'AUTORIZADA') > 0 THEN
-                        ROUND(
-                            COALESCE(SUM(total) FILTER (WHERE estado = 'AUTORIZADA'), 0)::numeric /
-                            COUNT(*) FILTER (WHERE estado = 'AUTORIZADA'),
-                        2)
+                    WHEN COUNT(cc.id) > 0 THEN
+                        ROUND(COALESCE(SUM(cc.monto_total), 0)::numeric / COUNT(cc.id), 2)
                     ELSE 0
                 END as ticket_promedio
-            FROM sistema_facturacion.facturas
-            WHERE empresa_id = %s
-              AND usuario_id = %s
-              AND fecha_emision BETWEEN %s AND %s::timestamp + interval '1 day' - interval '1 second'
+            FROM sistema_facturacion.cuentas_cobrar cc
+            JOIN sistema_facturacion.facturas f ON cc.factura_id = f.id
+            WHERE cc.empresa_id = %s
+              AND f.usuario_id = %s
+              AND f.estado = 'AUTORIZADA'
+              AND f.fecha_emision BETWEEN %s AND %s::timestamp + interval '1 day' - interval '1 second'
         """
         with self.db.cursor() as cur:
             cur.execute(query, (str(empresa_id), str(usuario_id), fecha_inicio, fecha_fin))
@@ -63,17 +62,19 @@ class RepositorioR001Empleados:
         query = """
             SELECT
                 c.razon_social as cliente,
-                COUNT(*) FILTER (WHERE f.estado = 'AUTORIZADA') as facturas,
-                COALESCE(SUM(f.total) FILTER (WHERE f.estado = 'AUTORIZADA'), 0) as total_compras,
+                COUNT(cc.id) as facturas,
+                COALESCE(SUM(cc.monto_total), 0) as total_compras,
                 MAX(f.fecha_emision)::date as ultima_compra,
                 CASE
                     WHEN MAX(f.fecha_emision) >= CURRENT_DATE - INTERVAL '60 days' THEN 'Activo'
                     ELSE 'Inactivo'
                 END as estado
-            FROM sistema_facturacion.facturas f
+            FROM sistema_facturacion.cuentas_cobrar cc
+            JOIN sistema_facturacion.facturas f ON cc.factura_id = f.id
             JOIN sistema_facturacion.clientes c ON f.cliente_id = c.id
-            WHERE f.empresa_id = %s
+            WHERE cc.empresa_id = %s
               AND f.usuario_id = %s
+              AND f.estado = 'AUTORIZADA'
               AND f.fecha_emision BETWEEN %s AND %s::timestamp + interval '1 day' - interval '1 second'
             GROUP BY c.id, c.razon_social
             ORDER BY total_compras DESC

@@ -397,7 +397,7 @@ class ServicioReportes:
                     "headers": headers, "keys": keys, "data": data, "now": now_str
                 }
                 inyectar_footer_contexto(context)
-                return render_to_pdf("reports/base_tabla.html", context)
+                return render_to_pdf("reports/usuarios/base_tabla.html", context)
             else:
                 headers = ["Mes", "Facturas", "Subtotal", "IVA", "Total"]
                 return generate_excel_report(f"Ventas Mensuales {anio}", headers, data, ["mes", "facturas", "subtotal", "iva", "total"])
@@ -413,7 +413,7 @@ class ServicioReportes:
                     "headers": headers, "keys": keys, "data": data, "now": now_str
                 }
                 inyectar_footer_contexto(context)
-                return render_to_pdf("reports/base_tabla.html", context)
+                return render_to_pdf("reports/usuarios/base_tabla.html", context)
             else:
                 headers = ["Usuario", "Facturas", "Total Ventas", "Ticket Promedio"]
                 return generate_excel_report("Ventas por Usuario", headers, data, ["usuario", "facturas", "total_ventas", "ticket_promedio"])
@@ -429,7 +429,7 @@ class ServicioReportes:
                     "headers": headers, "keys": keys, "data": data, "now": now_str
                 }
                 inyectar_footer_contexto(context)
-                return render_to_pdf("reports/base_tabla.html", context)
+                return render_to_pdf("reports/usuarios/base_tabla.html", context)
             else:
                 headers = ["Número", "Fecha Emisión", "Cliente", "Total", "Usuario Anuló", "Motivo", "Fecha Anulación"]
                 keys = ["numero_factura", "fecha_emision", "cliente", "total", "usuario_anulo", "motivo", "fecha_anulacion"]
@@ -446,13 +446,33 @@ class ServicioReportes:
                     "headers": headers, "keys": keys, "data": data, "now": now_str
                 }
                 inyectar_footer_contexto(context)
-                return render_to_pdf("reports/base_tabla.html", context)
+                return render_to_pdf("reports/usuarios/base_tabla.html", context)
             else:
                 headers = ["Número", "Cliente", "Fecha Intento", "Mensaje SRI", "Estado"]
                 keys = ["numero_factura", "cliente", "fecha_intento", "mensaje_sri", "estado_actual"]
                 return generate_excel_report("Rechazos SRI", headers, data, keys)
 
         # --- EXPORTACIÓN DE REPORTES FINANCIEROS (R-026 a R-028, R-008) ---
+
+        elif tipo == 'MIS_VENTAS':
+            empresa = self.repo_empresas.obtener_por_id(empresa_id)
+            fecha_inicio = params.get('fecha_inicio')
+            fecha_fin = params.get('fecha_fin')
+            token_usuario_id = params.get('_token_usuario_id')
+            if not token_usuario_id:
+                raise AppError("No se pudo determinar el usuario del token.", 400)
+            data = self.obtener_mis_ventas_empleado(empresa_id, token_usuario_id, fecha_inicio, fecha_fin)
+            if formato == 'pdf':
+                context = {
+                    "data": data,
+                    "params": params,
+                    "empresa": empresa,
+                    "now": now_str
+                }
+                inyectar_footer_contexto(context)
+                return render_to_pdf("reports/usuarios/reporte-r001-empleados.html", context)
+            else:
+                raise AppError("Formato no soportado para este reporte", 400)
 
         elif tipo in ['FINANCIERO_PYG', 'FINANCIERO_IVA', 'FINANCIERO_RESUMEN', 'FINANCIERO_CARTERA']:
             empresa = self.repo_empresas.obtener_por_id(empresa_id)
@@ -461,10 +481,10 @@ class ServicioReportes:
             
             if tipo == 'FINANCIERO_PYG':
                 data = self.obtener_pyg_usuario(empresa_id, fecha_inicio, fecha_fin)
-                template = "reports/pyg_report.html"
+                template = "reports/usuarios/reporte-pyg.html"
             elif tipo == 'FINANCIERO_IVA':
                 data = self.obtener_iva_ventas_usuario(empresa_id, fecha_inicio, fecha_fin)
-                template = "reports/iva_report.html"
+                template = "reports/usuarios/reporte-r027.html"
             elif tipo == 'FINANCIERO_CARTERA':
                 data = self.obtener_cartera_usuario(empresa_id, fecha_inicio, fecha_fin)
                 template = "reports/usuarios/reporte-r008.html"

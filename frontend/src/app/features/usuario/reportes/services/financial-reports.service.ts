@@ -230,6 +230,18 @@ export class FinancialReportsService {
     return this.http.get<MisVentasReport>(`${this.base}/mis-ventas`, { params });
   }
 
+  exportarMisVentasPDF(fecha_inicio: string, fecha_fin: string): Observable<Blob> {
+    const params = new HttpParams()
+      .set('tipo', 'MIS_VENTAS')
+      .set('formato', 'pdf')
+      .set('fecha_inicio', fecha_inicio)
+      .set('fecha_fin', fecha_fin);
+    return this.http.get(`${environment.apiUrl}/reportes/exportar`, {
+      params,
+      responseType: 'blob'
+    });
+  }
+
   exportarReportePDF(tipo: string, fecha_inicio: string, fecha_fin: string): Observable<Blob> {
     const params = new HttpParams()
       .set('tipo', tipo)

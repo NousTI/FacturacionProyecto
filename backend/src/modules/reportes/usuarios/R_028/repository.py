@@ -8,15 +8,16 @@ class RepositorioR028:
         self.db = db
 
     def obtener_kpis_ventas(self, empresa_id: UUID, fecha_inicio: str, fecha_fin: str) -> Dict[str, Any]:
-        """Obtiene indicadores clave de ventas (Total Facturado)."""
+        """Obtiene indicadores clave de ventas (Total Facturado desde cuentas_cobrar)."""
         query = """
             SELECT
-                COALESCE(SUM(total), 0) as total_facturado,
-                COUNT(*) as facturas_emitidas
-            FROM sistema_facturacion.facturas
-            WHERE empresa_id = %s
-              AND fecha_emision BETWEEN %s AND %s
-              AND estado != 'ANULADA'
+                COALESCE(SUM(cc.monto_total), 0) as total_facturado,
+                COUNT(cc.id) as facturas_emitidas
+            FROM sistema_facturacion.cuentas_cobrar cc
+            JOIN sistema_facturacion.facturas f ON cc.factura_id = f.id
+            WHERE cc.empresa_id = %s
+              AND f.fecha_emision BETWEEN %s AND %s
+              AND f.estado = 'AUTORIZADA'
         """
         with self.db.cursor() as cur:
             cur.execute(query, (str(empresa_id), fecha_inicio, fecha_fin))
@@ -34,7 +35,7 @@ class RepositorioR028:
             JOIN sistema_facturacion.facturas f ON fp.factura_id = f.id
             WHERE f.empresa_id = %s
               AND f.fecha_emision BETWEEN %s AND %s
-              AND f.estado != 'ANULADA'
+              AND f.estado = 'AUTORIZADA'
         """
         with self.db.cursor() as cur:
             cur.execute(query, (str(empresa_id), fecha_inicio, fecha_fin))
@@ -79,7 +80,7 @@ class RepositorioR028:
                     COUNT(*) as frecuencia,
                     SUM(total) as total_gastado
                 FROM sistema_facturacion.facturas
-                WHERE empresa_id = %s AND estado != 'ANULADA'
+                WHERE empresa_id = %s AND estado = 'AUTORIZADA'
                   AND fecha_emision BETWEEN %s AND %s
                 GROUP BY cliente_id
                 HAVING COUNT(*) >= 4
@@ -87,7 +88,7 @@ class RepositorioR028:
             ventas_totales AS (
                 SELECT COALESCE(SUM(total) / 12.0, 1) as promedio_mensual
                 FROM sistema_facturacion.facturas
-                WHERE empresa_id = %s AND estado != 'ANULADA'
+                WHERE empresa_id = %s AND estado = 'AUTORIZADA'
                   AND fecha_emision BETWEEN %s AND %s
             ),
             mora_clientes AS (
@@ -182,7 +183,7 @@ class RepositorioR028:
             LEFT JOIN sistema_facturacion.facturas_detalle fd ON fd.producto_id = p.id
             LEFT JOIN sistema_facturacion.facturas f ON fd.factura_id = f.id
             WHERE p.empresa_id = %s
-              AND (f.id IS NULL OR (f.estado != 'ANULADA' AND f.fecha_emision BETWEEN %s AND %s))
+              AND (f.id IS NULL OR (f.estado = 'AUTORIZADA' AND f.fecha_emision BETWEEN %s AND %s))
             GROUP BY p.id, p.nombre, p.stock_actual, p.costo
             ORDER BY vendidos DESC
             LIMIT 5
@@ -208,7 +209,7 @@ class RepositorioR028:
             LEFT JOIN sistema_facturacion.facturas_detalle fd ON fd.producto_id = p.id
             LEFT JOIN sistema_facturacion.facturas f ON fd.factura_id = f.id
             WHERE p.empresa_id = %s
-              AND (f.id IS NULL OR (f.estado != 'ANULADA' AND f.fecha_emision BETWEEN %s AND %s))
+              AND (f.id IS NULL OR (f.estado = 'AUTORIZADA' AND f.fecha_emision BETWEEN %s AND %s))
             GROUP BY p.id, p.nombre, p.stock_actual, p.costo
             ORDER BY utilidad_neta DESC
             LIMIT 5
@@ -241,7 +242,7 @@ class RepositorioR028:
             JOIN sistema_facturacion.facturas f ON fp.factura_id = f.id
             WHERE f.empresa_id = %s
               AND f.fecha_emision BETWEEN %s AND %s
-              AND f.estado != 'ANULADA'
+              AND f.estado = 'AUTORIZADA'
             GROUP BY fp.forma_pago_sri
         """
         with self.db.cursor() as cur:
@@ -262,7 +263,7 @@ class RepositorioR028:
             LEFT JOIN sistema_facturacion.productos p ON fd.producto_id = p.id
             WHERE f.empresa_id = %s
               AND f.fecha_emision BETWEEN %s AND %s
-              AND f.estado != 'ANULADA'
+              AND f.estado = 'AUTORIZADA'
         """
         with self.db.cursor() as cur:
             cur.execute(query, (str(empresa_id), fecha_inicio, fecha_fin))
@@ -285,7 +286,7 @@ class RepositorioR028:
             FROM sistema_facturacion.facturas
             WHERE empresa_id = %s
               AND fecha_emision BETWEEN %s AND %s
-              AND estado != 'ANULADA'
+              AND estado = 'AUTORIZADA'
         """
         with self.db.cursor() as cur:
             cur.execute(query, (str(empresa_id), prev_inicio, prev_fin))
