@@ -215,6 +215,7 @@ class ServicioFactura:
             
             # Generar comprobante automático en tabla pagos_factura
             if cuenta:
+                # Recuperar el método de pago original configurado en la factura
                 pagos_base = self.formas_pago_repo.listar_por_factura(id)
                 codigo_sri = pagos_base[0]['forma_pago_sri'] if pagos_base else '01'
                 recibo = "RCB-" + ''.join(random.choices(string.ascii_uppercase + string.digits, k=6))

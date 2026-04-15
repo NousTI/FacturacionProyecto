@@ -46,12 +46,13 @@ export interface IVAReport {
 
 export interface ExecutiveSummary {
   total_facturado: { valor: number; variacion: number };
+  total_recaudado: { valor: number; variacion: number };
   ingreso_efectivo: { valor: number; variacion: number };
   ingreso_tarjeta: { valor: number; variacion: number };
   ingreso_otras: {
     valor: number;
     variacion: number;
-    formas_pago_detalle: Array<{ forma_pago_sri: string; cantidad: number; total: number }>;
+    formas_pago_detalle: Array<{ metodo_pago: string; label: string; total: number }>;
   };
   por_cobrar: { total: number; en_mora: number };
   clientes_nuevos: { valor: number; variacion: number };

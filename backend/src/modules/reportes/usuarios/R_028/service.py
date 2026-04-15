@@ -25,8 +25,8 @@ class ServicioR028:
         prev_fin = (d1 - timedelta(days=1)).strftime('%Y-%m-%d')
 
         # 2. Obtener Datos Actuales vs Anteriores para Variaciones
-        ventas_actual = self.repo.obtener_kpis_ventas(empresa_id, fecha_inicio, fecha_fin)
-        ventas_prev = self.repo.obtener_kpis_ventas(empresa_id, prev_inicio, prev_fin)
+        financieros_actual = self.repo.obtener_kpis_financieros(empresa_id, fecha_inicio, fecha_fin)
+        financieros_prev = self.repo.obtener_kpis_financieros(empresa_id, prev_inicio, prev_fin)
 
         pagos_actual = self.repo.obtener_desglose_pagos(empresa_id, fecha_inicio, fecha_fin)
         pagos_prev = self.repo.obtener_desglose_pagos(empresa_id, prev_inicio, prev_fin)
@@ -42,7 +42,7 @@ class ServicioR028:
         # 3. Datos de Gastos y Utilidad (ventas - costo_ventas - gastos_operativos)
         gastos_val_actual = self.repo_gastos.obtener_total_gastos(empresa_id, fecha_inicio, fecha_fin)
         costo_ventas = self.repo.obtener_costo_ventas(empresa_id, fecha_inicio, fecha_fin)
-        total_facturado = float(ventas_actual['total_facturado'])
+        total_facturado = float(financieros_actual['total_facturado'])
         utilidad_neta = total_facturado - costo_ventas - float(gastos_val_actual)
         margen = (utilidad_neta / total_facturado * 100) if total_facturado > 0 else 0
 
@@ -58,7 +58,7 @@ class ServicioR028:
 
         # 5. Preparar datos para gráfica de anillo (ventas año actual vs anterior)
         grafica_anillo = {
-            "año_actual": float(ventas_actual['total_facturado']),
+            "año_actual": float(financieros_actual['total_facturado']),
             "año_anterior": float(ventas_anio_anterior.get('total_anio_anterior', 0))
         }
 
@@ -70,8 +70,12 @@ class ServicioR028:
 
         return {
             "total_facturado": {
-                "valor": float(ventas_actual['total_facturado']),
-                "variacion": calc_var(ventas_actual['total_facturado'], ventas_prev['total_facturado'])
+                "valor": float(financieros_actual['total_facturado']),
+                "variacion": calc_var(financieros_actual['total_facturado'], financieros_prev['total_facturado'])
+            },
+            "total_recaudado": {
+                "valor": float(financieros_actual['total_recaudado']),
+                "variacion": calc_var(financieros_actual['total_recaudado'], financieros_prev['total_recaudado'])
             },
             "ingreso_efectivo": {
                 "valor": float(pagos_actual['efectivo']),

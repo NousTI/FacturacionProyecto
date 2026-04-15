@@ -161,9 +161,9 @@ class LogPagoBase(BaseModel):
     
     monto: Decimal = Field(..., gt=0, description="Monto pagado (debe ser > 0)")
     fecha_pago: date = Field(default_factory=date.today, description="Fecha del pago")
-    metodo_pago_sri: str = Field(
-        default="01",
-        description="Código de metodo_pago_sri"
+    metodo_pago_sri: Optional[str] = Field(
+        None,
+        description="Código de metodo_pago_sri (Si es None, heredará el de la factura)"
     )
     numero_recibo: Optional[str] = Field(None, description="Recibo opcional desde front")
     numero_referencia: Optional[str] = Field(

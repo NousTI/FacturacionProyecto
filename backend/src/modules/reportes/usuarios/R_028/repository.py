@@ -7,9 +7,10 @@ class RepositorioR028:
     def __init__(self, db=Depends(get_db)):
         self.db = db
 
-    def obtener_kpis_ventas(self, empresa_id: UUID, fecha_inicio: str, fecha_fin: str) -> Dict[str, Any]:
-        """Obtiene indicadores clave de ventas (Total Facturado desde cuentas_cobrar)."""
-        query = """
+    def obtener_kpis_financieros(self, empresa_id: UUID, fecha_inicio: str, fecha_fin: str) -> Dict[str, Any]:
+        """Obtiene indicadores clave financieros (Ventas del periodo y Recaudación real del periodo)."""
+        # 1. Ventas Totales y Facturas Emitidas (Basado en fecha de emisión)
+        query_ventas = """
             SELECT
                 COALESCE(SUM(cc.monto_total), 0) as total_facturado,
                 COUNT(cc.id) as facturas_emitidas
@@ -19,22 +20,43 @@ class RepositorioR028:
               AND f.fecha_emision BETWEEN %s AND %s
               AND f.estado = 'AUTORIZADA'
         """
+        
+        # 2. Recaudación Real (Dinero que entró en el periodo, sin importar cuando se emitió la factura)
+        query_recaudado = """
+            SELECT COALESCE(SUM(p.monto), 0) as total_recaudado
+            FROM sistema_facturacion.pagos_factura p
+            JOIN sistema_facturacion.cuentas_cobrar cc ON p.cuenta_cobrar_id = cc.id
+            JOIN sistema_facturacion.facturas f ON cc.factura_id = f.id
+            WHERE f.empresa_id = %s
+              AND p.fecha_pago BETWEEN %s AND %s
+              AND f.estado = 'AUTORIZADA'
+        """
+        
         with self.db.cursor() as cur:
-            cur.execute(query, (str(empresa_id), fecha_inicio, fecha_fin))
-            result = cur.fetchone()
-            return dict(result) if result else {"total_facturado": 0, "facturas_emitidas": 0}
+            cur.execute(query_ventas, (str(empresa_id), fecha_inicio, fecha_fin))
+            v = cur.fetchone()
+            
+            cur.execute(query_recaudado, (str(empresa_id), fecha_inicio, fecha_fin))
+            r = cur.fetchone()
+            
+            return {
+                "total_facturado": v['total_facturado'],
+                "total_recaudado": r['total_recaudado'],
+                "facturas_emitidas": v['facturas_emitidas']
+            }
 
     def obtener_desglose_pagos(self, empresa_id: UUID, fecha_inicio: str, fecha_fin: str) -> Dict[str, Any]:
-        """Desglose por forma de pago (Efectivo, Tarjeta, Otros)."""
+        """Desglose por dinero REAL ingresado según el método de pago (del flujo de caja)."""
         query = """
             SELECT
-                COALESCE(SUM(fp.valor) FILTER (WHERE fp.forma_pago_sri = '01'), 0) as efectivo,
-                COALESCE(SUM(fp.valor) FILTER (WHERE fp.forma_pago_sri IN ('16','19','20')), 0) as tarjeta,
-                COALESCE(SUM(fp.valor) FILTER (WHERE fp.forma_pago_sri NOT IN ('01','16','19','20')), 0) as otros
-            FROM sistema_facturacion.formas_pago fp
-            JOIN sistema_facturacion.facturas f ON fp.factura_id = f.id
+                COALESCE(SUM(p.monto) FILTER (WHERE p.metodo_pago_sri = '01'), 0) as efectivo,
+                COALESCE(SUM(p.monto) FILTER (WHERE p.metodo_pago_sri IN ('16', '18', '19')), 0) as tarjeta,
+                COALESCE(SUM(p.monto) FILTER (WHERE p.metodo_pago_sri NOT IN ('01', '16', '18', '19')), 0) as otros
+            FROM sistema_facturacion.pagos_factura p
+            JOIN sistema_facturacion.cuentas_cobrar cc ON p.cuenta_cobrar_id = cc.id
+            JOIN sistema_facturacion.facturas f ON cc.factura_id = f.id
             WHERE f.empresa_id = %s
-              AND f.fecha_emision BETWEEN %s AND %s
+              AND p.fecha_pago BETWEEN %s AND %s
               AND f.estado = 'AUTORIZADA'
         """
         with self.db.cursor() as cur:
@@ -232,26 +254,37 @@ class RepositorioR028:
             return dict(result) if result else {"total_gastos": 0}
 
     def obtener_formas_pago_detalle(self, empresa_id: UUID, fecha_inicio: str, fecha_fin: str) -> List[Dict[str, Any]]:
-        """Detalle de todas las formas de pago SRI — siempre devuelve los 8 códigos, con 0 si no hubo movimiento."""
-        from .....constants.sri_constants import SRI_FORMAS_PAGO as SRI_FP
+        """Detalle de todas las formas de pago reales registradas en el periodo."""
+        # Mapeo completo según SRI_FORMAS_PAGO del sistema
+        METODOS_SRI = {
+            '01': 'Efectivo',
+            '15': 'Compensación de deudas',
+            '16': 'Tarjeta de Débito',
+            '17': 'Dinero Electrónico',
+            '18': 'Tarjeta Prepago',
+            '19': 'Tarjeta de Crédito',
+            '20': 'Transferencia / Cheque',
+            '21': 'Endoso de Títulos'
+        }
         query = """
             SELECT
-                fp.forma_pago_sri,
-                COALESCE(SUM(fp.valor), 0) as total
-            FROM sistema_facturacion.formas_pago fp
-            JOIN sistema_facturacion.facturas f ON fp.factura_id = f.id
+                p.metodo_pago_sri,
+                COALESCE(SUM(p.monto), 0) as total
+            FROM sistema_facturacion.pagos_factura p
+            JOIN sistema_facturacion.cuentas_cobrar cc ON p.cuenta_cobrar_id = cc.id
+            JOIN sistema_facturacion.facturas f ON cc.factura_id = f.id
             WHERE f.empresa_id = %s
-              AND f.fecha_emision BETWEEN %s AND %s
+              AND p.fecha_pago BETWEEN %s AND %s
               AND f.estado = 'AUTORIZADA'
-            GROUP BY fp.forma_pago_sri
+            GROUP BY p.metodo_pago_sri
         """
         with self.db.cursor() as cur:
             cur.execute(query, (str(empresa_id), fecha_inicio, fecha_fin))
-            totales = {row['forma_pago_sri']: float(row['total']) for row in cur.fetchall()}
+            totales = {row['metodo_pago_sri']: float(row['total']) for row in cur.fetchall()}
 
         return [
-            {"forma_pago_sri": fp["codigo"], "label": fp["label"], "total": totales.get(fp["codigo"], 0.0)}
-            for fp in SRI_FP
+            {"metodo_pago": cod, "label": label, "total": totales.get(cod, 0.0)}
+            for cod, label in METODOS_SRI.items()
         ]
 
     def obtener_costo_ventas(self, empresa_id: UUID, fecha_inicio: str, fecha_fin: str) -> float:

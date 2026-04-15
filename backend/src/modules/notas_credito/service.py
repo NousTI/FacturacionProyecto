@@ -108,7 +108,7 @@ class ServicioNotaCredito:
         res_sri = self.sri_service.emitir_nota_credito_sri(nueva_nc['id'], usuario_actual)
         
         # 7. ANULACIÓN AUTOMÁTICA (Si el SRI autorizó)
-        if res_sri.get('estado') == 'AUTORIZADO' or res_sri.get('estado') == 'AUTORIZADA':
+        if res_sri.get('estado') == 'AUTORIZADO':
             # Actualizar Factura original a ANULADA
             self.factura_repo.actualizar_factura(factura_id, {
                 "estado": "ANULADA",
@@ -145,7 +145,7 @@ class ServicioNotaCredito:
         res_sri = self.sri_service.emitir_nota_credito_sri(nc_id, usuario_actual)
         
         # Sincronización automática si ahora sí tiene éxito
-        if res_sri.get('estado') == 'AUTORIZADO' or res_sri.get('estado') == 'AUTORIZADA':
+        if res_sri.get('estado') == 'AUTORIZADO':
             self.factura_repo.actualizar_factura(nc['factura_id'], {
                 "estado": "ANULADA",
                 "estado_pago": "ANULADO",
@@ -174,7 +174,7 @@ class ServicioNotaCredito:
         res_sri = self.sri_service.consultar_estado_sri_nc(nc_id, usuario_actual)
         
         # Sincronización automática tras consulta exitosa
-        if res_sri.get('estado') == 'AUTORIZADO' or res_sri.get('estado') == 'AUTORIZADA':
+        if res_sri.get('estado') == 'AUTORIZADO':
              self.factura_repo.actualizar_factura(nc['factura_id'], {
                 "estado": "ANULADA",
                 "estado_pago": "ANULADO",

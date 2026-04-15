@@ -68,13 +68,24 @@ class ServicioPagosFactura:
             
         id_usuario_valido = factura.get('usuario_id')
         
+        # 3. Determinar método de pago (si no viene en datos, usar el de la factura)
+        metodo_pago_final = datos.metodo_pago_sri
+        if not metodo_pago_final:
+            pagos_base = self.repo.db.cursor().execute("SELECT forma_pago_sri FROM sistema_facturacion.formas_pago WHERE factura_id = %s", (str(factura_id),))
+            # Necesitamos el cursor real o usar el repo corporativo.
+            # Mejor usamos self.repo para consistencia si es posible, o una consulta rápida.
+            with self.repo.db.cursor() as cur_check:
+                cur_check.execute("SELECT forma_pago_sri FROM sistema_facturacion.formas_pago WHERE factura_id = %s", (str(factura_id),))
+                row_p = cur_check.fetchone()
+                metodo_pago_final = row_p['forma_pago_sri'] if row_p else '01'
+
         payload = {
             "cuenta_cobrar_id": str(cuenta['id']),
             "usuario_id": str(id_usuario_valido),
             "numero_recibo": datos.numero_recibo or recibo,
             "fecha_pago": str(datos.fecha_pago or date.today()),
             "monto": float(datos.monto),
-            "metodo_pago_sri": datos.metodo_pago_sri or '01',
+            "metodo_pago_sri": metodo_pago_final,
             "observaciones": datos.observaciones
         }
         

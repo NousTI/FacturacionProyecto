@@ -11,7 +11,7 @@ import { CommonModule } from '@angular/common';
           (mouseleave)="visible=false">
       <i class="bi bi-info-circle-fill fp-icon"></i>
       <div class="fp-box" *ngIf="visible">
-        <p class="fp-title">Desglose formas de pago</p>
+        <p class="fp-title">{{ tooltipTitle }}</p>
         <div class="fp-row" *ngFor="let r of rows">
           <span class="fp-label">{{ r.label }}</span>
           <span class="fp-value">{{ r.value }}</span>
@@ -71,5 +71,6 @@ import { CommonModule } from '@angular/common';
 })
 export class FormasPagoTooltipComponent {
   @Input() rows: Array<{ label: string; value: string }> = [];
+  @Input() tooltipTitle: string = 'Desglose formas de pago';
   visible = false;
 }

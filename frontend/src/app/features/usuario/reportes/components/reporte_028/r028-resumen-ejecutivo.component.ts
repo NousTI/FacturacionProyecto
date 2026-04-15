@@ -17,25 +17,40 @@ Chart.register(...registerables);
       <!-- ── FILA 1 KPIs FINANCIEROS ── -->
       <div class="kpi-grid mb-4">
 
+        <div class="kpi-card emerald">
+          <div class="kpi-body">
+            <span class="label">
+              Dinero Recaudado
+              <app-formas-pago-tooltip [rows]="todosLosMetodosRows" tooltipTitle="Total Recaudado"></app-formas-pago-tooltip>
+            </span>
+            <span class="value">{{ data.total_recaudado.valor | currency }}</span>
+            <span class="trend" [class.up]="data.total_recaudado.variacion >= 0" [class.down]="data.total_recaudado.variacion < 0">
+              <i class="bi" [class.bi-arrow-up-short]="data.total_recaudado.variacion >= 0" [class.bi-arrow-down-short]="data.total_recaudado.variacion < 0"></i>
+              {{ data.total_recaudado.variacion | number:'1.1-1' }}% vs periodo anterior
+            </span>
+          </div>
+          <div class="kpi-icon"><i class="bi bi-piggy-bank"></i></div>
+        </div>
+
         <div class="kpi-card purple">
           <div class="kpi-body">
-            <span class="label">Total Facturado</span>
+            <span class="label">Total Facturado (Ventas)</span>
             <span class="value">{{ data.total_facturado.valor | currency }}</span>
             <span class="trend" [class.up]="data.total_facturado.variacion >= 0" [class.down]="data.total_facturado.variacion < 0">
               <i class="bi" [class.bi-arrow-up-short]="data.total_facturado.variacion >= 0" [class.bi-arrow-down-short]="data.total_facturado.variacion < 0"></i>
-              {{ data.total_facturado.variacion | number:'1.1-1' }}% vs mes anterior
+              {{ data.total_facturado.variacion | number:'1.1-1' }}% vs periodo anterior
             </span>
           </div>
-          <div class="kpi-icon"><i class="bi bi-wallet2"></i></div>
+          <div class="kpi-icon"><i class="bi bi-file-earmark-text"></i></div>
         </div>
 
-        <div class="kpi-card emerald">
+        <div class="kpi-card light-emerald">
           <div class="kpi-body">
             <span class="label">Ingreso Efectivo</span>
             <span class="value">{{ data.ingreso_efectivo.valor | currency }}</span>
             <span class="trend" [class.up]="data.ingreso_efectivo.variacion >= 0" [class.down]="data.ingreso_efectivo.variacion < 0">
               <i class="bi" [class.bi-arrow-up-short]="data.ingreso_efectivo.variacion >= 0" [class.bi-arrow-down-short]="data.ingreso_efectivo.variacion < 0"></i>
-              {{ data.ingreso_efectivo.variacion | number:'1.1-1' }}% vs mes anterior
+              {{ data.ingreso_efectivo.variacion | number:'1.1-1' }}% vs ant.
             </span>
           </div>
           <div class="kpi-icon"><i class="bi bi-cash-stack"></i></div>
@@ -43,7 +58,10 @@ Chart.register(...registerables);
 
         <div class="kpi-card blue">
           <div class="kpi-body">
-            <span class="label">Ingreso con Tarjeta</span>
+            <span class="label">
+              Ingreso con Tarjeta
+              <app-formas-pago-tooltip [rows]="tarjetaFormasPagoRows" tooltipTitle="Desglose Tarjetas"></app-formas-pago-tooltip>
+            </span>
             <span class="value">{{ data.ingreso_tarjeta.valor | currency }}</span>
             <span class="trend" [class.up]="data.ingreso_tarjeta.variacion >= 0" [class.down]="data.ingreso_tarjeta.variacion < 0">
               <i class="bi" [class.bi-arrow-up-short]="data.ingreso_tarjeta.variacion >= 0" [class.bi-arrow-down-short]="data.ingreso_tarjeta.variacion < 0"></i>
@@ -58,12 +76,12 @@ Chart.register(...registerables);
           <div class="kpi-body">
             <span class="label">
               Otras Formas de Pago
-              <app-formas-pago-tooltip [rows]="otrasFormasPagoRows"></app-formas-pago-tooltip>
+              <app-formas-pago-tooltip [rows]="otrasFormasPagoRows" tooltipTitle="Otras Formas"></app-formas-pago-tooltip>
             </span>
             <span class="value">{{ data.ingreso_otras.valor | currency }}</span>
             <span class="trend" [class.up]="data.ingreso_otras.variacion >= 0" [class.down]="data.ingreso_otras.variacion < 0">
               <i class="bi" [class.bi-arrow-up-short]="data.ingreso_otras.variacion >= 0" [class.bi-arrow-down-short]="data.ingreso_otras.variacion < 0"></i>
-              {{ data.ingreso_otras.variacion | number:'1.1-1' }}% vs mes anterior
+              {{ data.ingreso_otras.variacion | number:'1.1-1' }}%
             </span>
           </div>
           <div class="kpi-icon"><i class="bi bi-phone"></i></div>
@@ -152,6 +170,48 @@ Chart.register(...registerables);
           </div>
         </div>
 
+      </div>
+
+      <!-- ── DESGLOSE DETALLADO DE PAGOS (SRI) ── -->
+      <div class="row g-4 mb-5">
+        <div class="col-12">
+          <div class="section-card">
+            <div class="section-header">
+              <div class="title-icon-row">
+                <i class="bi bi-list-check icon-badge gold-bg"></i>
+                <div>
+                  <h5>Desglose Detallado por Método de Pago (Caja)</h5>
+                  <p>Listado completo de todos los métodos oficiales del SRI con sus montos acumulados</p>
+                </div>
+              </div>
+            </div>
+            <div class="table-responsive">
+              <table class="table modern-table">
+                <thead>
+                  <tr>
+                    <th>Código SRI</th>
+                    <th>Método de Pago</th>
+                    <th class="text-end">Monto Total</th>
+                    <th class="text-center">Participación</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let fp of todosLosMetodosRowsFull" class="hover-row">
+                    <td class="text-muted">#{{ fp.codigo }}</td>
+                    <td class="font-medium">{{ fp.label }}</td>
+                    <td class="text-end font-bold">{{ fp.total | currency }}</td>
+                    <td class="text-center">
+                      <div class="progress-container">
+                        <div class="progress-bar" [style.width.%]="(fp.total / (data.total_recaudado.valor || 1)) * 100"></div>
+                        <span class="progress-label">{{ (fp.total / (data.total_recaudado.valor || 1)) | percent:'1.1-1' }}</span>
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
       </div>
 
       <!-- ── RADAR DE GESTIÓN + MONITOR ROTACIÓN ── -->
@@ -262,9 +322,7 @@ Chart.register(...registerables);
             </div>
           </div>
         </div>
-
       </div>
-
     </div>
   `,
   styles: [`
@@ -279,8 +337,9 @@ Chart.register(...registerables);
       align-items: flex-start;
     }
     .kpi-card:hover { box-shadow: 0 12px 20px -5px rgba(0,0,0,0.08); }
-    .kpi-card.purple  { border-bottom: 4px solid #818cf8; }
     .kpi-card.emerald { border-bottom: 4px solid #10b981; }
+    .kpi-card.light-emerald { border-bottom: 4px solid #34d399; }
+    .kpi-card.purple  { border-bottom: 4px solid #818cf8; }
     .kpi-card.blue    { border-bottom: 4px solid #3b82f6; }
     .kpi-card.amber   { border-bottom: 4px solid #f59e0b; }
     .kpi-card.red     { border-bottom: 4px solid #ef4444; }
@@ -371,6 +430,10 @@ Chart.register(...registerables);
     }
     .empty-state i { font-size: 2rem; }
     .empty-state p { font-size: 0.85rem; margin: 0; }
+    /* Progress Bar */
+    .progress-container { display: flex; align-items: center; gap: 8px; justify-content: center; }
+    .progress-bar { height: 6px; background: #818cf8; border-radius: 4px; min-width: 4px; }
+    .progress-label { font-size: 0.7rem; color: #64748b; font-weight: 700; width: 35px; text-align: right; }
   `]
 })
 export class R028ResumenEjecutivoComponent implements OnChanges {
@@ -389,13 +452,41 @@ export class R028ResumenEjecutivoComponent implements OnChanges {
       : this.data?.monitor_rentabilidad_por_utilidad;
   }
 
+  get tarjetaFormasPagoRows(): Array<{ label: string; value: string }> {
+    return (this.data?.ingreso_otras?.formas_pago_detalle ?? [])
+      .filter(fp => ['16', '18', '19'].includes(fp.metodo_pago))
+      .map(fp => ({
+        label: fp.label,
+        value: `$${(fp.total).toFixed(2)}`
+      }));
+  }
+
   get otrasFormasPagoRows(): Array<{ label: string; value: string }> {
-    const detalle = this.data?.ingreso_otras?.formas_pago_detalle ?? [];
-    const totales = new Map(detalle.map(fp => [fp.forma_pago_sri, Number(fp.total)]));
-    return SRI_FORMAS_PAGO.map(fp => ({
-      label: fp.label,
-      value: `$${(totales.get(fp.codigo) ?? 0).toFixed(2)}`
-    }));
+    return (this.data?.ingreso_otras?.formas_pago_detalle ?? [])
+      .filter(fp => !['01', '16', '18', '19'].includes(fp.metodo_pago))
+      .map(fp => ({
+        label: fp.label,
+        value: `$${(fp.total).toFixed(2)}`
+      }));
+  }
+
+  get todosLosMetodosRows(): Array<{ label: string; value: string }> {
+    return (this.data?.ingreso_otras?.formas_pago_detalle ?? [])
+      .filter(fp => fp.total > 0)
+      .map(fp => ({
+        label: fp.label,
+        value: `$${(fp.total).toFixed(2)}`
+      }));
+  }
+
+  get todosLosMetodosRowsFull() {
+    return (this.data?.ingreso_otras?.formas_pago_detalle ?? [])
+      .map(fp => ({
+        codigo: fp.metodo_pago,
+        label: fp.label,
+        total: fp.total
+      }))
+      .sort((a, b) => b.total - a.total);
   }
 
   ngOnChanges() {

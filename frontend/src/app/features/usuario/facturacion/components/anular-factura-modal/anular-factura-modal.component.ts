@@ -14,10 +14,13 @@ import { PremiumAlertComponent } from '../../../../../shared/components/premium-
   standalone: true,
   imports: [CommonModule, FormsModule, PremiumAlertComponent],
   template: `
-    <div class="modal-backdrop fade show" style="display: block; background-color: rgba(0,0,0,0.4); backdrop-filter: blur(4px);"></div>
+    <!-- Backdrop Estático (No se cierra al clickear) -->
+    <div class="modal-backdrop-premium fade show"></div>
+    
     <div class="modal fade show" style="display: block;" tabindex="-1">
-      <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content border-0 rounded-4 shadow-lg overflow-hidden">
+      <!-- El click en el diálogo NO emite cierre, logrando el backdrop estático -->
+      <div class="modal-dialog modal-dialog-centered" (click)="$event.stopPropagation()">
+        <div class="modal-content border-0 rounded-4 shadow-lg overflow-hidden animate__animated animate__zoomIn animate__faster">
           
           <!-- Header -->
           <div class="modal-header border-0 p-4 pb-0 d-flex justify-content-between align-items-start">
@@ -28,7 +31,7 @@ import { PremiumAlertComponent } from '../../../../../shared/components/premium-
                 </div>
                 <h5 class="fw-900 mb-0 text-dark" style="letter-spacing: -0.5px;">Anular Factura</h5>
               </div>
-              <p class="text-muted small mb-0">Esta acción solicitará la anulación del comprobante ante el SRI.</p>
+              <p class="text-muted small mb-0">Esta acción solicitará la anulación legal ante el SRI.</p>
             </div>
             <button type="button" class="btn-close-lux" (click)="close.emit(false)" [disabled]="loading">
               <i class="bi bi-x"></i>
@@ -36,15 +39,15 @@ import { PremiumAlertComponent } from '../../../../../shared/components/premium-
           </div>
 
           <div class="modal-body p-4">
-            <!-- Factura Info (Always visible for context) -->
-            <div class="invoice-summary-card mb-4" *ngIf="factura && !resultadoSri">
+            <!-- Factura Info (Contexto) -->
+            <div class="invoice-summary-card mb-4" *ngIf="factura && !resultadoSri && !loading">
                <div class="d-flex justify-content-between align-items-center mb-3">
                   <div>
                     <span class="text-muted small fw-bold text-uppercase d-block mb-1">Comprobante</span>
                     <h5 class="fw-900 text-dark mb-0">{{ factura.numero_factura }}</h5>
                   </div>
                   <div class="text-end">
-                    <span class="text-muted small fw-bold text-uppercase d-block mb-1">Monto a Reversar</span>
+                    <span class="text-muted small fw-bold text-uppercase d-block mb-1">Total Factura</span>
                     <h5 class="fw-900 text-primary mb-0">{{ factura.total | currency:'USD' }}</h5>
                   </div>
                </div>
@@ -54,230 +57,174 @@ import { PremiumAlertComponent } from '../../../../../shared/components/premium-
                     <span class="text-muted small d-block">Cliente</span>
                     <span class="fw-bold small text-dark">{{ factura.snapshot_cliente?.razon_social }}</span>
                   </div>
-                  <div>
-                    <span class="text-muted small d-block">Identificación</span>
-                    <span class="fw-bold small text-dark">{{ factura.snapshot_cliente?.identificacion }}</span>
-                  </div>
                </div>
             </div>
 
-            <!-- Loading State -->
-            <div *ngIf="loading" class="text-center py-5">
-               <div class="loading-lux mb-3">
-                  <div class="spinner-premium"></div>
+            <!-- ── ESTADO: CARGANDO (Spinner Prominente) ── -->
+            <div *ngIf="loading" class="text-center py-5 animate__animated animate__fadeIn">
+               <div class="loading-lux mb-4">
+                  <div class="spinner-premium-lg"></div>
                </div>
-               <h5 class="fw-900 text-dark mb-1">Procesando Anulación</h5>
-               <p class="text-muted small">Comunicando con el SRI, por favor espere...</p>
+               <h4 class="fw-900 text-dark mb-2">Procesando Anulación</h4>
+               <p class="text-muted px-4">Estamos comunicándonos con los servidores del SRI para autorizar la Nota de Crédito. No cierre esta ventana.</p>
             </div>
 
+            <!-- ── ESTADO: FORMULARIO ── -->
             <ng-container *ngIf="!loading && !resultadoSri">
-               <!-- Motivo y Acción -->
                <div class="form-section animate__animated animate__fadeIn">
                  <div class="form-group mb-4">
                    <label class="form-label-lux">Motivo de Anulación</label>
                    <textarea 
                      class="input-lux" 
                      [(ngModel)]="razon" 
-                     placeholder="Escriba el motivo por el cual desea anular este comprobante..."
+                     placeholder="Ej: Error en datos del cliente, devolución de mercadería..."
                      rows="3"
-                     style="resize: none; padding-left: 1rem;"
+                     style="resize: none;"
                    ></textarea>
                    <div class="alert alert-info-lux mt-3 d-flex align-items-start gap-2">
                      <i class="bi bi-info-circle-fill flex-shrink-0 mt-1"></i>
-                     <small>Se generará una <b>Nota de Crédito</b> electrónica asociada para legalizar la anulación.</small>
+                     <small>Para anular una factura AUTORIZADA, la ley requiere generar una <b>Nota de Crédito</b> electrónica.</small>
                    </div>
                  </div>
- 
-                 <!-- Action Buttons -->
+  
                  <div class="d-flex gap-3">
-                   <button
-                     class="btn btn-light-lux flex-grow-1"
-                     (click)="close.emit(false)"
-                   >
-                     Cancelar
-                   </button>
+                   <button class="btn btn-light-lux flex-grow-1" (click)="close.emit(false)">Cancelar</button>
                    <button
                      class="btn btn-danger-lux flex-grow-1"
                      [disabled]="!razon.trim() || !canAnular"
-                     [title]="!canAnular ? 'No tienes permisos para anular facturas' : ''"
                      (click)="onAnular()"
                    >
-                     <i class="bi bi-x-circle me-1"></i>
-                     Confirmar Anulación
+                     <i class="bi bi-check-circle me-1"></i> Confirmar
                    </button>
                  </div>
                </div>
             </ng-container>
 
-            <!-- Result State -->
-            <div *ngIf="resultadoSri && !loading" class="result-container py-2 animate__animated animate__fadeIn">
-               <app-premium-alert
-                  [type]="resultadoSri.resultado_sri.estado === 'AUTORIZADO' ? 'success' : 'warning'"
-                  [icon]="resultadoSri.resultado_sri.estado === 'AUTORIZADO' ? 'bi-check-all' : 'bi-exclamation-triangle'"
-                  [title]="resultadoSri.resultado_sri.estado === 'AUTORIZADO' ? '¡Anulación Exitosa!' : 'Resultado SRI'"
-                  [message]="resultadoSri.resultado_sri.estado === 'AUTORIZADO' 
-                    ? 'La factura ' + factura.numero_factura + ' ha sido anulada legalmente ante el SRI.' 
-                    : 'El SRI recibió el comprobante ' + factura.numero_factura + ' pero devolvió observaciones.'"
-               ></app-premium-alert>
+            <!-- ── ESTADO: RESULTADO (Éxito / Observaciones) ── -->
+            <div *ngIf="resultadoSri && !loading" class="result-container text-center animate__animated animate__fadeInUp">
+                
+                <!-- Icono de Éxito Gigante (Resiliente a género/mayúsculas) -->
+                <div class="success-icon-wrapper mb-4" *ngIf="estadoSri.includes('AUTORIZA')">
+                   <i class="bi bi-check-lg"></i>
+                </div>
 
-               <div class="alert bg-soft-light border-0 p-3 rounded-4 mt-3 text-start mb-4" *ngIf="resultadoSri.resultado_sri.mensajes?.length">
-                  <span class="d-block fw-bold small text-muted text-uppercase mb-2">Detalles Técnicos:</span>
-                  <ul class="ps-3 mb-0 small text-dark">
-                    <li *ngFor="let m of resultadoSri.resultado_sri.mensajes" class="mb-1 fw-500">{{ m }}</li>
-                  </ul>
-               </div>
+                <div class="alert-box" [class.success]="estadoSri.includes('AUTORIZA')" 
+                                      [class.warning]="!estadoSri.includes('AUTORIZA')">
+                  <h5 class="fw-900 mb-2">
+                    {{ estadoSri.includes('AUTORIZA') ? '¡Factura Anulada con Éxito!' : 'Resultado SRI' }}
+                  </h5>
+                  <p class="mb-0 small">
+                    {{ estadoSri.includes('AUTORIZA') 
+                      ? 'Se ha generado y autorizado la Nota de Crédito correctamente. La factura ' + (factura?.numero_factura || '') + ' ya no es válida legalmente.' 
+                      : 'El SRI recibió la solicitud pero devolvió observaciones o un estado no esperado: ' + estadoSri }}
+                  </p>
+                </div>
 
-               <button class="btn btn-dark-lux w-100 py-3 rounded-4 fw-bold shadow-sm mt-2" (click)="close.emit(true)">
-                 Entendido, Continuar
-               </button>
+                <div class="technical-details mt-4 text-start" *ngIf="mensajesSri.length">
+                   <span class="tiny-cap text-muted mb-2 d-block">Mensajes del SRI:</span>
+                   <div class="msg-list p-3 bg-light rounded-3">
+                      <div *ngFor="let m of mensajesSri" class="small mb-1 d-flex gap-2">
+                         <i class="bi bi-dot"></i> <span>{{ m }}</span>
+                      </div>
+                   </div>
+                </div>
+
+                <button class="btn btn-dark-lux w-100 py-3 rounded-4 fw-bold shadow-sm mt-4" (click)="close.emit(true)">
+                  Entendido, Continuar
+                </button>
             </div>
           </div>
-
         </div>
       </div>
     </div>
   `,
   styles: [`
     .fw-900 { font-weight: 900; }
-    .fw-500 { font-weight: 500; }
     .tiny-cap { text-transform: uppercase; font-size: 0.65rem; letter-spacing: 0.5px; font-weight: 700; }
     
+    .modal-backdrop-premium {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.4);
+      backdrop-filter: blur(8px);
+      z-index: 1040;
+    }
+
     .icon-badge {
-      width: 32px;
-      height: 32px;
-      border-radius: 8px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1.2rem;
+      width: 32px; height: 32px; border-radius: 8px;
+      display: flex; align-items: center; justify-content: center; font-size: 1.2rem;
     }
     .bg-soft-danger { background: #fef2f2; }
 
     .btn-close-lux {
-      background: #f1f5f9;
-      border: none;
-      width: 32px;
-      height: 32px;
-      border-radius: 10px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: #64748b;
-      transition: all 0.2s;
+      background: #f1f5f9; border: none; width: 32px; height: 32px; border-radius: 10px;
+      display: flex; align-items: center; justify-content: center; color: #64748b; transition: all 0.2s;
     }
     .btn-close-lux:hover:not(:disabled) { background: #e2e8f0; color: #1e293b; }
 
     .invoice-summary-card {
-      background: #fffafa;
-      border: 1px dashed #fca5a5;
-      border-radius: 16px;
-      padding: 1rem 1.25rem;
+      background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 16px; padding: 1.25rem;
     }
 
     .form-label-lux {
-      font-size: 0.75rem;
-      font-weight: 800;
-      color: #475569;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      margin-bottom: 0.5rem;
-      display: block;
+      font-size: 0.75rem; font-weight: 800; color: #475569; text-transform: uppercase;
+      letter-spacing: 0.5px; margin-bottom: 0.5rem; display: block;
     }
 
     .input-lux {
-      width: 100%;
-      background: #ffffff;
-      border: 1.5px solid #e2e8f0;
-      border-radius: 14px;
-      padding: 0.75rem 1rem;
-      font-size: 0.95rem;
-      font-weight: 600;
-      color: #1e293b;
-      outline: none;
-      transition: all 0.2s;
+      width: 100%; border: 2px solid #e2e8f0; border-radius: 14px; padding: 0.75rem 1rem;
+      font-size: 0.95rem; font-weight: 600; outline: none; transition: all 0.2s;
     }
-    .input-lux:focus {
-      border-color: #ef4444;
-      box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.05);
-    }
+    .input-lux:focus { border-color: #ef4444; box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.05); }
 
     .alert-info-lux {
-      background: #f0f9ff;
-      border: 1px solid #e0f2fe;
-      border-radius: 12px;
-      padding: 0.75rem;
-      color: #0369a1;
-      font-weight: 500;
-      line-height: 1.4;
+      background: #f0f9ff; border: 1px solid #e0f2fe; border-radius: 12px;
+      padding: 0.75rem; color: #0369a1; font-weight: 500; font-size: 0.85rem;
     }
 
     .btn-danger-lux {
-      background: #ef4444;
-      color: white;
-      border: none;
-      padding: 0.85rem;
-      border-radius: 14px;
-      font-weight: 700;
-      font-size: 0.95rem;
-      transition: all 0.2s;
+      background: #ef4444; color: white; border: none; padding: 0.85rem;
+      border-radius: 14px; font-weight: 700; transition: all 0.2s;
     }
-    .btn-danger-lux:hover:not(:disabled) {
-      background: #dc2626;
-      transform: translateY(-1px);
-      box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2);
-    }
-    .btn-danger-lux:disabled {
-      background: #fca5a5;
-      cursor: not-allowed;
-    }
+    .btn-danger-lux:hover:not(:disabled) { background: #dc2626; transform: translateY(-1px); }
+    .btn-danger-lux:disabled { background: #fca5a5; cursor: not-allowed; }
 
     .btn-light-lux {
-      background: #f1f5f9;
-      color: #475569;
-      border: none;
-      padding: 0.85rem;
-      border-radius: 14px;
-      font-weight: 700;
-      font-size: 0.95rem;
-      transition: all 0.2s;
-    }
-    .btn-light-lux:hover {
-      background: #e2e8f0;
-      color: #1e293b;
+      background: #f1f5f9; color: #475569; border: none; padding: 0.85rem;
+      border-radius: 14px; font-weight: 700; transition: all 0.2s;
     }
 
     .btn-dark-lux {
-      background: #1e293b;
-      color: white;
-      border: none;
-      transition: all 0.2s;
+      background: #1e293b; color: white; border: none; transition: all 0.2s;
     }
-    .btn-dark-lux:hover {
-      background: #0f172a;
-      transform: translateY(-1px);
-    }
-    .bg-soft-light { background: #f8fafc; }
 
+    /* Animation Wrapper Success */
     .success-icon-wrapper {
-      width: 80px;
-      height: 80px;
-      background: #ecfdf5;
-      color: #10b981;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 3.5rem;
-      margin: 0 auto;
-      box-shadow: 0 0 0 10px #f0fdf4;
-      animation: pulse-success 2s infinite;
+      width: 80px; height: 80px; background: #ecfdf5; color: #10b981; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center; font-size: 3rem;
+      margin: 0 auto; box-shadow: 0 0 0 10px #f0fdf4;
+      animation: checkBounce 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     }
 
-    @keyframes pulse-success {
-      0% { box-shadow: 0 0 0 0px rgba(16, 185, 129, 0.2); }
-      70% { box-shadow: 0 0 0 15px rgba(16, 185, 129, 0); }
-      100% { box-shadow: 0 0 0 0px rgba(16, 185, 129, 0); }
+    @keyframes checkBounce {
+      0% { transform: scale(0); opacity: 0; }
+      100% { transform: scale(1); opacity: 1; }
     }
+
+    .alert-box { padding: 1.5rem; border-radius: 20px; }
+    .alert-box.success { background: #ecfdf5; color: #065f46; border: 1px solid #d1fae5; }
+    .alert-box.warning { background: #fffbeb; color: #92400e; border: 1px solid #fef3c7; }
+
+    /* Spinner Lg */
+    .spinner-premium-lg {
+      width: 60px; height: 60px; border: 4px solid #f1f5f9;
+      border-top: 4px solid #ef4444; border-radius: 50%;
+      animation: spin 1s linear infinite; margin: 0 auto;
+    }
+
+    @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+    .loading-lux { height: 80px; display: flex; align-items: center; }
   `]
 })
 export class AnularFacturaModalComponent implements OnInit {
@@ -305,12 +252,20 @@ export class AnularFacturaModalComponent implements OnInit {
     return this.permissionsService.hasPermission(FACTURAS_PERMISSIONS.ANULAR);
   }
 
-  onAnular() {
-    if (!this.permissionsService.hasPermission(FACTURAS_PERMISSIONS.ANULAR)) {
-      this.uiService.showError('Permiso denegado: No puedes anular facturas', 'error');
-      return;
-    }
+  get estadoSri(): string {
+    // Manejo resiliente de la respuesta envuelta en 'detalles' por success_response
+    const res: any = this.resultadoSri;
+    const info = res?.detalles?.resultado_sri || res?.resultado_sri;
+    return (info?.estado || '').toUpperCase();
+  }
 
+  get mensajesSri(): string[] {
+    const res: any = this.resultadoSri;
+    const info = res?.detalles?.resultado_sri || res?.resultado_sri;
+    return info?.mensajes || [];
+  }
+
+  onAnular() {
     if (!this.razon.trim()) {
       this.uiService.showToast('Debe ingresar un motivo de anulación', 'warning');
       return;
@@ -318,19 +273,20 @@ export class AnularFacturaModalComponent implements OnInit {
 
     this.loading = true;
     this.ncService.anularFacturaConNC(this.factura.id, this.razon).subscribe({
-      next: (res) => {
+      next: (res: any) => {
         this.loading = false;
         this.resultadoSri = res;
         
-        if (res.resultado_sri.estado === 'AUTORIZADO') {
+        const estado = this.estadoSri;
+        if (estado.includes('AUTORIZA')) {
           this.uiService.showToast('Factura anulada exitosamente', 'success');
         } else {
-          this.uiService.showToast('El SRI devolvió observaciones en la anulación', 'warning');
+          this.uiService.showToast('El SRI devolvió observaciones: ' + estado, 'warning');
         }
       },
       error: (err) => {
         this.loading = false;
-        const msg = err.error?.detail || 'Error al intentar anular la factura';
+        const msg = err.error?.mensaje || err.error?.detail || 'Error al intentar anular la factura';
         this.uiService.showError(msg);
       }
     });
