@@ -1,6 +1,7 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 import { finalize } from 'rxjs';
 
 import { FacturaStatsComponent } from './components/factura-stats/factura-stats.component';
@@ -44,28 +45,48 @@ import { SriConfigService } from '../certificado-sri/services/sri-config.service
       <ng-container *ngIf="canView; else noPermission">
         <div class="container-fluid p-0">
 
-          <!-- STATS -->
-          <app-factura-stats
-            [totalCount]="stats.totalCount"
-            [totalAmount]="stats.totalAmount"
-            [pendingAmount]="stats.pendingAmount"
-          ></app-factura-stats>
+          <!-- BLOQUEO SRI -->
+          <ng-container *ngIf="sriError; else contenidoFacturacion">
+            <div class="sri-block-container">
+              <div class="sri-block-card">
+                <div class="sri-block-icon">
+                  <i class="bi bi-shield-exclamation"></i>
+                </div>
+                <h2 class="sri-block-title">Firma Electrónica Requerida</h2>
+                <p class="sri-block-message">{{ sriError }}</p>
+                <p class="sri-block-hint">Para emitir comprobantes electrónicos autorizados por el SRI, primero debes configurar y activar tu certificado de firma electrónica.</p>
+                <button class="sri-block-btn" (click)="irACertificadoSri()">
+                  <i class="bi bi-gear-fill me-2"></i>
+                  Configurar Certificado SRI
+                </button>
+              </div>
+            </div>
+          </ng-container>
 
-          <!-- ACTIONS -->
-          <app-factura-actions
-            [(searchQuery)]="searchQuery"
-            (searchQueryChange)="applyFilters()"
-            [sriError]="sriError"
-            (onFilterChangeEmit)="handleFilters($event)"
-            (onCreate)="openCreateModal()"
-          ></app-factura-actions>
+          <ng-template #contenidoFacturacion>
+            <!-- STATS -->
+            <app-factura-stats
+              [totalCount]="stats.totalCount"
+              [totalAmount]="stats.totalAmount"
+              [pendingAmount]="stats.pendingAmount"
+            ></app-factura-stats>
 
-          <!-- TABLE -->
-          <app-factura-table
-            [facturas]="filteredFacturas"
-            [processingStates]="processingStates"
-            (onAction)="handleAction($event)"
-          ></app-factura-table>
+            <!-- ACTIONS -->
+            <app-factura-actions
+              [(searchQuery)]="searchQuery"
+              (searchQueryChange)="applyFilters()"
+              [sriError]="sriError"
+              (onFilterChangeEmit)="handleFilters($event)"
+              (onCreate)="openCreateModal()"
+            ></app-factura-actions>
+
+            <!-- TABLE -->
+            <app-factura-table
+              [facturas]="filteredFacturas"
+              [processingStates]="processingStates"
+              (onAction)="handleAction($event)"
+            ></app-factura-table>
+          </ng-template>
 
            <!-- MODALS -->
            <app-create-factura-modal
@@ -184,6 +205,78 @@ import { SriConfigService } from '../certificado-sri/services/sri-config.service
     .max-w-400 { max-width: 400px; }
     .animate-fade-in { animation: fadeIn 0.4s ease-out; }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+
+    .sri-block-container {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 70vh;
+      padding: 2rem;
+    }
+    .sri-block-card {
+      background: white;
+      border-radius: 24px;
+      padding: 3rem 2.5rem;
+      max-width: 520px;
+      width: 100%;
+      text-align: center;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.08);
+      border: 1px solid #e2e8f0;
+      animation: fadeIn 0.4s ease-out;
+    }
+    .sri-block-icon {
+      width: 90px;
+      height: 90px;
+      background: linear-gradient(135deg, #fef3c7, #fde68a);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2.5rem;
+      color: #d97706;
+      margin: 0 auto 1.5rem;
+      box-shadow: 0 10px 25px rgba(217, 119, 6, 0.2);
+    }
+    .sri-block-title {
+      font-size: 1.5rem;
+      font-weight: 800;
+      color: #1e293b;
+      margin-bottom: 0.75rem;
+    }
+    .sri-block-message {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: #dc2626;
+      background: #fef2f2;
+      border: 1px solid #fecaca;
+      border-radius: 12px;
+      padding: 0.75rem 1rem;
+      margin-bottom: 1rem;
+    }
+    .sri-block-hint {
+      font-size: 0.875rem;
+      color: #64748b;
+      line-height: 1.6;
+      margin-bottom: 2rem;
+    }
+    .sri-block-btn {
+      background: #161d35;
+      color: white;
+      border: none;
+      padding: 0.9rem 2rem;
+      border-radius: 14px;
+      font-weight: 700;
+      font-size: 0.95rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+    }
+    .sri-block-btn:hover {
+      background: #232d4b;
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(22, 29, 53, 0.25);
+    }
   `]
 })
 export class FacturacionPage implements OnInit {
@@ -236,8 +329,13 @@ export class FacturacionPage implements OnInit {
     private uiService: UiService,
     private permissionsService: PermissionsService,
     private sriConfigService: SriConfigService,
-    private cd: ChangeDetectorRef
+    private cd: ChangeDetectorRef,
+    private router: Router
   ) { }
+
+  irACertificadoSri() {
+    this.router.navigate(['/usuario/certificado-sri']);
+  }
 
   ngOnInit() {
     this.uiService.setPageHeader('Facturación Electrónica', 'Emite y gestiona tus comprobantes autorizados por el SRI');
