@@ -11,12 +11,13 @@ type RangoTipo = 'mes_actual' | 'mes_anterior' | 'anio_actual' | 'personalizado'
   template: `
     <div class="kpi-grid mb-4">
       <!-- Empresas Activas -->
-      <div class="kpi-card">
+      <div class="kpi-card kpi-active-highlight">
         <span class="kpi-label">Empresas activas</span>
         <span class="kpi-value">{{ datos.empresas_activas }}</span>
-        <span class="kpi-sub" [class.text-success]="datos.variacion_empresas_activas_valor >= 0" [class.text-danger]="datos.variacion_empresas_activas_valor < 0">
-          {{ datos.variacion_empresas_activas_valor >= 0 ? '+' : '' }}{{ datos.variacion_empresas_activas_valor }} {{ periodoLabel }}
-        </span>
+        <div class="kpi-sub-v2" [class.text-success]="datos.variacion_empresas_activas_valor >= 0" [class.text-danger]="datos.variacion_empresas_activas_valor < 0">
+          <span class="fw-bold">{{ datos.variacion_empresas_activas_valor >= 0 ? '+' : '' }}{{ datos.variacion_empresas_activas_valor }}</span>
+          <span class="ms-1 text-muted fw-normal">{{ periodoLabel }}</span>
+        </div>
       </div>
 
       <!-- Ingresos del Año -->
@@ -44,14 +45,7 @@ type RangoTipo = 'mes_actual' | 'mes_anterior' | 'anio_actual' | 'personalizado'
         <span class="kpi-sub text-muted">este mes</span>
       </div>
 
-      <!-- Crecimiento Neto -->
-      <div class="kpi-card">
-        <span class="kpi-label">Crecimiento Neto</span>
-        <span class="kpi-value" [class.text-success]="datos.crecimiento_neto >= 0" [class.text-danger]="datos.crecimiento_neto < 0">
-          {{ datos.crecimiento_neto > 0 ? '+' : '' }}{{ datos.crecimiento_neto }}
-        </span>
-        <span class="kpi-sub text-muted">empresas (Neto)</span>
-      </div>
+
 
       <!-- Tasa Crecimiento -->
       <div class="kpi-card">
@@ -99,6 +93,8 @@ type RangoTipo = 'mes_actual' | 'mes_anterior' | 'anio_actual' | 'personalizado'
     .kpi-label { font-size: 0.65rem; font-weight: 700; color: #64748b; text-transform: uppercase; display: block; margin-bottom: 0.35rem; letter-spacing: 0.5px; }
     .kpi-value { font-size: 1.1rem; font-weight: 800; color: #1e293b; display: block; line-height: 1; margin-bottom: 0.25rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .kpi-sub { font-size: 0.75rem; font-weight: 600; }
+    .kpi-sub-v2 { font-size: 0.75rem; font-weight: 600; margin-top: 0.1rem; }
+    .kpi-active-highlight { background: #ffffff; border-left: 4px solid #1e293b; }
     .kpi-warning { border-bottom: 3px solid #f59e0b; background: #fffbeb; }
     .kpi-danger { border-bottom: 3px solid #ef4444; background: #fef2f2; }
   `]

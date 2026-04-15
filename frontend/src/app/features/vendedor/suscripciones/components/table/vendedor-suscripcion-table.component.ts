@@ -33,9 +33,6 @@ import { Suscripcion } from '../../services/vendedor-suscripcion.service';
                     </div>
                     <div class="text-truncate">
                       <span class="fw-bold text-dark d-block mb-0 text-truncate" [title]="sub.empresa_nombre">{{ sub.empresa_nombre || 'Empresa Desconocida' }}</span>
-                      <small class="text-muted d-block" style="font-size: 0.73rem;">
-                        ID: {{ sub.empresa_id.substring(0,8) }}...
-                      </small>
                     </div>
                   </div>
                 </td>
@@ -96,12 +93,7 @@ import { Suscripcion } from '../../services/vendedor-suscripcion.service';
                       <i class="bi bi-three-dots"></i>
                     </button>
                         <ul class="dropdown-menu dropdown-menu-end border-0 p-2 rounded-4" [attr.aria-labelledby]="'actions-' + sub.id">
-                          <li>
-                            <a class="dropdown-item rounded-3 py-2" href="javascript:void(0)" (click)="onVerHistorial.emit(sub)">
-                              <i class="bi bi-clock-history text-corporate"></i>
-                              <span class="ms-2">Historial de Pagos</span>
-                            </a>
-                          </li>
+
                           <li><hr class="dropdown-divider mx-2"></li>
                           <li>
                             <div class="px-3 py-1 text-muted" style="font-size: 0.65rem;">
@@ -241,7 +233,7 @@ import { Suscripcion } from '../../services/vendedor-suscripcion.service';
 })
 export class VendedorSuscripcionTableComponent {
   @Input() suscripciones: Suscripcion[] = [];
-  @Output() onVerHistorial = new EventEmitter<Suscripcion>();
+
   @Output() onNotas = new EventEmitter<Suscripcion>();
 
   trackById(index: number, sub: Suscripcion): string {

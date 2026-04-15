@@ -247,6 +247,7 @@ export class R031GlobalComponent implements OnInit, OnDestroy {
 
   ngOnInit() {}
 
+
   ngOnDestroy() {
     this.destroy$.next();
     this.destroy$.complete();

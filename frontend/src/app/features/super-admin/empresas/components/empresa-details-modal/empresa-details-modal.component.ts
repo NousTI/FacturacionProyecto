@@ -168,21 +168,21 @@ import { CommonModule } from '@angular/common';
                          <div class="d-flex align-items-center gap-2">
                             <div class="status-indicator" [class.success]="!isExpired(empresa?.sri_expiracion) && empresa?.sri_expiracion"></div>
                             <span class="fw-bold" *ngIf="empresa?.sri_expiracion">{{ !isExpired(empresa?.sri_expiracion) ? 'Válido' : 'Expirado' }}</span>
-                            <span class="fw-bold text-muted" *ngIf="!empresa?.sri_expiracion">Sin Configurar</span>
+                            <span class="fw-bold text-muted" *ngIf="!empresa?.sri_expiracion">Sin registro</span>
                          </div>
                       </div>
                    </div>
                    <div class="col-md-6">
                       <div class="info-pill">
                          <label>Expira el</label>
-                         <div class="fw-bold text-dark">{{ (empresa?.sri_expiracion | date:'dd MMM, yyyy') || 'Desconocido' }}</div>
+                         <div class="fw-bold text-dark">{{ (empresa?.sri_expiracion | date:'dd MMM, yyyy') || 'Sin registro' }}</div>
                       </div>
                    </div>
                    <div class="col-md-6">
                       <div class="info-pill">
                          <label>Ambiente SRI</label>
                          <div class="badge-ambient" [class.prod]="empresa?.sri_ambiente === 'PRODUCCION'">
-                            {{ empresa?.sri_ambiente || 'PRUEBAS' }}
+                            {{ empresa?.sri_expiracion ? (empresa?.sri_ambiente || 'PRUEBAS') : 'Sin registro' }}
                          </div>
                       </div>
                    </div>
@@ -239,9 +239,12 @@ import { CommonModule } from '@angular/common';
     /* El componente usa los colores de status definidos en styles.css */
     .status-success { background-color: var(--status-success-bg); color: var(--status-success-text); }
     .status-danger { background-color: var(--status-danger-bg); color: var(--status-danger-text); }
-    .status-text-success { color: var(--status-success-text); }
-    .status-text-warning { color: var(--status-warning-text); }
-    .status-text-danger { color: var(--status-danger-text); }
+    .status-text-success { color: var(--status-success); }
+    .status-text-warning { color: var(--status-warning); }
+    .status-text-danger { color: var(--status-danger); }
+    
+    .fw-800, .fw-bold { color: #0f172a !important; }
+    .text-muted { color: #64748b !important; }
     
     .badge-status-neutral { 
       background-color: var(--status-neutral-bg); 
@@ -291,9 +294,9 @@ import { CommonModule } from '@angular/common';
     .info-pill { background: white; padding: 1.25rem; border-radius: 18px; border: 1px solid #f1f5f9; }
     .info-pill label { display: block; font-size: var(--text-xs); font-weight: 800; color: #94a3b8; text-transform: uppercase; margin-bottom: 0.5rem; }
     
-    .status-indicator { width: 12px; height: 12px; border-radius: 50%; background: var(--status-danger-text); }
-    .status-indicator.success { background: var(--status-success-text); }
-    .badge-ambient { font-size: var(--text-sm); font-weight: 800; color: var(--status-warning-text); }
+    .status-indicator { width: 12px; height: 12px; border-radius: 50%; background: var(--status-danger); }
+    .status-indicator.success { background: var(--status-success); }
+    .badge-ambient { font-size: var(--text-sm); font-weight: 800; color: var(--status-warning); }
     .badge-ambient.prod { color: #8b5cf6; }
 
     .modal-footer-premium { padding: 1.75rem 2.5rem; background: #ffffff; display: flex; justify-content: flex-end; gap: 1rem; border-top: 1px solid #f1f5f9; }

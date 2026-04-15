@@ -27,16 +27,22 @@ class RepositorioR031:
 
         query = """
             SELECT
-                -- Empresas activas: TOTAL ACTUAL (Global)
-                (SELECT COUNT(DISTINCT e.id)
-                 FROM sistema_facturacion.empresas e
-                 JOIN sistema_facturacion.suscripciones s ON s.empresa_id = e.id
-                 WHERE s.estado = 'ACTIVA') as empresas_activas,
+                -- Empresas activas: Al finalizar el periodo
+                (SELECT COUNT(DISTINCT s.empresa_id)
+                 FROM sistema_facturacion.suscripciones s
+                 WHERE s.estado = 'ACTIVA' 
+                   AND s.fecha_inicio <= {f_fin}) as empresas_activas,
 
                 -- Nuevas empresas en el período
                 (SELECT COUNT(id)
                  FROM sistema_facturacion.empresas
                  WHERE created_at BETWEEN {f_inicio} AND {f_fin}) as empresas_nuevas_mes,
+
+                -- Empresas que perdieron suscripción en el periodo (Entraron a rescate)
+                (SELECT COUNT(DISTINCT s_loss.empresa_id)
+                 FROM sistema_facturacion.suscripciones s_loss
+                 WHERE s_loss.estado IN ('VENCIDA', 'SUSPENDIDA')
+                   AND s_loss.fecha_fin BETWEEN {f_inicio} AND {f_fin}) as perdidas_periodo,
 
                 -- Ingresos del año de la fecha seleccionada (pagos confirmados)
                 (SELECT COALESCE(SUM(monto), 0)
@@ -137,7 +143,10 @@ class RepositorioR031:
             # Calcular tasas y métricas adicionales
             emp_act = int(data.get('empresas_activas', 0))
             emp_ant = int(data.get('empresas_activas_mes_anterior', 0))
-            data['variacion_empresas_activas_valor'] = emp_act - emp_ant
+            # Variación de Empresas Activas = Crecimiento Neto (Nuevas en periodo - Perdidas en periodo)
+            # Como solicitó el usuario: "Crecimiento Neto y Empresas activas es lo mismo" y que afecte las fechas
+            data['variacion_empresas_activas_valor'] = data['empresas_nuevas_mes'] - data.get('perdidas_periodo', 0)
+
             data['tasa_crecimiento'] = round(
                 ((emp_act - emp_ant) / emp_ant * 100) if emp_ant > 0 else (100.0 if emp_act > 0 else 0.0), 2
             )
@@ -157,9 +166,6 @@ class RepositorioR031:
             data['variacion_ingresos_mes'] = round(
                 ((ing_mes - ing_mes_ant) / ing_mes_ant * 100) if ing_mes_ant > 0 else (100.0 if ing_mes > 0 else 0.0), 2
             )
-
-            # Crecimiento Neto (Empresas nuevas - Empresas que entraron en rescate en el periodo)
-            data['crecimiento_neto'] = data['empresas_nuevas_mes'] - data['zona_rescate']
 
             return data
 

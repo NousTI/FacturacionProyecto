@@ -6,7 +6,7 @@ import { EmpresaService } from '../../services/empresa.service';
 @Component({
   selector: 'app-change-plan-modal',
   template: `
-    <div class="modal-overlay" (click)="onClose.emit()">
+    <div class="modal-overlay">
       <div class="modal-container-plan shadow-premium" (click)="$event.stopPropagation()">
         
         <div class="modal-header-plan">

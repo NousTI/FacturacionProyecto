@@ -5,7 +5,7 @@ import { EmpresaService } from '../../services/empresa.service';
 @Component({
   selector: 'app-assign-vendedor-modal',
   template: `
-    <div class="modal-overlay" (click)="!loading && onClose.emit()">
+    <div class="modal-overlay">
       <div class="modal-container-final shadow-premium" (click)="$event.stopPropagation()">
         
         <div class="modal-header-final">

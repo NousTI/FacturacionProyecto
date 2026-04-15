@@ -36,9 +36,8 @@ import { Suscripcion } from '../../services/suscripcion.service';
                 <div class="col-md-12">
                   <label class="label-final">Plan a registrar *</label>
                   <select formControlName="plan_id" class="input-final" (change)="onPlanChange()">
-                    <option *ngFor="let p of planes" [value]="p.id">
-                      {{ p.nombre }} — {{ p.precio_anual | currency:'USD':'symbol':'1.0-0' }}/año
-                      {{ p.id === suscripcion?.plan_id ? '(Plan actual)' : '' }}
+                    <option *ngFor="let p of planes" [value]="p.id" [disabled]="isPlanDisabled(p.id)">
+                      {{ getPlanLabel(p) }} — {{ p.precio_anual | currency:'USD':'symbol':'1.0-0' }}/año
                     </option>
                   </select>
                 </div>
@@ -94,7 +93,9 @@ import { Suscripcion } from '../../services/suscripcion.service';
         <!-- Footer -->
         <div class="modal-footer-final">
           <button (click)="close()" [disabled]="saving" class="btn-cancel-final">Cancelar</button>
-          <button (click)="submit()" [disabled]="pagoForm.invalid || saving" class="btn-submit-final d-flex align-items-center gap-2">
+          <button (click)="submit()" 
+                  [disabled]="pagoForm.invalid || saving || isPlanDisabled(pagoForm.get('plan_id')?.value)" 
+                  class="btn-submit-final d-flex align-items-center gap-2">
             <span *ngIf="saving" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
             {{ saving ? 'Procesando...' : (pagoRecibido ? 'Registrar Pago' : 'Generar Deuda') }}
           </button>
@@ -198,6 +199,30 @@ export class RegistroPagoModalComponent implements OnInit, OnDestroy {
         if (selectedPlan) {
             this.pagoForm.patchValue({ monto: selectedPlan.precio_anual });
         }
+    }
+
+    get daysRemaining(): number {
+        if (!this.suscripcion?.fecha_fin) return 0;
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const expiry = new Date(this.suscripcion.fecha_fin);
+        expiry.setHours(0, 0, 0, 0);
+        const diffTime = expiry.getTime() - today.getTime();
+        return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    }
+
+    isPlanDisabled(planId: string): boolean {
+        // Solo deshabilitar si es el plan actual Y faltan más de 30 días
+        if (planId !== this.suscripcion?.plan_id) return false;
+        return this.daysRemaining > 30;
+    }
+
+    getPlanLabel(p: any): string {
+        const isCurrent = p.id === this.suscripcion?.plan_id;
+        if (isCurrent && this.daysRemaining > 30) {
+            return `${p.nombre} (Vigente - ${this.daysRemaining} días restantes)`;
+        }
+        return isCurrent ? `${p.nombre} (Plan actual - Renovable)` : p.nombre;
     }
 
     togglePagoRecibido() {

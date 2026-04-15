@@ -151,8 +151,14 @@ interface Company {
                                             
                                             <div class="text-end">
                                                 <div class="h5 fw-bolder text-dark mb-1">{{ item.monto | currency }}</div>
-                                                <div class="badge bg-success-subtle text-success border border-success-subtle rounded-pill fw-bold px-2">
-                                                    PAGADO
+                                                <div class="badge rounded-pill fw-bold px-2"
+                                                     [ngClass]="{
+                                                         'bg-success-subtle text-success border border-success-subtle': item.estado === 'PAGADO',
+                                                         'bg-warning-subtle text-warning border border-warning-subtle': item.estado === 'PENDIENTE',
+                                                         'bg-danger-subtle text-danger border border-danger-subtle': item.estado === 'CANCELADO' || item.estado === 'RECHAZADO',
+                                                         'bg-secondary-subtle text-secondary border border-secondary-subtle': !['PAGADO', 'PENDIENTE', 'CANCELADO', 'RECHAZADO'].includes(item.estado)
+                                                     }">
+                                                    {{ item.estado }}
                                                 </div>
                                             </div>
                                         </div>

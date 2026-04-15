@@ -8,7 +8,7 @@ import { SRI_TIPOS_PERSONA, SRI_TIPOS_CONTRIBUYENTE } from '../../../../../core/
 @Component({
   selector: 'app-create-empresa-modal',
   template: `
-    <div class="modal-overlay animate__animated animate__fadeIn animate__faster" (click)="close()">
+    <div class="modal-overlay animate__animated animate__fadeIn animate__faster">
       <div class="modal-container-final" (click)="$event.stopPropagation()">
         
         <!-- Header -->
@@ -197,7 +197,11 @@ import { SRI_TIPOS_PERSONA, SRI_TIPOS_CONTRIBUYENTE } from '../../../../../core/
                 <div class="col-md-12" *ngIf="empresaForm.get('estado_pago')?.value === 'PAGADO'">
                   <label class="label-final">Número de Comprobante / Referencia *</label>
                   <input type="text" formControlName="numero_comprobante" class="input-final" 
+                    [class.is-invalid]="empresaForm.get('numero_comprobante')?.invalid && empresaForm.get('numero_comprobante')?.touched"
                     placeholder="Ej: TR-123456">
+                  <div class="error-feedback" *ngIf="empresaForm.get('numero_comprobante')?.invalid && empresaForm.get('numero_comprobante')?.touched">
+                    El número de comprobante es obligatorio para confirmar el pago
+                  </div>
                 </div>
 
                  <div class="col-12">
@@ -213,7 +217,7 @@ import { SRI_TIPOS_PERSONA, SRI_TIPOS_CONTRIBUYENTE } from '../../../../../core/
         <!-- Footer -->
         <div class="modal-footer-final">
           <button (click)="close()" class="btn-cancel-final">Cancelar</button>
-          <button (click)="submit()" [disabled]="empresaForm.invalid || (empresa && empresaForm.pristine)" class="btn-submit-final">
+          <button (click)="submit()" [disabled]="empresaForm.invalid || (empresa && !hasChanges)" class="btn-submit-final">
             {{ empresa ? 'Guardar Cambios' : 'Crear Empresa' }}
           </button>
         </div>
@@ -389,6 +393,15 @@ export class CreateEmpresaModalComponent implements OnInit, OnDestroy {
   planes: any[] = [];
   tiposPersona = SRI_TIPOS_PERSONA;
   tiposContribuyente = SRI_TIPOS_CONTRIBUYENTE;
+  initialValues: string = '';
+
+  get hasChanges(): boolean {
+    return JSON.stringify(this.empresaForm.getRawValue()) !== this.initialValues;
+  }
+
+  captureSnapshot() {
+    this.initialValues = JSON.stringify(this.empresaForm.getRawValue());
+  }
 
   constructor(
     private fb: FormBuilder,
@@ -428,6 +441,25 @@ export class CreateEmpresaModalComponent implements OnInit, OnDestroy {
     document.body.style.overflow = 'hidden';
     this.loadCatalogs();
 
+    // Validación condicional para el comprobante de pago (solo en creación)
+    if (!this.empresa) {
+      this.empresaForm.get('estado_pago')?.valueChanges.subscribe(val => {
+        const ctrl = this.empresaForm.get('numero_comprobante');
+        if (val === 'PAGADO') {
+          ctrl?.setValidators([Validators.required]);
+        } else {
+          ctrl?.clearValidators();
+        }
+        ctrl?.updateValueAndValidity();
+      });
+
+      // Inicializar validador si está en PAGADO por defecto
+      if (this.empresaForm.get('estado_pago')?.value === 'PAGADO') {
+        this.empresaForm.get('numero_comprobante')?.setValidators([Validators.required]);
+        this.empresaForm.get('numero_comprobante')?.updateValueAndValidity();
+      }
+    }
+
     if (this.empresa) {
       this.empresaForm.patchValue({
         ...this.empresa,
@@ -447,6 +479,8 @@ export class CreateEmpresaModalComponent implements OnInit, OnDestroy {
       
       // Asegurar que el formulario recalcule su estado después del parcheo
       this.empresaForm.updateValueAndValidity();
+      this.captureSnapshot();
+      this.empresaForm.markAsPristine();
     }
   }
 
@@ -455,7 +489,11 @@ export class CreateEmpresaModalComponent implements OnInit, OnDestroy {
       this.vendedores = data;
       if (this.empresa) {
         const vid = this.empresa.vendedor_id || this.empresa.vendedorId;
-        this.empresaForm.get('vendedor_id')?.setValue(vid);
+        this.empresaForm.get('vendedor_id')?.setValue(vid, { emitEvent: false });
+        if (!this.empresaForm.dirty) {
+          this.captureSnapshot();
+          this.empresaForm.markAsPristine();
+        }
       }
     });
     
@@ -463,7 +501,11 @@ export class CreateEmpresaModalComponent implements OnInit, OnDestroy {
       this.planes = data;
       if (this.empresa) {
         const pid = this.empresa.plan_id || this.empresa.planId || this.empresa.currentPlanId;
-        this.empresaForm.get('plan_id')?.setValue(pid);
+        this.empresaForm.get('plan_id')?.setValue(pid, { emitEvent: false });
+        if (!this.empresaForm.dirty) {
+          this.captureSnapshot();
+          this.empresaForm.markAsPristine();
+        }
       }
     });
   }

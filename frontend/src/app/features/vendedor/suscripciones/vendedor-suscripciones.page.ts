@@ -9,7 +9,7 @@ import { VendedorSuscripcionActionsComponent } from './components/vendedor-suscr
 import { VendedorSuscripcionTableComponent } from './components/table/vendedor-suscripcion-table.component';
 import { SeguimientoNotasModalComponent } from './components/notas-modal/seguimiento-notas-modal.component';
 import { VendedorHistoryModalComponent } from './components/history-modal/vendedor-history-modal.component';
-import { HistorialPagosModalComponent } from '../../super-admin/suscripciones/components/historial-pagos-modal/historial-pagos-modal.component';
+
 import { ToastComponent } from '../../../shared/components/toast/toast.component';
 
 // Services
@@ -27,7 +27,6 @@ import { UiService } from '../../../shared/services/ui.service';
     VendedorSuscripcionStatsComponent,
     VendedorSuscripcionActionsComponent,
     VendedorSuscripcionTableComponent,
-    HistorialPagosModalComponent,
     SeguimientoNotasModalComponent,
     VendedorHistoryModalComponent,
     ToastComponent
@@ -52,7 +51,6 @@ import { UiService } from '../../../shared/services/ui.service';
       <!-- TABLE -->
       <app-vendedor-suscripcion-table
         [suscripciones]="filteredSuscripciones"
-        (onVerHistorial)="openHistorial($event)"
         (onNotas)="openNotas($event)"
       ></app-vendedor-suscripcion-table>
 
@@ -64,13 +62,7 @@ import { UiService } from '../../../shared/services/ui.service';
         (onClose)="showGeneralHistoryModal = false"
       ></app-vendedor-history-modal>
       
-      <!-- Historial Pagos (Individual - Read Only reused) -->
-      <app-historial-pagos-modal
-        *ngIf="showHistorialModal"
-        [companyName]="selectedSuscripcion?.empresa_nombre || ''"
-        [pagos]="historialPagos"
-        (onClose)="showHistorialModal = false"
-      ></app-historial-pagos-modal>
+
 
       <!-- Notas Seguimiento -->
       <app-seguimiento-notas-modal
@@ -106,7 +98,6 @@ import { UiService } from '../../../shared/services/ui.service';
 })
 export class VendedorSuscripcionesPage implements OnInit {
   suscripciones: Suscripcion[] = [];
-  historialPagos: PagoHistorico[] = [];
   selectedSuscripcion: Suscripcion | null = null;
   planes: any[] = [];
 
@@ -116,7 +107,6 @@ export class VendedorSuscripcionesPage implements OnInit {
   filterPago = 'ALL';
   filterPlan = 'ALL';
 
-  showHistorialModal = false;
   showGeneralHistoryModal = false;
   showNotasModal = false;
 
@@ -203,27 +193,10 @@ export class VendedorSuscripcionesPage implements OnInit {
     this.filterStatus = status;
   }
 
-  openHistorial(sub: Suscripcion) {
-    this.selectedSuscripcion = sub;
-    this.showNotasModal = false;
 
-    // Fetch history using Superadmin Service (reusing endpoint which hopefully allows vendor context or we need to update backend)
-    // Backend: ServicioSuscripciones.obtener_historial usually checks permissions.
-    // If "suscripciones" permission implies seeing history, it should work.
-    // Assuming vendor has 'ver_reportes' or similar.
-    this.adminSubService.getPagos(sub.empresa_id).subscribe({
-      next: (pagos) => {
-        this.historialPagos = pagos;
-        this.showHistorialModal = true;
-        this.cd.detectChanges();
-      },
-      error: (err) => this.uiService.showError(err, 'No se pudo cargar el historial')
-    });
-  }
 
   openNotas(sub: Suscripcion) {
     this.selectedSuscripcion = sub;
-    this.showHistorialModal = false;
     this.showNotasModal = true;
   }
 

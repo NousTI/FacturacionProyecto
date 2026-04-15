@@ -41,9 +41,6 @@ import { Suscripcion } from '../../services/suscripcion.service';
                       <span class="fw-bold text-dark d-block mb-0 text-truncate" [title]="sub.empresa_nombre || 'Empresa Desconocida'">
                         {{ sub.empresa_nombre || 'Empresa Desconocida' }}
                       </span>
-                      <small class="text-muted" style="font-size: 0.7rem;">
-                        ID: {{ sub.empresa_id.substring(0,8) }}...
-                      </small>
                     </div>
                   </div>
                 </td>
@@ -117,12 +114,7 @@ import { Suscripcion } from '../../services/suscripcion.service';
                           <span class="ms-2">Pago Pendiente...</span>
                         </button>
                       </li>
-                      <li>
-                        <button class="dropdown-item rounded-3 py-2" (click)="onVerHistorial.emit(sub)">
-                          <i class="bi bi-clock-history text-corporate"></i>
-                          <span class="ms-2">Historial de Pagos</span>
-                        </button>
-                      </li>
+
                       <li><hr class="dropdown-divider mx-2"></li>
                       
                       <!-- Botones de Ciclo de Vida Dinámicos -->
@@ -266,7 +258,7 @@ export class SuscripcionTableComponent {
   @Input() loading: boolean = false;
   @Input() suscripciones: Suscripcion[] = [];
   @Output() onRegistrarPago = new EventEmitter<Suscripcion>();
-  @Output() onVerHistorial = new EventEmitter<Suscripcion>();
+
   @Output() onActivar = new EventEmitter<Suscripcion>();
   @Output() onCancelar = new EventEmitter<Suscripcion>();
   @Output() onSuspender = new EventEmitter<Suscripcion>();

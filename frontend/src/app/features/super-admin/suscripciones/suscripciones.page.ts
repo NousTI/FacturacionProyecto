@@ -8,7 +8,7 @@ import { SuscripcionStatsComponent } from './components/suscripcion-stats/suscri
 import { SuscripcionTableComponent } from './components/suscripcion-table/suscripcion-table.component';
 import { SuscripcionActionsComponent } from './components/suscripcion-actions/suscripcion-actions.component';
 import { RegistroPagoModalComponent } from './components/registro-pago-modal/registro-pago-modal.component';
-import { HistorialPagosModalComponent } from './components/historial-pagos-modal/historial-pagos-modal.component';
+
 import { SuscripcionHistoryModalComponent } from './components/history-modal/history-modal.component';
 import { ConfirmModalComponent } from '../../../shared/components/confirm-modal/confirm-modal.component';
 import { ConfirmarCobroModalComponent } from './components/confirmar-cobro-modal/confirmar-cobro-modal.component';
@@ -28,7 +28,6 @@ import { UiService } from '../../../shared/services/ui.service';
         SuscripcionTableComponent,
         SuscripcionActionsComponent,
         RegistroPagoModalComponent,
-        HistorialPagosModalComponent,
         SuscripcionHistoryModalComponent,
         ConfirmModalComponent,
         ConfirmarCobroModalComponent,
@@ -83,13 +82,7 @@ import { UiService } from '../../../shared/services/ui.service';
         (onClose)="showConfirmarRecepcionModal = false"
       ></app-confirmar-cobro-modal>
 
-      <!-- Historial de Pagos Empresa -->
-      <app-historial-pagos-modal
-        *ngIf="showHistorialModal"
-        [companyName]="selectedSuscripcion?.empresa_nombre || ''"
-        [pagos]="historialPagos"
-        (onClose)="showHistorialModal = false"
-      ></app-historial-pagos-modal>
+
 
       <!-- Historial General Sección -->
       <app-suscripcion-history-modal
@@ -138,7 +131,6 @@ import { UiService } from '../../../shared/services/ui.service';
 export class SuscripcionesPage implements OnInit {
     suscripciones: Suscripcion[] = [];
     planes: any[] = [];
-    historialPagos: PagoHistorico[] = [];
 
     stats = {
         active: 0,
@@ -156,7 +148,6 @@ export class SuscripcionesPage implements OnInit {
     // --- Modales ---
     showRegistroPagoModal = false;
     showConfirmarRecepcionModal = false; // Nuevo modal para confirmar deuda
-    showHistorialModal = false;
     showHistorySectionModal = false; // New modal for general history
     showConfirmModal = false;
     
@@ -331,7 +322,6 @@ export class SuscripcionesPage implements OnInit {
 
     openRegistroPago(sub: Suscripcion) {
         this.selectedSuscripcion = sub;
-        this.showHistorialModal = false; // Close other modals
         this.showConfirmModal = false;
         this.showRegistroPagoModal = true;
         this.cdr.detectChanges();
@@ -353,23 +343,7 @@ export class SuscripcionesPage implements OnInit {
         });
     }
 
-    openHistorial(sub: Suscripcion) {
-        this.selectedSuscripcion = sub;
-        this.showRegistroPagoModal = false; // Close other modals
-        this.showConfirmModal = false;
 
-        this.susService.getPagos(sub.empresa_id).subscribe({
-            next: (pagos) => {
-                this.historialPagos = pagos;
-                this.showHistorialModal = true;
-                this.cdr.detectChanges();
-            },
-            error: (err) => {
-                this.uiService.showError(err, 'Error al cargar historial');
-                this.cdr.detectChanges();
-            }
-        });
-    }
 
     confirmarAccion(sub: Suscripcion, accion: 'ACTIVAR' | 'CANCELAR' | 'SUSPENDER') {
         this.selectedSuscripcion = sub;
@@ -404,7 +378,6 @@ export class SuscripcionesPage implements OnInit {
         }
 
         this.showRegistroPagoModal = false; // Close other modals
-        this.showHistorialModal = false;
         this.showConfirmModal = true;
         this.cdr.detectChanges();
     }

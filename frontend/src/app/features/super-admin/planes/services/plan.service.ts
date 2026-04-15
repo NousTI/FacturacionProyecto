@@ -44,6 +44,7 @@ export interface PlanHistory {
     date: Date;
     reason: string;
     monto: number;
+    estado: string;
 }
 
 export interface PlanStats {
@@ -150,7 +151,8 @@ export class PlanService {
                 newPlan: p.plan_nombre,
                 date: new Date(p.fecha_pago),
                 reason: p.numero_comprobante || '',
-                monto: p.monto
+                monto: p.monto,
+                estado: p.estado
             })))
         );
     }
