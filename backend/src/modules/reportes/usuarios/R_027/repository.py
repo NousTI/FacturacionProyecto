@@ -128,7 +128,7 @@ class RepositorioR027:
                 ROUND(COALESCE(SUM(total - subtotal), 0)::numeric, 2)                      AS valor_iva
             FROM sistema_facturacion.gastos
             WHERE empresa_id = %s
-              AND iva > 0
+              AND tipo_iva != '0'
               AND deleted_at IS NULL
               AND fecha_emision BETWEEN %s AND %s
         """
@@ -147,7 +147,7 @@ class RepositorioR027:
                 ROUND(COALESCE(SUM(total), 0)::numeric, 2) AS base_imponible
             FROM sistema_facturacion.gastos
             WHERE empresa_id = %s
-              AND iva = 0
+              AND tipo_iva = '0'
               AND deleted_at IS NULL
               AND fecha_emision BETWEEN %s AND %s
         """

@@ -62,6 +62,11 @@ import { SRI_IVA_TARIFAS } from '../../../../core/constants/sri-iva.constants';
           </div>
 
           <div>
+            <label class="editorial-label">Fecha de Vencimiento</label>
+            <input type="date" class="editorial-input" formControlName="fecha_vencimiento" [readonly]="viewOnly">
+          </div>
+
+          <div>
             <label class="editorial-label">Subtotal</label>
             <div class="input-editorial-group">
               <span class="addon">$</span>
@@ -72,8 +77,8 @@ import { SRI_IVA_TARIFAS } from '../../../../core/constants/sri-iva.constants';
 
           <div>
             <label class="editorial-label">IVA (Tarifa SRI)</label>
-            <select class="editorial-input" formControlName="iva" (change)="calculateTotal()" [attr.disabled]="viewOnly ? true : null">
-              <option *ngFor="let t of sriTarifas" [ngValue]="t.percentage">{{ t.label }}</option>
+            <select class="editorial-input" formControlName="tipo_iva" (change)="calculateTotal()" [attr.disabled]="viewOnly ? true : null">
+              <option *ngFor="let t of sriTarifas" [value]="t.code">{{ t.label }}</option>
             </select>
           </div>
 
@@ -156,8 +161,9 @@ export class GastoFormComponent implements OnInit, OnChanges {
       numero_factura: [''],
       concepto: ['', [Validators.required, Validators.minLength(3)]],
       fecha_emision: [new Date().toISOString().split('T')[0], Validators.required],
+      fecha_vencimiento: [new Date().toISOString().split('T')[0]],
       subtotal: [0, [Validators.required, Validators.min(0.01)]],
-      iva: [0],
+      tipo_iva: ['4'],
       total: [{ value: 0, disabled: true }],
       estado_pago: ['pendiente'],
       observaciones: ['']
@@ -184,8 +190,9 @@ export class GastoFormComponent implements OnInit, OnChanges {
       numero_factura: '',
       concepto: '',
       fecha_emision: new Date().toISOString().split('T')[0],
+      fecha_vencimiento: new Date().toISOString().split('T')[0],
       subtotal: 0,
-      iva: 0,
+      tipo_iva: '4',
       total: 0,
       estado_pago: 'pendiente',
       observaciones: ''
@@ -201,7 +208,8 @@ export class GastoFormComponent implements OnInit, OnChanges {
         ...baseValues,
         ...this.editData,
         fecha_emision: this.editData.fecha_emision?.split('T')[0],
-        iva: Number(this.editData.iva),
+        fecha_vencimiento: this.editData.fecha_vencimiento?.split('T')[0],
+        tipo_iva: this.editData.tipo_iva || '4',
       }, { emitEvent: false });
       
       this.calculateTotal();
@@ -209,7 +217,7 @@ export class GastoFormComponent implements OnInit, OnChanges {
 
       // Restricciones si el gasto ya está pagado totalmente
       if (this.editData.estado_pago === 'pagado') {
-        ['concepto', 'categoria_gasto_id', 'proveedor_id', 'subtotal', 'iva', 'fecha_emision', 'estado_pago']
+        ['concepto', 'categoria_gasto_id', 'proveedor_id', 'subtotal', 'tipo_iva', 'fecha_emision', 'fecha_vencimiento', 'estado_pago']
           .forEach(ctrl => this.form.get(ctrl)?.disable({ emitEvent: false }));
       }
     } else {
@@ -229,7 +237,10 @@ export class GastoFormComponent implements OnInit, OnChanges {
 
   calculateTotal() {
     const subtotal = this.form.get('subtotal')?.value || 0;
-    const ivaPct = this.form.get('iva')?.value || 0;
+    const tipoIva = this.form.get('tipo_iva')?.value || '4';
+    const tarifa = this.sriTarifas.find(t => t.code === tipoIva);
+    const ivaPct = tarifa ? tarifa.percentage : 0;
+    
     const ivaValor = Number(((subtotal * ivaPct) / 100).toFixed(2));
     this.form.patchValue({ total: Number((subtotal + ivaValor).toFixed(2)) }, { emitEvent: false });
   }
@@ -250,7 +261,17 @@ export class GastoFormComponent implements OnInit, OnChanges {
 
   submit() {
     if (this.form.valid) {
-      this.onSubmit.emit(this.form.getRawValue());
+      const rowValue = this.form.getRawValue();
+      
+      // Limpiar campos opcionales que llegan como strings vacíos
+      const cleanData = {
+        ...rowValue,
+        proveedor_id: rowValue.proveedor_id || null,
+        numero_factura: rowValue.numero_factura || null,
+        observaciones: rowValue.observaciones || null
+      };
+
+      this.onSubmit.emit(cleanData);
     }
   }
 }

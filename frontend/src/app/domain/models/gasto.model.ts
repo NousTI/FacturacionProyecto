@@ -9,7 +9,7 @@ export interface Gasto {
   fecha_vencimiento?: string;
   concepto: string;
   subtotal: number;
-  iva: number;
+  tipo_iva: string;
   total: number;
   saldo: number;
   estado_pago: 'pendiente' | 'parcial' | 'pagado' | 'vencido' | 'cancelado' | 'reembolsado';
@@ -29,7 +29,7 @@ export interface GastoCreate {
   fecha_vencimiento?: string;
   concepto: string;
   subtotal: number;
-  iva?: number;
+  tipo_iva: string;
   total: number;
   estado_pago?: string;
   comprobante_url?: string;
@@ -45,7 +45,7 @@ export interface GastoUpdate {
   fecha_vencimiento?: string;
   concepto?: string;
   subtotal?: number;
-  iva?: number;
+  tipo_iva?: string;
   total?: number;
   estado_pago?: string;
   comprobante_url?: string;

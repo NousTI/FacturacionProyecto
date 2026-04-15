@@ -24,7 +24,7 @@ CREATE TABLE IF NOT EXISTS sistema_facturacion.gastos (
     concepto TEXT NOT NULL,
 
     subtotal NUMERIC(15,2) NOT NULL CHECK (subtotal >= 0),
-    iva NUMERIC(15,2) NOT NULL DEFAULT 0 CHECK (iva >= 0),
+    tipo_iva TEXT NOT NULL DEFAULT '2' COMMENT 'Código SRI: 2=15%, 0=0%, etc.',
     total NUMERIC(15,2) NOT NULL CHECK (total >= 0),
 
     estado_pago TEXT NOT NULL
