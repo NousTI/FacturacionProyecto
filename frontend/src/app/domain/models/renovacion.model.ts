@@ -10,6 +10,7 @@ export interface SolicitudRenovacion {
   suscripcion_id: string;
   plan_id: string;
   vendedor_id?: string;
+  tipo: 'RENOVACION' | 'UPGRADE';
   estado: EstadoRenovacion;
   comprobante_url?: string;
   procesado_por?: string;
@@ -28,6 +29,7 @@ export interface SolicitudRenovacion {
 export interface SolicitudRenovacionCreate {
   empresa_id: string;
   plan_id: string;
+  tipo: 'RENOVACION' | 'UPGRADE';
   comprobante_url?: string;
 }
 

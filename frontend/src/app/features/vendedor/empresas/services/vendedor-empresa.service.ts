@@ -102,6 +102,7 @@ export class VendedorEmpresaService {
             precioPlan: e.precio_anual || 0,
             fechaInicio: e.fecha_inicio ? new Date(e.fecha_inicio) : null,
             fechaVencimiento: e.fecha_fin ? new Date(e.fecha_fin) : null,
+            suscripcionEstado: e.suscripcion_estado || 'ACTIVA',
             ultimoPagoFecha: e.ultimo_pago_fecha ? new Date(e.ultimo_pago_fecha) : null,
             ultimoPagoMonto: e.ultimo_pago_monto || 0,
             ultimoPagoEstado: e.ultimo_pago_estado || 'PENDIENTE',

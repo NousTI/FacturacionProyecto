@@ -46,7 +46,9 @@ import { UserRole } from '../../../domain/enums/role.enum';
         [(searchQuery)]="searchQuery"
         (searchQueryChange)="onSearchOrFilterChange()"
         [currentStatus]="statusFilter"
+        [currentType]="typeFilter"
         (onStatusChange)="statusFilter = $event; onSearchOrFilterChange()"
+        (onTypeChange)="typeFilter = $event; onSearchOrFilterChange()"
       ></app-renovaciones-actions>
 
       <!-- 3. Table -->
@@ -124,6 +126,7 @@ export class RenovacionesAdminPage implements OnInit, OnDestroy {
   isVendedor: boolean = false;
   highlightedId: string | null = null;
   statusFilter: string = 'ALL';
+  typeFilter: string = 'ALL';
 
   // Stats
   stats = { pending: 0, accepted: 0, rejected: 0 };
@@ -206,12 +209,18 @@ export class RenovacionesAdminPage implements OnInit, OnDestroy {
       temp = temp.filter(s => s.estado === this.statusFilter);
     }
 
+    // Filter by Type
+    if (this.typeFilter !== 'ALL') {
+      temp = temp.filter(s => s.tipo === this.typeFilter);
+    }
+
     // Filter by Search Query
     if (this.searchQuery) {
       const q = this.searchQuery.toLowerCase();
       temp = temp.filter(s => 
         s.empresa_nombre?.toLowerCase().includes(q) || 
-        s.plan_nombre?.toLowerCase().includes(q)
+        s.plan_nombre?.toLowerCase().includes(q) ||
+        s.tipo?.toLowerCase().includes(q)
       );
     }
 

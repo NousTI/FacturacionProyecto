@@ -11,6 +11,7 @@ class SolicitudRenovacionBase(BaseModel):
 class SolicitudRenovacionCreate(BaseModel):
     empresa_id: UUID
     plan_id: UUID
+    tipo: Optional[str] = "RENOVACION" # Por compatibilidad
 
 class SolicitudRenovacionProcess(BaseModel):
     estado: str = Field(..., pattern="^(ACEPTADA|RECHAZADA)$")
@@ -22,6 +23,7 @@ class SolicitudRenovacionLectura(SolicitudRenovacionBase):
     id: UUID
     suscripcion_id: UUID
     vendedor_id: Optional[UUID] = None
+    tipo: str
     estado: str
     procesado_por: Optional[UUID] = None
     motivo_rechazo: Optional[str] = None

@@ -13,17 +13,25 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
       <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content border-0 shadow-premium-lg rounded-4 overflow-hidden animate__animated animate__zoomIn animate__faster">
           <div class="modal-header border-0 p-4 pb-0">
-             <h5 class="fw-800 text-dark mb-0">Aprobar Renovación</h5>
+             <h5 class="fw-800 text-dark mb-0">
+               {{ seleccionada?.tipo === 'RENOVACION' ? 'Aprobar Renovación' : 'Aprobar Cambio de Plan (Upgrade)' }}
+             </h5>
              <button type="button" class="btn-close shadow-none" (click)="onClose.emit()"></button>
           </div>
           <div class="modal-body p-4" *ngIf="seleccionada">
-            <p class="text-muted">¿Estás seguro de que deseas aprobar la renovación para <strong class="text-dark">{{ seleccionada.empresa_nombre }}</strong>?</p>
+            <p class="text-muted">
+              ¿Estás seguro de que deseas aprobar {{ seleccionada.tipo === 'RENOVACION' ? 'la renovación' : 'el cambio de plan' }} al plan 
+              <strong class="text-dark">{{ seleccionada.plan_nombre }}</strong> para 
+              <strong class="text-dark">{{ seleccionada.empresa_nombre }}</strong>?
+            </p>
             
             <div class="benefit-box p-3 mb-4">
               <ul class="list-unstyled mb-0">
                 <li class="d-flex align-items-center mb-2">
                   <i class="bi bi-check-circle-fill text-success me-2"></i>
-                  <span class="small fw-600">Extensión automática de 365 días</span>
+                  <span class="small fw-600">
+                    {{ seleccionada.tipo === 'RENOVACION' ? 'Extensión automática de 365 días' : 'Activación inmediata del nuevo plan (365 días)' }}
+                  </span>
                 </li>
                 <li class="d-flex align-items-center mb-2">
                   <i class="bi bi-check-circle-fill text-success me-2"></i>
@@ -48,8 +56,11 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
               </div>
               
               <div class="mb-3">
-                <label class="smallest text-uppercase fw-800 text-muted d-block mb-2">Número de Comprobante / Referencia</label>
+                <label class="smallest text-uppercase fw-800 text-muted d-block mb-2">Número de Comprobante / Referencia *</label>
                 <input type="text" [(ngModel)]="numero_comprobante" class="form-control lux-input" placeholder="Ej: TR-000123">
+                <div class="text-danger smallest fw-bold mt-1" *ngIf="!numero_comprobante.trim()">
+                  * Este campo es obligatorio para aprobar
+                </div>
               </div>
             </div>
           </div>
@@ -58,7 +69,11 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
               <button class="btn-lux-secondary flex-grow-1" (click)="onClose.emit()">Cerrar</button>
               <ng-container *ngIf="seleccionada?.estado === 'PENDIENTE'">
                 <button class="btn btn-outline-danger px-4 border-0 fw-bold" (click)="onRejectAction.emit()">Rechazar</button>
-                <button class="btn-lux-primary px-4 fw-bold" [disabled]="cargando" (click)="confirmar()">
+                <button 
+                  class="btn-lux-primary px-4 fw-bold" 
+                  [disabled]="cargando || !numero_comprobante.trim()" 
+                  (click)="confirmar()"
+                >
                   <span *ngIf="cargando" class="spinner-border spinner-border-sm me-2"></span>
                   Confirmar Aprobación
                 </button>

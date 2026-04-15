@@ -23,7 +23,7 @@ import { InfoTooltipComponent } from '../../../../shared/components/info-tooltip
           <span>Registrar Empresa</span>
           <i class="bi bi-chevron-right ms-auto text-muted"></i>
         </a>
-        <a routerLink="/vendedor/pagos" class="quick-link">
+        <a routerLink="/vendedor/suscripciones" class="quick-link">
           <div class="ql-icon" style="color:#f59e0b; background:rgba(245,158,11,.1)">
             <i class="bi bi-credit-card"></i>
           </div>

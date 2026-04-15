@@ -45,22 +45,23 @@ class ServicioRenovaciones:
         if not suscripcion:
             raise HTTPException(status_code=404, detail="No se encontró una suscripción previa para esta empresa.")
 
-        # Impedir renovar el mismo plan si falta mucho tiempo (Regla 30 días)
+        # Regla de los 30 días: Solo aplica si la suscripción está ACTIVA
+        estado_actual = suscripcion.get('estado', 'ACTIVA')
         from datetime import date, datetime
         hoy = date.today()
-        # Normalizar fecha_fin a tipo date si es datetime
         fecha_fin = suscripcion['fecha_fin']
         if isinstance(fecha_fin, datetime):
             fecha_fin = fecha_fin.date()
 
         if str(suscripcion['plan_id']) == str(data.plan_id):
-            # Solo permitir si faltan 30 días o menos para el vencimiento
-            dias_restantes = (fecha_fin - hoy).days
-            if dias_restantes > 30:
-                raise HTTPException(
-                    status_code=400, 
-                    detail=f"Todavía faltan {dias_restantes} días para el vencimiento. Solo puedes solicitar renovación cuando falten 30 días o menos."
-                )
+            # Solo validar los 30 días si el estado es ACTIVA
+            if estado_actual == 'ACTIVA':
+                dias_restantes = (fecha_fin - hoy).days
+                if dias_restantes > 30:
+                    raise HTTPException(
+                        status_code=400,
+                        detail=f"Todavía faltan {dias_restantes} días para el vencimiento. Solo puedes solicitar renovación cuando falten 30 días o menos."
+                    )
         else:
             # Si el plan es diferente, es un Upgrade, se permite siempre.
             logger.info(f"[UPGRADE] Vendedor solicita cambio de plan para empresa {empresa_id}")
@@ -70,6 +71,7 @@ class ServicioRenovaciones:
             "empresa_id": empresa_id,
             "suscripcion_id": suscripcion['id'],
             "plan_id": data.plan_id,
+            "tipo": data.tipo or ("UPGRADE" if str(suscripcion['plan_id']) != str(data.plan_id) else "RENOVACION"),
             "vendedor_id": vendedor_id_actual,
             "estado": "PENDIENTE"
         }
@@ -77,12 +79,14 @@ class ServicioRenovaciones:
         
         # 5. Notificar a Superadmins
         admin_user_ids = self.repo.listar_user_ids_superadmins()
+        tipo_label = "Renovación" if sol_data['tipo'] == 'RENOVACION' else "Cambio de Plan (Upgrade)"
+        tipo_notif = sol_data['tipo'] # Ahora que el DB lo acepta, usamos el tipo real
         for admin_id in admin_user_ids:
             self.notif_service.crear_notificacion(NotificacionCreate(
                 user_id=admin_id,
-                titulo="Nueva Renovación de Vendedor",
-                mensaje=f"Un vendedor ha solicitado renovar una empresa. Por favor revisa los detalles.",
-                tipo="RENOVACION",
+                titulo=f"Nueva {tipo_label} de Vendedor",
+                mensaje=f"Un vendedor ha solicitado {tipo_label.lower()} para la empresa '{nueva_solicitud.get('empresa_nombre', 'Cliente')}'. Por favor revisa los detalles.",
+                tipo=tipo_notif,
                 prioridad="ALTA",
                 metadata={"solicitud_id": str(nueva_solicitud['id'])}
             ))
@@ -92,9 +96,9 @@ class ServicioRenovaciones:
         for emp_admin_id in empresa_admins:
             self.notif_service.crear_notificacion(NotificacionCreate(
                 user_id=emp_admin_id,
-                titulo="Solicitud de Renovación Iniciada",
-                mensaje=f"Se ha iniciado una solicitud de renovación para tu empresa. Estamos procesando tu pedido.",
-                tipo="RENOVACION",
+                titulo=f"Solicitud de {tipo_label} Iniciada",
+                mensaje=f"Se ha iniciado una solicitud de {tipo_label.lower()} para tu empresa. Estamos procesando tu pedido.",
+                tipo=tipo_notif,
                 prioridad="MEDIA",
                 metadata={"solicitud_id": str(nueva_solicitud['id'])}
             ))
@@ -136,18 +140,31 @@ class ServicioRenovaciones:
             if not plan:
                 raise HTTPException(status_code=404, detail="Plan seleccionado no existe.")
 
-            suscripcion_actual = self.repo_suscripciones.obtener_suscripcion_por_empresa(empresa_id)
+            # Cálculo de fechas inteligente:
+            # 1. UPGRADE: Empieza hoy (queremos las funciones del nuevo plan de inmediato)
+            # 2. RENOVACION: 
+            #    - Si está ACTIVA: Anexa al final del periodo actual (Base = fecha_fin actual)
+            #    - Si está VENCIDA/SUSPENDIDA: Empieza hoy (Borrón y cuenta nueva)
             
-            # Cálculo de fechas (siempre anual según la tabla planes)
-            # Si la suscripción aún no vence, sumamos un año a la fecha_fin actual.
-            # Si ya venció, empezamos desde hoy.
-            base_date = suscripcion_actual['fecha_fin'] if suscripcion_actual and suscripcion_actual['fecha_fin'] > datetime.now().astimezone() else datetime.now()
+            tipo_gestion = solicitud['tipo']
+            suscripcion_actual = self.repo_suscripciones.obtener_suscripcion_por_empresa(empresa_id)
+            estado_actual_sub = suscripcion_actual['estado'] if suscripcion_actual else 'NUEVA'
+
+            if tipo_gestion == 'UPGRADE':
+                # Upgrades siempre empiezan hoy
+                base_date = datetime.now()
+            else:
+                # Renovaciones dependen del estado de la suscripción
+                vence_a_futuro = suscripcion_actual and suscripcion_actual['fecha_fin'] > datetime.now().astimezone()
+                if vence_a_futuro and estado_actual_sub == 'ACTIVA':
+                    base_date = suscripcion_actual['fecha_fin']
+                else:
+                    base_date = datetime.now()
+            
             fecha_fin_nueva = base_date + timedelta(days=365)
 
-            # Determinar dinámicamente si es RENOVACION o UPGRADE
-            tipo_pago = "RENOVACION"
-            if suscripcion_actual and str(suscripcion_actual['plan_id']) != str(solicitud['plan_id']):
-                tipo_pago = "UPGRADE"
+            # Usar el tipo de gestión definido en la solicitud (RENOVACION o UPGRADE)
+            tipo_pago = solicitud['tipo']
 
             pago_data = {
                 "empresa_id": str(empresa_id),
@@ -193,13 +210,16 @@ class ServicioRenovaciones:
             self.repo_suscripciones.registrar_suscripcion_atomica(pago_data, empresa_data, comision_data)
 
             # Notificar Empresa (A sus administradores)
+            tipo_label_notif = "Renovación" if solicitud['tipo'] == 'RENOVACION' else "Cambio de Plan (Upgrade)"
+            tipo_notif_real = solicitud['tipo']
             admin_ids = self.repo.listar_user_ids_admins_empresa(empresa_id)
             for admin_user_id in admin_ids:
+                mensaje_empresa = f"Tu renovación al plan {plan['nombre']} ha sido aprobada." if solicitud['tipo'] == 'RENOVACION' else f"Tu cambio de plan al plan {plan['nombre']} ha sido aprobado. ¡Disfruta de tus nuevas capacidades!"
                 self.notif_service.crear_notificacion(NotificacionCreate(
                     user_id=admin_user_id,
-                    titulo="Suscripción Renovada con Éxito",
-                    mensaje=f"Tu renovación al plan {plan['nombre']} ha sido aprobada.",
-                    tipo="RENOVACION",
+                    titulo=f"{tipo_label_notif} Exitosa",
+                    mensaje=mensaje_empresa,
+                    tipo=tipo_notif_real,
                     prioridad="ALTA",
                     metadata={"suscripcion_id": str(suscripcion_actual['id'])}
                 ))
@@ -210,9 +230,9 @@ class ServicioRenovaciones:
                 if vendedor_info:
                     self.notif_service.crear_notificacion(NotificacionCreate(
                         user_id=vendedor_info['user_id'],
-                        titulo="Renovación Aprobada",
-                        mensaje=f"La renovación de la empresa '{solicitud['empresa_nombre']}' ha sido aprobada.",
-                        tipo="RENOVACION",
+                        titulo=f"{tipo_label_notif} Aprobada",
+                        mensaje=f"La {tipo_label_notif.lower()} de la empresa '{solicitud['empresa_nombre']}' ha sido aprobada.",
+                        tipo=tipo_notif_real,
                         prioridad="MEDIA",
                         metadata={"solicitud_id": str(solicitud_id)}
                     ))
@@ -222,9 +242,9 @@ class ServicioRenovaciones:
             for sa_id in superadmin_ids:
                 self.notif_service.crear_notificacion(NotificacionCreate(
                     user_id=sa_id,
-                    titulo="Renovación Procesada",
-                    mensaje=f"Se ha aprobado la renovación de la empresa '{solicitud['empresa_nombre']}'.",
-                    tipo="RENOVACION",
+                    titulo=f"{tipo_label_notif} Procesada",
+                    mensaje=f"Se ha aprobado la {tipo_label_notif.lower()} de la empresa '{solicitud['empresa_nombre']}'.",
+                    tipo=tipo_notif_real,
                     prioridad="BAJA",
                     metadata={"solicitud_id": str(solicitud_id)}
                 ))

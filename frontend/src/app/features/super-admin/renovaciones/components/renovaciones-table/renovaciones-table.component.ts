@@ -13,13 +13,14 @@ import { SolicitudRenovacion } from '../../../../../domain/models/renovacion.mod
           <table class="table mb-0 align-middle">
             <thead>
               <tr>
-                <th style="width: 280px">Empresa</th>
-                <th style="width: 180px">Plan Solicitado</th>
-                <th style="width: 180px">Vendedor</th>
-                <th style="width: 150px">Fecha Solicitud</th>
-                <th style="width: 130px; text-align: center;">Estado</th>
+                <th style="width: 200px">Empresa</th>
+                <th style="width: 130px">Plan</th>
+                <th style="width: 120px">Tipo</th>
+                <th style="width: 150px">Vendedor</th>
+                <th style="width: 140px">Fecha Solicitud</th>
+                <th style="width: 110px; text-align: center;">Estado</th>
                 <th class="text-end" style="width: 80px">Acciones</th>
-                <th class="text-end" style="width: 150px">Procesado</th>
+                <th class="text-end" style="width: 140px">Procesado</th>
               </tr>
             </thead>
             <tbody>
@@ -45,6 +46,15 @@ import { SolicitudRenovacion } from '../../../../../domain/models/renovacion.mod
                 <td>
                   <span class="text-dark fw-600" style="font-size: 0.85rem;">{{ s.plan_nombre }}</span>
                 </td>
+
+                <!-- Tipo -->
+                <td>
+                  <span class="badge-tipo-premium" [ngClass]="s.tipo.toLowerCase()">
+                    <i class="bi" [ngClass]="s.tipo === 'RENOVACION' ? 'bi-arrow-repeat' : 'bi-arrow-up-circle'"></i>
+                    {{ s.tipo }}
+                  </span>
+                </td>
+
 
                 <!-- Vendedor -->
                 <td>
@@ -150,6 +160,14 @@ import { SolicitudRenovacion } from '../../../../../domain/models/renovacion.mod
     .badge-status-premium.pendiente { background: var(--status-warning-bg, #fef9c3); color: var(--status-warning-text, #92400e); }
     .badge-status-premium.aceptada { background: var(--status-success-bg, #dcfce7); color: var(--status-success-text, #15803d); }
     .badge-status-premium.rechazada { background: var(--status-danger-bg, #fee2e2); color: var(--status-danger-text, #b91c1c); }
+    
+    .badge-tipo-premium {
+      padding: 0.25rem 0.6rem; border-radius: 6px; font-size: 0.65rem;
+      font-weight: 700; display: inline-flex; align-items: center; gap: 4px;
+      text-transform: uppercase;
+    }
+    .badge-tipo-premium.renovacion { background: #e0f2fe; color: #0369a1; }
+    .badge-tipo-premium.upgrade { background: #f5f3ff; color: #6d28d9; }
     
     .btn-action-trigger {
       background: transparent; border: none; width: 32px; height: 32px;

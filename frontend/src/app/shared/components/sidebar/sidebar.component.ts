@@ -60,8 +60,8 @@ import { SidebarService } from './sidebar.service';
 
             <!-- Vendedor Menu -->
             <ng-container *ngIf="isVendedor$ | async">
-                <a routerLink="/vendedor/pagos" routerLinkActive="active" class="menu-item px-3 mb-1" title="Pagos">
-                  <i class="bi bi-credit-card"></i> <span class="menu-text ms-3">Pagos</span>
+                <a routerLink="/vendedor/suscripciones" routerLinkActive="active" class="menu-item px-3 mb-1" title="Suscripciones">
+                  <i class="bi bi-credit-card"></i> <span class="menu-text ms-3">Suscripciones</span>
                 </a>
                 <a routerLink="/vendedor/clientes" routerLinkActive="active" class="menu-item px-3 mb-1" title="Clientes">
                   <i class="bi bi-person-badge"></i> <span class="menu-text ms-3">Clientes</span>

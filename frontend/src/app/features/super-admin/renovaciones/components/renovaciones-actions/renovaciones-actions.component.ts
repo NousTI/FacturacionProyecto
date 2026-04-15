@@ -34,7 +34,7 @@ import { FormsModule } from '@angular/forms';
                     type="button" 
                     data-bs-toggle="dropdown" 
                     aria-expanded="false"
-                    style="min-width: 180px;"
+                    style="min-width: 170px;"
                   >
                     <span>{{ getStatusLabel() }}</span>
                   </button>
@@ -43,6 +43,24 @@ import { FormsModule } from '@angular/forms';
                     <li><a class="dropdown-item" (click)="setStatus('PENDIENTE')">Pendientes</a></li>
                     <li><a class="dropdown-item" (click)="setStatus('ACEPTADA')">Aceptadas</a></li>
                     <li><a class="dropdown-item" (click)="setStatus('RECHAZADA')">Rechazadas</a></li>
+                  </ul>
+                </div>
+
+                <!-- Selector de Tipo -->
+                <div class="dropdown">
+                  <button 
+                    class="form-select-premium dropdown-toggle d-flex align-items-center justify-content-between" 
+                    type="button" 
+                    data-bs-toggle="dropdown" 
+                    aria-expanded="false"
+                    style="min-width: 170px;"
+                  >
+                    <span>{{ getTypeLabel() }}</span>
+                  </button>
+                  <ul class="dropdown-menu border-0 shadow-lg dropdown-menu-premium">
+                    <li><a class="dropdown-item" (click)="setType('ALL')">Todos los Tipos</a></li>
+                    <li><a class="dropdown-item" (click)="setType('RENOVACION')">Renovación</a></li>
+                    <li><a class="dropdown-item" (click)="setType('UPGRADE')">Upgrade</a></li>
                   </ul>
                 </div>
             </div>
@@ -95,9 +113,11 @@ import { FormsModule } from '@angular/forms';
 export class RenovacionesActionsComponent {
   @Input() searchQuery: string = '';
   @Input() currentStatus: string = 'ALL';
+  @Input() currentType: string = 'ALL';
 
   @Output() searchQueryChange = new EventEmitter<string>();
   @Output() onStatusChange = new EventEmitter<string>();
+  @Output() onTypeChange = new EventEmitter<string>();
 
   onSearchChange(value: string) {
     this.searchQueryChange.emit(value);
@@ -115,6 +135,20 @@ export class RenovacionesActionsComponent {
       'ACEPTADA': 'Aceptadas',
       'RECHAZADA': 'Rechazadas'
     };
-    return labels[this.currentStatus] || 'Filtrar por Estado';
+    return labels[this.currentStatus] || 'Estado';
+  }
+
+  setType(type: string) {
+    this.currentType = type;
+    this.onTypeChange.emit(type);
+  }
+
+  getTypeLabel(): string {
+    const labels: any = {
+      'ALL': 'Todos los Tipos',
+      'RENOVACION': 'Renovación',
+      'UPGRADE': 'Upgrade'
+    };
+    return labels[this.currentType] || 'Tipo';
   }
 }

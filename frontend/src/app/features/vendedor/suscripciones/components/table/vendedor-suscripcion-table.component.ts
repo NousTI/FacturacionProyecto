@@ -234,7 +234,7 @@ import { Suscripcion } from '../../services/vendedor-suscripcion.service';
 export class VendedorSuscripcionTableComponent {
   @Input() suscripciones: Suscripcion[] = [];
 
-  @Output() onNotas = new EventEmitter<Suscripcion>();
+
 
   trackById(index: number, sub: Suscripcion): string {
     return sub.id;

@@ -260,7 +260,7 @@ export class VendedorHistoryComponent implements OnInit {
             map(empresas => empresas.map(e => ({
                 id: e.id,
                 name: e.razonSocial,
-                ruc: e.ruc || 'N/A',
+                ruc: e.ruc || 'RUC: N/A',
                 status: e.activo ? 'ACTIVO' : 'INACTIVO'
             } as Company)))
         );

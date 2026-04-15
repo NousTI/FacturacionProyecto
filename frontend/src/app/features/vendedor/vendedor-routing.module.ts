@@ -23,7 +23,7 @@ const routes: Routes = [
         canActivate: [VendedorActivoGuard]
     },
     {
-        path: 'pagos',
+        path: 'suscripciones',
         loadComponent: () => import('./suscripciones/vendedor-suscripciones.page').then(m => m.VendedorSuscripcionesPage),
         data: { title: 'Suscripciones y Pagos', description: 'Historial de pagos y estado de suscripciones' },
         canActivate: [VendedorActivoGuard]

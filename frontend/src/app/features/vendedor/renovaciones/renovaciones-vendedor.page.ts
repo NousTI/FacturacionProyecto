@@ -37,7 +37,9 @@ import { RenovacionDetailModalComponent } from './components/modals/renovacion-d
       <app-renovaciones-actions
         [(searchQuery)]="searchQuery"
         [currentStatus]="statusFilter"
+        [currentType]="typeFilter"
         (onStatusChange)="handleStatusChange($event)"
+        (onTypeChange)="handleTypeChange($event)"
         (onCreate)="showCreateModal = true"
         (onRefresh)="cargarSolicitudes()"
       ></app-renovaciones-actions>
@@ -100,6 +102,7 @@ export class RenovacionesVendedorPage implements OnInit, OnDestroy {
   // Filters
   searchQuery: string = '';
   statusFilter: string = 'ALL';
+  typeFilter: string = 'ALL';
 
   // Stats
   stats = { pending: 0, accepted: 0, rejected: 0 };
@@ -178,12 +181,18 @@ export class RenovacionesVendedorPage implements OnInit, OnDestroy {
       temp = temp.filter(s => s.estado === this.statusFilter);
     }
 
+    // Filter by Type
+    if (this.typeFilter !== 'ALL') {
+      temp = temp.filter(s => s.tipo === this.typeFilter);
+    }
+
     // Filter by Search Query
     if (this.searchQuery) {
       const q = this.searchQuery.toLowerCase();
       temp = temp.filter(s => 
         s.empresa_nombre?.toLowerCase().includes(q) || 
-        s.plan_nombre?.toLowerCase().includes(q)
+        s.plan_nombre?.toLowerCase().includes(q) ||
+        s.tipo?.toLowerCase().includes(q)
       );
     }
 
@@ -192,6 +201,11 @@ export class RenovacionesVendedorPage implements OnInit, OnDestroy {
 
   handleStatusChange(status: string) {
     this.statusFilter = status;
+    this.cd.detectChanges();
+  }
+
+  handleTypeChange(type: string) {
+    this.typeFilter = type;
     this.cd.detectChanges();
   }
 

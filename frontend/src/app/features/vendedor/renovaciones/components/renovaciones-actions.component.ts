@@ -11,7 +11,7 @@ import { FormsModule } from '@angular/forms';
       <div class="actions-bar-container">
         <div class="row align-items-center g-3">
           <!-- Búsqueda Principal -->
-          <div class="col-lg-6">
+          <div class="col-lg-5">
             <div class="search-box-premium">
               <i class="bi bi-search"></i>
               <input 
@@ -24,8 +24,8 @@ import { FormsModule } from '@angular/forms';
             </div>
           </div>
 
-          <!-- Filtros Rápidos -->
-          <div class="col-lg-3">
+          <!-- Filtros Rápidos (Estado y Tipo) -->
+          <div class="col-lg-2">
             <div class="dropdown w-100">
               <button 
                 class="form-select-premium dropdown-toggle d-flex align-items-center justify-content-between" 
@@ -40,6 +40,24 @@ import { FormsModule } from '@angular/forms';
                 <li><a class="dropdown-item" (click)="setStatus('PENDIENTE')">En Revisión</a></li>
                 <li><a class="dropdown-item" (click)="setStatus('ACEPTADA')">Aprobadas</a></li>
                 <li><a class="dropdown-item" (click)="setStatus('RECHAZADA')">Rechazadas</a></li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="col-lg-2">
+            <div class="dropdown w-100">
+              <button 
+                class="form-select-premium dropdown-toggle d-flex align-items-center justify-content-between" 
+                type="button" 
+                data-bs-toggle="dropdown" 
+                aria-expanded="false"
+              >
+                <span>{{ getTypeLabel() }}</span>
+              </button>
+              <ul class="dropdown-menu border-0 shadow-sm dropdown-menu-premium">
+                <li><a class="dropdown-item" (click)="setType('ALL')">Todos los Tipos</a></li>
+                <li><a class="dropdown-item" (click)="setType('RENOVACION')">Renovación</a></li>
+                <li><a class="dropdown-item" (click)="setType('UPGRADE')">Upgrade</a></li>
               </ul>
             </div>
           </div>
@@ -75,9 +93,11 @@ import { FormsModule } from '@angular/forms';
 export class RenovacionesActionsComponent {
   @Input() searchQuery: string = '';
   @Input() currentStatus: string = 'ALL';
+  @Input() currentType: string = 'ALL';
 
   @Output() searchQueryChange = new EventEmitter<string>();
   @Output() onStatusChange = new EventEmitter<string>();
+  @Output() onTypeChange = new EventEmitter<string>();
   @Output() onCreate = new EventEmitter<void>();
   @Output() onRefresh = new EventEmitter<void>();
 
@@ -97,5 +117,18 @@ export class RenovacionesActionsComponent {
       'RECHAZADA': 'Rechazadas'
     };
     return labels[this.currentStatus] || 'Estado';
+  }
+
+  setType(type: string) {
+    this.onTypeChange.emit(type);
+  }
+
+  getTypeLabel(): string {
+    const labels: any = {
+      'ALL': 'Todos los Tipos',
+      'RENOVACION': 'Renovación',
+      'UPGRADE': 'Upgrade'
+    };
+    return labels[this.currentType] || 'Tipo';
   }
 }

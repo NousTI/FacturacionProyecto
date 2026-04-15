@@ -7,7 +7,6 @@ import { Subject, takeUntil } from 'rxjs';
 import { VendedorSuscripcionStatsComponent } from './components/vendedor-suscripcion-stats.component';
 import { VendedorSuscripcionActionsComponent } from './components/vendedor-suscripcion-actions.component';
 import { VendedorSuscripcionTableComponent } from './components/table/vendedor-suscripcion-table.component';
-import { SeguimientoNotasModalComponent } from './components/notas-modal/seguimiento-notas-modal.component';
 import { VendedorHistoryModalComponent } from './components/history-modal/vendedor-history-modal.component';
 
 import { ToastComponent } from '../../../shared/components/toast/toast.component';
@@ -27,7 +26,6 @@ import { UiService } from '../../../shared/services/ui.service';
     VendedorSuscripcionStatsComponent,
     VendedorSuscripcionActionsComponent,
     VendedorSuscripcionTableComponent,
-    SeguimientoNotasModalComponent,
     VendedorHistoryModalComponent,
     ToastComponent
   ],
@@ -51,7 +49,6 @@ import { UiService } from '../../../shared/services/ui.service';
       <!-- TABLE -->
       <app-vendedor-suscripcion-table
         [suscripciones]="filteredSuscripciones"
-        (onNotas)="openNotas($event)"
       ></app-vendedor-suscripcion-table>
 
       <!-- 5. MODALES -->
@@ -64,13 +61,7 @@ import { UiService } from '../../../shared/services/ui.service';
       
 
 
-      <!-- Notas Seguimiento -->
-      <app-seguimiento-notas-modal
-        *ngIf="showNotasModal"
-        [empresaName]="selectedSuscripcion?.empresa_nombre || ''"
-        [empresaId]="selectedSuscripcion?.empresa_id || ''"
-        (onClose)="showNotasModal = false"
-      ></app-seguimiento-notas-modal>
+
 
       <app-toast></app-toast>
     </div>
@@ -108,7 +99,6 @@ export class VendedorSuscripcionesPage implements OnInit {
   filterPlan = 'ALL';
 
   showGeneralHistoryModal = false;
-  showNotasModal = false;
 
   stats = {
     active: 0,
@@ -192,12 +182,4 @@ export class VendedorSuscripcionesPage implements OnInit {
   setFilter(status: string) {
     this.filterStatus = status;
   }
-
-
-
-  openNotas(sub: Suscripcion) {
-    this.selectedSuscripcion = sub;
-    this.showNotasModal = true;
-  }
-
 }
