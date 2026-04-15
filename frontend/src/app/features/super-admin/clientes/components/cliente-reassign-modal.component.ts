@@ -8,7 +8,7 @@ import { ClienteUsuario } from '../services/clientes.service';
   standalone: true,
   imports: [CommonModule, FormsModule],
   template: `
-    <div class="modal-overlay" (click)="onClose.emit()">
+    <div class="modal-overlay">
       <div class="modal-container" (click)="$event.stopPropagation()">
         <!-- HEADER -->
         <div class="modal-header-premium">

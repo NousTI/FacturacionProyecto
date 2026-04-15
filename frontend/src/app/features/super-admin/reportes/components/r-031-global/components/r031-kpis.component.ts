@@ -13,11 +13,14 @@ type RangoTipo = 'mes_actual' | 'mes_anterior' | 'anio_actual' | 'personalizado'
       <!-- Empresas Activas -->
       <div class="kpi-card kpi-active-highlight">
         <span class="kpi-label">Empresas activas</span>
-        <span class="kpi-value">{{ datos.empresas_activas }}</span>
-        <div class="kpi-sub-v2" [class.text-success]="datos.variacion_empresas_activas_valor >= 0" [class.text-danger]="datos.variacion_empresas_activas_valor < 0">
-          <span class="fw-bold">{{ datos.variacion_empresas_activas_valor >= 0 ? '+' : '' }}{{ datos.variacion_empresas_activas_valor }}</span>
-          <span class="ms-1 text-muted fw-normal">{{ periodoLabel }}</span>
+        <div class="kpi-main-content">
+          <span class="kpi-value-huge">{{ datos.empresas_activas | number }}</span>
+          <div class="kpi-growth-badge" [class.badge-up]="datos.variacion_empresas_activas_valor >= 0" [class.badge-down]="datos.variacion_empresas_activas_valor < 0">
+            <i class="bi" [class.bi-arrow-up-right]="datos.variacion_empresas_activas_valor >= 0" [class.bi-arrow-down-right]="datos.variacion_empresas_activas_valor < 0"></i>
+            {{ datos.variacion_empresas_activas_valor >= 0 ? '+' : '' }}{{ datos.variacion_empresas_activas_valor }}
+          </div>
         </div>
+        <span class="kpi-sub-label">{{ periodoLabel }}</span>
       </div>
 
       <!-- Ingresos del Año -->
@@ -92,8 +95,17 @@ type RangoTipo = 'mes_actual' | 'mes_anterior' | 'anio_actual' | 'personalizado'
     .kpi-card:hover { transform: translateY(-2px); box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
     .kpi-label { font-size: 0.65rem; font-weight: 700; color: #64748b; text-transform: uppercase; display: block; margin-bottom: 0.35rem; letter-spacing: 0.5px; }
     .kpi-value { font-size: 1.1rem; font-weight: 800; color: #1e293b; display: block; line-height: 1; margin-bottom: 0.25rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .kpi-main-content { display: flex; align-items: baseline; gap: 0.75rem; margin-bottom: 0.25rem; }
+    .kpi-value-huge { font-size: 1.75rem; font-weight: 800; color: #1e293b; line-height: 1; }
+    .kpi-growth-badge { 
+      padding: 0.25rem 0.5rem; border-radius: 6px; font-size: 0.75rem; font-weight: 700; 
+      display: flex; align-items: center; gap: 0.2rem;
+    }
+    .badge-up { background: #dcfce7; color: #15803d; }
+    .badge-down { background: #fee2e2; color: #b91c1c; }
+    .kpi-sub-label { font-size: 0.75rem; font-weight: 500; color: #94a3b8; }
+
     .kpi-sub { font-size: 0.75rem; font-weight: 600; }
-    .kpi-sub-v2 { font-size: 0.75rem; font-weight: 600; margin-top: 0.1rem; }
     .kpi-active-highlight { background: #ffffff; border-left: 4px solid #1e293b; }
     .kpi-warning { border-bottom: 3px solid #f59e0b; background: #fffbeb; }
     .kpi-danger { border-bottom: 3px solid #ef4444; background: #fef2f2; }

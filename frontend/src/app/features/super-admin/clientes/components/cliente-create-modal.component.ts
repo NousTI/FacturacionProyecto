@@ -7,7 +7,7 @@ import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } 
   standalone: true,
   imports: [CommonModule, FormsModule, ReactiveFormsModule],
   template: `
-    <div class="modal-overlay" (click)="onClose.emit()">
+    <div class="modal-overlay">
       <div class="modal-card" (click)="$event.stopPropagation()">
         <!-- Header -->
         <div class="modal-header">

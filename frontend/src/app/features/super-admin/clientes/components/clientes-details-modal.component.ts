@@ -7,7 +7,7 @@ import { ClienteConTrazabilidad } from '../services/clientes.service';
   standalone: true,
   imports: [CommonModule],
   template: `
-    <div class="modal-overlay animate__animated animate__fadeIn animate__faster" (click)="close.emit()">
+    <div class="modal-overlay animate__animated animate__fadeIn animate__faster">
       <div class="modal-container-premium" (click)="$event.stopPropagation()">
         
         <div class="modal-header-premium">

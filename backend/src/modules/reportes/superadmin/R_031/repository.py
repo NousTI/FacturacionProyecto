@@ -27,11 +27,13 @@ class RepositorioR031:
 
         query = """
             SELECT
-                -- Empresas activas: Al finalizar el periodo
+                -- Empresas activas: Total a la fecha fin seleccionada (Punto en el tiempo)
                 (SELECT COUNT(DISTINCT s.empresa_id)
                  FROM sistema_facturacion.suscripciones s
-                 WHERE s.estado = 'ACTIVA' 
-                   AND s.fecha_inicio <= {f_fin}) as empresas_activas,
+                 JOIN sistema_facturacion.empresas e ON s.empresa_id = e.id
+                 WHERE e.activo = TRUE
+                   AND s.fecha_inicio <= {f_fin} 
+                   AND s.fecha_fin >= {f_fin}) as empresas_activas,
 
                 -- Nuevas empresas en el período
                 (SELECT COUNT(id)
@@ -126,7 +128,9 @@ class RepositorioR031:
             f_inicio_date="%s::date"
         )
         params = [
+            ff_use, ff_use,           # empresas_activas (final del periodo: inicio <= ff y fin >= ff)
             fi_use, ff_use,           # empresas_nuevas_mes
+            fi_use, ff_use,           # perdidas_periodo
             ff_use,                   # ingresos_anio
             ff_use,                   # ingresos_anio_anterior
             fi_use, ff_use,           # ingresos_mes
