@@ -11,8 +11,8 @@ import { AuthService } from '../../../../../core/auth/auth.service';
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommonModule, ReactiveFormsModule],
   template: `
-    <div class="modal-overlay" (click)="close()">
-      <div class="modal-content-container shadow-lg" (click)="$event.stopPropagation()">
+    <div class="modal-overlay">
+      <div class="modal-content-container shadow-lg">
         
         <!-- Header -->
         <div class="modal-header">
@@ -178,7 +178,8 @@ import { AuthService } from '../../../../../core/auth/auth.service';
     .section-title i { font-size: 1.1rem; color: #3b82f6; }
     .section-title span { font-size: 0.85rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; }
     .form-label { font-size: 0.8rem; font-weight: 700; color: #475569; margin-bottom: 0.5rem; }
-    .form-input-premium, .form-select-premium { width: 100%; padding: 0.75rem 1rem; border-radius: 12px; border: 1px solid #e2e8f0; background: #f8fafc; font-size: 0.95rem; font-weight: 500; transition: all 0.2s; }
+    .form-input-premium { width: 100%; padding: 0.75rem 1rem; border-radius: 12px; border: 1px solid #e2e8f0; background: #f8fafc; font-size: 0.95rem; font-weight: 500; transition: all 0.2s; }
+    .form-select-premium { width: 100%; min-height: 58px; padding: 0.5rem 1rem; border-radius: 12px; border: 1px solid #e2e8f0; background: #f8fafc; font-size: 1rem; font-weight: 600; line-height: 1.5; transition: all 0.2s; cursor: pointer; }
     .form-input-premium:focus, .form-select-premium:focus { outline: none; background: white; border-color: #3b82f6; box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1); }
     .form-input-premium[readonly] { background: #f1f5f9; cursor: not-allowed; }
     

@@ -8,8 +8,8 @@ import { User } from '../../../../../domain/models/user.model';
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommonModule],
   template: `
-    <div class="modal-overlay" (click)="close()">
-      <div class="modal-content-container shadow-lg" (click)="$event.stopPropagation()">
+    <div class="modal-overlay">
+      <div class="modal-content-container shadow-lg">
         
         <!-- Header Section -->
         <div class="detail-header">
@@ -51,7 +51,7 @@ import { User } from '../../../../../domain/models/user.model';
                     <span class="text-secondary">#{{ usuario.id }}</span>
                   </div>
                   <div class="info-item full">
-                    <label>Correo Institucional</label>
+                    <label>Correo</label>
                     <span class="email-text">{{ usuario.email || usuario.correo }}</span>
                   </div>
                   <div class="info-item">
@@ -84,10 +84,10 @@ import { User } from '../../../../../domain/models/user.model';
               <div class="control-card">
                 <div class="card-title">Seguridad & Auditoría</div>
                 <div class="audit-item">
-                  <span class="a-label">Estado de Cuenta</span>
+                  <span class="a-label">Estado</span>
                   <div class="a-status" [ngClass]="usuario.activo !== false ? 'success' : 'danger'">
                     <i class="bi" [ngClass]="usuario.activo !== false ? 'bi-shield-check' : 'bi-shield-exclamation'"></i>
-                    {{ usuario.activo !== false ? 'Segura' : 'Sancionada' }}
+                    {{ usuario.activo !== false ? 'Activo' : 'Inactivo' }}
                   </div>
                 </div>
                 <div class="audit-item mt-3">

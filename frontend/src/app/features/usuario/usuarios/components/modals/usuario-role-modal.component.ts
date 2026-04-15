@@ -9,8 +9,8 @@ import { UsuariosService } from '../../services/usuarios.service';
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommonModule],
   template: `
-    <div class="modal-overlay" (click)="close()">
-      <div class="modal-container shadow-lg" (click)="$event.stopPropagation()">
+    <div class="modal-overlay">
+      <div class="modal-container shadow-lg">
 
         <!-- Icon -->
         <div class="icon-wrapper">
