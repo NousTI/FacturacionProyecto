@@ -263,7 +263,7 @@ class RepositorioR028:
             '17': 'Dinero Electrónico',
             '18': 'Tarjeta Prepago',
             '19': 'Tarjeta de Crédito',
-            '20': 'Transferencia / Cheque',
+            '20': 'Otros con utilización del sistema financiero',
             '21': 'Endoso de Títulos'
         }
         query = """

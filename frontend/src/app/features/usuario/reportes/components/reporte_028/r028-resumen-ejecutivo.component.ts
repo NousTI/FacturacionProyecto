@@ -76,7 +76,7 @@ Chart.register(...registerables);
           <div class="kpi-body">
             <span class="label">
               Otras Formas de Pago
-              <app-formas-pago-tooltip [rows]="otrasFormasPagoRows" tooltipTitle="Otras Formas"></app-formas-pago-tooltip>
+              <app-formas-pago-tooltip [rows]="otrasFormasPagoRows" tooltipTitle="Sist. Financiero (Otros)"></app-formas-pago-tooltip>
             </span>
             <span class="value">{{ data.ingreso_otras.valor | currency }}</span>
             <span class="trend" [class.up]="data.ingreso_otras.variacion >= 0" [class.down]="data.ingreso_otras.variacion < 0">
