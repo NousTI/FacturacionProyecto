@@ -8,11 +8,13 @@ import {
   ExecutiveSummary,
   SalesGeneralReport,
   AccountsReceivableReport,
-  R001Report
+  R001Report,
+  MisVentasReport
 } from './services/financial-reports.service';
 import { UiService } from '../../../shared/services/ui.service';
 import { inject } from '@angular/core';
 import { PermissionsService } from '../../../core/auth/permissions.service';
+import { AuthService } from '../../../core/auth/auth.service';
 import { REPORTES_PERMISSIONS } from '../../../constants/permission-codes';
 
 // Sub-componentes
@@ -22,9 +24,11 @@ import { IvaReportComponent } from './components/iva-report.component';
 import { SalesGeneralComponent } from './components/sales-general.component';
 import { R001VentasGeneralesComponent } from './components/reporte_001/r001-ventas-generales.component';
 import { R008CuentasPorCobrarComponent } from './components/reporte_008/r008-cuentas-por-cobrar.component';
+import { R028ResumenEjecutivoComponent } from './components/reporte_028/r028-resumen-ejecutivo.component';
+import { R001MisVentasComponent } from './components/reporte_001_empleados/r001-mis-ventas.component';
 
 export type RangoTipo = 'mes_actual' | 'mes_anterior' | 'anio_actual' | 'personalizado';
-type Tab = 'resumen' | 'ventas' | 'cartera' | 'pyg' | 'iva';
+type Tab = 'resumen' | 'ventas' | 'cartera' | 'pyg' | 'iva' | 'mis_ventas';
 
 @Component({
   selector: 'app-usuario-reportes',
@@ -38,7 +42,9 @@ type Tab = 'resumen' | 'ventas' | 'cartera' | 'pyg' | 'iva';
     IvaReportComponent,
     SalesGeneralComponent,
     R001VentasGeneralesComponent,
-    R008CuentasPorCobrarComponent
+    R008CuentasPorCobrarComponent,
+    R028ResumenEjecutivoComponent,
+    R001MisVentasComponent
   ],
   template: `
 <div class="reportes-page-container animate__animated animate__fadeIn">
@@ -48,20 +54,27 @@ type Tab = 'resumen' | 'ventas' | 'cartera' | 'pyg' | 'iva';
     <!-- BARRA DE NAVEGACIÓN Y ACCIONES -->
     <div class="header-actions-bar mb-4">
       <div class="tabs-navigation">
-        <button class="nav-btn" [class.active]="tabActivo === 'resumen'" (click)="setTab('resumen')">
-          <i class="bi bi-speedometer2 me-2"></i>Dashboard Ejecutivo
-        </button>
-        <button class="nav-btn" [class.active]="tabActivo === 'ventas'" (click)="setTab('ventas')">
-          <i class="bi bi-cart-check me-2"></i>Ventas Generales
-        </button>
-        <button class="nav-btn" [class.active]="tabActivo === 'cartera'" (click)="setTab('cartera')">
-          <i class="bi bi-person-lines-fill me-2"></i>Cartera
-        </button>
-        <button class="nav-btn" [class.active]="tabActivo === 'pyg'" (click)="setTab('pyg')">
-          <i class="bi bi-calculator me-2"></i>P &amp; G
-        </button>
-        <button class="nav-btn" [class.active]="tabActivo === 'iva'" (click)="setTab('iva')">
-          <i class="bi bi-receipt me-2"></i>IVA
+        <ng-container *ngIf="isAdmin">
+          <button class="nav-btn" [class.active]="tabActivo === 'resumen'" (click)="setTab('resumen')">
+            <i class="bi bi-speedometer2"></i>
+            <span class="nav-label"><span class="nav-name">Dashboard Ejecutivo</span><span class="nav-code">R-028</span></span>
+          </button>
+          <button class="nav-btn" [class.active]="tabActivo === 'ventas'" (click)="setTab('ventas')">
+            <i class="bi bi-cart-check"></i>
+            <span class="nav-label"><span class="nav-name">Ventas Generales</span><span class="nav-code">R-001</span></span>
+          </button>
+          <button class="nav-btn" [class.active]="tabActivo === 'cartera'" (click)="setTab('cartera')">
+            <i class="bi bi-person-lines-fill"></i>
+            <span class="nav-label"><span class="nav-name">Cartera</span><span class="nav-code">R-008</span></span>
+          </button>
+          <button class="nav-btn" [class.active]="tabActivo === 'iva'" (click)="setTab('iva')">
+            <i class="bi bi-receipt"></i>
+            <span class="nav-label"><span class="nav-name">IVA</span><span class="nav-code">R-027</span></span>
+          </button>
+        </ng-container>
+        <button class="nav-btn" [class.active]="tabActivo === 'mis_ventas'" (click)="setTab('mis_ventas')">
+          <i class="bi bi-person-check"></i>
+          <span class="nav-label"><span class="nav-name">Mis Ventas</span><span class="nav-code">R-001E</span></span>
         </button>
       </div>
 
@@ -105,10 +118,10 @@ type Tab = 'resumen' | 'ventas' | 'cartera' | 'pyg' | 'iva';
 
     <!-- CONTENIDO -->
     <ng-container *ngIf="!loading">
-      <app-executive-summary
+      <app-r028-resumen-ejecutivo
         *ngIf="tabActivo === 'resumen' && resumenData"
         [data]="resumenData">
-      </app-executive-summary>
+      </app-r028-resumen-ejecutivo>
 
       <app-r001-ventas-generales
         *ngIf="tabActivo === 'ventas' && r001Data"
@@ -129,6 +142,11 @@ type Tab = 'resumen' | 'ventas' | 'cartera' | 'pyg' | 'iva';
         *ngIf="tabActivo === 'iva' && ivaData"
         [data]="ivaData">
       </app-iva-report>
+
+      <app-r001-mis-ventas
+        *ngIf="tabActivo === 'mis_ventas' && misVentasData"
+        [data]="misVentasData">
+      </app-r001-mis-ventas>
     </ng-container>
 
   </ng-container>
@@ -173,10 +191,13 @@ type Tab = 'resumen' | 'ventas' | 'cartera' | 'pyg' | 'iva';
     /* TABS */
     .tabs-navigation { display: flex; gap: 0.4rem; flex-shrink: 0; }
     .nav-btn {
-      background: none; border: none; padding: 0.65rem 1.1rem; font-weight: 700; color: #64748b;
+      background: none; border: none; padding: 0.5rem 1rem; font-weight: 700; color: #64748b;
       border-radius: 12px; transition: all 0.2s cubic-bezier(0.4,0,0.2,1); cursor: pointer;
-      white-space: nowrap; display: flex; align-items: center; font-size: 0.85rem;
+      white-space: nowrap; display: flex; align-items: center; gap: 0.5rem; font-size: 0.85rem;
     }
+    .nav-label { display: flex; flex-direction: column; align-items: flex-start; line-height: 1.1; }
+    .nav-name  { font-size: 0.82rem; font-weight: 700; }
+    .nav-code  { font-size: 0.62rem; font-weight: 600; opacity: 0.55; letter-spacing: 0.03em; }
     .nav-btn:hover { background: #f1f5f9; color: #0f172a; }
     .nav-btn.active { background: #1e293b; color: #fff; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
 
@@ -224,6 +245,8 @@ type Tab = 'resumen' | 'ventas' | 'cartera' | 'pyg' | 'iva';
   `]
 })
 export class ReportesPage implements OnInit {
+  isAdmin = false;
+
   get canView(): boolean {
     return this.permissionsService.hasPermission(REPORTES_PERMISSIONS.VER);
   }
@@ -241,18 +264,33 @@ export class ReportesPage implements OnInit {
   carteraData?: AccountsReceivableReport;
   pygData?: PyGReport;
   ivaData?: IVAReport;
+  misVentasData?: MisVentasReport;
 
   private permissionsService = inject(PermissionsService);
 
   constructor(
     private reportsSvc: FinancialReportsService,
     private ui: UiService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private authService: AuthService
   ) {}
 
   ngOnInit() {
     this.initDefaultDates();
-    this.cargarDatos();
+    this.authService.getPerfil().subscribe({
+      next: (perfil: any) => {
+        const rolCodigo = (perfil?.rol_codigo || '').toUpperCase();
+        this.isAdmin = rolCodigo === 'ADMIN_EMPRESA';
+        if (!this.isAdmin) this.tabActivo = 'mis_ventas';
+        this.cargarDatos();
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.isAdmin = false;
+        this.tabActivo = 'mis_ventas';
+        this.cargarDatos();
+      }
+    });
   }
 
   private initDefaultDates() {
@@ -337,6 +375,14 @@ export class ReportesPage implements OnInit {
         this.reportsSvc.getIVAReport(this.fechaInicio, this.fechaFin).subscribe({
           next: (d) => { this.ivaData = d; this.finishLoading(); },
           error: () => this.handleError('Error al cargar IVA')
+        });
+        break;
+
+      case 'mis_ventas':
+        this.misVentasData = undefined;
+        this.reportsSvc.getMisVentas(this.fechaInicio, this.fechaFin).subscribe({
+          next: (d) => { this.misVentasData = d; this.finishLoading(); },
+          error: () => this.handleError('Error al cargar Mis Ventas')
         });
         break;
     }

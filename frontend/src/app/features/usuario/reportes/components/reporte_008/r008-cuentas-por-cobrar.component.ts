@@ -2,14 +2,14 @@ import { Component, Input, OnChanges, ViewChild, ElementRef } from '@angular/cor
 import { CommonModule, CurrencyPipe, DecimalPipe, PercentPipe } from '@angular/common';
 import { AccountsReceivableReport } from '../../services/financial-reports.service';
 import { Chart, ChartConfiguration, registerables } from 'chart.js';
-import { InfoTooltipComponent } from '../../../../../shared/components/info-tooltip/info-tooltip.component';
+import { ResponsableTooltipComponent } from './responsable-tooltip.component';
 
 Chart.register(...registerables);
 
 @Component({
   selector: 'app-r008-cuentas-por-cobrar',
   standalone: true,
-  imports: [CommonModule, CurrencyPipe, DecimalPipe, PercentPipe, InfoTooltipComponent],
+  imports: [CommonModule, CurrencyPipe, DecimalPipe, PercentPipe, ResponsableTooltipComponent],
   template: `
     <div class="fade-in">
 
@@ -88,7 +88,7 @@ Chart.register(...registerables);
                     <td class="font-medium">
                       <div class="d-flex align-items-center">
                         {{ c.cliente }}
-                        <app-info-tooltip [message]="'Vendedor responsable: ' + c.responsable"></app-info-tooltip>
+                        <app-responsable-tooltip [responsable]="c.responsable"></app-responsable-tooltip>
                       </div>
                     </td>
                     <td class="font-mono">{{ c.numero_factura }}</td>

@@ -45,10 +45,11 @@ class RepositorioR028:
         """Datos de cuentas por cobrar para dashboard."""
         query = """
             SELECT
-                COALESCE(SUM(saldo_pendiente), 0) as por_cobrar_total,
-                COALESCE(SUM(saldo_pendiente) FILTER (WHERE CURRENT_DATE - fecha_vencimiento >= 30), 0) as en_mora_30
-            FROM sistema_facturacion.cuentas_cobrar
-            WHERE empresa_id = %s AND saldo_pendiente > 0
+                COALESCE(SUM(cc.saldo_pendiente), 0) as por_cobrar_total,
+                COALESCE(SUM(cc.saldo_pendiente) FILTER (WHERE CURRENT_DATE - cc.fecha_vencimiento > 30), 0) as en_mora_30
+            FROM sistema_facturacion.cuentas_cobrar cc
+            JOIN sistema_facturacion.facturas f ON cc.factura_id = f.id
+            WHERE cc.empresa_id = %s AND cc.saldo_pendiente > 0 AND f.estado = 'AUTORIZADA'
         """
         with self.db.cursor() as cur:
             cur.execute(query, (str(empresa_id),))
@@ -56,15 +57,21 @@ class RepositorioR028:
             return dict(result) if result else {"por_cobrar_total": 0, "en_mora_30": 0}
 
     def obtener_clientes_metricas(self, empresa_id: UUID, fecha_inicio: str, fecha_fin: str) -> Dict[str, Any]:
-        """Clientes nuevos y VIP."""
-        # 1. Clientes nuevos
+        """Clientes nuevos (período) y VIP (año completo del período)."""
+        from datetime import datetime
+        anio = datetime.strptime(fecha_inicio, '%Y-%m-%d').year
+        anio_inicio = f"{anio}-01-01"
+        anio_fin    = f"{anio}-12-31"
+
+        # 1. Clientes nuevos en el período seleccionado
         query_nuevos = """
             SELECT COUNT(*) as count
             FROM sistema_facturacion.clientes
             WHERE empresa_id = %s AND created_at BETWEEN %s AND %s
         """
 
-        # 2. Clientes VIP (Criterio: 20% promedio ventas, >= 4 veces/mes, 0 días mora)
+        # 2. Clientes VIP — criterio anual: >= 4 compras en el año, acumulan el 20% del promedio
+        #    mensual de ventas totales, y 0 días de mora desde su primer compra
         query_vip = """
             WITH stats_clientes AS (
                 SELECT
@@ -78,18 +85,21 @@ class RepositorioR028:
                 HAVING COUNT(*) >= 4
             ),
             ventas_totales AS (
-                SELECT COALESCE(SUM(total), 1) as total_empresa FROM sistema_facturacion.facturas
-                WHERE empresa_id = %s AND estado != 'ANULADA' AND fecha_emision BETWEEN %s AND %s
+                SELECT COALESCE(SUM(total) / 12.0, 1) as promedio_mensual
+                FROM sistema_facturacion.facturas
+                WHERE empresa_id = %s AND estado != 'ANULADA'
+                  AND fecha_emision BETWEEN %s AND %s
             ),
             mora_clientes AS (
-                SELECT cliente_id FROM sistema_facturacion.cuentas_cobrar
-                WHERE empresa_id = %s AND saldo_pendiente > 0 AND fecha_vencimiento < CURRENT_DATE
-                GROUP BY cliente_id
+                SELECT DISTINCT cliente_id
+                FROM sistema_facturacion.cuentas_cobrar
+                WHERE empresa_id = %s AND saldo_pendiente > 0
+                  AND fecha_vencimiento < CURRENT_DATE
             )
             SELECT COUNT(sc.cliente_id) as vip_count
             FROM stats_clientes sc
             CROSS JOIN ventas_totales vt
-            WHERE sc.total_gastado >= (vt.total_empresa * 0.2)
+            WHERE sc.total_gastado >= (vt.promedio_mensual * 0.2)
               AND sc.cliente_id NOT IN (SELECT cliente_id FROM mora_clientes)
         """
 
@@ -98,92 +108,60 @@ class RepositorioR028:
             row_nuevos = cur.fetchone()
             nuevos = row_nuevos['count'] if row_nuevos else 0
 
-            cur.execute(query_vip, (str(empresa_id), fecha_inicio, fecha_fin, str(empresa_id), fecha_inicio, fecha_fin, str(empresa_id)))
+            cur.execute(query_vip, (
+                str(empresa_id), anio_inicio, anio_fin,
+                str(empresa_id), anio_inicio, anio_fin,
+                str(empresa_id)
+            ))
             row_vips = cur.fetchone()
             vips = row_vips['vip_count'] if row_vips else 0
 
         return {"clientes_nuevos": nuevos, "clientes_vip": vips}
 
     def obtener_radar_gestion(self, empresa_id: UUID) -> List[Dict[str, Any]]:
-        """Radar de gestión inmediata (Ventas mora > 5 días, Stock crítico, Cierre de caja)."""
+        """Radar de gestión inmediata: ventas en mora >5 días y stock crítico."""
         radar = []
 
-        # 1. Ventas en mora > 5 días
+        # 1. Ventas en mora > 5 días — responsable con rol/nombre
         query_mora = """
             SELECT
                 'Venta' as origen,
-                'Factura #' || f.numero_factura || ' - ' || c.razon_social as detalle,
+                'Factura #' || f.numero_factura || ' – ' || c.razon_social as detalle,
                 cc.saldo_pendiente as monto,
                 'Mora ' || (CURRENT_DATE - cc.fecha_vencimiento) || ' días' as estado,
-                u.nombres as responsable
+                COALESCE(er.nombre, 'Sin rol') || ' / ' || COALESCE(u.nombres || ' ' || u.apellidos, 'No asignado') as responsable
             FROM sistema_facturacion.cuentas_cobrar cc
             JOIN sistema_facturacion.facturas f ON cc.factura_id = f.id
             JOIN sistema_facturacion.clientes c ON cc.cliente_id = c.id
-            JOIN sistema_facturacion.usuarios u ON f.usuario_id = u.id
+            LEFT JOIN sistema_facturacion.usuarios u ON f.usuario_id = u.id
+            LEFT JOIN sistema_facturacion.empresa_roles er ON u.empresa_rol_id = er.id
             WHERE cc.empresa_id = %s AND cc.saldo_pendiente > 0
-              AND (CURRENT_DATE - cc.fecha_vencimiento) >= 5
-            ORDER BY cc.fecha_vencimiento ASC LIMIT 1
+              AND (CURRENT_DATE - cc.fecha_vencimiento) > 5
+            ORDER BY cc.fecha_vencimiento ASC
+            LIMIT 5
         """
 
-        # 2. Stock Crítico (< 10 unidades)
+        # 2. Stock crítico (< 10 unidades)
         query_stock = """
             SELECT
                 'Inventario' as origen,
                 nombre || ' (quedan ' || stock_actual || ')' as detalle,
-                0 as monto,
+                NULL as monto,
                 'Stock Crítico' as estado,
                 'Bodega' as responsable
             FROM sistema_facturacion.productos
             WHERE empresa_id = %s AND activo = TRUE AND maneja_inventario = TRUE
               AND stock_actual < 10
-            LIMIT 1
+            ORDER BY stock_actual ASC
+            LIMIT 3
         """
 
         with self.db.cursor() as cur:
             cur.execute(query_mora, (str(empresa_id),))
-            mora_result = cur.fetchone()
-            if mora_result:
-                radar.append(dict(mora_result))
+            radar.extend([dict(r) for r in cur.fetchall()])
 
             cur.execute(query_stock, (str(empresa_id),))
-            stock_result = cur.fetchone()
-            if stock_result:
-                radar.append(dict(stock_result))
-
-        # 3. Cierre de caja (dummy - no existe tabla en BD actual)
-        radar.append({
-            "origen": "Caja",
-            "detalle": "Cierre de caja principal",
-            "monto": 0.0,
-            "estado": "Pendiente",
-            "responsable": "Admin"
-        })
-
-        # Si no hay datos reales, usar valores por defecto
-        if len(radar) == 1:  # Solo caja
-            radar = [
-                {
-                    "origen": "Venta",
-                    "detalle": "Sin ventas en mora",
-                    "monto": 0.0,
-                    "estado": "Bueno",
-                    "responsable": "N/A"
-                },
-                {
-                    "origen": "Inventario",
-                    "detalle": "Stock normal",
-                    "monto": 0.0,
-                    "estado": "Stock saludable",
-                    "responsable": "Bodega"
-                },
-                {
-                    "origen": "Caja",
-                    "detalle": "Cierre de caja principal",
-                    "monto": 0.0,
-                    "estado": "Pendiente",
-                    "responsable": "Admin"
-                }
-            ]
+            radar.extend([dict(r) for r in cur.fetchall()])
 
         return radar
 
@@ -253,22 +231,11 @@ class RepositorioR028:
             return dict(result) if result else {"total_gastos": 0}
 
     def obtener_formas_pago_detalle(self, empresa_id: UUID, fecha_inicio: str, fecha_fin: str) -> List[Dict[str, Any]]:
-        """Obtiene detalle de formas de pago para tooltip."""
+        """Detalle de todas las formas de pago SRI — siempre devuelve los 8 códigos, con 0 si no hubo movimiento."""
+        from .....constants.sri_constants import SRI_FORMAS_PAGO as SRI_FP
         query = """
             SELECT
-                CASE
-                    WHEN fp.forma_pago_sri = '01' THEN 'Efectivo'
-                    WHEN fp.forma_pago_sri = '16' THEN 'Tarjeta de Débito'
-                    WHEN fp.forma_pago_sri = '17' THEN 'Dinero Electrónico'
-                    WHEN fp.forma_pago_sri = '18' THEN 'Tarjeta Prepago'
-                    WHEN fp.forma_pago_sri = '19' THEN 'Tarjeta de Crédito'
-                    WHEN fp.forma_pago_sri = '20' THEN 'Sistema Financiero'
-                    WHEN fp.forma_pago_sri = '15' THEN 'Compensación'
-                    WHEN fp.forma_pago_sri = '21' THEN 'Endoso'
-                    ELSE 'Otra forma'
-                END as forma_pago,
                 fp.forma_pago_sri,
-                COUNT(*) as cantidad,
                 COALESCE(SUM(fp.valor), 0) as total
             FROM sistema_facturacion.formas_pago fp
             JOIN sistema_facturacion.facturas f ON fp.factura_id = f.id
@@ -276,11 +243,31 @@ class RepositorioR028:
               AND f.fecha_emision BETWEEN %s AND %s
               AND f.estado != 'ANULADA'
             GROUP BY fp.forma_pago_sri
-            ORDER BY total DESC
         """
         with self.db.cursor() as cur:
             cur.execute(query, (str(empresa_id), fecha_inicio, fecha_fin))
-            return [dict(row) for row in cur.fetchall()]
+            totales = {row['forma_pago_sri']: float(row['total']) for row in cur.fetchall()}
+
+        return [
+            {"forma_pago_sri": fp["codigo"], "label": fp["label"], "total": totales.get(fp["codigo"], 0.0)}
+            for fp in SRI_FP
+        ]
+
+    def obtener_costo_ventas(self, empresa_id: UUID, fecha_inicio: str, fecha_fin: str) -> float:
+        """Costo total de los productos vendidos en el período (para calcular utilidad neta real)."""
+        query = """
+            SELECT COALESCE(SUM(fd.cantidad * COALESCE(p.costo, 0)), 0) as costo_ventas
+            FROM sistema_facturacion.facturas_detalle fd
+            JOIN sistema_facturacion.facturas f ON fd.factura_id = f.id
+            LEFT JOIN sistema_facturacion.productos p ON fd.producto_id = p.id
+            WHERE f.empresa_id = %s
+              AND f.fecha_emision BETWEEN %s AND %s
+              AND f.estado != 'ANULADA'
+        """
+        with self.db.cursor() as cur:
+            cur.execute(query, (str(empresa_id), fecha_inicio, fecha_fin))
+            result = cur.fetchone()
+            return float(result['costo_ventas']) if result else 0.0
 
     def obtener_ventas_anio_anterior(self, empresa_id: UUID, fecha_inicio: str, fecha_fin: str) -> Dict[str, Any]:
         """Obtiene ventas del año anterior para comparativa gráfica."""

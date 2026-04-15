@@ -48,7 +48,11 @@ export interface ExecutiveSummary {
   total_facturado: { valor: number; variacion: number };
   ingreso_efectivo: { valor: number; variacion: number };
   ingreso_tarjeta: { valor: number; variacion: number };
-  ingreso_otras: { valor: number; variacion: number };
+  ingreso_otras: {
+    valor: number;
+    variacion: number;
+    formas_pago_detalle: Array<{ forma_pago_sri: string; cantidad: number; total: number }>;
+  };
   por_cobrar: { total: number; en_mora: number };
   clientes_nuevos: { valor: number; variacion: number };
   clientes_vip: { valor: number; periodo: string };
@@ -56,7 +60,7 @@ export interface ExecutiveSummary {
   radar_gestion: Array<{
     origen: string;
     detalle: string;
-    monto: number;
+    monto: number | null;
     estado: string;
     responsable: string;
   }>;
@@ -67,6 +71,17 @@ export interface ExecutiveSummary {
     utilidad_neta: number;
     estado: string;
   }>;
+  monitor_rentabilidad_por_utilidad: Array<{
+    productos: string;
+    vendidos: number;
+    existencias: number;
+    utilidad_neta: number;
+    estado: string;
+  }>;
+  graficas: {
+    anillo_ventas: { año_actual: number; año_anterior: number };
+    gastos_vs_utilidad: { gastos: number; utilidad_neta: number };
+  };
 }
 
 export interface SalesGeneralReport {
@@ -121,6 +136,30 @@ export interface R001Report {
   ticket_promedio: { valor: number; variacion: number };
   ventas_por_usuario: R001UsuarioVenta[];
   top_usuarios: R001TopUsuario[];
+}
+
+export interface MisVentasReport {
+  empleado: string;
+  kpis: {
+    mis_facturas:    { valor: number; variacion: number };
+    total_vendido:   { valor: number; variacion: number };
+    devoluciones:    { valor: number; variacion: number };
+    ticket_promedio: { valor: number; variacion: number };
+  };
+  facturas_recientes: Array<{
+    numero_factura: string;
+    cliente: string;
+    fecha: string;
+    total: number;
+    estado: string;
+  }>;
+  mis_clientes: Array<{
+    cliente: string;
+    facturas: number;
+    total_compras: number;
+    ultima_compra: string;
+    estado: string;
+  }>;
 }
 
 export interface AccountsReceivableReport {
@@ -184,6 +223,11 @@ export class FinancialReportsService {
   getSalesByUser(fecha_inicio: string, fecha_fin: string): Observable<any> {
     const params = new HttpParams().set('fecha_inicio', fecha_inicio).set('fecha_fin', fecha_fin);
     return this.http.get<any>(`${environment.apiUrl}/reportes/ventas/usuarios`, { params });
+  }
+
+  getMisVentas(fecha_inicio: string, fecha_fin: string): Observable<MisVentasReport> {
+    const params = new HttpParams().set('fecha_inicio', fecha_inicio).set('fecha_fin', fecha_fin);
+    return this.http.get<MisVentasReport>(`${this.base}/mis-ventas`, { params });
   }
 
   exportarReportePDF(tipo: string, fecha_inicio: string, fecha_fin: string): Observable<Blob> {

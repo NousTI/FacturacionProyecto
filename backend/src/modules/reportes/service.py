@@ -11,10 +11,10 @@ from .superadmin.superadmin_reportes_service import SuperAdminReportesService
 from .vendedores.R_031.repository import RepositorioR031Vendedor
 from .vendedores.R_032.repository import RepositorioR032Vendedor
 from .usuarios.R_001.service import ServicioR001
-from .usuarios.R_026.service import ServicioR026
 from .usuarios.R_027.service import ServicioR027
 from .usuarios.R_028.service import ServicioR028
 from .usuarios.R_008.service import ServicioR008
+from .usuarios.R_001_Empleados.service import ServicioR001Empleados
 from .vendedores.dashboard.service import ServicioDashboardVendedor
 from .vendedores.vendedor_reportes_service import VendedorReportesService
 from ..empresas.repositories import RepositorioEmpresas
@@ -32,10 +32,10 @@ class ServicioReportes:
         repo_v_r031: RepositorioR031Vendedor = Depends(),
         repo_v_r032: RepositorioR032Vendedor = Depends(),
         svc_r001: ServicioR001 = Depends(),
-        svc_r026: ServicioR026 = Depends(),
         svc_r027: ServicioR027 = Depends(),
         svc_r028: ServicioR028 = Depends(),
         svc_r008: ServicioR008 = Depends(),
+        svc_r001_empleados: ServicioR001Empleados = Depends(),
         svc_dashboard_vendedor: ServicioDashboardVendedor = Depends(),
         svc_vendedor_reportes: VendedorReportesService = Depends(),
         repo_empresas: RepositorioEmpresas = Depends()
@@ -45,10 +45,10 @@ class ServicioReportes:
         self.repo_v_r031 = repo_v_r031
         self.repo_v_r032 = repo_v_r032
         self.svc_r001 = svc_r001
-        self.svc_r026 = svc_r026
         self.svc_r027 = svc_r027
         self.svc_r028 = svc_r028
         self.svc_r008 = svc_r008
+        self.svc_r001_empleados = svc_r001_empleados
         self.svc_dashboard_vendedor = svc_dashboard_vendedor
         self.svc_vendedor_reportes = svc_vendedor_reportes
         self.repo_empresas = repo_empresas
@@ -364,6 +364,10 @@ class ServicioReportes:
         """R-008: Cuentas por Cobrar con filtro de fechas."""
         return self.svc_r008.generar_reporte_cartera(empresa_id, fecha_inicio, fecha_fin)
 
+    def obtener_mis_ventas_empleado(self, empresa_id: UUID, usuario_id: UUID, fecha_inicio: str, fecha_fin: str):
+        """R-001 Empleados: Mis ventas filtradas por usuario."""
+        return self.svc_r001_empleados.generar_mis_ventas(empresa_id, usuario_id, fecha_inicio, fecha_fin)
+
     def exportar_reporte(self, empresa_id: UUID, tipo: str, formato: str, params: dict):
         """
         Orquesta la generación de archivos PDF/Excel para los reportes de ventas.
@@ -466,7 +470,7 @@ class ServicioReportes:
                 template = "reports/usuarios/reporte-r008.html"
             else: # FINANCIERO_RESUMEN
                 data = self.obtener_resumen_ejecutivo_usuario(empresa_id, fecha_inicio, fecha_fin)
-                template = "reports/resumen_report.html"
+                template = "reports/usuarios/reporte-r028.html"
                 
             if formato == 'pdf':
                 context = {

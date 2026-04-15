@@ -34,7 +34,7 @@ import { HasPermissionDirective } from '../../../../shared/directives/has-permis
           </div>
         </div>
         <div class="modal-footer-minimal p-4 border-top bg-light-soft justify-content-center">
-           <button *hasPermission="'ROLES_EDITAR'"
+           <button *hasPermission="'CONFIG_ROLES'"
                    class="btn btn-minimal-dark px-5" 
                    (click)="onSave.emit()" 
                    [disabled]="saving || (!role?.es_sistema && !hasChanges)">

@@ -1,4 +1,4 @@
-import { Component, Input, ElementRef, ViewChild, AfterViewInit } from '@angular/core';
+import { Component, Input, ElementRef, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 @Component({
@@ -11,16 +11,15 @@ import { CommonModule } from '@angular/common';
           (mouseenter)="showTooltip()"
           (mouseleave)="hideTooltip()">
       <i [class]="'bi ' + icon + ' cursor-help'"></i>
-      
+
       <!-- Tooltip Box (Fixed Portal) -->
-      <div class="info-tooltip-box" 
+      <div class="info-tooltip-box"
+           #tooltipBox
            [class.visible]="isVisible"
            [class.flipped]="isFlipped"
            [style.top.px]="coords.top"
            [style.left.px]="coords.left">
-        <div class="info-tooltip-content">
-          {{ message }}
-        </div>
+        <div class="info-tooltip-content">{{ message }}</div>
         <div class="info-tooltip-arrow"></div>
       </div>
     </span>
@@ -42,21 +41,17 @@ import { CommonModule } from '@angular/common';
       visibility: hidden;
       transition: opacity 0.2s ease, transform 0.2s ease;
       z-index: 11000;
-      transform: translateX(-50%) translateY(10px);
+      transform: translateY(10px);
     }
 
     .info-tooltip-box.visible {
       opacity: 1;
       visibility: visible;
-      transform: translateX(-50%) translateY(0);
+      transform: translateY(0);
     }
 
-    .info-tooltip-box.flipped {
-      transform: translateX(-50%) translateY(-10px);
-    }
-    .info-tooltip-box.flipped.visible {
-      transform: translateX(-50%) translateY(0);
-    }
+    .info-tooltip-box.flipped { transform: translateY(-10px); }
+    .info-tooltip-box.flipped.visible { transform: translateY(0); }
 
     .info-tooltip-content {
       background: var(--primary-color);
@@ -69,6 +64,7 @@ import { CommonModule } from '@angular/common';
       text-align: center;
       border: 1px solid rgba(255, 255, 255, 0.1);
       box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+      white-space: pre-line;
     }
 
     .info-tooltip-arrow {
@@ -81,13 +77,11 @@ import { CommonModule } from '@angular/common';
       border-right: 6px solid transparent;
     }
 
-    /* Normal: Arrow at bottom, pointing down */
     .info-tooltip-box:not(.flipped) .info-tooltip-arrow {
       top: 100%;
       border-top: 6px solid var(--primary-color);
     }
 
-    /* Flipped: Arrow at top, pointing up */
     .info-tooltip-box.flipped .info-tooltip-arrow {
       bottom: 100%;
       border-bottom: 6px solid var(--primary-color);
@@ -99,7 +93,7 @@ import { CommonModule } from '@angular/common';
       color: var(--text-muted);
       transition: all 0.2s;
     }
-    
+
     .info-tooltip-trigger:hover .cursor-help {
       color: var(--primary-color);
       transform: scale(1.15);
@@ -109,38 +103,47 @@ import { CommonModule } from '@angular/common';
 export class InfoTooltipComponent {
   @Input() message: string = '';
   @Input() icon: string = 'bi-info-circle';
-  
+
   isVisible = false;
   isFlipped = false;
-  coords = { top: 0, left: 0 };
+  coords = { top: -9999, left: -9999 };
+  private pendingRect: DOMRect = new DOMRect();
 
   @ViewChild('trigger') triggerElement!: ElementRef;
+  @ViewChild('tooltipBox') tooltipBox!: ElementRef;
 
   showTooltip() {
+    // Guardar posición del trigger ANTES de mostrar el box
     const rect = this.triggerElement.nativeElement.getBoundingClientRect();
-    const tooltipWidth = 220;
-    const tooltipHeight = 60; // Estimated
-    const margin = 12;
-
-    // Default: Show above
-    let top = rect.top - margin - tooltipHeight;
-    this.isFlipped = false;
-
-    // Flip logic: If hitting the top of viewport (navbar approx 80px)
-    if (top < 85) {
-      top = rect.bottom + margin;
-      this.isFlipped = true;
-    }
-
-    this.coords = {
-      top: top,
-      left: rect.left + (rect.width / 2)
-    };
-    
+    this.pendingRect = rect;
     this.isVisible = true;
+
+    setTimeout(() => {
+      if (!this.isVisible) return;
+      const boxEl: HTMLElement = this.tooltipBox?.nativeElement;
+      const tooltipHeight = boxEl ? boxEl.offsetHeight : 60;
+      const tooltipWidth  = boxEl ? boxEl.offsetWidth  : 220;
+      const margin = 12;
+
+      const triggerCenterX = this.pendingRect.left + this.pendingRect.width / 2;
+      let left = triggerCenterX - tooltipWidth / 2;
+      if (left < 8) left = 8;
+      if (left + tooltipWidth > window.innerWidth - 8) left = window.innerWidth - tooltipWidth - 8;
+
+      let top = this.pendingRect.top - margin - tooltipHeight;
+      this.isFlipped = false;
+
+      if (top < 85) {
+        top = this.pendingRect.bottom + margin;
+        this.isFlipped = true;
+      }
+
+      this.coords = { top, left };
+    }, 0);
   }
 
   hideTooltip() {
     this.isVisible = false;
+    this.coords = { top: -9999, left: -9999 };
   }
 }

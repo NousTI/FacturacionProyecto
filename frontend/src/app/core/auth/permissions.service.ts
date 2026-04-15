@@ -73,4 +73,11 @@ export class PermissionsService {
             return this.hasPermission(permission);
         });
     }
+
+    get isAdminEmpresa(): boolean {
+        const user = this.userSignal();
+        if (!user) return false;
+        const rolCodigo = (user.rol_codigo || '').toUpperCase();
+        return rolCodigo === 'ADMIN_EMPRESA';
+    }
 }

@@ -14,6 +14,12 @@ from ...errors.app_error import AppError
 
 router = APIRouter()
 
+def _require_admin_empresa(usuario_actual: dict):
+    """Lanza 403 si el usuario no tiene rol ADMIN_EMPRESA."""
+    rol_codigo = (usuario_actual.get("rol_codigo") or "").upper()
+    if rol_codigo != "ADMIN_EMPRESA":
+        raise AppError("Acceso restringido: solo administradores de empresa pueden ver este reporte.", 403)
+
 # --- RUTAS GENERALES (USUARIO EMPRESA) ---
 
 @router.get("/", response_model=List[ReporteLectura])
@@ -126,6 +132,7 @@ def obtener_reporte_r001(
     svc_r001: ServicioR001 = Depends()
 ):
     """R-001: Ventas Generales — desglose por usuario, IVA y comparación período anterior."""
+    _require_admin_empresa(usuario_actual)
     empresa_id = usuario_actual.get("empresa_id")
     return svc_r001.generar_reporte_ventas(empresa_id, fecha_inicio, fecha_fin)
 
@@ -227,6 +234,7 @@ def obtener_reporte_pyg(
     """R-026: Estado de Resultados (PyG)."""
     if usuario_actual.get(AuthKeys.IS_VENDEDOR):
         raise AppError("Este reporte está bloqueado para vendedores.", 403)
+    _require_admin_empresa(usuario_actual)
     empresa_id = usuario_actual.get("empresa_id")
     return servicio.obtener_pyg_usuario(empresa_id, fecha_inicio, fecha_fin)
 
@@ -240,6 +248,7 @@ def obtener_reporte_iva_ventas(
     """R-027: Reporte de IVA (Ventas)."""
     if usuario_actual.get(AuthKeys.IS_VENDEDOR):
         raise AppError("Este reporte está bloqueado para vendedores.", 403)
+    _require_admin_empresa(usuario_actual)
     empresa_id = usuario_actual.get("empresa_id")
     return servicio.obtener_iva_ventas_usuario(empresa_id, fecha_inicio, fecha_fin)
 
@@ -253,8 +262,23 @@ def obtener_resumen_ejecutivo(
     """R-028: Resumen Ejecutivo (KPIs)."""
     if usuario_actual.get(AuthKeys.IS_VENDEDOR):
         raise AppError("Este reporte está bloqueado para vendedores.", 403)
+    _require_admin_empresa(usuario_actual)
     empresa_id = usuario_actual.get("empresa_id")
     return servicio.obtener_resumen_ejecutivo_usuario(empresa_id, fecha_inicio, fecha_fin)
+
+@router.get("/financiero/mis-ventas")
+def obtener_mis_ventas_empleado(
+    fecha_inicio: str,
+    fecha_fin: str,
+    usuario_actual: dict = Depends(requerir_permiso([PermissionCodes.REPORTES_VER])),
+    servicio: ServicioReportes = Depends()
+):
+    """R-001 Empleados: Mis ventas (filtrado automático por usuario_id del token)."""
+    if usuario_actual.get(AuthKeys.IS_VENDEDOR):
+        raise AppError("Este reporte no está disponible para vendedores.", 403)
+    empresa_id = usuario_actual.get("empresa_id")
+    usuario_id = usuario_actual.get("usuario_id")
+    return servicio.obtener_mis_ventas_empleado(empresa_id, usuario_id, fecha_inicio, fecha_fin)
 
 @router.get("/financiero/cartera")
 def obtener_reporte_cartera(
@@ -266,6 +290,7 @@ def obtener_reporte_cartera(
     """R-008: Cuentas por Cobrar con filtro de fechas."""
     if usuario_actual.get(AuthKeys.IS_VENDEDOR):
         raise AppError("Este reporte está bloqueado para vendedores.", 403)
+    _require_admin_empresa(usuario_actual)
     empresa_id = usuario_actual.get("empresa_id")
     return servicio.obtener_cartera_usuario(empresa_id, fecha_inicio, fecha_fin)
 

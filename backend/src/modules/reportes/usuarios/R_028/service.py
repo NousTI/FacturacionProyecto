@@ -39,10 +39,12 @@ class ServicioR028:
         monitor = self.repo.obtener_monitor_productos(empresa_id, fecha_inicio, fecha_fin)
         monitor_utilidad = self.repo.obtener_monitor_productos_por_utilidad(empresa_id, fecha_inicio, fecha_fin)
 
-        # 3. Datos de Gastos y Utilidad
+        # 3. Datos de Gastos y Utilidad (ventas - costo_ventas - gastos_operativos)
         gastos_val_actual = self.repo_gastos.obtener_total_gastos(empresa_id, fecha_inicio, fecha_fin)
-        utilidad_neta = float(ventas_actual['total_facturado']) - float(gastos_val_actual)
-        margen = (utilidad_neta / float(ventas_actual['total_facturado']) * 100) if float(ventas_actual['total_facturado']) > 0 else 0
+        costo_ventas = self.repo.obtener_costo_ventas(empresa_id, fecha_inicio, fecha_fin)
+        total_facturado = float(ventas_actual['total_facturado'])
+        utilidad_neta = total_facturado - costo_ventas - float(gastos_val_actual)
+        margen = (utilidad_neta / total_facturado * 100) if total_facturado > 0 else 0
 
         # 4. Obtener datos para gráficas
         formas_pago_detalle = self.repo.obtener_formas_pago_detalle(empresa_id, fecha_inicio, fecha_fin)

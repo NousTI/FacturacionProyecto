@@ -74,7 +74,7 @@ class RepositorioR008:
             query += " AND f.fecha_emision <= %s::timestamp + interval '1 day' - interval '1 second'"
             params.append(fecha_fin)
 
-        query += " ORDER BY cc.saldo_pendiente DESC LIMIT %s"
+        query += " ORDER BY dias_vencido DESC LIMIT %s"
         params.append(limit)
 
         with self.db.cursor() as cur:
