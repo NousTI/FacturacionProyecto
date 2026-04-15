@@ -1,4 +1,4 @@
-import { Component, ViewChild, ChangeDetectorRef } from '@angular/core';
+import { Component, ViewChild, ChangeDetectorRef, OnInit, AfterViewInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { R031GlobalComponent } from './components/r-031-global/r-031-global.component';
 import { R032ComisionesComponent } from './components/r-032-comisiones/r-032-comisiones.component';
@@ -98,44 +98,31 @@ type Tab = 'global' | 'comisiones' | 'uso';
     .report-content-container { margin-top: 1rem; }
   `]
 })
-export class SuperAdminReportesPage {
+export class SuperAdminReportesPage implements OnInit, AfterViewInit {
   @ViewChild('r031') r031!: R031GlobalComponent;
   @ViewChild('r032') r032!: R032ComisionesComponent;
   @ViewChild('r033') r033!: R033UsoComponent;
 
   tabActivo: Tab = 'global';
   currentFilters: any = {};
-  
-  get isLoading(): boolean {
-    if (this.tabActivo === 'global') return this.r031?.loading || false;
-    if (this.tabActivo === 'comisiones') return this.r032?.loading || false;
-    if (this.tabActivo === 'uso') return this.r033?.loading || false;
-    return false;
-  }
-
-  get isLoadingPDF(): boolean {
-    if (this.tabActivo === 'global') return this.r031?.loadingPDF || false;
-    if (this.tabActivo === 'comisiones') return this.r032?.loadingPDF || false;
-    if (this.tabActivo === 'uso') return this.r033?.loadingPDF || false;
-    return false;
-  }
+  isLoading = false;
+  isLoadingPDF = false;
 
   constructor(private cd: ChangeDetectorRef) {}
 
-  ngOnInit() {
-    // La carga inicial se disparará automáticamente cuando SuperAdminFiltersComponent emita el estado inicial
-    // Pero forzamos una generación después de un pequeño delay para asegurar sincronía
-    setTimeout(() => this.handleGenerate(), 500);
+  ngOnInit() {}
+
+  ngAfterViewInit() {
+    this.syncFiltersToActiveComponent();
+    this.handleGenerate();
   }
 
   setTab(tab: Tab) {
     if (this.tabActivo === tab) return;
     this.tabActivo = tab;
-    // Darle un ciclo de detección para que los ViewChild estén disponibles
-    setTimeout(() => {
-        this.syncFiltersToActiveComponent();
-        this.handleGenerate();
-    }, 0);
+    this.cd.detectChanges(); // forzar render del *ngIf antes de acceder al ViewChild
+    this.syncFiltersToActiveComponent();
+    this.handleGenerate();
   }
 
   onFiltersChanged(filters: any) {
@@ -157,16 +144,36 @@ export class SuperAdminReportesPage {
 
   handleGenerate() {
     const comp = this.getActiveComponent();
-    if (comp) {
-        comp.generar();
-    }
+    if (!comp) return;
+    this.isLoading = true;
+    this.cd.detectChanges();
+    comp.generar();
+    // Polling liviano: espera hasta que el hijo termine de cargar
+    const poll = setInterval(() => {
+      if (!comp.loading) {
+        this.isLoading = false;
+        this.cd.detectChanges();
+        clearInterval(poll);
+      }
+    }, 100);
+    // Timeout de seguridad: si tarda más de 30s, libera el spinner
+    setTimeout(() => { clearInterval(poll); this.isLoading = false; this.cd.detectChanges(); }, 30000);
   }
 
   handleExport() {
     const comp = this.getActiveComponent();
-    if (comp) {
-        comp.exportarPDF();
-    }
+    if (!comp) return;
+    this.isLoadingPDF = true;
+    this.cd.detectChanges();
+    comp.exportarPDF();
+    const poll = setInterval(() => {
+      if (!comp.loadingPDF) {
+        this.isLoadingPDF = false;
+        this.cd.detectChanges();
+        clearInterval(poll);
+      }
+    }, 100);
+    setTimeout(() => { clearInterval(poll); this.isLoadingPDF = false; this.cd.detectChanges(); }, 60000);
   }
 
   private getActiveComponent(): any {
