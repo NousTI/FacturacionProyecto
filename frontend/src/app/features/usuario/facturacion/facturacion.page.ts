@@ -12,7 +12,6 @@ import { EmailFacturaModalComponent } from './components/email-factura-modal/ema
 import { ToastComponent } from '../../../shared/components/toast/toast.component';
 import { ConfirmModalComponent } from '../../../shared/components/confirm-modal/confirm-modal.component';
 import { PagosFacturaModalComponent } from './components/pagos-factura-modal/pagos-factura-modal.component';
-import { ReportesVentasComponent } from './components/reportes-ventas/reportes-ventas.component';
 import { AnularFacturaModalComponent } from './components/anular-factura-modal/anular-factura-modal.component';
 
 import { FacturasService } from './services/facturas.service';
@@ -37,7 +36,6 @@ import { SriConfigService } from '../certificado-sri/services/sri-config.service
     EmailFacturaModalComponent,
     PagosFacturaModalComponent,
     AnularFacturaModalComponent,
-    ReportesVentasComponent,
     ToastComponent,
     ConfirmModalComponent
   ],
@@ -46,56 +44,28 @@ import { SriConfigService } from '../certificado-sri/services/sri-config.service
       <ng-container *ngIf="canView; else noPermission">
         <div class="container-fluid p-0">
 
-          <!-- TABS NAVIGATION -->
-          <div class="tabs-container px-4 mt-4">
-            <div class="tabs-wrapper">
-              <button
-                class="tab-btn"
-                [class.active]="activeTab === 'gestion'"
-                (click)="activeTab = 'gestion'"
-              >
-                <i class="bi bi-receipt"></i>
-                Gestión de Comprobantes
-              </button>
-              <button
-                class="tab-btn"
-                [class.active]="activeTab === 'ventas'"
-                (click)="activeTab = 'ventas'"
-              >
-                <i class="bi bi-bar-chart-line-fill"></i>
-                Ventas y Reportes
-              </button>
-            </div>
-          </div>
+          <!-- STATS -->
+          <app-factura-stats
+            [totalCount]="stats.totalCount"
+            [totalAmount]="stats.totalAmount"
+            [pendingAmount]="stats.pendingAmount"
+          ></app-factura-stats>
 
-          <div *ngIf="activeTab === 'gestion'" class="animate__animated animate__fadeIn">
-            <!-- STATS -->
-            <app-factura-stats
-              [totalCount]="stats.totalCount"
-              [totalAmount]="stats.totalAmount"
-              [pendingAmount]="stats.pendingAmount"
-            ></app-factura-stats>
+          <!-- ACTIONS -->
+          <app-factura-actions
+            [(searchQuery)]="searchQuery"
+            (searchQueryChange)="applyFilters()"
+            [sriError]="sriError"
+            (onFilterChangeEmit)="handleFilters($event)"
+            (onCreate)="openCreateModal()"
+          ></app-factura-actions>
 
-            <!-- ACTIONS -->
-            <app-factura-actions
-              [(searchQuery)]="searchQuery"
-              (searchQueryChange)="applyFilters()"
-              [sriError]="sriError"
-              (onFilterChangeEmit)="handleFilters($event)"
-              (onCreate)="openCreateModal()"
-            ></app-factura-actions>
-
-            <!-- TABLE -->
-            <app-factura-table
-              [facturas]="filteredFacturas"
-              [processingStates]="processingStates"
-              (onAction)="handleAction($event)"
-            ></app-factura-table>
-          </div>
-
-          <div *ngIf="activeTab === 'ventas'" class="animate__animated animate__fadeIn">
-            <app-reportes-ventas></app-reportes-ventas>
-          </div>
+          <!-- TABLE -->
+          <app-factura-table
+            [facturas]="filteredFacturas"
+            [processingStates]="processingStates"
+            (onAction)="handleAction($event)"
+          ></app-factura-table>
 
            <!-- MODALS -->
            <app-create-factura-modal
@@ -205,44 +175,6 @@ import { SriConfigService } from '../certificado-sri/services/sri-config.service
       to { transform: rotate(360deg); }
     }
 
-    .tabs-container {
-      margin-bottom: 1rem;
-    }
-    .tabs-wrapper {
-      display: flex;
-      gap: 0.5rem;
-      background: #f1f5f9;
-      padding: 0.4rem;
-      border-radius: 14px;
-      width: fit-content;
-      border: 1px solid #e2e8f0;
-    }
-    .tab-btn {
-      padding: 0.6rem 1.2rem;
-      border-radius: 10px;
-      border: none;
-      background: transparent;
-      color: #64748b;
-      font-weight: 600;
-      font-size: 0.9rem;
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-    .tab-btn i {
-      font-size: 1.1rem;
-    }
-    .tab-btn:hover {
-      color: #1e293b;
-      background: #e2e8f0;
-    }
-    .tab-btn.active {
-      background: white;
-      color: #4f46e5;
-      box-shadow: 0 4px 12px rgba(79, 70, 229, 0.12);
-    }
-
     .no-permission-container { min-height: 70vh; }
     .icon-lock-wrapper {
       width: 100px; height: 100px; background: #fee2e2; color: #ef4444; border-radius: 50%;
@@ -260,7 +192,6 @@ export class FacturacionPage implements OnInit {
            this.permissionsService.hasPermission(FACTURAS_PERMISSIONS.VER_PROPIAS);
   }
 
-  activeTab: 'gestion' | 'ventas' = 'gestion';
   facturas: Factura[] = [];
   filteredFacturas: Factura[] = [];
 
