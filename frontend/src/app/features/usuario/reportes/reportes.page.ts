@@ -3,7 +3,6 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import {
   FinancialReportsService,
-  PyGReport,
   IVAReport,
   IvaR027Report,
   ExecutiveSummary,
@@ -20,7 +19,6 @@ import { REPORTES_PERMISSIONS } from '../../../constants/permission-codes';
 
 // Sub-componentes
 import { ExecutiveSummaryComponent } from './components/executive-summary.component';
-import { PygReportComponent } from './components/pyg-report.component';
 import { IvaReportComponent } from './components/iva-report.component';
 import { R027IvaComponent } from './components/reporte_027/r027-iva.component';
 import { SalesGeneralComponent } from './components/sales-general.component';
@@ -30,7 +28,7 @@ import { R028ResumenEjecutivoComponent } from './components/reporte_028/r028-res
 import { R001MisVentasComponent } from './components/reporte_001_empleados/r001-mis-ventas.component';
 
 export type RangoTipo = 'mes_actual' | 'mes_anterior' | 'anio_actual' | 'semestre_1' | 'semestre_2' | 'personalizado';
-type Tab = 'resumen' | 'ventas' | 'cartera' | 'pyg' | 'iva' | 'mis_ventas';
+type Tab = 'resumen' | 'ventas' | 'cartera' | 'iva' | 'mis_ventas';
 
 @Component({
   selector: 'app-usuario-reportes',
@@ -40,7 +38,6 @@ type Tab = 'resumen' | 'ventas' | 'cartera' | 'pyg' | 'iva' | 'mis_ventas';
     CommonModule,
     FormsModule,
     ExecutiveSummaryComponent,
-    PygReportComponent,
     IvaReportComponent,
     SalesGeneralComponent,
     R001VentasGeneralesComponent,
@@ -144,11 +141,6 @@ type Tab = 'resumen' | 'ventas' | 'cartera' | 'pyg' | 'iva' | 'mis_ventas';
         *ngIf="tabActivo === 'cartera' && carteraData"
         [data]="carteraData">
       </app-r008-cuentas-por-cobrar>
-
-      <app-pyg-report
-        *ngIf="tabActivo === 'pyg' && pygData"
-        [data]="pygData">
-      </app-pyg-report>
 
       <app-r027-iva
         *ngIf="tabActivo === 'iva' && ivaR027Data"
@@ -274,7 +266,6 @@ export class ReportesPage implements OnInit {
   r001Data?: R001Report;
   ventasData?: SalesGeneralReport;
   carteraData?: AccountsReceivableReport;
-  pygData?: PyGReport;
   ivaData?: IVAReport;
   ivaR027Data?: IvaR027Report;
   misVentasData?: MisVentasReport;
@@ -388,14 +379,6 @@ export class ReportesPage implements OnInit {
         });
         break;
 
-      case 'pyg':
-        this.pygData = undefined;
-        this.reportsSvc.getPyGReport(this.fechaInicio, this.fechaFin).subscribe({
-          next: (d) => { this.pygData = d; this.finishLoading(); },
-          error: () => this.handleError('Error al cargar PyG')
-        });
-        break;
-
       case 'iva':
         this.ivaR027Data = undefined;
         this.reportsSvc.getIvaR027(this.fechaInicio, this.fechaFin).subscribe({
@@ -454,7 +437,6 @@ export class ReportesPage implements OnInit {
       case 'resumen': tipo = 'FINANCIERO_RESUMEN'; break;
       case 'ventas':  tipo = 'VENTAS_GENERAL'; break;
       case 'cartera': tipo = 'FINANCIERO_CARTERA'; break;
-      case 'pyg':     tipo = 'FINANCIERO_PYG'; break;
       case 'iva':     tipo = 'FINANCIERO_IVA'; break;
     }
     if (!tipo) return;

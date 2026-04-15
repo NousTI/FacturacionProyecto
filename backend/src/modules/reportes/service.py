@@ -345,12 +345,8 @@ class ServicioReportes:
         return self.svc_superadmin.obtener_reporte_uso_sistema_superadmin(fecha_inicio, fecha_fin)
 
     # =========================================================
-    # NUEVOS REPORTES FINANCIEROS (R-026 a R-028)
+    # REPORTES FINANCIEROS (R-027 a R-028)
     # =========================================================
-
-    def obtener_pyg_usuario(self, empresa_id: UUID, fecha_inicio: str, fecha_fin: str):
-        """R-026: Estado de Resultados (PyG)."""
-        return self.svc_r026.generar_estado_resultados(empresa_id, fecha_inicio, fecha_fin)
 
     def obtener_iva_ventas_usuario(self, empresa_id: UUID, fecha_inicio: str, fecha_fin: str):
         """R-027: Reporte de IVA (Ventas)."""
@@ -474,15 +470,12 @@ class ServicioReportes:
             else:
                 raise AppError("Formato no soportado para este reporte", 400)
 
-        elif tipo in ['FINANCIERO_PYG', 'FINANCIERO_IVA', 'FINANCIERO_RESUMEN', 'FINANCIERO_CARTERA']:
+        elif tipo in ['FINANCIERO_IVA', 'FINANCIERO_RESUMEN', 'FINANCIERO_CARTERA']:
             empresa = self.repo_empresas.obtener_por_id(empresa_id)
             fecha_inicio = params.get('fecha_inicio')
             fecha_fin = params.get('fecha_fin')
-            
-            if tipo == 'FINANCIERO_PYG':
-                data = self.obtener_pyg_usuario(empresa_id, fecha_inicio, fecha_fin)
-                template = "reports/usuarios/reporte-pyg.html"
-            elif tipo == 'FINANCIERO_IVA':
+
+            if tipo == 'FINANCIERO_IVA':
                 data = self.obtener_iva_ventas_usuario(empresa_id, fecha_inicio, fecha_fin)
                 template = "reports/usuarios/reporte-r027.html"
             elif tipo == 'FINANCIERO_CARTERA':

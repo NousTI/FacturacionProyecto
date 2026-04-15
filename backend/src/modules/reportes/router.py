@@ -224,21 +224,7 @@ def obtener_reporte_facturas_rechazadas_sri(
     }
     return servicio.obtener_facturas_rechazadas_sri(empresa_id, params)
 
-# --- RUTAS DE REPORTES FINANCIEROS (R-026 a R-028) ---
-
-@router.get("/financiero/pyg")
-def obtener_reporte_pyg(
-    fecha_inicio: str,
-    fecha_fin: str,
-    usuario_actual: dict = Depends(requerir_permiso([PermissionCodes.REPORTES_VER])),
-    servicio: ServicioReportes = Depends()
-):
-    """R-026: Estado de Resultados (PyG)."""
-    if usuario_actual.get(AuthKeys.IS_VENDEDOR):
-        raise AppError("Este reporte está bloqueado para vendedores.", 403)
-    _require_admin_empresa(usuario_actual)
-    empresa_id = usuario_actual.get("empresa_id")
-    return servicio.obtener_pyg_usuario(empresa_id, fecha_inicio, fecha_fin)
+# --- RUTAS DE REPORTES FINANCIEROS (R-027 a R-028) ---
 
 @router.get("/financiero/iva")
 def obtener_reporte_iva_ventas(
