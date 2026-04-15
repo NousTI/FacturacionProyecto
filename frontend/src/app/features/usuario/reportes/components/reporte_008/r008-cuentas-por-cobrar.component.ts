@@ -1,4 +1,4 @@
-import { Component, Input, OnChanges, ViewChild, ElementRef } from '@angular/core';
+import { Component, Input, OnChanges, OnDestroy, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule, CurrencyPipe, DecimalPipe, PercentPipe } from '@angular/common';
 import { AccountsReceivableReport } from '../../services/financial-reports.service';
 import { Chart, ChartConfiguration, registerables } from 'chart.js';
@@ -165,19 +165,35 @@ Chart.register(...registerables);
     .bg-success-subtle { background-color: #f0fdf4 !important; }
   `]
 })
-export class R008CuentasPorCobrarComponent implements OnChanges {
+export class R008CuentasPorCobrarComponent implements OnChanges, OnDestroy {
   @Input() data!: AccountsReceivableReport;
   @ViewChild('doughnutChart') doughnutChart?: ElementRef<HTMLCanvasElement>;
 
   private chart?: Chart;
-  private colors = ['#f59e0b', '#ef4444']; // Amber for Vencido, Red for Critico
+  private colors = ['#f59e0b', '#ef4444'];
+  private pendingRender = false;
 
   ngOnChanges() {
-    setTimeout(() => this.renderChart(), 50);
+    // Destruir chart anterior inmediatamente si existe
+    this.chart?.destroy();
+    this.chart = undefined;
+    this.pendingRender = true;
+    // Esperar a que Angular procese el *ngIf y monte el canvas
+    setTimeout(() => {
+      if (this.pendingRender) {
+        this.pendingRender = false;
+        this.renderChart();
+      }
+    }, 0);
+  }
+
+  ngOnDestroy() {
+    this.chart?.destroy();
   }
 
   private renderChart() {
     if (!this.doughnutChart?.nativeElement || !this.data?.kpis) return;
+    if (this.data.kpis.total_por_cobrar <= 0) return;
 
     const kpis = this.data.kpis;
     const config: ChartConfiguration<'doughnut'> = {
@@ -216,7 +232,6 @@ export class R008CuentasPorCobrarComponent implements OnChanges {
       }
     };
 
-    this.chart?.destroy();
     this.chart = new Chart(this.doughnutChart.nativeElement, config);
   }
 }

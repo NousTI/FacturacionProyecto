@@ -14,7 +14,7 @@ class RepositorioR008:
                 COALESCE(SUM(cc.saldo_pendiente), 0) as total_por_cobrar,
                 COALESCE(SUM(cc.saldo_pendiente) FILTER (
                     WHERE cc.fecha_vencimiento < CURRENT_DATE
-                      AND CURRENT_DATE - cc.fecha_vencimiento < 30
+                      AND CURRENT_DATE - cc.fecha_vencimiento <= 30
                 ), 0) as vencido_menor_30,
                 COALESCE(SUM(cc.saldo_pendiente) FILTER (
                     WHERE cc.fecha_vencimiento < CURRENT_DATE

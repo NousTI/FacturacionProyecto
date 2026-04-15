@@ -46,10 +46,15 @@ import { MisVentasReport } from '../../services/financial-reports.service';
           <span class="label">Devoluciones</span>
           <span class="value">{{ data.kpis.devoluciones.valor }}</span>
           <span class="subtext">notas crédito emitidas</span>
-          <span class="trend" [class.up]="data.kpis.devoluciones.variacion <= 0" [class.down]="data.kpis.devoluciones.variacion > 0">
-            <i class="bi" [class.bi-arrow-up-short]="data.kpis.devoluciones.variacion >= 0" [class.bi-arrow-down-short]="data.kpis.devoluciones.variacion < 0"></i>
-            {{ data.kpis.devoluciones.variacion | number:'1.1-1' }}% vs período ant.
-          </span>
+          <ng-container *ngIf="data.kpis.devoluciones.variacion != null; else sinVariacion">
+            <span class="trend" [class.up]="data.kpis.devoluciones.variacion <= 0" [class.down]="data.kpis.devoluciones.variacion > 0">
+              <i class="bi" [class.bi-arrow-up-short]="data.kpis.devoluciones.variacion > 0" [class.bi-arrow-down-short]="data.kpis.devoluciones.variacion <= 0"></i>
+              {{ data.kpis.devoluciones.variacion | number:'1.1-1' }}% vs período ant.
+            </span>
+          </ng-container>
+          <ng-template #sinVariacion>
+            <span class="subtext">sin período anterior</span>
+          </ng-template>
         </div>
 
         <div class="kpi-card indigo">

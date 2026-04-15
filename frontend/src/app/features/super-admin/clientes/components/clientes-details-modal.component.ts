@@ -17,7 +17,7 @@ import { ClienteConTrazabilidad } from '../services/clientes.service';
             </div>
             <div>
               <h2 class="modal-title">{{ usuario.nombres }} {{ usuario.apellidos }}</h2>
-              <span class="badge-role">USUARIO</span>
+              <span class="badge-role">{{ usuario.rol_nombre || 'USUARIO' }}</span>
             </div>
           </div>
           <button (click)="close.emit()" class="btn-close-circle">
@@ -182,6 +182,7 @@ export class ClientesDetailsModalComponent {
     const labels: Record<string, string> = {
       'superadmin': 'CREADO POR SUPERADMIN',
       'vendedor': 'CREADO POR VENDEDOR',
+      'usuario_empresa': 'CREADO POR USUARIO DE EMPRESA',
       'sistema': 'CREADO POR SISTEMA'
     };
     return labels[origen || ''] || 'CREADO POR DESCONOCIDO';
@@ -191,6 +192,7 @@ export class ClientesDetailsModalComponent {
     const icons: Record<string, string> = {
       'superadmin': 'bi-shield-fill-check',
       'vendedor': 'bi-person-badge',
+      'usuario_empresa': 'bi-person-workspace',
       'sistema': 'bi-gear-fill'
     };
     return icons[origen || ''] || 'bi-question-circle';
@@ -200,6 +202,7 @@ export class ClientesDetailsModalComponent {
     const classes: Record<string, string> = {
       'superadmin': 'bg-primary',
       'vendedor': 'bg-info',
+      'usuario_empresa': 'bg-warning',
       'sistema': 'bg-secondary'
     };
     return classes[origen || ''] || 'bg-secondary';

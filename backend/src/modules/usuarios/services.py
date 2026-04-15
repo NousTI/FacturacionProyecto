@@ -159,7 +159,9 @@ class ServicioUsuarios:
             log_data['actor_rol_empresa'] = None
         elif usuario_actual.get(AuthKeys.IS_VENDEDOR):
             log_data['origen'] = 'vendedor'
-        elif not usuario_actual.get('id'):
+        elif usuario_actual.get('id'):
+            log_data['origen'] = 'usuario_empresa'
+        else:
             log_data['origen'] = 'sistema'
             log_data['actor_rol_sistema'] = 'sistema'
         
