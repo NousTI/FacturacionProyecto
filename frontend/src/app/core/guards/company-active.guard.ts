@@ -15,22 +15,25 @@ export class CompanyActiveGuard implements CanActivate {
         private lockStatusService: LockStatusService
     ) { }
 
-    canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): Observable<boolean | UrlTree> {
-        // 1. Escapar de inmediato si ya estamos en la página segura para evitar bucles
+    canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): boolean | Observable<boolean | UrlTree> {
+        console.log('[CompanyActiveGuard] canActivate. isLoggingOut:', this.lockStatusService.isLoggingOutValue, '| URL:', state.url);
+        // 1. Si se está cerrando sesión, ignorar verificaciones para evitar flashes
+        if (this.lockStatusService.isLoggingOutValue) {
+            console.log('[CompanyActiveGuard] Logout detectado, permitiendo paso.');
+            return true;
+        }
+
+        // 2. Escapar de inmediato si ya estamos en la página segura para evitar bucles
         const currentUrl = state.url.toLowerCase();
         if (currentUrl.includes('acceso-restringido')) {
-            return new Observable(obs => obs.next(true));
+            console.log('[CompanyActiveGuard] Ya en acceso-restringido, permitiendo.');
+            return true;
         }
 
         return this.authFacade.user$.pipe(
             take(1),
             map(user => {
-                // 2. Si se está cerrando sesión, ignorar verificaciones para evitar flashes de acceso restringido
-                if (this.lockStatusService.isLoggingOutValue) {
-                    return true;
-                }
-
-                // 2. Si no hay usuario autenticado, AuthGuard se encarga
+                // 3. Si no hay usuario autenticado, AuthGuard se encarga
                 if (!user) return this.router.createUrlTree(['/auth/login']);
 
                 // 3. SuperAdmins y Vendedores siempre tienen acceso

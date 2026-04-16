@@ -15,18 +15,17 @@ export class UserActiveGuard implements CanActivate {
         private lockService: LockStatusService
     ) { }
 
-    canActivate(): Observable<boolean | UrlTree> {
+    canActivate(): boolean | Observable<boolean | UrlTree> {
+        console.log('[UserActiveGuard] canActivate. isLoggingOut:', this.lockService.isLoggingOutValue);
+        // 0. Omitir validaciones si se está cerrando sesión
+        if (this.lockService.isLoggingOutValue) {
+            console.log('[UserActiveGuard] Logout detectado, permitiendo paso.');
+            return true;
+        }
+
         return this.authFacade.user$.pipe(
             take(1),
             map(user => {
-                console.log('[UserActiveGuard] user:', user);
-                console.log('[UserActiveGuard] user.activo:', user?.activo, '| tipo:', typeof user?.activo);
-
-                // Si se está cerrando sesión, omitir validaciones
-                if (this.lockService.isLoggingOutValue) {
-                    return true;
-                }
-
                 // Si no hay usuario, AuthGuard se encargará
                 if (!user) return true;
 
