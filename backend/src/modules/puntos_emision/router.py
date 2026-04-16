@@ -26,7 +26,7 @@ def listar_puntos(
     limit: int = Query(100, ge=1),
     offset: int = Query(0, ge=0),
     solo_activos: bool = Query(False),
-    usuario: dict = Depends(requerir_permiso([PermissionCodes.PUNTO_EMISION_GESTIONAR])),
+    usuario: dict = Depends(requerir_permiso([PermissionCodes.PUNTO_EMISION_GESTIONAR, PermissionCodes.FACTURAS_CREAR, PermissionCodes.FACTURAS_EDITAR, PermissionCodes.FACTURAS_VER_TODAS, PermissionCodes.FACTURAS_VER_PROPIAS, PermissionCodes.FACTURA_PROGRAMADA_CREAR, PermissionCodes.FACTURA_PROGRAMADA_EDITAR])),
     servicio: ServicioPuntosEmision = Depends()
 ):
     puntos = servicio.listar_puntos(usuario, establecimiento_id, limit, offset, solo_activos)
@@ -43,7 +43,7 @@ def obtener_estadisticas(
 @router.get("/{punto_id}", response_model=RespuestaBase[PuntoEmisionLectura])
 def obtener_punto(
     punto_id: UUID,
-    usuario: dict = Depends(requerir_permiso([PermissionCodes.PUNTO_EMISION_GESTIONAR])),
+    usuario: dict = Depends(requerir_permiso([PermissionCodes.PUNTO_EMISION_GESTIONAR, PermissionCodes.FACTURAS_CREAR, PermissionCodes.FACTURAS_EDITAR, PermissionCodes.FACTURAS_VER_TODAS, PermissionCodes.FACTURAS_VER_PROPIAS, PermissionCodes.FACTURA_PROGRAMADA_CREAR, PermissionCodes.FACTURA_PROGRAMADA_EDITAR])),
     servicio: ServicioPuntosEmision = Depends()
 ):
     punto = servicio.obtener_punto(punto_id, usuario)

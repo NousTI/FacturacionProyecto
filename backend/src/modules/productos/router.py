@@ -16,7 +16,7 @@ def listar_productos(
     nombre: Optional[str] = None, 
     codigo: Optional[str] = None, 
     empresa_id: Optional[UUID] = None,
-    usuario: dict = Depends(requerir_permiso([PermissionCodes.PRODUCTOS_VER])),
+    usuario: dict = Depends(requerir_permiso([PermissionCodes.PRODUCTOS_VER, PermissionCodes.FACTURAS_CREAR, PermissionCodes.FACTURAS_EDITAR, PermissionCodes.FACTURAS_VER_TODAS, PermissionCodes.FACTURAS_VER_PROPIAS, PermissionCodes.FACTURA_PROGRAMADA_CREAR, PermissionCodes.FACTURA_PROGRAMADA_EDITAR])),
     servicio: ServicioProductos = Depends()
 ):
     productos = servicio.listar_productos(usuario, nombre, codigo, empresa_id)

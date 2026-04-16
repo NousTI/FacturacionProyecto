@@ -26,7 +26,7 @@ def listar_establecimientos(
     offset: int = Query(0, ge=0),
     empresa_id: Optional[UUID] = Query(None),
     solo_activos: bool = Query(False),
-    usuario: dict = Depends(requerir_permiso([PermissionCodes.ESTABLECIMIENTO_GESTIONAR])),
+    usuario: dict = Depends(requerir_permiso([PermissionCodes.ESTABLECIMIENTO_GESTIONAR, PermissionCodes.FACTURAS_CREAR, PermissionCodes.FACTURAS_EDITAR, PermissionCodes.FACTURAS_VER_TODAS, PermissionCodes.FACTURAS_VER_PROPIAS, PermissionCodes.FACTURA_PROGRAMADA_CREAR, PermissionCodes.FACTURA_PROGRAMADA_EDITAR])),
     servicio: ServicioEstablecimientos = Depends()
 ):
     establecimientos = servicio.listar_establecimientos(usuario, empresa_id, limit, offset, solo_activos)
@@ -44,7 +44,7 @@ def obtener_estadisticas_establecimientos(
 @router.get("/{establecimiento_id}", response_model=RespuestaBase[EstablecimientoLectura])
 def obtener_establecimiento(
     establecimiento_id: UUID,
-    usuario: dict = Depends(requerir_permiso([PermissionCodes.ESTABLECIMIENTO_GESTIONAR])),
+    usuario: dict = Depends(requerir_permiso([PermissionCodes.ESTABLECIMIENTO_GESTIONAR, PermissionCodes.FACTURAS_CREAR, PermissionCodes.FACTURAS_EDITAR, PermissionCodes.FACTURAS_VER_TODAS, PermissionCodes.FACTURAS_VER_PROPIAS, PermissionCodes.FACTURA_PROGRAMADA_CREAR, PermissionCodes.FACTURA_PROGRAMADA_EDITAR])),
     servicio: ServicioEstablecimientos = Depends()
 ):
     establecimiento = servicio.obtener_establecimiento(establecimiento_id, usuario)
