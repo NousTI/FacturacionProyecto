@@ -10,7 +10,7 @@ import { FacturacionProgramadaService } from '../../../facturacion-recurrente/se
 import { SriConfigService } from '../../../certificado-sri/services/sri-config.service';
 import { UiService } from '../../../../../shared/services/ui.service';
 import { PermissionsService } from '../../../../../core/auth/permissions.service';
-import { FACTURAS_PERMISSIONS } from '../../../../../constants/permission-codes';
+import { FACTURAS_PERMISSIONS, FACTURACION_PROGRAMADA_PERMISSIONS } from '../../../../../constants/permission-codes';
 import { Cliente } from '../../../../../domain/models/cliente.model';
 import { Producto } from '../../../../../domain/models/producto.model';
 import { Establecimiento } from '../../../../../domain/models/establecimiento.model';
@@ -493,13 +493,23 @@ export class CreateFacturaModalComponent implements OnInit, OnChanges {
 
     // VALIDACIÓN 2: Guardar - Doble verificación de permisos antes de POST
     const isCreating = !this.facturaId;
-    const requiredPermission = isCreating ? FACTURAS_PERMISSIONS.CREAR : FACTURAS_PERMISSIONS.EDITAR;
+    
+    // Permisos de Facturación Normal
+    const hasFacturaPerm = isCreating ? FACTURAS_PERMISSIONS.CREAR : FACTURAS_PERMISSIONS.EDITAR;
+    
+    // Permisos de Facturación Programada (Recurrente)
+    const hasRecurrentePerm = isCreating ? FACTURACION_PROGRAMADA_PERMISSIONS.CREAR : FACTURACION_PROGRAMADA_PERMISSIONS.EDITAR;
 
-    if (!this.permissionsService.hasPermission(requiredPermission)) {
+    // Se permite guardar si tiene el permiso de factura normal 
+    // O si está en modo recurrente y tiene el permiso de programación
+    const canSave = this.permissionsService.hasPermission(hasFacturaPerm) || 
+                   (this.mode === 'RECURRENTE' && this.permissionsService.hasPermission(hasRecurrentePerm));
+
+    if (!canSave) {
       this.uiService.showError(
         isCreating
-          ? 'Permiso denegado: No puedes crear facturas'
-          : 'Permiso denegado: No puedes editar facturas',
+          ? 'Permiso denegado: No tienes permisos suficientes para crear este registro'
+          : 'Permiso denegado: No tienes permisos suficientes para editar este registro',
         'error'
       );
       return;
