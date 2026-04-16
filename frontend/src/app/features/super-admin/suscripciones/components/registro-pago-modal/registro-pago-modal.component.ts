@@ -68,13 +68,13 @@ import { Suscripcion } from '../../services/suscripcion.service';
                 <ng-container *ngIf="pagoRecibido">
                   <div class="col-md-6 animate__animated animate__fadeIn">
                     <label class="label-final">Método de Pago *</label>
-                    <select formControlName="metodo_pago" class="input-final">
+                    <select formControlName="metodo_pago" class="input-final" (change)="onMetodoPagoChange()">
                       <option value="" disabled>Seleccione...</option>
                       <option *ngFor="let m of metodosPago" [value]="m">{{ m }}</option>
                     </select>
                   </div>
 
-                  <div class="col-md-6 animate__animated animate__fadeIn">
+                  <div class="col-md-6 animate__animated animate__fadeIn" *ngIf="metodo_pago_actual !== 'EFECTIVO'">
                      <label class="label-final">Nº Comprobante / Referencia *</label>
                      <input type="text" formControlName="numero_comprobante" class="input-final" placeholder="Ej: TR-123456789">
                   </div>
@@ -168,6 +168,7 @@ export class RegistroPagoModalComponent implements OnInit, OnDestroy {
     pagoForm: FormGroup;
     metodosPago = ['TRANSFERENCIA', 'EFECTIVO', 'TARJETA', 'CHEQUE', 'OTRO'];
     pagoRecibido: boolean = true;
+    metodo_pago_actual: string = 'TRANSFERENCIA';
 
     constructor(private fb: FormBuilder) {
         this.pagoForm = this.fb.group({
@@ -238,13 +239,30 @@ export class RegistroPagoModalComponent implements OnInit, OnDestroy {
       this.pagoRecibido = !this.pagoRecibido;
       if (this.pagoRecibido) {
         this.pagoForm.get('metodo_pago')?.setValidators([Validators.required]);
-        this.pagoForm.get('numero_comprobante')?.setValidators([Validators.required]);
+        this.actualizarValidadorComprobante();
       } else {
         this.pagoForm.get('metodo_pago')?.clearValidators();
         this.pagoForm.get('numero_comprobante')?.clearValidators();
       }
       this.pagoForm.get('metodo_pago')?.updateValueAndValidity();
       this.pagoForm.get('numero_comprobante')?.updateValueAndValidity();
+    }
+
+    onMetodoPagoChange() {
+      this.metodo_pago_actual = this.pagoForm.get('metodo_pago')?.value || '';
+      this.actualizarValidadorComprobante();
+      this.pagoForm.get('numero_comprobante')?.updateValueAndValidity();
+    }
+
+    private actualizarValidadorComprobante() {
+      this.metodo_pago_actual = this.pagoForm.get('metodo_pago')?.value || '';
+      const esEfectivo = this.metodo_pago_actual === 'EFECTIVO';
+      if (esEfectivo) {
+        this.pagoForm.get('numero_comprobante')?.clearValidators();
+        this.pagoForm.get('numero_comprobante')?.setValue('');
+      } else {
+        this.pagoForm.get('numero_comprobante')?.setValidators([Validators.required]);
+      }
     }
 
     submit() {
@@ -256,7 +274,9 @@ export class RegistroPagoModalComponent implements OnInit, OnDestroy {
             plan_id: val.plan_id,
             monto: val.monto,
             metodo_pago: this.pagoRecibido ? val.metodo_pago : 'PENDIENTE',
-            numero_comprobante: this.pagoRecibido ? val.numero_comprobante : 'POR_RECIBIR',
+            numero_comprobante: this.pagoRecibido
+                ? (val.metodo_pago === 'EFECTIVO' ? 'EFECTIVO' : val.numero_comprobante)
+                : 'POR_RECIBIR',
             estado: this.pagoRecibido ? 'PAGADO' : 'PENDIENTE',
             observaciones: val.observaciones
         };

@@ -89,16 +89,16 @@ import { EmpresaService } from '../../services/empresa.service';
                       <option *ngFor="let m of metodosPago" [value]="m">{{ m }}</option>
                     </select>
                   </div>
-                  <div class="col-6 animate__animated animate__fadeIn">
+                  <div class="col-6 animate__animated animate__fadeIn" *ngIf="metodo_pago !== 'EFECTIVO'">
                     <label class="form-label small fw-bold text-secondary">Nº Comprobante *</label>
                     <input
                       type="text"
                       [(ngModel)]="numero_comprobante"
                       class="form-control rounded-pill shadow-none"
-                      [class.is-invalid]="(submitted || comprobanteTouched) && pagoRecibido && !numero_comprobante"
+                      [class.is-invalid]="(submitted || comprobanteTouched) && pagoRecibido && metodo_pago !== 'EFECTIVO' && !numero_comprobante"
                       (blur)="comprobanteTouched = true"
                       placeholder="TR-000123">
-                    <div class="invalid-feedback" *ngIf="(submitted || comprobanteTouched) && pagoRecibido && !numero_comprobante">
+                    <div class="invalid-feedback" *ngIf="(submitted || comprobanteTouched) && pagoRecibido && metodo_pago !== 'EFECTIVO' && !numero_comprobante">
                       El Nº Comprobante es obligatorio.
                     </div>
                   </div>
@@ -111,7 +111,7 @@ import { EmpresaService } from '../../services/empresa.service';
 
         <div class="modal-footer-plan">
           <button (click)="onClose.emit()" class="btn-plan-secondary">Cancelar</button>
-          <button (click)="submit()" [disabled]="!selectedNewPlanId || (pagoRecibido && !numero_comprobante)" class="btn-plan-primary">
+          <button (click)="submit()" [disabled]="!selectedNewPlanId || (pagoRecibido && metodo_pago !== 'EFECTIVO' && !numero_comprobante)" class="btn-plan-primary">
             {{ pagoRecibido ? 'Actualizar y Pagar' : 'Actualizar (Pendiente)' }}
           </button>
         </div>
@@ -221,14 +221,16 @@ export class ChangePlanModalComponent implements OnInit {
   submit() {
     this.submitted = true;
     if (!this.selectedNewPlanId) return;
-    if (this.pagoRecibido && !this.numero_comprobante) return;
+    if (this.pagoRecibido && this.metodo_pago !== 'EFECTIVO' && !this.numero_comprobante) return;
     this.onSave.emit({
       planId: this.selectedNewPlanId,
       monto: this.monto,
       observaciones: this.observaciones,
       estado: this.pagoRecibido ? 'PAGADO' : 'PENDIENTE',
       metodo_pago: this.pagoRecibido ? this.metodo_pago : 'PENDIENTE',
-      numero_comprobante: this.pagoRecibido ? this.numero_comprobante : 'POR_RECIBIR'
+      numero_comprobante: this.pagoRecibido
+        ? (this.metodo_pago === 'EFECTIVO' ? 'EFECTIVO' : this.numero_comprobante)
+        : 'POR_RECIBIR'
     });
   }
 }
