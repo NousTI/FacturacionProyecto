@@ -52,10 +52,7 @@ import { FacturaProgramada } from '../../../domain/models/facturacion-programada
                   >
                </div>
                <div class="d-flex gap-2">
-                  <button class="btn-refresh-premium" (click)="refreshData()" [class.spinning]="isRefreshing" title="Refrescar">
-                    <i class="bi bi-arrow-clockwise"></i>
-                  </button>
-                  <!-- Botón deshabilitado: la ejecución masiva se realiza automáticamente por el cronjob a medianoche
+<!-- Botón deshabilitado: la ejecución masiva se realiza automáticamente por el cronjob a medianoche
                   <button *hasPermission="['FACTURA_PROGRAMADA_CREAR', 'FACTURA_PROGRAMADA_EDITAR']" class="btn-bulk-premium" (click)="runBulkExecution()" [disabled]="isProcessing" title="Ejecutar Facturaciones Pendientes">
                     <i class="bi bi-play-circle-fill me-2"></i>
                     Ejecutar Pendientes
@@ -365,10 +362,12 @@ export class FacturacionRecurrentePage implements OnInit, OnDestroy {
 
   applyFilters() {
     const query = this._searchQuery.toLowerCase().trim();
-    this.filteredProgramaciones = this.programaciones.filter(p => 
-      (p.cliente_nombre?.toLowerCase() || '').includes(query) || 
-      p.concepto.toLowerCase().includes(query)
-    );
+    this.filteredProgramaciones = this.programaciones
+      .filter(p =>
+        (p.cliente_nombre?.toLowerCase() || '').includes(query) ||
+        p.concepto.toLowerCase().includes(query)
+      )
+      .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
   }
 
   openCreateModal() {
