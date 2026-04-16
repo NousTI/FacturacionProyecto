@@ -24,6 +24,9 @@ export class LockStatusService {
   private _showModal$ = new BehaviorSubject<boolean>(false);
   showModal$ = this._showModal$.asObservable();
 
+  private _isLoggingOut$ = new BehaviorSubject<boolean>(false);
+  isLoggingOut$ = this._isLoggingOut$.asObservable();
+
   setLock(type: LockType, data?: { phone?: string; message?: string }) {
     if (!type) {
       this._lock$.next(null);
@@ -106,5 +109,13 @@ export class LockStatusService {
 
   closeModal() {
     this._showModal$.next(false);
+  }
+
+  setLoggingOut(isLoggingOut: boolean) {
+    this._isLoggingOut$.next(isLoggingOut);
+  }
+
+  get isLoggingOutValue(): boolean {
+    return this._isLoggingOut$.value;
   }
 }

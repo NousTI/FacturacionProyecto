@@ -83,6 +83,11 @@ export class AuthFacade {
     }
 
     logout(): Observable<void> {
+        // Marcamos que estamos cerrando sesión para que el interceptor ignore errores 403
+        this.lockService.setLoggingOut(true);
+        this.lockService.clearLock();
+        this.lockService.setShowModal(false);
+
         return this.authService.logout().pipe(
             tap(() => {
                 this.userSubject.next(null);

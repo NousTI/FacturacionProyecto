@@ -12,7 +12,9 @@ export class LockInterceptor implements HttpInterceptor {
     return next.handle(request).pipe(
       catchError((error: HttpErrorResponse) => {
         const isLogout = request.url.includes('/autenticacion/cerrar-sesion');
-        if (!isLogout && (error.status === 402 || error.status === 403)) {
+        const isCurrentlyLoggingOut = this.lockService.isLoggingOutValue;
+
+        if (!isLogout && !isCurrentlyLoggingOut && (error.status === 402 || error.status === 403)) {
           try {
             const data = JSON.parse(error.error.detail);
             if (data.type) {
