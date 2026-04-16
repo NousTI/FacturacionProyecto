@@ -123,8 +123,8 @@ const routes: Routes = [
     {
         path: 'configuracion',
         component: ConfiguracionPage,
-        canActivate: [RoleGuard, CompanyActiveGuard],
-        data: { title: 'Configuración', roles: [UserRole.USUARIO] }
+        canActivate: [RoleGuard, CompanyActiveGuard, permissionGuard],
+        data: { title: 'Configuración', roles: [UserRole.USUARIO], permission: ['CONFIG_SRI', 'CONFIG_EMPRESA', 'CONFIG_ROLES', 'ESTABLECIMIENTO_GESTIONAR', 'PUNTO_EMISION_GESTIONAR'] }
     },
     {
         path: 'perfil',

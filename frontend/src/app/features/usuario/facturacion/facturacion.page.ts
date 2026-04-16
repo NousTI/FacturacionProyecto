@@ -582,8 +582,8 @@ export class FacturacionPage implements OnInit {
         this.consultarSri();
         break;
       case 'abono':
-        if (!this.checkAccess(FACTURAS_PERMISSIONS.PAGO_VER) && !this.checkAccess(FACTURAS_PERMISSIONS.PAGO_CREAR)) {
-           this.uiService.showToast('No tienes permiso para ver o registrar pagos', 'danger'); return;
+        if (!this.checkAccess(FACTURAS_PERMISSIONS.PAGO_CREAR)) {
+           this.uiService.showToast('No tienes permiso para registrar pagos', 'danger'); return;
         }
         this.showPagosModal = true;
         break;

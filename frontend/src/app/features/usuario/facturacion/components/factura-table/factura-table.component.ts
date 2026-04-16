@@ -155,7 +155,7 @@ import { HasPermissionDirective } from '../../../../../shared/directives/has-per
                     </li>
                   </ng-container>
 
-                  <ng-container *hasPermission="['PAGO_FACTURA_VER', 'PAGO_FACTURA_CREAR']">
+                  <ng-container *hasPermission="'PAGO_FACTURA_CREAR'">
                     <li *ngIf="factura.estado === 'AUTORIZADA'">
                       <a class="dropdown-item py-2" href="javascript:void(0)" (click)="onAction.emit({type: 'abono', factura})">
                         <div class="icon-item bg-soft-primary">

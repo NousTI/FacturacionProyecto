@@ -6,7 +6,6 @@ import { ConfigSriComponent } from './components/config-sri/config-sri.component
 import { ConfigRolesComponent } from './components/config-roles/config-roles.component';
 import { ConfigEstablecimientosComponent } from './components/config-establecimientos/config-establecimientos.component';
 import { ConfigPuntosEmisionComponent } from './components/config-puntos-emision/config-puntos-emision.component';
-import { ConfigProfileComponent } from './components/config-profile/config-profile.component';
 import { HasPermissionDirective } from '../../../core/directives/has-permission.directive';
 import { PermissionsService } from '../../../core/auth/permissions.service';
 
@@ -28,7 +27,6 @@ interface ConfigSection {
     ConfigRolesComponent, 
     ConfigEstablecimientosComponent,
     ConfigPuntosEmisionComponent,
-    ConfigProfileComponent,
     HasPermissionDirective
   ],
   template: `
@@ -100,11 +98,6 @@ interface ConfigSection {
               <div *hasPermission="'PUNTO_EMISION_GESTIONAR'; else restricted">
                 <app-config-puntos-emision></app-config-puntos-emision>
               </div>
-            </ng-container>
-
-            <!-- SECCIÓN: PERFIL -->
-            <ng-container *ngIf="activeSection().id === 'perfil'">
-              <app-config-profile></app-config-profile>
             </ng-container>
 
             <!-- SECCIONES EN CONSTRUCCIÓN -->
@@ -358,8 +351,7 @@ export class ConfiguracionPage implements OnInit {
     { id: 'datos-sri', label: 'Datos SRI', icon: 'bi-shield-check', subtitle: 'Configuración de facturación electrónica y firma digital.', permission: 'CONFIG_SRI' },
     { id: 'roles-permisos', label: 'Roles y Permisos', icon: 'bi-person-badge', subtitle: 'Gestión de accesos y perfiles de usuario.', permission: 'CONFIG_ROLES' },
     { id: 'establecimientos', label: 'Establecimientos', icon: 'bi-shop', subtitle: 'Administración de locales físicos y sucursales.', permission: 'ESTABLECIMIENTO_GESTIONAR' },
-    { id: 'puntos-emision', label: 'Puntos de Emisión', icon: 'bi-printer', subtitle: 'Configuración de cajas y terminales de facturación.', permission: 'PUNTO_EMISION_GESTIONAR' },
-    { id: 'perfil', label: 'Perfil', icon: 'bi-person-circle', subtitle: 'Gestiona tu información personal y seguridad.' }
+    { id: 'puntos-emision', label: 'Puntos de Emisión', icon: 'bi-printer', subtitle: 'Configuración de cajas y terminales de facturación.', permission: 'PUNTO_EMISION_GESTIONAR' }
   ];
 
   activeSection = signal<ConfigSection>(this.sections[0]);

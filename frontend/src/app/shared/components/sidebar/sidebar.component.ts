@@ -126,7 +126,7 @@ import { SidebarService } from './sidebar.service';
                 </ng-container>
               </ng-container>
 
-              <a routerLink="/usuario/configuracion" routerLinkActive="active" class="menu-item px-3 mb-1" title="Configuración">
+              <a *hasPermission="['CONFIG_SRI', 'CONFIG_EMPRESA', 'CONFIG_ROLES', 'ESTABLECIMIENTO_GESTIONAR', 'PUNTO_EMISION_GESTIONAR']" routerLink="/usuario/configuracion" routerLinkActive="active" class="menu-item px-3 mb-1" title="Configuración">
                 <i class="bi bi-gear"></i> <span class="menu-text ms-3">Configuración</span>
               </a>
               <a routerLink="/usuario/perfil" routerLinkActive="active" class="menu-item px-3 mb-1" title="Mi Perfil">
