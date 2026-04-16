@@ -14,7 +14,7 @@ router = APIRouter()
 @router.get("/", response_model=RespuestaBase[List[ProveedorLectura]])
 def listar_proveedores(
     empresa_id: Optional[UUID] = None,
-    usuario: dict = Depends(requerir_permiso([PermissionCodes.PROVEEDOR_VER, PermissionCodes.GESTIONAR_GASTOS, PermissionCodes.GESTIONAR_PAGOS])),
+    usuario: dict = Depends(requerir_permiso([PermissionCodes.PROVEEDOR_VER])),
     servicio: ServicioProveedores = Depends()
 ):
     return success_response(servicio.listar_proveedores(usuario, empresa_id_filtro=empresa_id))
@@ -22,7 +22,7 @@ def listar_proveedores(
 @router.get("/{proveedor_id}", response_model=RespuestaBase[ProveedorLectura])
 def obtener_proveedor(
     proveedor_id: UUID,
-    usuario: dict = Depends(requerir_permiso([PermissionCodes.PROVEEDOR_VER, PermissionCodes.GESTIONAR_GASTOS, PermissionCodes.GESTIONAR_PAGOS])),
+    usuario: dict = Depends(requerir_permiso([PermissionCodes.PROVEEDOR_VER])),
     servicio: ServicioProveedores = Depends()
 ):
     return success_response(servicio.obtener_proveedor(proveedor_id, usuario))

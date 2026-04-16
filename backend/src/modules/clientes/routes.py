@@ -82,7 +82,7 @@ def analitica_analisis_clientes(
 @router.get("", response_model=RespuestaBase[List[ClienteLectura]])
 def listar_clientes(
     empresa_id: Optional[UUID] = Query(None),
-    usuario: dict = Depends(requerir_permiso(PermissionCodes.CLIENTES_VER)),
+    usuario: dict = Depends(requerir_permiso([PermissionCodes.CLIENTES_VER])),
     controller: ClienteController = Depends()
 ):
     return controller.listar_clientes(usuario, empresa_id)
@@ -99,7 +99,7 @@ def crear_cliente(
 @router.get("/{id}", response_model=RespuestaBase[ClienteLectura])
 def obtener_cliente(
     id: UUID,
-    usuario: dict = Depends(requerir_permiso(PermissionCodes.CLIENTES_VER)),
+    usuario: dict = Depends(requerir_permiso([PermissionCodes.CLIENTES_VER])),
     controller: ClienteController = Depends()
 ):
     return controller.obtener_cliente(id, usuario)

@@ -16,7 +16,7 @@ def listar_productos(
     nombre: Optional[str] = None, 
     codigo: Optional[str] = None, 
     empresa_id: Optional[UUID] = None,
-    usuario: dict = Depends(requerir_permiso(PermissionCodes.PRODUCTOS_VER)),
+    usuario: dict = Depends(requerir_permiso([PermissionCodes.PRODUCTOS_VER])),
     servicio: ServicioProductos = Depends()
 ):
     productos = servicio.listar_productos(usuario, nombre, codigo, empresa_id)
@@ -73,7 +73,7 @@ def obtener_kardex(
 @router.get("/{producto_id}", response_model=RespuestaBase[ProductoLectura])
 def obtener_producto(
     producto_id: UUID,
-    usuario: dict = Depends(requerir_permiso(PermissionCodes.PRODUCTOS_VER)), 
+    usuario: dict = Depends(requerir_permiso([PermissionCodes.PRODUCTOS_VER, PermissionCodes.FACTURAS_VER_TODAS, PermissionCodes.FACTURAS_VER_PROPIAS, PermissionCodes.FACTURAS_CREAR, PermissionCodes.FACTURAS_EDITAR])), 
     servicio: ServicioProductos = Depends()
 ):
     producto = servicio.obtener_producto(producto_id, usuario)
