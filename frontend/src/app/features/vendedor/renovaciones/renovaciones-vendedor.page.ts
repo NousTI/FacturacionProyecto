@@ -6,6 +6,7 @@ import { RenovacionesApiService } from '../../../core/api/renovaciones-api.servi
 import { SolicitudRenovacion, SolicitudRenovacionCreate } from '../../../domain/models/renovacion.model';
 import { VendedorEmpresaService } from '../empresas/services/vendedor-empresa.service';
 import { UiService } from '../../../shared/services/ui.service';
+import { PermissionsService } from '../../../core/auth/permissions.service';
 import { finalize, Subject, takeUntil } from 'rxjs';
 
 // Components
@@ -38,6 +39,7 @@ import { RenovacionDetailModalComponent } from './components/modals/renovacion-d
         [(searchQuery)]="searchQuery"
         [currentStatus]="statusFilter"
         [currentType]="typeFilter"
+        [canCreate]="canCreate"
         (onStatusChange)="handleStatusChange($event)"
         (onTypeChange)="handleTypeChange($event)"
         (onCreate)="showCreateModal = true"
@@ -111,6 +113,7 @@ export class RenovacionesVendedorPage implements OnInit, OnDestroy {
   // UI States
   showCreateModal = false;
   showDetailModal = false;
+  canCreate: boolean = false;
   
   private lastOpenedId: string | null = null;
   private destroy$ = new Subject<void>();
@@ -120,7 +123,8 @@ export class RenovacionesVendedorPage implements OnInit, OnDestroy {
     private vendedorService: VendedorEmpresaService,
     private uiService: UiService,
     private route: ActivatedRoute,
-    private cd: ChangeDetectorRef
+    private cd: ChangeDetectorRef,
+    private permissionsService: PermissionsService
   ) {}
 
   ngOnInit() {
@@ -134,7 +138,10 @@ export class RenovacionesVendedorPage implements OnInit, OnDestroy {
         this.cd.detectChanges();
       });
 
-    // 2. Initial load
+    // 2. Check permissions
+    this.canCreate = this.permissionsService.hasPermission('gestionar_planes');
+
+    // 3. Initial load
     this.cargarSolicitudes();
     this.cargarEmpresas();
     this.cargarPlanes();

@@ -78,6 +78,12 @@ import { Vendedor } from '../../services/vendedor.service';
                           {{ v.activo ? 'Desactivar Acceso' : 'Activar Vendedor' }}
                         </a>
                       </li>
+                      <li><hr class="dropdown-divider mx-2"></li>
+                      <li>
+                        <a class="dropdown-item rounded-3 py-2 text-danger" (click)="onAction.emit({type: 'delete', vendedor: v})">
+                          <i class="bi bi-trash3 me-2"></i> Eliminar Vendedor
+                        </a>
+                      </li>
                     </ul>
                   </div>
                 </td>

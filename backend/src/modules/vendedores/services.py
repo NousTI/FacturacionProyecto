@@ -109,8 +109,21 @@ class ServicioVendedores:
         # 2. Create vendedor record with user_id
         datos_vendedor = datos.model_dump(exclude={"email", "password"})
         datos_vendedor["user_id"] = user["id"]
-        
-        vendedor = self.repo.crear(datos_vendedor)
+
+        try:
+            vendedor = self.repo.crear(datos_vendedor)
+        except Exception as e:
+            from psycopg2.errors import UniqueViolation
+            cause = getattr(e, '__cause__', None) or e
+            if isinstance(cause, UniqueViolation):
+                raise AppError(
+                    message="Identificación duplicada",
+                    status_code=400,
+                    code=ErrorCodes.DB_CONSTRAINT_VIOLATION,
+                    description="Ya existe un vendedor registrado con esa identificación.",
+                    level="WARNING"
+                )
+            raise
         return self._sanitize(vendedor)
 
     def listar_vendedores(self, usuario_actual: dict):
@@ -346,11 +359,18 @@ class ServicioVendedores:
     def eliminar_vendedor(self, id: UUID, usuario_actual: dict):
         if not usuario_actual.get(AuthKeys.IS_SUPERADMIN):
             raise AppError(
-                message=AppMessages.PERM_FORBIDDEN, 
-                status_code=403, 
+                message=AppMessages.PERM_FORBIDDEN,
+                status_code=403,
                 code=ErrorCodes.PERM_FORBIDDEN
             )
-        return self.repo.eliminar(id)
+        vendedor = self.repo.obtener_por_id(id)
+        if not vendedor:
+            raise AppError(message="Vendedor no encontrado", status_code=404, code=ErrorCodes.DB_NOT_FOUND)
+        user_id = vendedor.get('user_id')
+        eliminado = self.repo.eliminar(id)
+        if eliminado and user_id:
+            self.repo_usuarios.eliminar_usuario(user_id)
+        return eliminado
 
     def obtener_home_data(self, usuario_actual: dict):
         if not usuario_actual.get(AuthKeys.IS_VENDEDOR):

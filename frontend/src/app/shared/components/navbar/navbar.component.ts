@@ -87,8 +87,6 @@ import { Notificacion } from '../../../domain/models/notificacion.model';
           </div>
 
           <ul class="dropdown-menu dropdown-menu-end border-0 rounded-4 mt-2">
-            <li><a class="dropdown-item py-2 px-3" routerLink="/perfil"><i class="bi bi-person me-2"></i> Perfil</a></li>
-            <li><hr class="dropdown-divider mx-3"></li>
             <li><button class="dropdown-item py-2 px-3 text-danger" (click)="logout()"><i class="bi bi-box-arrow-right me-2"></i> Cerrar Sesión</button></li>
           </ul>
         </div>

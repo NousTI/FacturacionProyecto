@@ -136,6 +136,10 @@ export class VendedorService {
         });
     }
 
+    eliminarVendedor(id: string): Observable<any> {
+        return this.http.delete(`${this.apiUrl}/${id}`);
+    }
+
     getVendedorEmpresas(vendedorId: string): Observable<any[]> {
         return this.http.get<any>(`${this.apiUrl}/${vendedorId}/empresas`).pipe(
             map(res => res.detalles || [])

@@ -90,7 +90,7 @@ class PagoSuscripcionCreacion(PagoSuscripcionBase):
 class PagoSuscripcionQuick(BaseModel):
     empresa_id: UUID
     plan_id: UUID
-    metodo_pago: str
+    metodo_pago: Optional[str] = "PENDIENTE"
     monto: Optional[Decimal] = None
     fecha_inicio_periodo: Optional[datetime] = None
     fecha_fin_periodo: Optional[datetime] = None

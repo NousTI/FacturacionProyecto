@@ -67,12 +67,14 @@ import { FormsModule } from '@angular/forms';
             <button (click)="onRefresh.emit()" class="btn-system-action bg-light text-dark border flex-shrink-0" title="Actualizar">
               <i class="bi bi-arrow-clockwise"></i>
             </button>
-            <button 
-              (click)="onCreate.emit()"
+            <button
+              (click)="canCreate ? onCreate.emit() : null"
               class="btn-system-action w-100"
+              [class.restricted-btn]="!canCreate"
+              [title]="canCreate ? 'Nueva Solicitud' : 'No tienes permiso para gestionar planes'"
             >
-              <i class="bi bi-plus-lg me-2"></i>
-              <span>Nueva Solicitud</span>
+              <i class="bi me-2" [ngClass]="canCreate ? 'bi-plus-lg' : 'bi-lock-fill'"></i>
+              <span>{{ canCreate ? 'Nueva Solicitud' : 'Restringido' }}</span>
             </button>
           </div>
         </div>
@@ -88,12 +90,22 @@ import { FormsModule } from '@angular/forms';
     .dropdown-menu-premium {
       z-index: 1000;
     }
+    .restricted-btn {
+      background: #94a3b8 !important;
+      cursor: not-allowed !important;
+      box-shadow: none !important;
+      opacity: 0.7;
+    }
+    .restricted-btn:hover {
+      transform: none !important;
+    }
   `]
 })
 export class RenovacionesActionsComponent {
   @Input() searchQuery: string = '';
   @Input() currentStatus: string = 'ALL';
   @Input() currentType: string = 'ALL';
+  @Input() canCreate: boolean = false;
 
   @Output() searchQueryChange = new EventEmitter<string>();
   @Output() onStatusChange = new EventEmitter<string>();

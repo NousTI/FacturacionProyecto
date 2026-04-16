@@ -77,6 +77,20 @@ import { VendedorActionsComponent } from './components/vendedor-actions/vendedor
         (onCancel)="showConfirmModal = false"
       ></app-confirm-modal>
 
+      <!-- Modal Confirmación Eliminar -->
+      <app-confirm-modal
+        *ngIf="showDeleteModal"
+        [loading]="savingDelete"
+        title="Eliminar Vendedor"
+        [message]="'¿Estás seguro de eliminar a ' + (selectedVendedor?.nombre || 'este vendedor') + '? Esta acción no se puede deshacer y se eliminará su acceso al sistema.'"
+        confirmText="Eliminar Definitivamente"
+        type="danger"
+        icon="bi-trash3-fill"
+        [empresaName]="selectedVendedor?.nombre || ''"
+        (onConfirm)="confirmDelete()"
+        (onCancel)="showDeleteModal = false"
+      ></app-confirm-modal>
+
       <app-reassign-modal
         *ngIf="showReassignModal"
         [saving]="savingReassign"
@@ -137,12 +151,14 @@ export class VendedoresPage implements OnInit {
     saving: boolean = false;
     savingStatus: boolean = false;
     savingReassign: boolean = false;
+    savingDelete: boolean = false;
 
     // Modal Control
     showFormModal: boolean = false;
     showDetailsModal: boolean = false;
     showConfirmModal: boolean = false;
     showReassignModal: boolean = false;
+    showDeleteModal: boolean = false;
 
     editing: boolean = false;
     selectedVendedor: Vendedor | null = null;
@@ -248,6 +264,9 @@ export class VendedoresPage implements OnInit {
                 puedeVerReportes: event.vendedor.puedeVerReportes
             };
             this.showFormModal = true;
+        } else if (event.type === 'delete') {
+            this.savingDelete = false;
+            this.showDeleteModal = true;
         } else if (event.type === 'reassign') {
             this.savingReassign = false;
             this.vendedorEmpresas = [];
@@ -277,6 +296,23 @@ export class VendedoresPage implements OnInit {
             error: (err) => {
                 this.savingStatus = false;
                 this.uiService.showError(err, 'Error de Estado');
+            }
+        });
+    }
+
+    confirmDelete() {
+        if (!this.selectedVendedor) return;
+        this.savingDelete = true;
+        this.vendedorService.eliminarVendedor(this.selectedVendedor.id).subscribe({
+            next: () => {
+                this.uiService.showToast(`Vendedor "${this.selectedVendedor!.nombre}" eliminado correctamente`, 'success');
+                this.showDeleteModal = false;
+                this.savingDelete = false;
+                this.loadData();
+            },
+            error: (err) => {
+                this.savingDelete = false;
+                this.uiService.showError(err, 'Error al eliminar');
             }
         });
     }

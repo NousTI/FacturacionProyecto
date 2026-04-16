@@ -37,22 +37,15 @@ class RepositorioR032:
                    AND v3.created_at <= {f_fin}
                    {v_filter_v3}) as vendedores_activos,
 
-                -- Upgrades concretados
+                -- Upgrades concretados: ACEPTADAS / total (ACEPTADAS + RECHAZADAS)
                 (SELECT ROUND(
-                    COUNT(DISTINCT ps.empresa_id)::numeric /
-                    NULLIF((SELECT COUNT(DISTINCT ps3.empresa_id) FROM sistema_facturacion.pagos_suscripciones ps3 JOIN sistema_facturacion.empresas emp3 ON emp3.id = ps3.empresa_id WHERE ps3.estado='PAGADO' AND ps3.fecha_pago <= {f_fin} {v_filter_ps3}), 0) * 100, 1
+                    COUNT(*) FILTER (WHERE sr.estado = 'ACEPTADA')::numeric /
+                    NULLIF(COUNT(*), 0) * 100, 1
                  )
-                 FROM sistema_facturacion.pagos_suscripciones ps
-                 JOIN sistema_facturacion.empresas emp_up ON emp_up.id = ps.empresa_id
-                 WHERE ps.estado = 'PAGADO'
-                   AND ps.fecha_pago BETWEEN {f_inicio} AND {f_fin}
-                   {v_filter_ps}
-                   AND EXISTS (
-                       SELECT 1 FROM sistema_facturacion.pagos_suscripciones ps2
-                       WHERE ps2.empresa_id = ps.empresa_id
-                         AND ps2.plan_id != ps.plan_id
-                         AND ps2.fecha_pago < ps.fecha_pago
-                   )) as porcentaje_upgrades,
+                 FROM sistema_facturacion.solicitudes_renovacion sr
+                 WHERE sr.tipo = 'UPGRADE'
+                   AND sr.fecha_solicitud BETWEEN {f_inicio} AND {f_fin}
+                   {v_filter_sr}) as porcentaje_upgrades,
 
                 -- Clientes perdidos
                 (SELECT ROUND(
@@ -74,6 +67,7 @@ class RepositorioR032:
         v_filter_v3 = " AND v3.id = %s" if vendedor_id else ""
         v_filter_ps = " AND emp_up.vendedor_id = %s" if vendedor_id else ""
         v_filter_ps3 = " AND emp3.vendedor_id = %s" if vendedor_id else ""
+        v_filter_sr = " AND sr.vendedor_id = %s" if vendedor_id else ""
         v_filter_e  = " AND e.vendedor_id = %s" if vendedor_id else ""
         v_filter_e2 = " AND e2.vendedor_id = %s" if vendedor_id else ""
 
@@ -85,6 +79,7 @@ class RepositorioR032:
             v_filter_v3=v_filter_v3,
             v_filter_ps=v_filter_ps,
             v_filter_ps3=v_filter_ps3,
+            v_filter_sr=v_filter_sr,
             v_filter_e=v_filter_e,
             v_filter_e2=v_filter_e2
         )
@@ -93,15 +88,12 @@ class RepositorioR032:
         # c1: ff [, vid]
         # c2: fi, ff [, vid]
         # v3: ff [, vid]
-        # ps3: ff [, vid]
-        # ps: fi, ff [, vid]
+        # sr (upgrades): fi, ff [, vid]
         # e2: ff [, vid]
         params: list = []
         params.append(ff)
         if vendedor_id: params.append(vendedor_id)
         params += [fi, ff]
-        if vendedor_id: params.append(vendedor_id)
-        params.append(ff)
         if vendedor_id: params.append(vendedor_id)
         params.append(ff)
         if vendedor_id: params.append(vendedor_id)

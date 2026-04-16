@@ -198,7 +198,7 @@ class ServicioSuscripciones:
             "fecha_pago": datetime.now(),
             "fecha_inicio_periodo": fecha_inicio,
             "fecha_fin_periodo": fecha_fin,
-            "metodo_pago": data.metodo_pago,
+            "metodo_pago": data.metodo_pago or "PENDIENTE",
             "estado": data.estado or "PAGADO",
             "numero_comprobante": data.numero_comprobante,
             "registrado_por": usuario_actual['id'],

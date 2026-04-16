@@ -175,33 +175,15 @@ import { SRI_TIPOS_PERSONA, SRI_TIPOS_CONTRIBUYENTE } from '../../../../../core/
                   </div>
                 </div>
 
-                <!-- Detalle de Pago -->
+                <!-- Estado de pago fijo como PENDIENTE para vendedores -->
                 <div class="col-md-6">
-                  <label class="label-final">Estado de Pago *</label>
-                  <select formControlName="estado_pago" class="select-final">
-                    <option value="PAGADO">PAGADO (Confirmar ahora)</option>
-                    <option value="PENDIENTE">PENDIENTE (Generar deuda)</option>
-                  </select>
-                </div>
-                <div class="col-md-6" *ngIf="empresaForm.get('estado_pago')?.value === 'PAGADO'">
-                  <label class="label-final">Método de Pago</label>
-                  <select formControlName="metodo_pago" class="select-final">
-                    <option value="TRANSFERENCIA">TRANSFERENCIA</option>
-                    <option value="EFECTIVO">EFECTIVO</option>
-                    <option value="TARJETA">TARJETA</option>
-                    <option value="OTRO">OTRO</option>
-                  </select>
-                </div>
-                <div class="col-md-12" *ngIf="empresaForm.get('estado_pago')?.value === 'PAGADO'">
-                  <label class="label-final">Número de Comprobante / Referencia *</label>
-                  <input type="text" formControlName="numero_comprobante" class="input-final" 
-                    placeholder="Ej: TR-123456">
+                  <label class="label-final">Estado de Pago</label>
+                  <div class="input-final bg-light opacity-75 d-flex align-items-center gap-2" style="cursor:default;">
+                    <i class="bi bi-clock-history text-warning"></i>
+                    <span class="fw-bold text-warning">PENDIENTE</span>
+                  </div>
                 </div>
 
-                 <div class="col-12">
-                  <label class="label-final">Observación del Pago</label>
-                  <textarea formControlName="observacion_pago" class="input-final" rows="2" placeholder="Ej: Registro inicial Vendedor"></textarea>
-                </div>
               </div>
             </div>
 
@@ -412,9 +394,9 @@ export class VendedorCreateEmpresaModalComponent implements OnInit, OnDestroy {
             plan_id: ['', Validators.required],
             activo: [true],
             monto_pago: [0, [Validators.required, Validators.min(0)]],
-            estado_pago: ['PAGADO'],
-            metodo_pago: ['TRANSFERENCIA'],
-            numero_comprobante: [''],
+            estado_pago: ['PENDIENTE'],
+            metodo_pago: [null],
+            numero_comprobante: [null],
             observacion_pago: ['', [Validators.maxLength(250)]]
         });
     }
