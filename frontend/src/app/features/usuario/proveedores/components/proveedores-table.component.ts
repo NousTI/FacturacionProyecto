@@ -102,13 +102,13 @@ import { GET_IDENTIFICACION_LABEL } from '../../../../core/constants/sri-iva.con
                           <span class="ms-2">Editar</span>
                         </a>
                       </li>
-                      <li>
+                      <li *hasPermission="'PROVEEDOR_EDITAR'">
                         <a class="dropdown-item rounded-3 py-2" (click)="onAction.emit({type: 'toggle', proveedor: p})">
                           <i class="bi" [ngClass]="p.activo ? 'bi-toggle-off' : 'bi-toggle-on'"></i>
                           <span class="ms-2">{{ p.activo ? 'Desactivar' : 'Activar' }}</span>
                         </a>
                       </li>
-                      <li><hr class="dropdown-divider mx-2"></li>
+                      <li *hasPermission="'PROVEEDOR_ELIMINAR'"><hr class="dropdown-divider mx-2"></li>
                       <li *hasPermission="'PROVEEDOR_ELIMINAR'">
                         <a class="dropdown-item rounded-3 py-2 text-danger" (click)="onAction.emit({type: 'delete', proveedor: p})">
                           <i class="bi bi-trash"></i>

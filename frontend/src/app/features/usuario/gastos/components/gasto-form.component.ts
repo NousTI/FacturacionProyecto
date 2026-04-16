@@ -52,8 +52,16 @@ import { SRI_IVA_TARIFAS } from '../../../../core/constants/sri-iva.constants';
           </div>
 
           <div>
-            <label class="editorial-label">Nº de Factura</label>
-            <input type="text" class="editorial-input" formControlName="numero_factura" placeholder="000-000-000000000" [readonly]="viewOnly">
+            <label class="editorial-label">Nº de Factura *</label>
+            <input
+              type="text"
+              class="editorial-input"
+              formControlName="numero_factura"
+              placeholder="000-000-000000000"
+              [class.is-invalid]="isInvalid('numero_factura')"
+              [readonly]="viewOnly"
+            >
+            <div class="invalid-feedback-minimal" *ngIf="isInvalid('numero_factura')">Este campo es obligatorio.</div>
           </div>
 
           <div>
@@ -158,7 +166,7 @@ export class GastoFormComponent implements OnInit, OnChanges {
     this.form = this.fb.group({
       categoria_gasto_id: ['', Validators.required],
       proveedor_id: [''],
-      numero_factura: [''],
+      numero_factura: ['', Validators.required],
       concepto: ['', [Validators.required, Validators.minLength(3)]],
       fecha_emision: [new Date().toISOString().split('T')[0], Validators.required],
       fecha_vencimiento: [new Date().toISOString().split('T')[0]],

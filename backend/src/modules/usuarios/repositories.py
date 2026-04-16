@@ -228,10 +228,22 @@ class RepositorioUsuarios:
             return cur.rowcount > 0
 
     def eliminar_usuario(self, id: UUID) -> bool:
-        """Delete usuario (CASCADE will delete from users table)"""
-        query = "DELETE FROM sistema_facturacion.usuarios WHERE id = %s"
+        """Delete usuario (By deleting from users table, CASCADE will clean everything)"""
+        # First find the user_id associated with this usuario profile
+        find_query = "SELECT user_id FROM sistema_facturacion.usuarios WHERE id = %s"
+        
         with db_transaction(self.db) as cur:
-            cur.execute(query, (str(id),))
+            cur.execute(find_query, (str(id),))
+            row = cur.fetchone()
+            if not row:
+                return False
+            
+            user_id = row['user_id']
+            
+            # Delete from the parent table (users)
+            # This will cascade to usuarios and log tables
+            delete_query = "DELETE FROM sistema_facturacion.users WHERE id = %s"
+            cur.execute(delete_query, (str(user_id),))
             return cur.rowcount > 0
 
     def obtener_perfil_completo(self, user_id: UUID) -> Optional[dict]:

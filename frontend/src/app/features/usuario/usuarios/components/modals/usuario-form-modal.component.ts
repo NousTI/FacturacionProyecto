@@ -150,10 +150,6 @@ import { AuthService } from '../../../../../core/auth/auth.service';
               <input class="form-check-input" type="checkbox" formControlName="activo">
             </div>
           </div>
-          <div class="self-badge" *ngIf="isSelf()">
-             <i class="bi bi-check-circle-fill"></i> Sesión Actual
-          </div>
-          
           <div class="actions">
             <button (click)="close()" class="btn-cancel" [disabled]="loading">Cancelar</button>
             <button (click)="submit()"

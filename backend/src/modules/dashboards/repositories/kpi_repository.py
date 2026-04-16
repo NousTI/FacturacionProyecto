@@ -93,6 +93,14 @@ class KpiRepository(BaseRepository):
                 """, (empresa_id,))
                 kpis['facturas_rechazadas'] = cur.fetchone()['count']
 
+                cur.execute(f"""
+                    SELECT COALESCE(SUM(total), 0) as total 
+                    FROM sistema_facturacion.gastos 
+                    WHERE empresa_id = %s 
+                    AND {date_filter}
+                """, (empresa_id,))
+                kpis['total_gastos'] = float(cur.fetchone()['total'])
+
 
 
 

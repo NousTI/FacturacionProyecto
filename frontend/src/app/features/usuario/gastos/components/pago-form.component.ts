@@ -88,13 +88,29 @@ import { SRI_FORMAS_PAGO } from '../../../../core/constants/sri-iva.constants';
           </div>
 
           <div>
-            <label class="editorial-label">Nº Referencia</label>
-            <input type="text" class="editorial-input" formControlName="numero_referencia" placeholder="Ej: ID Transacción / Nº Depósito" [readonly]="viewOnly">
+            <label class="editorial-label">Nº Referencia {{ isBancarizado ? '*' : '' }}</label>
+            <input
+              type="text"
+              class="editorial-input"
+              formControlName="numero_referencia"
+              placeholder="Ej: ID Transacción / Nº Depósito"
+              [class.is-invalid]="isInvalid('numero_referencia')"
+              [readonly]="viewOnly"
+            >
+            <div class="invalid-feedback-minimal" *ngIf="isInvalid('numero_referencia')">Requerido para pagos bancarizados.</div>
           </div>
 
           <div>
-            <label class="editorial-label">Nº Comprobante</label>
-            <input type="text" class="editorial-input" formControlName="numero_comprobante" placeholder="Ej: Nº de Recibo / Operación" [readonly]="viewOnly">
+            <label class="editorial-label">Nº Comprobante {{ isBancarizado ? '*' : '' }}</label>
+            <input
+              type="text"
+              class="editorial-input"
+              formControlName="numero_comprobante"
+              placeholder="Ej: Nº de Recibo / Operación"
+              [class.is-invalid]="isInvalid('numero_comprobante')"
+              [readonly]="viewOnly"
+            >
+            <div class="invalid-feedback-minimal" *ngIf="isInvalid('numero_comprobante')">Requerido para pagos bancarizados.</div>
           </div>
 
           <div class="col-span-2">
@@ -187,6 +203,7 @@ export class PagoFormComponent implements OnInit, OnChanges {
 
   ngOnInit() {
     this.setupGastoSubscription();
+    this.setupMetodoPagoSubscription();
   }
 
   private initForm() {
@@ -244,7 +261,34 @@ export class PagoFormComponent implements OnInit, OnChanges {
       this.form.disable({ emitEvent: false });
     }
 
+    this.updateReferenceValidators(this.form.get('metodo_pago')?.value);
+    
     this.cd.detectChanges();
+  }
+
+  get isBancarizado(): boolean {
+    const metodo = this.form.get('metodo_pago')?.value;
+    return metodo && metodo !== '01'; // '01' es Efectivo
+  }
+
+  private setupMetodoPagoSubscription() {
+    this.form.get('metodo_pago')?.valueChanges.subscribe(val => {
+      this.updateReferenceValidators(val);
+    });
+  }
+
+  private updateReferenceValidators(metodo: string) {
+    const refs = ['numero_referencia', 'numero_comprobante'];
+    if (metodo !== '01') {
+      refs.forEach(field => {
+        this.form.get(field)?.setValidators([Validators.required]);
+      });
+    } else {
+      refs.forEach(field => {
+        this.form.get(field)?.clearValidators();
+      });
+    }
+    refs.forEach(field => this.form.get(field)?.updateValueAndValidity({ emitEvent: false }));
   }
 
   get hasChanges(): boolean {

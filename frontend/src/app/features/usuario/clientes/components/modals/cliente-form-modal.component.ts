@@ -313,7 +313,7 @@ export class ClienteFormModalComponent implements OnInit, OnDestroy {
   provincias: Provincia[] = PROVINCIAS;
   ciudadesDisponibles: Ciudad[] = [];
   initialFormValue: any = {};
-  sriTipos = SRI_TIPOS_IDENTIFICACION;
+  sriTipos = SRI_TIPOS_IDENTIFICACION.filter(t => ['04', '05', '06'].includes(t.code));
   submitted = false;
 
   constructor(private fb: FormBuilder) {
@@ -339,7 +339,7 @@ export class ClienteFormModalComponent implements OnInit, OnDestroy {
       } else if (val === '05') {
         idCont?.setValidators([Validators.required, SriValidators.identificacionEcuador()]);
       } else if (val === '06') {
-        idCont?.setValidators([Validators.required, SriValidators.pasaporte()]);
+        idCont?.setValidators([Validators.required, Validators.maxLength(20)]);
       } else {
         idCont?.setValidators([Validators.required]);
       }
@@ -430,6 +430,7 @@ export class ClienteFormModalComponent implements OnInit, OnDestroy {
     const tipoId = this.clienteForm.get('tipo_identificacion')?.value;
     if (tipoId === '05') return 'Cédula no válida';
     else if (tipoId === '04') return 'RUC no válido';
+    else if (tipoId === '06' && idControl?.hasError('maxlength')) return 'Máximo 20 caracteres';
     return 'Identificación inválida';
   }
 

@@ -96,19 +96,21 @@ import { HasPermissionDirective } from '../../../../core/directives/has-permissi
                           <span class="ms-2">Editar Datos</span>
                         </a>
                       </li>
-                      <li *hasPermission="'USUARIOS_EDITAR'">
-                        <a class="dropdown-item rounded-3 py-2" (click)="onAction.emit({type: 'role', usuario: u})">
-                          <i class="bi bi-shield-lock"></i>
-                          <span class="ms-2">Cambiar Rol</span>
-                        </a>
-                      </li>
-                      <li><hr class="dropdown-divider mx-2"></li>
-                      <li *hasPermission="'USUARIOS_ELIMINAR'">
-                        <a class="dropdown-item rounded-3 py-2 text-danger" (click)="onAction.emit({type: 'delete', usuario: u})">
-                          <i class="bi bi-person-x"></i>
-                          <span class="ms-2">Eliminar Usuario</span>
-                        </a>
-                      </li>
+                      <ng-container *ngIf="!isSelf(u)">
+                        <li *hasPermission="'USUARIOS_EDITAR'">
+                          <a class="dropdown-item rounded-3 py-2" (click)="onAction.emit({type: 'role', usuario: u})">
+                            <i class="bi bi-shield-lock"></i>
+                            <span class="ms-2">Cambiar Rol</span>
+                          </a>
+                        </li>
+                        <li *hasPermission="'USUARIOS_ELIMINAR'"><hr class="dropdown-divider mx-2"></li>
+                        <li *hasPermission="'USUARIOS_ELIMINAR'">
+                          <a class="dropdown-item rounded-3 py-2 text-danger" (click)="onAction.emit({type: 'delete', usuario: u})">
+                            <i class="bi bi-person-x"></i>
+                            <span class="ms-2">Eliminar Usuario</span>
+                          </a>
+                        </li>
+                      </ng-container>
                     </ul>
                   </div>
                 </td>

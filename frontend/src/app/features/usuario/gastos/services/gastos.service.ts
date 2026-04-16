@@ -96,7 +96,7 @@ export class GastosService extends BaseApiService {
       total: gastos.length,
       pendientes: gastos.filter(g => g.estado_pago === 'pendiente').length,
       pagados: gastos.filter(g => g.estado_pago === 'pagado').length,
-      total_monto: gastos.reduce((sum, g) => sum + g.total, 0)
+      total_monto: gastos.reduce((sum, g) => sum + Number(g.total || 0), 0)
     };
     this._stats$.next(stats);
   }

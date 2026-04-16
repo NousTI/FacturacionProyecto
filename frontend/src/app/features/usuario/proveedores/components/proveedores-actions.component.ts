@@ -53,9 +53,8 @@ import { HasPermissionDirective } from '../../../../shared/directives/has-permis
           </div>
 
           <!-- Botón de Acción -->
-          <div class="col-lg-2 text-lg-end">
+          <div class="col-lg-2 text-lg-end" *hasPermission="'PROVEEDOR_CREAR'">
             <button 
-              *hasPermission="'PROVEEDOR_CREAR'"
               (click)="onCreate.emit()"
               class="btn-system-action w-100"
             >
