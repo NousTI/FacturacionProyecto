@@ -20,6 +20,7 @@ export interface FacturaProgramada {
   activo: boolean;
   enviar_email: boolean;
   configuracion?: any;
+  emitida_hoy?: boolean;
   created_at: string;
   updated_at: string;
 }

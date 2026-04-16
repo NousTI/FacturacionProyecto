@@ -55,7 +55,7 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
                 </select>
               </div>
               
-              <div class="mb-3">
+              <div class="mb-3" *ngIf="requiereComprobante">
                 <label class="smallest text-uppercase fw-800 text-muted d-block mb-2">Número de Comprobante / Referencia *</label>
                 <input type="text" [(ngModel)]="numero_comprobante" class="form-control lux-input" placeholder="Ej: TR-000123">
                 <div class="text-danger smallest fw-bold mt-1" *ngIf="!numero_comprobante.trim()">
@@ -71,7 +71,7 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
                 <button class="btn btn-outline-danger px-4 border-0 fw-bold" (click)="onRejectAction.emit()">Rechazar</button>
                 <button 
                   class="btn-lux-primary px-4 fw-bold" 
-                  [disabled]="cargando || !numero_comprobante.trim()" 
+                  [disabled]="cargando || (requiereComprobante && !numero_comprobante.trim())"
                   (click)="confirmar()"
                 >
                   <span *ngIf="cargando" class="spinner-border spinner-border-sm me-2"></span>
@@ -128,6 +128,10 @@ export class RenovacionProcessModalComponent {
 
   metodo_pago: string = 'TRANSFERENCIA';
   numero_comprobante: string = '';
+
+  get requiereComprobante(): boolean {
+    return !['EFECTIVO', 'OTRO'].includes(this.metodo_pago);
+  }
 
   confirmar() {
     this.onConfirm.emit({

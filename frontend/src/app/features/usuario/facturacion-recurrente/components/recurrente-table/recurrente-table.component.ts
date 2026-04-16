@@ -81,7 +81,7 @@ import { FACTURACION_PROGRAMADA_PERMISSIONS } from '../../../../../constants/per
                       </button>
                     </li>
                     
-                    <ng-container *ngIf="prog.activo">
+                    <ng-container *ngIf="canExecuteManual(prog)">
                       <li><hr class="dropdown-divider"></li>
                       <li *hasPermission="['FACTURA_PROGRAMADA_CREAR', 'FACTURA_PROGRAMADA_EDITAR']">
                         <button class="dropdown-item fw-bold text-primary" (click)="onAction.emit({type: 'execute', data: prog})">
@@ -304,7 +304,7 @@ export class RecurrenteTableComponent {
       const [year, month, day] = prog.proxima_emision.split('-').map(Number);
       const nextDate = new Date(year, month - 1, day);
       
-      return nextDate <= today;
+      return nextDate <= today && !prog.emitida_hoy;
     } catch (e) {
       return true; // Fallback seguro
     }

@@ -62,18 +62,6 @@ import { Observable } from 'rxjs';
                     Requerido (3-100 carac.)
                   </div>
                 </div>
-                <div class="col-12">
-                  <label class="label-final">Teléfono de Contacto (Opcional)</label>
-                  <div class="input-group-premium">
-                    <i class="bi bi-telephone"></i>
-                    <input
-                      type="text"
-                      formControlName="telefono"
-                      class="input-final ps-5"
-                      placeholder="Ej: 0999999999"
-                    >
-                  </div>
-                </div>
               </div>
             </div>
 

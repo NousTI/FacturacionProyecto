@@ -20,7 +20,7 @@ import { Suscripcion } from '../../services/vendedor-suscripcion.service';
                 <th style="width: 130px; text-align: center;">Vencimiento</th>
                 <th style="width: 140px; text-align: center;">Pagos</th>
                 <th style="width: 120px; text-align: center;">Estado</th>
-                <th class="text-end" style="width: 100px">Acciones</th>
+                <!-- <th class="text-end" style="width: 100px">Acciones</th> -->
               </tr>
             </thead>
             <tbody>
@@ -79,14 +79,14 @@ import { Suscripcion } from '../../services/vendedor-suscripcion.service';
                   </span>
                 </td>
 
-                <!-- ACCIONES -->
+                <!-- ACCIONES (temporalmente oculto)
                 <td class="text-end">
                   <div class="dropdown">
-                    <button 
-                      class="btn-action-trigger" 
-                      type="button" 
-                      [id]="'actions-' + sub.id" 
-                      data-bs-toggle="dropdown" 
+                    <button
+                      class="btn-action-trigger"
+                      type="button"
+                      [id]="'actions-' + sub.id"
+                      data-bs-toggle="dropdown"
                       aria-expanded="false"
                       data-bs-popper-config='{"strategy":"fixed"}'
                     >
@@ -103,6 +103,7 @@ import { Suscripcion } from '../../services/vendedor-suscripcion.service';
                         </ul>
                   </div>
                 </td>
+                -->
               </tr>
             </tbody>
           </table>

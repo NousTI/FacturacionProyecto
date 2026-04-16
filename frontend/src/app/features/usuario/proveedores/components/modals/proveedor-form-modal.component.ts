@@ -112,12 +112,12 @@ import { SRI_TIPOS_IDENTIFICACION } from '../../../../../core/constants/sri-iva.
                     formControlName="telefono"
                     class="form-input-premium"
                     [class.is-invalid]="isFieldInvalid('telefono')"
-                    placeholder="Ej: 022123456"
+                    placeholder="Ej: 0987654321"
                     (keypress)="validateNumbers($event)"
                     maxlength="10"
                   >
                   <div class="invalid-feedback" *ngIf="isFieldInvalid('telefono')">
-                    El teléfono debe tener entre 9 y 10 dígitos
+                    El teléfono debe empezar con 09 y tener 10 dígitos
                   </div>
                 </div>
                 <div class="col-md-6">
@@ -246,7 +246,7 @@ export class ProveedorFormModalComponent implements OnInit, OnDestroy {
   provincias: Provincia[] = PROVINCIAS;
   ciudadesDisponibles: Ciudad[] = [];
   initialFormValue: any = {};
-  sriTipos = SRI_TIPOS_IDENTIFICACION;
+  sriTipos = SRI_TIPOS_IDENTIFICACION.filter(t => ['04', '05', '06'].includes(t.code));
   submitted = false;
 
   constructor(private fb: FormBuilder) {
@@ -256,7 +256,7 @@ export class ProveedorFormModalComponent implements OnInit, OnDestroy {
       razon_social: ['', [Validators.required, Validators.minLength(3)]],
       nombre_comercial: ['', [Validators.required]],
       email: ['', [Validators.required, Validators.pattern(/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/)]],
-      telefono: ['', [Validators.pattern(/^0\d{8,9}$/)]],
+      telefono: ['', [Validators.pattern(/^09\d{8}$/)]],
       direccion: ['', [Validators.required]],
       ciudad: ['', [Validators.required]],
       provincia: ['', [Validators.required]],

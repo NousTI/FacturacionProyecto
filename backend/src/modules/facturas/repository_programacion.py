@@ -50,7 +50,13 @@ class RepositorioProgramacion:
 
     def listar(self, empresa_id: Optional[UUID] = None, activo: Optional[bool] = None, usuario_id: Optional[UUID] = None) -> List[dict]:
         query = """
-            SELECT fp.*, c.razon_social as cliente_nombre 
+            SELECT fp.*, c.razon_social as cliente_nombre,
+                EXISTS (
+                    SELECT 1 FROM sistema_facturacion.facturas f
+                    WHERE f.facturacion_programada_id = fp.id
+                      AND f.estado = 'AUTORIZADA'
+                      AND f.fecha_emision::date = CURRENT_DATE
+                ) as emitida_hoy
             FROM sistema_facturacion.facturacion_programada fp
             JOIN sistema_facturacion.clientes c ON fp.cliente_id = c.id
             WHERE 1=1
