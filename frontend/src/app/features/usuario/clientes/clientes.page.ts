@@ -48,7 +48,10 @@ import { CLIENTES_PERMISSIONS } from '../../../constants/permission-codes';
             <i class="bi bi-people-fill"></i> 
             <span>Directorio de Clientes</span>
           </button>
-          <button class="tab-btn" [class.active]="activeTab === 'analitica'" (click)="activeTab = 'analitica'">
+          <button class="tab-btn" 
+                  *ngIf="canViewAnalitica"
+                  [class.active]="activeTab === 'analitica'" 
+                  (click)="activeTab = 'analitica'">
             <i class="bi bi-bar-chart-fill"></i> 
             <span>Analítica de Datos</span>
           </button>
@@ -82,7 +85,7 @@ import { CLIENTES_PERMISSIONS } from '../../../constants/permission-codes';
         </ng-container>
 
         <!-- TAB: ANALÍTICA -->
-        <div class="view-section" *ngIf="activeTab === 'analitica'">
+        <div class="view-section" *ngIf="activeTab === 'analitica' && canViewAnalitica">
           <app-cliente-analitica></app-cliente-analitica>
         </div>
 
@@ -247,6 +250,10 @@ export class ClientesPage implements OnInit, OnDestroy {
     return this.permissionsService.hasPermission(CLIENTES_PERMISSIONS.VER);
   }
 
+  get canViewAnalitica(): boolean {
+    return this.permissionsService.isAdminEmpresa;
+  }
+
   // Navigation State
   activeTab: 'directorio' | 'analitica' = 'directorio';
 
@@ -287,6 +294,12 @@ export class ClientesPage implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.uiService.setPageHeader('Gestión de Clientes', 'Administra la base de datos de tus clientes y sus créditos');
+    
+    // Protección de estado
+    if (this.activeTab === 'analitica' && !this.canViewAnalitica) {
+      this.activeTab = 'directorio';
+    }
+
     // Initial data load (handles caching)
     this.clientesService.loadInitialData();
 

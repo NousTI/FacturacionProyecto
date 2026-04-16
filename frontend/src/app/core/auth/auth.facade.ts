@@ -27,10 +27,17 @@ export class AuthFacade {
         private uiService: UiService,
         private lockService: LockStatusService
     ) {
-        this.userSubject = new BehaviorSubject<User | null>(this.authService.getUser());
+        const currentUser = this.authService.getUser();
+        this.userSubject = new BehaviorSubject<User | null>(currentUser);
         this.user$ = this.userSubject.asObservable();
         this.isAuthenticatedSubject = new BehaviorSubject<boolean>(this.authService.isAuthenticated());
         this.isAuthenticated$ = this.isAuthenticatedSubject.asObservable();
+
+        // Si hay usuario pero le faltan datos estratégicos (como rol_codigo), refrescamos automáticamente
+        if (currentUser && !currentUser.is_superadmin && !currentUser.rol_codigo) {
+            console.log('[AuthFacade] Datos incompletos detectados, refrescando perfil...');
+            this.recargarPermisos().subscribe();
+        }
     }
 
     login(correo: string, clave: string): Observable<any> {

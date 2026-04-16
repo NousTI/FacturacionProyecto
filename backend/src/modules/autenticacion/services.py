@@ -187,6 +187,8 @@ class AuthServices:
             "aviso_renovacion": aviso_renovacion,
             "role": primary_role,
             "is_superadmin": is_superadmin,
+            "rol_codigo": user.get("rol_codigo"),
+            "rol_nombre": user.get("rol_nombre"),
             "permisos": []
         }
 
@@ -301,6 +303,9 @@ class AuthServices:
         user["is_vendedor"] = (role_upper == "VENDEDOR")
         user["is_usuario"] = (role_upper == "USUARIO")
         user["empresa_activa"] = user.get("empresa_activa", True)
+        # Asegurar que rol_codigo y rol_nombre estén presentes (vienen del repo en obtener_por_id)
+        user["rol_codigo"] = user.get("rol_codigo")
+        user["rol_nombre"] = user.get("rol_nombre")
 
         # 6. Bloqueo Proactivo y Aviso (Lógica dinámica)
         empresa_lock = None

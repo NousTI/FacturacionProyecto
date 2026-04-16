@@ -77,7 +77,14 @@ export class PermissionsService {
     get isAdminEmpresa(): boolean {
         const user = this.userSignal();
         if (!user) return false;
+
+        // 1. SuperAdmin siempre tiene rango de admin de empresa
+        if (user.role === UserRole.SUPERADMIN || (user as any).is_superadmin) {
+            return true;
+        }
+
+        // 2. Check flexible de rol_codigo para administradores de empresa
         const rolCodigo = (user.rol_codigo || '').toUpperCase();
-        return rolCodigo === 'ADMIN_EMPRESA';
+        return rolCodigo === 'ADMIN' || rolCodigo.startsWith('ADMIN_');
     }
 }

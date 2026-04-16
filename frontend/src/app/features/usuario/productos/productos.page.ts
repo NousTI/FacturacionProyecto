@@ -48,6 +48,7 @@ import { Producto, ProductoStats } from '../../../domain/models/producto.model';
               <i class="bi bi-box-seam"></i> Catálogo de Productos
             </button>
             <button class="main-tab-btn" 
+                    *ngIf="canViewAnalitica"
                     [class.active]="activeTab === 'analitica'" 
                     (click)="activeTab = 'analitica'">
               <i class="bi bi-bar-chart-fill"></i> Analítica de Inventarios
@@ -80,7 +81,7 @@ import { Producto, ProductoStats } from '../../../domain/models/producto.model';
         </div>
 
         <!-- 4. TAB: ANALÍTICA -->
-        <div class="view-section" *ngIf="activeTab === 'analitica'">
+        <div class="view-section" *ngIf="activeTab === 'analitica' && canViewAnalitica">
           <app-productos-analitica></app-productos-analitica>
         </div>
       </ng-container>
@@ -172,6 +173,10 @@ export class ProductosPage implements OnInit, OnDestroy {
     return this.permissionsService.hasPermission(PRODUCTOS_PERMISSIONS.VER);
   }
 
+  get canViewAnalitica(): boolean {
+    return this.permissionsService.isAdminEmpresa;
+  }
+
   activeTab: 'catalogo' | 'analitica' = 'catalogo';
   productos$: Observable<Producto[]>;
   stats$: Observable<ProductoStats | null>;
@@ -205,6 +210,12 @@ export class ProductosPage implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.uiService.setPageHeader('Catálogo de Productos', 'Gestión integral de inventario, servicios y analítica comercial');
+    
+    // Si no es admin y de alguna forma guardó la pestaña analítica, regresamos a catálogo
+    if (this.activeTab === 'analitica' && !this.canViewAnalitica) {
+      this.activeTab = 'catalogo';
+    }
+
     this.productosService.loadInitialData();
 
     this.productos$
