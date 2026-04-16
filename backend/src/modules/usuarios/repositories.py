@@ -30,7 +30,7 @@ class RepositorioUsuarios:
     def obtener_por_correo(self, email: str) -> Optional[dict]:
         """Get user from auth table (sistema_facturacion.users)"""
         query = """
-            SELECT us.*, 
+            SELECT us.*,
                    u.id as usuario_id,
                    u.empresa_id,
                    COALESCE(u.nombres, s.nombres, v.nombres) as nombres,
@@ -41,7 +41,8 @@ class RepositorioUsuarios:
                    er.codigo as rol_codigo,
                    v.id as internal_vendedor_id,
                    sub.estado as empresa_suscripcion_estado,
-                   e.activo as empresa_activa
+                   e.activo as empresa_activa,
+                   u.activo as activo
             FROM sistema_facturacion.users us
             LEFT JOIN sistema_facturacion.usuarios u ON us.id = u.user_id
             LEFT JOIN sistema_facturacion.superadmin s ON us.id = s.user_id
@@ -59,7 +60,7 @@ class RepositorioUsuarios:
     def obtener_por_id(self, user_id: UUID) -> Optional[dict]:
         """Get user by auth ID (sistema_facturacion.users)"""
         query = """
-            SELECT us.*, 
+            SELECT us.*,
                    u.id as usuario_id,
                    u.empresa_id,
                    COALESCE(u.nombres, s.nombres, v.nombres) as nombres,
@@ -70,7 +71,8 @@ class RepositorioUsuarios:
                    er.codigo as rol_codigo,
                    v.id as internal_vendedor_id,
                    sub.estado as empresa_suscripcion_estado,
-                   e.activo as empresa_activa
+                   e.activo as empresa_activa,
+                   u.activo as activo
             FROM sistema_facturacion.users us
             LEFT JOIN sistema_facturacion.usuarios u ON us.id = u.user_id
             LEFT JOIN sistema_facturacion.superadmin s ON us.id = s.user_id

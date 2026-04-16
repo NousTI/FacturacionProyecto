@@ -183,6 +183,7 @@ class AuthServices:
             "empresa_id": str(empresa_id) if empresa_id else None,
             "empresa_suscripcion_estado": user.get("empresa_suscripcion_estado"),
             "empresa_activa": user.get("empresa_activa", True),
+            "activo": user.get("activo", True),
             "empresa_lock": empresa_lock,
             "aviso_renovacion": aviso_renovacion,
             "role": primary_role,

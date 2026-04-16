@@ -17,22 +17,27 @@ export class UserActiveGuard implements CanActivate {
         return this.authFacade.user$.pipe(
             take(1),
             map(user => {
+                console.log('[UserActiveGuard] user:', user);
+                console.log('[UserActiveGuard] user.activo:', user?.activo, '| tipo:', typeof user?.activo);
+
                 // Si no hay usuario, AuthGuard se encargará
                 if (!user) return true;
 
                 // Solo aplicamos esta restricción a usuarios de empresa (USUARIO)
                 // SuperAdmins y Vendedores tienen sus propias reglas
                 if (user.role !== UserRole.USUARIO) {
+                    console.log('[UserActiveGuard] No es USUARIO, dejando pasar. role:', user.role);
                     return true;
                 }
 
                 // Si el perfil del usuario en la empresa está desactivado (activo === false)
                 // Redirigir a la página de acceso denegado
                 if (user.activo === false) {
-                    console.warn('[UserActiveGuard] Perfil de usuario inactivo. Redirigiendo a /acceso-denegado');
+                    console.warn('[UserActiveGuard] Perfil inactivo → redirigiendo a /acceso-denegado');
                     return this.router.createUrlTree(['/acceso-denegado']);
                 }
 
+                console.log('[UserActiveGuard] Usuario activo, dejando pasar.');
                 return true;
             })
         );

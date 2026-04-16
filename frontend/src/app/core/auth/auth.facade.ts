@@ -63,10 +63,16 @@ export class AuthFacade {
                         });
                     }
 
+                    // Verificar si el usuario está inhabilitado en la empresa antes de navegar
+                    if (role === UserRole.USUARIO && userWithRole.activo === false) {
+                        observer.next(response);
+                        observer.complete();
+                        this.router.navigate(['/acceso-denegado']);
+                        return;
+                    }
+
                     observer.next(response);
                     observer.complete();
-
-                    // Navegar DESPUÉS de que el observer se complete
                     this.navigateBasedOnRole(role);
                 },
                 error: (err) => {
