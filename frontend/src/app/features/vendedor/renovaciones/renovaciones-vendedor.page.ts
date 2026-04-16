@@ -57,6 +57,7 @@ import { RenovacionDetailModalComponent } from './components/modals/renovacion-d
         [empresas]="empresas"
         [planes]="planes"
         [loading]="cargando"
+        [solicitudesPendientes]="solicitudes"
         (onClose)="showCreateModal = false"
         (onSave)="enviarSolicitud($event)"
       ></app-renovacion-create-modal>

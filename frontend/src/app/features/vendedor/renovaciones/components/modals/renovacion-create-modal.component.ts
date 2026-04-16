@@ -47,29 +47,41 @@ import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } 
               
               <!-- Tipo de Solicitud -->
               <div class="col-12">
-                <label class="editorial-label">2. Tipo de Gestión *</label>
-                <div class="d-flex gap-3">
-                  <div class="flex-grow-1" *ngIf="estadoActual !== 'CANCELADA'">
-                    <input type="radio" id="tipo_renovacion" formControlName="tipo" value="RENOVACION" class="btn-check">
-                    <label 
-                      class="btn btn-outline-premium w-100 py-3" 
-                      for="tipo_renovacion"
-                      [class.disabled]="selectedEmpresaPlanId && !esTiempoDeRenovacion"
-                      [title]="!esTiempoDeRenovacion ? 'Solo disponible 30 días antes del vencimiento' : ''"
-                    >
-                      <i class="bi bi-arrow-repeat me-2"></i>
-                      Renovación
-                    </label>
+                <ng-container *ngIf="!bloqueadaPorEstado">
+                  <label class="editorial-label">2. Tipo de Gestión *</label>
+                  <div class="d-flex gap-3">
+                    <div class="flex-grow-1" *ngIf="estadoActual !== 'CANCELADA'">
+                      <input type="radio" id="tipo_renovacion" formControlName="tipo" value="RENOVACION" class="btn-check">
+                      <label
+                        class="btn btn-outline-premium w-100 py-3"
+                        for="tipo_renovacion"
+                        [class.disabled]="selectedEmpresaPlanId && !esTiempoDeRenovacion"
+                        [title]="!esTiempoDeRenovacion ? 'Solo disponible 30 días antes del vencimiento' : ''"
+                      >
+                        <i class="bi bi-arrow-repeat me-2"></i>
+                        Renovación
+                      </label>
+                    </div>
+                    <div class="flex-grow-1">
+                      <input type="radio" id="tipo_upgrade" formControlName="tipo" value="UPGRADE" class="btn-check">
+                      <label class="btn btn-outline-premium w-100 py-3" for="tipo_upgrade">
+                        <i class="bi bi-arrow-up-circle me-2"></i>
+                        Upgrade
+                      </label>
+                    </div>
                   </div>
-                  <div class="flex-grow-1">
-                    <input type="radio" id="tipo_upgrade" formControlName="tipo" value="UPGRADE" class="btn-check">
-                    <label class="btn btn-outline-premium w-100 py-3" for="tipo_upgrade">
-                      <i class="bi bi-arrow-up-circle me-2"></i>
-                      Upgrade
-                    </label>
+                </ng-container>
+                <!-- Alertas de tipo y estado -->
+                <div *ngIf="tieneSolicitudPendiente" class="mt-2 alert alert-warning border-0 rounded-4 p-3 animate__animated animate__headShake">
+                  <div class="d-flex align-items-center gap-3">
+                    <i class="bi bi-hourglass-split fs-4 text-warning"></i>
+                    <div>
+                      <strong class="d-block text-dark">Solicitud en proceso</strong>
+                      <span class="smallest text-muted">Esta empresa ya tiene una solicitud <strong>PENDIENTE</strong> de aprobación por el administrador. No puedes enviar otra hasta que sea procesada.</span>
+                    </div>
                   </div>
                 </div>
-                <!-- Alertas de tipo y estado -->
+
                 <div *ngIf="empresaInactiva" class="mt-2 alert alert-dark border-0 rounded-4 p-3 animate__animated animate__headShake">
                   <div class="d-flex align-items-center gap-3">
                     <i class="bi bi-slash-circle-fill fs-4"></i>
@@ -114,7 +126,7 @@ import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } 
                   <i class="bi bi-exclamation-octagon-fill me-1"></i>
                   La renovación solo está disponible 30 días antes del vencimiento.
                 </div>
-                <div *ngIf="selectedEmpresaId && estadoActual === 'ACTIVA' && !esTiempoDeRenovacion" class="mt-2 text-muted smallest italic">
+                <div *ngIf="selectedEmpresaId && estadoActual === 'ACTIVA' && !esTiempoDeRenovacion && !bloqueadaPorEstado" class="mt-2 text-muted smallest italic">
                   <i class="bi bi-info-circle me-1"></i>
                   Faltan {{ diasRestantesParaVencer }} días para el vencimiento. 
                   Solo puedes solicitar un <strong>Upgrade</strong> por ahora.
@@ -122,7 +134,7 @@ import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } 
               </div>
 
               <!-- Plan -->
-              <div class="col-12" [class.opacity-50]="renovacionForm.get('tipo')?.value === 'RENOVACION'">
+              <div class="col-12" [class.opacity-50]="renovacionForm.get('tipo')?.value === 'RENOVACION'" *ngIf="!bloqueadaPorEstado">
                 <label class="editorial-label">3. Seleccionar Plan *</label>
                 <select 
                   class="editorial-input"
@@ -146,7 +158,7 @@ import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } 
               </div>
 
               <!-- Info Alert -->
-              <div class="col-12">
+              <div class="col-12" *ngIf="!bloqueadaPorEstado">
                 <div class="info-editorial-card bg-warning-subtle border-warning-subtle">
                   <div class="d-flex align-items-center gap-3">
                     <div class="icon-indicator bg-white text-warning">
@@ -236,6 +248,7 @@ export class RenovacionCreateModalComponent implements OnInit {
   @Input() empresas: any[] = [];
   @Input() planes: any[] = [];
   @Input() loading = false;
+  @Input() solicitudesPendientes: any[] = [];
   @Output() onClose = new EventEmitter<void>();
   @Output() onSave = new EventEmitter<any>();
 
@@ -246,6 +259,7 @@ export class RenovacionCreateModalComponent implements OnInit {
   bloqueadaPorEstado: boolean = false;
   empresaInactiva: boolean = false;
   estadoActual: string = 'ACTIVA';
+  tieneSolicitudPendiente: boolean = false;
 
   constructor(private fb: FormBuilder) {
     this.renovacionForm = this.fb.group({
@@ -271,12 +285,15 @@ export class RenovacionCreateModalComponent implements OnInit {
     this.selectedEmpresaPlanId = emp ? emp.planId : null;
     this.estadoActual = emp ? emp.suscripcionEstado : 'ACTIVA';
     this.empresaInactiva = emp ? emp.estado === 'INACTIVO' : false;
-    
+    this.tieneSolicitudPendiente = this.solicitudesPendientes.some(
+      s => s.empresa_id === empresaId && s.estado === 'PENDIENTE'
+    );
+
     this.esTiempoDeRenovacion = false;
     this.diasRestantesParaVencer = 0;
-    
-    // Solo bloqueamos si la empresa está inactiva globalmente
-    this.bloqueadaPorEstado = this.empresaInactiva;
+
+    // Solo bloqueamos si la empresa está inactiva globalmente o tiene solicitud pendiente
+    this.bloqueadaPorEstado = this.empresaInactiva || this.tieneSolicitudPendiente;
 
     // Si está cancelada, forzamos Upgrade
     if (this.estadoActual === 'CANCELADA') {
