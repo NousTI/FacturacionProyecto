@@ -25,6 +25,11 @@ export class CompanyActiveGuard implements CanActivate {
         return this.authFacade.user$.pipe(
             take(1),
             map(user => {
+                // 2. Si se está cerrando sesión, ignorar verificaciones para evitar flashes de acceso restringido
+                if (this.lockStatusService.isLoggingOutValue) {
+                    return true;
+                }
+
                 // 2. Si no hay usuario autenticado, AuthGuard se encarga
                 if (!user) return this.router.createUrlTree(['/auth/login']);
 

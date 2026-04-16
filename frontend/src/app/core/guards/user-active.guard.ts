@@ -3,6 +3,7 @@ import { CanActivate, Router, UrlTree } from '@angular/router';
 import { AuthFacade } from '../auth/auth.facade';
 import { UserRole } from '../../domain/enums/role.enum';
 import { Observable, map, take } from 'rxjs';
+import { LockStatusService } from '../services/lock-status.service';
 
 @Injectable({
     providedIn: 'root'
@@ -10,7 +11,8 @@ import { Observable, map, take } from 'rxjs';
 export class UserActiveGuard implements CanActivate {
     constructor(
         private authFacade: AuthFacade,
-        private router: Router
+        private router: Router,
+        private lockService: LockStatusService
     ) { }
 
     canActivate(): Observable<boolean | UrlTree> {
@@ -19,6 +21,11 @@ export class UserActiveGuard implements CanActivate {
             map(user => {
                 console.log('[UserActiveGuard] user:', user);
                 console.log('[UserActiveGuard] user.activo:', user?.activo, '| tipo:', typeof user?.activo);
+
+                // Si se está cerrando sesión, omitir validaciones
+                if (this.lockService.isLoggingOutValue) {
+                    return true;
+                }
 
                 // Si no hay usuario, AuthGuard se encargará
                 if (!user) return true;
