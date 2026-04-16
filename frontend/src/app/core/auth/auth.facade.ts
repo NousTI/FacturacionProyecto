@@ -88,22 +88,20 @@ export class AuthFacade {
         this.lockService.clearLock();
         this.lockService.setShowModal(false);
 
+        // Ocultar la app visualmente al instante para evitar flashes de páginas
+        // intermedias (acceso-restringido, acceso-denegado) durante el reload
+        document.body.style.visibility = 'hidden';
+
+        // Limpiar estado síncronamente antes de navegar para que los guards
+        // encuentren null al leer localStorage y no hagan redirecciones intermedias
+        this.authService.clearSession();
+        this.userSubject.next(null);
+        this.isAuthenticatedSubject.next(false);
+        window.location.href = '/auth/login';
+
         return this.authService.logout().pipe(
-            tap(() => {
-                this.userSubject.next(null);
-                this.isAuthenticatedSubject.next(false);
-                this.uiService.showToast('Has cerrado sesión correctamente', 'info');
-            }),
             tap({
-                error: () => {
-                    // Even on error, clear local state
-                    this.userSubject.next(null);
-                    this.isAuthenticatedSubject.next(false);
-                }
-            }),
-            finalize(() => {
-                // Force a full page reload to clear all in-memory caches and singleton states
-                window.location.href = '/auth/login';
+                error: () => { /* estado ya limpiado */ }
             })
         );
     }

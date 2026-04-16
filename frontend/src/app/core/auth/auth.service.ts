@@ -89,6 +89,12 @@ export class AuthService {
         return !!this.getToken();
     }
 
+    clearSession(): void {
+        localStorage.removeItem(this.TOKEN_KEY);
+        localStorage.removeItem(this.USER_KEY);
+        localStorage.clear();
+    }
+
     private saveSession(response: AuthResponse): void {
         localStorage.setItem(this.TOKEN_KEY, response.access_token);
         // El rol ya viene inyectado en el objeto usuario desde el backend

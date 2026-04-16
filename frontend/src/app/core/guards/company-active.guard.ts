@@ -30,6 +30,9 @@ export class CompanyActiveGuard implements CanActivate {
         return this.authFacade.user$.pipe(
             take(1),
             map(user => {
+                // 3. Re-verificar por si el logout comenzó mientras esperábamos el observable
+                if (this.lockStatusService.isLoggingOutValue) return true;
+
                 // 3. Si no hay usuario autenticado, AuthGuard se encarga
                 if (!user) return this.router.createUrlTree(['/auth/login']);
 
