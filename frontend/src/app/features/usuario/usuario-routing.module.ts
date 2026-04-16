@@ -27,6 +27,7 @@ import { ConfiguracionPage } from './configuracion/configuracion.page';
 import { AccesoRestringidoPage } from './acceso-restringido/acceso-restringido.page';
 
 import { CompanyActiveGuard } from '../../core/guards/company-active.guard';
+import { lockActiveGuard } from '../../core/guards/lock-active.guard';
 
 const routes: Routes = [
     {
@@ -40,7 +41,8 @@ const routes: Routes = [
     },
     {
         path: 'acceso-restringido',
-        component: AccesoRestringidoPage
+        component: AccesoRestringidoPage,
+        canActivate: [lockActiveGuard]
     },
     {
         path: 'dashboard',

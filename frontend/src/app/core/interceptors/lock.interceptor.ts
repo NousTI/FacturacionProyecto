@@ -11,7 +11,8 @@ export class LockInterceptor implements HttpInterceptor {
   intercept(request: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
     return next.handle(request).pipe(
       catchError((error: HttpErrorResponse) => {
-        if (error.status === 402 || error.status === 403) {
+        const isLogout = request.url.includes('/autenticacion/cerrar-sesion');
+        if (!isLogout && (error.status === 402 || error.status === 403)) {
           try {
             const data = JSON.parse(error.error.detail);
             if (data.type) {
