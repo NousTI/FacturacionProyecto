@@ -51,12 +51,14 @@ def exportar_reporte_ventas(
     punto_emision_id: Optional[UUID] = None,
     usuario_id: Optional[UUID] = None,
     estado: Optional[str] = None,
+    manual507: Optional[float] = None,
+    manual503: Optional[float] = None,
     usuario_actual: dict = Depends(requerir_permiso(PermissionCodes.REPORTES_EXPORTAR)),
     servicio: ServicioReportes = Depends()
 ):
     """Genera y descarga un reporte en formato PDF o Excel."""
     from fastapi.responses import StreamingResponse
-    
+
     empresa_id = usuario_actual.get("empresa_id")
     params = {
         "fecha_inicio": fecha_inicio,
@@ -66,6 +68,8 @@ def exportar_reporte_ventas(
         "punto_emision_id": punto_emision_id,
         "usuario_id": usuario_id,
         "estado": estado,
+        "manual507": manual507,
+        "manual503": manual503,
         # Para MIS_VENTAS: usuario del token (no query param)
         "_token_usuario_id": usuario_actual.get("usuario_id"),
     }

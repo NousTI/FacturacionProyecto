@@ -1,6 +1,5 @@
-import { Component, Input, Output, EventEmitter, OnChanges } from '@angular/core';
+import { Component, Input, OnChanges } from '@angular/core';
 import { CommonModule, CurrencyPipe, DecimalPipe } from '@angular/common';
-import { FormsModule } from '@angular/forms';
 import { IvaR027Report } from '../../services/financial-reports.service';
 import { InfoTooltipComponent } from './info-tooltip.component';
 import { R027DetalleModalComponent } from './r027-detalle-modal.component';
@@ -8,7 +7,7 @@ import { R027DetalleModalComponent } from './r027-detalle-modal.component';
 @Component({
   selector: 'app-r027-iva',
   standalone: true,
-  imports: [CommonModule, CurrencyPipe, DecimalPipe, FormsModule, InfoTooltipComponent],
+  imports: [CommonModule, CurrencyPipe, DecimalPipe, InfoTooltipComponent, R027DetalleModalComponent],
   template: `
 <div class="fade-in">
 
@@ -159,7 +158,7 @@ import { R027DetalleModalComponent } from './r027-detalle-modal.component';
               <span class="desc-title">Ventas locales tarifa 0%</span>
               <span class="desc-sub">Líneas con tarifa 0% en facturas emitidas autorizadas</span>
             </td>
-            <td class="text-center"><span class="cas-badge gris">403 / 413</span></td>
+            <td class="text-center"><span class="cas-badge gris cas-link" (click)="modalCasillero='403'" title="Ver detalle">403 / 413</span></td>
             <td class="text-end font-mono">{{ data.bloque_400?.c403 | currency }}</td>
             <td class="text-end fw-bold">{{ data.bloque_400?.c403 | currency }}</td>
             <td class="text-end nd">$0.00</td>
@@ -171,7 +170,7 @@ import { R027DetalleModalComponent } from './r027-detalle-modal.component';
               <span class="desc-title">Ventas locales gravadas tarifa diferente de cero (15% / 8% / 5%)</span>
               <span class="desc-sub">Base imponible neta (bruto menos notas de crédito emitidas en el período)</span>
             </td>
-            <td class="text-center"><span class="cas-badge azul">401 / 411</span></td>
+            <td class="text-center"><span class="cas-badge azul cas-link" (click)="modalCasillero='401'" title="Ver detalle">401 / 411</span></td>
             <td class="text-end font-mono">{{ data.bloque_400?.c401_bruto | currency }}</td>
             <td class="text-end fw-bold">{{ data.bloque_400?.c401_neto | currency }}</td>
             <td class="text-end iva-val">{{ data.bloque_400?.c411_bruto | currency }}</td>
@@ -211,7 +210,7 @@ import { R027DetalleModalComponent } from './r027-detalle-modal.component';
               <span class="desc-title">(-) Notas de crédito emitidas tarifa diferente de cero</span>
               <span class="desc-sub">Se reportan en el mes de emisión de la NC, no en el de la factura original</span>
             </td>
-            <td class="text-center"><span class="cas-badge rojo">402 / 412</span></td>
+            <td class="text-center"><span class="cas-badge rojo cas-link" (click)="modalCasillero='402'" title="Ver detalle">402 / 412</span></td>
             <td class="text-end font-mono text-danger">{{ data.bloque_400?.c402 | currency }}</td>
             <td class="text-end fw-bold text-danger">{{ data.bloque_400?.c402 | currency }}</td>
             <td class="text-end text-danger">{{ data.bloque_400?.c412 | currency }}</td>
@@ -260,18 +259,12 @@ import { R027DetalleModalComponent } from './r027-detalle-modal.component';
           <tr class="hover-row">
             <td class="desc-cell">
               <span class="desc-title">Adquisiciones y pagos tarifa 0% / RIMPE (negocios populares)</span>
-              <span class="desc-sub">Gastos registrados sin IVA en el módulo de Gastos + facturas físicas ingresadas manualmente</span>
+              <span class="desc-sub">Gastos registrados sin IVA en el módulo de Gastos</span>
             </td>
-            <td class="text-center"><span class="cas-badge gris">507</span></td>
-            <td class="text-end font-mono">{{ (data.bloque_500?.c507 || 0) + manual507 | currency }}</td>
-            <td class="text-end fw-bold">{{ (data.bloque_500?.c507 || 0) + manual507 | currency }}</td>
-            <td class="text-end nd">
-              <div class="manual-input-wrap">
-                <span class="manual-label">+ físicas:</span>
-                <input type="number" class="manual-input" [(ngModel)]="manual507"
-                       (ngModelChange)="emitirManuales()" min="0" step="0.01" placeholder="0.00">
-              </div>
-            </td>
+            <td class="text-center"><span class="cas-badge gris cas-link" (click)="modalCasillero='507'" title="Ver detalle">507</span></td>
+            <td class="text-end font-mono">{{ data.bloque_500?.c507 | currency }}</td>
+            <td class="text-end fw-bold">{{ data.bloque_500?.c507 | currency }}</td>
+            <td class="text-end nd">$0.00</td>
           </tr>
 
           <!-- 500/510: Compras gravadas con derecho a crédito -->
@@ -280,7 +273,7 @@ import { R027DetalleModalComponent } from './r027-detalle-modal.component';
               <span class="desc-title">Adquisiciones gravadas tarifa diferente de cero — con derecho a crédito tributario</span>
               <span class="desc-sub">Gastos con IVA &gt; 0% del módulo de Gastos (excluyendo activos fijos)</span>
             </td>
-            <td class="text-center"><span class="cas-badge azul">500 / 510</span></td>
+            <td class="text-center"><span class="cas-badge azul cas-link" (click)="modalCasillero='500'" title="Ver detalle">500 / 510</span></td>
             <td class="text-end font-mono">{{ data.bloque_500?.c500 | currency }}</td>
             <td class="text-end fw-bold">{{ data.bloque_500?.c500 | currency }}</td>
             <td class="text-end iva-val">{{ data.bloque_500?.c510 | currency }}</td>
@@ -301,29 +294,17 @@ import { R027DetalleModalComponent } from './r027-detalle-modal.component';
           </tr>
 
           <!-- 503/504: Compras en el exterior -->
-          <tr class="hover-row">
+          <tr class="hover-row not-impl-row">
             <td class="desc-cell">
               <span class="desc-title">Compras en el exterior (ej. publicidad Facebook / Google Ads)
-                <app-info-tooltip text="Ingrésalo manualmente: suma el total pagado a proveedores del exterior (Facebook Ads, Google, suscripciones, etc.) sin IVA local. Este valor va directamente en los casilleros 503/504 del portal del SRI." label="Ingreso manual"></app-info-tooltip>
+                <app-info-tooltip text="No hay registro de compras en el exterior en el sistema. Si realizaste pagos a proveedores del exterior (Facebook Ads, Google, etc.), ingrésalos directamente en el portal del SRI." label="¿Por qué no está disponible?"></app-info-tooltip>
               </span>
-              <span class="desc-sub">Ingreso manual — no existe registro automático en el sistema</span>
+              <span class="desc-sub impl-note">Sin información disponible</span>
             </td>
-            <td class="text-center"><span class="cas-badge azul">503 / 504</span></td>
-            <td class="text-end">
-              <span *ngIf="manual503 > 0">{{ manual503 | currency }}</span>
-              <span *ngIf="manual503 === 0" class="nd">—</span>
-            </td>
-            <td class="text-end fw-bold">
-              <span *ngIf="manual503 > 0">{{ manual503 | currency }}</span>
-              <span *ngIf="manual503 === 0" class="nd">—</span>
-            </td>
-            <td class="text-end">
-              <div class="manual-input-wrap">
-                <span class="manual-label">base:</span>
-                <input type="number" class="manual-input" [(ngModel)]="manual503"
-                       (ngModelChange)="emitirManuales()" min="0" step="0.01" placeholder="0.00">
-              </div>
-            </td>
+            <td class="text-center"><span class="cas-badge gris">503 / 504</span></td>
+            <td class="text-end nd">—</td>
+            <td class="text-end nd">—</td>
+            <td class="text-end nd">—</td>
           </tr>
 
           <!-- 520/521: NC en adquisiciones -->
@@ -677,6 +658,15 @@ import { R027DetalleModalComponent } from './r027-detalle-modal.component';
     <p class="cal-nota">Si el día cae en feriado o fin de semana, se traslada al siguiente día hábil.</p>
   </div>
 
+  <!-- ══ MODAL DRILL-DOWN ══════════════════════════════════════════ -->
+  <app-r027-detalle-modal
+    *ngIf="modalCasillero"
+    [casillero]="modalCasillero"
+    [fechaInicio]="data.periodo.inicio"
+    [fechaFin]="data.periodo.fin"
+    (cerrar)="modalCasillero = ''">
+  </app-r027-detalle-modal>
+
 </div>
   `,
   styles: [`
@@ -827,34 +817,22 @@ import { R027DetalleModalComponent } from './r027-detalle-modal.component';
     .cal-dia    { font-size: 0.62rem; font-weight: 600; color: #64748b; text-transform: uppercase; }
     .cal-nota   { font-size: 0.74rem; color: #94a3b8; padding: 0 1.75rem 1rem; margin: 0; }
 
-    /* ── INPUTS MANUALES ── */
-    .manual-input-wrap {
-      display: flex; align-items: center; gap: 4px; justify-content: flex-end;
+    /* ── BADGES CLICKEABLES ── */
+    .cas-link {
+      cursor: pointer;
+      transition: filter 0.15s, transform 0.1s;
     }
-    .manual-label {
-      font-size: 0.7rem; color: #94a3b8; white-space: nowrap;
+    .cas-link:hover {
+      filter: brightness(0.85);
+      transform: scale(1.08);
     }
-    .manual-input {
-      width: 90px; text-align: right; font-size: 0.8rem; font-family: monospace;
-      border: 1px solid #e2e8f0; border-radius: 6px; padding: 2px 6px;
-      background: #f8fafc; color: #0f172a;
-      outline: none; transition: border-color 0.15s;
-    }
-    .manual-input:focus { border-color: #6366f1; background: #fff; }
-    .manual-input::-webkit-inner-spin-button,
-    .manual-input::-webkit-outer-spin-button { opacity: 0.5; }
+
+
   `]
 })
 export class R027IvaComponent implements OnChanges {
   @Input() data!: IvaR027Report;
-  @Output() manualesChange = new EventEmitter<{ manual507: number; manual503: number }>();
-
-  manual507 = 0;
-  manual503 = 0;
-
-  emitirManuales() {
-    this.manualesChange.emit({ manual507: this.manual507, manual503: this.manual503 });
-  }
+  modalCasillero = '';
 
   readonly calendario = [
     { digito: '1', dia: 10 }, { digito: '2', dia: 12 }, { digito: '3', dia: 14 },

@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, OnChanges } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule, CurrencyPipe, DatePipe } from '@angular/common';
 import { FinancialReportsService } from '../../services/financial-reports.service';
 
@@ -221,7 +221,7 @@ const TITULOS: Record<string, string> = {
     .tot     { font-weight: 800; color: #0f172a; }
   `]
 })
-export class R027DetalleModalComponent implements OnChanges {
+export class R027DetalleModalComponent implements OnInit {
   @Input() casillero = '';
   @Input() fechaInicio = '';
   @Input() fechaFin = '';
@@ -239,12 +239,10 @@ export class R027DetalleModalComponent implements OnChanges {
     return this.filas.reduce((s, r) => s + (r.valor_iva || 0), 0);
   }
 
-  constructor(private svc: FinancialReportsService) {}
+  constructor(private svc: FinancialReportsService, private cdr: ChangeDetectorRef) {}
 
-  ngOnChanges() {
-    if (this.casillero && this.fechaInicio && this.fechaFin) {
-      this.cargar();
-    }
+  ngOnInit() {
+    this.cargar();
   }
 
   private cargar() {
@@ -252,8 +250,8 @@ export class R027DetalleModalComponent implements OnChanges {
     this.filas = [];
     this.svc.obtenerDetalleCasilleroR027(this.casillero, this.fechaInicio, this.fechaFin)
       .subscribe({
-        next: (data) => { this.filas = data; this.cargando = false; },
-        error: () => { this.cargando = false; }
+        next: (data) => { this.filas = data; this.cargando = false; this.cdr.detectChanges(); },
+        error: () => { this.cargando = false; this.cdr.detectChanges(); }
       });
   }
 }

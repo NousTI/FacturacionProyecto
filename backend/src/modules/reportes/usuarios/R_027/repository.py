@@ -169,12 +169,13 @@ class RepositorioR027:
                 f.numero_autorizacion,
                 f.fecha_emision::date            AS fecha,
                 f.numero_factura,
-                f.razon_social_comprador         AS cliente,
+                COALESCE(c.razon_social, f.cliente_id::text, '—') AS cliente,
                 fd.tarifa_iva                    AS tarifa,
                 ROUND(fd.base_imponible::numeric, 2) AS base_imponible,
                 ROUND(fd.valor_iva::numeric, 2)      AS valor_iva
             FROM sistema_facturacion.facturas_detalle fd
             JOIN sistema_facturacion.facturas f ON fd.factura_id = f.id
+            LEFT JOIN sistema_facturacion.clientes c ON f.cliente_id = c.id
             WHERE f.empresa_id = %s
               AND f.estado = 'AUTORIZADA'
               AND f.tipo_documento = '01'
@@ -194,10 +195,11 @@ class RepositorioR027:
                 f.numero_autorizacion,
                 f.fecha_emision::date            AS fecha,
                 f.numero_factura,
-                f.razon_social_comprador         AS cliente,
+                COALESCE(c.razon_social, f.cliente_id::text, '—') AS cliente,
                 ROUND(fd.base_imponible::numeric, 2) AS base_imponible
             FROM sistema_facturacion.facturas_detalle fd
             JOIN sistema_facturacion.facturas f ON fd.factura_id = f.id
+            LEFT JOIN sistema_facturacion.clientes c ON f.cliente_id = c.id
             WHERE f.empresa_id = %s
               AND f.estado = 'AUTORIZADA'
               AND f.tipo_documento = '01'
@@ -215,12 +217,13 @@ class RepositorioR027:
             SELECT
                 nc.numero_autorizacion,
                 nc.fecha_emision::date           AS fecha,
-                nc.numero_nota_credito,
-                f.razon_social_comprador         AS cliente,
+                nc.secuencial                    AS numero_nota_credito,
+                COALESCE(c.razon_social, f.cliente_id::text, '—') AS cliente,
                 ROUND(nc.subtotal_15_iva::numeric, 2) AS base_imponible,
                 ROUND(nc.iva_total::numeric, 2)       AS valor_iva
             FROM sistema_facturacion.notas_credito nc
             JOIN sistema_facturacion.facturas f ON nc.factura_id = f.id
+            LEFT JOIN sistema_facturacion.clientes c ON f.cliente_id = c.id
             WHERE f.empresa_id = %s
               AND nc.estado_sri = 'AUTORIZADO'
               AND nc.fecha_emision BETWEEN %s::timestamptz AND %s::timestamptz + interval '1 day' - interval '1 second'
@@ -234,14 +237,15 @@ class RepositorioR027:
         """Gastos con IVA > 0% — casilleros 500/510."""
         query = """
             SELECT
-                g.fecha_emision::date        AS fecha,
-                g.numero_comprobante,
-                g.proveedor,
-                g.descripcion,
-                g.iva                        AS tarifa,
-                ROUND(g.subtotal::numeric, 2)            AS base_imponible,
+                g.fecha_emision::date                     AS fecha,
+                g.numero_factura                          AS numero_comprobante,
+                COALESCE(p.razon_social, '—')             AS proveedor,
+                g.concepto                                AS descripcion,
+                g.tipo_iva                                AS tarifa,
+                ROUND(g.subtotal::numeric, 2)             AS base_imponible,
                 ROUND((g.total - g.subtotal)::numeric, 2) AS valor_iva
             FROM sistema_facturacion.gastos g
+            LEFT JOIN sistema_facturacion.proveedores p ON g.proveedor_id = p.id
             WHERE g.empresa_id = %s
               AND g.tipo_iva != '0'
               AND g.deleted_at IS NULL
@@ -256,12 +260,13 @@ class RepositorioR027:
         """Gastos sin IVA (tarifa 0%) — casillero 507."""
         query = """
             SELECT
-                g.fecha_emision::date        AS fecha,
-                g.numero_comprobante,
-                g.proveedor,
-                g.descripcion,
-                ROUND(g.subtotal::numeric, 2) AS base_imponible
+                g.fecha_emision::date             AS fecha,
+                g.numero_factura                  AS numero_comprobante,
+                COALESCE(p.razon_social, '—')     AS proveedor,
+                g.concepto                        AS descripcion,
+                ROUND(g.subtotal::numeric, 2)     AS base_imponible
             FROM sistema_facturacion.gastos g
+            LEFT JOIN sistema_facturacion.proveedores p ON g.proveedor_id = p.id
             WHERE g.empresa_id = %s
               AND g.tipo_iva = '0'
               AND g.deleted_at IS NULL

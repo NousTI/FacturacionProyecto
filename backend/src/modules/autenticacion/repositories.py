@@ -46,7 +46,7 @@ class AuthRepository:
             WHERE user_id = %s AND is_valid = TRUE AND expires_at > NOW()
             LIMIT 1
         """
-        with self.db.cursor() as cur:
+        with db_transaction(self.db) as cur:
             cur.execute(query, (str(user_id),))
             return cur.fetchone() is not None
 
@@ -57,7 +57,7 @@ class AuthRepository:
 
     def obtener_sesion(self, sid: str) -> Optional[dict]:
         query = "SELECT * FROM sistema_facturacion.user_sessions WHERE id = %s"
-        with self.db.cursor() as cur:
+        with db_transaction(self.db) as cur:
             cur.execute(query, (sid,))
             row = cur.fetchone()
             return dict(row) if row else None

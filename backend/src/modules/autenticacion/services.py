@@ -308,14 +308,12 @@ class AuthServices:
         user["rol_nombre"] = user.get("rol_nombre")
 
         # 6. Bloqueo Proactivo y Aviso (Lógica dinámica)
-        empresa_lock = None
-        aviso_renovacion = None
         empresa_id = user.get("empresa_id")
         if not user["is_superadmin"] and user["is_usuario"] and empresa_id:
             user["empresa_lock"], user["aviso_renovacion"] = self._resolver_bloqueo_empresa(empresa_id)
-
-        user["empresa_lock"] = empresa_lock
-        user["aviso_renovacion"] = aviso_renovacion
+        else:
+            user["empresa_lock"] = None
+            user["aviso_renovacion"] = None
 
         # Si es VENDEDOR/USUARIO, inyectar permisos
         if user["is_vendedor"]:

@@ -489,6 +489,8 @@ class ServicioReportes:
                     data['bloque_500']['c507'] = round(data['bloque_500']['c507'] + manual507, 2)
                 if manual503:
                     data['bloque_500']['c503'] = round(manual503, 2)
+                # Recalcular c599 explícitamente
+                data['bloque_500']['c599'] = round(data['bloque_500']['c510'], 2)
             elif tipo == 'FINANCIERO_CARTERA':
                 data = self.obtener_cartera_usuario(empresa_id, fecha_inicio, fecha_fin)
                 template = "reports/usuarios/reporte-r008.html"

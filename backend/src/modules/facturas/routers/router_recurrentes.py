@@ -93,7 +93,7 @@ def ejecutar_emisiones_masivas(
 @router.post("/{id}/ejecutar")
 def ejecutar_ahora_individual(
     id: UUID,
-    usuario: dict = Depends(requerir_permiso(PermissionCodes.FACTURA_PROGRAMADA_EDITAR)),
+    usuario: dict = Depends(requerir_permiso([PermissionCodes.FACTURA_PROGRAMADA_EDITAR, PermissionCodes.FACTURA_PROGRAMADA_CREAR])),
     servicio: ServicioRecurrentes = Depends()
 ):
     """

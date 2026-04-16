@@ -43,7 +43,7 @@ class RepositorioProgramacion:
 
     def obtener_por_id(self, id: UUID) -> Optional[dict]:
         query = "SELECT * FROM sistema_facturacion.facturacion_programada WHERE id = %s"
-        with self.db.cursor() as cur:
+        with db_transaction(self.db) as cur:
             cur.execute(query, (str(id),))
             row = cur.fetchone()
             return dict(row) if row else None
@@ -67,7 +67,7 @@ class RepositorioProgramacion:
             params.append(str(usuario_id))
             
         query += " ORDER BY fp.proxima_emision ASC"
-        with self.db.cursor() as cur:
+        with db_transaction(self.db) as cur:
             cur.execute(query, tuple(params))
             return [dict(row) for row in cur.fetchall()]
 
@@ -106,7 +106,7 @@ class RepositorioProgramacion:
             AND (fp.proxima_emision IS NULL OR fp.proxima_emision <= CURRENT_DATE)
             AND (fp.fecha_fin IS NULL OR fp.fecha_fin >= CURRENT_DATE)
         """
-        with self.db.cursor() as cur:
+        with db_transaction(self.db) as cur:
             cur.execute(query)
             return [dict(row) for row in cur.fetchall()]
     def obtener_historial_ejecucion(self, id: UUID, limit: int = 50, offset: int = 0) -> List[dict]:
@@ -125,6 +125,6 @@ class RepositorioProgramacion:
             ORDER BY l.timestamp DESC
             LIMIT %s OFFSET %s
         """
-        with self.db.cursor() as cur:
+        with db_transaction(self.db) as cur:
             cur.execute(query, (str(id), limit, offset))
             return [dict(row) for row in cur.fetchall()]
