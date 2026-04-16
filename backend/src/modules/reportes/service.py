@@ -486,10 +486,9 @@ class ServicioReportes:
                 manual507 = float(params.get('manual507', 0) or 0)
                 manual503 = float(params.get('manual503', 0) or 0)
                 if manual507:
-                    data['bloque_500']['c507'] = round(data['bloque_500']['c507'] + manual507, 2)
+                    data['bloque_500']['c507'] = round(manual507, 2)
                 if manual503:
                     data['bloque_500']['c503'] = round(manual503, 2)
-                # Recalcular c599 explícitamente
                 data['bloque_500']['c599'] = round(data['bloque_500']['c510'], 2)
             elif tipo == 'FINANCIERO_CARTERA':
                 data = self.obtener_cartera_usuario(empresa_id, fecha_inicio, fecha_fin)

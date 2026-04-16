@@ -144,7 +144,8 @@ type Tab = 'resumen' | 'ventas' | 'cartera' | 'iva' | 'mis_ventas';
 
       <app-r027-iva
         *ngIf="tabActivo === 'iva' && ivaR027Data"
-        [data]="ivaR027Data">
+        [data]="ivaR027Data"
+        (manualesChange)="ivaR027Manuales = $event">
       </app-r027-iva>
 
       <app-r001-mis-ventas
@@ -279,6 +280,7 @@ export class ReportesPage implements OnInit {
   carteraData?: AccountsReceivableReport;
   ivaData?: IVAReport;
   ivaR027Data?: IvaR027Report;
+  ivaR027Manuales = { manual507: 0, manual503: 0 };
   misVentasData?: MisVentasReport;
 
   private permissionsService = inject(PermissionsService);
@@ -452,7 +454,8 @@ export class ReportesPage implements OnInit {
     if (!tipo) return;
 
     this.ui.showToast('Optimizando documento...', 'info');
-    this.reportsSvc.exportarReportePDF(tipo, this.fechaInicio, this.fechaFin).subscribe({
+    const extras = tipo === 'FINANCIERO_IVA' ? this.ivaR027Manuales : undefined;
+    this.reportsSvc.exportarReportePDF(tipo, this.fechaInicio, this.fechaFin, extras).subscribe({
       next: (blob) => {
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement('a');

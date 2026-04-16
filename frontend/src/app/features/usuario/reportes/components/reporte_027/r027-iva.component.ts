@@ -1,4 +1,4 @@
-import { Component, Input, OnChanges } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnChanges } from '@angular/core';
 import { CommonModule, CurrencyPipe, DecimalPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { IvaR027Report } from '../../services/financial-reports.service';
@@ -263,8 +263,8 @@ import { R027DetalleModalComponent } from './r027-detalle-modal.component';
               <span class="desc-sub">Gastos registrados sin IVA en el módulo de Gastos + facturas físicas</span>
             </td>
             <td class="text-center"><span class="cas-badge gris cas-link" (click)="modalCasillero='507'" title="Ver detalle">507</span></td>
-            <td class="text-end"><input type="number" class="cell-input" [(ngModel)]="manual507" min="0" step="0.01"></td>
-            <td class="text-end fw-bold"><input type="number" class="cell-input fw-bold" [(ngModel)]="manual507" min="0" step="0.01"></td>
+            <td class="text-end"><input type="number" class="cell-input" [(ngModel)]="manual507" (ngModelChange)="manualesChange.emit({manual507,manual503})" min="0" step="0.01"></td>
+            <td class="text-end fw-bold"><input type="number" class="cell-input fw-bold" [(ngModel)]="manual507" (ngModelChange)="manualesChange.emit({manual507,manual503})" min="0" step="0.01"></td>
             <td class="text-end nd">$0.00</td>
           </tr>
 
@@ -303,8 +303,8 @@ import { R027DetalleModalComponent } from './r027-detalle-modal.component';
               <span class="desc-sub">Ingreso manual</span>
             </td>
             <td class="text-center"><span class="cas-badge azul">503 / 504</span></td>
-            <td class="text-end"><input type="number" class="cell-input" [(ngModel)]="manual503" min="0" step="0.01"></td>
-            <td class="text-end fw-bold"><input type="number" class="cell-input fw-bold" [(ngModel)]="manual503" min="0" step="0.01"></td>
+            <td class="text-end"><input type="number" class="cell-input" [(ngModel)]="manual503" (ngModelChange)="manualesChange.emit({manual507,manual503})" min="0" step="0.01"></td>
+            <td class="text-end fw-bold"><input type="number" class="cell-input fw-bold" [(ngModel)]="manual503" (ngModelChange)="manualesChange.emit({manual507,manual503})" min="0" step="0.01"></td>
             <td class="text-end nd">$0.00</td>
           </tr>
 
@@ -844,6 +844,7 @@ import { R027DetalleModalComponent } from './r027-detalle-modal.component';
 })
 export class R027IvaComponent implements OnChanges {
   @Input() data!: IvaR027Report;
+  @Output() manualesChange = new EventEmitter<{ manual507: number; manual503: number }>();
   modalCasillero = '';
   manual507 = 0;
   manual503 = 0;
