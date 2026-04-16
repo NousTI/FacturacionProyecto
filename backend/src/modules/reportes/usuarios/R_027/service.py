@@ -61,14 +61,13 @@ class ServicioR027:
         prev_fin    = (d1 - timedelta(days=1)).strftime('%Y-%m-%d')
 
         # ── BLOQUE 400: VENTAS ──────────────────────────────────────────
-        ventas_grav      = self.repo.obtener_ventas_gravadas(empresa_id, fecha_inicio, fecha_fin)
-        ventas_0         = self.repo.obtener_ventas_tarifa_cero(empresa_id, fecha_inicio, fecha_fin)
-        nc_emitidas      = self.repo.obtener_notas_credito_emitidas(empresa_id, fecha_inicio, fecha_fin)
+        ventas_grav       = self.repo.obtener_ventas_gravadas(empresa_id, fecha_inicio, fecha_fin)
+        ventas_0          = self.repo.obtener_ventas_tarifa_cero(empresa_id, fecha_inicio, fecha_fin)
+        nc_emitidas       = self.repo.obtener_notas_credito_emitidas(empresa_id, fecha_inicio, fecha_fin)
         ventas_por_tarifa = self.repo.obtener_ventas_por_tarifa(empresa_id, fecha_inicio, fecha_fin)
 
         # Período anterior — para factor comparativo
         ventas_grav_prev = self.repo.obtener_ventas_gravadas(empresa_id, prev_inicio, prev_fin)
-        ventas_0_prev    = self.repo.obtener_ventas_tarifa_cero(empresa_id, prev_inicio, prev_fin)
 
         # Casillero 401 (bruto antes de NC) / 411
         c401_bruto = round(float(ventas_grav['base_imponible']), 2)
@@ -85,7 +84,7 @@ class ServicioR027:
         c401_neto = round(c401_bruto - c402, 2)
         c411_neto = round(c411_bruto - c412, 2)
 
-        # Casillero 403 (tarifa 0% sin derecho a crédito)
+        # Casillero 403 — todas las líneas tipo_iva='0' de facturas emitidas autorizadas
         c403 = round(ventas_0, 2)
 
         # Casillero 499 = IVA total generado en ventas (neto)
@@ -99,10 +98,9 @@ class ServicioR027:
         }
 
         # Factor del período anterior (para comparativa en KPI)
+        # 403 prev = 0 — sin datos de tarifa 0% (mismo criterio que período actual)
         c401_bruto_prev = round(float(ventas_grav_prev['base_imponible']), 2)
-        c403_prev       = round(ventas_0_prev, 2)
-        denom_prev      = c401_bruto_prev + c403_prev
-        c563_prev       = round(c401_bruto_prev / denom_prev, 4) if denom_prev > 0 else 1.0
+        c563_prev       = 1.0 if c401_bruto_prev == 0 else 1.0
 
         # ── BLOQUE 500: COMPRAS (desde gastos) ─────────────────────────
         compras_grav = self.repo.obtener_compras_gravadas(empresa_id, fecha_inicio, fecha_fin)
@@ -115,58 +113,37 @@ class ServicioR027:
         # Casillero 507 (compras 0%)
         c507 = round(compras_0, 2)
 
-        # Casillero 563: factor de proporcionalidad
-        # Fórmula: (401 + 405 + 407 + 408) / (401 + 403 + 405 + 407 + 408)
-        # 405/407/408 = 0 por ahora (no hay exportaciones ni flag con derecho)
-        denominador_563 = c401_neto + c403
-        c563 = round(c401_neto / denominador_563, 4) if denominador_563 > 0 else 1.0
-
-        # Casillero 564: crédito tributario aplicable
-        # Fórmula: (510 + 511 + 513 + 514 + 515) * 563
-        # 511/513/514/515 = 0 (activos fijos y exterior no disponibles)
-        c564 = round(c510 * c563, 2)
+        # Casillero 563/564 — sin datos suficientes: falta 405/407/408 para factor real
+        c563 = None
+        c564 = None
 
         # Casillero 599 = total IVA pagado compras
         c599 = c510
 
         # ── BLOQUE 600: LIQUIDACIÓN ─────────────────────────────────────
-        # Casillero 601 (impuesto causado) = 499 - 564, solo si > 0
-        diferencia_600 = round(c499 - c564, 2)
-        c601 = round(diferencia_600, 2) if diferencia_600 > 0 else 0.0
-        c602 = round(abs(diferencia_600), 2) if diferencia_600 < 0 else 0.0
+        # 601/602: sin 564 no se puede calcular — None
+        c601 = None
+        c602 = None
 
-        # Casillero 605 (arrastre adquisiciones mes anterior) — no hay historial en BD
-        c605 = 0.0  # pendiente: requiere tabla de historial declaraciones
+        # 605/606/609 — sin historial ni tabla de retenciones
+        c605 = None
+        c606 = None
+        c609 = None
 
-        # Casillero 606 (arrastre retenciones mes anterior) — no hay historial
-        c606 = 0.0  # pendiente: requiere tabla de historial declaraciones
+        # 699 = 601 - 605 - 606 - 609 — sin los anteriores no se puede calcular
+        c699 = None
 
-        # Casillero 609 (retenciones recibidas) — no hay tabla de retenciones recibidas
-        c609 = 0.0
+        # 801 viene del 699
+        c801 = None
 
-        # Casillero 699 = 601 - 605 - 606 - 609
-        c699 = round(max(c601 - c605 - c606 - c609, 0), 2)
+        # 999 = 801 + 802
+        c999 = None
 
-        # Casillero 801 = viene del 699
-        c801 = c699
+        # Bloque 700 — sin tabla de retenciones efectuadas
+        bloque_700 = {"disponible": False}
 
-        # Casillero 999 = 801 + 802 (802 = 0 sin bloque 700)
-        c999 = c801
-
-        # ── BLOQUE 700: RETENCIONES EFECTUADAS ─────────────────────────
-        # Sin tabla de retenciones efectuadas a proveedores — bloque vacío.
-        bloque_700 = {
-            "disponible": False,
-        }
-
-        # ── KPIs superiores ─────────────────────────────────────────────
-        # Factor tooltip
-        pct_tarifa_cero = round((c403 / (c401_bruto + c403) * 100), 1) if (c401_bruto + c403) > 0 else 0.0
-        factor_tooltip = (
-            f"Tu factor es {c563:.4f} porque el {pct_tarifa_cero}% de tus ventas fueron en tarifa 0% "
-            f"sin derecho a crédito. Esto significa que puedes recuperar el {round(c563 * 100, 2)}% "
-            f"del IVA de tus compras."
-        )
+        # KPI factor — sin datos suficientes
+        factor_tooltip = "Sin información disponible: faltan datos de exportaciones y ventas 0% clasificadas."
 
         return {
             "empresa": {
@@ -182,8 +159,8 @@ class ServicioR027:
 
             # KPIs superiores
             "kpis": {
-                "iva_a_pagar":        {"valor": c699,  "label": "IVA a pagar SRI",       "sublabel": "proyectado"},
-                "credito_tributario": {"valor": c602,  "label": "Crédito tributario",     "sublabel": "disponible"},
+                "iva_a_pagar":        {"valor": None, "label": "IVA a pagar SRI",    "sublabel": "sin datos suficientes"},
+                "credito_tributario": {"valor": None, "label": "Crédito tributario", "sublabel": "sin datos suficientes"},
                 "ventas_tarifa_principal": {
                     "tarifa":         tarifa_principal,
                     "valor":          kpi_tarifa_principal["base_imponible"],

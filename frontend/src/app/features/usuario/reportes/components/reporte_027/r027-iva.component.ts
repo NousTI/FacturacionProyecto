@@ -68,37 +68,37 @@ import { InfoTooltipComponent } from './info-tooltip.component';
 
     <div class="kpi-card red">
       <span class="kpi-label">IVA a pagar SRI</span>
-      <span class="kpi-value">{{ data.kpis?.iva_a_pagar?.valor | currency }}</span>
-      <span class="kpi-sub">proyectado</span>
+      <span class="kpi-value not-impl" *ngIf="data.kpis?.iva_a_pagar?.valor === null">—</span>
+      <span class="kpi-value" *ngIf="data.kpis?.iva_a_pagar?.valor !== null">{{ data.kpis.iva_a_pagar.valor | currency }}</span>
+      <span class="kpi-sub">{{ data.kpis?.iva_a_pagar?.sublabel }}</span>
     </div>
 
     <div class="kpi-card teal">
       <span class="kpi-label">Crédito tributario</span>
-      <span class="kpi-value">{{ data.kpis?.credito_tributario?.valor | currency }}</span>
-      <span class="kpi-sub">disponible</span>
+      <span class="kpi-value not-impl" *ngIf="data.kpis?.credito_tributario?.valor === null">—</span>
+      <span class="kpi-value" *ngIf="data.kpis?.credito_tributario?.valor !== null">{{ data.kpis.credito_tributario.valor | currency }}</span>
+      <span class="kpi-sub">{{ data.kpis?.credito_tributario?.sublabel }}</span>
     </div>
 
     <div class="kpi-card blue">
-      <span class="kpi-label">Ventas tarifa 8%</span>
-      <span class="kpi-value not-impl">Sin datos</span>
-      <span class="kpi-sub">base imponible</span>
+      <span class="kpi-label">{{ data.kpis?.ventas_tarifa_principal?.label || 'Ventas tarifa principal' }}</span>
+      <span class="kpi-value" *ngIf="(data.kpis?.ventas_tarifa_principal?.valor ?? 0) > 0">
+        {{ data.kpis.ventas_tarifa_principal.valor | currency }}
+      </span>
+      <span class="kpi-value not-impl" *ngIf="(data.kpis?.ventas_tarifa_principal?.valor ?? 0) === 0">$0.00</span>
+      <span class="kpi-sub">{{ data.kpis?.ventas_tarifa_principal?.sublabel || 'base imponible' }}</span>
     </div>
 
     <div class="kpi-card amber">
       <span class="kpi-label">Retenciones recibidas</span>
-      <span class="kpi-value not-impl">Sin información disponible</span>
-      <span class="kpi-sub">a favor</span>
+      <span class="kpi-value not-impl">No disponible</span>
+      <span class="kpi-sub">sin tabla en BD</span>
     </div>
 
     <div class="kpi-card indigo">
-      <span class="kpi-label">
-        Factor de este mes
-        <app-info-tooltip [text]="data.kpis?.factor?.tooltip || ''" label="Factor de proporcionalidad"></app-info-tooltip>
-      </span>
-      <span class="kpi-value">{{ data.kpis?.factor?.valor | number:'1.4-4' }}</span>
-      <span class="kpi-sub">
-        vs {{ data.kpis?.factor?.valor_anterior | number:'1.4-4' }} período anterior
-      </span>
+      <span class="kpi-label">Factor de este mes</span>
+      <span class="kpi-value not-impl">—</span>
+      <span class="kpi-sub">sin datos suficientes</span>
     </div>
 
   </div>
@@ -137,11 +137,11 @@ import { InfoTooltipComponent } from './info-tooltip.component';
             <td class="text-end nd">—</td>
           </tr>
 
-          <!-- 403/413: Ventas 0% SIN derecho a crédito -->
+          <!-- 403/413: Ventas 0% -->
           <tr class="hover-row">
             <td class="desc-cell">
-              <span class="desc-title">Ventas locales tarifa 0% sin derecho a crédito tributario</span>
-              <span class="desc-sub">Servicios exentos (transporte, salud, arriendo). Por defecto todas las líneas 0% van aquí hasta implementar flag de producto.</span>
+              <span class="desc-title">Ventas locales tarifa 0%</span>
+              <span class="desc-sub">Líneas con tarifa 0% en facturas emitidas autorizadas</span>
             </td>
             <td class="text-center"><span class="cas-badge gris">403 / 413</span></td>
             <td class="text-end font-mono">{{ data.bloque_400?.c403 | currency }}</td>
@@ -297,30 +297,27 @@ import { InfoTooltipComponent } from './info-tooltip.component';
           </tr>
 
           <!-- 563: Factor de proporcionalidad -->
-          <tr class="hover-row factor-row">
+          <tr class="hover-row not-impl-row">
             <td class="desc-cell">
-              <span class="desc-title">
-                Factor de proporcionalidad
-                <app-info-tooltip [text]="data.kpis?.factor?.tooltip || ''" label="Factor 563"></app-info-tooltip>
-              </span>
-              <span class="desc-sub">Fórmula: (401 + 405 + 407 + 408) / (401 + 403 + 405 + 407 + 408) — 4 decimales</span>
+              <span class="desc-title">Factor de proporcionalidad</span>
+              <span class="desc-sub impl-note">Sin información disponible</span>
             </td>
-            <td class="text-center"><span class="cas-badge indigo">563</span></td>
-            <td class="text-end">—</td>
-            <td class="text-end fw-bold">{{ data.bloque_500?.c563 | number:'1.4-4' }}</td>
-            <td class="text-end">—</td>
+            <td class="text-center"><span class="cas-badge gris">563</span></td>
+            <td class="text-end nd">—</td>
+            <td class="text-end nd">—</td>
+            <td class="text-end nd">—</td>
           </tr>
 
           <!-- 564: Crédito tributario aplicable -->
-          <tr class="hover-row">
+          <tr class="hover-row not-impl-row">
             <td class="desc-cell">
               <span class="desc-title">Crédito tributario aplicable</span>
-              <span class="desc-sub">Fórmula: (510 + 511 + 513 + 514 + 515) × 563</span>
+              <span class="desc-sub impl-note">Sin información disponible</span>
             </td>
-            <td class="text-center"><span class="cas-badge verde">564</span></td>
-            <td class="text-end">—</td>
-            <td class="text-end fw-bold text-success">{{ data.bloque_500?.c564 | currency }}</td>
-            <td class="text-end">—</td>
+            <td class="text-center"><span class="cas-badge gris">564</span></td>
+            <td class="text-end nd">—</td>
+            <td class="text-end nd">—</td>
+            <td class="text-end nd">—</td>
           </tr>
 
           <!-- 599: Total IVA pagado compras -->
@@ -361,23 +358,23 @@ import { InfoTooltipComponent } from './info-tooltip.component';
         <tbody>
 
           <!-- 601: Impuesto causado -->
-          <tr class="hover-row" [class.highlight-pay]="(data.bloque_600?.c601 ?? 0) > 0">
+          <tr class="hover-row not-impl-row">
             <td class="desc-cell">
-              <span class="desc-title">Impuesto causado (solo si 499 &gt; 564)</span>
-              <span class="desc-sub">Fórmula: 499 − 564</span>
+              <span class="desc-title">Impuesto causado (499 − 564)</span>
+              <span class="desc-sub impl-note">Sin información disponible</span>
             </td>
-            <td class="text-center"><span class="cas-badge rojo">601</span></td>
-            <td class="text-end fw-bold">{{ data.bloque_600?.c601 | currency }}</td>
+            <td class="text-center"><span class="cas-badge gris">601</span></td>
+            <td class="text-end nd">—</td>
           </tr>
 
           <!-- 602: Crédito tributario del período -->
-          <tr class="hover-row" [class.highlight-credit]="(data.bloque_600?.c602 ?? 0) > 0">
+          <tr class="hover-row not-impl-row">
             <td class="desc-cell">
-              <span class="desc-title">Crédito tributario para el próximo mes (solo si 564 &gt; 499)</span>
-              <span class="desc-sub">Fórmula: 564 − 499. Se arrastra como 605 en la declaración siguiente.</span>
+              <span class="desc-title">Crédito tributario para el próximo mes (564 − 499)</span>
+              <span class="desc-sub impl-note">Sin información disponible</span>
             </td>
-            <td class="text-center"><span class="cas-badge verde">602</span></td>
-            <td class="text-end fw-bold text-success">{{ data.bloque_600?.c602 | currency }}</td>
+            <td class="text-center"><span class="cas-badge gris">602</span></td>
+            <td class="text-end nd">—</td>
           </tr>
 
           <!-- 605: Arrastre adquisiciones mes anterior -->
@@ -414,10 +411,10 @@ import { InfoTooltipComponent } from './info-tooltip.component';
           <tr class="total-row">
             <td class="desc-cell">
               <span class="desc-title fw-bold">TOTAL IMPUESTO A PAGAR</span>
-              <span class="desc-sub">Fórmula: 601 − 605 − 606 − 609. Si negativo → nuevo crédito tributario (casillero 615).</span>
+              <span class="desc-sub impl-note">Sin información disponible</span>
             </td>
-            <td class="text-center"><span class="cas-badge rojo">699</span></td>
-            <td class="text-end fw-bold total-val">{{ data.bloque_600?.c699 | currency }}</td>
+            <td class="text-center"><span class="cas-badge gris">699</span></td>
+            <td class="text-end nd">—</td>
           </tr>
 
         </tbody>
@@ -536,12 +533,13 @@ import { InfoTooltipComponent } from './info-tooltip.component';
           </tr>
         </thead>
         <tbody>
-          <tr class="hover-row">
+          <tr class="hover-row not-impl-row">
             <td class="desc-cell">
               <span class="desc-title">Impuesto a pagar por percepción (viene del 699)</span>
+              <span class="desc-sub impl-note">Sin información disponible</span>
             </td>
-            <td class="text-center"><span class="cas-badge rojo">801</span></td>
-            <td class="text-end fw-bold">{{ data.bloque_900?.c801 | currency }}</td>
+            <td class="text-center"><span class="cas-badge gris">801</span></td>
+            <td class="text-end nd">—</td>
           </tr>
           <tr class="hover-row not-impl-row">
             <td class="desc-cell">
@@ -570,9 +568,10 @@ import { InfoTooltipComponent } from './info-tooltip.component';
           <tr class="total-row grand-total">
             <td class="desc-cell">
               <span class="desc-title fw-bold">TOTAL PAGADO AL SRI (801 + 802 + 897 + 898)</span>
+              <span class="desc-sub" style="color:#94a3b8">Sin información disponible</span>
             </td>
-            <td class="text-center"><span class="cas-badge-grand">999</span></td>
-            <td class="text-end grand-total-val">{{ data.bloque_900?.c999 | currency }}</td>
+            <td class="text-center"><span class="cas-badge-grand" style="background:#475569">999</span></td>
+            <td class="text-end grand-total-val" style="color:#94a3b8">—</td>
           </tr>
         </tbody>
       </table>

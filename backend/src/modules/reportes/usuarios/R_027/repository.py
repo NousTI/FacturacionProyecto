@@ -17,6 +17,7 @@ class RepositorioR027:
         """
         Casilleros 401/411: ventas locales con tarifa > 0 (base imponible e IVA).
         Solo facturas AUTORIZADAS con tipo_documento = '01' (factura normal).
+        Filtra por tipo_iva = '4' Y tarifa_iva > 0 para excluir líneas código 4 con tarifa cero.
         """
         query = """
             SELECT
@@ -27,8 +28,9 @@ class RepositorioR027:
             WHERE f.empresa_id = %s
               AND f.estado = 'AUTORIZADA'
               AND f.tipo_documento = '01'
+              AND fd.tipo_iva = '4'
               AND fd.tarifa_iva > 0
-              AND f.fecha_emision BETWEEN %s AND %s::timestamp + interval '1 day' - interval '1 second'
+              AND f.fecha_emision BETWEEN %s::timestamptz AND %s::timestamptz + interval '1 day' - interval '1 second'
         """
         with self.db.cursor() as cur:
             cur.execute(query, (str(empresa_id), fecha_inicio, fecha_fin))
@@ -47,8 +49,9 @@ class RepositorioR027:
             WHERE f.empresa_id = %s
               AND f.estado = 'AUTORIZADA'
               AND f.tipo_documento = '01'
+              AND fd.tipo_iva = '4'
               AND fd.tarifa_iva > 0
-              AND f.fecha_emision BETWEEN %s AND %s::timestamp + interval '1 day' - interval '1 second'
+              AND f.fecha_emision BETWEEN %s::timestamptz AND %s::timestamptz + interval '1 day' - interval '1 second'
             GROUP BY fd.tarifa_iva
             ORDER BY fd.tarifa_iva DESC
         """
@@ -67,9 +70,8 @@ class RepositorioR027:
     def obtener_ventas_tarifa_cero(self, empresa_id: UUID, fecha_inicio: str, fecha_fin: str) -> float:
         """
         Casillero 403: ventas tarifa 0% (base imponible).
-        Por defecto todas las líneas 0% van al 403 (sin derecho a crédito)
-        dado que no existe flag 'con_derecho_credito' en productos aún.
-        Casillero 405 se omite hasta implementar dicho flag.
+        Filtra por tipo_iva = '0' para capturar exactamente las líneas exentas/0%.
+        Casillero 405 se omite — productos no tiene flag 'con_derecho_credito'.
         """
         query = """
             SELECT
@@ -79,8 +81,8 @@ class RepositorioR027:
             WHERE f.empresa_id = %s
               AND f.estado = 'AUTORIZADA'
               AND f.tipo_documento = '01'
-              AND fd.tarifa_iva = 0
-              AND f.fecha_emision BETWEEN %s AND %s::timestamp + interval '1 day' - interval '1 second'
+              AND fd.tipo_iva = '0'
+              AND f.fecha_emision BETWEEN %s::timestamptz AND %s::timestamptz + interval '1 day' - interval '1 second'
         """
         with self.db.cursor() as cur:
             cur.execute(query, (str(empresa_id), fecha_inicio, fecha_fin))
@@ -89,20 +91,20 @@ class RepositorioR027:
 
     def obtener_notas_credito_emitidas(self, empresa_id: UUID, fecha_inicio: str, fecha_fin: str) -> Dict[str, Any]:
         """
-        Casilleros 402/412: notas de crédito EMITIDAS en el período (tipo_documento = '04').
+        Casilleros 402/412: notas de crédito AUTORIZADAS emitidas en el período.
+        Fuente: tabla notas_credito (estado_sri = 'AUTORIZADO'), no facturas.
         Se reportan en el mes de emisión de la nota, no de la factura original.
+        subtotal_15_iva → base imponible (402); iva_total → IVA (412).
         """
         query = """
             SELECT
-                ROUND(COALESCE(SUM(fd.base_imponible), 0)::numeric, 2) AS base_imponible,
-                ROUND(COALESCE(SUM(fd.valor_iva), 0)::numeric, 2)       AS valor_iva
-            FROM sistema_facturacion.facturas_detalle fd
-            JOIN sistema_facturacion.facturas f ON fd.factura_id = f.id
+                ROUND(COALESCE(SUM(nc.subtotal_15_iva), 0)::numeric, 2) AS base_imponible,
+                ROUND(COALESCE(SUM(nc.iva_total), 0)::numeric, 2)        AS valor_iva
+            FROM sistema_facturacion.notas_credito nc
+            JOIN sistema_facturacion.facturas f ON nc.factura_id = f.id
             WHERE f.empresa_id = %s
-              AND f.estado = 'AUTORIZADA'
-              AND f.tipo_documento = '04'
-              AND fd.tarifa_iva > 0
-              AND f.fecha_emision BETWEEN %s AND %s::timestamp + interval '1 day' - interval '1 second'
+              AND nc.estado_sri = 'AUTORIZADO'
+              AND nc.fecha_emision BETWEEN %s::timestamptz AND %s::timestamptz + interval '1 day' - interval '1 second'
         """
         with self.db.cursor() as cur:
             cur.execute(query, (str(empresa_id), fecha_inicio, fecha_fin))
@@ -144,7 +146,7 @@ class RepositorioR027:
         """
         query = """
             SELECT
-                ROUND(COALESCE(SUM(total), 0)::numeric, 2) AS base_imponible
+                ROUND(COALESCE(SUM(subtotal), 0)::numeric, 2) AS base_imponible
             FROM sistema_facturacion.gastos
             WHERE empresa_id = %s
               AND tipo_iva = '0'
