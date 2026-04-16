@@ -55,7 +55,7 @@ import { SriConfigService } from '../certificado-sri/services/sri-config.service
                 <h2 class="sri-block-title">Firma Electrónica Requerida</h2>
                 <p class="sri-block-message">{{ sriError }}</p>
                 <p class="sri-block-hint">Para emitir comprobantes electrónicos autorizados por el SRI, primero debes configurar y activar tu certificado de firma electrónica.</p>
-                <button class="sri-block-btn" (click)="irACertificadoSri()">
+                <button *ngIf="canConfigSri" class="sri-block-btn" (click)="irACertificadoSri()">
                   <i class="bi bi-gear-fill me-2"></i>
                   Configurar Certificado SRI
                 </button>
@@ -349,12 +349,11 @@ export class FacturacionPage implements OnInit {
     this.loadData();
   }
 
-  checkSriStatus() {
-    if (!this.permissionsService.hasPermission('CONFIG_SRI')) {
-        this.sriError = null;
-        return;
-    }
+  get canConfigSri(): boolean {
+    return this.permissionsService.hasPermission('CONFIG_SRI');
+  }
 
+  checkSriStatus() {
     this.sriConfigService.obtenerConfiguracion().subscribe({
       next: (config) => {
         if (!config) {

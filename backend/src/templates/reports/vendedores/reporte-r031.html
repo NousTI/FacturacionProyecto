@@ -113,7 +113,7 @@
             {% endif %}
         </div>
         <div class="chart-box">
-            <h3>Ventas por períodos</h3>
+            <h3>Ventas por meses</h3>
             {% if data.grafica_ventas_mes|length > 0 %}
                 <canvas id="chartVentas"></canvas>
             {% else %}
@@ -161,45 +161,38 @@
     });
     }
 
-    // Gráfica 2: Ventas por períodos (Line)
+    // Gráfica 2: Ventas por meses (Pie)
     const ventasData = {{ data.grafica_ventas_mes | tojson }};
     const ctxVentas = document.getElementById('chartVentas');
-    
+
     if (ctxVentas && ventasData.length > 0) {
-        const mesesLabels = ventasData.map(v => v.mes);
+        const mesesLabels = ventasData.map(v => `${v.mes} ($${Number(v.total).toLocaleString('en-US', {minimumFractionDigits: 0, maximumFractionDigits: 0})})`);
         const ventasTotales = ventasData.map(v => v.total);
 
         new Chart(ctxVentas.getContext('2d'), {
-        type: 'line',
+        type: 'pie',
         data: {
             labels: mesesLabels,
             datasets: [{
-                label: 'Ingresos ($)',
                 data: ventasTotales,
-                borderColor: '#10b981',
-                backgroundColor: 'rgba(16, 185, 129, 0.1)',
-                borderWidth: 2,
-                fill: true,
-                tension: 0.4,
-                pointBackgroundColor: '#10b981',
-                pointBorderColor: '#065f46',
-                pointRadius: 4,
-                pointBorderWidth: 2
+                backgroundColor: ['#10b981', '#3b82f6', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4', '#ec4899', '#6366f1'],
+                borderColor: ['#065f46', '#1e40af', '#b45309', '#991b1b', '#6d28d9', '#0e7490', '#9d174d', '#4338ca'],
+                borderWidth: 2
             }]
         },
         options: {
             responsive: true,
             maintainAspectRatio: true,
             plugins: {
-                legend: { display: true, labels: { font: { size: 9 }, padding: 10 } },
-                datalabels: { display: false }
-            },
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    ticks: { font: { size: 9 }, color: '#64748b' }
+                legend: {
+                    position: 'bottom',
+                    labels: { font: { size: 9 }, padding: 10, color: '#475569' }
                 },
-                x: { ticks: { font: { size: 9 }, color: '#64748b' } }
+                datalabels: {
+                    color: '#fff',
+                    font: { weight: 'bold', size: 11 },
+                    formatter: (value) => '$' + Number(value).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })
+                }
             }
         }
     });

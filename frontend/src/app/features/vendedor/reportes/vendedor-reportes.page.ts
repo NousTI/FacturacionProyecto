@@ -83,10 +83,10 @@ export type ReportTab = 'empresas' | 'comisiones';
               </app-vendor-chart>
           </div>
           <div class="col-md-6">
-              <app-vendor-chart 
-                  title="Ventas por meses" 
-                  subtitle="Evolución mensual de ingresos"
-                  type="line" 
+              <app-vendor-chart
+                  title="Ventas por meses"
+                  subtitle="Participación mensual de ingresos"
+                  type="pie"
                   [data]="r031Data?.grafica_ventas_mes || []"
                   labelKey="mes"
                   valueKey="total">
@@ -183,6 +183,7 @@ export class VendedorReportesPage implements OnInit, OnDestroy {
   r031Data: any = null;
   r032Data: any = null;
   isLoading = false;
+  isLoadingPDF = false;
   rangoTipo: RangoTipo = 'mes_actual';
   fechaInicio = '';
   fechaFin = '';
@@ -281,7 +282,7 @@ export class VendedorReportesPage implements OnInit, OnDestroy {
 
   exportarPDF() {
     this.uiService.showToast('Generando reporte PDF...', 'info');
-    this.isLoading = true;
+    this.isLoadingPDF = true;
     this.cd.detectChanges();
 
     const tipo = this.getBackendTipo();
@@ -290,7 +291,7 @@ export class VendedorReportesPage implements OnInit, OnDestroy {
 
     this.reportesService.generarReporte(tipo, nombre, params)
       .pipe(finalize(() => {
-        this.isLoading = false;
+        this.isLoadingPDF = false;
         this.cd.detectChanges();
       }))
       .subscribe({

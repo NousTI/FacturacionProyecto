@@ -154,7 +154,8 @@ export class VendorChartComponent implements AfterViewInit, OnChanges {
             ctx.font = 'bold 13px Inter, sans-serif';
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
-            ctx.fillText(value.toString(), x, y);
+            const label = '$' + Number(value).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+            ctx.fillText(label, x, y);
           });
         });
         ctx.restore();

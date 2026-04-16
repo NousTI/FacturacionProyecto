@@ -3,6 +3,7 @@ import re
 import logging
 import time
 from fastapi import Depends
+from psycopg2.errors import UniqueViolation
 from uuid import UUID
 from typing import List, Optional
 from datetime import datetime
@@ -94,7 +95,16 @@ class ServicioSRI:
         ruc_extraido = meta.get("ruc")
         if ruc_extraido and len(ruc_extraido) == 13:
             logger.info(f"[SRI] Sincronizando RUC {ruc_extraido} desde certificado para empresa {empresa_id}")
-            self.empresa_repo.actualizar_empresa(empresa_id, {"ruc": ruc_extraido})
+            try:
+                self.empresa_repo.actualizar_empresa(empresa_id, {"ruc": ruc_extraido})
+            except Exception as e:
+                if isinstance(e.__cause__, UniqueViolation) or isinstance(e, UniqueViolation):
+                    raise AppError(
+                        f"El RUC {ruc_extraido} ya está registrado en otra empresa del sistema.",
+                        409,
+                        "RUC_DUPLICADO"
+                    )
+                raise
         else:
             logger.warning(f"[SRI] No se pudo extraer un RUC válido del certificado para la empresa {empresa_id}")
 

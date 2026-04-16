@@ -2,6 +2,8 @@ import { Component, OnInit, OnDestroy, ChangeDetectorRef, inject } from '@angula
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { finalize, Subscription, combineLatest, map } from 'rxjs';
+import { Router } from '@angular/router';
+import { SriConfigService } from '../certificado-sri/services/sri-config.service';
 
 import { RecurrenteStatsComponent } from './components/recurrente-stats/recurrente-stats.component';
 import { RecurrenteTableComponent } from './components/recurrente-table/recurrente-table.component';
@@ -36,7 +38,25 @@ import { FacturaProgramada } from '../../../domain/models/facturacion-programada
   template: `
     <div class="recurrente-page-container">
       
-      <ng-container *ngIf="canViewModule; else noPermission">
+      <!-- BLOQUEO SRI -->
+      <ng-container *ngIf="sriError">
+        <div class="sri-block-container">
+          <div class="sri-block-card">
+            <div class="sri-block-icon">
+              <i class="bi bi-shield-exclamation"></i>
+            </div>
+            <h2 class="sri-block-title">Firma Electrónica Requerida</h2>
+            <p class="sri-block-message">{{ sriError }}</p>
+            <p class="sri-block-hint">Para crear facturaciones programadas, primero debes configurar y activar tu certificado de firma electrónica.</p>
+            <button *ngIf="canConfigSri" class="sri-block-btn" (click)="irACertificadoSri()">
+              <i class="bi bi-gear-fill me-2"></i>
+              Configurar Certificado SRI
+            </button>
+          </div>
+        </div>
+      </ng-container>
+
+      <ng-container *ngIf="canViewModule && !sriError; else noPermission">
         <div class="container-fluid p-0 animate__animated animate__fadeIn">
           
           <!-- FILTERS & SEARCH + ACTIONS -->
@@ -58,7 +78,7 @@ import { FacturaProgramada } from '../../../domain/models/facturacion-programada
                     Ejecutar Pendientes
                   </button>
                   -->
-                  <button *hasPermission="'FACTURA_PROGRAMADA_CREAR'" class="btn-create-premium" (click)="openCreateModal()">
+                  <button *hasPermission="'FACTURA_PROGRAMADA_CREAR'" class="btn-create-premium" (click)="openCreateModal()" [disabled]="!!sriError">
                     <i class="bi bi-plus-lg me-2"></i>
                     Nueva Programación
                   </button>
@@ -249,6 +269,33 @@ import { FacturaProgramada } from '../../../domain/models/facturacion-programada
       border-top: 4px solid #161d35; border-radius: 50%;
       animation: spin 1s linear infinite;
     }
+
+    .sri-block-container {
+      display: flex; align-items: center; justify-content: center;
+      min-height: 70vh; padding: 2rem;
+    }
+    .sri-block-card {
+      background: white; border-radius: 24px; padding: 3rem 2.5rem;
+      max-width: 480px; width: 100%; text-align: center;
+      box-shadow: 0 10px 40px -10px rgba(0,0,0,0.1);
+      animation: fadeIn 0.4s ease-out;
+    }
+    .sri-block-icon {
+      width: 90px; height: 90px; border-radius: 50%;
+      background: linear-gradient(135deg, #fef3c7, #fde68a);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 2.5rem; color: #d97706; margin: 0 auto 1.5rem;
+      box-shadow: 0 10px 25px rgba(217, 119, 6, 0.2);
+    }
+    .sri-block-title { font-size: 1.5rem; font-weight: 800; color: #1e293b; margin-bottom: 0.75rem; }
+    .sri-block-message { font-size: 0.95rem; font-weight: 600; color: #d97706; margin-bottom: 1rem; }
+    .sri-block-hint { font-size: 0.875rem; color: #94a3b8; margin-bottom: 2rem; }
+    .sri-block-btn {
+      background: #161d35; color: white; border: none;
+      padding: 0.875rem 2rem; border-radius: 14px;
+      font-weight: 700; font-size: 0.9rem; cursor: pointer; transition: all 0.2s;
+    }
+    .sri-block-btn:hover { background: #0f172a; transform: translateY(-2px); box-shadow: 0 8px 20px rgba(0,0,0,0.15); }
   `]
 })
 export class FacturacionRecurrentePage implements OnInit, OnDestroy {
@@ -263,6 +310,7 @@ export class FacturacionRecurrentePage implements OnInit, OnDestroy {
     this.applyFilters();
   }
 
+  sriError: string | null = null;
   isLoading: boolean = true;
   isLoadingEdit: boolean = false;
   isRefreshing: boolean = false;
@@ -290,7 +338,9 @@ export class FacturacionRecurrentePage implements OnInit, OnDestroy {
   constructor(
     private service: FacturacionProgramadaService,
     private uiService: UiService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private sriConfigService: SriConfigService,
+    private router: Router
   ) {}
 
   get canViewModule(): boolean {
@@ -300,8 +350,40 @@ export class FacturacionRecurrentePage implements OnInit, OnDestroy {
     ]);
   }
 
+  get canConfigSri(): boolean {
+    return this.permissionsService.hasPermission('CONFIG_SRI');
+  }
+
+  checkSriStatus() {
+    this.sriConfigService.obtenerConfiguracion().subscribe({
+      next: (config) => {
+        if (!config) {
+          this.sriError = "No se ha configurado la firma electrónica. Vaya a Configuración > Certificado SRI.";
+          return;
+        }
+        if (config.estado !== 'ACTIVO') {
+          this.sriError = `La firma electrónica no está activa (Estado: ${config.estado}).`;
+          return;
+        }
+        const expiration = new Date(config.fecha_expiracion_cert);
+        const now = new Date();
+        if (expiration < now) {
+          this.sriError = `La firma electrónica caducó el ${expiration.toLocaleDateString()}. Renueve su certificado.`;
+          return;
+        }
+        this.sriError = null;
+      },
+      error: () => { this.sriError = null; }
+    });
+  }
+
+  irACertificadoSri() {
+    this.router.navigate(['/usuario/certificado-sri']);
+  }
+
   ngOnInit() {
     this.uiService.setPageHeader('Facturación Programada', 'Automatización de emisiones periódicas');
+    this.checkSriStatus();
     
     // Suscripción reactiva al cache del servicio
     this.subscription.add(
@@ -371,6 +453,10 @@ export class FacturacionRecurrentePage implements OnInit, OnDestroy {
   }
 
   openCreateModal() {
+    if (this.sriError) {
+      this.uiService.showToast(this.sriError, 'warning');
+      return;
+    }
     this.selectedProgramacion = null;
     this.isViewOnly = false;
     this.showCreateModal = true;
