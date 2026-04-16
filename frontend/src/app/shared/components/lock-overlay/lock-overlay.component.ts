@@ -1,11 +1,11 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Observable, take, retry, catchError, of } from 'rxjs';
+import { AuthService } from '../../../core/auth/auth.service';
 import { LockStatusService, LockInfo } from '../../../core/services/lock-status.service';
 import { Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../../environments/environment';
-import { AuthService } from '../../../core/auth/auth.service';
 
 @Component({
   selector: 'app-lock-overlay',
