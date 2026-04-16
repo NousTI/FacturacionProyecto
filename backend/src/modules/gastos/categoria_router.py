@@ -14,7 +14,7 @@ router = APIRouter()
 @router.get("", response_model=RespuestaBase[List[CategoriaGastoLectura]])
 def listar_categorias(
     empresa_id: Optional[UUID] = None,
-    usuario: dict = Depends(requerir_permiso(PermissionCodes.GESTIONAR_CATEGORIA_GASTO)),
+    usuario: dict = Depends(requerir_permiso([PermissionCodes.GESTIONAR_CATEGORIA_GASTO, PermissionCodes.GESTIONAR_GASTOS])),
     servicio: ServicioCategoriasGasto = Depends()
 ):
     return success_response(servicio.listar_categorias(usuario, empresa_id))
@@ -30,7 +30,7 @@ def crear_categoria(
 @router.get("/{id}", response_model=RespuestaBase[CategoriaGastoLectura])
 def obtener_categoria(
     id: UUID,
-    usuario: dict = Depends(requerir_permiso(PermissionCodes.GESTIONAR_CATEGORIA_GASTO)),
+    usuario: dict = Depends(requerir_permiso([PermissionCodes.GESTIONAR_CATEGORIA_GASTO, PermissionCodes.GESTIONAR_GASTOS])),
     servicio: ServicioCategoriasGasto = Depends()
 ):
     return success_response(servicio.obtener_categoria(id, usuario))

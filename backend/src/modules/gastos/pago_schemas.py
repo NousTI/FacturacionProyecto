@@ -1,6 +1,6 @@
 from uuid import UUID
 from datetime import date, datetime
-from typing import Optional
+from typing import Optional, Literal
 from decimal import Decimal
 from pydantic import BaseModel, Field
 
@@ -9,7 +9,7 @@ class PagoGastoBase(BaseModel):
     numero_comprobante: Optional[str] = None
     fecha_pago: date
     monto: Decimal = Field(..., gt=0)
-    metodo_pago: str # efectivo, depósito, transferencia, cheque
+    metodo_pago: Literal['01', '15', '16', '17', '18', '19', '20', '21']
     numero_referencia: Optional[str] = None
     observaciones: Optional[str] = None
 
@@ -20,7 +20,7 @@ class PagoGastoActualizacion(BaseModel):
     numero_comprobante: Optional[str] = None
     fecha_pago: Optional[date] = None
     monto: Optional[Decimal] = Field(None, gt=0)
-    metodo_pago: Optional[str] = None
+    metodo_pago: Optional[Literal['01', '15', '16', '17', '18', '19', '20', '21']] = None
     numero_referencia: Optional[str] = None
     observaciones: Optional[str] = None
 

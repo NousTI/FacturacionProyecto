@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { PagoGasto } from '../../../../../domain/models/pago-gasto.model';
 import { Gasto } from '../../../../../domain/models/gasto.model';
 import { HasPermissionDirective } from '../../../../../shared/directives/has-permission.directive';
+import { SRI_FORMAS_PAGO } from '../../../../../core/constants/sri-iva.constants';
 
 @Component({
   selector: 'app-pagos-table',
@@ -38,7 +39,7 @@ import { HasPermissionDirective } from '../../../../../shared/directives/has-per
                   <span class="text-muted" style="font-size: 0.85rem;">{{ pago.fecha_pago | date:'mediumDate' }}</span>
                 </td>
                 <td>
-                  <span class="text-capitalize badge-method-editorial">{{ pago.metodo_pago }}</span>
+                  <span class="text-capitalize badge-method-editorial">{{ getMetodoPagoLabel(pago.metodo_pago) }}</span>
                 </td>
                 <td>
                   <code class="text-muted">{{ pago.numero_referencia || '-' }}</code>
@@ -151,11 +152,25 @@ export class PagosTableComponent {
     const status = this.getGastoStatus(pago.gasto_id);
     if (status !== 'pagado') return true;
 
-    // Si está pagado, solo es editable si falta alguno de los campos opcionales
+    // Si el gasto está totalmente pagado, analizamos la naturaleza del método de pago
+    const isEfectivo = pago.metodo_pago === '01' || pago.metodo_pago?.toLowerCase() === 'efectivo';
+    
+    if (isEfectivo) {
+      // El efectivo no requiere datos bancarios. Una vez pagada la factura, este registro queda blindado.
+      return false; 
+    }
+
+    // Si es un método bancarizado (transferencia, tarjeta, etc), solo es editable 
+    // si AÚN faltan los comprobantes requeridos
     const lacksReferencia = !pago.numero_referencia || pago.numero_referencia.trim() === '';
     const lacksComprobante = !pago.numero_comprobante || pago.numero_comprobante.trim() === '';
-    const lacksObservaciones = !pago.observaciones || pago.observaciones.trim() === '';
 
-    return lacksReferencia || lacksComprobante || lacksObservaciones;
+    return lacksReferencia || lacksComprobante;
+  }
+
+  getMetodoPagoLabel(codigo: string): string {
+    if (!codigo) return '-';
+    const method = SRI_FORMAS_PAGO.find(fp => fp.codigo === codigo);
+    return method ? method.label : codigo.replace(/_/g, ' ');
   }
 }

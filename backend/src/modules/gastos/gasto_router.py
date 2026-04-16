@@ -14,7 +14,7 @@ router = APIRouter()
 @router.get("/", response_model=RespuestaBase[List[GastoLectura]])
 def listar_gastos(
     empresa_id: Optional[UUID] = None,
-    usuario: dict = Depends(requerir_permiso(PermissionCodes.GESTIONAR_GASTOS)),
+    usuario: dict = Depends(requerir_permiso([PermissionCodes.GESTIONAR_GASTOS, PermissionCodes.GESTIONAR_PAGOS])),
     servicio: ServicioGastos = Depends()
 ):
     return success_response(servicio.listar_gastos(usuario, empresa_id))
@@ -30,7 +30,7 @@ def crear_gasto(
 @router.get("/{id}", response_model=RespuestaBase[GastoLectura])
 def obtener_gasto(
     id: UUID,
-    usuario: dict = Depends(requerir_permiso(PermissionCodes.GESTIONAR_GASTOS)),
+    usuario: dict = Depends(requerir_permiso([PermissionCodes.GESTIONAR_GASTOS, PermissionCodes.GESTIONAR_PAGOS])),
     servicio: ServicioGastos = Depends()
 ):
     return success_response(servicio.obtener_gasto(id, usuario))

@@ -50,8 +50,8 @@ export class GastosService extends BaseApiService {
   }
 
   // --- Initial Loading ---
-  loadInitialData(force = false): void {
-    if (!this._loaded || force) {
+  loadInitialData(force = false, options: { loadGastos?: boolean, loadCategorias?: boolean, loadProveedores?: boolean } = { loadGastos: true, loadCategorias: true, loadProveedores: true }): void {
+    if ((!this._loaded || force) && options.loadGastos !== false) {
       this.get<ApiResponse<Gasto[]>>(this.ENDPOINT).subscribe(resp => {
         if (resp && resp.detalles) {
           this._gastos$.next(resp.detalles);
@@ -61,7 +61,7 @@ export class GastosService extends BaseApiService {
       });
     }
 
-    if (!this._categoriasLoaded) {
+    if ((!this._categoriasLoaded || force) && options.loadCategorias !== false) {
       this.get<ApiResponse<CategoriaGasto[]>>(this.CATEGORIAS_ENDPOINT).subscribe(resp => {
         if (resp && resp.detalles) {
           this._categorias$.next(resp.detalles);
@@ -70,7 +70,7 @@ export class GastosService extends BaseApiService {
       });
     }
 
-    if (!this._proveedoresLoaded) {
+    if ((!this._proveedoresLoaded || force) && options.loadProveedores !== false) {
       this.get<ApiResponse<Proveedor[]>>(this.PROVEEDORES_ENDPOINT).subscribe(resp => {
         if (resp && resp.detalles) {
           this._proveedores$.next(resp.detalles);
@@ -227,9 +227,11 @@ export class GastosService extends BaseApiService {
     );
   }
 
-  refresh(): void {
+  refresh(options: { loadGastos?: boolean, loadCategorias?: boolean, loadProveedores?: boolean, loadPagos?: boolean } = { loadGastos: true, loadCategorias: true, loadProveedores: true, loadPagos: true }): void {
     // Perform background fetches without clearing subjects to avoid UI flicker
-    this.loadInitialData(true);
-    this.loadPagos(true);
+    this.loadInitialData(true, options);
+    if (options.loadPagos !== false) {
+      this.loadPagos(true);
+    }
   }
 }

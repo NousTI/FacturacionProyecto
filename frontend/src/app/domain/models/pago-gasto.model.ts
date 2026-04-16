@@ -5,7 +5,7 @@ export interface PagoGasto {
   numero_comprobante?: string;
   fecha_pago: string;
   monto: number;
-  metodo_pago: 'efectivo' | 'tarjeta' | 'transferencia' | 'cheque';
+  metodo_pago: '01' | '15' | '16' | '17' | '18' | '19' | '20' | '21';
   numero_referencia?: string;
   observaciones?: string;
   created_at: string;
@@ -18,7 +18,7 @@ export interface PagoGastoCreate {
   numero_comprobante?: string;
   fecha_pago: string;
   monto: number;
-  metodo_pago: 'efectivo' | 'tarjeta' | 'transferencia' | 'cheque';
+  metodo_pago: '01' | '15' | '16' | '17' | '18' | '19' | '20' | '21';
   numero_referencia?: string;
   observaciones?: string;
 }
@@ -27,7 +27,7 @@ export interface PagoGastoUpdate {
   numero_comprobante?: string;
   fecha_pago?: string;
   monto?: number;
-  metodo_pago?: 'efectivo' | 'tarjeta' | 'transferencia' | 'cheque';
+  metodo_pago?: '01' | '15' | '16' | '17' | '18' | '19' | '20' | '21';
   numero_referencia?: string;
   observaciones?: string;
 }

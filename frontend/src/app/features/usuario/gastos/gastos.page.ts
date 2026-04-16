@@ -313,7 +313,15 @@ export class GastosPage implements OnInit, OnDestroy {
       else if (this.canViewCategorias) this.activeTab = 'categorias';
     }
 
-    this.service.loadInitialData();
+    this.service.loadInitialData(false, {
+      loadGastos: this.canViewGeneral || this.canViewPagos,
+      loadCategorias: this.canViewGeneral || this.canViewCategorias,
+      loadProveedores: this.canViewGeneral || this.canViewPagos || this.permissionsService.hasPermission('PROVEEDOR_VER')
+    });
+
+    if (this.canViewPagos) {
+      this.service.loadPagos();
+    }
 
     // Subscripciones para data local (dropdowns, etc)
     this.gastos$.pipe(takeUntil(this.destroy$)).subscribe(g => {
@@ -346,7 +354,12 @@ export class GastosPage implements OnInit, OnDestroy {
 
   refresh() {
     this.isLoading = true;
-    this.service.refresh();
+    this.service.refresh({
+      loadGastos: this.canViewGeneral || this.canViewPagos,
+      loadCategorias: this.canViewGeneral || this.canViewCategorias,
+      loadProveedores: this.canViewGeneral || this.canViewPagos || this.permissionsService.hasPermission('PROVEEDOR_VER'),
+      loadPagos: this.canViewPagos
+    });
     setTimeout(() => { this.isLoading = false; this.cd.detectChanges(); }, 600);
   }
 
@@ -501,7 +514,7 @@ export class GastosPage implements OnInit, OnDestroy {
         this.uiService.showToast('Pago procesado correctamente', 'success'); 
         this.closeModals();
         // Forzar recarga de para ver el estado del gasto actualizado
-        this.service.refresh();
+        this.refresh();
       },
       error: (e) => this.uiService.showError(e, 'Error al procesar pago')
     });
