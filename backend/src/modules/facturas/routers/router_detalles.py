@@ -13,7 +13,7 @@ router = APIRouter()
 @router.get("/{factura_id}/detalles", response_model=List[FacturaDetalleLectura])
 def listar_detalles(
     factura_id: UUID,
-    usuario: dict = Depends(requerir_permiso([PermissionCodes.FACTURAS_VER_TODAS, PermissionCodes.FACTURAS_VER_PROPIAS])),
+    usuario: dict = Depends(requerir_permiso([PermissionCodes.FACTURAS_VER_TODAS, PermissionCodes.FACTURAS_VER_PROPIAS, PermissionCodes.FACTURA_PROGRAMADA_VER, PermissionCodes.FACTURA_PROGRAMADA_VER_PROPIAS])),
     servicio: ServicioFacturaDetalles = Depends()
 ):
     """Lista los detalles (líneas) de una factura."""

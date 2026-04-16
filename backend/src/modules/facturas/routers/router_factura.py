@@ -119,7 +119,7 @@ def listar_mis_facturas(
 @router.get("/{id}", response_model=FacturaLectura)
 def obtener_factura(
     id: UUID,
-    usuario: dict = Depends(requerir_permiso([PermissionCodes.FACTURAS_VER_TODAS, PermissionCodes.FACTURAS_VER_PROPIAS])),
+    usuario: dict = Depends(requerir_permiso([PermissionCodes.FACTURAS_VER_TODAS, PermissionCodes.FACTURAS_VER_PROPIAS, PermissionCodes.FACTURA_PROGRAMADA_VER, PermissionCodes.FACTURA_PROGRAMADA_VER_PROPIAS])),
     servicio: ServicioFactura = Depends()
 ):
     """

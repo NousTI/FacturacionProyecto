@@ -15,23 +15,36 @@ class ValidacionesFactura:
             raise AppError("No tiene permiso para esta factura", 403, "AUTH_FORBIDDEN")
 
         permisos = usuario_actual.get("permisos", [])
-        if PermissionCodes.FACTURAS_VER_TODAS in permisos or PermissionCodes.FACTURA_PROGRAMADA_VER in permisos:
-             return
-             
-        # Si tiene permisos de Facturas Propias O Facturación Programada Propia
-        has_facturas_propias = PermissionCodes.FACTURAS_VER_PROPIAS in permisos
-        has_programada_propias = PermissionCodes.FACTURA_PROGRAMADA_VER_PROPIAS in permisos
+        
+        has_fact_todas = PermissionCodes.FACTURAS_VER_TODAS in permisos
+        has_fact_propias = PermissionCodes.FACTURAS_VER_PROPIAS in permisos
+        has_prog_todas = PermissionCodes.FACTURA_PROGRAMADA_VER in permisos
+        has_prog_propias = PermissionCodes.FACTURA_PROGRAMADA_VER_PROPIAS in permisos
 
-        if has_facturas_propias or has_programada_propias:
-             if str(factura.get('usuario_id')) == str(usuario_actual.get('usuario_facturacion_id')):
-                  return
-             
-             msg = "No tienes permiso para ver facturas de otros usuarios"
-             if has_programada_propias and not has_facturas_propias:
-                  msg = "No tienes permiso para ver programaciones de otros usuarios"
-             raise AppError(msg, 403, "AUTH_FORBIDDEN")
+        is_owner = str(factura.get('usuario_id')) == str(usuario_actual.get('usuario_facturacion_id'))
+        is_programada = factura.get('facturacion_programada_id') is not None or factura.get('origen') == 'FACTURACION_PROGRAMADA'
 
-        raise AppError("No tienes permisos suficientes para acceder a esta factura", 403, "AUTH_FORBIDDEN")
+        # 1. Si posee la llave maestra de facturas normales
+        if has_fact_todas:
+            return
+
+        # 2. Si puede ver sus propias facturas normales y es el dueño
+        if has_fact_propias and is_owner:
+            return
+            
+        # 3. Requisito estricto: Si falló en los permisos generales de factura, la única salvación es 
+        # usar los permisos de la facturación programada. PERO el documento DEBE originarse desde allí.
+        if not is_programada:
+             raise AppError("No tienes permisos suficientes para acceder a facturas emitidas manualmente. Tu acceso se limita a Facturación Programada.", 403, "AUTH_FORBIDDEN")
+
+        # 4. Evaluación final de las llaves del submódulo de programación (ya sabemos que es_programada=True)
+        if has_prog_todas:
+            return
+            
+        if has_prog_propias and is_owner:
+            return
+            
+        raise AppError("No tienes permisos para ver esta factura. Fue originada por las suscripciones pero pertenece a otro usuario.", 403, "AUTH_FORBIDDEN")
 
     @staticmethod
     def validar_estado_borrador(factura: dict):
