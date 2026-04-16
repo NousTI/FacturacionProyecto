@@ -88,9 +88,12 @@ import { environment } from '../../../../environments/environment';
       display: flex;
       align-items: center;
       justify-content: center;
+      width: 100%;
       min-height: 100vh;
-      background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
-      padding: 1.5rem;
+      background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+      padding: 2rem;
+      margin: 0;
+      overflow-y: auto;
     }
 
     .restriction-card {

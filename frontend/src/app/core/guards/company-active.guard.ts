@@ -35,7 +35,7 @@ export class CompanyActiveGuard implements CanActivate {
 
                 // 3. Rutas permitidas incluso si la empresa está inactiva
                 const allowedPaths = [
-                    '/usuario/acceso-restringido',
+                    '/acceso-restringido',
                     '/auth/login',
                     '/auth/logout'
                 ];
@@ -65,7 +65,7 @@ export class CompanyActiveGuard implements CanActivate {
                     this.lockStatusService.setShowModal(true);
 
                     console.warn('[CompanyActiveGuard] Acceso restringido por estado de cuenta/suscripción');
-                    return this.router.createUrlTree(['/usuario/acceso-restringido']);
+                    return this.router.createUrlTree(['/acceso-restringido']);
                 }
 
                 return true;

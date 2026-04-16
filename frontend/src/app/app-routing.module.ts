@@ -8,6 +8,7 @@ import { RoleGuard } from './core/guards/role.guard';
 import { UserRole } from './domain/enums/role.enum';
 import { UserActiveGuard } from './core/guards/user-active.guard';
 import { AccesoDenegadoPage } from './features/usuario/acceso-denegado/acceso-denegado.page';
+import { AccesoRestringidoPage } from './features/usuario/acceso-restringido/acceso-restringido.page';
 
 const routes: Routes = [
     {
@@ -25,6 +26,10 @@ const routes: Routes = [
     {
         path: 'acceso-denegado',
         component: AccesoDenegadoPage
+    },
+    {
+        path: 'acceso-restringido',
+        component: AccesoRestringidoPage
     },
     {
         path: 'vendedor',

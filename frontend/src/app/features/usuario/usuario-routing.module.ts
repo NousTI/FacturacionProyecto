@@ -40,11 +40,6 @@ const routes: Routes = [
         component: SinPermisosPage
     },
     {
-        path: 'acceso-restringido',
-        component: AccesoRestringidoPage,
-        canActivate: [lockActiveGuard]
-    },
-    {
         path: 'dashboard',
         component: DashboardPage,
         canActivate: [RoleGuard, CompanyActiveGuard, permissionGuard],
