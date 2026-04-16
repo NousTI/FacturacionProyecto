@@ -287,16 +287,35 @@ export class FinancialReportsService {
     });
   }
 
-  exportarReportePDF(tipo: string, fecha_inicio: string, fecha_fin: string): Observable<Blob> {
+  obtenerDetalleCasilleroR027(casillero: string, fecha_inicio: string, fecha_fin: string): Observable<any[]> {
     const params = new HttpParams()
+      .set('casillero', casillero)
+      .set('fecha_inicio', fecha_inicio)
+      .set('fecha_fin', fecha_fin);
+    return this.http.get<any[]>(`${environment.apiUrl}/reportes/financiero/iva/detalle`, { params });
+  }
+
+  exportarReportePDF(
+    tipo: string,
+    fecha_inicio: string,
+    fecha_fin: string,
+    extras?: { [key: string]: number }
+  ): Observable<Blob> {
+    let params = new HttpParams()
       .set('tipo', tipo)
       .set('formato', 'pdf')
       .set('fecha_inicio', fecha_inicio)
       .set('fecha_fin', fecha_fin);
-    
-    return this.http.get(`${environment.apiUrl}/reportes/exportar`, { 
-      params, 
-      responseType: 'blob' 
+
+    if (extras) {
+      Object.entries(extras).forEach(([k, v]) => {
+        if (v !== 0) params = params.set(k, v.toString());
+      });
+    }
+
+    return this.http.get(`${environment.apiUrl}/reportes/exportar`, {
+      params,
+      responseType: 'blob'
     });
   }
 }

@@ -240,6 +240,21 @@ def obtener_reporte_iva_ventas(
     empresa_id = usuario_actual.get("empresa_id")
     return servicio.obtener_iva_ventas_usuario(empresa_id, fecha_inicio, fecha_fin)
 
+@router.get("/financiero/iva/detalle")
+def obtener_detalle_casillero_iva(
+    casillero: str,
+    fecha_inicio: str,
+    fecha_fin: str,
+    usuario_actual: dict = Depends(requerir_permiso([PermissionCodes.REPORTES_VER])),
+    servicio: ServicioReportes = Depends()
+):
+    """R-027: Detalle (drill-down) de un casillero del formulario 104."""
+    if usuario_actual.get(AuthKeys.IS_VENDEDOR):
+        raise AppError("Este reporte está bloqueado para vendedores.", 403)
+    _require_admin_empresa(usuario_actual)
+    empresa_id = usuario_actual.get("empresa_id")
+    return servicio.obtener_detalle_casillero_r027(empresa_id, casillero, fecha_inicio, fecha_fin)
+
 @router.get("/financiero/resumen")
 def obtener_resumen_ejecutivo(
     fecha_inicio: str,

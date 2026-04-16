@@ -41,6 +41,31 @@ class ServicioR027:
     def __init__(self, repo: RepositorioR027 = Depends()):
         self.repo = repo
 
+    def detalle_casillero(self, empresa_id: UUID, casillero: str, fecha_inicio: str, fecha_fin: str):
+        """Devuelve el listado de documentos que componen un casillero."""
+        metodos = {
+            '401': self.repo.detalle_casillero_401,
+            '403': self.repo.detalle_casillero_403,
+            '402': self.repo.detalle_casillero_402,
+            '500': self.repo.detalle_casillero_500,
+            '507': self.repo.detalle_casillero_507,
+        }
+        fn = metodos.get(casillero)
+        if not fn:
+            return []
+        rows = fn(empresa_id, fecha_inicio, fecha_fin)
+        # Serializar fechas y decimales
+        result = []
+        for r in rows:
+            row = {}
+            for k, v in r.items():
+                if hasattr(v, 'isoformat'):
+                    row[k] = v.isoformat()
+                else:
+                    row[k] = float(v) if hasattr(v, '__float__') and not isinstance(v, (int, str, bool)) else v
+            result.append(row)
+        return result
+
     def generar_reporte_iva(self, empresa_id: UUID, fecha_inicio: str, fecha_fin: str) -> Dict[str, Any]:
         """
         Formula 104 — Declaración de IVA.

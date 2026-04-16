@@ -352,6 +352,10 @@ class ServicioReportes:
         """R-027: Reporte de IVA (Ventas)."""
         return self.svc_r027.generar_reporte_iva(empresa_id, fecha_inicio, fecha_fin)
 
+    def obtener_detalle_casillero_r027(self, empresa_id: UUID, casillero: str, fecha_inicio: str, fecha_fin: str):
+        """R-027: Drill-down de un casillero específico."""
+        return self.svc_r027.detalle_casillero(empresa_id, casillero, fecha_inicio, fecha_fin)
+
     def obtener_resumen_ejecutivo_usuario(self, empresa_id: UUID, fecha_inicio: str, fecha_fin: str):
         """R-028: Resumen Ejecutivo (KPIs)."""
         return self.svc_r028.generar_resumen_ejecutivo(empresa_id, fecha_inicio, fecha_fin)
@@ -478,6 +482,13 @@ class ServicioReportes:
             if tipo == 'FINANCIERO_IVA':
                 data = self.obtener_iva_ventas_usuario(empresa_id, fecha_inicio, fecha_fin)
                 template = "reports/usuarios/reporte-r027.html"
+                # Valores manuales ingresados en el frontend (no persisten en BD)
+                manual507 = float(params.get('manual507', 0) or 0)
+                manual503 = float(params.get('manual503', 0) or 0)
+                if manual507:
+                    data['bloque_500']['c507'] = round(data['bloque_500']['c507'] + manual507, 2)
+                if manual503:
+                    data['bloque_500']['c503'] = round(manual503, 2)
             elif tipo == 'FINANCIERO_CARTERA':
                 data = self.obtener_cartera_usuario(empresa_id, fecha_inicio, fecha_fin)
                 template = "reports/usuarios/reporte-r008.html"

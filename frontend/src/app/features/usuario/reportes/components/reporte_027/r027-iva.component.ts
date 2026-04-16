@@ -1,12 +1,14 @@
-import { Component, Input, OnChanges } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnChanges } from '@angular/core';
 import { CommonModule, CurrencyPipe, DecimalPipe } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { IvaR027Report } from '../../services/financial-reports.service';
 import { InfoTooltipComponent } from './info-tooltip.component';
+import { R027DetalleModalComponent } from './r027-detalle-modal.component';
 
 @Component({
   selector: 'app-r027-iva',
   standalone: true,
-  imports: [CommonModule, CurrencyPipe, DecimalPipe, InfoTooltipComponent],
+  imports: [CommonModule, CurrencyPipe, DecimalPipe, FormsModule, InfoTooltipComponent],
   template: `
 <div class="fade-in">
 
@@ -67,14 +69,20 @@ import { InfoTooltipComponent } from './info-tooltip.component';
   <div class="kpi-grid mb-4">
 
     <div class="kpi-card red">
-      <span class="kpi-label">IVA a pagar SRI</span>
+      <span class="kpi-label">
+        IVA a pagar SRI
+        <app-info-tooltip text="Depende del factor de proporcionalidad (563) y el crédito tributario (564), que requieren clasificar las ventas 0% en con y sin derecho a crédito. Sin ese dato en productos no se puede calcular." label="¿Por qué no está disponible?"></app-info-tooltip>
+      </span>
       <span class="kpi-value not-impl" *ngIf="data.kpis?.iva_a_pagar?.valor === null">—</span>
       <span class="kpi-value" *ngIf="data.kpis?.iva_a_pagar?.valor !== null">{{ data.kpis.iva_a_pagar.valor | currency }}</span>
       <span class="kpi-sub">{{ data.kpis?.iva_a_pagar?.sublabel }}</span>
     </div>
 
     <div class="kpi-card teal">
-      <span class="kpi-label">Crédito tributario</span>
+      <span class="kpi-label">
+        Crédito tributario
+        <app-info-tooltip text="Es el IVA de compras que puedes recuperar, ajustado por el factor 563. Como el factor no se puede calcular, este valor tampoco está disponible." label="¿Por qué no está disponible?"></app-info-tooltip>
+      </span>
       <span class="kpi-value not-impl" *ngIf="data.kpis?.credito_tributario?.valor === null">—</span>
       <span class="kpi-value" *ngIf="data.kpis?.credito_tributario?.valor !== null">{{ data.kpis.credito_tributario.valor | currency }}</span>
       <span class="kpi-sub">{{ data.kpis?.credito_tributario?.sublabel }}</span>
@@ -90,13 +98,19 @@ import { InfoTooltipComponent } from './info-tooltip.component';
     </div>
 
     <div class="kpi-card amber">
-      <span class="kpi-label">Retenciones recibidas</span>
-      <span class="kpi-value not-impl">No disponible</span>
+      <span class="kpi-label">
+        Retenciones recibidas
+        <app-info-tooltip text="No hay tabla de comprobantes de retención recibidos en el sistema. Para obtener este valor consulta tu cuenta en el portal del SRI." label="¿Por qué no está disponible?"></app-info-tooltip>
+      </span>
+      <span class="kpi-value not-impl">—</span>
       <span class="kpi-sub">sin tabla en BD</span>
     </div>
 
     <div class="kpi-card indigo">
-      <span class="kpi-label">Factor de este mes</span>
+      <span class="kpi-label">
+        Factor de este mes
+        <app-info-tooltip text="La fórmula requiere separar ventas 0% con derecho a crédito (casillero 405) de las que no lo tienen (403). Sin un campo en cada producto que indique esto, el factor no se puede calcular con precisión." label="¿Por qué no está disponible?"></app-info-tooltip>
+      </span>
       <span class="kpi-value not-impl">—</span>
       <span class="kpi-sub">sin datos suficientes</span>
     </div>
@@ -128,7 +142,9 @@ import { InfoTooltipComponent } from './info-tooltip.component';
           <!-- 405/415: Ventas 0% CON derecho a crédito (RIMPE / exportación) -->
           <tr class="hover-row not-impl-row">
             <td class="desc-cell">
-              <span class="desc-title">Ventas locales tarifa 0% con derecho a crédito tributario (RIMPE / exportación)</span>
+              <span class="desc-title">Ventas locales tarifa 0% con derecho a crédito tributario (RIMPE / exportación)
+                <app-info-tooltip text="Requiere un campo en cada producto que indique si es 0% con derecho a crédito (exportación, venta al sector público). La tabla de productos no tiene ese campo actualmente." label="¿Por qué no está disponible?"></app-info-tooltip>
+              </span>
               <span class="desc-sub impl-note">Sin información disponible</span>
             </td>
             <td class="text-center"><span class="cas-badge gris">405 / 415</span></td>
@@ -164,7 +180,9 @@ import { InfoTooltipComponent } from './info-tooltip.component';
           <!-- 407/408/417/418: Exportaciones -->
           <tr class="hover-row not-impl-row">
             <td class="desc-cell">
-              <span class="desc-title">Exportaciones de Bienes (407) / Exportaciones de Servicios (408)</span>
+              <span class="desc-title">Exportaciones de Bienes (407) / Exportaciones de Servicios (408)
+                <app-info-tooltip text="No existe un tipo de documento de exportación en el sistema. Para declarar esto deberías ingresar el valor manualmente en el portal del SRI." label="¿Por qué no está disponible?"></app-info-tooltip>
+              </span>
               <span class="desc-sub impl-note">Sin información disponible</span>
             </td>
             <td class="text-center"><span class="cas-badge gris">407 / 417<br>408 / 418</span></td>
@@ -176,7 +194,9 @@ import { InfoTooltipComponent } from './info-tooltip.component';
           <!-- 431: Transferencias no objeto -->
           <tr class="hover-row not-impl-row">
             <td class="desc-cell">
-              <span class="desc-title">Transferencias no objeto o exentas de IVA</span>
+              <span class="desc-title">Transferencias no objeto o exentas de IVA
+                <app-info-tooltip text="El sistema no registra transferencias fuera del alcance del IVA (donaciones, herencias, fusiones). Si aplica, ingrésalo manualmente en el portal del SRI." label="¿Por qué no está disponible?"></app-info-tooltip>
+              </span>
               <span class="desc-sub impl-note">Sin información disponible</span>
             </td>
             <td class="text-center"><span class="cas-badge gris">431</span></td>
@@ -240,12 +260,18 @@ import { InfoTooltipComponent } from './info-tooltip.component';
           <tr class="hover-row">
             <td class="desc-cell">
               <span class="desc-title">Adquisiciones y pagos tarifa 0% / RIMPE (negocios populares)</span>
-              <span class="desc-sub">Gastos registrados sin IVA en el módulo de Gastos</span>
+              <span class="desc-sub">Gastos registrados sin IVA en el módulo de Gastos + facturas físicas ingresadas manualmente</span>
             </td>
             <td class="text-center"><span class="cas-badge gris">507</span></td>
-            <td class="text-end font-mono">{{ data.bloque_500?.c507 | currency }}</td>
-            <td class="text-end fw-bold">{{ data.bloque_500?.c507 | currency }}</td>
-            <td class="text-end nd">$0.00</td>
+            <td class="text-end font-mono">{{ (data.bloque_500?.c507 || 0) + manual507 | currency }}</td>
+            <td class="text-end fw-bold">{{ (data.bloque_500?.c507 || 0) + manual507 | currency }}</td>
+            <td class="text-end nd">
+              <div class="manual-input-wrap">
+                <span class="manual-label">+ físicas:</span>
+                <input type="number" class="manual-input" [(ngModel)]="manual507"
+                       (ngModelChange)="emitirManuales()" min="0" step="0.01" placeholder="0.00">
+              </div>
+            </td>
           </tr>
 
           <!-- 500/510: Compras gravadas con derecho a crédito -->
@@ -263,7 +289,9 @@ import { InfoTooltipComponent } from './info-tooltip.component';
           <!-- 509/519: Compras gravadas SIN derecho a crédito -->
           <tr class="hover-row not-impl-row">
             <td class="desc-cell">
-              <span class="desc-title">Adquisiciones gravadas tarifa diferente de cero — sin derecho a crédito tributario</span>
+              <span class="desc-title">Adquisiciones gravadas tarifa diferente de cero — sin derecho a crédito tributario
+                <app-info-tooltip text="La tabla de gastos no distingue si una compra es para actividad gravada o exenta. Sin esa clasificación no se puede separar qué IVA se puede recuperar y cuál no." label="¿Por qué no está disponible?"></app-info-tooltip>
+              </span>
               <span class="desc-sub impl-note">Sin información disponible</span>
             </td>
             <td class="text-center"><span class="cas-badge gris">509 / 519</span></td>
@@ -273,21 +301,37 @@ import { InfoTooltipComponent } from './info-tooltip.component';
           </tr>
 
           <!-- 503/504: Compras en el exterior -->
-          <tr class="hover-row not-impl-row">
+          <tr class="hover-row">
             <td class="desc-cell">
-              <span class="desc-title">Compras en el exterior (ej. publicidad Facebook / Google Ads)</span>
-              <span class="desc-sub impl-note">Sin información disponible</span>
+              <span class="desc-title">Compras en el exterior (ej. publicidad Facebook / Google Ads)
+                <app-info-tooltip text="Ingrésalo manualmente: suma el total pagado a proveedores del exterior (Facebook Ads, Google, suscripciones, etc.) sin IVA local. Este valor va directamente en los casilleros 503/504 del portal del SRI." label="Ingreso manual"></app-info-tooltip>
+              </span>
+              <span class="desc-sub">Ingreso manual — no existe registro automático en el sistema</span>
             </td>
-            <td class="text-center"><span class="cas-badge gris">503 / 504</span></td>
-            <td class="text-end nd">—</td>
-            <td class="text-end nd">—</td>
-            <td class="text-end nd">—</td>
+            <td class="text-center"><span class="cas-badge azul">503 / 504</span></td>
+            <td class="text-end">
+              <span *ngIf="manual503 > 0">{{ manual503 | currency }}</span>
+              <span *ngIf="manual503 === 0" class="nd">—</span>
+            </td>
+            <td class="text-end fw-bold">
+              <span *ngIf="manual503 > 0">{{ manual503 | currency }}</span>
+              <span *ngIf="manual503 === 0" class="nd">—</span>
+            </td>
+            <td class="text-end">
+              <div class="manual-input-wrap">
+                <span class="manual-label">base:</span>
+                <input type="number" class="manual-input" [(ngModel)]="manual503"
+                       (ngModelChange)="emitirManuales()" min="0" step="0.01" placeholder="0.00">
+              </div>
+            </td>
           </tr>
 
           <!-- 520/521: NC en adquisiciones -->
           <tr class="hover-row not-impl-row">
             <td class="desc-cell">
-              <span class="desc-title">(-) Notas de crédito en adquisiciones</span>
+              <span class="desc-title">(-) Notas de crédito en adquisiciones
+                <app-info-tooltip text="No hay registro de notas de crédito recibidas de proveedores en el sistema. Si recibiste alguna, descuéntala manualmente del casillero 500 en el portal del SRI." label="¿Por qué no está disponible?"></app-info-tooltip>
+              </span>
               <span class="desc-sub impl-note">Sin información disponible</span>
             </td>
             <td class="text-center"><span class="cas-badge gris">520 / 521</span></td>
@@ -299,7 +343,9 @@ import { InfoTooltipComponent } from './info-tooltip.component';
           <!-- 563: Factor de proporcionalidad -->
           <tr class="hover-row not-impl-row">
             <td class="desc-cell">
-              <span class="desc-title">Factor de proporcionalidad</span>
+              <span class="desc-title">Factor de proporcionalidad
+                <app-info-tooltip text="La fórmula requiere separar ventas 0% con y sin derecho a crédito (casilleros 403 y 405). Sin esa distinción en productos el factor no se puede calcular con precisión." label="¿Por qué no está disponible?"></app-info-tooltip>
+              </span>
               <span class="desc-sub impl-note">Sin información disponible</span>
             </td>
             <td class="text-center"><span class="cas-badge gris">563</span></td>
@@ -311,7 +357,9 @@ import { InfoTooltipComponent } from './info-tooltip.component';
           <!-- 564: Crédito tributario aplicable -->
           <tr class="hover-row not-impl-row">
             <td class="desc-cell">
-              <span class="desc-title">Crédito tributario aplicable</span>
+              <span class="desc-title">Crédito tributario aplicable
+                <app-info-tooltip text="Depende del factor 563 que no se puede calcular. Sin él no se sabe qué porcentaje del IVA de compras puedes recuperar." label="¿Por qué no está disponible?"></app-info-tooltip>
+              </span>
               <span class="desc-sub impl-note">Sin información disponible</span>
             </td>
             <td class="text-center"><span class="cas-badge gris">564</span></td>
@@ -360,7 +408,9 @@ import { InfoTooltipComponent } from './info-tooltip.component';
           <!-- 601: Impuesto causado -->
           <tr class="hover-row not-impl-row">
             <td class="desc-cell">
-              <span class="desc-title">Impuesto causado (499 − 564)</span>
+              <span class="desc-title">Impuesto causado (499 − 564)
+                <app-info-tooltip text="Depende del crédito tributario aplicable (564) que no está disponible por falta del factor de proporcionalidad." label="¿Por qué no está disponible?"></app-info-tooltip>
+              </span>
               <span class="desc-sub impl-note">Sin información disponible</span>
             </td>
             <td class="text-center"><span class="cas-badge gris">601</span></td>
@@ -370,7 +420,9 @@ import { InfoTooltipComponent } from './info-tooltip.component';
           <!-- 602: Crédito tributario del período -->
           <tr class="hover-row not-impl-row">
             <td class="desc-cell">
-              <span class="desc-title">Crédito tributario para el próximo mes (564 − 499)</span>
+              <span class="desc-title">Crédito tributario para el próximo mes (564 − 499)
+                <app-info-tooltip text="Depende del casillero 564 que no está disponible. Si tuvieras más IVA de compras que de ventas, ese saldo se arrastraría al siguiente período." label="¿Por qué no está disponible?"></app-info-tooltip>
+              </span>
               <span class="desc-sub impl-note">Sin información disponible</span>
             </td>
             <td class="text-center"><span class="cas-badge gris">602</span></td>
@@ -380,7 +432,9 @@ import { InfoTooltipComponent } from './info-tooltip.component';
           <!-- 605: Arrastre adquisiciones mes anterior -->
           <tr class="hover-row not-impl-row">
             <td class="desc-cell">
-              <span class="desc-title">Arrastre de crédito tributario por adquisiciones (mes anterior)</span>
+              <span class="desc-title">Arrastre de crédito tributario por adquisiciones (mes anterior)
+                <app-info-tooltip text="Requiere historial de declaraciones anteriores guardadas en el sistema. No hay tabla para almacenar ese historial actualmente." label="¿Por qué no está disponible?"></app-info-tooltip>
+              </span>
               <span class="desc-sub impl-note">Sin información disponible</span>
             </td>
             <td class="text-center"><span class="cas-badge gris">605</span></td>
@@ -390,7 +444,9 @@ import { InfoTooltipComponent } from './info-tooltip.component';
           <!-- 606: Arrastre retenciones mes anterior -->
           <tr class="hover-row not-impl-row">
             <td class="desc-cell">
-              <span class="desc-title">Arrastre de crédito tributario por retenciones en la fuente (mes anterior)</span>
+              <span class="desc-title">Arrastre de crédito tributario por retenciones en la fuente (mes anterior)
+                <app-info-tooltip text="Requiere el casillero 615 de la declaración del mes anterior. Sin historial de declaraciones guardadas no se puede obtener ese valor." label="¿Por qué no está disponible?"></app-info-tooltip>
+              </span>
               <span class="desc-sub impl-note">Sin información disponible</span>
             </td>
             <td class="text-center"><span class="cas-badge gris">606</span></td>
@@ -400,7 +456,9 @@ import { InfoTooltipComponent } from './info-tooltip.component';
           <!-- 609: Retenciones recibidas en el período -->
           <tr class="hover-row not-impl-row">
             <td class="desc-cell">
-              <span class="desc-title">Retenciones en la fuente de IVA recibidas en el período</span>
+              <span class="desc-title">Retenciones en la fuente de IVA recibidas en el período
+                <app-info-tooltip text="No hay tabla de comprobantes de retención recibidos en el sistema. Debes consultar tu cuenta en el portal del SRI para obtener este valor." label="¿Por qué no está disponible?"></app-info-tooltip>
+              </span>
               <span class="desc-sub impl-note">Sin información disponible</span>
             </td>
             <td class="text-center"><span class="cas-badge gris">609</span></td>
@@ -446,7 +504,9 @@ import { InfoTooltipComponent } from './info-tooltip.component';
         <tbody>
           <tr class="hover-row not-impl-row">
             <td class="desc-cell">
-              <span class="desc-title">Retención 10% — servicios profesionales / arrendamiento</span>
+              <span class="desc-title">Retención 10% — servicios profesionales / arrendamiento
+                <app-info-tooltip text="No hay tabla de retenciones efectuadas a proveedores en el sistema. Si eres agente de retención, debes declarar estos valores manualmente en el portal del SRI." label="¿Por qué no está disponible?"></app-info-tooltip>
+              </span>
               <span class="desc-sub impl-note">Sin información disponible</span>
             </td>
             <td class="text-center"><span class="cas-badge gris">721</span></td>
@@ -457,7 +517,9 @@ import { InfoTooltipComponent } from './info-tooltip.component';
           </tr>
           <tr class="hover-row not-impl-row">
             <td class="desc-cell">
-              <span class="desc-title">Retención 20% — otros servicios</span>
+              <span class="desc-title">Retención 20% — otros servicios
+                <app-info-tooltip text="No hay tabla de retenciones efectuadas a proveedores en el sistema. Declarar manualmente en el portal del SRI." label="¿Por qué no está disponible?"></app-info-tooltip>
+              </span>
               <span class="desc-sub impl-note">Sin información disponible</span>
             </td>
             <td class="text-center"><span class="cas-badge gris">723</span></td>
@@ -468,7 +530,9 @@ import { InfoTooltipComponent } from './info-tooltip.component';
           </tr>
           <tr class="hover-row not-impl-row">
             <td class="desc-cell">
-              <span class="desc-title">Retención 30% — bienes muebles</span>
+              <span class="desc-title">Retención 30% — bienes muebles
+                <app-info-tooltip text="No hay tabla de retenciones efectuadas a proveedores en el sistema. Declarar manualmente en el portal del SRI." label="¿Por qué no está disponible?"></app-info-tooltip>
+              </span>
               <span class="desc-sub impl-note">Sin información disponible</span>
             </td>
             <td class="text-center"><span class="cas-badge gris">725</span></td>
@@ -479,7 +543,9 @@ import { InfoTooltipComponent } from './info-tooltip.component';
           </tr>
           <tr class="hover-row not-impl-row">
             <td class="desc-cell">
-              <span class="desc-title">Retención 70% — servicios / comisiones</span>
+              <span class="desc-title">Retención 70% — servicios / comisiones
+                <app-info-tooltip text="No hay tabla de retenciones efectuadas a proveedores en el sistema. Declarar manualmente en el portal del SRI." label="¿Por qué no está disponible?"></app-info-tooltip>
+              </span>
               <span class="desc-sub impl-note">Sin información disponible</span>
             </td>
             <td class="text-center"><span class="cas-badge gris">727</span></td>
@@ -490,7 +556,9 @@ import { InfoTooltipComponent } from './info-tooltip.component';
           </tr>
           <tr class="hover-row not-impl-row">
             <td class="desc-cell">
-              <span class="desc-title">Retención 100% — publicidad, pagos al exterior, Negocio Popular</span>
+              <span class="desc-title">Retención 100% — publicidad, pagos al exterior, Negocio Popular
+                <app-info-tooltip text="No hay tabla de retenciones efectuadas a proveedores en el sistema. Declarar manualmente en el portal del SRI." label="¿Por qué no está disponible?"></app-info-tooltip>
+              </span>
               <span class="desc-sub impl-note">Sin información disponible</span>
             </td>
             <td class="text-center"><span class="cas-badge gris">729</span></td>
@@ -535,7 +603,9 @@ import { InfoTooltipComponent } from './info-tooltip.component';
         <tbody>
           <tr class="hover-row not-impl-row">
             <td class="desc-cell">
-              <span class="desc-title">Impuesto a pagar por percepción (viene del 699)</span>
+              <span class="desc-title">Impuesto a pagar por percepción (viene del 699)
+                <app-info-tooltip text="Depende del casillero 699 que requiere el factor 563 y el crédito tributario 564, ambos no disponibles actualmente." label="¿Por qué no está disponible?"></app-info-tooltip>
+              </span>
               <span class="desc-sub impl-note">Sin información disponible</span>
             </td>
             <td class="text-center"><span class="cas-badge gris">801</span></td>
@@ -543,7 +613,9 @@ import { InfoTooltipComponent } from './info-tooltip.component';
           </tr>
           <tr class="hover-row not-impl-row">
             <td class="desc-cell">
-              <span class="desc-title">Impuesto a pagar por retención (viene del 799)</span>
+              <span class="desc-title">Impuesto a pagar por retención (viene del 799)
+                <app-info-tooltip text="Depende del total de retenciones efectuadas (799) que no está disponible por falta de tabla de retenciones a proveedores." label="¿Por qué no está disponible?"></app-info-tooltip>
+              </span>
               <span class="desc-sub impl-note">Sin información disponible</span>
             </td>
             <td class="text-center"><span class="cas-badge gris">802</span></td>
@@ -551,7 +623,9 @@ import { InfoTooltipComponent } from './info-tooltip.component';
           </tr>
           <tr class="hover-row not-impl-row">
             <td class="desc-cell">
-              <span class="desc-title">Interés por mora</span>
+              <span class="desc-title">Interés por mora
+                <app-info-tooltip text="Se calcula solo si la declaración se presenta fuera de plazo. El sistema no tiene historial de declaraciones para determinar si hubo mora." label="¿Por qué no está disponible?"></app-info-tooltip>
+              </span>
               <span class="desc-sub impl-note">Sin información disponible</span>
             </td>
             <td class="text-center"><span class="cas-badge gris">897</span></td>
@@ -559,7 +633,9 @@ import { InfoTooltipComponent } from './info-tooltip.component';
           </tr>
           <tr class="hover-row not-impl-row">
             <td class="desc-cell">
-              <span class="desc-title">Multas</span>
+              <span class="desc-title">Multas
+                <app-info-tooltip text="Aplica solo si la declaración fue tardía o incompleta. El sistema no gestiona historial de sanciones del SRI." label="¿Por qué no está disponible?"></app-info-tooltip>
+              </span>
               <span class="desc-sub impl-note">Sin información disponible</span>
             </td>
             <td class="text-center"><span class="cas-badge gris">898</span></td>
@@ -694,7 +770,7 @@ import { InfoTooltipComponent } from './info-tooltip.component';
       vertical-align: middle; font-size: 0.85rem;
     }
     .hover-row:hover { background: #f8fafc; }
-    .not-impl-row td { opacity: 0.6; }
+    .not-impl-row td { opacity: 1; }
     .nc-row td       { background: #fff5f5 !important; }
     .nc-row:hover td { background: #fef2f2 !important; }
     .factor-row      { background: #faf5ff; }
@@ -750,10 +826,35 @@ import { InfoTooltipComponent } from './info-tooltip.component';
     .cal-digito { font-size: 1.15rem; font-weight: 900; color: #1e293b; line-height: 1.2; }
     .cal-dia    { font-size: 0.62rem; font-weight: 600; color: #64748b; text-transform: uppercase; }
     .cal-nota   { font-size: 0.74rem; color: #94a3b8; padding: 0 1.75rem 1rem; margin: 0; }
+
+    /* ── INPUTS MANUALES ── */
+    .manual-input-wrap {
+      display: flex; align-items: center; gap: 4px; justify-content: flex-end;
+    }
+    .manual-label {
+      font-size: 0.7rem; color: #94a3b8; white-space: nowrap;
+    }
+    .manual-input {
+      width: 90px; text-align: right; font-size: 0.8rem; font-family: monospace;
+      border: 1px solid #e2e8f0; border-radius: 6px; padding: 2px 6px;
+      background: #f8fafc; color: #0f172a;
+      outline: none; transition: border-color 0.15s;
+    }
+    .manual-input:focus { border-color: #6366f1; background: #fff; }
+    .manual-input::-webkit-inner-spin-button,
+    .manual-input::-webkit-outer-spin-button { opacity: 0.5; }
   `]
 })
 export class R027IvaComponent implements OnChanges {
   @Input() data!: IvaR027Report;
+  @Output() manualesChange = new EventEmitter<{ manual507: number; manual503: number }>();
+
+  manual507 = 0;
+  manual503 = 0;
+
+  emitirManuales() {
+    this.manualesChange.emit({ manual507: this.manual507, manual503: this.manual503 });
+  }
 
   readonly calendario = [
     { digito: '1', dia: 10 }, { digito: '2', dia: 12 }, { digito: '3', dia: 14 },

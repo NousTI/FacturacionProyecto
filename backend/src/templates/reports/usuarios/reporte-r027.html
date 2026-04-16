@@ -111,18 +111,18 @@
     <div class="kpi-grid">
         <div class="kpi-card" style="border-top: 3px solid #ef4444;">
             <div class="label">IVA a pagar SRI</div>
-            <div class="value">${{ "{:,.2f}".format(data.kpis.iva_a_pagar.valor) }}</div>
-            <div class="extra">proyectado</div>
+            <div class="value" style="font-size:14px; color:#94a3b8; font-style:italic;">—</div>
+            <div class="extra">sin datos suficientes</div>
         </div>
         <div class="kpi-card" style="border-top: 3px solid #14b8a6;">
             <div class="label">Crédito tributario</div>
-            <div class="value">${{ "{:,.2f}".format(data.kpis.credito_tributario.valor) }}</div>
-            <div class="extra">disponible</div>
+            <div class="value" style="font-size:14px; color:#94a3b8; font-style:italic;">—</div>
+            <div class="extra">sin datos suficientes</div>
         </div>
         <div class="kpi-card" style="border-top: 3px solid #6366f1;">
             <div class="label">Factor de proporcionalidad</div>
-            <div class="value">{{ "%.4f"|format(data.kpis.factor.valor) }}</div>
-            <div class="extra">vs {{ "%.4f"|format(data.kpis.factor.valor_anterior) }} período anterior</div>
+            <div class="value" style="font-size:14px; color:#94a3b8; font-style:italic;">—</div>
+            <div class="extra">sin datos suficientes</div>
         </div>
         <div class="kpi-card" style="border-top: 3px solid #3b82f6;">
             <div class="label">Ventas tarifa {{ data.kpis.ventas_tarifa_principal.tarifa }}%</div>
@@ -179,7 +179,7 @@
                 <td style="text-align:center;"><span class="cas cas-azul">401 / 411</span></td>
                 <td class="text-right">${{ "{:,.2f}".format(data.bloque_400.c401_bruto) }}</td>
                 <td class="text-right font-bold">${{ "{:,.2f}".format(data.bloque_400.c401_neto) }}</td>
-                <td class="text-right" style="color:#1d4ed8; font-weight:700;">${{ "{:,.2f}".format(data.bloque_400.c411_neto) }}</td>
+                <td class="text-right" style="color:#1d4ed8; font-weight:700;">${{ "{:,.2f}".format(data.bloque_400.c411_bruto) }}</td>
             </tr>
             <tr>
                 <td>
@@ -260,14 +260,17 @@
                 <td class="text-right nd">—</td>
             </tr>
             <tr>
-                <td>
-                    Compras en el exterior (ej. publicidad Facebook / Google Ads)<br>
-                    <span class="no-info">Sin información disponible</span>
-                </td>
-                <td style="text-align:center;"><span class="cas">503 / 504</span></td>
+                <td>Compras en el exterior (ej. publicidad Facebook / Google Ads)</td>
+                <td style="text-align:center;"><span class="cas cas-azul">503 / 504</span></td>
+                {% if data.bloque_500.c503 %}
+                <td class="text-right">${{ "{:,.2f}".format(data.bloque_500.c503) }}</td>
+                <td class="text-right font-bold">${{ "{:,.2f}".format(data.bloque_500.c503) }}</td>
+                <td class="text-right nd">$0.00</td>
+                {% else %}
                 <td class="text-right nd">—</td>
                 <td class="text-right nd">—</td>
                 <td class="text-right nd">—</td>
+                {% endif %}
             </tr>
             <tr>
                 <td>
@@ -280,17 +283,17 @@
                 <td class="text-right nd">—</td>
             </tr>
             <tr style="background:#faf5ff;">
-                <td>Factor de proporcionalidad &nbsp; <span style="font-size:9px; color:#6b7280;">(401+405+407+408) / (401+403+405+407+408)</span></td>
-                <td style="text-align:center;"><span class="cas cas-indigo">563</span></td>
+                <td>Factor de proporcionalidad &nbsp; <span style="font-size:9px; color:#6b7280;">(401+405+407+408) / (401+403+405+407+408)</span><br><span class="no-info">Sin información disponible</span></td>
+                <td style="text-align:center;"><span class="cas">563</span></td>
                 <td class="text-right nd">—</td>
-                <td class="text-right font-bold">{{ "%.4f"|format(data.bloque_500.c563) }}</td>
+                <td class="text-right nd">—</td>
                 <td class="text-right nd">—</td>
             </tr>
             <tr>
-                <td>Crédito tributario aplicable &nbsp; <span style="font-size:9px; color:#6b7280;">(510 + 511 + 513 + 514 + 515) × 563</span></td>
-                <td style="text-align:center;"><span class="cas cas-verde">564</span></td>
+                <td>Crédito tributario aplicable &nbsp; <span style="font-size:9px; color:#6b7280;">(510 + 511 + 513 + 514 + 515) × 563</span><br><span class="no-info">Sin información disponible</span></td>
+                <td style="text-align:center;"><span class="cas">564</span></td>
                 <td class="text-right nd">—</td>
-                <td class="text-right" style="color:#166534; font-weight:700;">${{ "{:,.2f}".format(data.bloque_500.c564) }}</td>
+                <td class="text-right nd">—</td>
                 <td class="text-right nd">—</td>
             </tr>
             <tr class="total-row">
@@ -317,15 +320,15 @@
             </tr>
         </thead>
         <tbody>
-            <tr {% if data.bloque_600.c601 > 0 %}style="background:#fff7ed;"{% endif %}>
-                <td>Impuesto causado (499 − 564, solo si positivo)</td>
-                <td style="text-align:center;"><span class="cas cas-rojo">601</span></td>
-                <td class="text-right font-bold">${{ "{:,.2f}".format(data.bloque_600.c601) }}</td>
+            <tr>
+                <td>Impuesto causado (499 − 564, solo si positivo)<br><span class="no-info">Sin información disponible</span></td>
+                <td style="text-align:center;"><span class="cas">601</span></td>
+                <td class="text-right nd">—</td>
             </tr>
-            <tr {% if data.bloque_600.c602 > 0 %}style="background:#f0fdf4;"{% endif %}>
-                <td>Crédito tributario para el próximo mes (564 − 499, solo si positivo)</td>
-                <td style="text-align:center;"><span class="cas cas-verde">602</span></td>
-                <td class="text-right" style="color:#166534; font-weight:700;">${{ "{:,.2f}".format(data.bloque_600.c602) }}</td>
+            <tr>
+                <td>Crédito tributario para el próximo mes (564 − 499, solo si positivo)<br><span class="no-info">Sin información disponible</span></td>
+                <td style="text-align:center;"><span class="cas">602</span></td>
+                <td class="text-right nd">—</td>
             </tr>
             <tr>
                 <td>Arrastre de crédito tributario por adquisiciones (mes anterior)<br><span class="no-info">Sin información disponible</span></td>
@@ -343,9 +346,9 @@
                 <td class="text-right nd">—</td>
             </tr>
             <tr class="total-row">
-                <td class="font-bold">TOTAL IMPUESTO A PAGAR (601 − 605 − 606 − 609)</td>
-                <td style="text-align:center;"><span class="cas cas-rojo">699</span></td>
-                <td class="text-right font-bold">${{ "{:,.2f}".format(data.bloque_600.c699) }}</td>
+                <td class="font-bold">TOTAL IMPUESTO A PAGAR (601 − 605 − 606 − 609)<br><span class="no-info">Sin información disponible</span></td>
+                <td style="text-align:center;"><span class="cas">699</span></td>
+                <td class="text-right nd">—</td>
             </tr>
         </tbody>
     </table>
@@ -397,9 +400,9 @@
         </thead>
         <tbody>
             <tr>
-                <td>Impuesto a pagar por percepción (viene del 699)</td>
-                <td style="text-align:center;"><span class="cas cas-rojo">801</span></td>
-                <td class="text-right font-bold">${{ "{:,.2f}".format(data.bloque_900.c801) }}</td>
+                <td>Impuesto a pagar por percepción (viene del 699)<br><span class="no-info">Sin información disponible</span></td>
+                <td style="text-align:center;"><span class="cas">801</span></td>
+                <td class="text-right nd">—</td>
             </tr>
             <tr>
                 <td>Impuesto a pagar por retención (viene del 799)<br><span class="no-info">Sin información disponible</span></td>
@@ -418,8 +421,8 @@
             </tr>
             <tr class="grand-total-row">
                 <td>TOTAL PAGADO AL SRI (801 + 802 + 897 + 898)</td>
-                <td style="text-align:center;"><span style="font-family:monospace; font-weight:800; font-size:11px; background:#22c55e; color:#fff; padding:2px 6px; border-radius:4px;">999</span></td>
-                <td class="text-right">${{ "{:,.2f}".format(data.bloque_900.c999) }}</td>
+                <td style="text-align:center;"><span style="font-family:monospace; font-weight:800; font-size:11px; background:#475569; color:#fff; padding:2px 6px; border-radius:4px;">999</span></td>
+                <td class="text-right" style="color:#94a3b8 !important;">—</td>
             </tr>
         </tbody>
     </table>

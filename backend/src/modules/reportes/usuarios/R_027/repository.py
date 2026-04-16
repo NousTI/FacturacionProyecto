@@ -159,6 +159,120 @@ class RepositorioR027:
             return float(row['base_imponible']) if row else 0.0
 
     # ─────────────────────────────────────────────
+    # DRILL-DOWN — detalle por casillero
+    # ─────────────────────────────────────────────
+
+    def detalle_casillero_401(self, empresa_id: UUID, fecha_inicio: str, fecha_fin: str):
+        """Facturas emitidas gravadas (tarifa > 0%) — casillero 401/411."""
+        query = """
+            SELECT
+                f.numero_autorizacion,
+                f.fecha_emision::date            AS fecha,
+                f.numero_factura,
+                f.razon_social_comprador         AS cliente,
+                fd.tarifa_iva                    AS tarifa,
+                ROUND(fd.base_imponible::numeric, 2) AS base_imponible,
+                ROUND(fd.valor_iva::numeric, 2)      AS valor_iva
+            FROM sistema_facturacion.facturas_detalle fd
+            JOIN sistema_facturacion.facturas f ON fd.factura_id = f.id
+            WHERE f.empresa_id = %s
+              AND f.estado = 'AUTORIZADA'
+              AND f.tipo_documento = '01'
+              AND fd.tipo_iva = '4'
+              AND fd.tarifa_iva > 0
+              AND f.fecha_emision BETWEEN %s::timestamptz AND %s::timestamptz + interval '1 day' - interval '1 second'
+            ORDER BY f.fecha_emision DESC
+        """
+        with self.db.cursor() as cur:
+            cur.execute(query, (str(empresa_id), fecha_inicio, fecha_fin))
+            return [dict(r) for r in cur.fetchall()]
+
+    def detalle_casillero_403(self, empresa_id: UUID, fecha_inicio: str, fecha_fin: str):
+        """Facturas emitidas tarifa 0% — casillero 403."""
+        query = """
+            SELECT
+                f.numero_autorizacion,
+                f.fecha_emision::date            AS fecha,
+                f.numero_factura,
+                f.razon_social_comprador         AS cliente,
+                ROUND(fd.base_imponible::numeric, 2) AS base_imponible
+            FROM sistema_facturacion.facturas_detalle fd
+            JOIN sistema_facturacion.facturas f ON fd.factura_id = f.id
+            WHERE f.empresa_id = %s
+              AND f.estado = 'AUTORIZADA'
+              AND f.tipo_documento = '01'
+              AND fd.tipo_iva = '0'
+              AND f.fecha_emision BETWEEN %s::timestamptz AND %s::timestamptz + interval '1 day' - interval '1 second'
+            ORDER BY f.fecha_emision DESC
+        """
+        with self.db.cursor() as cur:
+            cur.execute(query, (str(empresa_id), fecha_inicio, fecha_fin))
+            return [dict(r) for r in cur.fetchall()]
+
+    def detalle_casillero_402(self, empresa_id: UUID, fecha_inicio: str, fecha_fin: str):
+        """Notas de crédito emitidas — casilleros 402/412."""
+        query = """
+            SELECT
+                nc.numero_autorizacion,
+                nc.fecha_emision::date           AS fecha,
+                nc.numero_nota_credito,
+                f.razon_social_comprador         AS cliente,
+                ROUND(nc.subtotal_15_iva::numeric, 2) AS base_imponible,
+                ROUND(nc.iva_total::numeric, 2)       AS valor_iva
+            FROM sistema_facturacion.notas_credito nc
+            JOIN sistema_facturacion.facturas f ON nc.factura_id = f.id
+            WHERE f.empresa_id = %s
+              AND nc.estado_sri = 'AUTORIZADO'
+              AND nc.fecha_emision BETWEEN %s::timestamptz AND %s::timestamptz + interval '1 day' - interval '1 second'
+            ORDER BY nc.fecha_emision DESC
+        """
+        with self.db.cursor() as cur:
+            cur.execute(query, (str(empresa_id), fecha_inicio, fecha_fin))
+            return [dict(r) for r in cur.fetchall()]
+
+    def detalle_casillero_500(self, empresa_id: UUID, fecha_inicio: str, fecha_fin: str):
+        """Gastos con IVA > 0% — casilleros 500/510."""
+        query = """
+            SELECT
+                g.fecha_emision::date        AS fecha,
+                g.numero_comprobante,
+                g.proveedor,
+                g.descripcion,
+                g.iva                        AS tarifa,
+                ROUND(g.subtotal::numeric, 2)            AS base_imponible,
+                ROUND((g.total - g.subtotal)::numeric, 2) AS valor_iva
+            FROM sistema_facturacion.gastos g
+            WHERE g.empresa_id = %s
+              AND g.tipo_iva != '0'
+              AND g.deleted_at IS NULL
+              AND g.fecha_emision BETWEEN %s AND %s
+            ORDER BY g.fecha_emision DESC
+        """
+        with self.db.cursor() as cur:
+            cur.execute(query, (str(empresa_id), fecha_inicio, fecha_fin))
+            return [dict(r) for r in cur.fetchall()]
+
+    def detalle_casillero_507(self, empresa_id: UUID, fecha_inicio: str, fecha_fin: str):
+        """Gastos sin IVA (tarifa 0%) — casillero 507."""
+        query = """
+            SELECT
+                g.fecha_emision::date        AS fecha,
+                g.numero_comprobante,
+                g.proveedor,
+                g.descripcion,
+                ROUND(g.subtotal::numeric, 2) AS base_imponible
+            FROM sistema_facturacion.gastos g
+            WHERE g.empresa_id = %s
+              AND g.tipo_iva = '0'
+              AND g.deleted_at IS NULL
+              AND g.fecha_emision BETWEEN %s AND %s
+            ORDER BY g.fecha_emision DESC
+        """
+        with self.db.cursor() as cur:
+            cur.execute(query, (str(empresa_id), fecha_inicio, fecha_fin))
+            return [dict(r) for r in cur.fetchall()]
+
+    # ─────────────────────────────────────────────
     # INFO EMPRESA (RUC, régimen, noveno dígito)
     # ─────────────────────────────────────────────
 
