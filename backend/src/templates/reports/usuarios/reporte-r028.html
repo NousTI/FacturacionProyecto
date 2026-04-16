@@ -10,7 +10,7 @@
 
 {% block extra_styles %}
     /* KPI Rows */
-    .kpi-grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 16px; }
+    .kpi-grid-5 { display: grid; grid-template-columns: repeat(5, 1fr); gap: 14px; margin-bottom: 16px; }
     .kpi-grid-4b { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 30px; }
 
     .kpi-card { border-top: 3px solid #e5e7eb; }
@@ -34,7 +34,7 @@
     }
 
     /* Charts */
-    .charts-row { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin: 16px 0 26px; }
+    .charts-row { display: grid; grid-template-columns: 1fr; gap: 20px; margin: 16px 0 26px; }
     .chart-box canvas { max-height: 260px; }
 
     /* Radar table */
@@ -75,7 +75,19 @@
 
     <!-- ─── KPI Row 1: Financieros ─── -->
     <div class="section-title">Indicadores Financieros</div>
-    <div class="kpi-grid-4">
+    <div class="kpi-grid-5">
+
+        <div class="kpi-card green">
+            <div class="label">Dinero Recaudado</div>
+            <div class="value">${{ "{:,.2f}".format(data.total_recaudado.valor) }}</div>
+            <div class="extra">
+                {% if data.total_recaudado.variacion >= 0 %}
+                    <span class="trend-up">▲ {{ "{:.1f}".format(data.total_recaudado.variacion) }}% vs período ant.</span>
+                {% else %}
+                    <span class="trend-down">▼ {{ "{:.1f}".format(data.total_recaudado.variacion | abs) }}% vs período ant.</span>
+                {% endif %}
+            </div>
+        </div>
 
         <div class="kpi-card blue">
             <div class="label">Total Facturado</div>
@@ -182,7 +194,7 @@
 
     <!-- ─── Desglose Formas de Pago ─── -->
     {% if data.ingreso_otras.formas_pago_detalle %}
-    <div class="section-title">Desglose Formas de Pago</div>
+    <div class="section-title">Desglose por Método de Pago</div>
     <table>
         <thead>
             <tr>
@@ -252,8 +264,8 @@
     <div class="no-data-msg">✓ Sin alertas en radar de gestión. Operación saludable.</div>
     {% endif %}
 
-    <!-- ─── Monitor de Rentabilidad (por cantidad vendida) ─── -->
-    <div class="section-title">Monitor de Rentabilidad — Top 5 por Cantidad</div>
+    <!-- ─── Monitor de Rentabilidad ─── -->
+    <div class="section-title">Monitor de Rentabilidad y Rotación — Top 5 más vendidos</div>
     {% if data.monitor_rentabilidad %}
     <table>
         <thead>
@@ -291,8 +303,7 @@
     <div class="no-data-msg">Sin datos de productos en el período.</div>
     {% endif %}
 
-    <!-- ─── Monitor de Rentabilidad (por utilidad) ─── -->
-    <div class="section-title">Monitor de Rentabilidad — Top 5 por Utilidad</div>
+    <div class="section-title" style="margin-top:22px;">Monitor de Rentabilidad y Rotación — Top 5 mayor utilidad</div>
     {% if data.monitor_rentabilidad_por_utilidad %}
     <table>
         <thead>

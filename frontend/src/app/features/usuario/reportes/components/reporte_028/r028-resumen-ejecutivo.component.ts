@@ -180,7 +180,7 @@ Chart.register(...registerables);
               <div class="title-icon-row">
                 <i class="bi bi-list-check icon-badge gold-bg"></i>
                 <div>
-                  <h5>Desglose Detallado por Método de Pago (Caja)</h5>
+                  <h5>Desglose Detallado por Método de Pago</h5>
                   <p>Listado completo de todos los métodos oficiales del SRI con sus montos acumulados</p>
                 </div>
               </div>
