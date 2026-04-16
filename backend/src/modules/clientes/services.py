@@ -1,4 +1,4 @@
-from fastapi import Depends
+from fastapi import Depends, Request
 from uuid import UUID
 from typing import List, Optional
 import logging
@@ -103,49 +103,58 @@ class ServicioClientes:
         logger.info(f"[ÉXITO] Cliente obtenido - ID: {id}")
         return cliente
 
-    def crear_cliente(self, datos: ClienteCreacion, usuario_actual: dict):
+    def crear_cliente(self, datos: ClienteCreacion, usuario_actual: dict, request: Request):
         logger.info(f"[CREAR] Iniciando creación de cliente")
         ctx = self._get_context(usuario_actual)
         
+        import uuid
+        import unicodedata
+        import re
+        from urllib.parse import urlparse
+
+        # Get domain from request
+        domain = request.headers.get("origin")
+        if domain:
+            domain_name = urlparse(domain).hostname
+        else:
+            domain_name = request.url.hostname
+        if not domain_name:
+            domain_name = "nousesaas.com"
+            
+        # Ensure it has an extension
+        if "." not in domain_name:
+            domain_name = f"{domain_name}.com"
+
+        # clean name for email
+        def _clean_str(s):
+            if not s: return ""
+            s = ''.join(c for c in unicodedata.normalize('NFD', s) if unicodedata.category(c) != 'Mn')
+            s = s.lower()
+            return re.sub(r'[^a-z0-9]', '', s)
+
         # Determinar empresa_id
         target_empresa_id = None
 
         if ctx["is_usuario"]:
             target_empresa_id = ctx["empresa_id"]
         else:
-             # Admin/Vendedor deben pasar empresa_id en los datos Opcional en schema, pero obligatorio logicamente
-             # El schema ClienteBase tiene empresa_id? Revisemos schema:
-             # Si, ClienteBase tiene Identificacion, etc. pero NO empresa_id explicitamente en mi correccion anterior del schema
-             # Error mio en schema anterior, agregaremos validacion aqui o asumiremos que el frontend lo envia si el schema lo permite.
-             # En el schema anterior ClienteBase NO tiene empresa_id, tiene identificacion etc. 
-             # IMPORTANTE: El usuario debe crear cliente en SU empresa.
-             pass
-        
-        # Como schema ClienteCreacion hereda ClienteBase, y ClienteBase no tiene empresa_id en mi update,
-        # necesitamos inyectarlo.
+             if not target_empresa_id:
+                  if not ctx["empresa_id"]:
+                      raise AppError("Contexto de empresa requerido para crear cliente", 400)
+                  target_empresa_id = ctx["empresa_id"]
         
         data_dict = datos.model_dump()
-        
-        if ctx["is_usuario"]:
-            data_dict["empresa_id"] = ctx["empresa_id"]
-        elif ctx["is_superadmin"] or ctx["is_vendedor"]:
-            # Para simplificar, asumiremos que si es admin/vendedor el ID de empresa viene en un header o parametro, 
-            # PERO como estamos en POST body, lo ideal es que el modelo lo tenga.
-            # Dado que no edite el modelo para agregar empresa_id opcional, usaremos el del usuario si existe, o fallaremos.
-            # FIX: Para evitar complicar, Usuarios crean en SU empresa. Admin/Vendedor NO usan este endpoint tipicamente para crear clientes
-            # de facturacion manual, sino la empresa misma.
-            if not target_empresa_id:
-                 # Hack: Si el modelo trae empresa_id (que no trae), lo usariamos.
-                 # Asumimos contexto de usuario por ahora.
-                 # Si un ADMIN quiere crear un cliente para una empresa X, deberia "impersonar" o pasar el ID.
-                 # Por ahora, cerramos a: USUARIOS crean clientes.
-                 if not ctx["empresa_id"]:
-                     raise AppError("Contexto de empresa requerido para crear cliente", 400)
-                 data_dict["empresa_id"] = ctx["empresa_id"]
+        data_dict["empresa_id"] = target_empresa_id
+
+        # Dynamically generate email to not allow frontend email
+        base_name = _clean_str(datos.razon_social.split()[0]) if datos.razon_social else "cliente"
+        # Since clients might not have separately stored nombres/apellidos in the same way, we use razon_social
+        random_str = uuid.uuid4().hex[:4]
+        data_dict["email"] = f"{base_name}.{random_str}@{domain_name}"
 
         try:
             result = self.repo.crear_cliente(data_dict)
-            logger.info(f"[ÉXITO] Cliente creado - ID: {result['id']}")
+            logger.info(f"[ÉXITO] Cliente creado - ID: {result['id']} - Email: {data_dict['email']}")
             return result
         except ValueError as e:
             logger.error(f"[ERROR] Fallo al crear cliente: {str(e)}")

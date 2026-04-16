@@ -1,4 +1,4 @@
-from fastapi import Depends
+from fastapi import Depends, Request
 from fastapi.responses import StreamingResponse
 from datetime import datetime
 from .services import ServicioClientes
@@ -11,8 +11,8 @@ class ClienteController:
     def __init__(self, service: ServicioClientes = Depends()):
         self.service = service
 
-    def crear_cliente(self, body: ClienteCreacion, usuario_actual: dict):
-        nuevo = self.service.crear_cliente(body, usuario_actual)
+    def crear_cliente(self, body: ClienteCreacion, usuario_actual: dict, request: Request):
+        nuevo = self.service.crear_cliente(body, usuario_actual, request)
         return success_response(nuevo, "Cliente creado exitosamente")
 
     def listar_clientes(self, usuario_actual: dict, empresa_id: Optional[UUID] = None):

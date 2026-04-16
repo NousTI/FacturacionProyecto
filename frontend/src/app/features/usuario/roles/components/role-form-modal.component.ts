@@ -38,7 +38,7 @@ import { HasPermissionDirective } from '../../../../shared/directives/has-permis
           <button class="btn btn-minimal-link me-3" (click)="onClose.emit()">Cancelar</button>
           
           <ng-container *ngIf="!editingRole || !role?.es_sistema">
-            <button *hasPermission="editingRole ? 'ROLES_EDITAR' : 'ROLES_CREAR'"
+            <button *hasPermission="'CONFIG_ROLES'"
                     class="btn btn-minimal-dark px-4" 
                     (click)="onSave.emit(roleForm)" 
                     [disabled]="saving">

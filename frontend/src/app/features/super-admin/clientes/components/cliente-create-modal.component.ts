@@ -28,14 +28,14 @@ import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } 
               <div class="col-md-6">
                 <label class="editorial-label">Nombres *</label>
                 <input 
-                  type="text"
+                  type="text" 
                   class="editorial-input"
                   formControlName="nombres" 
-                  placeholder="Ej. María Elena"
+                  placeholder="Ej: Juan Antonio"
                   [class.is-invalid]="clienteForm.get('nombres')?.invalid && clienteForm.get('nombres')?.touched"
                 >
                 <div class="invalid-feedback" *ngIf="clienteForm.get('nombres')?.invalid && clienteForm.get('nombres')?.touched">
-                  El nombre es obligatorio (mín. 3 caracteres)
+                  Los nombres son obligatorios (mín. 3 letras)
                 </div>
               </div>
               
@@ -43,32 +43,34 @@ import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } 
               <div class="col-md-6">
                 <label class="editorial-label">Apellidos *</label>
                 <input 
-                  type="text"
+                  type="text" 
                   class="editorial-input"
                   formControlName="apellidos" 
-                  placeholder="Ej. Espinoza Vera"
+                  placeholder="Ej: Pérez García"
                   [class.is-invalid]="clienteForm.get('apellidos')?.invalid && clienteForm.get('apellidos')?.touched"
                 >
                 <div class="invalid-feedback" *ngIf="clienteForm.get('apellidos')?.invalid && clienteForm.get('apellidos')?.touched">
-                  El apellido es obligatorio (mín. 3 caracteres)
+                  Los apellidos son obligatorios (mín. 3 letras)
                 </div>
               </div>
               
               <!-- Teléfono -->
               <div class="col-12">
-                <label class="editorial-label">Teléfono de Contacto *</label>
+                <label class="editorial-label">Teléfono de contacto *</label>
                 <input 
                   type="text"
                   class="editorial-input"
-                  formControlName="telefono"
-                  placeholder="099 999 9999"
+                  formControlName="telefono" 
+                  placeholder="Ej: 0987654321"
                   maxlength="10"
-                  inputmode="numeric"
                   (keypress)="onlyNumbers($event)"
                   [class.is-invalid]="clienteForm.get('telefono')?.invalid && clienteForm.get('telefono')?.touched"
                 >
-                <div class="invalid-feedback" *ngIf="clienteForm.get('telefono')?.invalid && clienteForm.get('telefono')?.touched">
-                  Formato inválido (Ej: 09XXXXXXXX, 10 dígitos)
+                <div class="invalid-feedback" *ngIf="clienteForm.get('telefono')?.errors?.['required'] && clienteForm.get('telefono')?.touched">
+                  El teléfono es obligatorio
+                </div>
+                <div class="invalid-feedback" *ngIf="clienteForm.get('telefono')?.errors?.['pattern'] && clienteForm.get('telefono')?.touched">
+                  Debe empezar con 09 y tener 10 dígitos
                 </div>
               </div>
 
@@ -79,11 +81,18 @@ import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } 
                   type="email"
                   class="editorial-input"
                   formControlName="email" 
-                  placeholder="ejemplo@correo.com"
+                  placeholder="Generación automática por el sistema"
+                  readonly
                   [class.is-invalid]="clienteForm.get('email')?.invalid && clienteForm.get('email')?.touched"
                 >
                 <div class="invalid-feedback" *ngIf="clienteForm.get('email')?.invalid && clienteForm.get('email')?.touched">
                   Ingrese un correo electrónico válido
+                </div>
+                <div class="info-editorial-card mt-2" style="background: #f0f9ff; border-color: #bae6fd;">
+                  <div class="d-flex align-items-center gap-2">
+                    <i class="bi bi-info-circle-fill text-primary"></i>
+                    <span class="text-muted" style="font-size: 0.75rem; font-weight: 600;">El correo se creará automáticamente basándose en la razón social.</span>
+                  </div>
                 </div>
               </div>
               
@@ -95,13 +104,13 @@ import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } 
                   formControlName="empresa_id"
                   [class.is-invalid]="clienteForm.get('empresa_id')?.invalid && clienteForm.get('empresa_id')?.touched"
                 >
-                  <option [value]="null" disabled>Seleccione una empresa de la lista...</option>
+                  <option [value]="null" disabled selected>Seleccione una empresa...</option>
                   <option *ngFor="let e of empresas" [value]="e.id">
                     {{ e.nombre_comercial }}
                   </option>
                 </select>
                 <div class="invalid-feedback" *ngIf="clienteForm.get('empresa_id')?.invalid && clienteForm.get('empresa_id')?.touched">
-                  Debe asignar este cliente a una empresa
+                  Debe seleccionar una empresa
                 </div>
               </div>
 
@@ -280,8 +289,8 @@ export class ClienteCreateModalComponent implements OnInit {
     this.clienteForm = this.fb.group({
       nombres: ['', [Validators.required, Validators.minLength(3)]],
       apellidos: ['', [Validators.required, Validators.minLength(3)]],
-      email: ['', [Validators.required, Validators.email]],
-      telefono: ['', [Validators.required, Validators.pattern(/^09[0-9]{8}$/)]],
+      email: [null, [Validators.email]],
+      telefono: ['', [Validators.required, Validators.pattern(/^09\d{8}$/)]],
       empresa_id: [null, Validators.required],
       avatar_url: [null],
       activo: [true]

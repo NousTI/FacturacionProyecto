@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, Query, Request
 from typing import List, Optional
 from uuid import UUID
 
@@ -90,10 +90,11 @@ def listar_clientes(
 @router.post("", response_model=RespuestaBase[ClienteLectura], status_code=201)
 def crear_cliente(
     datos: ClienteCreacion,
+    request: Request,
     usuario: dict = Depends(requerir_permiso(PermissionCodes.CLIENTES_CREAR)),
     controller: ClienteController = Depends()
 ):
-    return controller.crear_cliente(datos, usuario)
+    return controller.crear_cliente(datos, usuario, request)
 
 @router.get("/{id}", response_model=RespuestaBase[ClienteLectura])
 def obtener_cliente(

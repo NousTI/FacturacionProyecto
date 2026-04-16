@@ -39,19 +39,17 @@ import { AuthService } from '../../../../../core/auth/auth.service';
               </div>
               <div class="row g-3">
                 <div class="col-md-6">
-                  <label class="form-label">Nombres *</label>
+                  <label class="form-label">Nombre *</label>
                   <input type="text" formControlName="nombre" class="form-input-premium" 
-                         [class.is-invalid]="isFieldInvalid('nombre')" 
-                         placeholder="Ej: Juan">
+                         [class.is-invalid]="isFieldInvalid('nombre')" placeholder="Ej: Juan">
                   <div class="invalid-feedback" *ngIf="isFieldInvalid('nombre')">
                     El nombre es obligatorio
                   </div>
                 </div>
                 <div class="col-md-6">
-                  <label class="form-label">Apellidos *</label>
+                  <label class="form-label">Apellido *</label>
                   <input type="text" formControlName="apellido" class="form-input-premium" 
-                         [class.is-invalid]="isFieldInvalid('apellido')" 
-                         placeholder="Ej: Pérez">
+                         [class.is-invalid]="isFieldInvalid('apellido')" placeholder="Ej: Pérez">
                   <div class="invalid-feedback" *ngIf="isFieldInvalid('apellido')">
                     El apellido es obligatorio
                   </div>
@@ -67,10 +65,11 @@ import { AuthService } from '../../../../../core/auth/auth.service';
               </div>
               <div class="row g-3">
                 <div class="col-md-12">
-                  <label class="form-label">Correo Electrónico *</label>
+                  <label class="form-label">Correo Electrónico</label>
                   <input type="email" formControlName="correo" class="form-input-premium" 
                          [class.is-invalid]="isFieldInvalid('correo')" 
-                         placeholder="juan.perez@empresa.com" [readonly]="!!usuario">
+                         [placeholder]="usuario ? 'correo@ejemplo.com' : 'Generación automática por el sistema'" 
+                         readonly>
                   <div class="invalid-feedback" *ngIf="userForm.get('correo')?.errors?.['required'] && isFieldInvalid('correo')">
                     El correo es obligatorio
                   </div>
@@ -78,14 +77,21 @@ import { AuthService } from '../../../../../core/auth/auth.service';
                     Ingrese un correo electrónico válido
                   </div>
                   <small *ngIf="usuario" class="text-muted-xs mt-1 d-block">El correo electrónico no se puede modificar por seguridad.</small>
+                  <div *ngIf="!usuario" class="info-notice-compact mt-2">
+                    <i class="bi bi-info-circle-fill"></i>
+                    <span>El correo se generará dinámicamente usando el nombre y apellido.</span>
+                  </div>
                 </div>
                 <div class="col-md-12">
-                  <label class="form-label">Teléfono de contacto</label>
+                  <label class="form-label">Teléfono de contacto *</label>
                   <input type="text" formControlName="telefono" class="form-input-premium" 
                          [class.is-invalid]="isFieldInvalid('telefono')"
-                         (keypress)="validateNumbers($event)" maxlength="10" placeholder="0999999999">
-                  <div class="invalid-feedback" *ngIf="isFieldInvalid('telefono')">
-                    El teléfono debe tener 10 dígitos
+                         (keypress)="validateNumbers($event)" maxlength="10" placeholder="Ej: 0987654321">
+                  <div class="invalid-feedback" *ngIf="userForm.get('telefono')?.errors?.['required'] && isFieldInvalid('telefono')">
+                    El teléfono es obligatorio
+                  </div>
+                  <div class="invalid-feedback" *ngIf="userForm.get('telefono')?.errors?.['pattern'] && isFieldInvalid('telefono')">
+                    Debe empezar con 09 y tener 10 dígitos
                   </div>
                 </div>
                 
@@ -200,6 +206,8 @@ import { AuthService } from '../../../../../core/auth/auth.service';
     .status-toggle { display: flex; align-items: center; gap: 1rem; }
     .status-toggle span { font-size: 0.85rem; font-weight: 700; color: #94a3b8; }
     .status-toggle span.active { color: #10b981; }
+    .info-notice-compact { display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem 0.75rem; background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 8px; color: #0369a1; font-size: 0.75rem; font-weight: 600; }
+    .info-notice-compact i { font-size: 0.9rem; }
     .self-badge { padding: 0.5rem 1rem; background: #ecfdf5; color: #065f46; border-radius: 100px; font-size: 0.75rem; font-weight: 800; display: flex; align-items: center; gap: 0.5rem; }
     .actions { display: flex; gap: 1rem; }
     .btn-cancel { padding: 0.75rem 1.5rem; border-radius: 12px; border: none; background: white; color: #64748b; font-weight: 700; }
@@ -233,8 +241,8 @@ export class UsuarioFormModalComponent implements OnInit, OnDestroy {
     this.userForm = this.fb.group({
       nombre: ['', [Validators.required]],
       apellido: ['', [Validators.required]],
-      correo: ['', [Validators.required, Validators.email]],
-      telefono: ['', [Validators.pattern(/^\d{10}$/)]],
+      correo: [null, [Validators.email]],
+      telefono: ['', [Validators.required, Validators.pattern(/^09\d{8}$/)]],
       empresa_rol_id: ['', [Validators.required]],
       activo: [true]
     });
