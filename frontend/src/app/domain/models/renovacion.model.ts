@@ -38,4 +38,5 @@ export interface SolicitudRenovacionProcess {
   motivo_rechazo?: string;
   metodo_pago?: string;
   numero_comprobante?: string;
+  estado_pago?: 'PAGADO' | 'PENDIENTE';
 }

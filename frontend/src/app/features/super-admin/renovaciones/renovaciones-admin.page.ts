@@ -299,7 +299,8 @@ export class RenovacionesAdminPage implements OnInit, OnDestroy {
       estado,
       motivo_rechazo: estado === 'RECHAZADA' ? this.motivoRechazo : undefined,
       metodo_pago: extraData?.metodo_pago,
-      numero_comprobante: extraData?.numero_comprobante
+      numero_comprobante: extraData?.numero_comprobante,
+      estado_pago: extraData?.estado_pago
     };
 
     this.api.procesarSolicitud(this.seleccionada.id, data)

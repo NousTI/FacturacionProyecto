@@ -18,6 +18,7 @@ class SolicitudRenovacionProcess(BaseModel):
     motivo_rechazo: Optional[str] = None
     metodo_pago: Optional[str] = "TRANSFERENCIA"
     numero_comprobante: Optional[str] = None
+    estado_pago: Optional[str] = "PAGADO"
 
 class SolicitudRenovacionLectura(SolicitudRenovacionBase):
     id: UUID

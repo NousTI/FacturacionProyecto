@@ -44,7 +44,24 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
               </ul>
             </div>
 
-            <div class="payment-fields mt-3">
+            <!-- Toggle Pago Recibido -->
+            <div class="pago-toggle-box p-3 mb-3" [class.pagado]="pagoRecibido" [class.pendiente]="!pagoRecibido">
+              <div class="d-flex align-items-center justify-content-between">
+                <div>
+                  <div class="fw-800 text-dark" style="font-size: 0.85rem;">
+                    {{ pagoRecibido ? 'Pago Recibido' : 'Pago Pendiente' }}
+                  </div>
+                  <div class="text-muted" style="font-size: 0.75rem;">
+                    {{ pagoRecibido ? 'El plan se activará como pagado.' : 'Se activará el servicio, el pago se confirmará después.' }}
+                  </div>
+                </div>
+                <div class="form-check form-switch ms-3 mb-0">
+                  <input class="form-check-input" type="checkbox" role="switch" [(ngModel)]="pagoRecibido" style="width: 2.5rem; height: 1.25rem; cursor: pointer;">
+                </div>
+              </div>
+            </div>
+
+            <div class="payment-fields" *ngIf="pagoRecibido">
               <div class="mb-3">
                 <label class="smallest text-uppercase fw-800 text-muted d-block mb-2">Método de Pago</label>
                 <select [(ngModel)]="metodo_pago" class="form-select lux-input">
@@ -54,7 +71,7 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
                   <option value="OTRO">OTRO</option>
                 </select>
               </div>
-              
+
               <div class="mb-3" *ngIf="requiereComprobante">
                 <label class="smallest text-uppercase fw-800 text-muted d-block mb-2">Número de Comprobante / Referencia *</label>
                 <input type="text" [(ngModel)]="numero_comprobante" class="form-control lux-input" placeholder="Ej: TR-000123">
@@ -69,9 +86,9 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
               <button class="btn-lux-secondary flex-grow-1" (click)="onClose.emit()">Cerrar</button>
               <ng-container *ngIf="seleccionada?.estado === 'PENDIENTE'">
                 <button class="btn btn-outline-danger px-4 border-0 fw-bold" (click)="onRejectAction.emit()">Rechazar</button>
-                <button 
-                  class="btn-lux-primary px-4 fw-bold" 
-                  [disabled]="cargando || (requiereComprobante && !numero_comprobante.trim())"
+                <button
+                  class="btn-lux-primary px-4 fw-bold"
+                  [disabled]="cargando || (pagoRecibido && requiereComprobante && !numero_comprobante.trim())"
                   (click)="confirmar()"
                 >
                   <span *ngIf="cargando" class="spinner-border spinner-border-sm me-2"></span>
@@ -114,6 +131,13 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
     }
     .btn-lux-secondary:hover { background: #e2e8f0; }
 
+    .pago-toggle-box {
+      border-radius: 12px; border: 1px solid;
+      transition: all 0.2s;
+    }
+    .pago-toggle-box.pagado { background: #f0fdf4; border-color: #dcfce7; }
+    .pago-toggle-box.pendiente { background: #fffbeb; border-color: #fde68a; }
+
     .smallest { font-size: 0.65rem; }
     .fw-800 { font-weight: 800; }
     .fw-600 { font-weight: 600; }
@@ -128,6 +152,7 @@ export class RenovacionProcessModalComponent {
 
   metodo_pago: string = 'TRANSFERENCIA';
   numero_comprobante: string = '';
+  pagoRecibido: boolean = true;
 
   get requiereComprobante(): boolean {
     return !['EFECTIVO', 'OTRO'].includes(this.metodo_pago);
@@ -135,8 +160,9 @@ export class RenovacionProcessModalComponent {
 
   confirmar() {
     this.onConfirm.emit({
-      metodo_pago: this.metodo_pago,
-      numero_comprobante: this.numero_comprobante
+      metodo_pago: this.pagoRecibido ? this.metodo_pago : null,
+      numero_comprobante: this.pagoRecibido ? this.numero_comprobante : null,
+      estado_pago: this.pagoRecibido ? 'PAGADO' : 'PENDIENTE'
     });
   }
 }

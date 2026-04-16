@@ -171,7 +171,7 @@ class ServicioRenovaciones:
                 "plan_id": str(solicitud['plan_id']),
                 "monto": float(plan['precio_anual']),
                 "metodo_pago": data.metodo_pago or "TRANSFERENCIA", 
-                "estado": "PAGADO",
+                "estado": data.estado_pago or "PAGADO",
                 "fecha_pago": datetime.now(),
                 "fecha_inicio_periodo": base_date,
                 "fecha_fin_periodo": fecha_fin_nueva,
