@@ -34,7 +34,7 @@ def listar_puntos(
 
 @router.get("/stats")
 def obtener_estadisticas(
-    usuario: dict = Depends(requerir_permiso(PermissionCodes.PUNTO_EMISION_GESTIONAR)),
+    usuario: dict = Depends(requerir_permiso([PermissionCodes.PUNTO_EMISION_GESTIONAR, PermissionCodes.FACTURAS_CREAR, PermissionCodes.FACTURAS_EDITAR, PermissionCodes.FACTURAS_VER_TODAS, PermissionCodes.FACTURAS_VER_PROPIAS, PermissionCodes.FACTURA_PROGRAMADA_CREAR, PermissionCodes.FACTURA_PROGRAMADA_EDITAR])),
     servicio: ServicioPuntosEmision = Depends()
 ):
     stats = servicio.obtener_estadisticas(usuario)

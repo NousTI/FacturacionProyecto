@@ -34,7 +34,7 @@ def listar_establecimientos(
 
 @router.get("/stats", response_model=RespuestaBase[dict])
 def obtener_estadisticas_establecimientos(
-    usuario: dict = Depends(requerir_permiso(PermissionCodes.ESTABLECIMIENTO_GESTIONAR)),
+    usuario: dict = Depends(requerir_permiso([PermissionCodes.ESTABLECIMIENTO_GESTIONAR, PermissionCodes.FACTURAS_CREAR, PermissionCodes.FACTURAS_EDITAR, PermissionCodes.FACTURAS_VER_TODAS, PermissionCodes.FACTURAS_VER_PROPIAS, PermissionCodes.FACTURA_PROGRAMADA_CREAR, PermissionCodes.FACTURA_PROGRAMADA_EDITAR])),
     servicio: ServicioEstablecimientos = Depends()
 ):
     """Obtiene estadísticas generales de establecimientos"""
