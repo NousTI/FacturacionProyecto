@@ -259,7 +259,25 @@ class ServicioRecurringBilling:
 
             # 3. Preparar Datos de Nueva Factura (Clonando la plantilla)
             detalles_clonados = []
+            # Recalcular totales desde los detalles para evitar inconsistencias en la plantilla
+            _s_sin_iva = 0; _s_con_iva = 0; _s_no_obj = 0; _s_exento = 0
+            _t_iva = 0; _t_desc = 0
+            _mapping = {'0': 0.0, '2': 12.0, '3': 14.0, '4': 15.0, '5': 5.0, '10': 13.0}
             for det in plantilla.get('detalles', []):
+                cant = float(det.get('cantidad', 0))
+                prec = float(det.get('precio_unitario', 0))
+                desc = float(det.get('descuento', 0))
+                sub_neto = round((cant * prec) - desc, 2)
+                tipo = str(det.get('tipo_iva', '0')).strip()
+                rate = _mapping.get(tipo, 0.0)
+                val_iva = round(sub_neto * (rate / 100.0), 2)
+                if tipo in ['2', '3', '4', '5', '10']: _s_con_iva += sub_neto
+                elif tipo == '0': _s_sin_iva += sub_neto
+                elif tipo in ['6', 'NO_OBJETO']: _s_no_obj += sub_neto
+                elif tipo in ['7', 'EXENTO']: _s_exento += sub_neto
+                else: _s_sin_iva += sub_neto
+                _t_iva += val_iva
+                _t_desc += desc
                 detalles_clonados.append({
                     "producto_id": det.get('producto_id'),
                     "codigo_producto": det.get('codigo_producto'),
@@ -269,9 +287,14 @@ class ServicioRecurringBilling:
                     "precio_unitario": det.get('precio_unitario'),
                     "descuento": det.get('descuento'),
                     "tipo_iva": det.get('tipo_iva'),
-                    "valor_iva": det.get('valor_iva'),
-                    "subtotal": det.get('subtotal')
                 })
+
+            _propina = float(plantilla.get('propina', 0))
+            _ret_iva = float(plantilla.get('retencion_iva', 0))
+            _ret_renta = float(plantilla.get('retencion_renta', 0))
+            # sub_neto ya tiene el descuento restado por línea, no acumular descuento en cabecera
+            # Fórmula Pydantic: total = subtotales + iva + propina - retenciones (descuento=0 porque ya está en subtotales)
+            _total_calc = round((_s_sin_iva + _s_con_iva + _s_no_obj + _s_exento + _t_iva + _propina) - (_ret_iva + _ret_renta), 2)
 
             datos_factura = FacturaCreacion(
                 establecimiento_id=plantilla['establecimiento_id'],
@@ -281,14 +304,14 @@ class ServicioRecurringBilling:
                 empresa_id=prog['empresa_id'],
                 facturacion_programada_id=prog['id'],
                 fecha_emision=datetime.now(),
-                subtotal_sin_iva=plantilla['subtotal_sin_iva'],
-                subtotal_con_iva=plantilla['subtotal_con_iva'],
-                subtotal_no_objeto_iva=plantilla['subtotal_no_objeto_iva'],
-                subtotal_exento_iva=plantilla['subtotal_exento_iva'],
-                iva=plantilla['iva'],
-                descuento=plantilla['descuento'],
-                propina=plantilla.get('propina', 0),
-                total=plantilla['total'],
+                subtotal_sin_iva=round(_s_sin_iva, 2),
+                subtotal_con_iva=round(_s_con_iva, 2),
+                subtotal_no_objeto_iva=round(_s_no_obj, 2),
+                subtotal_exento_iva=round(_s_exento, 2),
+                iva=round(_t_iva, 2),
+                descuento=0,
+                propina=_propina,
+                total=_total_calc,
                 detalles=detalles_clonados,
                 origen="API",
                 observaciones=f"Generada automáticamente desde plantilla. Programación ID: {prog['id']}",
@@ -319,8 +342,11 @@ class ServicioRecurringBilling:
         except Exception as e:
             logger.error(f"FALLO en ejecución programada {prog['id']}: {str(e)}")
             try:
+                self.repo_prog.db.rollback()
+            except: pass
+            try:
                 query_log_error = """
-                    INSERT INTO sistema_facturacion.log_emision_facturas 
+                    INSERT INTO sistema_facturacion.log_emision_facturas
                     (facturacion_programada_id, ambiente, estado, tipo_intento, usuario_id, observaciones, mensajes)
                     VALUES (%s, %s, %s, %s, %s, %s, %s)
                 """
@@ -328,6 +354,7 @@ class ServicioRecurringBilling:
                     cur.execute(query_log_error, (
                         str(prog['id']), 1, 'ERROR_SISTEMA', 'INICIAL', str(prog['usuario_id']), f"Error: {str(e)}", '[]'
                     ))
+                self.repo_prog.db.commit()
             except: pass
 
             self.registrar_ejecucion(prog['id'], exitosa=False)
@@ -335,6 +362,9 @@ class ServicioRecurringBilling:
 
     def registrar_ejecucion(self, id: UUID, exitosa: bool, frecuencia: str = None, dia: int = None):
         """Actualiza estadísticas y proxima fecha tras un intento de emision."""
+        try:
+            self.repo_prog.db.rollback()
+        except: pass
         prog = self.repo_prog.obtener_por_id(id)
         if not prog: return
         

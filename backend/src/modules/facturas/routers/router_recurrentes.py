@@ -12,7 +12,7 @@ from ..schemas_programacion import (
 from ..services.service_recurrentes import ServicioRecurrentes
 from ...autenticacion.routes import requerir_permiso
 from ....constants.permissions import PermissionCodes
-from ....utils.response import success_response
+from ....utils.response import success_response, error_response
 
 router = APIRouter()
 
@@ -103,7 +103,8 @@ def ejecutar_ahora_individual(
     resultado = servicio.ejecutar_ahora(id, usuario)
     if resultado.get("exitosa"):
         return success_response(resultado, "Factura generada y emitida correctamente")
-    return success_response(resultado, "Hubo errores en el proceso de emisión. Revisa el historial.", status_code=400)
+    from fastapi.responses import JSONResponse
+    return JSONResponse(status_code=400, content=error_response("Hubo errores en el proceso de emisión. Revisa el historial."))
 
 @router.get("/{id}/historial", response_model=List[FacturacionProgramadaHistorial])
 def obtener_historial(

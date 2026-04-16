@@ -114,9 +114,9 @@ import { SidebarService } from './sidebar.service';
                   <a *hasPermission="['FACTURAS_VER_TODAS', 'FACTURAS_VER_PROPIAS']" routerLink="/usuario/facturacion" routerLinkActive="active" class="menu-item px-3 mb-1" title="Facturación">
                     <i class="bi bi-receipt"></i> <span class="menu-text ms-3">Facturación</span>
                   </a>
-                  <a *hasPermission="'CUENTA_COBRAR_VER'" routerLink="/usuario/cuentas-cobrar" routerLinkActive="active" class="menu-item px-3 mb-1" title="Cuentas por Cobrar">
+                  <!-- <a *hasPermission="'CUENTA_COBRAR_VER'" routerLink="/usuario/cuentas-cobrar" routerLinkActive="active" class="menu-item px-3 mb-1" title="Cuentas por Cobrar">
                     <i class="bi bi-wallet2"></i> <span class="menu-text ms-3">Cuentas por Cobrar</span>
-                  </a>
+                  </a> -->
                   <a *hasPermission="['FACTURA_PROGRAMADA_VER', 'FACTURA_PROGRAMADA_VER_PROPIAS']" routerLink="/usuario/facturacion-recurrente" routerLinkActive="active" class="menu-item px-3 mb-1" title="Facturación Programada">
                     <i class="bi bi-arrow-repeat"></i> <span class="menu-text ms-3">Fac. Programada</span>
                   </a>

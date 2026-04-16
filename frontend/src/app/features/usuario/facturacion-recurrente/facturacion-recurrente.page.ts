@@ -55,10 +55,12 @@ import { FacturaProgramada } from '../../../domain/models/facturacion-programada
                   <button class="btn-refresh-premium" (click)="refreshData()" [class.spinning]="isRefreshing" title="Refrescar">
                     <i class="bi bi-arrow-clockwise"></i>
                   </button>
+                  <!-- Botón deshabilitado: la ejecución masiva se realiza automáticamente por el cronjob a medianoche
                   <button *hasPermission="['FACTURA_PROGRAMADA_CREAR', 'FACTURA_PROGRAMADA_EDITAR']" class="btn-bulk-premium" (click)="runBulkExecution()" [disabled]="isProcessing" title="Ejecutar Facturaciones Pendientes">
                     <i class="bi bi-play-circle-fill me-2"></i>
                     Ejecutar Pendientes
                   </button>
+                  -->
                   <button *hasPermission="'FACTURA_PROGRAMADA_CREAR'" class="btn-create-premium" (click)="openCreateModal()">
                     <i class="bi bi-plus-lg me-2"></i>
                     Nueva Programación

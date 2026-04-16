@@ -134,17 +134,18 @@ class AutomationService:
         if self._scheduler.running:
             return
 
-        # Ejecución diaria a las 08:00
+        # Ejecución diaria a las 00:00 hora Ecuador (America/Guayaquil)
         self._scheduler.add_job(
             self._run_daily_tasks,
             trigger='cron',
-            hour=8,
+            hour=0,
             minute=0,
+            timezone='America/Guayaquil',
             id='daily_automation',
             replace_existing=True
         )
         self._scheduler.start()
-        logger.info("Servicio de Automatización iniciado (cron: 08:00 diario).")
+        logger.info("Servicio de Automatización iniciado (cron: 00:00 America/Guayaquil).")
 
         # Primera ejecución inmediata al arrancar
         self._run_daily_tasks()

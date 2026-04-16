@@ -25,7 +25,10 @@ export class CompanyActiveGuard implements CanActivate {
         return this.authFacade.user$.pipe(
             take(1),
             map(user => {
-                // 2. SuperAdmins y Vendedores siempre tienen acceso
+                // 2. Si no hay usuario autenticado, AuthGuard se encarga
+                if (!user) return this.router.createUrlTree(['/auth/login']);
+
+                // 3. SuperAdmins y Vendedores siempre tienen acceso
                 if (user?.role === UserRole.SUPERADMIN || user?.role === UserRole.VENDEDOR) {
                     return true;
                 }
