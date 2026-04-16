@@ -84,9 +84,15 @@ class SuperAdminReportesService:
 
             empresas_rescate.append(e)
 
+        empresas_upgrade = self.repo_r031.obtener_zona_upgrade(fecha_inicio=fecha_inicio, fecha_fin=fecha_fin)
+
+        variacion_empresas = int(kpis.get("variacion_empresas_activas_valor", 0))
+
         return {
             **kpis,
+            "crecimiento_neto": variacion_empresas,
             "empresas_rescate": empresas_rescate,
+            "empresas_upgrade": empresas_upgrade,
             "planes_mas_vendidos": planes,
             "top_vendedores": top_vendedores,
         }

@@ -460,6 +460,12 @@ export class SuscripcionesPage implements OnInit {
         });
     }
 
+    openHistorial(sub: Suscripcion) {
+        this.selectedSuscripcion = sub;
+        this.showHistorySectionModal = true;
+        this.cdr.detectChanges();
+    }
+
     ejecutarMantenimiento() {
         this.isRunningMaintenance = true;
         this.susService.runMaintenance().subscribe({

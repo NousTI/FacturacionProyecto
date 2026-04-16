@@ -13,14 +13,14 @@ type RangoTipo = 'mes_actual' | 'mes_anterior' | 'anio_actual' | 'personalizado'
       <!-- Empresas Activas -->
       <div class="kpi-card kpi-active-highlight">
         <span class="kpi-label">Empresas activas</span>
-        <div class="kpi-main-content">
-          <span class="kpi-value-huge">{{ datos.empresas_activas | number }}</span>
-          <div class="kpi-growth-badge" [class.badge-up]="datos.variacion_empresas_activas_valor >= 0" [class.badge-down]="datos.variacion_empresas_activas_valor < 0">
+        <span class="kpi-value-huge">{{ datos.empresas_activas | number }}</span>
+        <div class="kpi-sub-row">
+          <span class="kpi-growth-badge" [class.badge-up]="datos.variacion_empresas_activas_valor >= 0" [class.badge-down]="datos.variacion_empresas_activas_valor < 0">
             <i class="bi" [class.bi-arrow-up-right]="datos.variacion_empresas_activas_valor >= 0" [class.bi-arrow-down-right]="datos.variacion_empresas_activas_valor < 0"></i>
             {{ datos.variacion_empresas_activas_valor >= 0 ? '+' : '' }}{{ datos.variacion_empresas_activas_valor }}
-          </div>
+          </span>
+          <span class="kpi-sub-label">{{ periodoLabel }}</span>
         </div>
-        <span class="kpi-sub-label">{{ periodoLabel }}</span>
       </div>
 
       <!-- Ingresos del Año -->
@@ -44,8 +44,14 @@ type RangoTipo = 'mes_actual' | 'mes_anterior' | 'anio_actual' | 'personalizado'
       <!-- Usuarios Nuevos -->
       <div class="kpi-card">
         <span class="kpi-label">Usuarios nuevos</span>
-        <span class="kpi-value">{{ datos.usuarios_nuevos_mes }}</span>
-        <span class="kpi-sub text-muted">este mes</span>
+        <span class="kpi-value-huge">{{ datos.usuarios_nuevos_mes }}</span>
+        <div class="kpi-sub-row">
+          <span class="kpi-growth-badge" [class.badge-up]="datos.variacion_usuarios_nuevos >= 0" [class.badge-down]="datos.variacion_usuarios_nuevos < 0">
+            <i class="bi" [class.bi-arrow-up-right]="datos.variacion_usuarios_nuevos >= 0" [class.bi-arrow-down-right]="datos.variacion_usuarios_nuevos < 0"></i>
+            {{ datos.variacion_usuarios_nuevos >= 0 ? '+' : '' }}{{ datos.variacion_usuarios_nuevos }}
+          </span>
+          <span class="kpi-sub-label">{{ periodoLabel }}</span>
+        </div>
       </div>
 
 
@@ -96,7 +102,8 @@ type RangoTipo = 'mes_actual' | 'mes_anterior' | 'anio_actual' | 'personalizado'
     .kpi-label { font-size: 0.65rem; font-weight: 700; color: #64748b; text-transform: uppercase; display: block; margin-bottom: 0.35rem; letter-spacing: 0.5px; }
     .kpi-value { font-size: 1.1rem; font-weight: 800; color: #1e293b; display: block; line-height: 1; margin-bottom: 0.25rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .kpi-main-content { display: flex; align-items: baseline; gap: 0.75rem; margin-bottom: 0.25rem; }
-    .kpi-value-huge { font-size: 1.75rem; font-weight: 800; color: #1e293b; line-height: 1; }
+    .kpi-value-huge { font-size: 1.75rem; font-weight: 800; color: #1e293b; line-height: 1; display: block; margin-bottom: 0.35rem; }
+    .kpi-sub-row { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
     .kpi-growth-badge { 
       padding: 0.25rem 0.5rem; border-radius: 6px; font-size: 0.75rem; font-weight: 700; 
       display: flex; align-items: center; gap: 0.2rem;

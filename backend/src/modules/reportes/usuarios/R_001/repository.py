@@ -58,7 +58,7 @@ class RepositorioR001:
             JOIN sistema_facturacion.facturas_detalle fd ON f.id = fd.factura_id
             WHERE f.empresa_id = %s
               AND f.fecha_emision BETWEEN %s AND %s::timestamp + interval '1 day' - interval '1 second'
-              AND f.estado != 'ANULADA'
+              AND f.estado = 'AUTORIZADA'
             GROUP BY CASE
                 WHEN (fd.tarifa_iva = 0 OR fd.tarifa_iva IS NULL) THEN '0%%'
                 WHEN fd.tarifa_iva = 5 THEN '5%%'
@@ -104,8 +104,8 @@ class RepositorioR001:
         query = """
             SELECT
                 u.nombres || ' ' || u.apellidos as usuario,
-                COALESCE(SUM(f.total) FILTER (WHERE f.estado != 'ANULADA'), 0) as total_ventas,
-                COALESCE(COUNT(*) FILTER (WHERE f.estado != 'ANULADA'), 0) as facturas_validas
+                COALESCE(SUM(f.total) FILTER (WHERE f.estado = 'AUTORIZADA'), 0) as total_ventas,
+                COALESCE(COUNT(*) FILTER (WHERE f.estado = 'AUTORIZADA'), 0) as facturas_validas
             FROM sistema_facturacion.usuarios u
             LEFT JOIN sistema_facturacion.facturas f ON u.id = f.usuario_id
                 AND f.fecha_emision BETWEEN %s AND %s::timestamp + interval '1 day' - interval '1 second'

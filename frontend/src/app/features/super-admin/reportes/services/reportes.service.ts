@@ -51,6 +51,7 @@ export interface ReporteGlobal {
   ingresos_mes: number;
   variacion_ingresos_mes: number;
   usuarios_nuevos_mes: number;
+  variacion_usuarios_nuevos: number;
   tasa_crecimiento: number;
   tasa_abandono: number;
   zona_upgrade: number;

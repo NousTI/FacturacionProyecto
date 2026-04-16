@@ -18,12 +18,18 @@ class ServicioR031:
         planes_mas_vendidos = self.repo.obtener_planes_mas_vendidos(fecha_inicio, fecha_fin)
         top_vendedores = self.repo.obtener_top_vendedores(fecha_inicio, fecha_fin)
 
+        empresas_upgrade = self.repo.obtener_zona_upgrade(fecha_inicio, fecha_fin)
+
         return {
             # KPIs
             "empresas_activas": int(kpis.get("empresas_activas", 0)),
+            "variacion_empresas_activas_valor": int(kpis.get("variacion_empresas_activas_valor", 0)),
             "ingresos_anio": float(kpis.get("ingresos_anio", 0)),
+            "variacion_ingresos_anio": float(kpis.get("variacion_ingresos_anio", 0)),
             "ingresos_mes": float(kpis.get("ingresos_mes", 0)),
+            "variacion_ingresos_mes": float(kpis.get("variacion_ingresos_mes", 0)),
             "usuarios_nuevos_mes": int(kpis.get("usuarios_nuevos_mes", 0)),
+            "variacion_usuarios_nuevos": int(kpis.get("variacion_usuarios_nuevos", 0)),
             "crecimiento_neto": int(kpis.get("crecimiento_neto", 0)),
             "tasa_crecimiento": float(kpis.get("tasa_crecimiento", 0)),
             "tasa_abandono": float(kpis.get("tasa_abandono", 0)),
@@ -32,6 +38,7 @@ class ServicioR031:
 
             # Tablas
             "empresas_rescate": empresas_rescate,
+            "empresas_upgrade": empresas_upgrade,
             "planes_mas_vendidos": planes_mas_vendidos,
             "top_vendedores": top_vendedores
         }

@@ -107,6 +107,7 @@ export class SuperAdminReportesPage implements OnInit, AfterViewInit {
   currentFilters: any = {};
   isLoading = false;
   isLoadingPDF = false;
+  private pdfPoll: any = null;
 
   constructor(private cd: ChangeDetectorRef) {}
 
@@ -120,6 +121,9 @@ export class SuperAdminReportesPage implements OnInit, AfterViewInit {
   setTab(tab: Tab) {
     if (this.tabActivo === tab) return;
     this.tabActivo = tab;
+    // Limpiar spinner PDF al cambiar de sección
+    if (this.pdfPoll) { clearInterval(this.pdfPoll); this.pdfPoll = null; }
+    this.isLoadingPDF = false;
     this.cd.detectChanges(); // forzar render del *ngIf antes de acceder al ViewChild
     this.syncFiltersToActiveComponent();
     this.handleGenerate();
@@ -163,17 +167,23 @@ export class SuperAdminReportesPage implements OnInit, AfterViewInit {
   handleExport() {
     const comp = this.getActiveComponent();
     if (!comp) return;
+    if (this.pdfPoll) { clearInterval(this.pdfPoll); this.pdfPoll = null; }
     this.isLoadingPDF = true;
     this.cd.detectChanges();
     comp.exportarPDF();
-    const poll = setInterval(() => {
+    this.pdfPoll = setInterval(() => {
       if (!comp.loadingPDF) {
         this.isLoadingPDF = false;
         this.cd.detectChanges();
-        clearInterval(poll);
+        clearInterval(this.pdfPoll);
+        this.pdfPoll = null;
       }
     }, 100);
-    setTimeout(() => { clearInterval(poll); this.isLoadingPDF = false; this.cd.detectChanges(); }, 60000);
+    setTimeout(() => {
+      if (this.pdfPoll) { clearInterval(this.pdfPoll); this.pdfPoll = null; }
+      this.isLoadingPDF = false;
+      this.cd.detectChanges();
+    }, 60000);
   }
 
   private getActiveComponent(): any {

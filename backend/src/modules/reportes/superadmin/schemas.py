@@ -35,11 +35,13 @@ class ReporteGlobalSuperadmin(BaseModel):
     # KPIs
     empresas_activas: int = 0
     empresas_nuevas_mes: int = 0
+    variacion_empresas_activas_valor: int = 0
     ingresos_anio: float = 0.0
     variacion_ingresos_anio: float = 0.0
     ingresos_mes: float = 0.0
     variacion_ingresos_mes: float = 0.0
     usuarios_nuevos_mes: int = 0
+    variacion_usuarios_nuevos: int = 0
     tasa_crecimiento: float = 0.0
     tasa_abandono: float = 0.0
     zona_upgrade: int = 0

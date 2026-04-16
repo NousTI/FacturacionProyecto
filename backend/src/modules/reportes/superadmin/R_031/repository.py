@@ -75,6 +75,11 @@ class RepositorioR031:
                  FROM sistema_facturacion.usuarios
                  WHERE created_at BETWEEN {f_inicio} AND {f_fin}) as usuarios_nuevos_mes,
 
+                -- Usuarios nuevos en el período anterior (misma duración)
+                (SELECT COUNT(id)
+                 FROM sistema_facturacion.usuarios
+                 WHERE created_at BETWEEN %s AND %s) as usuarios_nuevos_mes_anterior,
+
                 -- Tasa de crecimiento: empresas activas comparadas con el mes anterior a la fecha inicio
                 (SELECT COUNT(DISTINCT s.empresa_id)
                  FROM sistema_facturacion.suscripciones s
@@ -136,6 +141,7 @@ class RepositorioR031:
             fi_use, ff_use,           # ingresos_mes
             fi_anterior, ff_anterior, # ingresos_mes_anterior
             fi_use, ff_use,           # usuarios_nuevos_mes
+            fi_anterior, ff_anterior, # usuarios_nuevos_mes_anterior
             fi_use, fi_use            # empresas_activas_mes_anterior
         ]
 
@@ -150,6 +156,10 @@ class RepositorioR031:
             # Variación de Empresas Activas = Crecimiento Neto (Nuevas en periodo - Perdidas en periodo)
             # Como solicitó el usuario: "Crecimiento Neto y Empresas activas es lo mismo" y que afecte las fechas
             data['variacion_empresas_activas_valor'] = data['empresas_nuevas_mes'] - data.get('perdidas_periodo', 0)
+
+            usr_nuevos = int(data.get('usuarios_nuevos_mes', 0))
+            usr_nuevos_ant = int(data.get('usuarios_nuevos_mes_anterior', 0))
+            data['variacion_usuarios_nuevos'] = usr_nuevos - usr_nuevos_ant
 
             data['tasa_crecimiento'] = round(
                 ((emp_act - emp_ant) / emp_ant * 100) if emp_ant > 0 else (100.0 if emp_act > 0 else 0.0), 2
