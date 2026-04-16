@@ -16,10 +16,8 @@ export class UserActiveGuard implements CanActivate {
     ) { }
 
     canActivate(): boolean | Observable<boolean | UrlTree> {
-        console.log('[UserActiveGuard] canActivate. isLoggingOut:', this.lockService.isLoggingOutValue);
         // 0. Omitir validaciones si se está cerrando sesión
         if (this.lockService.isLoggingOutValue) {
-            console.log('[UserActiveGuard] Logout detectado, permitiendo paso.');
             return true;
         }
 

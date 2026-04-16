@@ -83,10 +83,8 @@ export class AuthFacade {
     }
 
     logout(): Observable<void> {
-        console.log('[AuthFacade] logout() iniciado');
         // Marcamos que estamos cerrando sesión para que el interceptor ignore errores 403
         this.lockService.setLoggingOut(true);
-        console.log('[AuthFacade] isLoggingOut establecido en true');
         this.lockService.clearLock();
         this.lockService.setShowModal(false);
 
@@ -176,7 +174,7 @@ export class AuthFacade {
         });
     }
 
-    private navigateBasedOnRole(role: string | null): void {
+    public navigateBasedOnRole(role: string | null): void {
         // Lógica de redirección dinámica basada en el rol inyectado
         console.log(`[navigateBasedOnRole] Rol recibido: ${role}`);
         if (role === UserRole.SUPERADMIN) {

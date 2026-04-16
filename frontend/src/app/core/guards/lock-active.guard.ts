@@ -10,11 +10,8 @@ export const lockActiveGuard: CanActivateFn = () => {
     const lockStatusService = inject(LockStatusService);
     const router = inject(Router);
 
-    console.log('[lockActiveGuard] isLoggingOut:', lockStatusService.isLoggingOutValue);
-
     // Si se está cerrando sesión, permitir navegación sin redirecciones
     if (lockStatusService.isLoggingOutValue) {
-        console.log('[lockActiveGuard] Logout detectado, permitiendo.');
         return true;
     }
 

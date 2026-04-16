@@ -5,13 +5,15 @@ import { LockStatusService, LockInfo } from '../../../core/services/lock-status.
 import { Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../../environments/environment';
+import { AuthService } from '../../../core/auth/auth.service';
 
 @Component({
   selector: 'app-lock-overlay',
   standalone: true,
   imports: [CommonModule],
   template: `
-    <div *ngIf="lock$ | async as lock" class="lock-overlay animate__animated animate__fadeIn">
+    <ng-container *ngIf="!(isLoggingOut$ | async)">
+      <div *ngIf="lock$ | async as lock" class="lock-overlay animate__animated animate__fadeIn">
       <div class="lock-panel text-center shadow-lg p-5">
         <div class="icon-wrap mb-4 pulse-animation">
           <i class="bi" [ngClass]="lock.icon"></i>
@@ -38,6 +40,7 @@ import { environment } from '../../../../environments/environment';
         </div>
       </div>
     </div>
+    </ng-container>
   `,
   styles: [`
     .lock-overlay {
@@ -85,18 +88,24 @@ import { environment } from '../../../../environments/environment';
 })
 export class LockOverlayComponent implements OnInit {
   lock$: Observable<LockInfo | null>;
+  isLoggingOut$: Observable<boolean>;
   whatsappUrl: string | null = null;
 
   constructor(
     private lockService: LockStatusService,
+    private authService: AuthService,
     private router: Router,
     private http: HttpClient
   ) {
     this.lock$ = this.lockService.lock$;
+    this.isLoggingOut$ = this.lockService.isLoggingOut$;
   }
 
   ngOnInit() {
-    this.loadSuperadminPhone();
+    // Solo cargar teléfono si está autenticado para evitar 401 en login
+    if (this.authService.isAuthenticated()) {
+      this.loadSuperadminPhone();
+    }
   }
 
   private loadSuperadminPhone() {
@@ -106,7 +115,7 @@ export class LockOverlayComponent implements OnInit {
         catchError(() => of(null))
       )
       .subscribe({
-        next: (res) => {
+        next: (res: any) => {
           if (res && res.detalles && res.detalles.telefono) {
             const tel = res.detalles.telefono;
             const cleaned = tel.replace(/\D/g, '');

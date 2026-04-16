@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { AuthFacade } from '../../../core/auth/auth.facade';
+import { AuthService } from '../../../core/auth/auth.service';
 import { Observable, take, retry, catchError, of } from 'rxjs';
 import { LockStatusService, LockInfo } from '../../../core/services/lock-status.service';
 import { environment } from '../../../../environments/environment';
@@ -213,6 +214,7 @@ export class AccesoRestringidoPage implements OnInit {
   constructor(
     private authFacade: AuthFacade,
     private lockStatusService: LockStatusService,
+    private authService: AuthService,
     private http: HttpClient,
     private router: Router
   ) {
@@ -220,6 +222,11 @@ export class AccesoRestringidoPage implements OnInit {
   }
 
   ngOnInit() {
+    // Solo cargar si está autenticado
+    if (!this.authService.isAuthenticated()) {
+      return;
+    }
+
     // Leer userId del usuario en sesión
     this.authFacade.user$.pipe(take(1)).subscribe(user => {
       this.userId = user?.id?.substring(0, 8) || '---';
@@ -245,7 +252,7 @@ export class AccesoRestringidoPage implements OnInit {
         catchError(() => of(null))
       )
       .subscribe({
-        next: (res) => {
+        next: (res: any) => {
           if (res && res.detalles && res.detalles.telefono) {
             const tel = res.detalles.telefono;
             const cleaned = tel.replace(/\D/g, '');

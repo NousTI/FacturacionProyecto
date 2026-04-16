@@ -7,6 +7,7 @@ import { AuthGuard } from './core/guards/auth.guard';
 import { RoleGuard } from './core/guards/role.guard';
 import { UserRole } from './domain/enums/role.enum';
 import { UserActiveGuard } from './core/guards/user-active.guard';
+import { PublicGuard } from './core/guards/public.guard';
 import { AccesoDenegadoPage } from './features/usuario/acceso-denegado/acceso-denegado.page';
 import { AccesoRestringidoPage } from './features/usuario/acceso-restringido/acceso-restringido.page';
 
@@ -21,6 +22,7 @@ const routes: Routes = [
     {
         path: 'auth',
         component: PublicLayoutComponent,
+        canActivate: [PublicGuard],
         loadChildren: () => import('./features/auth/auth.module').then(m => m.AuthModule)
     },
     {

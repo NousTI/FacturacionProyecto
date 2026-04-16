@@ -16,17 +16,14 @@ export class CompanyActiveGuard implements CanActivate {
     ) { }
 
     canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): boolean | Observable<boolean | UrlTree> {
-        console.log('[CompanyActiveGuard] canActivate. isLoggingOut:', this.lockStatusService.isLoggingOutValue, '| URL:', state.url);
         // 1. Si se está cerrando sesión, ignorar verificaciones para evitar flashes
         if (this.lockStatusService.isLoggingOutValue) {
-            console.log('[CompanyActiveGuard] Logout detectado, permitiendo paso.');
             return true;
         }
 
         // 2. Escapar de inmediato si ya estamos en la página segura para evitar bucles
         const currentUrl = state.url.toLowerCase();
         if (currentUrl.includes('acceso-restringido')) {
-            console.log('[CompanyActiveGuard] Ya en acceso-restringido, permitiendo.');
             return true;
         }
 
