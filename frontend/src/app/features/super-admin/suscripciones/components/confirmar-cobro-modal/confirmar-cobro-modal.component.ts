@@ -37,7 +37,7 @@ import { Suscripcion } from '../../services/suscripcion.service';
             </select>
           </div>
 
-          <div class="form-group-final">
+          <div class="form-group-final" *ngIf="confirmarData.metodo_pago !== 'EFECTIVO' && confirmarData.metodo_pago !== 'OTRO'">
             <label class="label-final">Número de Comprobante / Referencia *</label>
             <input 
               type="text" 
@@ -53,7 +53,7 @@ import { Suscripcion } from '../../services/suscripcion.service';
           <button (click)="close()" [disabled]="processing" class="btn-cancel-final">Cancelar</button>
           <button 
             (click)="submit()" 
-            [disabled]="!confirmarData.numero_comprobante || processing" 
+            [disabled]="(!confirmarData.numero_comprobante && confirmarData.metodo_pago !== 'EFECTIVO' && confirmarData.metodo_pago !== 'OTRO') || processing" 
             class="btn-submit-final d-flex align-items-center gap-2"
           >
             <span *ngIf="processing" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
@@ -123,7 +123,13 @@ export class ConfirmarCobroModalComponent implements OnInit, OnDestroy {
   }
 
   submit() {
-    if (this.confirmarData.numero_comprobante) {
+    const isNoVoucherRequired = this.confirmarData.metodo_pago === 'EFECTIVO' || this.confirmarData.metodo_pago === 'OTRO';
+    
+    if (this.confirmarData.numero_comprobante || isNoVoucherRequired) {
+      // Limpiar comprobante si no es requerido (por si acaso había basura)
+      if (isNoVoucherRequired) {
+        this.confirmarData.numero_comprobante = '';
+      }
       this.onConfirm.emit(this.confirmarData);
     }
   }
