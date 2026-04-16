@@ -323,7 +323,7 @@ export class ClienteFormModalComponent implements OnInit, OnDestroy {
       razon_social: ['', [Validators.required, Validators.minLength(3)]],
       nombre_comercial: ['', [Validators.required]],
       email: ['', [Validators.required, Validators.pattern(/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/)]],
-      telefono: ['', [Validators.pattern(/^09\d{8}$/)]],
+      telefono: ['', [Validators.required, Validators.pattern(/^09\d{8}$/)]],
       direccion: ['', [Validators.required]],
       ciudad: ['', [Validators.required]],
       provincia: ['', [Validators.required]],
@@ -441,8 +441,9 @@ export class ClienteFormModalComponent implements OnInit, OnDestroy {
 
   getSubmitButtonDisabled(): boolean {
     if (this.loading) return true;
-    if (!this.cliente) return false;
-    return !this.hasChanges || (this.clienteForm.invalid && this.submitted);
+    if (this.clienteForm.invalid) return true;
+    if (this.cliente && !this.hasChanges) return true;
+    return false;
   }
 
   get hasChanges(): boolean {

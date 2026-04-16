@@ -34,7 +34,7 @@ type RangoTipo = 'mes_actual' | 'mes_anterior' | 'anio_actual' | 'personalizado'
 
       <!-- Ingresos del Mes -->
       <div class="kpi-card">
-        <span class="kpi-label">Ingresos del mes</span>
+        <span class="kpi-label">Ingresos {{ periodoLabel }}</span>
         <span class="kpi-value">{{ datos.ingresos_mes | currency:'USD':'symbol':'1.0-2' }}</span>
         <span class="kpi-sub" [class.text-success]="datos.variacion_ingresos_mes >= 0" [class.text-danger]="datos.variacion_ingresos_mes < 0">
           {{ datos.variacion_ingresos_mes >= 0 ? '+' : '' }}{{ datos.variacion_ingresos_mes }}% vs anterior

@@ -106,7 +106,7 @@ import { SRI_TIPOS_IDENTIFICACION } from '../../../../../core/constants/sri-iva.
                   </div>
                 </div>
                 <div class="col-md-5">
-                  <label class="form-label">Teléfono</label>
+                  <label class="form-label">Teléfono *</label>
                   <input
                     type="text"
                     formControlName="telefono"
@@ -256,7 +256,7 @@ export class ProveedorFormModalComponent implements OnInit, OnDestroy {
       razon_social: ['', [Validators.required, Validators.minLength(3)]],
       nombre_comercial: ['', [Validators.required]],
       email: ['', [Validators.required, Validators.pattern(/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/)]],
-      telefono: ['', [Validators.pattern(/^09\d{8}$/)]],
+      telefono: ['', [Validators.required, Validators.pattern(/^09\d{8}$/)]],
       direccion: ['', [Validators.required]],
       ciudad: ['', [Validators.required]],
       provincia: ['', [Validators.required]],
@@ -364,8 +364,9 @@ export class ProveedorFormModalComponent implements OnInit, OnDestroy {
 
   getSubmitButtonDisabled(): boolean {
     if (this.loading) return true;
-    if (!this.proveedor) return false; // Let internal validation handle it
-    return !this.hasChanges || (this.proveedorForm.invalid && this.submitted);
+    if (this.proveedorForm.invalid) return true;
+    if (this.proveedor && !this.hasChanges) return true;
+    return false;
   }
 
   get hasChanges(): boolean {

@@ -305,7 +305,8 @@ export class UsuarioFormModalComponent implements OnInit, OnDestroy {
 
   getSubmitDisabled(): boolean {
     if (this.loading) return true;
-    if (this.usuario && !this.hasChanges() && !this.submitted) return true;
+    if (this.userForm.invalid) return true;
+    if (this.usuario && !this.hasChanges()) return true;
     return false;
   }
 
