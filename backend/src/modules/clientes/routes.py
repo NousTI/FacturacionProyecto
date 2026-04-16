@@ -18,7 +18,7 @@ router = APIRouter(tags=["Clientes"], redirect_slashes=False)
 
 @router.get("/stats", response_model=RespuestaBase[ClienteStats])
 def obtener_stats(
-    usuario: dict = Depends(requerir_permiso(PermissionCodes.CLIENTES_VER)),
+    usuario: dict = Depends(requerir_permiso([PermissionCodes.CLIENTES_VER, PermissionCodes.FACTURAS_CREAR, PermissionCodes.FACTURAS_EDITAR, PermissionCodes.FACTURAS_VER_TODAS, PermissionCodes.FACTURAS_VER_PROPIAS, PermissionCodes.FACTURA_PROGRAMADA_CREAR, PermissionCodes.FACTURA_PROGRAMADA_EDITAR])),
     controller: ClienteController = Depends()
 ):
     return controller.obtener_stats(usuario)

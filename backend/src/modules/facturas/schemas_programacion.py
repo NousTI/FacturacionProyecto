@@ -56,6 +56,7 @@ class FacturacionProgramadaLectura(FacturacionProgramadaBase):
 class FacturacionProgramadaHistorial(BaseModel):
     fecha: datetime
     estado: str
+    factura_id: Optional[UUID] = None
     numero_factura: Optional[str] = None
     detalle: Optional[str] = None
     sri_mensajes: Optional[Any] = None
