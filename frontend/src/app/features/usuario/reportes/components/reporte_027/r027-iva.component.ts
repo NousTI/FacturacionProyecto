@@ -158,7 +158,7 @@ import { InfoTooltipComponent } from './info-tooltip.component';
             <td class="text-center"><span class="cas-badge azul">401 / 411</span></td>
             <td class="text-end font-mono">{{ data.bloque_400?.c401_bruto | currency }}</td>
             <td class="text-end fw-bold">{{ data.bloque_400?.c401_neto | currency }}</td>
-            <td class="text-end iva-val">{{ data.bloque_400?.c411_neto | currency }}</td>
+            <td class="text-end iva-val">{{ data.bloque_400?.c411_bruto | currency }}</td>
           </tr>
 
           <!-- 407/408/417/418: Exportaciones -->
