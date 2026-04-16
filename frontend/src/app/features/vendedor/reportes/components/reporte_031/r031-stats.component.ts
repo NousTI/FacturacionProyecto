@@ -95,26 +95,26 @@ import { InfoTooltipComponent } from '../../../../../shared/components/info-tool
   styles: [`
     .stats-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-      gap: 1.25rem;
-      margin-bottom: 2rem;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 0.75rem;
+      margin-bottom: 1.25rem;
     }
 
     .stat-card {
       background: white;
-      border-radius: 24px;
-      padding: 1.5rem;
-      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-      border: 1px solid rgba(226, 232, 240, 0.5);
+      border-radius: 12px;
+      padding: 1rem;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+      border: 1px solid rgba(226, 232, 240, 0.8);
       transition: transform 0.2s ease, box-shadow 0.2s ease;
       display: flex;
       flex-direction: column;
-      gap: 1rem;
+      gap: 0.6rem;
     }
 
     .stat-card:hover {
-      transform: translateY(-4px);
-      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
     }
 
     .stat-header {
@@ -125,29 +125,30 @@ import { InfoTooltipComponent } from '../../../../../shared/components/info-tool
 
     .stat-label {
       color: #64748b;
-      font-size: 0.875rem;
-      font-weight: 600;
-      letter-spacing: -0.01em;
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      text-transform: uppercase;
     }
 
     .stat-icon {
-      width: 40px;
-      height: 40px;
-      border-radius: 12px;
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 1.25rem;
+      font-size: 1rem;
     }
 
     .stat-body {
       display: flex;
       flex-direction: column;
-      gap: 0.5rem;
+      gap: 0.35rem;
     }
 
     .stat-value {
-      font-size: 1.75rem;
+      font-size: 1.35rem;
       font-weight: 800;
       color: #1e293b;
       margin: 0;
@@ -158,10 +159,10 @@ import { InfoTooltipComponent } from '../../../../../shared/components/info-tool
       display: inline-flex;
       align-items: center;
       gap: 0.25rem;
-      font-size: 0.75rem;
+      font-size: 0.65rem;
       font-weight: 700;
-      padding: 0.25rem 0.75rem;
-      border-radius: 100px;
+      padding: 0.2rem 0.6rem;
+      border-radius: 8px;
       width: fit-content;
     }
 

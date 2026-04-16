@@ -59,41 +59,41 @@ import { CommonModule } from '@angular/common';
   styles: [`
     .stats-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-      gap: 1.5rem;
-      margin-bottom: 2rem;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 0.75rem;
+      margin-bottom: 1.25rem;
     }
 
     .stat-card {
       background: white;
-      border-radius: 20px;
-      padding: 1.75rem;
-      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+      border-radius: 12px;
+      padding: 1rem;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
       border: 1px solid #f1f5f9;
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      transition: all 0.2s ease;
       display: flex;
       flex-direction: column;
-      gap: 1.25rem;
+      gap: 0.6rem;
       position: relative;
       overflow: hidden;
     }
 
-    .stat-card:hover { 
-      transform: translateY(-5px); 
-      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.05), 0 10px 10px -5px rgba(0, 0, 0, 0.02);
+    .stat-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
       border-color: #e2e8f0;
     }
 
     .stat-header { display: flex; justify-content: space-between; align-items: center; }
-    .stat-label { color: #64748b; font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; }
-    .stat-icon { width: 44px; height: 44px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 1.35rem; }
+    .stat-label { color: #64748b; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; }
+    .stat-icon { width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 1rem; }
 
-    .stat-body { display: flex; flex-direction: column; gap: 0.75rem; }
-    .stat-value { font-size: 2rem; font-weight: 850; color: #0f172a; margin: 0; letter-spacing: -0.04em; }
+    .stat-body { display: flex; flex-direction: column; gap: 0.4rem; }
+    .stat-value { font-size: 1.35rem; font-weight: 800; color: #0f172a; margin: 0; letter-spacing: -0.03em; }
 
     .stat-badge {
-      display: inline-flex; align-items: center; gap: 0.35rem; font-size: 0.7rem;
-      font-weight: 800; padding: 0.35rem 0.85rem; border-radius: 12px; width: fit-content;
+      display: inline-flex; align-items: center; gap: 0.25rem; font-size: 0.65rem;
+      font-weight: 700; padding: 0.2rem 0.6rem; border-radius: 8px; width: fit-content;
       text-transform: lowercase;
     }
 
