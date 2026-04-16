@@ -87,6 +87,7 @@ class RepositorioR001Empleados:
             JOIN sistema_facturacion.clientes c ON f.cliente_id = c.id
             WHERE f.empresa_id = %s
               AND f.usuario_id = %s
+              AND f.estado != 'BORRADOR'
               AND f.fecha_emision BETWEEN %s AND %s::timestamp + interval '1 day' - interval '1 second'
             ORDER BY f.fecha_emision DESC
             LIMIT %s

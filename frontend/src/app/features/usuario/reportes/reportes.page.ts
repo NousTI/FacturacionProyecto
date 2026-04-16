@@ -54,7 +54,7 @@ type Tab = 'resumen' | 'ventas' | 'cartera' | 'iva' | 'mis_ventas';
     <!-- BARRA DE NAVEGACIÓN Y ACCIONES -->
     <div class="header-actions-bar mb-4">
       <div class="tabs-navigation">
-        <ng-container *ngIf="isAdmin">
+        <ng-container *ngIf="isAdminEmpresa">
           <button class="nav-btn" [class.active]="tabActivo === 'resumen'" (click)="setTab('resumen')">
             <i class="bi bi-speedometer2"></i>
             <span class="nav-label"><span class="nav-name">Dashboard Ejecutivo</span><span class="nav-code">R-028</span></span>
@@ -105,13 +105,13 @@ type Tab = 'resumen' | 'ventas' | 'cartera' | 'iva' | 'mis_ventas';
           </ng-container>
 
           <!-- Generar -->
-          <button class="btn-generar" (click)="cargarDatos()" [disabled]="loading">
+          <button class="btn-generar" *ngIf="canGenerate" (click)="cargarDatos()" [disabled]="loading">
             <i class="bi" [class.bi-search]="!loading" [class.bi-arrow-repeat]="loading" [class.spin]="loading"></i>
             <span class="ms-2">{{ loading ? 'Cargando...' : 'Generar Reporte' }}</span>
           </button>
 
           <!-- Exportar PDF -->
-          <button class="btn-exportar" (click)="exportarPDF()">
+          <button class="btn-exportar" *ngIf="canExport" (click)="exportarPDF()">
             <i class="bi bi-file-earmark-pdf"></i>
             <span class="ms-2">Exportar PDF</span>
           </button>
@@ -250,10 +250,21 @@ type Tab = 'resumen' | 'ventas' | 'cartera' | 'iva' | 'mis_ventas';
   `]
 })
 export class ReportesPage implements OnInit {
-  isAdmin = false;
-
+  
   get canView(): boolean {
     return this.permissionsService.hasPermission(REPORTES_PERMISSIONS.VER);
+  }
+
+  get canGenerate(): boolean {
+    return this.permissionsService.hasPermission(REPORTES_PERMISSIONS.GENERAR);
+  }
+
+  get canExport(): boolean {
+    return this.permissionsService.hasPermission(REPORTES_PERMISSIONS.EXPORTAR);
+  }
+
+  get isAdminEmpresa(): boolean {
+    return this.permissionsService.isAdminEmpresa;
   }
 
   tabActivo: Tab = 'resumen';
@@ -283,20 +294,17 @@ export class ReportesPage implements OnInit {
 
   ngOnInit() {
     this.initDefaultDates();
-    this.authService.getPerfil().subscribe({
-      next: (perfil: any) => {
-        const rolCodigo = (perfil?.rol_codigo || '').toUpperCase();
-        this.isAdmin = rolCodigo === 'ADMIN_EMPRESA';
-        if (!this.isAdmin) this.tabActivo = 'mis_ventas';
-        this.cargarDatos();
-        this.cdr.detectChanges();
-      },
-      error: () => {
-        this.isAdmin = false;
-        this.tabActivo = 'mis_ventas';
-        this.cargarDatos();
-      }
-    });
+    
+    // Si no es admin de empresa, forzar la vista de 'mis_ventas'
+    if (!this.isAdminEmpresa) {
+      this.tabActivo = 'mis_ventas';
+    }
+
+    // Solo cargar datos si tiene permiso de generar
+    if (this.canGenerate) {
+      this.cargarDatos();
+      this.cdr.detectChanges();
+    }
   }
 
   private initDefaultDates() {
@@ -352,6 +360,7 @@ export class ReportesPage implements OnInit {
   }
 
   cargarDatos() {
+    if (!this.canGenerate) return;
     if (!this.fechaInicio || !this.fechaFin) return;
     this.loading = true;
     this.cdr.detectChanges();
@@ -411,6 +420,7 @@ export class ReportesPage implements OnInit {
   }
 
   exportarPDF() {
+    if (!this.canExport) return;
     if (!this.fechaInicio || !this.fechaFin) return;
 
     // Mis Ventas usa su propio endpoint (filtra por usuario del token)

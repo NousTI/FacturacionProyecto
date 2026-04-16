@@ -280,9 +280,15 @@ import { SriConfigService } from '../certificado-sri/services/sri-config.service
   `]
 })
 export class FacturacionPage implements OnInit {
+
+  // Helper centralizado para verificar permisos combinando granulares con el bypass del Admin de Empresa
+  private checkAccess(permissionCode: string): boolean {
+    return this.permissionsService.isAdminEmpresa || this.permissionsService.hasPermission(permissionCode);
+  }
+
   get canView(): boolean {
-    return this.permissionsService.hasPermission(FACTURAS_PERMISSIONS.VER_TODAS) ||
-           this.permissionsService.hasPermission(FACTURAS_PERMISSIONS.VER_PROPIAS);
+    return this.checkAccess(FACTURAS_PERMISSIONS.VER_TODAS) ||
+           this.checkAccess(FACTURAS_PERMISSIONS.VER_PROPIAS);
   }
 
   facturas: Factura[] = [];
@@ -380,8 +386,8 @@ export class FacturacionPage implements OnInit {
 
   loadData() {
     // Permission Check Logic for Listing
-    const canViewAll = this.permissionsService.hasPermission('FACTURAS_VER_TODAS');
-    const canViewOwn = this.permissionsService.hasPermission('FACTURAS_VER_PROPIAS');
+    const canViewAll = this.checkAccess('FACTURAS_VER_TODAS');
+    const canViewOwn = this.checkAccess('FACTURAS_VER_PROPIAS');
 
     if (!canViewAll && !canViewOwn) {
       this.uiService.showToast('No tienes permisos para ver facturas', 'warning');
@@ -454,6 +460,11 @@ export class FacturacionPage implements OnInit {
   }
 
   openCreateModal() {
+    if (!this.checkAccess(FACTURAS_PERMISSIONS.CREAR)) {
+      this.uiService.showToast('No tienes permiso para crear facturas', 'warning');
+      return;
+    }
+
     if (this.sriError) {
       this.uiService.showToast(this.sriError, 'warning');
       return;
@@ -497,6 +508,9 @@ export class FacturacionPage implements OnInit {
 
     switch (event.type) {
       case 'edit':
+        if (!this.checkAccess(FACTURAS_PERMISSIONS.EDITAR)) {
+           this.uiService.showToast('No tienes permiso para editar', 'danger'); return;
+        }
         if (this.sriError) {
           this.uiService.showToast('No se puede editar: ' + this.sriError, 'warning');
           return;
@@ -504,6 +518,9 @@ export class FacturacionPage implements OnInit {
         this.showCreateModal = true;
         break;
       case 'delete':
+        if (!this.checkAccess(FACTURAS_PERMISSIONS.EDITAR)) { // Eliminar borrador usa el permiso de editar
+           this.uiService.showToast('No tienes permiso para eliminar', 'danger'); return;
+        }
         this.confirmModalConfig = {
           title: '¿Eliminar Factura?',
           message: '¿Estás seguro de que deseas eliminar la factura ' + (this.selectedFactura?.numero_factura || 'BORRADOR') + '?',
@@ -518,6 +535,9 @@ export class FacturacionPage implements OnInit {
         this.showViewModal = true;
         break;
       case 'sri':
+        if (!this.checkAccess(FACTURAS_PERMISSIONS.ENVIAR_SRI)) {
+           this.uiService.showToast('No tienes permiso para interactuar con el SRI', 'danger'); return;
+        }
         if (this.sriError) {
           this.uiService.showToast('No se puede enviar: ' + this.sriError, 'warning');
           return;
@@ -533,12 +553,21 @@ export class FacturacionPage implements OnInit {
         this.showConfirmModal = true;
         break;
       case 'pdf':
+        if (!this.checkAccess(FACTURAS_PERMISSIONS.DESCARGAR_PDF)) {
+           this.uiService.showToast('No tienes permiso para descargar PDFs', 'danger'); return;
+        }
         this.descargarPdf(event.factura.id);
         break;
       case 'email':
+        if (!this.checkAccess(FACTURAS_PERMISSIONS.ENVIAR_EMAIL)) {
+           this.uiService.showToast('No tienes permiso para enviar emails', 'danger'); return;
+        }
         this.showEmailModal = true;
         break;
       case 'anular':
+        if (!this.checkAccess(FACTURAS_PERMISSIONS.ANULAR)) {
+           this.uiService.showToast('No tienes permiso para anular facturas', 'danger'); return;
+        }
         if (this.sriError) {
           this.uiService.showToast('No se puede anular: ' + this.sriError, 'warning');
           return;
@@ -546,10 +575,16 @@ export class FacturacionPage implements OnInit {
         this.showAnularModal = true;
         break;
       case 'consultar':
+        if (!this.checkAccess(FACTURAS_PERMISSIONS.ENVIAR_SRI)) {
+           this.uiService.showToast('No tienes permiso para interactuar con el SRI', 'danger'); return;
+        }
         this.selectedFactura = event.factura;
         this.consultarSri();
         break;
       case 'abono':
+        if (!this.checkAccess(FACTURAS_PERMISSIONS.PAGO_VER) && !this.checkAccess(FACTURAS_PERMISSIONS.PAGO_CREAR)) {
+           this.uiService.showToast('No tienes permiso para ver o registrar pagos', 'danger'); return;
+        }
         this.showPagosModal = true;
         break;
     }
@@ -572,6 +607,7 @@ export class FacturacionPage implements OnInit {
   }
 
   deleteFactura() {
+    if (!this.checkAccess(FACTURAS_PERMISSIONS.EDITAR)) return;
     if (!this.selectedFactura) return;
     this.isProcessing = true;
     this.facturasService.eliminarFactura(this.selectedFactura.id)
@@ -589,6 +625,7 @@ export class FacturacionPage implements OnInit {
   }
 
   enviarSri() {
+    if (!this.checkAccess(FACTURAS_PERMISSIONS.ENVIAR_SRI)) return;
     if (!this.selectedFactura) return; 
     
     const id = this.selectedFactura.id;
@@ -652,6 +689,10 @@ export class FacturacionPage implements OnInit {
   }
 
   anularFactura(id: string, razon: string) {
+    if (!this.checkAccess(FACTURAS_PERMISSIONS.ANULAR)) {
+       this.uiService.showToast('Acceso Denegado: Permiso ANULAR requerido', 'danger');
+       return;
+    }
     this.isLoading = true;
     this.facturasService.anularFactura(id, razon)
       .pipe(finalize(() => this.isLoading = false))
@@ -665,6 +706,7 @@ export class FacturacionPage implements OnInit {
   }
 
   consultarSri(facturaId?: string) {
+    if (!this.checkAccess(FACTURAS_PERMISSIONS.ENVIAR_SRI)) return;
     const id = facturaId || this.selectedFactura?.id;
     if (!id || this.processingStates.has(id)) return;
 
@@ -698,6 +740,10 @@ export class FacturacionPage implements OnInit {
 
 
   descargarPdf(id: string) {
+    if (!this.checkAccess(FACTURAS_PERMISSIONS.DESCARGAR_PDF)) {
+       this.uiService.showToast('No tienes permiso para descargar', 'danger');
+       return;
+    }
     this.uiService.showToast('Preparando documento PDF, por favor espere...', 'info', 'Esto puede tomar unos segundos.', 4000);
     this.facturasService.descargarPdf(id).subscribe({
       next: (blob: Blob) => {
@@ -721,6 +767,10 @@ export class FacturacionPage implements OnInit {
   }
 
   enviarEmail(id: string, email?: string) {
+    if (!this.checkAccess(FACTURAS_PERMISSIONS.ENVIAR_EMAIL)) {
+       this.uiService.showToast('No tienes permiso para enviar email', 'danger');
+       return;
+    }
     this.facturasService.enviarEmail(id, email).subscribe({
       next: () => this.uiService.showToast('Correo enviado (No implementado)', 'success'),
       error: (err) => this.uiService.showError(err, 'Error enviando correo')
