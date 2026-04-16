@@ -125,13 +125,21 @@ export class CreateFacturaModalComponent implements OnInit, OnChanges {
     // VALIDACIÓN 1: Guardia - Verificar permisos al abrir el modal
     if (!this.isViewOnly) {
       const isCreating = !this.facturaId;
-      const requiredPermission = isCreating ? FACTURAS_PERMISSIONS.CREAR : FACTURAS_PERMISSIONS.EDITAR;
+      
+      // Permisos de Facturación Normal
+      const hasFacturaPerm = isCreating ? FACTURAS_PERMISSIONS.CREAR : FACTURAS_PERMISSIONS.EDITAR;
+      
+      // Permisos de Facturación Programada (Recurrente)
+      const hasRecurrentePerm = isCreating ? FACTURACION_PROGRAMADA_PERMISSIONS.CREAR : FACTURACION_PROGRAMADA_PERMISSIONS.EDITAR;
 
-      if (!this.permissionsService.hasPermission(requiredPermission)) {
+      // Se permite el acceso si tiene el permiso de factura normal 
+      // O si está en modo recurrente y tiene el permiso de programación
+      const canAccess = this.permissionsService.hasPermission(hasFacturaPerm) || 
+                       (this.mode === 'RECURRENTE' && this.permissionsService.hasPermission(hasRecurrentePerm));
+
+      if (!canAccess) {
         this.uiService.showToast(
-          isCreating
-            ? 'No tienes permisos para crear facturas'
-            : 'No tienes permisos para editar facturas',
+          'No tienes permisos suficientes para realizar esta acción',
           'warning'
         );
         this.close();
@@ -170,9 +178,14 @@ export class CreateFacturaModalComponent implements OnInit, OnChanges {
     if (this.isViewOnly) return false;
 
     const isCreating = !this.facturaId;
-    const requiredPermission = isCreating ? FACTURAS_PERMISSIONS.CREAR : FACTURAS_PERMISSIONS.EDITAR;
+    
+    // Permisos Normales vs Recurrentes
+    const hasFacturaPerm = isCreating ? FACTURAS_PERMISSIONS.CREAR : FACTURAS_PERMISSIONS.EDITAR;
+    const hasRecurrentePerm = isCreating ? FACTURACION_PROGRAMADA_PERMISSIONS.CREAR : FACTURACION_PROGRAMADA_PERMISSIONS.EDITAR;
 
-    const hasValidPermission = this.permissionsService.hasPermission(requiredPermission);
+    const hasValidPermission = this.permissionsService.hasPermission(hasFacturaPerm) || 
+                              (this.mode === 'RECURRENTE' && this.permissionsService.hasPermission(hasRecurrentePerm));
+    
     const hasPositiveTotal = this.totals.total > 0;
 
     return hasValidPermission && hasPositiveTotal;

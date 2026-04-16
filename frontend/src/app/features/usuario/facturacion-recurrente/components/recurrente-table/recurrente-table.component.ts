@@ -81,9 +81,9 @@ import { FACTURACION_PROGRAMADA_PERMISSIONS } from '../../../../../constants/per
                       </button>
                     </li>
                     
-                    <ng-container *ngIf="canExecuteManual(prog) && hasPermissionEditar">
+                    <ng-container *ngIf="prog.activo">
                       <li><hr class="dropdown-divider"></li>
-                      <li>
+                      <li *hasPermission="['FACTURA_PROGRAMADA_CREAR', 'FACTURA_PROGRAMADA_EDITAR']">
                         <button class="dropdown-item fw-bold text-primary" (click)="onAction.emit({type: 'execute', data: prog})">
                           <i class="bi bi-lightning-fill me-2 anim-pulse"></i>Ejecutar Ahora
                         </button>
