@@ -1,5 +1,6 @@
 import { Component, Input, OnChanges } from '@angular/core';
 import { CommonModule, CurrencyPipe, DecimalPipe } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { IvaR027Report } from '../../services/financial-reports.service';
 import { InfoTooltipComponent } from './info-tooltip.component';
 import { R027DetalleModalComponent } from './r027-detalle-modal.component';
@@ -7,7 +8,7 @@ import { R027DetalleModalComponent } from './r027-detalle-modal.component';
 @Component({
   selector: 'app-r027-iva',
   standalone: true,
-  imports: [CommonModule, CurrencyPipe, DecimalPipe, InfoTooltipComponent, R027DetalleModalComponent],
+  imports: [CommonModule, CurrencyPipe, DecimalPipe, FormsModule, InfoTooltipComponent, R027DetalleModalComponent],
   template: `
 <div class="fade-in">
 
@@ -259,11 +260,11 @@ import { R027DetalleModalComponent } from './r027-detalle-modal.component';
           <tr class="hover-row">
             <td class="desc-cell">
               <span class="desc-title">Adquisiciones y pagos tarifa 0% / RIMPE (negocios populares)</span>
-              <span class="desc-sub">Gastos registrados sin IVA en el módulo de Gastos</span>
+              <span class="desc-sub">Gastos registrados sin IVA en el módulo de Gastos + facturas físicas</span>
             </td>
             <td class="text-center"><span class="cas-badge gris cas-link" (click)="modalCasillero='507'" title="Ver detalle">507</span></td>
-            <td class="text-end font-mono">{{ data.bloque_500?.c507 | currency }}</td>
-            <td class="text-end fw-bold">{{ data.bloque_500?.c507 | currency }}</td>
+            <td class="text-end"><input type="number" class="cell-input" [(ngModel)]="manual507" min="0" step="0.01"></td>
+            <td class="text-end fw-bold"><input type="number" class="cell-input fw-bold" [(ngModel)]="manual507" min="0" step="0.01"></td>
             <td class="text-end nd">$0.00</td>
           </tr>
 
@@ -294,17 +295,17 @@ import { R027DetalleModalComponent } from './r027-detalle-modal.component';
           </tr>
 
           <!-- 503/504: Compras en el exterior -->
-          <tr class="hover-row not-impl-row">
+          <tr class="hover-row">
             <td class="desc-cell">
               <span class="desc-title">Compras en el exterior (ej. publicidad Facebook / Google Ads)
-                <app-info-tooltip text="No hay registro de compras en el exterior en el sistema. Si realizaste pagos a proveedores del exterior (Facebook Ads, Google, etc.), ingrésalos directamente en el portal del SRI." label="¿Por qué no está disponible?"></app-info-tooltip>
+                <app-info-tooltip text="Ingresa manualmente el total pagado a proveedores del exterior (Facebook Ads, Google, suscripciones, etc.). Este valor va en los casilleros 503/504 del portal del SRI." label="Ingreso manual"></app-info-tooltip>
               </span>
-              <span class="desc-sub impl-note">Sin información disponible</span>
+              <span class="desc-sub">Ingreso manual</span>
             </td>
-            <td class="text-center"><span class="cas-badge gris">503 / 504</span></td>
-            <td class="text-end nd">—</td>
-            <td class="text-end nd">—</td>
-            <td class="text-end nd">—</td>
+            <td class="text-center"><span class="cas-badge azul">503 / 504</span></td>
+            <td class="text-end"><input type="number" class="cell-input" [(ngModel)]="manual503" min="0" step="0.01"></td>
+            <td class="text-end fw-bold"><input type="number" class="cell-input fw-bold" [(ngModel)]="manual503" min="0" step="0.01"></td>
+            <td class="text-end nd">$0.00</td>
           </tr>
 
           <!-- 520/521: NC en adquisiciones -->
@@ -817,6 +818,17 @@ import { R027DetalleModalComponent } from './r027-detalle-modal.component';
     .cal-dia    { font-size: 0.62rem; font-weight: 600; color: #64748b; text-transform: uppercase; }
     .cal-nota   { font-size: 0.74rem; color: #94a3b8; padding: 0 1.75rem 1rem; margin: 0; }
 
+    /* ── INPUT EN CELDA ── */
+    .cell-input {
+      width: 110px; text-align: right; font-size: 0.82rem; font-family: monospace;
+      border: 1px solid #e2e8f0; border-radius: 6px; padding: 2px 6px;
+      background: #f8fafc; color: #0f172a; outline: none;
+      transition: border-color 0.15s, background 0.15s;
+    }
+    .cell-input:focus { border-color: #6366f1; background: #fff; }
+    .cell-input::-webkit-inner-spin-button,
+    .cell-input::-webkit-outer-spin-button { opacity: 0.4; }
+
     /* ── BADGES CLICKEABLES ── */
     .cas-link {
       cursor: pointer;
@@ -833,6 +845,8 @@ import { R027DetalleModalComponent } from './r027-detalle-modal.component';
 export class R027IvaComponent implements OnChanges {
   @Input() data!: IvaR027Report;
   modalCasillero = '';
+  manual507 = 0;
+  manual503 = 0;
 
   readonly calendario = [
     { digito: '1', dia: 10 }, { digito: '2', dia: 12 }, { digito: '3', dia: 14 },
@@ -872,5 +886,8 @@ export class R027IvaComponent implements OnChanges {
     return `Tu número de RUC: ${ruc} y el noveno dígito es ${noveno}, por lo que tu declaración ${regimen} tiene fecha máxima ${fecha}. Si el día cae feriado, se traslada al siguiente día hábil.`;
   }
 
-  ngOnChanges() {}
+  ngOnChanges() {
+    this.manual507 = this.data?.bloque_500?.c507 ?? 0;
+    this.manual503 = 0;
+  }
 }
