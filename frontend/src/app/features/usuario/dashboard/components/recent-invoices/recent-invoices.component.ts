@@ -104,10 +104,10 @@ import { RouterModule } from '@angular/router';
       text-transform: uppercase;
       letter-spacing: 0.3px;
     }
-    .badge-autorizada { background: #ecfdf5; color: #10b981; }
-    .badge-borrador   { background: #f1f5f9; color: #64748b; }
-    .badge-anulada    { background: #fef2f2; color: #ef4444; }
-    .badge-proceso    { background: #fff7ed; color: #f59e0b; }
+    .badge-autorizada { background: var(--status-success-bg); color: var(--status-success-text); }
+    .badge-borrador   { background: var(--status-neutral-bg); color: var(--status-neutral-text); }
+    .badge-anulada    { background: var(--status-danger-bg); color: var(--status-danger-text); }
+    .badge-proceso    { background: var(--status-orange-bg); color: var(--status-orange-text); }
   `]
 })
 export class RecentInvoicesComponent {

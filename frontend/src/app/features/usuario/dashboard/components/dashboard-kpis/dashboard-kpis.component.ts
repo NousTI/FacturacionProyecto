@@ -15,7 +15,7 @@ import { DashboardKPIs } from '../../../../../shared/services/dashboard.service'
       <!-- Fila 1: Operativa -->
       <div class="col-12 col-md-4">
         <div class="kpi-card-premium">
-          <div class="icon-circle" style="color: #6366f1; background: rgba(99,102,241,.1)">
+          <div class="icon-circle" style="background: var(--status-info-bg); color: var(--status-info-text)">
             <i class="bi bi-receipt"></i>
           </div>
           <div class="kpi-content">
@@ -35,7 +35,7 @@ import { DashboardKPIs } from '../../../../../shared/services/dashboard.service'
 
       <div class="col-12 col-md-4">
         <div class="kpi-card-premium">
-          <div class="icon-circle" style="color: #10b981; background: rgba(16,185,129,.1)">
+          <div class="icon-circle" style="background: var(--status-success-bg); color: var(--status-success-text)">
             <i class="bi bi-check-circle"></i>
           </div>
           <div class="kpi-content">
@@ -49,7 +49,7 @@ import { DashboardKPIs } from '../../../../../shared/services/dashboard.service'
 
       <div class="col-12 col-md-4">
         <div class="kpi-card-premium">
-          <div class="icon-circle" style="color: #f59e0b; background: rgba(245,158,11,.1)">
+          <div class="icon-circle" style="background: var(--status-orange-bg); color: var(--status-orange-text)">
             <i class="bi bi-hourglass-split"></i>
           </div>
           <div class="kpi-content">
@@ -65,7 +65,7 @@ import { DashboardKPIs } from '../../../../../shared/services/dashboard.service'
       <ng-container *ngIf="kpis?.ticket_promedio">
         <div class="col-6 col-lg-3">
           <div class="kpi-card-premium">
-            <div class="icon-circle" style="color: #8b5cf6; background: rgba(139,92,246,.1)">
+            <div class="icon-circle" style="background: var(--status-info-bg); color: var(--status-info-text)">
               <i class="bi bi-cart-check"></i>
             </div>
             <div class="kpi-content">
@@ -76,7 +76,7 @@ import { DashboardKPIs } from '../../../../../shared/services/dashboard.service'
         </div>
         <div class="col-6 col-lg-3">
           <div class="kpi-card-premium">
-            <div class="icon-circle" style="color: #10b981; background: rgba(16,185,129,.1)">
+            <div class="icon-circle" style="background: var(--status-success-bg); color: var(--status-success-text)">
               <i class="bi bi-graph-up-arrow"></i>
             </div>
             <div class="kpi-content">
@@ -87,7 +87,7 @@ import { DashboardKPIs } from '../../../../../shared/services/dashboard.service'
         </div>
         <div class="col-6 col-lg-3">
           <div class="kpi-card-premium">
-            <div class="icon-circle" style="color: #4f46e5; background: rgba(79,70,229,.1)">
+            <div class="icon-circle" style="background: var(--status-info-bg); color: var(--status-info-text)">
               <i class="bi bi-arrow-repeat"></i>
             </div>
             <div class="kpi-content">
@@ -98,7 +98,7 @@ import { DashboardKPIs } from '../../../../../shared/services/dashboard.service'
         </div>
         <div class="col-6 col-lg-3">
           <div class="kpi-card-premium">
-            <div class="icon-circle" style="color: #f43f5e; background: rgba(244,63,94,.1)">
+            <div class="icon-circle" style="background: var(--status-danger-bg); color: var(--status-danger-text)">
               <i class="bi bi-people"></i>
             </div>
             <div class="kpi-content">
@@ -159,8 +159,8 @@ import { DashboardKPIs } from '../../../../../shared/services/dashboard.service'
       display: flex;
       align-items: center;
     }
-    .up { color: #10b981; }
-    .down { color: #ef4444; }
+    .up { color: var(--status-success-text); }
+    .down { color: var(--status-danger-text); }
 
     @media (max-width: 1400px) {
       .kpi-value { font-size: 1.15rem; }

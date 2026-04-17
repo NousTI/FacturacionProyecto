@@ -24,8 +24,9 @@ import { InfoTooltipComponent } from '../../../../../shared/components/info-tool
                   <span class="small fw-bold text-truncate" style="max-width: 150px;">{{ p.nombre }}</span>
                   <span class="small fw-bold text-dark">{{ p.total | currency:'USD':'symbol':'1.2-2' }}</span>
                 </div>
-                <div class="progress" style="height: 4px;">
-                  <div class="progress-bar bg-primary" 
+                <div class="progress" style="height: 4px; background: var(--border-color);">
+                  <div class="progress-bar" 
+                       style="background: var(--status-success);"
                        [style.width.%]="((p.total || 0) / (topProductos[0]?.total || 1)) * 100"></div>
                 </div>
                 <div class="text-muted mt-1" style="font-size: 0.65rem;">{{ p.cantidad }} unidades vendidas</div>

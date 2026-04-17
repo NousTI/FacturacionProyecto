@@ -146,9 +146,9 @@ import { DashboardOverview } from '../../../shared/services/dashboard.service';
     }
 
     .alert-renewal-flat {
-      background: #fffbeb;
-      border: 1px solid #fef3c7;
-      border-left: 5px solid var(--status-warning);
+      background: var(--status-warning-bg);
+      border: 1px solid var(--status-warning-bg);
+      border-left: 5px solid var(--status-warning-text);
       border-radius: 20px;
       padding: 1.25rem 2rem;
     }
@@ -156,7 +156,8 @@ import { DashboardOverview } from '../../../shared/services/dashboard.service';
     .icon-static {
       width: 50px;
       height: 50px;
-      background: rgba(245, 158, 11, 0.1);
+      background: var(--status-warning-bg);
+      color: var(--status-warning-text);
       border-radius: 15px;
       display: flex;
       align-items: center;

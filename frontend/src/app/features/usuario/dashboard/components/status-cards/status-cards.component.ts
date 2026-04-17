@@ -15,8 +15,8 @@ import { InfoTooltipComponent } from '../../../../../shared/components/info-tool
              [ngClass]="(firmaInfo?.dias_restantes || 0) < 15 ? 'border-danger' : 'border-warning'">
           <div class="d-flex align-items-center gap-3">
             <div class="ql-icon" 
-                 [style.color]="(firmaInfo?.dias_restantes || 0) < 15 ? '#ef4444' : '#f59e0b'"
-                 [style.background]="(firmaInfo?.dias_restantes || 0) < 15 ? 'rgba(239,68,68,.1)' : 'rgba(245,158,11,.1)'">
+                 [style.color]="(firmaInfo?.dias_restantes || 0) < 15 ? 'var(--status-danger-text)' : 'var(--status-warning-text)'"
+                 [style.background]="(firmaInfo?.dias_restantes || 0) < 15 ? 'var(--status-danger-bg)' : 'var(--status-warning-bg)'">
               <i class="bi bi-key-fill"></i>
             </div>
             <div *ngIf="firmaInfo; else noFirma">
@@ -115,10 +115,19 @@ import { InfoTooltipComponent } from '../../../../../shared/components/info-tool
       flex-shrink: 0;
     }
     
-    .bg-soft-success { background-color: rgba(16, 185, 129, 0.1); color: #10b981; }
-    .bg-soft-warning { background-color: rgba(245, 158, 11, 0.1); color: #f59e0b; }
-    .bg-soft-danger { background-color: rgba(239, 68, 68, 0.1); color: #ef4444; }
-    .bg-soft-primary { background-color: rgba(79, 70, 229, 0.1); color: #4f46e5; }
+    .bg-soft-success { background-color: var(--status-success-bg); color: var(--status-success-text); }
+    .bg-soft-warning { background-color: var(--status-warning-bg); color: var(--status-warning-text); }
+    .bg-soft-danger { background-color: var(--status-danger-bg); color: var(--status-danger-text); }
+    .bg-soft-info { background-color: var(--status-info-bg); color: var(--status-info-text); }
+    .bg-soft-orange { background-color: var(--status-orange-bg); color: var(--status-orange-text); }
+
+    .progress-success { background-color: var(--status-success-text) !important; }
+    .progress-warning { background-color: var(--status-warning-text) !important; }
+    .progress-danger { background-color: var(--status-danger-text) !important; }
+
+    .border-success { border-color: var(--status-success) !important; }
+    .border-warning { border-color: var(--status-warning) !important; }
+    .border-danger { border-color: var(--status-danger) !important; }
 
     .badge {
       padding: 0.4em 0.8em;
@@ -160,26 +169,27 @@ export class StatusCardsComponent {
 
   getSubscriptionBorderClass(): string {
     if (this.isNearLimit() || this.isNearExpiration()) return 'border-danger';
-    if (this.consumoPlan?.estado === 'ACTIVA') return 'border-primary';
+    if (this.consumoPlan?.estado === 'ACTIVA') return 'border-success';
     return 'border-warning';
   }
 
   getSubscriptionIconClass(): string {
     if (this.isNearLimit() || this.isNearExpiration()) return 'bg-soft-danger';
-    return 'bg-soft-primary';
+    if (this.consumoPlan?.estado === 'ACTIVA') return 'bg-soft-success';
+    return 'bg-soft-warning';
   }
 
   getProgressBarClass(): string {
     const p = this.getUsagePercent();
-    if (p >= 90) return 'bg-danger';
-    if (p >= 70) return 'bg-warning';
-    return 'bg-primary';
+    if (p >= 90) return 'progress-danger';
+    if (p >= 70) return 'progress-warning';
+    return 'progress-success';
   }
 
   getBadgeClass(): string {
     const p = this.getUsagePercent();
     if (p >= 90) return 'bg-soft-danger';
     if (p >= 70) return 'bg-soft-warning';
-    return 'bg-soft-primary';
+    return 'bg-soft-success';
   }
 }
