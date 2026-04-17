@@ -146,64 +146,68 @@ import { CommonModule } from '@angular/common';
       padding: 1rem;
     }
     .modal-container-premium {
-      background: #ffffff; width: 850px; height: 600px;
+      background: var(--bg-main); width: 850px; height: 600px;
       max-width: 95vw; max-height: 90vh; border-radius: 32px;
       display: flex; flex-direction: column; overflow: hidden;
-      box-shadow: 0 40px 80px -20px rgba(22, 29, 53, 0.25);
+      border: 1px solid var(--border-color);
+      box-shadow: 0 40px 80px -20px rgba(0, 0, 0, 0.25);
     }
     .modal-header-premium { padding: 2rem 2.5rem; display: flex; justify-content: space-between; align-items: center; }
-    .modal-title-premium { font-size: 1.4rem; font-weight: 900; color: #161d35; margin: 0; }
-    .btn-close-premium { background: #f8fafc; border: none; width: 40px; height: 40px; border-radius: 12px; color: #94a3b8; cursor: pointer; }
+    .modal-title-premium { font-size: 1.4rem; font-weight: 800; color: var(--text-main); margin: 0; }
+    .btn-close-premium { background: var(--status-neutral-bg); border: none; width: 40px; height: 40px; border-radius: 12px; color: var(--text-muted); cursor: pointer; transition: all 0.2s; }
+    .btn-close-premium:hover { background: var(--status-danger-bg); color: var(--status-danger-text); }
     
     .avatar-details-premium {
       width: 54px; height: 54px; color: white;
       border-radius: 16px; display: flex; align-items: center; justify-content: center;
       font-weight: 800; font-size: 1.25rem;
+      background: var(--primary-color) !important;
     }
 
     .badge-status-details {
-      font-size: 0.65rem; font-weight: 800; padding: 0.2rem 0.75rem; border-radius: 100px;
-      text-transform: uppercase;
+      font-size: 0.65rem; font-weight: 800; padding: 4px 12px; border-radius: 100px;
+      text-transform: uppercase; letter-spacing: 0.5px;
     }
-    .badge-status-details.active { background: #dcfce7; color: #15803d; } 
-    .badge-status-details.inactive { background: #fee2e2; color: #b91c1c; }
-    .badge-plan-details { background: #161d35; color: white; font-size: 0.65rem; font-weight: 800; padding: 0.2rem 0.75rem; border-radius: 100px; text-transform: uppercase; }
+    .badge-status-details.active { background: var(--status-success-bg); color: var(--status-success-text); } 
+    .badge-status-details.inactive { background: var(--status-danger-bg); color: var(--status-danger-text); }
+    .badge-plan-details { background: var(--text-main); color: white; font-size: 0.65rem; font-weight: 800; padding: 4px 12px; border-radius: 100px; text-transform: uppercase; letter-spacing: 0.5px; }
 
     .modal-nav-tabs {
-       display: flex; padding: 0 2.5rem; gap: 0.5rem; border-bottom: 1px solid #f1f5f9;
+       display: flex; padding: 0 2.5rem; gap: 0.5rem; border-bottom: 1px solid var(--border-color);
     }
     .nav-tab-btn {
        background: transparent; border: none; padding: 1rem 1.5rem; font-size: 0.85rem;
-       font-weight: 700; color: #94a3b8; display: flex; align-items: center; gap: 0.5rem;
-       position: relative; transition: all 0.2s;
+       font-weight: 800; color: var(--text-muted); display: flex; align-items: center; gap: 0.5rem;
+       position: relative; transition: all 0.2s; text-transform: uppercase; letter-spacing: 0.5px;
     }
     .nav-tab-btn i { font-size: 1.1rem; }
-    .nav-tab-btn.active { color: #161d35; }
+    .nav-tab-btn.active { color: var(--primary-color); }
     .nav-tab-btn.active::after {
        content: ""; position: absolute; bottom: 0; left: 0; width: 100%;
-       height: 3px; background: #161d35; border-radius: 3px 3px 0 0;
+       height: 3px; background: var(--primary-color); border-radius: 3px 3px 0 0;
     }
 
     .modal-body-premium { padding: 2rem 2.5rem; overflow-y: auto; flex: 1; }
     
     .info-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.25rem; }
-    .info-card-premium { background: #f8fafc; padding: 1.25rem; border-radius: 18px; border: 1px solid #f1f5f9; }
-    .info-card-premium label { font-size: 0.65rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; display: block; margin-bottom: 0.5rem; }
-    .info-card-premium .value { font-size: 1rem; font-weight: 800; color: #1e293b; }
-    .info-card-premium .sub-value { font-size: 0.75rem; color: #64748b; margin-top: 0.25rem; }
+    .info-card-premium { background: #ffffff; padding: 1.25rem; border-radius: 18px; border: 1px solid var(--border-color); }
+    .info-card-premium label { font-size: 0.65rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; display: block; margin-bottom: 0.5rem; letter-spacing: 0.5px; }
+    .info-card-premium .value { font-size: 1rem; font-weight: 800; color: var(--text-main); }
+    .info-card-premium .sub-value { font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem; font-weight: 600; }
     .col-span-2 { grid-column: span 2; }
 
-    .section-title-mini { font-size: 0.8rem; font-weight: 800; text-transform: uppercase; color: #94a3b8; margin-bottom: 1.25rem; }
-    .progress-premium { height: 6px; background: #e2e8f0; border-radius: 10px; overflow: hidden; }
-    .progress-bar-premium { height: 100%; background: #161d35; border-radius: 10px; }
+    .section-title-mini { font-size: 0.8rem; font-weight: 800; text-transform: uppercase; color: var(--text-muted); margin-bottom: 1.25rem; letter-spacing: 1px; }
+    .progress-premium { height: 8px; background: var(--status-neutral-bg); border-radius: 10px; overflow: hidden; }
+    .progress-bar-premium { height: 100%; background: var(--primary-color); border-radius: 10px; }
 
-    .modal-footer-premium { padding: 1.5rem 2.5rem; background: #ffffff; display: flex; justify-content: flex-end; gap: 1rem; border-top: 1px solid #f1f5f9; }
-    .btn-cancel-premium { background: #ffffff; color: #64748b; border: 1px solid #e2e8f0; padding: 0.85rem 2rem; border-radius: 14px; font-weight: 700; }
+    .modal-footer-premium { padding: 1.5rem 2.5rem; background: var(--bg-main); display: flex; justify-content: flex-end; gap: 1rem; border-top: 1px solid var(--border-color); }
+    .btn-cancel-premium { background: #ffffff; color: var(--text-muted); border: 1px solid var(--border-color); padding: 0.85rem 2rem; border-radius: 14px; font-weight: 800; transition: all 0.2s; }
+    .btn-cancel-premium:hover { background: var(--status-neutral-bg); transform: translateY(-1px); }
     
-    .text-corporate { color: #161d35 !important; }
+    .text-corporate { color: var(--primary-color) !important; }
     .font-mono { font-family: 'DM Mono', monospace; }
     .scroll-custom::-webkit-scrollbar { width: 5px; }
-    .scroll-custom::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
+    .scroll-custom::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 10px; }
   `],
     standalone: true,
     imports: [CommonModule]

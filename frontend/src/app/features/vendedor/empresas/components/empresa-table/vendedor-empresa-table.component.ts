@@ -154,23 +154,24 @@ import { CommonModule } from '@angular/common';
       border-collapse: separate;
       border-spacing: 0;
       width: 100%;
-    }
-    .table thead th {
+    }    .table thead th {
       position: sticky;
       top: 0;
       z-index: 10;
-      background: var(--bg-main, #ffffff);
+      background: var(--bg-main);
       padding: 1rem 1.5rem;
       font-size: var(--text-base);
-      color: #0f172a;
-      font-weight: 600;
-      border-bottom: 2px solid var(--border-color, #f1f5f9);
+      color: var(--text-main);
+      font-weight: 800;
+      border-bottom: 2px solid var(--border-color);
       vertical-align: middle;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
     }
     .table tbody td {
       padding: 1.25rem 1.5rem;
-      border-bottom: 1px solid var(--border-color, #f1f5f9);
-      color: var(--text-muted, #475569);
+      border-bottom: 1px solid var(--border-color);
+      color: var(--text-muted);
       font-size: var(--text-md);
       vertical-align: middle;
     }
@@ -179,46 +180,44 @@ import { CommonModule } from '@angular/common';
       width: 40px; height: 40px;
       border-radius: 12px;
       display: flex; align-items: center; justify-content: center;
-      font-weight: 800; font-size: 0.85rem;
+      font-weight: 800; font-size: 0.95rem;
+      background: var(--primary-color); color: #ffffff;
     }
     
     .badge-status-premium {
-      padding: 0.25rem 0.75rem;
+      padding: 0.4rem 0.85rem;
       border-radius: 6px;
-      font-size: var(--text-sm);
-      font-weight: 600;
+      font-size: var(--text-xs);
+      font-weight: 800;
       display: inline-block;
       text-transform: uppercase;
+      letter-spacing: 0.5px;
     }
-    .badge-status-premium.activo { background: var(--status-success-bg, #dcfce7); color: var(--status-success-text, #ffffff); }
-    .badge-status-premium.inactivo { background: var(--status-danger-bg, #fee2e2); color: var(--status-danger-text, #ffffff); }
-    .badge-status-premium.vencida { background: var(--status-warning-bg, #fef9c3); color: var(--status-warning-text, #ffffff); }
-
-    /* For business logic colors if they differ from semantic ones */
-    .badge-status-premium.ACTIVO { background: #dcfce7; color: #15803d; }
-    .badge-status-premium.INACTIVO { background: #fee2e2; color: #b91c1c; }
+    .activo, .ACTIVO { background: var(--status-success-bg); color: var(--status-success-text); }
+    .inactivo, .INACTIVO { background: var(--status-danger-bg); color: var(--status-danger-text); }
+    .vencida, .VENCIDA { background: var(--status-warning-bg); color: var(--status-warning-text); }
 
     .usage-container { width: 100%; max-width: 140px; }
     .progress-premium {
-      height: 6px; background: #f1f5f9; border-radius: 10px; overflow: hidden;
+      height: 6px; background: var(--status-neutral-bg); border-radius: 10px; overflow: hidden;
     }
     .progress-bar-premium {
-      height: 100%; background: var(--primary-color, #161d35); border-radius: 10px; transition: width 0.3s ease;
+      height: 100%; background: var(--primary-color); border-radius: 10px; transition: width 0.3s ease;
     }
     
     .btn-action-trigger {
       background: transparent; border: none;
       width: 32px; height: 32px;
-      border-radius: 8px; color: #94a3b8;
+      border-radius: 8px; color: var(--text-muted);
       transition: all 0.2s;
     }
     .btn-action-trigger:hover, .btn-action-trigger[aria-expanded="true"] {
-      background: #f8fafc; color: #0f172a;
+      background: var(--status-info-bg); color: var(--status-info-text);
     }
     
     .dropdown-menu {
-      border: 1px solid var(--border-color, #e2e8f0) !important;
-      box-shadow: none !important;
+      border: 1px solid var(--border-color) !important;
+      box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1) !important;
       border-radius: 12px !important;
       padding: 0.5rem !important;
       z-index: 1050 !important;
@@ -227,18 +226,19 @@ import { CommonModule } from '@angular/common';
       border-radius: 8px !important;
       font-size: var(--text-base);
       font-weight: 500;
-      color: var(--text-muted, #475569); padding: 0.5rem 1rem;
+      color: var(--text-main); padding: 0.5rem 1rem;
       display: flex; align-items: center;
       cursor: pointer;
     }
-    .dropdown-item:hover { background: #f8fafc; color: #0f172a; }
+    .dropdown-item:hover { background: var(--status-info-bg); color: var(--status-info-text); }
     .dropdown-item i { font-size: 1.1rem; margin-right: 0.75rem; }
     
     .fw-600 { font-weight: 600; }
     .fw-700 { font-weight: 700; }
     .fw-800 { font-weight: 800; }
-    .text-corporate { color: var(--primary-color, #111827) !important; }
+    .text-corporate { color: var(--primary-color) !important; }
     .font-mono { font-family: 'DM Mono', monospace; }
+
   `]
 })
 export class VendedorEmpresaTableComponent {

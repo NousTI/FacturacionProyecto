@@ -18,20 +18,20 @@ interface Company {
     standalone: true,
     imports: [CommonModule, FormsModule],
     template: `
-<div class="container-fluid h-100 p-0 bg-white">
+<div class="container-fluid h-100 p-0">
     <div class="d-flex h-100">
         
-        <!-- Left Panel: Company List (Sidebar style) -->
-        <div class="company-sidebar h-100 d-flex flex-column border-end bg-light-subtle" style="width: 380px; min-width: 380px;">
+        <!-- Left Panel: Company List -->
+        <div class="company-sidebar h-100 d-flex flex-column border-end" style="width: 380px; min-width: 380px;">
             <!-- Header -->
-            <div class="p-4 bg-white border-bottom sticky-top z-1">
-                <h2 class="h5 fw-bolder text-dark mb-4 ls-tight">Mi Cartera</h2>
+            <div class="p-4 border-bottom sticky-top z-1">
+                <h2 class="h5 fw-800 text-dark mb-4 ls-tight">Mi Cartera</h2>
                 
                 <div class="search-wrapper position-relative">
-                    <i class="bi bi-search position-absolute top-50 start-0 translate-middle-y ms-3 text-secondary"></i>
+                    <i class="bi bi-search position-absolute top-50 start-0 translate-middle-y ms-3 text-muted"></i>
                     <input 
                         type="text" 
-                        class="form-control form-control-lg border-light-subtle bg-light ps-5 rounded-4 shadow-none fs-6"
+                        class="form-control"
                         placeholder="Buscar empresa..."
                         (input)="updateSearch($any($event.target).value)"
                     >
@@ -39,21 +39,21 @@ interface Company {
             </div>
             
             <!-- List -->
-            <div class="flex-grow-1 overflow-y-auto p-3">
+            <div class="flex-grow-1 overflow-y-auto p-3 scroll-custom">
                 <div *ngIf="filteredCompanies$ | async as companies" class="d-flex flex-column gap-2">
                     
                     <button *ngFor="let company of companies"
                             (click)="selectCompany(company)"
-                            class="company-card w-100 border-0 p-3 rounded-4 d-flex align-items-center gap-3 text-start transition-all"
+                            class="company-card w-100 border-0 p-3 rounded-4 d-flex align-items-center gap-3 text-start"
                             [class.active]="(selectedCompany | async)?.id === company.id">
                         
-                        <div class="avatar rounded-4 text-white d-flex align-items-center justify-content-center fw-bold shadow-sm flex-shrink-0"
-                             style="background-color: #161d35; color: #fff; width: 48px; height: 48px; font-size: 1.1rem; transition: all 0.2s;">
+                        <div class="avatar d-flex align-items-center justify-content-center p-0 flex-shrink-0"
+                             style="width: 48px; height: 48px; font-size: 1.1rem;">
                             {{ company.name.charAt(0).toUpperCase() }}
                         </div>
                         
                         <div class="flex-grow-1 overflow-hidden">
-                            <h6 class="mb-1 fw-bold text-truncate" [class.text-primary]="(selectedCompany | async)?.id === company.id">{{ company.name }}</h6>
+                            <h6 class="mb-1 fw-800 text-truncate" [class.text-corporate]="(selectedCompany | async)?.id === company.id">{{ company.name }}</h6>
                             <div class="d-flex align-items-center gap-2">
                                 <span class="d-flex align-items-center gap-1 small fw-bold" 
                                       [class.text-success]="company.status === 'ACTIVO'"
@@ -64,40 +64,35 @@ interface Company {
                             </div>
                         </div>
 
-                        <i class="bi bi-chevron-right small" 
-                           [class.text-primary]="(selectedCompany | async)?.id === company.id"
-                           [class.text-muted]="(selectedCompany | async)?.id !== company.id"
-                           style="opacity: 0.5;"></i>
+                        <i class="bi bi-chevron-right small text-muted"></i>
                     </button>
 
                     <div *ngIf="companies.length === 0" class="text-center py-5 mt-5">
-                        <div class="d-inline-flex align-items-center justify-content-center rounded-circle bg-light mb-3" style="width: 60px; height: 60px;">
-                            <i class="bi bi-search text-secondary fs-4"></i>
-                        </div>
-                        <h6 class="text-secondary fw-normal">No se encontraron resultados</h6>
+                        <i class="bi bi-search text-muted fs-1 mb-3 d-block opacity-25"></i>
+                        <h6 class="text-muted fw-normal">No se encontraron resultados</h6>
                     </div>
                 </div>
             </div>
         </div>
 
         <!-- Right Panel: Detail View -->
-        <div class="flex-grow-1 h-100 bg-white overflow-hidden d-flex flex-column position-relative">
+        <div class="flex-grow-1 h-100 overflow-hidden d-flex flex-column position-relative">
             
             <ng-container *ngIf="selectedCompany | async as company; else noSelection">
                 
                 <!-- Detail Header -->
-                <div class="d-flex align-items-end justify-content-between p-5 pb-0 mb-4 bg-white fade-in-up">
+                <div class="p-5 pb-0 mb-4 bg-white">
                     <div class="d-flex align-items-center gap-4">
-                        <div class="detail-avatar rounded-4 d-flex align-items-center justify-content-center text-white fw-bolder shadow-lg"
-                             style="width: 80px; height: 80px; font-size: 2rem; background: linear-gradient(135deg, #161d35 0%, #2a3555 100%);">
+                        <div class="detail-avatar d-flex align-items-center justify-content-center text-white p-0"
+                             style="width: 80px; height: 80px; font-size: 2.2rem;">
                             {{ company.name.charAt(0).toUpperCase() }}
                         </div>
                         <div>
-                            <div class="text-uppercase text-secondary fw-bold small mb-1 ls-wider">Detalle del Vendedor</div>
-                            <h1 class="display-6 fw-bold text-dark mb-2">{{ company.name }}</h1>
+                            <div class="text-secondary fw-800 small mb-1 ls-wider text-uppercase" style="font-size: 0.7rem;">Historial de Cobros</div>
+                            <h1 class="h2 fw-800 text-dark mb-2">{{ company.name }}</h1>
                             <div class="d-flex align-items-center gap-3 text-secondary">
-                                <span class="d-flex align-items-center gap-2 small fw-medium bg-light px-3 py-1 rounded-pill">
-                                    <i class="bi bi-hash text-muted"></i> {{ company.ruc }}
+                                <span class="badge bg-light text-muted border-0 fw-bold px-3 py-2 rounded-pill small">
+                                    <i class="bi bi-hash me-1"></i> {{ company.ruc }}
                                 </span>
                             </div>
                         </div>
@@ -105,72 +100,60 @@ interface Company {
                 </div>
 
                 <!-- Timeline Content -->
-                <div class="flex-grow-1 overflow-y-auto px-5 pb-5 fade-in-up" style="animation-delay: 0.1s;">
+                <div class="flex-grow-1 overflow-y-auto px-5 pb-5 scroll-custom">
                     <div class="row">
                         <div class="col-12">
                             
                             <div class="d-flex align-items-center justify-content-between mb-4 mt-2">
-                                <h5 class="fw-bold text-dark m-0">Historial de Pagos y Facturación</h5>
+                                <h5 class="fw-800 text-dark m-0">Registro Cronológico de Pagos</h5>
                             </div>
 
                             <div class="timeline-container position-relative">
                                 <!-- Line -->
-                                <div class="position-absolute start-0 top-0 bottom-0 ms-3 border-start border-2 border-light-subtle" style="z-index: 0;"></div>
+                                <div class="position-absolute start-0 top-0 bottom-0 ms-3 border-start border-2 border-light-subtle" style="z-index: 0; opacity: 0.5;"></div>
 
                                 <div *ngFor="let item of history$ | async; let isFirst = first" 
-                                     class="position-relative ps-5 mb-4 group-hover-effect">
+                                     class="position-relative ps-5 mb-4">
                                     
                                     <!-- Dot -->
-                                    <div class="position-absolute start-0 mt-1 d-flex align-items-center justify-content-center bg-white" 
-                                         style="width: 24px; height: 24px; z-index: 1;">
-                                        <div class="rounded-circle border border-3" 
-                                             [class.border-success]="isFirst" 
-                                             [class.border-secondary]="!isFirst"
-                                             [style.background-color]="isFirst ? '#d1e7dd' : '#e9ecef'"
-                                             style="width: 12px; height: 12px;"></div>
+                                    <div class="timeline-dot position-absolute start-0 mt-1">
+                                        <div class="timeline-dot-inner" 
+                                             [ngClass]="isFirst ? 'dot-success' : 'dot-neutral'"></div>
                                     </div>
 
-                                    <!-- Card -->
-                                    <div class="card border bg-light-subtle rounded-4 p-4 transition-all hover-lift">
+                                    <!-- Card Flat -->
+                                    <div class="payment-card-flat">
                                         <div class="d-flex justify-content-between align-items-start">
                                             <div>
                                                 <div class="d-flex align-items-center gap-2 mb-2">
-                                                    <span class="badge bg-white text-dark shadow-sm border fw-bold px-2 py-1 rounded-2" style="font-size: 11px;">
+                                                    <span class="badge bg-light text-dark fw-800 p-2 rounded-2" style="font-size: 10px; border: 1px solid var(--border-color) !important;">
                                                         {{ item.plan_nombre || 'PLAN DESCONOCIDO' }}
                                                     </span>
-                                                    <span class="text-secondary small fw-medium">
-                                                        {{ item.fecha_pago | date:'longDate' }} · {{ item.fecha_pago | date:'shortTime' }}
+                                                    <span class="text-muted small fw-bold ms-2">
+                                                        {{ item.fecha_pago | date:'dd MMM yyyy' }} · {{ item.fecha_pago | date:'HH:mm' }}
                                                     </span>
                                                 </div>
                                                 <div class="d-flex align-items-center gap-2" *ngIf="item.numero_comprobante">
-                                                    <i class="bi bi-receipt text-secondary opacity-50 small"></i>
-                                                    <span class="text-secondary small">Comprobante: {{ item.numero_comprobante }}</span>
+                                                    <i class="bi bi-receipt text-muted opacity-50 small"></i>
+                                                    <span class="text-muted small fw-600">Comprobante: {{ item.numero_comprobante }}</span>
                                                 </div>
                                             </div>
                                             
                                             <div class="text-end">
-                                                <div class="h5 fw-bolder text-dark mb-1">{{ item.monto | currency }}</div>
-                                                <div class="badge" 
-                                                     [ngClass]="{
-                                                        'bg-success-subtle text-success border-success-subtle': item.estado === 'PAGADO',
-                                                        'bg-warning-subtle text-warning border-warning-subtle': item.estado === 'PENDIENTE',
-                                                        'bg-danger-subtle text-danger border-danger-subtle': item.estado === 'ANULADO' || item.estado === 'REEMBOLSADO'
-                                                     }"
-                                                     class="border rounded-pill fw-bold px-2">
+                                                <div class="h5 fw-800 text-dark mb-2">{{ item.monto | currency }}</div>
+                                                <span class="badge-timeline p-2" [ngClass]="item.estado">
                                                     {{ item.estado }}
-                                                </div>
+                                                </span>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
 
-                                <!-- Empty State Inner -->
-                                <div *ngIf="(history$ | async)?.length === 0" class="card border-dashed border-2 bg-transparent p-5 text-center rounded-4 mt-4">
-                                    <div class="mb-3 opacity-25">
-                                        <i class="bi bi-wallet2 display-4"></i>
-                                    </div>
-                                    <h6 class="text-secondary fw-bold">Sin pagos registrados</h6>
-                                    <p class="text-muted small mb-0">Esta empresa aún no cuenta con historial de pagos.</p>
+                                <!-- Empty State -->
+                                <div *ngIf="(history$ | async)?.length === 0" class="p-5 text-center mt-4">
+                                    <i class="bi bi-wallet2 text-muted fs-1 mb-3 d-block opacity-25"></i>
+                                    <h6 class="text-muted fw-800">Sin pagos registrados</h6>
+                                    <p class="text-muted small mb-0 fw-600">Esta empresa aún no cuenta con historial de cobros.</p>
                                 </div>
 
                             </div>
@@ -183,13 +166,13 @@ interface Company {
 
             <!-- No Selection State -->
             <ng-template #noSelection>
-                <div class="d-flex flex-column align-items-center justify-content-center h-100 bg-light-subtle">
-                    <div class="mb-4 p-4 bg-white rounded-circle shadow-sm">
-                        <i class="bi bi-building text-secondary fs-1 opacity-50"></i>
+                <div class="d-flex flex-column align-items-center justify-content-center h-100">
+                    <div class="mb-4 p-4 bg-light rounded-circle">
+                        <i class="bi bi-building text-muted fs-1 opacity-25"></i>
                     </div>
-                    <h3 class="fw-bold text-dark mb-2">Seleccione una Empresa</h3>
-                    <p class="text-muted text-center mw-sm px-4">
-                        Haga clic en una empresa de su cartera para ver su historial de pagos.
+                    <h4 class="fw-800 text-dark mb-2">Cartera de Clientes</h4>
+                    <p class="text-muted text-center mw-sm px-4 fw-600">
+                        Selecciona una empresa del panel lateral para consultar su historial de pagos y facturación.
                     </p>
                 </div>
             </ng-template>
@@ -199,22 +182,76 @@ interface Company {
 </div>
     `,
     styles: [`
-        :host { display: block; height: 100%; font-family: 'Plus Jakarta Sans', 'Inter', sans-serif; }
-        *::-webkit-scrollbar { width: 6px; }
-        *::-webkit-scrollbar-track { background: transparent; }
-        *::-webkit-scrollbar-thumb { background-color: rgba(0,0,0,0.1); border-radius: 20px; }
-        *::-webkit-scrollbar-thumb:hover { background-color: rgba(0,0,0,0.2); }
-        .ls-tight { letter-spacing: -0.02em; }
-        .ls-wider { letter-spacing: 0.05em; }
-        .company-card { background: transparent; transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1); }
-        .company-card:hover { background: rgba(0,0,0,0.03); transform: translateX(4px); }
-        .company-card.active { background: #fff; box-shadow: 0 4px 20px rgba(0,0,0,0.05); transform: translateX(0); }
-        .hover-lift { transition: all 0.2s ease; }
-        .hover-lift:hover { transform: translateY(-3px); box-shadow: 0 10px 30px rgba(0,0,0,0.08); background: #fff !important; }
-        .fade-in-up { animation: fadeInUp 0.4s ease-out forwards; opacity: 0; transform: translateY(10px); }
-        @keyframes fadeInUp { to { opacity: 1; transform: translateY(0); } }
-        .border-dashed { border-style: dashed !important; }
-    `]
+    :host {
+      display: block;
+      height: 100%;
+    }
+    .container-fluid { background: var(--bg-main) !important; }
+    
+    .company-sidebar {
+      background: var(--bg-main);
+      border-right: 1px solid var(--border-color) !important;
+    }
+    
+    .company-sidebar .bg-white { background: var(--bg-main) !important; }
+    
+    .company-card {
+      background: transparent; border: 1px solid transparent !important;
+      transition: all 0.2s;
+    }
+    .company-card:hover:not(.active) { background: var(--status-neutral-bg); }
+    .company-card.active {
+      background: #ffffff;
+      border-color: var(--border-color) !important;
+      box-shadow: 0 4px 15px -3px rgba(0,0,0,0.05);
+    }
+    
+    .avatar { background: var(--primary-color) !important; color: #ffffff !important; font-weight: 800; border-radius: 12px !important; }
+    .detail-avatar { background: var(--primary-color) !important; color: #ffffff !important; font-weight: 800; border-radius: 16px !important; box-shadow: none !important; }
+
+    .search-wrapper .form-control {
+      background: #ffffff !important; border: 1px solid var(--border-color) !important;
+      height: 44px; border-radius: 12px !important; font-weight: 600;
+    }
+    .search-wrapper .form-control:focus {
+      border-color: var(--status-info) !important;
+      box-shadow: 0 0 0 4px var(--status-info-bg) !important;
+    }
+
+    .ls-tight { letter-spacing: -0.02em; }
+    .ls-wider { letter-spacing: 0.05em; }
+    
+    .timeline-dot {
+      width: 24px; height: 24px; z-index: 1; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      background: #ffffff;
+    }
+    .timeline-dot-inner { width: 12px; height: 12px; border-radius: 50%; border: 3px solid; }
+    .dot-success { border-color: var(--status-success); background: var(--status-success-bg); }
+    .dot-neutral { border-color: var(--text-muted); background: var(--status-neutral-bg); }
+
+    .payment-card-flat {
+      background: #ffffff; border: 1px solid var(--border-color);
+      border-radius: 16px; padding: 1.5rem; transition: all 0.2s;
+    }
+    .payment-card-flat:hover { border-color: var(--primary-color); }
+    
+    .badge-timeline {
+      padding: 0.4rem 0.85rem; border-radius: 6px;
+      font-size: var(--text-xs); font-weight: 800;
+      text-transform: uppercase; letter-spacing: 0.5px;
+      border: none !important;
+    }
+    .PAGADO { background: var(--status-success-bg); color: var(--status-success-text); }
+    .PENDIENTE { background: var(--status-warning-bg); color: var(--status-warning-text); }
+    .ANULADO, .REEMBOLSADO { background: var(--status-danger-bg); color: var(--status-danger-text); }
+
+    .text-corporate { color: var(--primary-color) !important; }
+    .fw-800 { font-weight: 800; }
+    
+    .scroll-custom::-webkit-scrollbar { width: 5px; }
+    .scroll-custom::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 10px; }
+  `]
 })
 export class VendedorHistoryComponent implements OnInit {
     companies$: Observable<Company[]> = of([]);

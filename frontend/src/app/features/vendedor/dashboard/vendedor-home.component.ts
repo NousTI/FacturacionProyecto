@@ -53,22 +53,10 @@ import { DashboardEmpresasComponent } from './componentes/dashboard-empresas.com
     </div>
   `,
   styles: [`
-    .dash-wrap { min-height: 100vh; padding-bottom: 2rem; }
-    
-    /* Flatten UI: Remove shadows and animations across the module */
-    :host ::ng-deep {
-      .soft-card, .panel, .quick-link, .btn-atender, .info-tooltip-box, .editorial-card {
-        box-shadow: none !important;
-        transition: none !important;
-        animation: none !important;
-        transform: none !important;
-      }
-      
-      /* Also disable internal tooltip trigger transitions */
-      .cursor-help {
-        transition: none !important;
-        transform: none !important;
-      }
+    .dash-wrap { 
+      min-height: 100vh; 
+      padding-bottom: 2rem;
+      background: var(--bg-main);
     }
   `]
 })

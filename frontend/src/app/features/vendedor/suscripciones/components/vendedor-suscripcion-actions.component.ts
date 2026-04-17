@@ -90,33 +90,53 @@ import { FormsModule } from '@angular/forms';
       background: transparent;
       border: none;
     }
-    .filter-tabs-premium {
-      background: #f1f5f9;
-      padding: 0.35rem;
-      border-radius: 12px;
-      display: inline-flex;
-      width: 100%;
+    .form-control-premium-search {
+      width: 100%; height: 48px; border-radius: 12px;
+      padding: 0 1rem 0 2.75rem; background: #ffffff;
+      border: 1px solid var(--border-color); color: var(--text-main);
+      font-size: var(--text-md); transition: all 0.2s;
     }
-    .btn-tab-premium {
-      flex: 1;
-      border: none;
-      background: transparent;
-      color: #64748b;
-      padding: 0.5rem 1rem;
-      border-radius: 8px;
-      font-weight: 700;
-      font-size: 0.85rem;
-      transition: all 0.2s;
+    .form-control-premium-search:focus {
+      outline: none; border-color: var(--status-info);
+      box-shadow: 0 0 0 4px var(--status-info-bg);
     }
-    .btn-tab-premium.active {
-      background: white;
-      color: #161d35;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    .form-select-premium {
+      width: 100%; height: 48px; border-radius: 12px;
+      padding: 0 1.25rem; background: #ffffff;
+      border: 1px solid var(--border-color); color: var(--text-main);
+      font-weight: 600; font-size: var(--text-md); transition: all 0.2s;
+      box-shadow: none !important;
     }
-    .btn-tab-premium:hover:not(.active) {
-      background: rgba(255, 255, 255, 0.5);
-      color: #161d35;
+    .form-select-premium:focus {
+      outline: none; border-color: var(--status-info);
+      box-shadow: 0 0 0 4px var(--status-info-bg) !important;
     }
+    .dropdown-menu-premium {
+      border: 1px solid var(--border-color) !important;
+      box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1) !important;
+      border-radius: 12px !important;
+      padding: 0.5rem !important;
+    }
+    .dropdown-item {
+      border-radius: 8px !important;
+      padding: 0.6rem 1rem !important;
+      font-weight: 500; color: var(--text-main);
+    }
+    .dropdown-item:hover {
+      background: var(--status-info-bg) !important;
+      color: var(--status-info-text) !important;
+    }
+    .btn-system-action {
+      height: 48px;
+    }
+    
+    .search-box-premium { position: relative; }
+    .search-box-premium i {
+      position: absolute; top: 50%; left: 1.1rem;
+      transform: translateY(-50%); color: var(--text-muted);
+      font-size: 1.1rem; transition: all 0.2s;
+    }
+    .form-control-premium-search:focus + i { color: var(--status-info); }
   `]
 })
 export class VendedorSuscripcionActionsComponent {

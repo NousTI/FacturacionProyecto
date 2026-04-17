@@ -17,35 +17,35 @@ import { InfoTooltipComponent } from '../../../../shared/components/info-tooltip
       </div>
       <div class="quick-links">
         <a routerLink="/vendedor/empresas" class="quick-link">
-          <div class="ql-icon" style="color:#6366f1; background:rgba(99,102,241,.1)">
+          <div class="ql-icon status-info-soft">
             <i class="bi bi-building-add"></i>
           </div>
           <span>Registrar Empresa</span>
           <i class="bi bi-chevron-right ms-auto text-muted"></i>
         </a>
         <a routerLink="/vendedor/suscripciones" class="quick-link">
-          <div class="ql-icon" style="color:#f59e0b; background:rgba(245,158,11,.1)">
+          <div class="ql-icon status-warning-soft">
             <i class="bi bi-credit-card"></i>
           </div>
           <span>Suscripciones</span>
           <i class="bi bi-chevron-right ms-auto text-muted"></i>
         </a>
         <a routerLink="/vendedor/comisiones" class="quick-link">
-          <div class="ql-icon" style="color:#10b981; background:rgba(16,185,129,.1)">
+          <div class="ql-icon status-success-soft">
             <i class="bi bi-percent"></i>
           </div>
           <span>Mis Comisiones</span>
           <i class="bi bi-chevron-right ms-auto text-muted"></i>
         </a>
         <a routerLink="/vendedor/clientes" class="quick-link">
-          <div class="ql-icon" style="color:#0ea5e9; background:rgba(14,165,233,.1)">
+          <div class="ql-icon status-info-soft" style="filter: hue-rotate(180deg);">
             <i class="bi bi-people"></i>
           </div>
           <span>Clientes</span>
           <i class="bi bi-chevron-right ms-auto text-muted"></i>
         </a>
         <a routerLink="/vendedor/reportes" class="quick-link">
-          <div class="ql-icon" style="color:#ec4899; background:rgba(236,72,153,.1)">
+          <div class="ql-icon status-danger-soft" style="filter: hue-rotate(300deg);">
             <i class="bi bi-file-earmark-bar-graph"></i>
           </div>
           <span>Reportes</span>
@@ -56,8 +56,8 @@ import { InfoTooltipComponent } from '../../../../shared/components/info-tooltip
   `,
   styles: [`
     .panel {
-      background: white;
-      border: 1px solid #f1f5f9;
+      background: var(--bg-main);
+      border: 1px solid var(--border-color);
       border-radius: 14px;
       display: flex;
       flex-direction: column;
@@ -66,9 +66,9 @@ import { InfoTooltipComponent } from '../../../../shared/components/info-tooltip
       padding: 0.9rem 1.25rem;
       font-size: 0.85rem;
       font-weight: 800;
-      color: #1e293b;
-      border-bottom: 1px solid #f1f5f9;
-      background: #f8fafc;
+      color: var(--text-main);
+      border-bottom: 1px solid var(--border-color);
+      background: var(--status-neutral-bg);
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -82,12 +82,14 @@ import { InfoTooltipComponent } from '../../../../shared/components/info-tooltip
       padding: 0.85rem 1.25rem;
       font-size: 0.875rem;
       font-weight: 600;
-      color: #334155;
+      color: var(--text-main);
       text-decoration: none;
-      border-bottom: 1px solid #f8fafc;
+      border-bottom: 1px solid var(--border-color);
+      transition: all 0.2s;
     }
-    .quick-link:hover { background: #f8fafc; color: #161d35; }
+    .quick-link:hover { background: var(--status-info-bg); color: var(--status-info-text); }
     .quick-link:last-child { border-bottom: none; }
+    
     .ql-icon {
       width: 34px; height: 34px;
       border-radius: 9px;
@@ -95,6 +97,13 @@ import { InfoTooltipComponent } from '../../../../shared/components/info-tooltip
       font-size: 1rem;
       flex-shrink: 0;
     }
+    
+    .status-info-soft { background: var(--status-info-bg); color: var(--status-info); }
+    .status-warning-soft { background: var(--status-warning-bg); color: var(--status-warning); }
+    .status-success-soft { background: var(--status-success-bg); color: var(--status-success); }
+    .status-danger-soft { background: var(--status-danger-bg); color: var(--status-danger); }
+    
+    .text-muted { color: var(--text-muted) !important; }
   `]
 })
 export class DashboardAccionesComponent {}

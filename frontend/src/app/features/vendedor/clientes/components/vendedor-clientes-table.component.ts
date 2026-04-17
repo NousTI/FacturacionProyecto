@@ -14,7 +14,6 @@ import { CommonModule } from '@angular/common';
               <tr>
                 <th style="width: 250px">Cliente</th>
                 <th style="width: 180px">Empresa</th>
-                <th style="width: 130px; text-align: center;">Origen</th>
                 <th style="width: 150px">Rol</th>
                 <th style="width: 130px; text-align: center;">Estado</th>
                 <th style="width: 160px">Último Acceso</th>
@@ -38,12 +37,6 @@ import { CommonModule } from '@angular/common';
                 </td>
                 <td>
                   <span class="text-corporate fw-700" style="font-size: 0.85rem;">{{ cliente.empresa_nombre || 'N/A' }}</span>
-                </td>
-                <td class="text-center">
-                   <div [ngClass]="getOrigenClass(cliente.origen_creacion)" class="badge-origen-premium">
-                      <i class="bi" [ngClass]="getOrigenIcon(cliente.origen_creacion)"></i>
-                      {{ (cliente.origen_creacion || 'sistema') }}
-                   </div>
                 </td>
                 <td>
                   <span class="badge-role-premium">
@@ -80,7 +73,7 @@ import { CommonModule } from '@angular/common';
                         <a class="dropdown-item rounded-3 py-2" href="javascript:void(0)" 
                            (click)="onAction.emit({type: 'view_details', cliente})">
                           <i class="bi bi-eye text-corporate"></i>
-                          <span class="ms-2">Ver Detalles Completos</span>
+                          <span class="ms-2">Ver Detalles</span>
                         </a>
                       </li>
                       <li><hr class="dropdown-divider mx-2"></li>
@@ -137,18 +130,20 @@ import { CommonModule } from '@angular/common';
       position: sticky;
       top: 0;
       z-index: 10;
-      background: var(--bg-main, #ffffff);
+      background: var(--bg-main);
       padding: 1rem 1.25rem;
       font-size: var(--text-base);
-      color: #0f172a;
-      font-weight: 600;
-      border-bottom: 2px solid var(--border-color, #f1f5f9);
+      color: var(--text-main);
+      font-weight: 800;
+      border-bottom: 2px solid var(--border-color);
       vertical-align: middle;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
     }
     .table tbody td {
       padding: 1.25rem 1.25rem;
-      border-bottom: 1px solid var(--border-color, #f1f5f9);
-      color: var(--text-muted, #475569);
+      border-bottom: 1px solid var(--border-color);
+      color: var(--text-muted);
       font-size: var(--text-md);
       vertical-align: middle;
     }
@@ -158,56 +153,47 @@ import { CommonModule } from '@angular/common';
       border-radius: 12px;
       display: flex; align-items: center; justify-content: center;
       font-weight: 800; font-size: 0.85rem;
+      background: var(--primary-color);
+      color: #ffffff;
     }
     
     .badge-status-premium {
-      padding: 0.25rem 0.75rem;
+      padding: 0.4rem 0.85rem;
       border-radius: 6px;
-      font-size: var(--text-sm);
-      font-weight: 600;
+      font-size: var(--text-xs);
+      font-weight: 800;
       display: inline-block;
       text-transform: uppercase;
+      letter-spacing: 0.5px;
     }
-    .badge-status-premium.activo { background: var(--status-success-bg, #dcfce7); color: var(--status-success-text, #ffffff); }
-    .badge-status-premium.inactivo { background: var(--status-danger-bg, #fee2e2); color: var(--status-danger-text, #ffffff); }
+    .activo { background: var(--status-success-bg); color: var(--status-success-text); }
+    .inactivo { background: var(--status-danger-bg); color: var(--status-danger-text); }
 
     .badge-role-premium {
-      padding: 0.25rem 0.75rem;
+      padding: 0.4rem 0.85rem;
       border-radius: 6px;
-      font-size: var(--text-sm);
-      font-weight: 600;
-      background: #f1f5f9;
-      color: #1e293b;
+      font-size: var(--text-xs);
+      font-weight: 800;
+      background: var(--status-neutral-bg);
+      color: var(--text-main);
       display: inline-block;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
     }
 
-    .badge-origen-premium {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.4rem;
-        padding: 0.2rem 0.6rem;
-        border-radius: 6px;
-        font-size: 0.65rem;
-        font-weight: 700;
-        text-transform: uppercase;
-    }
-    .badge-origen-premium.superadmin { background: #eff6ff; color: #1e40af; border: 1px solid #bfdbfe; }
-    .badge-origen-premium.vendedor { background: #fff7ed; color: #9a3412; border: 1px solid #fed7aa; }
-    .badge-origen-premium.sistema { background: #f1f5f9; color: #475569; border: 1px solid #e2e8f0; }
-    
     .btn-action-trigger {
       background: transparent; border: none;
       width: 32px; height: 32px;
-      border-radius: 8px; color: #94a3b8;
+      border-radius: 8px; color: var(--text-muted);
       transition: all 0.2s;
     }
     .btn-action-trigger:hover, .btn-action-trigger[aria-expanded="true"] {
-      background: #f8fafc; color: #0f172a;
+      background: var(--status-info-bg); color: var(--status-info-text);
     }
     
     .dropdown-menu {
-      border: 1px solid var(--border-color, #e2e8f0) !important;
-      box-shadow: none !important;
+      border: 1px solid var(--border-color) !important;
+      box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1) !important;
       border-radius: 12px !important;
       padding: 0.5rem !important;
       z-index: 1050 !important;
@@ -216,16 +202,17 @@ import { CommonModule } from '@angular/common';
       border-radius: 8px !important;
       font-size: var(--text-base);
       font-weight: 500;
-      color: var(--text-muted, #475569); padding: 0.5rem 1rem;
+      color: var(--text-main); padding: 0.5rem 1rem;
       display: flex; align-items: center;
       cursor: pointer;
     }
-    .dropdown-item:hover { background: #f8fafc; color: #0f172a; }
+    .dropdown-item:hover { background: var(--status-info-bg); color: var(--status-info-text); }
     .dropdown-item i { font-size: 1.1rem; margin-right: 0.75rem; }
     
     .fw-600 { font-weight: 600; }
     .fw-700 { font-weight: 700; }
-    .text-corporate { color: var(--primary-color, #111827) !important; }
+    .fw-800 { font-weight: 800; }
+    .text-corporate { color: var(--primary-color) !important; }
   `]
 })
 export class VendedorClientesTableComponent {

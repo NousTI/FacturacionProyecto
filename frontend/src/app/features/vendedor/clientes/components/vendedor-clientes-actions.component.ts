@@ -90,16 +90,59 @@ import { FormsModule } from '@angular/forms';
     :host {
       display: block;
     }
-    .actions-bar-container {
-      border: none !important;
-      background: transparent !important;
-      padding: 0 !important;
+    .form-control-premium-search {
+      width: 100%; height: 48px; border-radius: 12px;
+      padding: 0 1rem 0 2.75rem; background: #ffffff;
+      border: 1px solid var(--border-color); color: var(--text-main);
+      font-size: var(--text-md); transition: all 0.2s;
     }
+    .form-control-premium-search:focus {
+      outline: none; border-color: var(--status-info);
+      box-shadow: 0 0 0 4px var(--status-info-bg);
+    }
+    .form-select-premium {
+      width: 100%; height: 48px; border-radius: 12px;
+      padding: 0 1.25rem; background: #ffffff;
+      border: 1px solid var(--border-color); color: var(--text-main);
+      font-weight: 600; font-size: var(--text-md); transition: all 0.2s;
+      box-shadow: none !important;
+    }
+    .form-select-premium:focus {
+      outline: none; border-color: var(--status-info);
+      box-shadow: 0 0 0 4px var(--status-info-bg) !important;
+    }
+    .dropdown-menu-premium {
+      border: 1px solid var(--border-color) !important;
+      box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1) !important;
+      border-radius: 12px !important;
+      padding: 0.5rem !important;
+    }
+    .dropdown-item {
+      border-radius: 8px !important;
+      padding: 0.6rem 1rem !important;
+      font-weight: 500; color: var(--text-main);
+    }
+    .dropdown-item:hover {
+      background: var(--status-info-bg) !important;
+      color: var(--status-info-text) !important;
+    }
+    .btn-system-action {
+      height: 48px;
+    }
+    
+    .search-box-premium { position: relative; }
+    .search-box-premium i {
+      position: absolute; top: 50%; left: 1.1rem;
+      transform: translateY(-50%); color: var(--text-muted);
+      font-size: 1.1rem; transition: all 0.2s;
+    }
+    .form-control-premium-search:focus + i { color: var(--status-info); }
+
     .restricted-btn {
-      background: #f1f5f9 !important;
-      color: #94a3b8 !important;
+      background: var(--status-neutral-bg) !important;
+      color: var(--text-muted) !important;
       cursor: not-allowed !important;
-      border: 1px solid #e2e8f0 !important;
+      border: 1px solid var(--border-color) !important;
       box-shadow: none !important;
     }
   `]

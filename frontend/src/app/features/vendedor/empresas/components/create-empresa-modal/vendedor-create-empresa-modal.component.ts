@@ -217,7 +217,7 @@ import { SRI_TIPOS_PERSONA, SRI_TIPOS_CONTRIBUYENTE } from '../../../../../core/
       padding: 1rem;
     }
     .modal-container-final {
-      background: #ffffff;
+      background: var(--bg-main);
       width: 780px;
       height: 750px;
       max-width: 95vw;
@@ -226,93 +226,101 @@ import { SRI_TIPOS_PERSONA, SRI_TIPOS_CONTRIBUYENTE } from '../../../../../core/
       display: flex;
       flex-direction: column;
       overflow: hidden;
-      box-shadow: 0 40px 80px -20px rgba(22, 29, 53, 0.25);
+      border: 1px solid var(--border-color);
+      box-shadow: 0 40px 80px -20px rgba(0, 0, 0, 0.2);
     }
     .modal-header-final {
       padding: 1.5rem 2.5rem;
       display: flex;
       justify-content: space-between;
       align-items: center;
+      border-bottom: 1px solid var(--border-color);
     }
     .modal-title-final {
       font-size: 1.25rem;
       font-weight: 800;
-      color: #161d35;
+      color: var(--text-main);
       margin: 0;
     }
     .btn-close-final {
-      background: none;
+      background: var(--status-neutral-bg);
       border: none;
+      width: 36px; height: 36px;
+      border-radius: 10px;
       font-size: 1.5rem;
-      color: #94a3b8;
+      color: var(--text-muted);
       cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: all 0.2s;
     }
+    .btn-close-final:hover { background: var(--status-danger-bg); color: var(--status-danger-text); }
+
     .modal-body-final {
-      padding: 0 2.5rem 2rem;
+      padding: 2rem 2.5rem;
       overflow-y: auto;
       flex: 1;
     }
     .form-section-final {
       margin-bottom: 2rem;
       padding-bottom: 2rem;
-      border-bottom: 1px solid #f1f5f9;
+      border-bottom: 1px solid var(--border-color);
     }
     .section-header-final {
       font-size: 1.1rem;
       font-weight: 800;
-      color: #1e293b;
+      color: var(--text-main);
       margin-bottom: 1.5rem;
     }
     .label-final {
       font-size: 0.85rem;
-      font-weight: 700;
-      color: #64748b;
+      font-weight: 800;
+      color: var(--text-muted);
       margin-bottom: 0.6rem;
       display: block;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
     }
     .input-final, .select-final {
       width: 100%;
       background: #ffffff;
-      border: 1px solid #e2e8f0;
+      border: 1px solid var(--border-color);
       border-radius: 12px;
-      padding: 0.75rem 1.5rem;
+      padding: 0.75rem 1.25rem;
       font-size: 0.95rem;
-      color: #475569;
+      color: var(--text-main);
       font-weight: 600;
       transition: all 0.2s;
     }
     .input-final::placeholder {
-      color: #94a3b8;
-      font-weight: 600;
+      color: var(--text-muted);
+      opacity: 0.5;
     }
     .input-final:focus, .select-final:focus {
       outline: none;
-      box-shadow: 0 0 0 4px rgba(22, 29, 53, 0.05);
+      border-color: var(--status-info);
+      box-shadow: 0 0 0 4px var(--status-info-bg);
     }
     .input-final.is-invalid, .select-final.is-invalid {
-      border-color: #ef4444 !important;
-      background-color: #fef2f2 !important;
-    }
-    .input-final.is-invalid:focus, .select-final.is-invalid:focus {
-      box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.1) !important;
+      border-color: var(--status-danger) !important;
+      background-color: var(--status-danger-bg) !important;
     }
     .hint-final {
       display: block;
       font-size: 0.75rem;
-      color: #94a3b8;
+      color: var(--text-muted);
       margin-top: 0.4rem;
-      padding-left: 1rem;
+      padding-left: 0.5rem;
     }
     .modal-footer-final {
       padding: 1.5rem 2.5rem;
-      background: #ffffff;
+      background: var(--bg-main);
       display: flex;
       justify-content: flex-end;
       gap: 1rem;
-      border-top: 1px solid #f1f5f9;
+      border-top: 1px solid var(--border-color);
     }
     .btn-submit-final {
-      background: #161d35;
+      background: var(--primary-color);
       color: #ffffff;
       border: none;
       padding: 0.75rem 2.5rem;
@@ -321,8 +329,8 @@ import { SRI_TIPOS_PERSONA, SRI_TIPOS_CONTRIBUYENTE } from '../../../../../core/
       transition: all 0.2s;
     }
     .btn-submit-final:hover:not(:disabled) {
-      background: #232d4d;
-      transform: translateY(-1px);
+      transform: translateY(-2px);
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
     }
     .btn-submit-final:disabled {
       opacity: 0.3;
@@ -330,34 +338,26 @@ import { SRI_TIPOS_PERSONA, SRI_TIPOS_CONTRIBUYENTE } from '../../../../../core/
     }
     .btn-cancel-final {
       background: #ffffff;
-      color: #64748b;
-      border: 1px solid #e2e8f0;
+      color: var(--text-muted);
+      border: 1px solid var(--border-color);
       padding: 0.75rem 2rem;
       border-radius: 12px;
       font-weight: 600;
+      transition: all 0.2s;
     }
+    .btn-cancel-final:hover { background: var(--status-neutral-bg); }
+
     .switch-final .form-check-input:checked {
-      background-color: #161d35;
-      border-color: #161d35;
+      background-color: var(--primary-color);
+      border-color: var(--primary-color);
     }
     .switch-final .form-check-label {
       font-size: 0.85rem;
       font-weight: 700;
-      color: #475569;
-    }
-    .scroll-custom::-webkit-scrollbar {
-      width: 5px;
-    }
-    .scroll-custom::-webkit-scrollbar-thumb {
-      background: #e2e8f0;
-      border-radius: 10px;
-    }
-    .input-final.is-invalid {
-      border-color: #ef4444;
-      background: #fffcfc;
+      color: var(--text-main);
     }
     .error-feedback {
-      color: #ef4444;
+      color: var(--status-danger-text);
       font-size: 0.75rem;
       font-weight: 700;
       margin-top: 0.4rem;

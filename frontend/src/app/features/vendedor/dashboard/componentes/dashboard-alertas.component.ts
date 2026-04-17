@@ -18,7 +18,7 @@ import { InfoTooltipComponent } from '../../../../shared/components/info-tooltip
             message="Muestra renovaciones próximas (<48h) y comisiones recién generadas para atención inmediata.">
           </app-info-tooltip>
         </span>
-        <span class="badge bg-danger rounded-pill" *ngIf="alertasRenovacion.length">
+        <span class="badge status-danger-bg status-danger-text rounded-pill" *ngIf="alertasRenovacion.length">
           {{ alertasRenovacion.length }}
         </span>
       </div>
@@ -39,17 +39,16 @@ import { InfoTooltipComponent } from '../../../../shared/components/info-tooltip
              }">
           <div class="alert-icon-box">
             <i *ngIf="alerta.tipo === 'RENOVACION_PROXIMA'"
-               class="bi bi-exclamation-triangle-fill"
-               style="color:#ef4444"></i>
+               class="bi bi-exclamation-triangle-fill text-danger"></i>
             <i *ngIf="alerta.tipo === 'COMISION_APROBADA'"
-               class="bi bi-check-circle-fill"
-               style="color:#10b981"></i>
+               class="bi bi-check-circle-fill text-success"></i>
           </div>
           <div class="alert-body">
             <div class="d-flex align-items-center gap-2">
               <span class="alert-title">{{ alerta.titulo }}</span>
               <span *ngIf="alerta.estado"
-                    [ngClass]="'badge badge-' + getEstadoBadgeClass(alerta.estado)">
+                    class="badge-status-premium"
+                    [ngClass]="'badge-' + getEstadoBadgeClass(alerta.estado)">
                 {{ getEstadoTexto(alerta.estado) }}
               </span>
             </div>
@@ -66,7 +65,7 @@ import { InfoTooltipComponent } from '../../../../shared/components/info-tooltip
 
       <!-- Empty state -->
       <div class="empty-state" *ngIf="!isLoading && !alertas.length">
-        <i class="bi bi-shield-check" style="font-size:2.5rem; color:#10b981"></i>
+        <i class="bi bi-shield-check" style="font-size:2.5rem; color: var(--status-success)"></i>
         <h5>Todo bajo control</h5>
         <p>No tienes tareas urgentes pendientes.</p>
       </div>
@@ -74,8 +73,8 @@ import { InfoTooltipComponent } from '../../../../shared/components/info-tooltip
   `,
   styles: [`
     .panel {
-      background: white;
-      border: 1px solid #f1f5f9;
+      background: var(--bg-main);
+      border: 1px solid var(--border-color);
       border-radius: 14px;
       display: flex;
       flex-direction: column;
@@ -84,9 +83,9 @@ import { InfoTooltipComponent } from '../../../../shared/components/info-tooltip
       padding: 0.9rem 1.25rem;
       font-size: 0.85rem;
       font-weight: 800;
-      color: #1e293b;
-      border-bottom: 1px solid #f1f5f9;
-      background: #f8fafc;
+      color: var(--text-main);
+      border-bottom: 1px solid var(--border-color);
+      background: var(--status-neutral-bg);
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -98,44 +97,45 @@ import { InfoTooltipComponent } from '../../../../shared/components/info-tooltip
       align-items: center;
       gap: 1rem;
       padding: 1rem 1.25rem;
-      border-bottom: 1px solid #f8fafc;
+      border-bottom: 1px solid var(--border-color);
     }
     .alert-row:last-child { border-bottom: none; }
-    .border-danger-left { border-left: 3px solid #ef4444; }
-    .border-success-left { border-left: 3px solid #10b981; }
+    .border-danger-left { border-left: 3px solid var(--status-danger); }
+    .border-success-left { border-left: 3px solid var(--status-success); }
     .alert-icon-box { font-size: 1.25rem; flex-shrink: 0; width: 24px; text-align: center; }
     .alert-body { flex: 1; display: flex; flex-direction: column; gap: 2px; }
-    .alert-title { font-size: 0.875rem; font-weight: 700; color: #1e293b; }
-    .alert-desc { font-size: 0.8rem; color: #64748b; }
-    .alert-date { font-size: 0.75rem; color: #94a3b8; }
+    .alert-title { font-size: 0.875rem; font-weight: 700; color: var(--text-main); }
+    .alert-desc { font-size: 0.8rem; color: var(--text-muted); }
+    .alert-date { font-size: 0.75rem; color: var(--text-muted); opacity: 0.8; }
+    
     .btn-atender {
-      font-size: 0.75rem;
-      font-weight: 700;
-      color: #6366f1;
-      text-decoration: none;
-      border: 1px solid #e0e7ff;
-      padding: 4px 12px;
-      border-radius: 8px;
-      white-space: nowrap;
+      font-size: 0.75rem; font-weight: 700;
+      color: var(--status-info-text); text-decoration: none;
+      background: var(--status-info-bg); border: 1px solid var(--status-info);
+      padding: 6px 14px; border-radius: 8px; white-space: nowrap;
+      transition: all 0.2s;
     }
-    .btn-atender:hover { background: #eef2ff; }
-    .empty-state {
-      text-align: center;
-      padding: 3rem 1rem;
+    .btn-atender:hover { background: var(--status-info); color: white; transform: translateY(-1px); }
+
+    .empty-state { text-align: center; padding: 3rem 1rem; }
+    .empty-state h5 { margin-top: 1rem; font-weight: 700; color: var(--text-main); }
+    .empty-state p { color: var(--text-muted); font-size: 0.875rem; margin: 0; }
+    
+    .badge-status-premium {
+      font-size: 0.65rem; padding: 4px 10px; border-radius: 6px;
+      font-weight: 800; white-space: nowrap; text-transform: uppercase;
+      letter-spacing: 0.5px;
     }
-    .empty-state h5 { margin-top: 1rem; font-weight: 700; color: #334155; }
-    .empty-state p { color: #64748b; font-size: 0.875rem; margin: 0; }
-    .badge {
-      font-size: 0.65rem;
-      padding: 3px 8px;
-      border-radius: 4px;
-      font-weight: 600;
-      white-space: nowrap;
-    }
-    .badge-warning { background: #fef3c7; color: #92400e; }
-    .badge-info { background: #dbeafe; color: #1e40af; }
-    .badge-success { background: #dcfce7; color: #166534; }
-    .badge-danger { background: #fee2e2; color: #991b1b; }
+    .badge-warning { background: var(--status-warning-bg); color: var(--status-warning-text); }
+    .badge-info { background: var(--status-info-bg); color: var(--status-info-text); }
+    .badge-success { background: var(--status-success-bg); color: var(--status-success-text); }
+    .badge-danger { background: var(--status-danger-bg); color: var(--status-danger-text); }
+    
+    .status-danger-bg { background: var(--status-danger-bg); }
+    .status-danger-text { color: var(--status-danger-text); }
+    
+    .text-danger { color: var(--status-danger) !important; }
+    .text-success { color: var(--status-success) !important; }
     .d-flex { display: flex; }
     .gap-2 { gap: 0.5rem; }
   `]

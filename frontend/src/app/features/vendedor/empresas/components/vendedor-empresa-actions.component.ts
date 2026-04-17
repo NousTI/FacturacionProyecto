@@ -84,14 +84,37 @@ import { FormsModule } from '@angular/forms';
       background: transparent;
       border: none;
     }
+    .form-control-premium-search {
+      width: 100%; height: 48px; border-radius: 12px;
+      padding: 0 1rem 0 2.75rem; background: #ffffff;
+      border: 1px solid var(--border-color); color: var(--text-main);
+      font-size: var(--text-md); transition: all 0.2s;
+    }
+    .form-control-premium-search:focus {
+      outline: none; border-color: var(--status-info);
+      box-shadow: 0 0 0 4px var(--status-info-bg);
+    }
+    .form-select-premium {
+      width: 100%; height: 48px; border-radius: 12px;
+      padding: 0 1rem; background: #ffffff;
+      border: 1px solid var(--border-color); color: var(--text-main);
+      font-weight: 600; font-size: var(--text-md); transition: all 0.2s;
+    }
+    .form-select-premium:focus {
+      outline: none; border-color: var(--status-info);
+      box-shadow: 0 0 0 4px var(--status-info-bg);
+    }
     .restricted-btn {
-        background: #94a3b8 !important;
-        cursor: not-allowed !important;
-        box-shadow: none !important;
-        opacity: 0.7;
+      background: var(--status-neutral) !important;
+      cursor: not-allowed !important;
+      box-shadow: none !important;
+      opacity: 0.6;
     }
     .restricted-btn:hover {
-        transform: none !important;
+      transform: none !important;
+    }
+    .btn-system-action {
+      height: 48px;
     }
   `]
 })

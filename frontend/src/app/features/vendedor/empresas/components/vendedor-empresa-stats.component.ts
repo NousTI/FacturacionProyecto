@@ -9,7 +9,7 @@ import { VendedorEmpresaStats } from '../services/vendedor-empresa.service';
   template: `
     <div class="stats-compact-row">
       <div class="stat-item-mini">
-        <div class="icon-circle" style="background: rgba(59, 130, 246, 0.1); color: #3b82f6;">
+        <div class="icon-circle status-info-soft">
           <i class="bi bi-building"></i>
         </div>
         <div class="stat-info">
@@ -21,7 +21,7 @@ import { VendedorEmpresaStats } from '../services/vendedor-empresa.service';
       <div class="stat-divider"></div>
 
       <div class="stat-item-mini">
-        <div class="icon-circle" style="background: rgba(16, 185, 129, 0.1); color: #10b981;">
+        <div class="icon-circle status-success-soft">
           <i class="bi bi-check-circle-fill"></i>
         </div>
         <div class="stat-info">
@@ -33,7 +33,7 @@ import { VendedorEmpresaStats } from '../services/vendedor-empresa.service';
       <div class="stat-divider"></div>
 
       <div class="stat-item-mini">
-        <div class="icon-circle" style="background: rgba(245, 158, 11, 0.1); color: #f59e0b;">
+        <div class="icon-circle status-warning-soft">
           <i class="bi bi-dash-circle-fill"></i>
         </div>
         <div class="stat-info">
@@ -48,13 +48,13 @@ import { VendedorEmpresaStats } from '../services/vendedor-empresa.service';
       display: block;
     }
     .stats-compact-row {
-      background: white;
+      background: var(--bg-main);
       border-radius: 20px;
       padding: 1.25rem 2rem;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      border: 1px solid #f1f5f9;
+      border: 1px solid var(--border-color);
       margin-bottom: 0;
     }
     .stat-item-mini {
@@ -72,6 +72,11 @@ import { VendedorEmpresaStats } from '../services/vendedor-empresa.service';
       justify-content: center;
       font-size: 1.2rem;
     }
+    
+    .status-info-soft { background: var(--status-info-bg); color: var(--status-info); }
+    .status-success-soft { background: var(--status-success-bg); color: var(--status-success); }
+    .status-warning-soft { background: var(--status-warning-bg); color: var(--status-warning); }
+
     .stat-info {
       display: flex;
       flex-direction: column;
@@ -79,23 +84,22 @@ import { VendedorEmpresaStats } from '../services/vendedor-empresa.service';
     .stat-label {
       font-size: 0.65rem;
       font-weight: 800;
-      color: #94a3b8;
+      color: var(--text-muted);
       text-transform: uppercase;
       letter-spacing: 0.5px;
     }
     .stat-value {
       font-size: 1.35rem;
       font-weight: 800;
-      color: #1e293b;
+      color: var(--text-main);
       line-height: 1.2;
     }
-    .text-success {
-      color: #10b981 !important;
-    }
+    .text-success { color: var(--status-success-text) !important; }
+    
     .stat-divider {
       width: 1px;
       height: 35px;
-      background: #f1f5f9;
+      background: var(--border-color);
       margin: 0 1.5rem;
     }
     @media (max-width: 992px) {

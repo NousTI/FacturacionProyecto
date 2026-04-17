@@ -96,17 +96,18 @@ import { LogAuditoria } from '../../services/auditoria.service';
   styles: [`
     .modal-overlay {
       position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-      background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(8px);
+      background: rgba(15, 23, 42, 0.4); backdrop-filter: blur(8px);
       display: flex; align-items: center; justify-content: center;
       z-index: 10000; padding: 1rem;
     }
     .modal-premium-content {
-      background: white; border-radius: 24px;
+      background: var(--bg-main); border-radius: 24px;
       width: 100%; max-width: 600px;
       overflow: hidden; display: flex; flex-direction: column;
+      border: 1px solid var(--border-color);
     }
     .modal-header-premium {
-      padding: 1.75rem 2rem; border-bottom: 1px solid #f1f5f9;
+      padding: 1.75rem 2rem; border-bottom: 1px solid var(--border-color);
       display: flex; align-items: center; justify-content: space-between;
     }
     .icon-box {
@@ -114,47 +115,48 @@ import { LogAuditoria } from '../../services/auditoria.service';
       display: flex; align-items: center; justify-content: center;
       color: white; font-size: 1.4rem;
     }
-    .modal-title { font-weight: 800; color: #0f172a; margin: 0; font-size: 1.25rem; }
-    .modal-subtitle { color: #94a3b8; margin: 0; font-size: 0.8rem; font-weight: 500; }
+    .modal-title { font-weight: 800; color: var(--text-main); margin: 0; font-size: 1.25rem; }
+    .modal-subtitle { color: var(--text-muted); margin: 0; font-size: 0.8rem; font-weight: 500; }
     .btn-close-modal {
-      background: #f8fafc; border: none; width: 36px; height: 36px;
-      border-radius: 10px; color: #64748b; font-size: 1.5rem;
+      background: var(--status-neutral-bg); border: none; width: 36px; height: 36px;
+      border-radius: 10px; color: var(--text-muted); font-size: 1.5rem;
       display: flex; align-items: center; justify-content: center;
       transition: all 0.2s;
     }
-    .btn-close-modal:hover { background: #fee2e2; color: #ef4444; }
+    .btn-close-modal:hover { background: var(--status-danger-bg); color: var(--status-danger-text); }
 
     .modal-body-premium { padding: 2rem; max-height: 70vh; overflow-y: auto; }
     .detail-label {
       display: block; font-size: 0.65rem; font-weight: 800;
-      color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px;
+      color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;
       margin-bottom: 0.4rem;
     }
-    .detail-value { color: #334155; font-size: 1rem; }
+    .detail-value { color: var(--text-main); font-size: 1rem; }
     
     .avatar-lg {
       width: 48px; height: 48px; border-radius: 12px;
-      background: var(--primary-color, #161d35); color: white;
+      background: var(--primary-color); color: white;
       display: flex; align-items: center; justify-content: center;
       font-weight: 800; font-size: 1.2rem;
     }
 
-    .divider { height: 1px; background: #f1f5f9; margin: 0.5rem 0; }
+    .divider { height: 1px; background: var(--border-color); margin: 0.5rem 0; }
     
     .motivo-container {
-      background: #f8fafc; border-radius: 16px; padding: 1.25rem;
-      color: #475569; font-size: 0.95rem; line-height: 1.6;
-      border: 1px solid #e2e8f0;
+      background: var(--status-neutral-bg); border-radius: 16px; padding: 1.25rem;
+      color: var(--text-main); font-size: 0.95rem; line-height: 1.6;
+      border: 1px solid var(--border-color);
     }
     
     .ua-container {
-      background: #fafafc; padding: 0.75rem; border-radius: 8px;
+      background: var(--status-neutral-bg); padding: 0.75rem; border-radius: 8px;
       word-break: break-all; font-family: 'Inter', sans-serif;
+      border: 1px solid var(--border-color);
     }
 
     .modal-footer-premium { padding: 1.5rem 2rem; }
     .btn-primary-premium {
-      background: var(--primary-color, #161d35); color: white;
+      background: var(--primary-color); color: white;
       border: none; padding: 1rem; border-radius: 12px;
       font-weight: 700; transition: all 0.2s;
     }

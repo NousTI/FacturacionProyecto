@@ -101,16 +101,51 @@ export interface FiltrosAuditoria {
       background: transparent;
       border: none;
     }
+    .form-control-premium-search {
+      background: #ffffff;
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 0 1rem 0 2.75rem;
+      height: 48px;
+      font-size: var(--text-md);
+      color: var(--text-main);
+      transition: all 0.2s;
+      width: 100%;
+    }
+    .form-control-premium-search:focus {
+      border-color: var(--status-info);
+      box-shadow: 0 0 0 4px var(--status-info-bg);
+      outline: none;
+    }
     .form-select-premium {
       height: 48px;
+      background: #ffffff;
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 0 1rem;
+      font-weight: 600;
+      color: var(--text-main);
+      transition: all 0.2s;
+      width: 100%;
+    }
+    .form-select-premium:focus {
+      border-color: var(--status-info);
+      box-shadow: 0 0 0 4px var(--status-info-bg);
+      outline: none;
     }
     .btn-excel-green {
-      background: #10b981 !important;
+      background: var(--status-success) !important;
       color: white !important;
+      border: none;
+      height: 48px;
+      border-radius: 12px;
+      font-weight: 700;
+      transition: all 0.2s;
     }
     .btn-excel-green:hover {
-      background: #059669 !important;
-      transform: translateY(-1px);
+      background: var(--status-success-text) !important;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px var(--status-success-bg);
     }
   `]
 })

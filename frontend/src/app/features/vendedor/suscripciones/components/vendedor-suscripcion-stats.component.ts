@@ -9,7 +9,7 @@ import { CommonModule } from '@angular/common';
     <div class="stats-compact-row">
       <!-- ACTIVAS -->
       <div class="stat-item-mini">
-        <div class="icon-circle" style="background: rgba(16, 185, 129, 0.1); color: #10b981;">
+        <div class="icon-circle status-success-soft">
           <i class="bi bi-check-circle-fill"></i>
         </div>
         <div class="stat-info">
@@ -22,7 +22,7 @@ import { CommonModule } from '@angular/common';
 
       <!-- VENCIDAS -->
       <div class="stat-item-mini">
-        <div class="icon-circle" style="background: rgba(239, 68, 68, 0.1); color: #ef4444;">
+        <div class="icon-circle status-danger-soft">
           <i class="bi bi-exclamation-triangle-fill"></i>
         </div>
         <div class="stat-info">
@@ -33,9 +33,9 @@ import { CommonModule } from '@angular/common';
 
       <div class="stat-divider"></div>
 
-      <!-- PROYECCIÓN (Opcional/Futuro) -->
+      <!-- PROYECCIÓN -->
       <div class="stat-item-mini">
-        <div class="icon-circle" style="background: rgba(59, 130, 246, 0.1); color: #3b82f6;">
+        <div class="icon-circle status-info-soft">
           <i class="bi bi-cash-stack"></i>
         </div>
         <div class="stat-info">
@@ -50,13 +50,13 @@ import { CommonModule } from '@angular/common';
       display: block;
     }
     .stats-compact-row {
-      background: white;
+      background: var(--bg-main);
       border-radius: 20px;
       padding: 1.25rem 2rem;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      border: 1px solid #f1f5f9;
+      border: 1px solid var(--border-color);
       margin-bottom: 0;
     }
     .stat-item-mini {
@@ -74,6 +74,11 @@ import { CommonModule } from '@angular/common';
       justify-content: center;
       font-size: 1.2rem;
     }
+    
+    .status-success-soft { background: var(--status-success-bg); color: var(--status-success); }
+    .status-danger-soft { background: var(--status-danger-bg); color: var(--status-danger); }
+    .status-info-soft { background: var(--status-info-bg); color: var(--status-info); }
+
     .stat-info {
       display: flex;
       flex-direction: column;
@@ -81,26 +86,23 @@ import { CommonModule } from '@angular/common';
     .stat-label {
       font-size: 0.65rem;
       font-weight: 800;
-      color: #94a3b8;
+      color: var(--text-muted);
       text-transform: uppercase;
       letter-spacing: 0.5px;
     }
     .stat-value {
       font-size: 1.35rem;
       font-weight: 800;
-      color: #1e293b;
+      color: var(--text-main);
       line-height: 1.2;
     }
-    .text-success {
-      color: #10b981 !important;
-    }
-    .text-danger {
-      color: #ef4444 !important;
-    }
+    .text-success { color: var(--status-success-text) !important; }
+    .text-danger { color: var(--status-danger-text) !important; }
+    
     .stat-divider {
       width: 1px;
       height: 35px;
-      background: #f1f5f9;
+      background: var(--border-color);
       margin: 0 1.5rem;
     }
     @media (max-width: 992px) {

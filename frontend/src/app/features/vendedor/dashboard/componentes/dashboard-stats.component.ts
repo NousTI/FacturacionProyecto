@@ -12,7 +12,7 @@ import { VendedorHomeStats } from '../services/vendedor-home.service';
       <!-- Empresas Asignadas -->
       <div class="col-6 col-lg-3">
         <div class="kpi-card-premium">
-          <div class="icon-circle" style="color: #6366f1; background: rgba(99,102,241,.1)">
+          <div class="icon-circle status-info-soft">
             <i class="bi bi-building"></i>
           </div>
           <div class="kpi-content">
@@ -27,7 +27,7 @@ import { VendedorHomeStats } from '../services/vendedor-home.service';
       <!-- Comisiones Pendientes -->
       <div class="col-6 col-lg-3">
         <div class="kpi-card-premium">
-          <div class="icon-circle" style="color: #f59e0b; background: rgba(245,158,11,.1)">
+          <div class="icon-circle status-warning-soft">
             <i class="bi bi-percent"></i>
           </div>
           <div class="kpi-content">
@@ -42,7 +42,7 @@ import { VendedorHomeStats } from '../services/vendedor-home.service';
       <!-- Ingresos Generados -->
       <div class="col-6 col-lg-3">
         <div class="kpi-card-premium">
-          <div class="icon-circle" style="color: #10b981; background: rgba(16,185,129,.1)">
+          <div class="icon-circle status-success-soft">
             <i class="bi bi-wallet2"></i>
           </div>
           <div class="kpi-content">
@@ -57,7 +57,7 @@ import { VendedorHomeStats } from '../services/vendedor-home.service';
       <!-- Renovaciones Próximas -->
       <div class="col-6 col-lg-3">
         <div class="kpi-card-premium">
-          <div class="icon-circle" style="color: #ef4444; background: rgba(239,68,68,.1)">
+          <div class="icon-circle status-danger-soft">
             <i class="bi bi-clock-history"></i>
           </div>
           <div class="kpi-content">
@@ -74,17 +74,14 @@ import { VendedorHomeStats } from '../services/vendedor-home.service';
   `,
   styles: [`
     .kpi-card-premium {
-      background: #ffffff;
-      border: 1px solid #f1f5f9;
+      background: var(--bg-main);
+      border: 1px solid var(--border-color);
       border-radius: 20px;
       padding: 1.25rem 1.5rem;
       display: flex;
       align-items: center;
       gap: 1.1rem;
       height: 100%;
-      /* NO ANIMATIONS OR SHADOWS AS REQUESTED */
-      transition: none;
-      box-shadow: none;
     }
     .icon-circle {
       width: 44px;
@@ -96,6 +93,12 @@ import { VendedorHomeStats } from '../services/vendedor-home.service';
       font-size: 1.25rem;
       flex-shrink: 0;
     }
+
+    .status-info-soft { background: var(--status-info-bg); color: var(--status-info); }
+    .status-warning-soft { background: var(--status-warning-bg); color: var(--status-warning); }
+    .status-success-soft { background: var(--status-success-bg); color: var(--status-success); }
+    .status-danger-soft { background: var(--status-danger-bg); color: var(--status-danger); }
+
     .kpi-content {
       display: flex;
       flex-direction: column;
@@ -104,7 +107,7 @@ import { VendedorHomeStats } from '../services/vendedor-home.service';
     .kpi-label {
       font-size: 0.65rem;
       font-weight: 800;
-      color: #64748b;
+      color: var(--text-muted);
       text-transform: uppercase;
       letter-spacing: 0.5px;
       margin-bottom: 2px;
@@ -112,11 +115,11 @@ import { VendedorHomeStats } from '../services/vendedor-home.service';
     .kpi-value {
       font-size: 1.35rem;
       font-weight: 800;
-      color: #1e293b;
+      color: var(--text-main);
       line-height: 1.2;
     }
     .text-danger {
-      color: #ef4444 !important;
+      color: var(--status-danger-text) !important;
     }
 
     @media (max-width: 1400px) {

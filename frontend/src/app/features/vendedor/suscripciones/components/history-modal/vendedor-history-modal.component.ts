@@ -33,13 +33,27 @@ import { VendedorHistoryComponent } from '../history/vendedor-history.component'
       display: flex; align-items: center; justify-content: center; z-index: 10000; padding: 1rem;
     }
     .modal-container-final {
-      background: #ffffff; width: 95vw; max-width: 1200px; height: 90vh;
-      border-radius: 24px; display: flex; flex-direction: column; overflow: hidden;
-      box-shadow: 0 40px 80px -20px rgba(22, 29, 53, 0.25);
+      background: var(--bg-main); width: 95vw; max-width: 1200px; height: 90vh;
+      border-radius: 28px; display: flex; flex-direction: column; overflow: hidden;
+      border: 1px solid var(--border-color);
+      box-shadow: 0 40px 80px -20px rgba(0, 0, 0, 0.25);
     }
-    .modal-header-final { padding: 1.5rem 2rem; display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 1px solid #f1f5f9; }
-    .modal-title-final { font-size: 1.15rem; font-weight: 800; color: #161d35; margin: 0; }
-    .btn-close-final { background: none; border: none; font-size: 1.5rem; color: #94a3b8; cursor: pointer; }
+    .modal-header-final { 
+      padding: 1.5rem 2.5rem; 
+      display: flex; 
+      justify-content: space-between; 
+      align-items: center; 
+      border-bottom: 1px solid var(--border-color);
+    }
+    .modal-title-final { font-size: 1.25rem; font-weight: 800; color: var(--text-main); margin: 0; }
+    .btn-close-final { 
+      background: var(--status-neutral-bg); border: none; 
+      width: 36px; height: 36px; border-radius: 10px;
+      font-size: 1.5rem; color: var(--text-muted); cursor: pointer; 
+      display: flex; align-items: center; justify-content: center;
+      transition: all 0.2s;
+    }
+    .btn-close-final:hover { background: var(--status-danger-bg); color: var(--status-danger-text); }
     
     .modal-body-final { padding: 0; overflow: hidden; flex: 1; display: flex; flex-direction: column; }
   `],

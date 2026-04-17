@@ -93,11 +93,11 @@ import { PermissionsService } from '../../../core/auth/permissions.service';
       flex: 1;
       display: flex;
       flex-direction: column;
-      background: var(--bg-main, #ffffff);
+      background: var(--bg-main);
       padding: 0;
       overflow: hidden;
       min-height: 0;
-      gap: 24px;
+      gap: 1.5rem;
     }
   `]
 })

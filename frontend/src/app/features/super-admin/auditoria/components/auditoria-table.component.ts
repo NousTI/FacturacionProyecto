@@ -92,7 +92,7 @@ import { LogAuditoria } from '../services/auditoria.service';
                       <li>
                         <button class="dropdown-item rounded-3 py-2" (click)="onVerDetalle.emit(log)">
                           <i class="bi bi-info-circle text-primary"></i>
-                          <span class="ms-2">Ver Detalle JSON</span>
+                          <span class="ms-2">Ver Detalle</span>
                         </button>
                       </li>
                     </ul>
@@ -133,54 +133,57 @@ import { LogAuditoria } from '../services/auditoria.service';
     }
     .table thead th {
       position: sticky; top: 0; z-index: 10;
-      background: #f8fafc; padding: 1rem 1.5rem;
-      font-size: 0.7rem; color: #64748b; font-weight: 800;
+      background: var(--bg-main); padding: 1rem 1.5rem;
+      font-size: var(--text-base); color: var(--text-main); font-weight: 800;
       text-transform: uppercase; letter-spacing: 0.5px;
-      border-bottom: 2px solid var(--border-color, #f1f5f9);
+      border-bottom: 2px solid var(--border-color);
     }
     .table tbody td {
-      padding: 1rem 1.5rem; border-bottom: 1px solid var(--border-color, #f1f5f9);
-      color: #475569;
+      padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--border-color);
+      color: var(--text-muted);
+      font-size: var(--text-md);
     }
     
     .modulo-badge {
       font-size: 0.65rem; font-weight: 700;
       padding: 0.25rem 0.6rem; border-radius: 6px;
-      background: #f1f5f9; color: #64748b;
-      border: 1px solid #e2e8f0;
+      background: var(--status-neutral-bg); color: var(--status-neutral-text);
+      border: 1px solid var(--border-color);
     }
 
     .avatar-soft-premium {
       width: 32px; height: 32px; border-radius: 10px;
       display: flex; align-items: center; justify-content: center;
-      font-weight: 700; font-size: 0.85rem; color: #ffffff;
+      font-weight: 800; font-size: 0.85rem; color: #ffffff;
+      background: var(--primary-color);
     }
 
     .badge-status-premium {
-      padding: 0.25rem 0.75rem; border-radius: 6px; font-size: 0.65rem;
-      font-weight: 700; display: inline-block; text-transform: uppercase;
+      padding: 0.35rem 0.85rem; border-radius: 6px; font-size: var(--text-xs);
+      font-weight: 800; display: inline-block; text-transform: uppercase;
+      letter-spacing: 0.3px;
     }
     
-    .login-ok { background: #dcfce7; color: #15803d; }
-    .login-fail { background: #fee2e2; color: #b91c1c; }
-    .logout { background: #f1f5f9; color: #475569; }
-    .update { background: #fef9c3; color: #a16207; }
-    .create { background: #dbeafe; color: #1e40af; }
-    .delete { background: #fecaca; color: #991b1b; }
-    .default { background: #f1f5f9; color: #475569; }
+    .login-ok { background: var(--status-success-bg); color: var(--status-success-text); }
+    .login-fail { background: var(--status-danger-bg); color: var(--status-danger-text); }
+    .logout { background: var(--status-neutral-bg); color: var(--status-neutral-text); }
+    .update { background: var(--status-warning-bg); color: var(--status-warning-text); }
+    .create { background: var(--status-info-bg); color: var(--status-info-text); }
+    .delete { background: var(--status-danger-bg); color: var(--status-danger-text); }
+    .default { background: var(--status-neutral-bg); color: var(--status-neutral-text); }
 
     .ip-tag {
       font-family: 'JetBrains Mono', monospace; font-size: 0.7rem;
-      background: #f8fafc; border: 1px solid #e2e8f0;
-      padding: 0.2rem 0.5rem; border-radius: 4px; color: #64748b;
+      background: var(--status-neutral-bg); border: 1px solid var(--border-color);
+      padding: 0.25rem 0.5rem; border-radius: 4px; color: var(--text-muted);
     }
 
     .btn-action-trigger {
       background: transparent; border: none; width: 32px; height: 32px;
-      border-radius: 8px; color: #94a3b8; transition: all 0.2s;
+      border-radius: 8px; color: var(--text-muted); transition: all 0.2s;
     }
     .btn-action-trigger:hover, .btn-action-trigger[aria-expanded="true"] {
-      background: #f8fafc; color: #0f172a;
+      background: var(--status-info-bg); color: var(--status-info-text);
     }
 
     .dropdown-menu {

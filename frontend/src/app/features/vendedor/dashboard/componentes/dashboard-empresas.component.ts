@@ -49,8 +49,8 @@ import { InfoTooltipComponent } from '../../../../shared/components/info-tooltip
   `,
   styles: [`
     .panel {
-      background: white;
-      border: 1px solid #f1f5f9;
+      background: var(--bg-main);
+      border: 1px solid var(--border-color);
       border-radius: 14px;
       display: flex;
       flex-direction: column;
@@ -59,9 +59,9 @@ import { InfoTooltipComponent } from '../../../../shared/components/info-tooltip
       padding: 0.9rem 1.25rem;
       font-size: 0.85rem;
       font-weight: 800;
-      color: #1e293b;
-      border-bottom: 1px solid #f1f5f9;
-      background: #f8fafc;
+      color: var(--text-main);
+      border-bottom: 1px solid var(--border-color);
+      background: var(--status-neutral-bg);
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -70,29 +70,38 @@ import { InfoTooltipComponent } from '../../../../shared/components/info-tooltip
     .panel-header-link {
       font-size: 0.75rem;
       font-weight: 700;
-      color: #6366f1;
+      color: var(--status-info-text);
       text-decoration: none;
+      background: var(--status-info-bg);
+      padding: 4px 10px;
+      border-radius: 6px;
+      transition: all 0.2s;
     }
+    .panel-header-link:hover { background: var(--status-info); color: white; }
+
     .table thead th {
       font-size: 0.7rem;
       font-weight: 800;
-      color: #94a3b8;
+      color: var(--text-muted);
       text-transform: uppercase;
-      border-bottom: 1px solid #f1f5f9;
-      padding: 0.6rem 1rem;
-      background: white;
+      border-bottom: 1px solid var(--border-color);
+      padding: 0.8rem 1rem;
+      background: var(--bg-main);
+      letter-spacing: 0.5px;
     }
-    .table tbody td { padding: 0.75rem 1rem; vertical-align: middle; font-size: 0.875rem; }
-    .table-hover tbody tr:hover td { background: #f8fafc; }
+    .table tbody td { padding: 1rem; vertical-align: middle; font-size: 0.875rem; color: var(--text-main); }
+    .table-hover tbody tr:hover td { background: var(--status-info-bg); }
+    
     .estado-badge {
       font-size: 0.68rem;
       font-weight: 800;
-      padding: 3px 8px;
+      padding: 4px 10px;
       border-radius: 6px;
       text-transform: uppercase;
+      letter-spacing: 0.3px;
     }
-    .badge-activa  { background: #ecfdf5; color: #10b981; }
-    .badge-vencida { background: #fef2f2; color: #ef4444; }
+    .badge-activa  { background: var(--status-success-bg); color: var(--status-success-text); }
+    .badge-vencida { background: var(--status-danger-bg); color: var(--status-danger-text); }
   `]
 })
 export class DashboardEmpresasComponent {

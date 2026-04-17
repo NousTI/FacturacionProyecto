@@ -95,7 +95,7 @@ import { VendedorEmpresaService } from '../../services/vendedor-empresa.service'
       z-index: 10001;
     }
     .modal-container-plan {
-      background: #ffffff;
+      background: var(--bg-main);
       width: 100%;
       max-width: 550px;
       border-radius: 28px;
@@ -103,33 +103,42 @@ import { VendedorEmpresaService } from '../../services/vendedor-empresa.service'
       display: flex;
       flex-direction: column;
       max-height: 90vh;
+      border: 1px solid var(--border-color);
+      box-shadow: 0 40px 80px -20px rgba(0, 0, 0, 0.2);
     }
     .modal-header-plan {
-      padding: 1.5rem 2rem;
+      padding: 1.5rem 2.5rem;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      background: #fff;
+      border-bottom: 1px solid var(--border-color);
     }
     .modal-title-plan {
       font-size: 1.15rem;
       font-weight: 800;
-      color: #161d35;
+      color: var(--text-main);
       margin: 0;
     }
     .plan-subtitle {
       font-size: 0.9rem;
-      color: #64748b;
+      color: var(--text-muted);
+      font-weight: 600;
     }
     .btn-close-plan {
-      background: none;
+      background: var(--status-neutral-bg);
       border: none;
+      width: 36px; height: 36px;
+      border-radius: 10px;
       font-size: 1.5rem;
-      color: #94a3b8;
+      color: var(--text-muted);
       cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: all 0.2s;
     }
+    .btn-close-plan:hover { background: var(--status-danger-bg); color: var(--status-danger-text); }
+
     .modal-body-plan {
-      padding: 0 2rem 2rem;
+      padding: 2rem 2.5rem;
       overflow-y: auto;
     }
     .plans-list {
@@ -138,43 +147,43 @@ import { VendedorEmpresaService } from '../../services/vendedor-empresa.service'
       gap: 1rem;
     }
     .plan-card {
-      padding: 1rem 1.25rem;
-      border: 1px solid #e2e8f0;
+      padding: 1.25rem;
+      border: 1px solid var(--border-color);
       border-radius: 16px;
       display: flex;
       justify-content: space-between;
       align-items: center;
       cursor: pointer;
       transition: all 0.2s;
+      background: #ffffff;
     }
-    .plan-card:hover:not(.disabled) { border-color: #161d35; background: #f8fafc; }
+    .plan-card:hover:not(.disabled) { border-color: var(--primary-color); background: var(--status-info-bg); }
     .plan-card.selected {
-      border-color: #161d35;
-      background: rgba(22, 29, 53, 0.02);
-      box-shadow: 0 4px 15px rgba(22, 29, 53, 0.05);
+      border-color: var(--primary-color);
+      background: var(--status-info-bg);
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
     }
     .plan-card.disabled {
       opacity: 0.6;
       cursor: not-allowed;
-      background: #f1f5f9;
-      border-color: #e2e8f0;
+      background: var(--status-neutral-bg);
+      border-color: var(--border-color);
     }
     .badge-current {
       font-size: 0.65rem;
-      background: #e2e8f0;
-      color: #64748b;
-      padding: 2px 8px;
+      background: var(--status-neutral);
+      color: white;
+      padding: 3px 10px;
       border-radius: 6px;
-      font-weight: 700;
+      font-weight: 800;
       letter-spacing: 0.5px;
     }
     .plan-info { display: flex; flex-direction: column; }
-    .plan-name { font-weight: 800; color: #1e293b; font-size: 1rem; }
-    .plan-desc { font-size: 0.8rem; color: #64748b; }
-    .plan-check { font-size: 1.25rem; color: #94a3b8; }
-    .selected .plan-check { color: #161d35; }
+    .plan-name { font-weight: 800; color: var(--text-main); font-size: 1rem; }
+    .plan-desc { font-size: 0.8rem; color: var(--text-muted); font-weight: 500; }
+    .plan-check { font-size: 1.25rem; color: var(--text-muted); opacity: 0.4; }
+    .selected .plan-check { color: var(--primary-color); opacity: 1; }
     
-    /* Accordion styles */
     .payment-wrapper {
       max-height: 0;
       overflow: hidden;
@@ -184,19 +193,40 @@ import { VendedorEmpresaService } from '../../services/vendedor-empresa.service'
     .payment-wrapper.open {
       max-height: 500px;
       opacity: 1;
+      margin-top: 1.5rem;
+    }
+
+    .payment-section {
+       border-top: 1px solid var(--border-color);
+       padding-top: 1.5rem;
+    }
+    .section-label {
+       font-size: 0.7rem; font-weight: 800; color: var(--text-muted); 
+       text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 1rem;
+       display: block;
+    }
+
+    .form-control {
+       border-radius: 12px !important;
+       border: 1px solid var(--border-color) !important;
+       font-weight: 600; font-size: 0.95rem; padding: 0.75rem 1rem !important;
+    }
+    .form-control:focus {
+       border-color: var(--status-info) !important;
+       box-shadow: 0 0 0 4px var(--status-info-bg) !important;
     }
 
     .modal-footer-plan {
-      padding: 1.5rem 2rem;
-      background: #f8fafc;
+      padding: 1.5rem 2.5rem;
+      background: var(--bg-main);
       display: flex;
       justify-content: flex-end;
       gap: 1rem;
-      border-top: 1px solid #e2e8f0;
+      border-top: 1px solid var(--border-color);
       margin-top: auto;
     }
     .btn-plan-primary {
-      background: #161d35;
+      background: var(--primary-color);
       color: white;
       border: none;
       padding: 0.75rem 2rem;
@@ -204,16 +234,18 @@ import { VendedorEmpresaService } from '../../services/vendedor-empresa.service'
       font-weight: 700;
       transition: all 0.2s;
     }
+    .btn-plan-primary:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 8px 15px -3px rgba(0,0,0,0.1); }
     .btn-plan-primary:disabled { opacity: 0.4; cursor: not-allowed; }
     .btn-plan-secondary {
       background: white;
-      color: #64748b;
-      border: 1px solid #e2e8f0;
+      color: var(--text-muted);
+      border: 1px solid var(--border-color);
       padding: 0.75rem 1.5rem;
       border-radius: 12px;
       font-weight: 600;
+      transition: all 0.2s;
     }
-    .shadow-premium { box-shadow: 0 40px 80px -20px rgba(22, 29, 53, 0.25); }
+    .btn-plan-secondary:hover { background: var(--status-neutral-bg); }
   `],
   standalone: true,
   imports: [CommonModule, FormsModule]
