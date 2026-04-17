@@ -120,9 +120,9 @@ import { User } from '../../../../../domain/models/user.model';
     .brand-text h4 { margin: 0 0 0.5rem 0; font-weight: 800; color: #1e293b; font-size: 1.5rem; }
     .badges { display: flex; gap: 0.5rem; }
     .status-badge { display: inline-flex; padding: 0.4rem 0.8rem; border-radius: 8px; font-size: 0.75rem; font-weight: 700; }
-    .status-badge.active { background: #15803d; color: white; }
-    .status-badge.inactive { background: #dc2626; color: white; }
-    .role-badge { background: #eff6ff; color: #1e40af; padding: 0.4rem 0.8rem; border-radius: 8px; font-size: 0.75rem; font-weight: 700; border: 1px solid #dbeafe; }
+    .status-badge.active { background: var(--status-success-text); color: white; }
+    .status-badge.inactive { background: var(--status-danger-text); color: white; }
+    .role-badge { background: var(--status-info-bg); color: var(--status-info-text); padding: 0.4rem 0.8rem; border-radius: 8px; font-size: 0.75rem; font-weight: 700; border: 1px solid var(--status-info-bg); }
     .btn-close-custom { width: 36px; height: 36px; border-radius: 12px; border: none; background: white; color: #64748b; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
     .btn-close-custom:hover { background: #fee2e2; color: #ef4444; }
     .modal-body { padding: 2.5rem; overflow-y: auto; flex: 1; }
@@ -136,7 +136,7 @@ import { User } from '../../../../../domain/models/user.model';
     .info-item label { font-size: 0.75rem; font-weight: 700; color: #94a3b8; text-transform: uppercase; }
     .info-item span { font-size: 1rem; font-weight: 600; color: #1e293b; }
     .email-text { color: #2563eb !important; text-decoration: underline; }
-    .control-card { background: #1e293b; border-radius: 24px; padding: 2rem; color: white; margin-bottom: 2rem; }
+    .control-card { background: var(--primary-color); border-radius: 24px; padding: 2rem; color: white; margin-bottom: 2rem; }
     .card-title { font-size: 0.75rem; font-weight: 800; text-transform: uppercase; color: #94a3b8; margin-bottom: 1.5rem; letter-spacing: 0.05em; }
     .audit-item { display: flex; flex-direction: column; gap: 0.5rem; }
     .a-label { font-size: 0.8rem; color: #94a3b8; font-weight: 600; }
@@ -148,8 +148,8 @@ import { User } from '../../../../../domain/models/user.model';
     .info-tip i { color: #94a3b8; }
     .info-tip p { font-size: 0.75rem; color: #64748b; margin: 0; line-height: 1.5; font-weight: 500; }
     .modal-footer { padding: 1.5rem 2.5rem; }
-    .btn-primary-premium { width: 100%; padding: 1rem; border-radius: 16px; border: none; background: #1e293b; color: white; font-weight: 800; font-size: 1rem; transition: all 0.2s; }
-    .btn-primary-premium:hover { background: #0f172a; transform: translateY(-2px); }
+    .btn-primary-premium { width: 100%; padding: 1rem; border-radius: 16px; border: none; background: var(--primary-color); color: white; font-weight: 800; font-size: 1rem; transition: all 0.2s; }
+    .btn-primary-premium:hover { background: var(--primary-hover); transform: translateY(-2px); }
     .scroll-custom::-webkit-scrollbar { width: 5px; }
     .scroll-custom::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
   `]

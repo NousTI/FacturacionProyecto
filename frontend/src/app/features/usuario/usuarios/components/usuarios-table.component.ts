@@ -28,7 +28,7 @@ import { HasPermissionDirective } from '../../../../core/directives/has-permissi
                 <!-- USUARIO -->
                 <td>
                   <div class="client-info-editorial">
-                    <div class="avatar-soft-editorial" [style.background]="getAvatarColor((u.nombre || u.nombres || ''), 0.1)" [style.color]="getAvatarColor((u.nombre || u.nombres || ''), 1)">
+                    <div class="avatar-soft-editorial">
                       {{ getInitials(u) }}
                     </div>
                     <div class="details-editorial">
@@ -147,15 +147,15 @@ import { HasPermissionDirective } from '../../../../core/directives/has-permissi
     .table-editorial tbody tr:last-child td { border-bottom: none; }
 
     .client-info-editorial { display: flex; align-items: center; gap: 1rem; }
-    .avatar-soft-editorial { width: 40px; height: 40px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 0.9rem; flex-shrink: 0; }
+    .avatar-soft-editorial { width: 40px; height: 40px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 0.9rem; flex-shrink: 0; background: var(--primary-color); color: #ffffff; }
     .details-editorial { display: flex; flex-direction: column; min-width: 0; }
     .name-editorial { font-weight: 700; color: #1e293b; font-size: 0.95rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .sub-editorial { font-size: 0.75rem; color: #94a3b8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .sub-editorial { font-size: 0.75rem; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .me-label { font-size: 0.65rem; font-weight: 900; color: var(--status-info-text); background: var(--status-info-bg); padding: 0.1rem 0.5rem; border-radius: 6px; text-transform: uppercase; letter-spacing: 0.02em; }
 
     .role-info-editorial { display: flex; flex-direction: column; gap: 0.25rem; }
-    .badge-role-editorial { display: inline-flex; font-size: 0.75rem; font-weight: 800; color: #475569; background: #f1f5f9; padding: 0.3rem 0.75rem; border-radius: 8px; width: fit-content; }
-    .role-sub-editorial { font-size: 0.7rem; color: #94a3b8; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .badge-role-editorial { display: inline-flex; font-size: 0.75rem; font-weight: 800; color: var(--status-info-text); background: var(--status-info-bg); padding: 0.3rem 0.75rem; border-radius: 8px; width: fit-content; }
+    .role-sub-editorial { font-size: 0.7rem; color: var(--text-muted); font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
     .contact-info-editorial { display: flex; flex-direction: column; gap: 0.25rem; }
     .contact-item-editorial { display: flex; align-items: center; gap: 0.5rem; font-size: 0.8rem; color: #64748b; }
