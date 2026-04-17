@@ -78,8 +78,8 @@ import { FacturaCalculationService } from '../../../../services/factura-calculat
               <td>
                 <div class="select-lux-wrapper">
                   <select class="select-lux input-sm" formControlName="tipo_iva">
-                    <option *ngFor="let rate of IVA_RATES" [value]="rate.code">
-                      {{ rate.percentage }}%
+                    <option *ngFor="let rate of IVA_RATES" [value]="rate.code" [label]="rate.percentage + '%'">
+                      {{ rate.label }}
                     </option>
                   </select>
                 </div>

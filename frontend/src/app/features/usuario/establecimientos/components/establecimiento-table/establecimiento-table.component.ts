@@ -46,7 +46,7 @@ import { HasPermissionDirective } from '../../../../../shared/directives/has-per
                   <span class="badge-code-editorial">{{ est.codigo }}</span>
                 </td>
                 <td>
-                  <span class="text-dark fw-500" style="font-size: var(--text-base);" [title]="est.direccion">{{ est.direccion | slice:0:50 }}{{ est.direccion.length > 50 ? '...' : '' }}</span>
+                  <span class="text-dark fw-500" style="font-size: var(--text-base);" [title]="est.direccion">{{ est.direccion | slice:0:80 }}{{ est.direccion.length > 80 ? '...' : '' }}</span>
                 </td>
                 <td class="text-center">
                   <span class="badge-status-editorial" [ngClass]="est.activo ? 'activo' : 'inactivo'">

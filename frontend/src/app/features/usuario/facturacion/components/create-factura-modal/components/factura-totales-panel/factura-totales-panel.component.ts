@@ -12,7 +12,7 @@ import { CommonModule } from '@angular/common';
         <span class="fw-bold">{{ totals.subtotal_sin_iva | currency:'USD' }}</span>
       </div>
       <div class="d-flex justify-content-between mb-2">
-        <span class="text-muted small-cap">Subtotal 15%</span>
+        <span class="text-muted small-cap">Subtotal {{ ivaPercentage }}%</span>
         <span class="fw-bold">{{ totals.subtotal_con_iva | currency:'USD' }}</span>
       </div>
       <div class="d-flex justify-content-between mb-2">
@@ -32,7 +32,7 @@ import { CommonModule } from '@angular/common';
         <span class="text-danger fw-bold">- {{ totals.descuento | currency:'USD' }}</span>
       </div>
       <div class="d-flex justify-content-between mb-2">
-        <span class="text-muted small-cap">IVA 15%</span>
+        <span class="text-muted small-cap">IVA {{ ivaPercentage }}%</span>
         <span class="fw-bold text-dark">{{ totals.iva | currency:'USD' }}</span>
       </div>
       <div class="d-flex justify-content-between mb-3" *ngIf="totals.ice > 0">
@@ -58,4 +58,9 @@ export class FacturaTotalesPanelComponent {
     ice: 0,
     total: 0
   };
+
+  get ivaPercentage(): number {
+    if (!this.totals.subtotal_con_iva || this.totals.subtotal_con_iva === 0) return 0;
+    return Math.round((this.totals.iva / this.totals.subtotal_con_iva) * 100);
+  }
 }

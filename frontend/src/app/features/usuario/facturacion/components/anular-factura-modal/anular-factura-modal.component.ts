@@ -73,7 +73,7 @@ import { PremiumAlertComponent } from '../../../../../shared/components/premium-
             <ng-container *ngIf="!loading && !resultadoSri">
                <div class="form-section animate__animated animate__fadeIn">
                  <div class="form-group mb-4">
-                   <label class="form-label-lux">Motivo de Anulación</label>
+                   <label class="form-label-lux">Motivo de Anulación *</label>
                    <textarea 
                      class="input-lux" 
                      [(ngModel)]="razon" 

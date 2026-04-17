@@ -8,8 +8,8 @@ export const SRI_IVA_TARIFAS = [
     { code: '3', label: 'Tarifa 14% (Histórica)', percentage: 14, description: 'Tarifa temporal histórica utilizada tras eventos de emergencia (Solidaridad).' },
     { code: '4', label: 'Tarifa 15% (General Vigente)', percentage: 15, description: 'Tarifa general aplicada a la mayoría de bienes y servicios gravados desde abril 2024.' },
     { code: '5', label: 'Tarifa 5% (Construcción/Canasta)', percentage: 5, description: 'Tarifa reducida para transferencias locales de materiales de construcción y ciertos servicios básicos.' },
-    { code: '6', label: 'No objeto de Impuesto', percentage: 0, description: 'Ventas que no están sujetas al pago de IVA (ej: venta de negocios completos o herencias).' },
-    { code: '7', label: 'Exento de IVA', percentage: 0, description: 'Servicios de salud, alquiler de vivienda para vivienda, transporte público, entre otros.' },
+    { code: '6', label: 'No objeto de Impuesto (0%)', percentage: 0, description: 'Ventas que no están sujetas al pago de IVA (ej: venta de negocios completos o herencias).' },
+    { code: '7', label: 'Exento de IVA (0%)', percentage: 0, description: 'Servicios de salud, alquiler de vivienda para vivienda, transporte público, entre otros.' },
     { code: '8', label: 'Tarifa 8% (Feriados Turísticos)', percentage: 8, description: 'Tarifa reducida aplicada exclusivamente a servicios turísticos durante feriados nacionales decretados.' },
     { code: '10', label: 'Tarifa 13% (Materiales de Construcción)', percentage: 13, description: 'Tarifa temporal previo al incremento al 15% o aplicada a esquemas específicos de materiales.' },
 ];

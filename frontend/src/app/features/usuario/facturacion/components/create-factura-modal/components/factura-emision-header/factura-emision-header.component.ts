@@ -36,7 +36,7 @@ import { SRI_FORMAS_PAGO, FORMA_PAGO_REQUIERE_PLAZO } from '../../../../../../..
           </div>
         </div>
 
-        <div class="col-md-5">
+        <div class="col-md-5" style="display: none;">
           <label class="form-label-lux">Fecha Emisión</label>
           <div class="input-lux-wrapper input-sm">
             <i class="bi bi-calendar-event"></i>

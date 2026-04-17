@@ -492,8 +492,8 @@ export class CreateFacturaModalComponent implements OnInit, OnChanges {
   }
 
   mapIvaCode(percent: number): string {
-    if (percent === 0) return '0';
-    return '4'; // Default 15% (SRI Code '10')
+    const map: Record<number, string> = { 0: '0', 5: '5', 8: '8', 12: '2', 13: '10', 14: '3', 15: '4' };
+    return map[percent] ?? '4';
   }
 
   calculateTotals() {
