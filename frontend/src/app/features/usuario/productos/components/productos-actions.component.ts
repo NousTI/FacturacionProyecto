@@ -79,26 +79,26 @@ import { HasPermissionDirective } from '../../../../core/directives/has-permissi
       gap: 1.5rem; background: transparent; padding: 0; border: none;
     }
     .search-wrapper { position: relative; flex: 1; max-width: 500px; }
-    .search-wrapper i { position: absolute; left: 1.1rem; top: 50%; transform: translateY(-50%); color: #94a3b8; font-size: 1rem; }
+    .search-wrapper i { position: absolute; left: 1.1rem; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 1rem; }
     .search-input {
       width: 100%; padding: 0.75rem 1rem 0.75rem 2.8rem; border-radius: 14px;
-      border: 1px solid #e2e8f0; background: #f8fafc; font-size: 0.9rem;
+      border: 1px solid var(--border-color); background: #f8fafc; font-size: 0.9rem;
       font-weight: 500; transition: all 0.2s;
     }
-    .search-input:focus { outline: none; background: white; border-color: #3b82f6; box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1); }
+    .search-input:focus { outline: none; background: white; border-color: var(--primary-color); box-shadow: 0 0 0 3px rgba(22, 29, 53, 0.06); }
     .buttons-group { display: flex; align-items: center; gap: 0.75rem; }
     .btn-filter, .btn-primary {
       display: flex; align-items: center; justify-content: center; gap: 0.6rem;
       padding: 0.7rem 1.1rem; border-radius: 12px; font-weight: 700; font-size: 0.82rem;
       cursor: pointer; transition: all 0.2s; border: none;
     }
-    .btn-filter { background: #f1f5f9; color: #475569; }
-    .btn-filter:hover { background: #e2e8f0; }
-    .btn-primary { background: #1e293b; color: white; padding: 0.7rem 1.3rem; }
-    .btn-primary:hover { background: #0f172a; transform: translateY(-1px); }
-    .dropdown-menu { border-radius: 12px; border: 1px solid #f1f5f9; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); padding: 0.5rem; margin-top: 0.5rem; min-width: 180px; }
+    .btn-filter { background: var(--status-neutral-bg); color: var(--status-neutral-text); }
+    .btn-filter:hover { background: var(--border-color); }
+    .btn-primary { background: var(--primary-color); color: white; padding: 0.7rem 1.3rem; }
+    .btn-primary:hover { background: var(--primary-hover); transform: translateY(-1px); }
+    .dropdown-menu { border-radius: 12px; border: 1px solid var(--border-color); box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.08); padding: 0.5rem; margin-top: 0.5rem; min-width: 180px; }
     .dropdown-item { border-radius: 8px; padding: 0.6rem 1rem; font-weight: 600; font-size: 0.82rem; color: #475569; cursor: pointer; }
-    .dropdown-item:hover { background: #f8fafc; color: #1e293b; }
+    .dropdown-item:hover { background: var(--primary-color); color: #ffffff; }
     @media (max-width: 1200px) { .actions-container { flex-direction: column; align-items: stretch; } .search-wrapper { max-width: 100%; } .buttons-group { flex-wrap: wrap; } }
   `]
 })

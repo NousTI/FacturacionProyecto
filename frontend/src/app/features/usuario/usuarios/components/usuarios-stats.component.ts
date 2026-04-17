@@ -9,7 +9,7 @@ import { CommonModule } from '@angular/common';
   template: `
     <div class="stats-compact-row">
       <div class="stat-item-mini">
-        <div class="icon-circle primary">
+        <div class="icon-circle neutral">
           <i class="bi bi-people-fill"></i>
         </div>
         <div class="stat-info">
@@ -55,7 +55,7 @@ import { CommonModule } from '@angular/common';
       width: 44px; height: 44px; border-radius: 14px; flex-shrink: 0;
       display: flex; align-items: center; justify-content: center; font-size: 1.25rem;
     }
-    .icon-circle.primary { background: var(--primary-color); color: #ffffff; }
+    .icon-circle.neutral { background: var(--status-neutral-bg); color: var(--status-neutral-text); }
     .icon-circle.success { background: var(--status-success-bg); color: var(--status-success-text); }
     .icon-circle.danger  { background: var(--status-danger-bg);  color: var(--status-danger-text); }
     .stat-info { display: flex; flex-direction: column; }

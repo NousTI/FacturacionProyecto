@@ -141,25 +141,30 @@ import { PROVEEDORES_PERMISSIONS } from '../../../constants/permission-codes';
     }
 
     /* No Permission */
+    @keyframes pulse-ring {
+      0%   { box-shadow: 0 0 0 0 rgba(185, 28, 28, 0.2); }
+      70%  { box-shadow: 0 0 0 14px rgba(185, 28, 28, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(185, 28, 28, 0); }
+    }
     .no-permission-container {
       flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
       text-align: center; padding: 3rem; min-height: 70vh;
     }
     .restricted-card-premium {
       background: white; padding: 4rem 3rem; border-radius: 32px;
-      box-shadow: 0 25px 50px rgba(0,0,0,0.05); border: 1px solid #f1f5f9;
+      border: 1px solid var(--border-color);
       max-width: 600px; width: 100%;
     }
     .icon-lock-wrapper {
-      width: 100px; height: 100px; background: #fee2e2; color: #ef4444; border-radius: 50%;
+      width: 100px; height: 100px; background: var(--status-danger-bg); color: var(--status-danger-text); border-radius: 28px;
       display: flex; align-items: center; justify-content: center; font-size: 3rem;
-      margin: 0 auto 1.5rem; box-shadow: 0 10px 25px -5px rgba(239, 68, 68, 0.3);
+      margin: 0 auto 1.5rem; animation: pulse-ring 2s ease-out infinite;
     }
     .btn-retry {
-      background: #1e293b; color: white; border: none; padding: 1rem 2.5rem;
+      background: var(--primary-color); color: white; border: none; padding: 1rem 2.5rem;
       border-radius: 100px; font-weight: 700; transition: all 0.2s; cursor: pointer;
     }
-    .btn-retry:hover { transform: scale(1.05); background: #0f172a; }
+    .btn-retry:hover { transform: scale(1.05); background: var(--primary-hover); }
   `]
 })
 export class ProveedoresPage implements OnInit, OnDestroy {

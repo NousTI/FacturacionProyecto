@@ -29,7 +29,7 @@ import { GET_IDENTIFICACION_LABEL } from '../../../../core/constants/sri-iva.con
                 <!-- PROVEEDOR -->
                 <td>
                   <div class="client-info-editorial">
-                    <div class="avatar-editorial" [style.background]="getAvatarColor(p.razon_social, 0.1)" [style.color]="getAvatarColor(p.razon_social, 1)">
+                    <div class="avatar-editorial">
                       {{ getInitials(p.razon_social) }}
                     </div>
                     <div class="details-editorial">
@@ -136,53 +136,53 @@ import { GET_IDENTIFICACION_LABEL } from '../../../../core/constants/sri-iva.con
   `,
   styles: [`
     :host { display: block; width: 100%; flex: 1; min-height: 0; }
-    .module-table-premium { background: white; border-radius: 24px; border: 1px solid #f1f5f9; overflow: hidden; }
+    .module-table-premium { background: white; border-radius: 24px; border: 1px solid var(--border-color); overflow: hidden; }
     .table-container-premium { display: flex; flex-direction: column; }
     .table-responsive-premium { overflow-x: auto; overscroll-behavior: contain; }
     .table-editorial { width: 100%; border-collapse: separate; border-spacing: 0; table-layout: fixed; }
-    
+
     .table-editorial th {
-      padding: 1.25rem 1.5rem; background: #f8fafc; font-size: 0.75rem; font-weight: 800;
-      color: #64748b; text-transform: uppercase; letter-spacing: 0.05em;
-      border-bottom: 2px solid #f1f5f9; text-align: left;
+      padding: 1.25rem 1.5rem; background: var(--bg-main); font-size: 0.75rem; font-weight: 800;
+      color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em;
+      border-bottom: 2px solid var(--border-color); text-align: left;
     }
-    .table-editorial td { padding: 1.1rem 1.5rem; border-bottom: 1px solid #f1f5f9; vertical-align: middle; transition: all 0.2s; }
+    .table-editorial td { padding: 1.1rem 1.5rem; border-bottom: 1px solid var(--border-color); vertical-align: middle; transition: all 0.2s; }
     .table-editorial tbody tr:hover td { background-color: #f8fafc; }
     .table-editorial tbody tr:last-child td { border-bottom: none; }
 
     .client-info-editorial { display: flex; align-items: center; gap: 1rem; }
-    .avatar-editorial { width: 38px; height: 38px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 0.85rem; flex-shrink: 0; }
+    .avatar-editorial { width: 38px; height: 38px; border-radius: 10px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 0.85rem; background: var(--primary-color); color: #ffffff; }
     .details-editorial { display: flex; flex-direction: column; min-width: 0; }
     .name-editorial { font-weight: 700; color: #1e293b; font-size: 0.95rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .sub-editorial { font-size: 0.75rem; color: #94a3b8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .sub-editorial { font-size: 0.75rem; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
     .id-info-editorial { display: flex; flex-direction: column; }
     .id-value-editorial { font-weight: 700; color: #475569; font-size: 0.9rem; }
-    .id-type-editorial { font-size: 0.7rem; color: #94a3b8; text-transform: uppercase; font-weight: 600; }
+    .id-type-editorial { font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; font-weight: 600; }
 
     .badge-status-editorial { display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.35rem 0.8rem; border-radius: 10px; font-size: 0.7rem; font-weight: 800; text-transform: uppercase; }
-    .badge-status-editorial.activo { background: #dcfce7; color: #15803d; }
-    .badge-status-editorial.inactivo { background: #fee2e2; color: #dc2626; }
+    .badge-status-editorial.activo { background: var(--status-success-bg); color: var(--status-success-text); }
+    .badge-status-editorial.inactivo { background: var(--status-neutral-bg); color: var(--status-neutral-text); }
 
     .contact-info-editorial { display: flex; flex-direction: column; gap: 0.25rem; }
-    .contact-item-editorial { display: flex; align-items: center; gap: 0.5rem; font-size: 0.8rem; color: #64748b; }
-    .contact-item-editorial i { font-size: 0.9rem; color: #94a3b8; }
+    .contact-item-editorial { display: flex; align-items: center; gap: 0.5rem; font-size: 0.8rem; color: var(--text-muted); }
+    .contact-item-editorial i { font-size: 0.9rem; color: var(--text-muted); }
 
     .credit-info-editorial { display: flex; flex-direction: column; }
     .amount-editorial { font-weight: 700; color: #1e293b; font-size: 0.9rem; }
-    .days-editorial { font-size: 0.75rem; color: #94a3b8; }
+    .days-editorial { font-size: 0.75rem; color: var(--text-muted); }
 
     .btn-action-trigger-editorial {
-      width: 34px; height: 34px; border-radius: 10px; border: none; background: transparent; color: #94a3b8;
+      width: 34px; height: 34px; border-radius: 10px; border: none; background: transparent; color: var(--text-muted);
       display: flex; align-items: center; justify-content: center; transition: all 0.2s;
     }
-    .btn-action-trigger-editorial:hover { background: #f1f5f9; color: #1e293b; }
+    .btn-action-trigger-editorial:hover { background: var(--status-neutral-bg); color: var(--text-main); }
 
-    .dropdown-menu { border-radius: 12px; border: 1px solid #f1f5f9; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.08); padding: 0.5rem; z-index: 1050 !important; position: fixed !important; }
+    .dropdown-menu { border-radius: 12px; border: 1px solid var(--border-color); box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.08); padding: 0.5rem; z-index: 1050 !important; position: fixed !important; }
     .dropdown-item { border-radius: 8px; padding: 0.6rem 1rem; font-weight: 600; font-size: 0.85rem; display: flex; align-items: center; gap: 0.75rem; color: #475569; cursor: pointer; transition: all 0.2s; }
     .dropdown-item i { font-size: 1.1rem; }
-    .dropdown-item:hover { background: #f8fafc; color: #1e293b; }
-    .dropdown-item.text-danger:hover { background: #fef2f2; }
+    .dropdown-item:hover { background: var(--primary-color); color: #ffffff; }
+    .dropdown-item.text-danger:hover { background: var(--status-danger-bg); color: var(--status-danger-text); }
 
     .empty-state-editorial { text-align: center; }
   `]

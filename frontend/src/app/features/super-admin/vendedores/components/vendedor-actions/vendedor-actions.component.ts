@@ -63,6 +63,7 @@ import { FormsModule } from '@angular/forms';
     .actions-bar-container {
       background: transparent;
       border: none;
+      padding: 0;
     }
     .search-box-premium {
       position: relative;

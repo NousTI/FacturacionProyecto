@@ -117,47 +117,55 @@ import { HasPermissionDirective } from '../../../../../shared/directives/has-per
   styles: [`
     :host { display: block; width: 100%; }
     .module-table-premium {
-      background: white; border-radius: 24px; border: 1px solid #f1f5f9; overflow: hidden;
+      background: white; border-radius: 24px; border: 1px solid var(--border-color); overflow: hidden;
     }
     .table-container-premium { display: flex; flex-direction: column; }
     .table-responsive-premium { overflow-x: auto; }
-    
+
     .table-editorial { width: 100%; border-collapse: separate; border-spacing: 0; }
     .table-editorial th {
-      padding: 1.25rem 1.5rem; background: #f8fafc; font-size: 0.85rem; color: #64748b; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid #f1f5f9;
+      padding: 1.25rem 1.5rem; background: var(--bg-main); font-size: 0.85rem;
+      color: var(--text-muted); font-weight: 600; text-transform: uppercase;
+      letter-spacing: 0.5px; border-bottom: 1px solid var(--border-color);
     }
-    .table-editorial td { padding: 1rem 1.5rem; border-bottom: 1px solid #f1f5f9; vertical-align: middle; transition: all 0.2s; }
+    .table-editorial td { padding: 1rem 1.5rem; border-bottom: 1px solid var(--border-color); vertical-align: middle; transition: all 0.2s; }
     .table-editorial tbody tr:hover td { background-color: #f8fafc; }
 
     .badge-code-editorial {
-      background: #f1f5f9; color: #475569; padding: 0.35rem 0.6rem; border-radius: 8px; font-weight: 700; font-size: 0.75rem;
+      background: var(--status-neutral-bg); color: var(--status-neutral-text);
+      padding: 0.35rem 0.6rem; border-radius: 8px; font-weight: 700; font-size: 0.75rem;
     }
     .badge-category-editorial {
-      background: rgba(99, 102, 241, 0.1); color: #6366f1; padding: 0.35rem 0.6rem; border-radius: 8px; font-weight: 600; font-size: 0.75rem;
+      background: var(--status-info-bg); color: var(--status-info-text);
+      padding: 0.35rem 0.6rem; border-radius: 8px; font-weight: 600; font-size: 0.75rem;
     }
 
     .badge-status-editorial {
-      display: inline-flex; align-items: center; padding: 0.25rem 0.75rem; border-radius: 8px; font-size: 0.65rem; font-weight: 700; text-transform: uppercase;
+      display: inline-flex; align-items: center; padding: 0.25rem 0.75rem;
+      border-radius: 8px; font-size: 0.65rem; font-weight: 700; text-transform: uppercase;
     }
-    .badge-status-editorial.pendiente { background: #fff7ed; color: #9a3412; }
-    .badge-status-editorial.pagado { background: #f0fdf4; color: #166534; }
-    .badge-status-editorial.vencido { background: #fef2f2; color: #991b1b; }
+    .badge-status-editorial.pendiente { background: var(--status-warning-bg); color: var(--status-warning-text); }
+    .badge-status-editorial.pagado    { background: var(--status-success-bg); color: var(--status-success-text); }
+    .badge-status-editorial.vencido   { background: var(--status-danger-bg);  color: var(--status-danger-text); }
 
     .btn-action-trigger-editorial {
-      width: 32px; height: 32px; border-radius: 8px; border: none; background: transparent; color: #94a3b8; transition: all 0.2s; display: inline-flex; align-items: center; justify-content: center;
+      width: 32px; height: 32px; border-radius: 8px; border: none; background: transparent;
+      color: var(--text-muted); transition: all 0.2s; display: inline-flex; align-items: center; justify-content: center;
     }
-    .btn-action-trigger-editorial:hover { background: #f1f5f9; color: #1e293b; }
+    .btn-action-trigger-editorial:hover { background: var(--status-neutral-bg); color: var(--text-main); }
 
     .dropdown-menu {
-      z-index: 1050; border: 1px solid #f1f5f9 !important; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1) !important;
+      z-index: 1050; border: 1px solid var(--border-color) !important;
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.08) !important;
     }
     .dropdown-item {
-      font-size: 0.9rem; font-weight: 500; color: #64748b; padding: 0.5rem 1rem; display: flex; align-items: center; cursor: pointer;
+      font-size: 0.9rem; font-weight: 500; color: var(--text-muted);
+      padding: 0.5rem 1rem; display: flex; align-items: center; cursor: pointer;
     }
-    .dropdown-item:hover { background: #f8fafc; color: #1e293b; }
+    .dropdown-item:hover { background: var(--primary-color); color: #ffffff; }
     .dropdown-item i { font-size: 1.1rem; margin-right: 0.75rem; }
-    .dropdown-item.text-success:hover { background: #f0fdf4; }
-    .dropdown-item.text-danger:hover { background: #fef2f2; }
+    .dropdown-item.text-success:hover { background: var(--status-success-bg); color: var(--status-success-text); }
+    .dropdown-item.text-danger:hover  { background: var(--status-danger-bg);  color: var(--status-danger-text); }
   `]
 })
 export class GastosTableComponent {

@@ -172,7 +172,7 @@ import { CLIENTES_PERMISSIONS } from '../../../constants/permission-codes';
       gap: 1rem;
       padding: 0.5rem 1rem 0;
       background: white;
-      border-bottom: 1px solid #f1f5f9;
+      border-bottom: 1px solid var(--border-color);
     }
     .tab-btn {
       display: flex;
@@ -181,7 +181,7 @@ import { CLIENTES_PERMISSIONS } from '../../../constants/permission-codes';
       padding: 0.8rem 1.25rem;
       border: none;
       background: none;
-      color: #94a3b8;
+      color: var(--text-muted);
       font-weight: 700;
       font-size: 0.9rem;
       border-bottom: 3px solid transparent;
@@ -189,12 +189,12 @@ import { CLIENTES_PERMISSIONS } from '../../../constants/permission-codes';
       cursor: pointer;
     }
     .tab-btn:hover {
-      color: #475569;
-      background: #f8fafc;
+      color: var(--text-main);
+      background: var(--status-neutral-bg);
     }
     .tab-btn.active {
-      color: var(--secondary-color, #1e293b);
-      border-bottom-color: var(--status-info);
+      color: var(--primary-color);
+      border-bottom-color: var(--primary-color);
     }
     .tab-btn i { font-size: 1.1rem; }
 
@@ -207,6 +207,11 @@ import { CLIENTES_PERMISSIONS } from '../../../constants/permission-codes';
     }
 
     /* No Permission */
+    @keyframes pulse-ring {
+      0%   { box-shadow: 0 0 0 0 rgba(185, 28, 28, 0.2); }
+      70%  { box-shadow: 0 0 0 14px rgba(185, 28, 28, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(185, 28, 28, 0); }
+    }
     .no-permission-container {
       flex: 1;
       display: flex;
@@ -221,18 +226,19 @@ import { CLIENTES_PERMISSIONS } from '../../../constants/permission-codes';
       height: 100px;
       background: var(--status-danger-bg);
       color: var(--status-danger-text);
-      border-radius: 50%;
+      border-radius: 28px;
       display: flex;
       align-items: center;
       justify-content: center;
       font-size: 3rem;
       margin-bottom: 1.5rem;
+      animation: pulse-ring 2s ease-out infinite;
     }
     .no-permission-container h2 { font-weight: 800; color: #1e293b; margin-bottom: 0.5rem; }
-    .no-permission-container p { color: #64748b; max-width: 400px; margin-bottom: 2rem; line-height: 1.6; }
-    
+    .no-permission-container p { color: var(--text-muted); max-width: 400px; margin-bottom: 2rem; line-height: 1.6; }
+
     .btn-retry {
-      background: #1e293b;
+      background: var(--primary-color);
       color: white;
       border: none;
       padding: 1rem 2rem;
@@ -241,7 +247,7 @@ import { CLIENTES_PERMISSIONS } from '../../../constants/permission-codes';
       transition: all 0.2s;
       cursor: pointer;
     }
-    .btn-retry:hover { transform: scale(1.05); background: #0f172a; }
+    .btn-retry:hover { transform: scale(1.05); background: var(--primary-hover); }
   `]
 })
 export class ClientesPage implements OnInit, OnDestroy {

@@ -27,7 +27,7 @@ import { GET_IDENTIFICACION_LABEL } from '../../../../core/constants/sri-iva.con
               <!-- CLIENTE -->
               <td>
                 <div class="client-info">
-                  <div class="avatar" [style.background]="getAvatarColor(cliente.razon_social, 0.1)" [style.color]="getAvatarColor(cliente.razon_social, 1)">
+                  <div class="avatar">
                     {{ getInitials(cliente.razon_social) }}
                   </div>
                   <div class="details">
@@ -126,7 +126,7 @@ import { GET_IDENTIFICACION_LABEL } from '../../../../core/constants/sri-iva.con
     .table-premium-container {
       background: white;
       border-radius: 20px;
-      border: 1px solid #f1f5f9;
+      border: 1px solid var(--border-color);
       overflow: hidden;
     }
     .table-premium {
@@ -152,7 +152,7 @@ import { GET_IDENTIFICACION_LABEL } from '../../../../core/constants/sri-iva.con
     }
     .table-row td {
       padding: 1.25rem 1.5rem;
-      border-bottom: 1px solid #f1f5f9;
+      border-bottom: 1px solid var(--border-color);
       vertical-align: middle;
     }
     .table-row:last-child td {
@@ -166,14 +166,10 @@ import { GET_IDENTIFICACION_LABEL } from '../../../../core/constants/sri-iva.con
       gap: 1rem;
     }
     .avatar {
-      width: 42px;
-      height: 42px;
-      border-radius: 12px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: 800;
-      font-size: 0.9rem;
+      width: 42px; height: 42px; border-radius: 12px; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 800; font-size: 0.9rem;
+      background: var(--primary-color); color: #ffffff;
     }
     .details {
       display: flex;
@@ -186,7 +182,7 @@ import { GET_IDENTIFICACION_LABEL } from '../../../../core/constants/sri-iva.con
     }
     .sub {
       font-size: 0.75rem;
-      color: #94a3b8;
+      color: var(--text-muted);
     }
 
     /* ID Info */
@@ -236,11 +232,11 @@ import { GET_IDENTIFICACION_LABEL } from '../../../../core/constants/sri-iva.con
       align-items: center;
       gap: 0.5rem;
       font-size: 0.85rem;
-      color: #64748b;
+      color: var(--text-muted);
     }
     .contact-item i {
       font-size: 0.9rem;
-      color: #94a3b8;
+      color: var(--text-muted);
     }
 
     /* Credit Info */

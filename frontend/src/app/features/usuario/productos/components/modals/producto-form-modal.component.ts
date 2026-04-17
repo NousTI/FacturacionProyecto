@@ -66,11 +66,11 @@ import { SRI_IVA_TARIFAS, GET_IVA_PERCENTAGE } from '../../../../../core/constan
                 <div class="col-md-6">
                   <div class="input-group-modern">
                     <label>Estado</label>
-                    <div class="toggle-container">
+                    <div class="inventory-config-panel" [ngClass]="formData.activo ? 'panel-active' : 'panel-inactive'">
                       <div class="form-check form-switch custom-switch-premium">
                         <input class="form-check-input" type="checkbox" [(ngModel)]="formData.activo" name="activo" id="activoCheck">
                         <label class="form-check-label" for="activoCheck">
-                          {{ formData.activo ? 'Habilitado' : 'Inactivo' }}
+                          {{ formData.activo ? 'Producto habilitado para venta' : 'Producto desactivado' }}
                         </label>
                       </div>
                     </div>
@@ -237,11 +237,29 @@ import { SRI_IVA_TARIFAS, GET_IVA_PERCENTAGE } from '../../../../../core/constan
     .margen-warning { background: #fffbeb; color: #d97706; }
     .margen-danger { background: #fef2f2; color: #dc2626; }
 
-    .inventory-config-panel { background: #f8fafc; padding: 1.25rem; border-radius: 16px; margin-bottom: 1rem; }
+    .inventory-config-panel { background: #f8fafc; padding: 1.25rem; border-radius: 16px; margin-bottom: 1rem; transition: all 0.2s; }
+    .inventory-config-panel.panel-active { background: var(--status-success-bg); }
+    .inventory-config-panel.panel-inactive { background: var(--status-neutral-bg); }
 
-    .custom-switch-premium .form-check-input { width: 3rem; height: 1.5rem; cursor: pointer; }
-    .custom-switch-premium .form-check-label { font-size: 0.85rem; font-weight: 700; color: #475569; padding-top: 0.2rem; cursor: pointer; }
-    .custom-switch-premium .form-check-input:checked { background-color: #3b82f6; border-color: #3b82f6; }
+    .custom-switch-premium .form-check-input {
+      width: 3rem; height: 1.5rem; cursor: pointer;
+      background-color: #cbd5e1;
+      background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='3' fill='%23fff'/%3e%3c/svg%3e");
+      background-repeat: no-repeat;
+      background-position: left center;
+      border-radius: 2rem;
+      border: none;
+      transition: background-color 0.2s, background-position 0.15s;
+      appearance: none;
+      -webkit-appearance: none;
+    }
+    .custom-switch-premium .form-check-input:checked {
+      background-color: var(--status-success);
+      background-position: right center;
+      background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='3' fill='%23fff'/%3e%3c/svg%3e");
+    }
+    .custom-switch-premium .form-check-input:focus { box-shadow: none; outline: none; }
+    .custom-switch-premium .form-check-label { font-size: 0.85rem; font-weight: 700; color: #475569; padding-top: 0.2rem; cursor: pointer; margin-left: 0.5rem; }
 
     .modal-editorial-footer {
       padding: 1.5rem 2rem; display: flex; justify-content: flex-end; gap: 1rem;

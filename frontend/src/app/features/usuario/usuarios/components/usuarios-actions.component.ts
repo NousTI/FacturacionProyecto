@@ -102,8 +102,9 @@ import { HasPermissionDirective } from '../../../../core/directives/has-permissi
   styles: [`
     :host { display: block; }
     .actions-bar-container {
-      background: #ffffff; border-radius: 20px;
-      border: 1px solid var(--border-color); padding: 1.25rem 1.5rem;
+      background: transparent;
+      border: none;
+      padding: 0;
     }
 
     .search-box-premium { position: relative; width: 100%; }

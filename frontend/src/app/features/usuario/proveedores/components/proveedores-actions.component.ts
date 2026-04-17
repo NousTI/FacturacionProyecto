@@ -68,36 +68,36 @@ import { HasPermissionDirective } from '../../../../shared/directives/has-permis
   `,
   styles: [`
     :host { display: block; }
-    .actions-bar-container { background: transparent; border: none; }
-    
+    .actions-bar-container { background: transparent; border: none; padding: 0; }
+
     .search-box-premium { position: relative; width: 100%; }
     .search-box-premium i {
       position: absolute; left: 1.1rem; top: 50%; transform: translateY(-50%);
-      color: #94a3b8; font-size: 1rem;
+      color: var(--text-muted); font-size: 1rem;
     }
     .form-control-premium-search {
-      background: #ffffff; border: 1px solid #e2e8f0; border-radius: 14px;
+      background: #ffffff; border: 1px solid var(--border-color); border-radius: 14px;
       padding: 0 2.5rem 0 2.85rem; height: 44px; font-size: 0.95rem; color: #0f172a;
       transition: all 0.2s; width: 100%; font-weight: 500;
     }
-    .form-control-premium-search:focus { border-color: #cbd5e1; outline: none; box-shadow: 0 4px 12px rgba(0,0,0,0.03); }
+    .form-control-premium-search:focus { border-color: var(--primary-color); outline: none; box-shadow: 0 0 0 3px rgba(22, 29, 53, 0.06); }
     .btn-clear-search-premium {
       position: absolute; right: 0.75rem; top: 50%; transform: translateY(-50%);
-      background: transparent; border: none; color: #94a3b8; cursor: pointer;
+      background: transparent; border: none; color: var(--text-muted); cursor: pointer;
       display: flex; align-items: center; justify-content: center; font-size: 1.25rem;
     }
 
     .form-select-premium {
-      background: #ffffff; border: 1px solid #e2e8f0; border-radius: 14px;
+      background: #ffffff; border: 1px solid var(--border-color); border-radius: 14px;
       padding: 0 1.25rem; height: 44px; font-size: 0.9rem; color: #475569;
       width: 100%; cursor: pointer; text-align: left; font-weight: 600;
       transition: all 0.2s;
     }
-    .form-select-premium:hover { border-color: #cbd5e1; }
+    .form-select-premium:hover { border-color: var(--primary-color); }
 
     .dropdown-menu-premium {
       border-radius: 12px !important; padding: 0.5rem !important; min-width: 100%;
-      margin-top: 0.5rem !important; border: 1px solid #f1f5f9 !important;
+      margin-top: 0.5rem !important; border: 1px solid var(--border-color) !important;
       box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05) !important;
     }
     .dropdown-item {
@@ -105,15 +105,15 @@ import { HasPermissionDirective } from '../../../../shared/directives/has-permis
       color: #475569 !important; font-size: 0.85rem !important;
       font-weight: 600 !important; cursor: pointer; transition: all 0.2s;
     }
-    .dropdown-item:hover { background-color: var(--primary-color, #1e293b) !important; color: #ffffff !important; }
+    .dropdown-item:hover { background-color: var(--primary-color) !important; color: #ffffff !important; }
 
     .btn-system-action {
-      background: #1e293b; color: #ffffff; border: none; padding: 0 1.25rem;
+      background: var(--primary-color); color: #ffffff; border: none; padding: 0 1.25rem;
       height: 44px; border-radius: 14px; font-weight: 700; font-size: 0.85rem;
       display: inline-flex; align-items: center; justify-content: center;
       transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1); white-space: nowrap;
     }
-    .btn-system-action:hover { background: #0f172a; transform: translateY(-1.5px); box-shadow: 0 8px 15px -3px rgba(15, 23, 42, 0.2); }
+    .btn-system-action:hover { background: var(--primary-hover); transform: translateY(-1.5px); box-shadow: 0 8px 15px -3px rgba(22, 29, 53, 0.25); }
   `]
 })
 export class ProveedoresActionsComponent {

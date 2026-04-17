@@ -72,102 +72,51 @@ import { HasPermissionDirective } from '../../../../../shared/directives/has-per
     :host {
       display: block;
     }
-    .search-box-premium {
-      position: relative;
-      width: 100%;
-    }
+    .search-box-premium { position: relative; width: 100%; }
     .search-box-premium i {
-      position: absolute;
-      left: 1rem;
-      top: 50%;
-      transform: translateY(-50%);
-      color: #94a3b8;
-      font-size: 1rem;
+      position: absolute; left: 1rem; top: 50%; transform: translateY(-50%);
+      color: var(--text-muted); font-size: 1rem;
     }
     .form-control-premium-search {
-      background: #ffffff;
-      border: 1px solid #e2e8f0;
-      border-radius: 12px;
-      padding: 0 2.5rem 0 2.75rem;
-      height: 42px;
-      font-size: 0.9rem;
-      color: #0f172a;
-      transition: all 0.2s;
-      width: 100%;
+      background: #ffffff; border: 1px solid var(--border-color); border-radius: 12px;
+      padding: 0 2.5rem 0 2.75rem; height: 42px; font-size: 0.9rem; color: #0f172a;
+      transition: all 0.2s; width: 100%;
     }
     .form-control-premium-search:focus {
-      border-color: #cbd5e1;
-      outline: none;
-      box-shadow: none;
+      border-color: var(--primary-color); outline: none;
+      box-shadow: 0 0 0 3px rgba(22, 29, 53, 0.06);
     }
     .btn-clear-search-premium {
-      position: absolute;
-      right: 0.75rem;
-      top: 50%;
-      transform: translateY(-50%);
-      background: transparent;
-      border: none;
-      color: #94a3b8;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1.25rem;
+      position: absolute; right: 0.75rem; top: 50%; transform: translateY(-50%);
+      background: transparent; border: none; color: var(--text-muted); cursor: pointer;
+      display: flex; align-items: center; justify-content: center; font-size: 1.25rem;
     }
     .form-select-premium {
-      background: #ffffff;
-      border: 1px solid #e2e8f0;
-      border-radius: 12px;
-      padding: 0 1rem;
-      height: 42px;
-      font-size: 0.9rem;
-      color: #475569;
-      width: 100%;
-      cursor: pointer;
-      text-align: left;
+      background: #ffffff; border: 1px solid var(--border-color); border-radius: 12px;
+      padding: 0 1rem; height: 42px; font-size: 0.9rem; color: #475569;
+      width: 100%; cursor: pointer; text-align: left; font-weight: 600; transition: all 0.2s;
     }
-    .form-select-premium:focus {
-      border-color: #cbd5e1;
-      outline: none;
-    }
+    .form-select-premium:hover { border-color: var(--primary-color); }
+    .form-select-premium:focus { border-color: var(--primary-color); outline: none; }
     .dropdown-menu-premium {
-      border-radius: 12px !important;
-      padding: 0.5rem !important;
-      min-width: 100%;
-      margin-top: 0.5rem !important;
+      border-radius: 12px !important; padding: 0.5rem !important;
+      min-width: 100%; margin-top: 0.5rem !important;
+      border: 1px solid var(--border-color) !important;
+      box-shadow: 0 10px 15px -3px rgba(0,0,0,0.05) !important;
     }
     .dropdown-item {
-      border-radius: 8px !important;
-      padding: 0.6rem 1rem !important;
-      color: #475569 !important;
-      font-size: 0.9rem !important;
-      font-weight: 500 !important;
-      cursor: pointer;
-      transition: all 0.2s;
+      border-radius: 8px !important; padding: 0.6rem 1rem !important;
+      color: #475569 !important; font-size: 0.9rem !important;
+      font-weight: 500 !important; cursor: pointer; transition: all 0.2s;
     }
-    .dropdown-item:hover {
-      background-color: var(--primary-color, #161d35) !important;
-      color: #ffffff !important;
-    }
+    .dropdown-item:hover { background-color: var(--primary-color) !important; color: #ffffff !important; }
     .btn-system-action {
-      background: #111827;
-      color: #ffffff;
-      border: none;
-      padding: 0 1rem;
-      height: 42px;
-      border-radius: 12px;
-      font-weight: 600;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      transition: all 0.2s;
-      font-size: 0.9rem;
-      white-space: nowrap;
+      background: var(--primary-color); color: #ffffff; border: none;
+      padding: 0 1rem; height: 42px; border-radius: 12px; font-weight: 600;
+      display: inline-flex; align-items: center; justify-content: center;
+      transition: all 0.2s; font-size: 0.9rem; white-space: nowrap;
     }
-    .btn-system-action:hover {
-      background: #1f2937;
-      transform: translateY(-1px);
-    }
+    .btn-system-action:hover { background: var(--primary-hover); transform: translateY(-1px); }
   `]
 })
 export class GastosActionsComponent {

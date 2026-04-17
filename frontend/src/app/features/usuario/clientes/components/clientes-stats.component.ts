@@ -8,7 +8,7 @@ import { CommonModule } from '@angular/common';
   template: `
     <div class="stats-compact-row">
       <div class="stat-item-mini">
-        <div class="icon-circle" style="background: var(--status-info-bg); color: var(--status-info-text);">
+        <div class="icon-circle info">
           <i class="bi bi-people-fill"></i>
         </div>
         <div class="stat-info">
@@ -20,24 +20,24 @@ import { CommonModule } from '@angular/common';
       <div class="stat-divider"></div>
 
       <div class="stat-item-mini">
-        <div class="icon-circle" style="background: var(--status-success-bg); color: var(--status-success-text);">
+        <div class="icon-circle success">
           <i class="bi bi-person-check-fill"></i>
         </div>
         <div class="stat-info">
           <span class="stat-label">Clientes Activos</span>
-          <span class="stat-value text-success">{{ active }}</span>
+          <span class="stat-value success">{{ active }}</span>
         </div>
       </div>
 
       <div class="stat-divider"></div>
 
       <div class="stat-item-mini">
-        <div class="icon-circle" style="background: var(--status-orange-bg); color: var(--status-orange-text);">
+        <div class="icon-circle warning">
           <i class="bi bi-credit-card-fill"></i>
         </div>
         <div class="stat-info">
           <span class="stat-label">Con Crédito</span>
-          <span class="stat-value text-warning">{{ credit }}</span>
+          <span class="stat-value warning">{{ credit }}</span>
         </div>
       </div>
     </div>
@@ -53,7 +53,7 @@ import { CommonModule } from '@angular/common';
       display: flex;
       align-items: center;
       justify-content: space-between;
-      border: 1px solid #f1f5f9;
+      border: 1px solid var(--border-color);
       margin-bottom: 0;
     }
     .stat-item-mini {
@@ -63,14 +63,12 @@ import { CommonModule } from '@angular/common';
       flex: 1;
     }
     .icon-circle {
-      width: 42px;
-      height: 42px;
-      border-radius: 12px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1.2rem;
+      width: 42px; height: 42px; border-radius: 12px; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center; font-size: 1.2rem;
     }
+    .icon-circle.info    { background: var(--status-info-bg);    color: var(--status-info-text); }
+    .icon-circle.success { background: var(--status-success-bg); color: var(--status-success-text); }
+    .icon-circle.warning { background: var(--status-orange-bg);  color: var(--status-orange-text); }
     .stat-info {
       display: flex;
       flex-direction: column;
@@ -78,7 +76,7 @@ import { CommonModule } from '@angular/common';
     .stat-label {
       font-size: 0.65rem;
       font-weight: 800;
-      color: #94a3b8;
+      color: var(--text-muted);
       text-transform: uppercase;
       letter-spacing: 0.5px;
     }
@@ -88,16 +86,12 @@ import { CommonModule } from '@angular/common';
       color: #1e293b;
       line-height: 1.2;
     }
-    .text-success {
-      color: var(--status-success-text) !important;
-    }
-    .text-warning {
-      color: var(--status-orange-text) !important;
-    }
+    .stat-value.success { color: var(--status-success-text); }
+    .stat-value.warning { color: var(--status-orange-text); }
     .stat-divider {
       width: 1px;
       height: 35px;
-      background: #f1f5f9;
+      background: var(--border-color);
       margin: 0 1.5rem;
     }
     @media (max-width: 992px) {

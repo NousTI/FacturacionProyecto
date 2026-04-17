@@ -65,8 +65,8 @@ import { HasPermissionDirective } from '../../../../shared/directives/has-permis
       justify-content: space-between;
       gap: 1.5rem;
       background: transparent;
-      padding: 0;
       border: none;
+      padding: 0;
     }
     .search-wrapper {
       position: relative;
@@ -78,14 +78,14 @@ import { HasPermissionDirective } from '../../../../shared/directives/has-permis
       left: 1.1rem;
       top: 50%;
       transform: translateY(-50%);
-      color: #94a3b8;
+      color: var(--text-muted);
       font-size: 1rem;
     }
     .search-input {
       width: 100%;
       padding: 0.75rem 1rem 0.75rem 2.8rem;
       border-radius: 14px;
-      border: 1px solid #e2e8f0;
+      border: 1px solid var(--border-color);
       background: #f8fafc;
       font-size: 0.9rem;
       font-weight: 500;
@@ -94,8 +94,8 @@ import { HasPermissionDirective } from '../../../../shared/directives/has-permis
     .search-input:focus {
       outline: none;
       background: white;
-      border-color: #3b82f6;
-      box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 3px rgba(22, 29, 53, 0.06);
     }
     .buttons-group {
       display: flex;
@@ -116,33 +116,33 @@ import { HasPermissionDirective } from '../../../../shared/directives/has-permis
       border: none;
     }
     .btn-filter {
-      background: #f1f5f9;
-      color: #475569;
+      background: var(--status-neutral-bg);
+      color: var(--status-neutral-text);
     }
     .btn-filter:hover {
-      background: #e2e8f0;
+      background: var(--border-color);
     }
     .btn-icon {
-      background: #f1f5f9;
-      color: #475569;
+      background: var(--status-neutral-bg);
+      color: var(--status-neutral-text);
     }
     .btn-icon:hover {
-      background: #e2e8f0;
-      color: #1e293b;
+      background: var(--border-color);
+      color: var(--text-main);
     }
     .btn-primary {
-      background: #1e293b;
+      background: var(--primary-color);
       color: white;
       padding: 0.7rem 1.3rem;
     }
     .btn-primary:hover {
-      background: #0f172a;
+      background: var(--primary-hover);
       transform: translateY(-1px);
     }
     .dropdown-menu {
       border-radius: 12px;
-      border: 1px solid #f1f5f9;
-      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+      border: 1px solid var(--border-color);
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.08);
       padding: 0.5rem;
       margin-top: 0.5rem;
     }
@@ -155,8 +155,8 @@ import { HasPermissionDirective } from '../../../../shared/directives/has-permis
       cursor: pointer;
     }
     .dropdown-item:hover {
-      background: #f8fafc;
-      color: #1e293b;
+      background: var(--primary-color);
+      color: #ffffff;
     }
     @media (max-width: 768px) {
       .actions-container {

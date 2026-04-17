@@ -141,29 +141,34 @@ import { Producto, ProductoStats } from '../../../domain/models/producto.model';
     .productos-page-container { flex: 1; display: flex; flex-direction: column; background: var(--bg-main, #ffffff); padding: 0; overflow: hidden; min-height: 0; gap: 24px; }
 
     /* Modern Tabs Layout */
-    .main-tabs-wrapper { border-bottom: 2px solid #f1f5f9; margin-bottom: 0.5rem; }
+    .main-tabs-wrapper { border-bottom: 2px solid var(--border-color); margin-bottom: 0.5rem; }
     .main-tabs { display: flex; gap: 2.5rem; }
     .main-tab-btn {
       background: none; border: none; padding: 1rem 0.5rem; font-size: 0.95rem; font-weight: 800;
-      color: #94a3b8; cursor: pointer; display: flex; align-items: center; gap: 0.75rem;
+      color: var(--text-muted); cursor: pointer; display: flex; align-items: center; gap: 0.75rem;
       border-bottom: 3px solid transparent; transition: all 0.2s; position: relative; bottom: -2px;
     }
     .main-tab-btn i { font-size: 1.1rem; }
-    .main-tab-btn:hover { color: #64748b; }
-    .main-tab-btn.active { color: #1e293b; border-bottom-color: #3b82f6; }
+    .main-tab-btn:hover { color: var(--text-main); }
+    .main-tab-btn.active { color: var(--primary-color); border-bottom-color: var(--primary-color); }
 
     .view-section { flex: 1; display: flex; flex-direction: column; gap: 24px; min-height: 0; }
 
     /* No Permission */
-    .no-permission-container { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 3rem; }
-    .restricted-card-premium { background: white; padding: 4rem 3rem; border-radius: 32px; box-shadow: 0 25px 50px rgba(0,0,0,0.05); border: 1px solid #f1f5f9; text-align: center; }
-    .icon-lock-wrapper {
-      width: 100px; height: 100px; background: #fee2e2; color: #ef4444; border-radius: 50%;
-      display: flex; align-items: center; justify-content: center; font-size: 3rem;
-      margin-bottom: 1.5rem; box-shadow: 0 10px 25px -5px rgba(239, 68, 68, 0.3);
+    @keyframes pulse-ring {
+      0%   { box-shadow: 0 0 0 0 rgba(185, 28, 28, 0.2); }
+      70%  { box-shadow: 0 0 0 14px rgba(185, 28, 28, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(185, 28, 28, 0); }
     }
-    .btn-retry { background: #1e293b; color: white; border: none; padding: 1rem 2.5rem; border-radius: 100px; font-weight: 700; transition: all 0.2s; cursor: pointer; }
-    .btn-retry:hover { transform: scale(1.05); background: #0f172a; }
+    .no-permission-container { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 3rem; }
+    .restricted-card-premium { background: white; padding: 4rem 3rem; border-radius: 32px; border: 1px solid var(--border-color); text-align: center; }
+    .icon-lock-wrapper {
+      width: 100px; height: 100px; background: var(--status-danger-bg); color: var(--status-danger-text);
+      border-radius: 28px; display: flex; align-items: center; justify-content: center; font-size: 3rem;
+      margin: 0 auto 1.5rem; animation: pulse-ring 2s ease-out infinite;
+    }
+    .btn-retry { background: var(--primary-color); color: white; border: none; padding: 1rem 2.5rem; border-radius: 100px; font-weight: 700; transition: all 0.2s; cursor: pointer; }
+    .btn-retry:hover { transform: scale(1.05); background: var(--primary-hover); }
 
     @media (max-width: 768px) { .main-tabs { gap: 1rem; } .main-tab-btn { font-size: 0.85rem; } }
   `]

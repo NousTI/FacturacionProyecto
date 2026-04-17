@@ -132,7 +132,7 @@ import { CategoriaFormComponent } from './components/categoria-form.component';
       <ng-template #noPermission>
         <div class="no-permission-container d-flex flex-column align-items-center justify-content-center text-center p-5 animate-in" style="min-height: 70vh;">
           <div class="icon-lock-wrapper mb-4">
-            <i class="bi bi-shield-lock-fill" style="font-size: 3.5rem; color: #6366f1;"></i>
+            <i class="bi bi-shield-lock-fill" style="font-size: 3.5rem;"></i>
           </div>
           <h2 class="fw-bold text-dark mb-2">Acceso Restringido</h2>
           <p class="text-muted mb-4 mx-auto" style="max-width: 450px;">
@@ -202,30 +202,43 @@ import { CategoriaFormComponent } from './components/categoria-form.component';
   `,
   styles: [`
     .main-content-card {
-      background: white; border-radius: 24px; padding: 2rem; border: 1px solid #f1f5f9;
+      background: white; border-radius: 24px; padding: 2rem; border: 1px solid var(--border-color);
     }
-    
+
     .tabs-minimal-premium {
-      display: flex; gap: 0.5rem; border-bottom: 2px solid #f1f5f9; margin-bottom: 0.5rem;
+      display: flex; gap: 0.5rem; border-bottom: 2px solid var(--border-color); margin-bottom: 0.5rem;
     }
     .tab-btn {
-      background: none; border: none; padding: 0.85rem 1.5rem; cursor: pointer; color: #64748b; font-weight: 600; font-size: 0.95rem; border-radius: 12px 12px 0 0; border-bottom: 3px solid transparent; transition: all 0.2s; display: flex; align-items: center; gap: 0.6rem;
+      background: none; border: none; padding: 0.85rem 1.5rem; cursor: pointer;
+      color: var(--text-muted); font-weight: 600; font-size: 0.95rem;
+      border-radius: 12px 12px 0 0; border-bottom: 3px solid transparent;
+      transition: all 0.2s; display: flex; align-items: center; gap: 0.6rem;
     }
-    .tab-btn:hover { background: #f8fafc; color: #1e293b; }
-    .tab-btn.active { color: #2563eb; border-bottom-color: #2563eb; background: #eff6ff; }
-    
+    .tab-btn:hover { background: var(--status-neutral-bg); color: var(--text-main); }
+    .tab-btn.active { color: var(--primary-color); border-bottom-color: var(--primary-color); background: var(--status-info-bg); }
+
     .btn-system-action {
-      background: #111827; color: #ffffff; border: none; padding: 0.6rem 1.25rem; border-radius: 10px; font-weight: 600; font-size: 0.9rem; display: inline-flex; align-items: center; transition: all 0.2s;
+      background: var(--primary-color); color: #ffffff; border: none;
+      padding: 0.6rem 1.25rem; border-radius: 10px; font-weight: 600;
+      font-size: 0.9rem; display: inline-flex; align-items: center; transition: all 0.2s;
     }
-    .btn-system-action:hover { background: #1f2937; transform: translateY(-1px); shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1); }
-    
+    .btn-system-action:hover { background: var(--primary-hover); transform: translateY(-1px); }
+
     .glass-modal { backdrop-filter: blur(8px); border: 1px solid rgba(255,255,255,0.2); }
     .modal-overlay { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.4); display: flex; align-items: center; justify-content: center; z-index: 1050; animation: fadeIn 0.2s; padding: 1rem; }
-    .modal-content-container { display: flex; flex-direction: column; background: white; border-radius: 24px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); max-height: 90vh; width: 100%; max-width: 700px; position: relative; overflow: hidden; border: 1px solid #f1f5f9; }
-    
+    .modal-content-container { display: flex; flex-direction: column; background: white; border-radius: 24px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); max-height: 90vh; width: 100%; max-width: 700px; position: relative; overflow: hidden; border: 1px solid var(--border-color); }
+
+    @keyframes pulse-ring {
+      0%   { box-shadow: 0 0 0 0 rgba(185, 28, 28, 0.2); }
+      70%  { box-shadow: 0 0 0 14px rgba(185, 28, 28, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(185, 28, 28, 0); }
+    }
     @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
     .icon-lock-wrapper {
-      width: 90px; height: 90px; background: #eef2ff; border: 1px solid #e0e7ff; border-radius: 24px; display: flex; align-items: center; justify-content: center; box-shadow: 0 10px 25px -5px rgba(99, 102, 241, 0.2);
+      width: 90px; height: 90px; background: var(--status-danger-bg);
+      color: var(--status-danger-text); border-radius: 24px;
+      display: flex; align-items: center; justify-content: center;
+      animation: pulse-ring 2s ease-out infinite;
     }
     .fade-in { animation: fadeIn 0.3s ease-out; }
   `]
