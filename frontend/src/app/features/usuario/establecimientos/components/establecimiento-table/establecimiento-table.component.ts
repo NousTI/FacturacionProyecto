@@ -15,12 +15,12 @@ import { HasPermissionDirective } from '../../../../../shared/directives/has-per
           <table class="table-editorial">
             <thead>
               <tr>
-                <th style="width: 500px">Establecimiento</th>
-                <th style="width: 200px">Código</th>
-                <th>Dirección</th>
-                <th class="text-center" style="width: 180px">Estado</th>
-                <th class="text-center" style="width: 180px">Puntos Emisión</th>
-                <th class="text-center" style="width: 100px">Acciones</th>
+                <th style="width: 22%">Establecimiento</th>
+                <th style="width: 10%">Código</th>
+                <th style="width: 38%">Dirección</th>
+                <th class="text-center" style="width: 12%">Estado</th>
+                <th class="text-center" style="width: 12%">Puntos Emisión</th>
+                <th class="text-center" style="width: 6%">Acciones</th>
               </tr>
             </thead>
             <tbody>

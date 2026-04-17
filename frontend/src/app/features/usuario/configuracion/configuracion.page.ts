@@ -129,8 +129,8 @@ interface ConfigSection {
   styles: [`
     .config-page {
       display: flex;
-      min-height: calc(100vh - 80px); /* Ajuste según el navbar global */
-      background: #ffffff;
+      min-height: calc(100vh - 80px);
+      background: var(--bg-main, #ffffff);
       margin: 0;
       padding: 0;
       overflow: hidden;
@@ -139,8 +139,8 @@ interface ConfigSection {
     /* SIDEBAR */
     .config-sidebar {
       width: 320px;
-      background: #fcfcfd;
-      border-right: 1px solid #f1f5f9;
+      background: var(--bg-main, #fcfcfd);
+      border-right: 1px solid var(--border-color);
       display: flex;
       flex-direction: column;
       padding: 2.5rem 0;
@@ -154,14 +154,14 @@ interface ConfigSection {
     .sidebar-title {
       font-size: 1.5rem;
       font-weight: 900;
-      color: #0f172a;
+      color: var(--text-main);
       letter-spacing: -0.03em;
       margin-bottom: 0.5rem;
     }
 
     .sidebar-description {
       font-size: 0.85rem;
-      color: #94a3b8;
+      color: var(--text-muted);
       font-weight: 500;
       line-height: 1.4;
     }
@@ -189,11 +189,11 @@ interface ConfigSection {
     }
 
     .nav-tab:hover {
-      background: #f1f5f9;
+      background: var(--status-neutral-bg);
     }
 
     .nav-tab.active {
-      background: #f1f5f9;
+      background: var(--status-neutral-bg);
     }
 
     .tab-icon {
@@ -205,12 +205,12 @@ interface ConfigSection {
       background: white;
       border-radius: 8px;
       box-shadow: 0 2px 5px rgba(0,0,0,0.03);
-      color: #64748b;
+      color: var(--text-muted);
       transition: all 0.2s;
     }
 
     .nav-tab.active .tab-icon {
-      background: #161d35;
+      background: var(--primary-color);
       color: white;
       box-shadow: 0 4px 10px rgba(22, 29, 53, 0.2);
     }
@@ -218,14 +218,14 @@ interface ConfigSection {
     .tab-label {
       font-size: 0.8rem;
       font-weight: 700;
-      color: #64748b;
+      color: var(--text-muted);
       text-transform: uppercase;
       letter-spacing: 0.05em;
       transition: all 0.2s;
     }
 
     .nav-tab.active .tab-label {
-      color: #0f172a;
+      color: var(--text-main);
     }
 
     .active-indicator {
@@ -234,7 +234,7 @@ interface ConfigSection {
       top: 25%;
       height: 50%;
       width: 4px;
-      background: #161d35;
+      background: var(--primary-color);
       border-radius: 4px 0 0 4px;
     }
 
@@ -261,25 +261,25 @@ interface ConfigSection {
       font-size: 3rem;
       font-weight: 900;
       letter-spacing: -0.05em;
-      color: #0f172a;
+      color: var(--text-main);
       margin-bottom: 0.75rem;
     }
 
     .section-subtitle {
       font-size: 1.1rem;
-      color: #64748b;
+      color: var(--text-muted);
       font-weight: 500;
       max-width: 600px;
     }
 
     .empty-placeholder {
-      border: 2px dashed #f1f5f9;
+      border: 2px dashed var(--border-color);
       border-radius: 20px;
       padding: 5rem;
       display: flex;
       align-items: center;
       justify-content: center;
-      color: #cbd5e1;
+      color: var(--text-muted);
     }
 
     .placeholder-card {
@@ -300,9 +300,9 @@ interface ConfigSection {
 
     /* Restricted Access Style */
     .restricted-info {
-      background: #fffafa;
-      border: 1px solid #fee2e2;
-      border-radius: 24px;
+      background: var(--status-danger-bg);
+      border: 1px solid var(--status-danger-text);
+      border-radius: 28px;
       padding: 4rem 2rem;
       text-align: center;
       display: flex;
@@ -314,9 +314,9 @@ interface ConfigSection {
     .restricted-icon {
       width: 64px;
       height: 64px;
-      background: #fee2e2;
-      color: #ef4444;
-      border-radius: 50%;
+      background: var(--status-danger-bg);
+      color: var(--status-danger-text);
+      border-radius: 28px;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -325,18 +325,18 @@ interface ConfigSection {
     }
     .restricted-info h3 {
       font-weight: 900;
-      color: #0f172a;
+      color: var(--text-main);
       margin: 0;
     }
     .restricted-info p {
-      color: #64748b;
+      color: var(--text-muted);
       max-width: 400px;
       margin: 0;
     }
     .contact-hint {
       font-size: 0.8rem;
       font-weight: 600;
-      color: #94a3b8;
+      color: var(--text-muted);
       text-transform: uppercase;
       letter-spacing: 0.05em;
     }
