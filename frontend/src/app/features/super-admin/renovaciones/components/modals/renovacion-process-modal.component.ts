@@ -13,7 +13,7 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
       <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content border-0 shadow-premium-lg rounded-4 overflow-hidden animate__animated animate__zoomIn animate__faster">
           <div class="modal-header border-0 p-4 pb-0">
-             <h5 class="fw-800 text-dark mb-0">
+             <h5 class="fw-800 text-dark mb-0" style="color: var(--text-main) !important;">
                {{ seleccionada?.tipo === 'RENOVACION' ? 'Aprobar Renovación' : 'Aprobar Cambio de Plan (Upgrade)' }}
              </h5>
              <button type="button" class="btn-close shadow-none" (click)="onClose.emit()"></button>
@@ -102,11 +102,11 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
     </div>
   `,
   styles: [`
-    .modal-backdrop { background: rgba(15, 23, 42, 0.4); backdrop-filter: blur(4px); }
+    .modal-backdrop { background: rgba(15, 23, 42, 0.4); backdrop-filter: blur(8px); }
     .shadow-premium-lg { box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); }
     
     .benefit-box {
-      background: #f0fdf4; border: 1px solid #dcfce7; border-radius: 16px;
+      background: var(--status-success-bg); border: 1px solid var(--status-success); border-radius: 16px;
     }
 
     .btn-attachment {
@@ -115,28 +115,28 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
       text-decoration: none; color: #475569; font-weight: 600; font-size: 0.85rem;
       transition: all 0.2s;
     }
-    .btn-attachment:hover { background: #f1f5f9; color: var(--primary-color); }
+    .btn-attachment:hover { background: var(--bg-main); color: var(--status-info-text); }
 
     .btn-lux-primary {
-      background: var(--primary-color, #161d35); color: #ffffff;
+      background: var(--status-success); color: #ffffff;
       border: none; padding: 0.75rem 1.5rem; border-radius: 12px;
       transition: all 0.2s;
     }
-    .btn-lux-primary:hover:not(:disabled) { background: #0f172a; transform: translateY(-1px); }
+    .btn-lux-primary:hover:not(:disabled) { opacity: 0.85; filter: brightness(1.1); transform: translateY(-1px); }
     
     .btn-lux-secondary {
-      background: #f1f5f9; color: #475569; border: none;
+      background: #ffffff; color: var(--text-muted); border: 1px solid var(--border-color);
       padding: 0.75rem 1.5rem; border-radius: 12px; font-weight: 600;
       transition: all 0.2s;
     }
-    .btn-lux-secondary:hover { background: #e2e8f0; }
+    .btn-lux-secondary:hover { background: var(--bg-main); }
 
     .pago-toggle-box {
       border-radius: 12px; border: 1px solid;
       transition: all 0.2s;
     }
-    .pago-toggle-box.pagado { background: #f0fdf4; border-color: #dcfce7; }
-    .pago-toggle-box.pendiente { background: #fffbeb; border-color: #fde68a; }
+    .pago-toggle-box.pagado { background: var(--status-success-bg); border-color: var(--status-success); }
+    .pago-toggle-box.pendiente { background: var(--status-warning-bg); border-color: var(--status-warning); }
 
     .smallest { font-size: 0.65rem; }
     .fw-800 { font-weight: 800; }

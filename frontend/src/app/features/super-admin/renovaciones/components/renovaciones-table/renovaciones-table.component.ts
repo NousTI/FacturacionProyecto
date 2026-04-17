@@ -20,7 +20,6 @@ import { SolicitudRenovacion } from '../../../../../domain/models/renovacion.mod
                 <th style="width: 140px">Fecha Solicitud</th>
                 <th style="width: 110px; text-align: center;">Estado</th>
                 <th class="text-end" style="width: 80px">Acciones</th>
-                <th class="text-end" style="width: 140px">Procesado</th>
               </tr>
             </thead>
             <tbody>
@@ -106,13 +105,6 @@ import { SolicitudRenovacion } from '../../../../../domain/models/renovacion.mod
                   </div>
                 </td>
 
-                <!-- Procesado -->
-                <td class="text-end">
-                   <span *ngIf="s.estado !== 'PENDIENTE'" class="text-muted fw-500" style="font-size: 0.75rem;">
-                      {{ (s.fecha_procesamiento || s.updated_at) | date:'dd/MM/yyyy HH:mm' }}
-                    </span>
-                    <span *ngIf="s.estado === 'PENDIENTE'" class="text-muted opacity-50 fw-bold" style="font-size: 0.65rem;">PENDIENTE</span>
-                </td>
               </tr>
             </tbody>
           </table>
@@ -138,8 +130,9 @@ import { SolicitudRenovacion } from '../../../../../domain/models/renovacion.mod
     .table thead th {
       position: sticky; top: 0; z-index: 10;
       background: var(--bg-main, #ffffff); padding: 1rem 1.5rem;
-      font-size: var(--text-base); color: #0f172a; font-weight: 600;
+      font-size: var(--text-base); color: var(--text-main); font-weight: 800;
       border-bottom: 2px solid var(--border-color, #f1f5f9);
+      text-transform: uppercase; letter-spacing: 0.05em;
     }
     .table tbody td {
       padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--border-color, #f1f5f9);
@@ -149,32 +142,32 @@ import { SolicitudRenovacion } from '../../../../../domain/models/renovacion.mod
     .avatar-soft-premium {
       width: 38px; height: 38px; border-radius: 12px;
       display: flex; align-items: center; justify-content: center;
-      font-weight: 700; font-size: 1rem;
-      background: var(--primary-color, #161d35); color: #ffffff;
+      font-weight: 800; font-size: 1rem;
+      background: var(--primary-color); color: #ffffff;
     }
 
     .badge-status-premium {
       padding: 0.25rem 0.75rem; border-radius: 6px; font-size: var(--text-sm);
       font-weight: 600; display: inline-block; text-transform: uppercase;
     }
-    .badge-status-premium.pendiente { background: var(--status-warning-bg, #fef9c3); color: var(--status-warning-text, #92400e); }
-    .badge-status-premium.aceptada { background: var(--status-success-bg, #dcfce7); color: var(--status-success-text, #15803d); }
-    .badge-status-premium.rechazada { background: var(--status-danger-bg, #fee2e2); color: var(--status-danger-text, #b91c1c); }
+    .badge-status-premium.pendiente { background: var(--status-warning-bg); color: var(--status-warning-text); }
+    .badge-status-premium.aceptada { background: var(--status-success-bg); color: var(--status-success-text); }
+    .badge-status-premium.rechazada { background: var(--status-danger-bg); color: var(--status-danger-text); }
     
     .badge-tipo-premium {
       padding: 0.25rem 0.6rem; border-radius: 6px; font-size: 0.65rem;
       font-weight: 700; display: inline-flex; align-items: center; gap: 4px;
       text-transform: uppercase;
     }
-    .badge-tipo-premium.renovacion { background: #e0f2fe; color: #0369a1; }
-    .badge-tipo-premium.upgrade { background: #f5f3ff; color: #6d28d9; }
+    .badge-tipo-premium.renovacion { background: var(--status-success-bg); color: var(--status-success-text); }
+    .badge-tipo-premium.upgrade { background: var(--status-info-bg); color: var(--status-info-text); }
     
     .btn-action-trigger {
       background: transparent; border: none; width: 32px; height: 32px;
       border-radius: 8px; color: #94a3b8; transition: all 0.2s;
     }
     .btn-action-trigger:hover, .btn-action-trigger[aria-expanded="true"] {
-      background: #f8fafc; color: #0f172a;
+      background: var(--bg-main); color: var(--text-main);
     }
 
     .dropdown-item {
@@ -183,9 +176,12 @@ import { SolicitudRenovacion } from '../../../../../domain/models/renovacion.mod
       color: var(--text-muted); cursor: pointer; border: none; background: transparent; width: 100%; text-align: left;
     }
     .dropdown-item i { font-size: 1.1rem; margin-right: 0.75rem; }
-    .dropdown-item:hover { background: #f8fafc; color: #0f172a; }
+    .dropdown-item:hover { background: var(--status-info-bg); color: var(--status-info-text); }
 
-    .table-highlighted { background-color: rgba(59, 130, 246, 0.05) !important; box-shadow: inset 4px 0 0 var(--primary-color); }
+    .table-highlighted { 
+      background-color: var(--status-info-bg) !important; 
+      box-shadow: inset 4px 0 0 var(--status-info); 
+    }
     .fw-600 { font-weight: 600; }
     .fw-500 { font-weight: 500; }
   `]

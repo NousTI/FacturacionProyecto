@@ -44,7 +44,7 @@ import { Plan } from '../../services/plan.service';
                   </div>
                 </td>
                 <td class="text-center">
-                  <span class="badge-status-premium" [ngClass]="plan.visible_publico ? 'activo' : 'inactivo'">
+                  <span class="badge-status-premium" [ngClass]="plan.visible_publico ? 'visible' : 'oculto'">
                     {{ plan.visible_publico ? 'VISIBLE' : 'OCULTO' }}
                   </span>
                 </td>
@@ -152,16 +152,11 @@ import { Plan } from '../../services/plan.service';
       width: 100%;
     }
     .table thead th {
-      position: sticky;
-      top: 0;
-      z-index: 10;
-      background: var(--bg-main, #ffffff);
-      padding: 1rem 1.5rem;
-      font-size: var(--text-base);
-      color: #0f172a;
-      font-weight: 600;
-      border-bottom: 2px solid var(--border-color, #f1f5f9);
-      vertical-align: middle;
+      position: sticky; top: 0; z-index: 10;
+      background: var(--bg-main, #ffffff); padding: 1rem 1.5rem;
+      font-size: var(--text-base); color: var(--text-main); font-weight: 800;
+      border-bottom: 2px solid var(--border-color, #f1f5f9); vertical-align: middle;
+      text-transform: uppercase; letter-spacing: 0.05em;
     }
     .table tbody td {
       padding: 1.25rem 1.5rem;
@@ -173,13 +168,11 @@ import { Plan } from '../../services/plan.service';
       border-bottom: none;
     }
     .avatar-soft-premium {
-      width: 38px; height: 38px;
-      border-radius: 12px;
+      width: 38px; height: 38px; border-radius: 12px;
       display: flex; align-items: center; justify-content: center;
-      flex-shrink: 0;
-      font-size: 1.1rem;
-      background: var(--primary-color, #161d35);
-      color: #ffffff;
+      flex-shrink: 0; font-size: 1.1rem;
+      font-weight: 800;
+      background: var(--primary-color); color: #ffffff;
     }
     .badge-cycle {
       background: #f1f5f9;
@@ -192,7 +185,7 @@ import { Plan } from '../../services/plan.service';
     }
     .subs-count {
       font-weight: 800;
-      color: #161d35;
+      color: var(--status-info-text);
       font-size: 1.1rem;
     }
     .badge-status-premium {
@@ -203,8 +196,10 @@ import { Plan } from '../../services/plan.service';
       display: inline-block;
       text-transform: capitalize;
     }
-    .badge-status-premium.activo { background: var(--status-success-bg, #dcfce7); color: var(--status-success-text, #15803d); }
-    .badge-status-premium.inactivo { background: var(--status-danger-bg, #fee2e2); color: var(--status-danger-text, #b91c1c); }
+    .badge-status-premium.activo { background: var(--status-success-bg); color: var(--status-success-text); }
+    .badge-status-premium.inactivo { background: var(--status-danger-bg); color: var(--status-danger-text); }
+    .badge-status-premium.visible { background: var(--status-info-bg); color: var(--status-info-text); }
+    .badge-status-premium.oculto { background: var(--status-neutral-bg); color: var(--status-neutral-text); }
 
     .btn-action-trigger {
       background: transparent; border: none;
@@ -213,7 +208,7 @@ import { Plan } from '../../services/plan.service';
       transition: all 0.2s;
     }
     .btn-action-trigger:hover, .btn-action-trigger[aria-expanded="true"] {
-      background: #f8fafc; color: #0f172a;
+      background: var(--bg-main); color: var(--text-main);
     }
 
     .dropdown-menu {
@@ -231,7 +226,7 @@ import { Plan } from '../../services/plan.service';
       display: flex; align-items: center;
       cursor: pointer;
     }
-    .dropdown-item:hover { background: #f8fafc; color: #0f172a; }
+    .dropdown-item:hover { background: var(--status-info-bg); color: var(--status-info-text); }
     .dropdown-item i { font-size: 1.1rem; margin-right: 0.75rem; }
 
     .cursor-pointer { cursor: pointer; }

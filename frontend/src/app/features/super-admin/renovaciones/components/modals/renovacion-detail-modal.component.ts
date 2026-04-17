@@ -12,7 +12,7 @@ import { SolicitudRenovacion } from '../../../../../domain/models/renovacion.mod
       <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-content border-0 shadow-premium-lg rounded-4 overflow-hidden animate__animated animate__zoomIn animate__faster">
           <div class="modal-header border-0 p-4 pb-0">
-             <h5 class="fw-800 text-dark mb-0">Detalle de Solicitud</h5>
+             <h5 class="fw-800 mb-0" style="color: var(--text-main) !important;">Detalle de Solicitud</h5>
              <button type="button" class="btn-close shadow-none" (click)="onClose.emit()"></button>
           </div>
           <div class="modal-body p-4" *ngIf="seleccionada">
@@ -93,25 +93,25 @@ import { SolicitudRenovacion } from '../../../../../domain/models/renovacion.mod
     </div>
   `,
   styles: [`
-    .modal-backdrop { background: rgba(15, 23, 42, 0.4); backdrop-filter: blur(4px); }
+    .modal-backdrop { background: rgba(15, 23, 42, 0.4); backdrop-filter: blur(8px); }
     .shadow-premium-lg { box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); }
     
     .avatar-soft-lg {
       width: 56px; height: 56px; border-radius: 16px;
       display: flex; align-items: center; justify-content: center;
       font-weight: 800; font-size: 1.4rem;
-      background: var(--primary-color, #161d35); color: #ffffff;
+      background: var(--status-info-bg); color: var(--status-info-text);
     }
 
     .info-card {
-      background: #f8fafc; padding: 1.5rem; border-radius: 20px;
-      border: 1px solid #f1f5f9;
+      background: var(--bg-main); padding: 1.5rem; border-radius: 20px;
+      border: 1px solid var(--border-color);
     }
     .side-info-card {
-      background: #f8fafc; padding: 1rem; border-radius: 16px;
-      border: 1px solid #f1f5f9;
+      background: var(--bg-main); padding: 1rem; border-radius: 16px;
+      border: 1px solid var(--border-color);
     }
-    .side-info-card.danger { background: #fff1f2; border-color: #ffe4e6; }
+    .side-info-card.danger { background: var(--status-danger-bg); border-color: var(--status-danger); }
     
     .grid-details {
       display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;
@@ -121,7 +121,7 @@ import { SolicitudRenovacion } from '../../../../../domain/models/renovacion.mod
       display: block; font-size: 0.65rem; font-weight: 800;
       color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0.25rem;
     }
-    .detail-item span { font-weight: 700; color: #1e293b; font-size: 0.9rem; }
+    .detail-item span { font-weight: 700; color: var(--text-main); font-size: 0.9rem; }
     
     .side-info-card label {
        font-size: 0.65rem; font-weight: 800; color: #94a3b8; text-transform: uppercase;
@@ -136,26 +136,26 @@ import { SolicitudRenovacion } from '../../../../../domain/models/renovacion.mod
     .btn-attachment:hover { background: #f1f5f9; color: var(--primary-color); border-color: #cbd5e1; }
 
     .btn-lux-primary {
-      background: var(--primary-color, #161d35); color: #ffffff;
+      background: var(--status-success); color: #ffffff;
       border: none; padding: 0.75rem 1.5rem; border-radius: 12px;
       transition: all 0.2s;
     }
-    .btn-lux-primary:hover { background: #0f172a; transform: translateY(-1px); }
+    .btn-lux-primary:hover { opacity: 0.85; filter: brightness(1.1); transform: translateY(-1px); }
     
     .btn-lux-secondary {
-      background: #f1f5f9; color: #475569; border: none;
+      background: #ffffff; color: var(--text-muted); border: 1px solid var(--border-color);
       padding: 0.75rem 1.5rem; border-radius: 12px; font-weight: 600;
       transition: all 0.2s;
     }
-    .btn-lux-secondary:hover { background: #e2e8f0; }
+    .btn-lux-secondary:hover { background: var(--bg-main); }
 
     .badge-status-premium {
       padding: 0.2rem 0.6rem; border-radius: 6px; font-size: 0.7rem;
       font-weight: 700; text-transform: uppercase;
     }
-    .badge-status-premium.pendiente { background: #fef9c3; color: #92400e; }
-    .badge-status-premium.aceptada { background: #dcfce7; color: #15803d; }
-    .badge-status-premium.rechazada { background: #fee2e2; color: #b91c1c; }
+    .badge-status-premium.pendiente { background: var(--status-warning-bg); color: var(--status-warning-text); }
+    .badge-status-premium.aceptada { background: var(--status-success-bg); color: var(--status-success-text); }
+    .badge-status-premium.rechazada { background: var(--status-danger-bg); color: var(--status-danger-text); }
 
     .fw-800 { font-weight: 800; }
     .fw-700 { font-weight: 700; }

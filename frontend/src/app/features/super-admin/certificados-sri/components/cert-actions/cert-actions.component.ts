@@ -74,26 +74,42 @@ import { FormsModule } from '@angular/forms';
     }
     .btn-filter-lux {
       background: #ffffff;
-      border: 1px solid var(--border-color, #e2e8f0);
-      color: #64748b;
+      border: 1px solid var(--border-color);
+      color: var(--text-muted);
       padding: 0 1.25rem;
       height: 42px;
       border-radius: 12px;
       font-weight: 700;
-      font-size: var(--text-base, 0.85rem);
+      font-size: var(--text-base);
       display: flex;
       align-items: center;
       gap: 0.6rem;
       transition: all 0.2s;
     }
-    .btn-filter-lux:hover, .btn-filter-lux.active {
-      background: #ffffff;
-      border-color: #cbd5e1;
-      color: var(--primary-color, #161d35);
+    .btn-filter-lux:hover {
+      background: var(--status-neutral-bg);
+      color: var(--text-main);
     }
     .btn-filter-lux.active {
-      border-color: var(--primary-color, #161d35);
-      background-color: #f8fafc;
+      border-color: var(--status-info);
+      background-color: var(--status-info-bg);
+      color: var(--status-info-text);
+    }
+    .form-control-premium-search {
+      background: #ffffff;
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 0 1rem 0 2.75rem;
+      height: 42px;
+      font-size: var(--text-md);
+      color: var(--text-main);
+      transition: all 0.2s;
+      width: 100%;
+    }
+    .form-control-premium-search:focus {
+      border-color: var(--status-info);
+      box-shadow: 0 0 0 4px var(--status-info-bg);
+      outline: none;
     }
     .text-success { color: var(--status-success) !important; }
     .text-warning { color: var(--status-warning) !important; }

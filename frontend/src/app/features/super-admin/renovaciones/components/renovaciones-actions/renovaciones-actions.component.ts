@@ -79,7 +79,7 @@ import { FormsModule } from '@angular/forms';
       font-size: var(--text-base); color: #475569;
       width: 100%; cursor: pointer; text-align: left;
     }
-    .form-select-premium:focus { border-color: var(--primary-color, #161d35); outline: none; }
+    .form-select-premium:focus { border-color: var(--status-info); outline: none; box-shadow: 0 0 0 4px var(--status-info-bg); }
 
     .dropdown-menu-premium {
       border-radius: 12px !important; padding: 0.5rem !important;
@@ -91,7 +91,7 @@ import { FormsModule } from '@angular/forms';
       color: #475569 !important; font-size: var(--text-base) !important;
       font-weight: 500 !important; cursor: pointer; transition: all 0.2s;
     }
-    .dropdown-item:hover { background-color: var(--primary-color, #161d35) !important; color: #ffffff !important; }
+    .dropdown-item:hover { background-color: var(--status-info-bg) !important; color: var(--status-info-text) !important; }
 
     /* Standard Search Styling */
     .search-box-premium { position: relative; width: 100%; }
@@ -105,8 +105,8 @@ import { FormsModule } from '@angular/forms';
       font-weight: 500; font-size: 0.9rem; width: 100%; transition: all 0.2s;
     }
     .form-control-premium-search:focus {
-      outline: none; border-color: var(--primary-color, #161d35);
-      box-shadow: 0 0 0 4px rgba(22, 29, 53, 0.05);
+      outline: none; border-color: var(--status-info);
+      box-shadow: 0 0 0 4px var(--status-info-bg);
     }
   `]
 })

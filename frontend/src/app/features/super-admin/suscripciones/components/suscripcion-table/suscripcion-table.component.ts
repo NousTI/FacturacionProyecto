@@ -205,9 +205,9 @@ import { Suscripcion } from '../../services/suscripcion.service';
       width: 38px; height: 38px;
       border-radius: 12px;
       display: flex; align-items: center; justify-content: center;
-      font-weight: 700; font-size: 1rem;
-      background: var(--status-info-bg);
-      color: var(--status-info-text);
+      font-weight: 800; font-size: 1rem;
+      background: var(--primary-color);
+      color: #ffffff;
     }
 
     .badge-status-premium {

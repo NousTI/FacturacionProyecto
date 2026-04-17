@@ -162,9 +162,9 @@ import { Vendedor } from '../../services/vendedor.service';
       width: 38px; height: 38px;
       border-radius: 12px;
       display: flex; align-items: center; justify-content: center;
-      font-weight: 700; font-size: var(--text-base);
-      background: var(--status-info-bg);
-      color: var(--status-info-text);
+      font-weight: 800; font-size: var(--text-base);
+      background: var(--primary-color);
+      color: #ffffff;
     }
 
     .badge-status-premium {

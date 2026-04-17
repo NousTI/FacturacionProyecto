@@ -113,23 +113,23 @@ import { Plan, PlanCharacteristics } from '../../services/plan.service';
       box-shadow: 0 40px 80px -20px rgba(22, 29, 53, 0.25);
     }
     .modal-header-final { padding: 1.5rem 2.5rem; display: flex; justify-content: space-between; align-items: center; }
-    .modal-title-final { font-size: 1.25rem; font-weight: 800; color: #161d35; margin: 0; }
+    .modal-title-final { font-size: 1.25rem; font-weight: 800; color: var(--text-main); margin: 0; }
     .btn-close-final { background: none; border: none; font-size: 1.5rem; color: #94a3b8; cursor: pointer; }
     .modal-body-final { padding: 0 2.5rem 1rem; overflow-y: auto; flex: 1; }
     .form-section-final { margin-bottom: 2rem; padding-bottom: 2rem; border-bottom: 1px solid #f1f5f9; }
-    .section-header-final { font-size: 1.1rem; font-weight: 800; color: #1e293b; margin-bottom: 1.5rem; }
+    .section-header-final { font-size: 1.1rem; font-weight: 800; color: var(--text-main); margin-bottom: 1.25rem; }
     .label-final { font-size: 0.85rem; font-weight: 700; color: #64748b; margin-bottom: 0.6rem; display: block; }
     .input-final, .select-final {
       width: 100%; border: 1px solid #e2e8f0; border-radius: 12px;
       padding: 0.75rem 1.5rem; font-size: 0.95rem; color: #475569; font-weight: 600; transition: all 0.2s;
     }
     .input-final:focus, .select-final:focus {
-      border-color: #161d35; outline: none;
-      box-shadow: 0 0 0 4px rgba(22, 29, 53, 0.05);
+      border-color: var(--status-info); outline: none;
+      box-shadow: 0 0 0 4px var(--status-info-bg);
     }
     .rounded-start-12 { border-radius: 12px 0 0 12px !important; }
     .limits-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
-    .limit-card { background: #f8fafc; padding: 1rem; border-radius: 16px; border: 1px solid #f1f5f9; }
+    .limit-card { background: var(--bg-main); padding: 1rem; border-radius: 16px; border: 1px solid var(--border-color); }
     .limit-info { display: flex; flex-direction: column; gap: 0.5rem; }
     .limit-name { font-size: 0.75rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; }
     .limit-unit { font-size: 0.75rem; color: #94a3b8; font-weight: 600; }
@@ -137,13 +137,13 @@ import { Plan, PlanCharacteristics } from '../../services/plan.service';
     .feature-item { width: calc(50% - 0.75rem); }
     .modal-footer-final { padding: 1.5rem 2.5rem; background: #ffffff; display: flex; justify-content: flex-end; gap: 1rem; border-top: 1px solid #f1f5f9; }
     .btn-submit-final {
-      background: #161d35; color: #ffffff; border: none; padding: 0.75rem 2.5rem;
+      background: var(--primary-color); color: #ffffff; border: none; padding: 0.75rem 2.5rem;
       border-radius: 12px; font-weight: 700; transition: all 0.2s;
     }
-    .btn-submit-final:hover:not(:disabled) { background: #232d4d; transform: translateY(-1px); }
+    .btn-submit-final:hover:not(:disabled) { opacity: 0.9; transform: translateY(-1px); }
     .btn-submit-final:disabled { opacity: 0.3; cursor: not-allowed; }
     .btn-cancel-final { background: #ffffff; color: #64748b; border: 1px solid #e2e8f0; padding: 0.75rem 2rem; border-radius: 12px; font-weight: 600; }
-    .switch-final .form-check-input:checked { background-color: #161d35; border-color: #161d35; }
+    .switch-final .form-check-input:checked { background-color: var(--status-success); border-color: var(--status-success); }
     .scroll-custom::-webkit-scrollbar { width: 5px; }
     .scroll-custom::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
     .input-final::placeholder { color: #94a3b8; font-weight: 600; }

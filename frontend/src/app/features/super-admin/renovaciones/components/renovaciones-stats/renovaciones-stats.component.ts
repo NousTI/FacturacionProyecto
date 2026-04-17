@@ -9,7 +9,7 @@ import { CommonModule } from '@angular/common';
     <div class="stats-compact-row">
       <!-- Pendientes -->
       <div class="stat-item-mini">
-        <div class="icon-circle" style="background: rgba(245, 158, 11, 0.1); color: var(--status-warning);">
+        <div class="icon-circle" style="background: var(--status-warning-bg); color: var(--status-warning-text);">
           <i class="bi bi-hourglass-split"></i>
         </div>
         <div class="stat-info">
@@ -22,7 +22,7 @@ import { CommonModule } from '@angular/common';
 
       <!-- Aceptadas -->
       <div class="stat-item-mini">
-        <div class="icon-circle" style="background: rgba(16, 185, 129, 0.1); color: var(--status-success);">
+        <div class="icon-circle" style="background: var(--status-success-bg); color: var(--status-success-text);">
           <i class="bi bi-check-circle-fill"></i>
         </div>
         <div class="stat-info">
@@ -35,7 +35,7 @@ import { CommonModule } from '@angular/common';
 
       <!-- Rechazadas -->
       <div class="stat-item-mini">
-        <div class="icon-circle" style="background: rgba(239, 68, 68, 0.1); color: var(--status-danger);">
+        <div class="icon-circle" style="background: var(--status-danger-bg); color: var(--status-danger-text);">
           <i class="bi bi-x-octagon-fill"></i>
         </div>
         <div class="stat-info">
@@ -63,9 +63,9 @@ import { CommonModule } from '@angular/common';
     }
     .stat-value { font-size: 1.35rem; font-weight: 800; color: #1e293b; line-height: 1.2; }
     
-    .text-success { color: var(--status-success) !important; }
-    .text-warning { color: var(--status-warning) !important; }
-    .text-danger { color: var(--status-danger) !important; }
+    .text-success { color: var(--status-success-text) !important; }
+    .text-warning { color: var(--status-warning-text) !important; }
+    .text-danger { color: var(--status-danger-text) !important; }
 
     .stat-divider { width: 1px; height: 35px; background: #f1f5f9; margin: 0 1.5rem; }
     

@@ -12,7 +12,7 @@ import { FormsModule } from '@angular/forms';
       <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content border-0 shadow-premium-lg rounded-4 overflow-hidden animate__animated animate__zoomIn animate__faster">
           <div class="modal-header border-0 p-4 pb-0">
-             <h5 class="fw-800 text-danger mb-0">Rechazar Solicitud</h5>
+             <h5 class="fw-800 mb-0" style="color: var(--status-danger-text) !important;">Rechazar Solicitud</h5>
              <button type="button" class="btn-close shadow-none" (click)="onClose.emit()"></button>
           </div>
           <div class="modal-body p-4">
@@ -43,25 +43,25 @@ import { FormsModule } from '@angular/forms';
     </div>
   `,
   styles: [`
-    .modal-backdrop { background: rgba(15, 23, 42, 0.4); backdrop-filter: blur(4px); }
+    .modal-backdrop { background: rgba(15, 23, 42, 0.4); backdrop-filter: blur(8px); }
     .shadow-premium-lg { box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); }
     
     .form-control-premium {
       width: 100%; padding: 1rem; border-radius: 12px;
-      border: 1px solid #e2e8f0; background: #f8fafc;
-      font-size: 0.9rem; font-weight: 500; transition: all 0.2s;
+      border: 1px solid var(--border-color); background: var(--bg-main);
+      font-size: 0.9rem; font-weight: 500; transition: all 0.2s; color: var(--text-main);
     }
     .form-control-premium:focus {
-        outline: none; border-color: #f43f5e; background: #ffffff;
-        box-shadow: 0 0 0 4px rgba(244, 63, 94, 0.05);
+        outline: none; border-color: var(--status-danger); background: #ffffff;
+        box-shadow: 0 0 0 4px var(--status-danger-bg);
     }
 
     .btn-lux-secondary {
-      background: #f1f5f9; color: #475569; border: none;
+      background: #ffffff; color: var(--text-muted); border: 1px solid var(--border-color);
       padding: 0.75rem 1.5rem; border-radius: 12px; font-weight: 600;
       transition: all 0.2s;
     }
-    .btn-lux-secondary:hover:not(:disabled) { background: #e2e8f0; }
+    .btn-lux-secondary:hover:not(:disabled) { background: var(--bg-main); }
 
     .smallest { font-size: 0.65rem; }
     .fw-800 { font-weight: 800; }

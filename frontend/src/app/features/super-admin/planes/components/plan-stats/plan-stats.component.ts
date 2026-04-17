@@ -6,7 +6,7 @@ import { CommonModule } from '@angular/common';
   template: `
     <div class="stats-compact-row">
       <div class="stat-item-mini">
-        <div class="icon-circle" style="background: rgba(99, 102, 241, 0.1); color: #6366f1;">
+        <div class="icon-circle" style="background: var(--status-info-bg); color: var(--status-info-text);">
           <i class="bi bi-wallet2"></i>
         </div>
         <div class="stat-info">
@@ -18,7 +18,7 @@ import { CommonModule } from '@angular/common';
       <div class="stat-divider"></div>
 
       <div class="stat-item-mini">
-        <div class="icon-circle" style="background: rgba(16, 185, 129, 0.1); color: #10b981;">
+        <div class="icon-circle" style="background: var(--status-success-bg); color: var(--status-success-text);">
           <i class="bi bi-people"></i>
         </div>
         <div class="stat-info">
@@ -30,12 +30,12 @@ import { CommonModule } from '@angular/common';
       <div class="stat-divider"></div>
 
       <div class="stat-item-mini">
-        <div class="icon-circle" style="background: rgba(245, 158, 11, 0.1); color: #f59e0b;">
+        <div class="icon-circle" style="background: var(--status-warning-bg); color: var(--status-warning-text);">
           <i class="bi bi-star"></i>
         </div>
         <div class="stat-info">
           <span class="stat-label">Más Rentable</span>
-          <span class="stat-value" style="font-size: 1.1rem; color: #f59e0b;">{{ stats.mostProfitable }}</span>
+          <span class="stat-value" style="font-size: 1.1rem; color: var(--status-warning-text) !important;">{{ stats.mostProfitable }}</span>
         </div>
       </div>
     </div>
@@ -83,7 +83,7 @@ import { CommonModule } from '@angular/common';
     .stat-value {
       font-size: 1.35rem;
       font-weight: 800;
-      color: #1e293b;
+      color: var(--text-main);
       line-height: 1.2;
     }
     .stat-divider {

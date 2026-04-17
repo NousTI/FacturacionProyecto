@@ -13,9 +13,10 @@ import { SriCertConfig } from '../../services/sri-cert.service';
           <table class="table mb-0 align-middle">
             <thead>
               <tr>
-                <th style="width: 280px">Empresa</th>
-                <th style="width: 180px">Estado SRI</th>
-                <th style="width: 180px">Vencimiento</th>
+                <th style="width: 250px">Empresa</th>
+                <th style="width: 140px">Ambiente</th>
+                <th style="width: 140px">Estado</th>
+                <th style="width: 160px">Vencimiento</th>
                 <th style="width: 180px">Días Restantes</th>
                 <th class="text-end" style="width: 80px">Acciones</th>
               </tr>
@@ -29,7 +30,7 @@ import { SriCertConfig } from '../../services/sri-cert.service';
                       {{ (cert.empresa_nombre || 'N').charAt(0) }}
                     </div>
                     <div class="text-truncate">
-                      <span class="fw-bold text-dark d-block mb-0 text-truncate" [title]="cert.empresa_nombre || 'No asignada'">
+                      <span class="fw-bold text-main d-block mb-0 text-truncate" [title]="cert.empresa_nombre || 'No asignada'">
                         {{ cert.empresa_nombre || 'No asignada' }}
                       </span>
                       <small class="text-muted d-flex align-items-center gap-1" style="font-size: 0.7rem;">
@@ -39,22 +40,24 @@ import { SriCertConfig } from '../../services/sri-cert.service';
                   </div>
                 </td>
   
-                <!-- Estado SRI -->
+                <!-- Ambiente -->
                 <td>
-                   <div class="d-flex flex-column gap-1">
-                      <span class="badge-status-premium" [ngClass]="getStatusClass(cert)">
-                          {{ cert.estado }}
-                      </span>
-                      <small class="text-muted fw-bold ms-1" style="font-size: 0.65rem;">
-                          {{ cert.ambiente }}
-                      </small>
-                   </div>
+                   <span class="badge-status-premium" [ngClass]="cert.ambiente === 'PRODUCCION' ? 'ambiente-prod' : 'ambiente-pruebas'">
+                       {{ cert.ambiente }}
+                   </span>
+                </td>
+
+                <!-- Estado -->
+                <td>
+                   <span class="badge-status-premium" [ngClass]="getStatusClass(cert)">
+                       {{ cert.estado }}
+                   </span>
                 </td>
   
                 <!-- Vencimiento -->
                 <td>
                    <div class="d-flex flex-column">
-                      <span class="text-dark fw-600" style="font-size: 0.85rem;">{{ cert.fecha_expiracion_cert | date:'dd MMM, yyyy' }}</span>
+                      <span class="text-main fw-600" style="font-size: 0.85rem;">{{ cert.fecha_expiracion_cert | date:'dd MMM, yyyy' }}</span>
                       <small class="text-muted" style="font-size: 0.7rem;">{{ cert.fecha_expiracion_cert | date:'shortTime' }}</small>
                    </div>
                 </td>
@@ -69,7 +72,7 @@ import { SriCertConfig } from '../../services/sri-cert.service';
                                   'bg-success': (cert.days_until_expiry || 0) > 30,
                                   'bg-warning': (cert.days_until_expiry || 0) <= 30 && (cert.days_until_expiry || 0) > 0,
                                   'bg-danger': (cert.days_until_expiry || 0) <= 0
-                               }">
+                                }">
                           </div>
                       </div>
                       <span class="fw-bold fs-7" 
@@ -85,11 +88,11 @@ import { SriCertConfig } from '../../services/sri-cert.service';
                 <td class="text-end">
                    <div class="dropdown">
                       <button 
-                        class="btn-action-trigger" 
-                        type="button" 
-                        data-bs-toggle="dropdown" 
-                        aria-expanded="false"
-                        data-bs-popper-config='{"strategy":"fixed"}'
+                         class="btn-action-trigger" 
+                         type="button" 
+                         data-bs-toggle="dropdown" 
+                         aria-expanded="false"
+                         data-bs-popper-config='{"strategy":"fixed"}'
                       >
                          <i class="bi bi-three-dots"></i>
                       </button>
@@ -101,10 +104,10 @@ import { SriCertConfig } from '../../services/sri-cert.service';
                             </button>
                          </li>
                          <li *ngIf="false">
-                           <button class="dropdown-item rounded-3 py-2" (click)="onViewHistory.emit(cert)">
-                              <i class="bi bi-clock-history text-corporate"></i>
-                              <span class="ms-2">Historial</span>
-                           </button>
+                            <button class="dropdown-item rounded-3 py-2" (click)="onViewHistory.emit(cert)">
+                               <i class="bi bi-clock-history text-corporate"></i>
+                               <span class="ms-2">Historial</span>
+                            </button>
                          </li>
                       </ul>
                    </div>
@@ -112,12 +115,13 @@ import { SriCertConfig } from '../../services/sri-cert.service';
   
               </tr>
               <tr *ngIf="certificados.length === 0">
-                <td colspan="5" class="text-center p-5 text-muted">
+                <td colspan="6" class="text-center p-5 text-muted">
                   <i class="bi bi-shield-x fs-1 d-block mb-3"></i>
                   No se encontraron certificados configurados.
                 </td>
               </tr>
             </tbody>
+>
           </table>
         </div>
       </div>
@@ -159,14 +163,16 @@ import { SriCertConfig } from '../../services/sri-cert.service';
       background: var(--bg-main, #ffffff);
       padding: 1rem 1.5rem;
       font-size: var(--text-base);
-      color: #0f172a;
-      font-weight: 600;
-      border-bottom: 2px solid var(--border-color, #f1f5f9);
+      color: var(--text-main);
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      border-bottom: 2px solid var(--border-color);
     }
     .table tbody td {
       padding: 1.25rem 1.5rem;
-      border-bottom: 1px solid var(--border-color, #f1f5f9);
-      color: var(--text-muted, #475569);
+      border-bottom: 1px solid var(--border-color);
+      color: var(--text-muted);
       font-size: var(--text-md);
     }
     
@@ -174,49 +180,57 @@ import { SriCertConfig } from '../../services/sri-cert.service';
       width: 38px; height: 38px;
       border-radius: 12px;
       display: flex; align-items: center; justify-content: center;
-      font-weight: 700; font-size: var(--text-base);
-      background: var(--primary-color, #161d35);
+      font-weight: 800; font-size: var(--text-base);
+      background: var(--primary-color);
       color: #ffffff;
     }
     
     .badge-status-premium {
-      padding: 0.25rem 0.75rem;
+      padding: 0.35rem 0.85rem;
       border-radius: 6px;
-      font-size: var(--text-sm);
-      font-weight: 600;
+      font-size: var(--text-xs);
+      font-weight: 800;
       display: inline-block;
       text-transform: uppercase;
+      letter-spacing: 0.3px;
     }
-    .badge-status-premium.activo { background: var(--status-success-bg, #dcfce7); color: var(--status-success-text, #15803d); }
-    .badge-status-premium.vencido { background: var(--status-danger-bg, #fee2e2); color: var(--status-danger-text, #b91c1c); }
-    .badge-status-premium.por-vencer { background: var(--status-warning-bg, #fef3c7); color: var(--status-warning-text, #92400e); }
+    .badge-status-premium.activo { background: var(--status-success-bg); color: var(--status-success-text); }
+    .badge-status-premium.vencido { background: var(--status-danger-bg); color: var(--status-danger-text); }
+    .badge-status-premium.por-vencer { background: var(--status-warning-bg); color: var(--status-warning-text); }
+
+    .ambiente-prod { background: var(--status-info-bg); color: var(--status-info-text); }
+    .ambiente-pruebas { background: var(--status-neutral-bg); color: var(--status-neutral-text); }
 
     .btn-action-trigger {
       background: transparent; border: none;
       width: 32px; height: 32px;
-      border-radius: 8px; color: #94a3b8;
+      border-radius: 8px; color: var(--text-muted);
       transition: all 0.2s;
     }
     .btn-action-trigger:hover {
-      background: #f8fafc; color: #0f172a;
+      background: var(--status-info-bg); color: var(--status-info-text);
     }
     
     .dropdown-item {
-      display: flex; align-items: center; padding: 0.5rem 1rem;
-      font-size: var(--text-base); font-weight: 500;
+      display: flex; align-items: center; padding: 0.6rem 1rem;
+      font-size: var(--text-base); font-weight: 600;
       color: var(--text-muted); cursor: pointer;
+      transition: all 0.2s;
     }
     .dropdown-item i { font-size: 1.1rem; margin-right: 0.75rem; }
-    .dropdown-item:hover { background: #f8fafc; color: #0f172a; }
+    .dropdown-item:hover { background: var(--status-info-bg); color: var(--status-info-text); }
 
     .bg-success { background-color: var(--status-success) !important; }
     .bg-warning { background-color: var(--status-warning) !important; }
     .bg-danger { background-color: var(--status-danger) !important; }
+    
     .text-success { color: var(--status-success) !important; }
     .text-warning { color: var(--status-warning) !important; }
     .text-danger { color: var(--status-danger) !important; }
+    .text-main { color: var(--text-main) !important; }
     
     .fw-600 { font-weight: 600; }
+    .fw-800 { font-weight: 800; }
     .text-corporate { color: var(--primary-color) !important; }
     .fs-7 { font-size: 0.8rem; }
   `]
