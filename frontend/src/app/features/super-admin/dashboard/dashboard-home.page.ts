@@ -7,6 +7,7 @@ import { SuperAdminChartsComponent } from './componentes/charts-section.componen
 import { SuperAdminAlertsComponent } from './componentes/system-alerts.component';
 import { RecentCompaniesComponent } from './componentes/recent-companies.component';
 import { QuickLinksComponent } from './componentes/quick-links.component';
+import { PlanDistributionChartComponent } from './componentes/plan-distribution-chart.component';
 
 @Component({
   selector: 'app-dashboard-home',
@@ -17,7 +18,8 @@ import { QuickLinksComponent } from './componentes/quick-links.component';
     SuperAdminChartsComponent,
     SuperAdminAlertsComponent,
     RecentCompaniesComponent,
-    QuickLinksComponent
+    QuickLinksComponent,
+    PlanDistributionChartComponent
   ],
   template: `
     <div class="dash-wrap animate__animated animate__fadeIn">
@@ -55,13 +57,10 @@ import { QuickLinksComponent } from './componentes/quick-links.component';
             *ngIf="overview?.alertas?.criticas?.length || overview?.alertas?.advertencias?.length">
           </app-super-admin-alerts>
 
-          <!-- Gráfico de Distribución -->
-          <app-super-admin-charts 
-            [charts]="charts" 
-            type="plans"
-            [selectedPeriod]="selectedPeriod"
-            (periodChange)="onPeriodChange($event)">
-          </app-super-admin-charts>
+          <!-- Gráfico de Distribución por Plan -->
+          <app-plan-distribution-chart 
+            [data]="charts?.empresas_by_plan || []">
+          </app-plan-distribution-chart>
 
           <!-- Accesos Rápidos -->
           <app-quick-links class="flex-grow-1"></app-quick-links>
