@@ -13,6 +13,7 @@ import { RecentInvoicesComponent } from './components/recent-invoices/recent-inv
 import { StatusCardsComponent } from './components/status-cards/status-cards.component';
 import { QuickActionsComponent } from './components/quick-actions/quick-actions.component';
 import { TopProductsComponent } from './components/top-products/top-products.component';
+import { SalesTrendChartComponent } from './components/sales-trend-chart/sales-trend-chart.component';
 
 // Services
 import { DashboardFeatureService } from './services/dashboard.service';
@@ -32,7 +33,8 @@ import { DashboardOverview } from '../../../shared/services/dashboard.service';
     RecentInvoicesComponent,
     StatusCardsComponent,
     QuickActionsComponent,
-    TopProductsComponent
+    TopProductsComponent,
+    SalesTrendChartComponent
   ],
   template: `
     <div class="dash-wrap p-0 position-relative">
@@ -81,19 +83,13 @@ import { DashboardOverview } from '../../../shared/services/dashboard.service';
           <div class="col-lg-8">
             <div class="d-flex flex-column gap-3">
 
-              <!-- Análisis de Tendencias -->
-              <app-chart-card 
+              <!-- Análisis de Tendencias Premium -->
+              <app-sales-trend-chart
                 class="dashboard-main-chart"
-                [title]="'Tendencia de Ventas (vs Anterior)'"
                 [data]="overview.ventas_tendencia || []"
-                [barColor]="'var(--primary-color)'">
-                <!-- Filtros integrados en el header de la gráfica -->
-                <app-period-selector 
-                  actions
-                  [selectedPeriod]="selectedPeriod" 
-                  (onPeriodChange)="changePeriod($event)">
-                </app-period-selector>
-              </app-chart-card>
+                [selectedPeriod]="selectedPeriod"
+                (onPeriodChange)="changePeriod($event)">
+              </app-sales-trend-chart>
 
               <!-- Actividad Reciente -->
               <app-recent-invoices [facturas]="overview.facturas_recientes || []" class="mb-3"></app-recent-invoices>

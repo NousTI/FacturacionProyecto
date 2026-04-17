@@ -9,7 +9,6 @@ import { InfoTooltipComponent } from '../../../../shared/components/info-tooltip
   imports: [CommonModule, InfoTooltipComponent],
   template: `
     <div class="row g-3 mb-4">
-      <!-- Empresas Activas -->
       <div class="col-6 col-lg-3">
         <div class="kpi-card-premium">
           <div class="icon-circle" style="color: var(--status-success); background: var(--border-color)">
@@ -24,7 +23,6 @@ import { InfoTooltipComponent } from '../../../../shared/components/info-tooltip
         </div>
       </div>
 
-      <!-- Ingresos Dinámicos -->
       <div class="col-6 col-lg-3">
         <div class="kpi-card-premium">
           <div class="icon-circle" style="color: var(--primary-color); background: var(--border-color)">
@@ -46,7 +44,6 @@ import { InfoTooltipComponent } from '../../../../shared/components/info-tooltip
         </div>
       </div>
 
-      <!-- Comisiones Pendientes -->
       <div class="col-6 col-lg-3">
         <div class="kpi-card-premium">
           <div class="icon-circle" style="color: var(--status-warning); background: var(--border-color)">
@@ -61,7 +58,6 @@ import { InfoTooltipComponent } from '../../../../shared/components/info-tooltip
         </div>
       </div>
 
-      <!-- Pagos Atrasados / Empresas por vencer -->
       <div class="col-6 col-lg-3">
         <div class="kpi-card-premium">
           <div class="icon-circle" style="color: var(--status-danger); background: var(--border-color)">

@@ -15,7 +15,7 @@ import { InfoTooltipComponent } from '../../../../shared/components/info-tooltip
       <div *ngSwitchCase="'income'" class="h-100 chart-container-premium">
         <app-chart-card
           title="Ingresos SaaS ($)"
-          [barColor]="primaryColor"
+          [barColor]="incomeGradient"
           [chartType]="activeChartType"
           [data]="charts?.ingresos_saas || []">
           <app-info-tooltip info message="Recaudación mensual por suscripciones de todas las empresas activas."></app-info-tooltip>
@@ -53,7 +53,7 @@ import { InfoTooltipComponent } from '../../../../shared/components/info-tooltip
           <div class="chart-container-premium">
             <app-chart-card
               title="Ingresos SaaS ($)"
-              [barColor]="primaryColor"
+              [barColor]="incomeGradient"
               [chartType]="activeChartType"
               [data]="charts?.ingresos_saas || []">
               <app-info-tooltip info message="Recaudación mensual por suscripciones de todas las empresas activas."></app-info-tooltip>
@@ -163,6 +163,9 @@ export class SuperAdminChartsComponent implements OnChanges {
   @Output() periodChange = new EventEmitter<string>();
 
   activeChartType: 'bar' | 'line' = 'bar';
+
+  // Premium Gradient for Income Chart
+  incomeGradient = 'linear-gradient(180deg, #A855F7 0%, #6366F1 100%)';
 
   // Using solid primary color for charts and bars
   primaryColor = 'var(--primary-color)';
