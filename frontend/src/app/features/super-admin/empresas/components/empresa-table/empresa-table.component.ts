@@ -212,12 +212,13 @@ import { GET_PERSONA_LABEL, GET_CONTRIBUYENTE_LABEL } from '../../../../../core/
     }
     
     .avatar-soft-premium {
-      width: 38px; height: 38px;
+      width: 40px; height: 40px;
       border-radius: 12px;
       display: flex; align-items: center; justify-content: center;
       font-weight: 700; font-size: var(--text-base);
       background: var(--primary-color, #161d35);
       color: #ffffff;
+      flex-shrink: 0;
     }
     
     .badge-status-premium {

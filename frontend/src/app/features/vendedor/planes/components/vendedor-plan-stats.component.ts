@@ -9,7 +9,7 @@ import { CommonModule } from '@angular/common';
     <div class="stats-compact-row">
       <!-- Total de Planes -->
       <div class="stat-item-mini">
-        <div class="icon-circle" style="background: rgba(59, 130, 246, 0.1); color: #3b82f6;">
+        <div class="icon-circle status-info-soft">
           <i class="bi bi-box-seam"></i>
         </div>
         <div class="stat-info">
@@ -22,7 +22,7 @@ import { CommonModule } from '@angular/common';
 
       <!-- Planes Activos -->
       <div class="stat-item-mini">
-        <div class="icon-circle" style="background: rgba(16, 185, 129, 0.1); color: #10b981;">
+        <div class="icon-circle status-success-soft">
           <i class="bi bi-check-circle"></i>
         </div>
         <div class="stat-info">
@@ -35,7 +35,7 @@ import { CommonModule } from '@angular/common';
 
       <!-- Planes Ocultos -->
       <div class="stat-item-mini">
-        <div class="icon-circle" style="background: rgba(245, 158, 11, 0.1); color: #f59e0b;">
+        <div class="icon-circle status-warning-soft">
           <i class="bi bi-eye-slash"></i>
         </div>
         <div class="stat-info">
@@ -47,13 +47,14 @@ import { CommonModule } from '@angular/common';
   `,
   styles: [`
     .stats-compact-row {
-      background: white;
+      background: var(--bg-main);
       border-radius: 16px;
-      padding: 0.75rem 1.5rem;
+      padding: 1rem 1.75rem;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      border: 1px solid #f1f5f9;
+      border: 1px solid var(--border-color);
+      box-shadow: 0 4px 15px -3px rgba(0,0,0,0.02);
     }
     .stat-item-mini {
       display: flex;
@@ -62,13 +63,13 @@ import { CommonModule } from '@angular/common';
       flex: 1;
     }
     .icon-circle {
-      width: 36px;
-      height: 36px;
-      border-radius: 10px;
+      width: 40px;
+      height: 40px;
+      border-radius: 12px;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 1rem;
+      font-size: 1.1rem;
     }
     .stat-info {
       display: flex;
@@ -77,22 +78,28 @@ import { CommonModule } from '@angular/common';
     .stat-label {
       font-size: 0.65rem;
       font-weight: 800;
-      color: #94a3b8;
+      color: var(--text-muted);
       text-transform: uppercase;
       letter-spacing: 0.5px;
+      margin-bottom: 2px;
     }
     .stat-value {
-      font-size: 1.15rem;
+      font-size: 1.25rem;
       font-weight: 800;
-      color: #1e293b;
-      line-height: 1.2;
+      color: var(--text-main);
+      line-height: 1.1;
     }
     .stat-divider {
       width: 1px;
-      height: 25px;
-      background: #f1f5f9;
-      margin: 0 1.25rem;
+      height: 30px;
+      background: var(--border-color);
+      margin: 0 1.5rem;
     }
+    
+    .status-info-soft { background: var(--status-info-bg); color: var(--status-info-text); }
+    .status-success-soft { background: var(--status-success-bg); color: var(--status-success-text); }
+    .status-warning-soft { background: var(--status-warning-bg); color: var(--status-warning-text); }
+
     @media (max-width: 992px) {
       .stats-compact-row {
         flex-wrap: wrap;

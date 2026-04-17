@@ -28,7 +28,7 @@ import { Plan } from '../../../../super-admin/planes/services/plan.service';
                 <!-- Plan Name + Icon -->
                 <td class="ps-4">
                   <div class="d-flex align-items-center">
-                    <div class="avatar-soft-premium me-3" [style.background]="getPlanColor(plan.name, 0.1)" [style.color]="getPlanColor(plan.name, 1)">
+                    <div class="avatar-soft-premium me-3">
                       <i class="bi bi-box-seam"></i>
                     </div>
                     <div>
@@ -150,83 +150,76 @@ import { Plan } from '../../../../super-admin/planes/services/plan.service';
       position: sticky;
       top: 0;
       z-index: 10;
-      background: var(--bg-main, #ffffff);
+      background: var(--bg-main);
       padding: 1rem 1.25rem;
-      font-size: var(--text-base, 0.85rem);
-      color: #0f172a;
-      font-weight: 600;
-      border-bottom: 2px solid var(--border-color, #f1f5f9);
+      font-size: var(--text-base);
+      color: var(--text-main);
+      font-weight: 800;
+      border-bottom: 2px solid var(--border-color);
       vertical-align: middle;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
     }
     .table tbody td {
       padding: 1.25rem 1.25rem;
-      border-bottom: 1px solid var(--border-color, #f1f5f9);
-      color: var(--text-muted, #475569);
-      font-size: var(--text-md, 0.95rem);
+      border-bottom: 1px solid var(--border-color);
+      color: var(--text-muted);
+      font-size: var(--text-md);
       vertical-align: middle;
     }
 
     .avatar-soft-premium {
-      width: 36px;
-      height: 36px;
+      width: 40px; height: 40px;
       border-radius: 12px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: 800;
-      font-size: 0.85rem;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 800; font-size: 1.1rem;
+      background: var(--primary-color);
+      color: #ffffff;
+      flex-shrink: 0;
     }
 
     .badge-status-premium {
       padding: 0.4rem 0.85rem;
       border-radius: 6px;
-      font-size: var(--text-sm, 0.75rem);
-      font-weight: 600;
+      font-size: var(--text-xs);
+      font-weight: 800;
       display: inline-block;
       text-transform: uppercase;
-      color: #ffffff;
+      letter-spacing: 0.5px;
     }
-    .badge-status-premium.activo {
-      background: #10b981;
-    }
-    .badge-status-premium.inactivo {
-      background: #ef4444;
-    }
-    .badge-status-premium.visible {
-      background: #3b82f6;
-    }
-    .badge-status-premium.oculto {
-      background: #8b5cf6;
-    }
+    .activo { background: var(--status-success-bg); color: var(--status-success-text); }
+    .inactivo { background: var(--status-danger-bg); color: var(--status-danger-text); }
+    .visible { background: var(--status-info-bg); color: var(--status-info-text); }
+    .oculto { background: var(--status-natural-bg); color: var(--text-main); }
 
     .badge-role-premium {
-      padding: 0.25rem 0.75rem;
+      padding: 0.4rem 0.85rem;
       border-radius: 6px;
-      font-size: var(--text-sm, 0.75rem);
-      font-weight: 600;
-      background: #f1f5f9;
-      color: #1e293b;
+      font-size: var(--text-xs);
+      font-weight: 800;
       display: inline-block;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
     }
+    .basico { background: var(--status-info-bg); color: var(--status-info-text); }
+    .profesional { background: var(--status-success-bg); color: var(--status-success-text); }
+    .enterprise { background: var(--status-warning-bg); color: var(--status-warning-text); }
+    .estandar { background: var(--status-natural-bg); color: var(--text-main); }
 
     .btn-action-trigger {
-      background: transparent;
-      border: none;
-      width: 32px;
-      height: 32px;
-      border-radius: 8px;
-      color: #94a3b8;
-      transition: all 0.2s;
-      cursor: pointer;
+      background: transparent; border: none;
+      width: 32px; height: 32px;
+      border-radius: 8px; color: var(--text-muted);
+      transition: all 0.2s; cursor: pointer;
     }
     .btn-action-trigger:hover,
     .btn-action-trigger[aria-expanded="true"] {
-      background: #161d35;
-      color: #ffffff;
+      background: var(--status-info-bg); color: var(--status-info-text);
     }
 
     .dropdown-menu {
-      border: 1px solid var(--border-color, #e2e8f0) !important;
+      border: 1px solid var(--border-color) !important;
+      box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1) !important;
       border-radius: 12px !important;
       padding: 0.5rem !important;
       z-index: 1050 !important;
@@ -245,13 +238,6 @@ export class VendedorPlanTableComponent {
 
   trackByPlanId(index: number, plan: Plan): string {
     return plan.id;
-  }
-
-  getPlanColor(name: string, opacity: number): string {
-    if (name.includes('Básico')) return `rgba(99, 102, 241, ${opacity})`;
-    if (name.includes('Profesional')) return `rgba(16, 185, 129, ${opacity})`;
-    if (name.includes('Enterprise')) return `rgba(245, 158, 11, ${opacity})`;
-    return `rgba(148, 163, 184, ${opacity})`;
   }
 
   getCategoryLabel(planName: string): string {

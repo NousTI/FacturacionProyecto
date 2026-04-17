@@ -156,12 +156,13 @@ import { CommonModule } from '@angular/common';
     }
     
     .avatar-soft-premium {
-      width: 38px; height: 38px;
+      width: 40px; height: 40px;
       border-radius: 12px;
       display: flex; align-items: center; justify-content: center;
-      font-weight: 700; font-size: 0.85rem;
+      font-weight: 700; font-size: 0.95rem;
       background: var(--primary-color, #161d35);
       color: #ffffff;
+      flex-shrink: 0;
     }
     
     .badge-status-premium {

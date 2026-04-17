@@ -108,79 +108,51 @@ import { FormsModule } from '@angular/forms';
       flex: 1;
       min-width: 0;
     }
-    .search-box-premium {
-      position: relative;
-      width: 100%;
-    }
-    .search-box-premium i {
-      position: absolute;
-      left: 1rem;
-      top: 50%;
-      transform: translateY(-50%);
-      color: #94a3b8;
-      font-size: 1rem;
-    }
     .form-control-premium-search {
-      background: #ffffff;
-      border: 1px solid #e2e8f0;
-      border-radius: 12px;
-      padding: 0 1rem 0 2.75rem;
-      height: 42px;
-      font-size: var(--text-md, 0.95rem);
-      color: #0f172a;
-      transition: all 0.2s;
-      width: 100%;
+      width: 100%; height: 48px; border-radius: 12px;
+      padding: 0 1rem 0 2.75rem; background: #ffffff;
+      border: 1px solid var(--border-color); color: var(--text-main);
+      font-size: var(--text-md); transition: all 0.2s;
     }
     .form-control-premium-search:focus {
-      border-color: #cbd5e1;
-      outline: none;
-      box-shadow: none;
+      outline: none; border-color: var(--status-info);
+      box-shadow: 0 0 0 4px var(--status-info-bg);
     }
     .form-select-premium {
-      background: #ffffff;
-      border: 1px solid #e2e8f0;
-      border-radius: 12px;
-      padding: 0 1rem;
-      height: 42px;
-      font-size: var(--text-base, 0.85rem);
-      color: #0f172a;
-      width: 100%;
-      cursor: pointer;
-      text-align: left;
-      font-weight: 500;
-      transition: all 0.2s;
-    }
-    .form-select-premium:hover {
-      border-color: #cbd5e1;
-      background: #f8fafc;
+      width: 100%; height: 48px; border-radius: 12px;
+      padding: 0 1.25rem; background: #ffffff;
+      border: 1px solid var(--border-color); color: var(--text-main);
+      font-weight: 600; font-size: var(--text-md); transition: all 0.2s;
+      box-shadow: none !important;
     }
     .form-select-premium:focus {
-      border-color: #cbd5e1;
-      outline: none;
-    }
-    .form-select-premium[aria-expanded="true"] {
-      background: #f8fafc;
-      border-color: #cbd5e1;
+      outline: none; border-color: var(--status-info);
+      box-shadow: 0 0 0 4px var(--status-info-bg) !important;
     }
     .dropdown-menu-premium {
+      border: 1px solid var(--border-color) !important;
+      box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1) !important;
       border-radius: 12px !important;
       padding: 0.5rem !important;
-      min-width: 100%;
-      margin-top: 0.5rem !important;
+      z-index: 1050 !important;
     }
     .dropdown-item {
       border-radius: 8px !important;
       padding: 0.6rem 1rem !important;
-      color: #475569 !important;
-      font-size: var(--text-base, 0.85rem) !important;
-      font-weight: 500 !important;
-      cursor: pointer;
-      transition: all 0.2s;
+      font-weight: 500; color: var(--text-main);
     }
     .dropdown-item:hover {
-      background-color: var(--primary-color, #161d35) !important;
-      color: #ffffff !important;
+      background: var(--status-info-bg) !important;
+      color: var(--status-info-text) !important;
     }
+    
+    .search-box-premium { position: relative; }
+    .search-box-premium i {
+      position: absolute; top: 50%; left: 1.1rem;
+      transform: translateY(-50%); color: var(--text-muted);
+      font-size: 1.1rem; transition: all 0.2s;
+    }
+    .form-control-premium-search:focus + i { color: var(--status-info); }
   `]
 })
 export class VendedorPlanActionsComponent {

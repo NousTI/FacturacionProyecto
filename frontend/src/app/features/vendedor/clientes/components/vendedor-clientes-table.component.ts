@@ -24,9 +24,7 @@ import { CommonModule } from '@angular/common';
               <tr *ngFor="let cliente of clientes">
                 <td>
                   <div class="d-flex align-items-center">
-                    <div class="avatar-soft-premium me-3" 
-                         [style.background]="getAvatarColor(cliente.nombres + ' ' + cliente.apellidos, 0.1)" 
-                         [style.color]="getAvatarColor(cliente.nombres + ' ' + cliente.apellidos, 1)">
+                    <div class="avatar-soft-premium me-3">
                       {{ getInitials(cliente.nombres + ' ' + cliente.apellidos) }}
                     </div>
                     <div class="text-truncate" style="max-width: 180px;">
@@ -149,12 +147,13 @@ import { CommonModule } from '@angular/common';
     }
     
     .avatar-soft-premium {
-      width: 36px; height: 36px;
+      width: 40px; height: 40px;
       border-radius: 12px;
       display: flex; align-items: center; justify-content: center;
-      font-weight: 800; font-size: 0.85rem;
+      font-weight: 800; font-size: 1rem;
       background: var(--primary-color);
       color: #ffffff;
+      flex-shrink: 0;
     }
     
     .badge-status-premium {
@@ -222,17 +221,6 @@ export class VendedorClientesTableComponent {
   getInitials(name: string): string {
     if (!name) return '??';
     return name.split(' ').slice(0, 2).map(n => n[0]).join('').toUpperCase();
-  }
-
-  getAvatarColor(name: string, opacity: number): string {
-    const colors = [
-      `rgba(99, 102, 241, ${opacity})`, `rgba(16, 185, 129, ${opacity})`,
-      `rgba(245, 158, 11, ${opacity})`, `rgba(239, 68, 68, ${opacity})`,
-      `rgba(139, 92, 246, ${opacity})`
-    ];
-    let hash = 0;
-    for (let i = 0; i < name.length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash);
-    return colors[Math.abs(hash) % colors.length];
   }
 
   getOrigenClass(origen?: string): string {

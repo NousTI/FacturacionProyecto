@@ -175,6 +175,7 @@ import { Suscripcion } from '../../services/vendedor-suscripcion.service';
       font-weight: 800; font-size: 1.1rem;
       background: var(--primary-color);
       color: #ffffff;
+      flex-shrink: 0;
     }
     
     .badge-status-premium {

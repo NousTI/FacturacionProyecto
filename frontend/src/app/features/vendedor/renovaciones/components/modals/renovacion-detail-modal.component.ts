@@ -102,64 +102,64 @@ import { SolicitudRenovacion } from '../../../../../domain/models/renovacion.mod
       display: flex; align-items: center; justify-content: center; z-index: 10000;
     }
     .modal-container-premium {
-      background: #ffffff; width: 750px; max-width: 95vw;
+      background: var(--bg-main); width: 750px; max-width: 95vw;
       border-radius: 28px; overflow: hidden;
       box-shadow: 0 40px 80px -20px rgba(22, 29, 53, 0.25);
+      border: 1px solid var(--border-color);
     }
     .modal-header-premium {
-      padding: 1.5rem 2rem; background: #f8fafc; border-bottom: 1px solid #f1f5f9;
+      padding: 1.5rem 2rem; background: var(--bg-main); border-bottom: 1px solid var(--border-color);
       display: flex; justify-content: space-between; align-items: center;
     }
     .avatar-large {
-      width: 52px; height: 52px; background: var(--primary-color, #161d35); color: white;
+      width: 52px; height: 52px; background: var(--primary-color); color: white;
       border-radius: 14px; display: flex; align-items: center; justify-content: center;
       font-size: 1.5rem; font-weight: 800;
     }
-    .modal-title { font-size: 1.15rem; font-weight: 800; color: #1e293b; margin: 0; }
+    .modal-title { font-size: 1.15rem; font-weight: 800; color: var(--text-main); margin: 0; }
     .btn-close-circle {
       width: 32px; height: 32px; border-radius: 50%; border: none;
-      background: #ffffff; color: #94a3b8; display: flex; align-items: center; justify-content: center;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.05); cursor: pointer;
+      background: var(--bg-main); color: var(--text-muted); display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.05); cursor: pointer; transition: all 0.2s;
     }
+    .btn-close-circle:hover { background: var(--status-danger-bg); color: var(--status-danger-text); }
     
     .modal-body-premium { padding: 2rem; max-height: 70vh; overflow-y: auto; }
     .section-card {
-      background: #ffffff; border: 1px solid #f1f5f9; border-radius: 20px; padding: 1.25rem;
+      background: var(--bg-main); border: 1px solid var(--border-color); border-radius: 20px; padding: 1.5rem;
     }
-    .section-title { font-size: 0.8rem; font-weight: 800; color: #475569; margin-bottom: 1.25rem; text-transform: uppercase; letter-spacing: 0.5px; }
+    .section-title { font-size: 0.8rem; font-weight: 800; color: var(--text-muted); margin-bottom: 1.25rem; text-transform: uppercase; letter-spacing: 0.5px; }
     
-    .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; }
+    .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
     .info-item { display: flex; flex-direction: column; }
-    .info-item.full-width { grid-column: span 2; }
-    .info-item label { font-size: 0.65rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; margin-bottom: 2px; }
-    .info-item span { font-size: 0.9rem; font-weight: 600; color: #1e293b; }
-    .text-monospace { font-family: monospace; color: #64748b; font-size: 0.75rem !important; }
+    .info-item label { font-size: 0.65rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; margin-bottom: 4px; }
+    .info-item span { font-size: 1rem; font-weight: 600; color: var(--text-main); }
     
     .btn-adjunto {
       display: flex; align-items: center; justify-content: space-between;
-      padding: 0.75rem 1rem; background: #f8fafc; border: 1px solid #e2e8f0;
+      padding: 1rem; background: var(--status-info-bg); border: 1px solid var(--border-color);
       border-radius: 12px; text-decoration: none; transition: all 0.2s;
+      color: var(--status-info-text);
     }
-    .btn-adjunto:hover { background: #f1f5f9; border-color: #cbd5e1; }
+    .btn-adjunto:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
 
-    .modal-footer-premium { padding: 1.5rem 2rem; }
+    .modal-footer-premium { padding: 1.5rem 2rem; border-top: 1px solid var(--border-color); }
     .btn-secondary-premium {
-      background: #f8fafc; border: 1px solid #e2e8f0; color: #64748b;
-      padding: 0.75rem 1.5rem; border-radius: 12px; font-weight: 700; cursor: pointer;
+      background: var(--status-natural-bg); border: 1px solid var(--border-color); color: var(--text-main);
+      padding: 0.75rem 1.5rem; border-radius: 12px; font-weight: 800; cursor: pointer; transition: all 0.2s;
     }
+    .btn-secondary-premium:hover { background: var(--status-info-bg); color: var(--status-info-text); }
     
-    .badge-status-premium { padding: 0.2rem 0.6rem; border-radius: 6px; font-size: 0.7rem; font-weight: 800; }
-    .badge-pending { background: #fff9db; color: #f08c00; }
-    .badge-accepted { background: #ebfbee; color: #2b8a3e; }
-    .badge-rejected { background: #fff5f5; color: #c92a2a; }
+    .badge-status-premium { padding: 0.4rem 0.85rem; border-radius: 8px; font-size: 0.7rem; font-weight: 800; text-transform: uppercase; }
+    .badge-pending { background: var(--status-warning-bg); color: var(--status-warning-text); }
+    .badge-accepted { background: var(--status-success-bg); color: var(--status-success-text); }
+    .badge-rejected { background: var(--status-danger-bg); color: var(--status-danger-text); }
 
-    .bg-danger-subtle { background-color: #fff5f5 !important; }
-    .border-danger-subtle { border-color: #ffc9c9 !important; }
-    .bg-info-subtle { background-color: #e7f5ff !important; }
-    .border-info-subtle { border-color: #a5d8ff !important; }
-    .text-info-dark { color: #1971c2 !important; }
+    .bg-danger-soft { background-color: var(--status-danger-bg) !important; color: var(--status-danger-text) !important; border: 1px solid var(--status-danger-bg) !important; }
+    .bg-info-soft { background-color: var(--status-info-bg) !important; color: var(--status-info-text) !important; border: 1px solid var(--status-info-bg) !important; }
+    .text-info-dark { color: var(--status-info-text) !important; }
     .smallest { font-size: 0.7rem; }
-    .editorial-label { font-size: 0.65rem; font-weight: 700; text-transform: uppercase; color: #94a3b8; }
+    .editorial-label { font-size: 0.65rem; font-weight: 800; text-transform: uppercase; color: var(--text-muted); }
   `]
 })
 export class RenovacionDetailModalComponent {

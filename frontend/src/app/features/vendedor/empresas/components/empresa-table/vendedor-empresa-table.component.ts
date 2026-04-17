@@ -25,7 +25,7 @@ import { CommonModule } from '@angular/common';
               <tr *ngFor="let empresa of empresas">
                 <td>
                   <div class="d-flex align-items-center" style="max-width: 230px;">
-                    <div class="avatar-soft-premium me-3" [style.background]="getAvatarColor(empresa.razonSocial, 0.1)" [style.color]="getAvatarColor(empresa.razonSocial, 1)">
+                    <div class="avatar-soft-premium me-3">
                       {{ getInitials(empresa.razonSocial) }}
                     </div>
                     <div class="text-truncate">
@@ -182,6 +182,7 @@ import { CommonModule } from '@angular/common';
       display: flex; align-items: center; justify-content: center;
       font-weight: 800; font-size: 0.95rem;
       background: var(--primary-color); color: #ffffff;
+      flex-shrink: 0;
     }
     
     .badge-status-premium {
@@ -249,17 +250,6 @@ export class VendedorEmpresaTableComponent {
   getInitials(name: string): string {
     if (!name) return '??';
     return name.split(' ').slice(0, 2).map(n => n[0]).join('').toUpperCase();
-  }
-
-  getAvatarColor(name: string, opacity: number): string {
-    const colors = [
-      `rgba(99, 102, 241, ${opacity})`, `rgba(16, 185, 129, ${opacity})`,
-      `rgba(245, 158, 11, ${opacity})`, `rgba(239, 68, 68, ${opacity})`,
-      `rgba(139, 92, 246, ${opacity})`
-    ];
-    let hash = 0;
-    for (let i = 0; i < name.length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash);
-    return colors[Math.abs(hash) % colors.length];
   }
 
   getUsagePercent(current: number = 0, max: any = 0): number {

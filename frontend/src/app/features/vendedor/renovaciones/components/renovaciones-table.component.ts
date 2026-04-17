@@ -75,53 +75,47 @@ import { SolicitudRenovacion } from '../../../../domain/models/renovacion.model'
   styles: [`
     :host { display: block; width: 100%; }
     .table-container {
-      background: #ffffff;
-      border-radius: 20px;
-      border: 1px solid #f1f5f9;
-      overflow: hidden;
+      background: var(--bg-main); border-radius: 20px;
+      border: 1px solid var(--border-color); overflow: hidden;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
     }
     .table-responsive-premium { overflow-x: auto; }
     .table thead th {
-      background: #f8fafc;
-      padding: 1rem 1.5rem;
-      font-size: 0.75rem;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      color: #64748b;
-      border-bottom: 1px solid #f1f5f9;
+      background: var(--bg-main); padding: 1rem 1.5rem;
+      font-size: 0.75rem; font-weight: 800;
+      text-transform: uppercase; letter-spacing: 0.05em;
+      color: var(--text-main); border-bottom: 2px solid var(--border-color);
     }
     .table tbody td {
-      padding: 1.25rem 1.5rem;
-      border-bottom: 1px solid #f1f5f9;
+      padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--border-color);
+      color: var(--text-muted);
     }
     .cursor-pointer { cursor: pointer; }
     .table-highlighted {
-      background-color: rgba(59, 130, 246, 0.05) !important;
-      border-left: 4px solid var(--primary-color, #161d35);
+      background-color: var(--status-info-bg) !important;
+      border-left: 4px solid var(--primary-color);
     }
     .avatar-soft-premium {
-      width: 38px; height: 38px;
-      border-radius: 10px;
+      width: 40px; height: 40px; border-radius: 12px;
       display: flex; align-items: center; justify-content: center;
-      font-weight: 800; background: #eef2ff; color: #4f46e5;
+      font-weight: 800; background: var(--primary-color); color: #ffffff;
+      font-size: 1.1rem;
+      flex-shrink: 0;
     }
     .badge-status-premium {
-      padding: 0.35rem 0.75rem;
-      border-radius: 8px;
-      font-size: 0.75rem;
-      font-weight: 700;
+      padding: 0.4rem 0.85rem; border-radius: 8px;
+      font-size: 0.75rem; font-weight: 800; text-transform: uppercase;
     }
-    .badge-pending { background: #fffbeb; color: #b45309; }
-    .badge-accepted { background: #ecfdf5; color: #047857; }
-    .badge-rejected { background: #fef2f2; color: #b91c1c; }
+    .badge-pending { background: var(--status-warning-bg); color: var(--status-warning-text); }
+    .badge-accepted { background: var(--status-success-bg); color: var(--status-success-text); }
+    .badge-rejected { background: var(--status-danger-bg); color: var(--status-danger-text); }
     
     .btn-action-trigger {
       background: transparent; border: none;
       width: 32px; height: 32px; border-radius: 8px;
-      color: #94a3b8; transition: all 0.2s;
+      color: var(--text-muted); transition: all 0.2s;
     }
-    .btn-action-trigger:hover { background: #f1f5f9; color: #1e293b; }
+    .btn-action-trigger:hover { background: var(--status-info-bg); color: var(--status-info-text); }
     
     .fw-600 { font-weight: 600; }
     .smallest { font-size: 0.75rem; }

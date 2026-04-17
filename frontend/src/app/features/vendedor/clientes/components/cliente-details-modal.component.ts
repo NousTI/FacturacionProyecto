@@ -139,71 +139,65 @@ import { CommonModule } from '@angular/common';
   `,
   styles: [`
     .modal-overlay {
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: rgba(0, 0, 0, 0.5);
-      backdrop-filter: blur(4px);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 10000;
-      padding: 1rem;
+      position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+      background: rgba(15, 23, 53, 0.4); backdrop-filter: blur(8px);
+      display: flex; align-items: center; justify-content: center; z-index: 10000; padding: 1rem;
     }
 
     .modal-content-premium {
-      background: white;
-      border-radius: 24px;
+      background: var(--bg-main);
+      border-radius: 28px;
       width: 100%;
       max-width: 700px;
       max-height: 90vh;
       overflow: hidden;
       display: flex;
       flex-direction: column;
+      border: 1px solid var(--border-color);
       box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
     }
 
     .modal-header-premium {
-      padding: 2rem;
-      border-bottom: 1px solid #f1f5f9;
+      padding: 2.5rem;
+      border-bottom: 1px solid var(--border-color);
       display: flex;
       justify-content: space-between;
       align-items: center;
     }
 
     .avatar-large {
-      width: 60px;
-      height: 60px;
-      border-radius: 16px;
+      width: 64px;
+      height: 64px;
+      border-radius: 18px;
       display: flex;
       align-items: center;
       justify-content: center;
       font-weight: 800;
-      font-size: 1.25rem;
+      font-size: 1.5rem;
+      background: var(--primary-color) !important;
+      color: #ffffff !important;
     }
 
     .btn-close-premium {
-      background: #f8fafc;
+      background: var(--status-neutral-bg);
       border: none;
-      width: 36px;
-      height: 36px;
-      border-radius: 10px;
+      width: 40px;
+      height: 40px;
+      border-radius: 12px;
       display: flex;
       align-items: center;
       justify-content: center;
-      color: #64748b;
+      color: var(--text-muted);
       transition: all 0.2s;
       cursor: pointer;
     }
     .btn-close-premium:hover {
-      background: #161d35;
-      color: white;
+      background: var(--status-danger-bg);
+      color: var(--status-danger-text);
     }
 
     .modal-body-premium {
-      padding: 2rem;
+      padding: 2.5rem;
       overflow-y: auto;
       flex: 1;
     }
@@ -212,53 +206,54 @@ import { CommonModule } from '@angular/common';
       display: inline-flex;
       align-items: center;
       gap: 0.5rem;
-      padding: 0.65rem 1.25rem;
-      border-radius: 100px;
-      font-size: 0.85rem;
+      padding: 0.75rem 1.5rem;
+      border-radius: 12px;
+      font-size: var(--text-sm);
       font-weight: 800;
       text-transform: uppercase;
+      letter-spacing: 0.5px;
     }
     .badge-status-large.activo {
-      background: #dcfce7;
-      color: #15803d;
+      background: var(--status-success-bg);
+      color: var(--status-success-text);
     }
     .badge-status-large.inactivo {
-      background: #fee2e2;
-      color: #b91c1c;
+      background: var(--status-danger-bg);
+      color: var(--status-danger-text);
     }
 
     .info-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-      gap: 1rem;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.25rem;
     }
 
     .info-card {
-      background: #f8fafc;
-      border: 1px solid #f1f5f9;
-      border-radius: 16px;
-      padding: 1.25rem;
+      background: #ffffff;
+      border: 1px solid var(--border-color);
+      border-radius: 20px;
+      padding: 1.5rem;
       display: flex;
       align-items: center;
-      gap: 1rem;
+      gap: 1.25rem;
       transition: all 0.2s;
     }
     .info-card:hover {
-      background: white;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+      border-color: var(--primary-color);
+      box-shadow: 0 10px 20px -5px rgba(0, 0, 0, 0.05);
     }
 
     .info-icon {
-      width: 48px;
-      height: 48px;
-      border-radius: 12px;
+      width: 52px;
+      height: 52px;
+      border-radius: 14px;
       display: flex;
       align-items: center;
       justify-content: center;
       font-size: 1.25rem;
       flex-shrink: 0;
-      background: rgba(22, 29, 53, 0.05);
-      color: #161d35;
+      background: var(--status-info-bg);
+      color: var(--status-info-text);
     }
 
     .info-content {
@@ -268,18 +263,18 @@ import { CommonModule } from '@angular/common';
     }
 
     .info-label {
-      font-size: 0.7rem;
-      font-weight: 700;
-      color: #94a3b8;
+      font-size: 0.65rem;
+      font-weight: 800;
+      color: var(--text-muted);
       text-transform: uppercase;
       letter-spacing: 0.5px;
-      margin-bottom: 0.25rem;
+      margin-bottom: 0.35rem;
     }
 
     .info-value {
-      font-size: 0.95rem;
-      font-weight: 700;
-      color: #1e293b;
+      font-size: 1rem;
+      font-weight: 800;
+      color: var(--text-main);
       word-break: break-word;
     }
 
@@ -287,36 +282,37 @@ import { CommonModule } from '@angular/common';
     .badge-origen-detail {
         display: inline-flex;
         align-items: center;
-        padding: 0.35rem 0.75rem;
-        border-radius: 8px;
-        font-size: 0.75rem;
+        padding: 0.45rem 1rem;
+        border-radius: 10px;
+        font-size: var(--text-xs);
         font-weight: 800;
+        letter-spacing: 0.5px;
     }
-    .badge-origen-detail.superadmin { background: #eff6ff; color: #1e40af; border: 1px solid #bfdbfe; }
-    .badge-origen-detail.vendedor { background: #fff7ed; color: #9a3412; border: 1px solid #fed7aa; }
-    .badge-origen-detail.sistema { background: #f1f5f9; color: #475569; border: 1px solid #e2e8f0; }
+    .badge-origen-detail.superadmin { background: var(--status-info-bg); color: var(--status-info-text); }
+    .badge-origen-detail.vendedor { background: var(--status-warning-bg); color: var(--status-warning-text); }
+    .badge-origen-detail.sistema { background: var(--status-neutral-bg); color: var(--text-main); }
 
     .modal-footer-premium {
-      padding: 1.5rem 2rem;
-      border-top: 1px solid #f1f5f9;
+      padding: 1.5rem 2.5rem;
+      border-top: 1px solid var(--border-color);
       display: flex;
       justify-content: flex-end;
       gap: 0.75rem;
     }
 
     .btn-secondary-premium {
-      background: #f8fafc;
-      color: #475569;
+      background: var(--status-neutral-bg);
+      color: var(--text-main);
       border: none;
-      padding: 0.75rem 1.5rem;
-      border-radius: 12px;
-      font-weight: 700;
-      font-size: 0.9rem;
+      padding: 0.85rem 2rem;
+      border-radius: 14px;
+      font-weight: 800;
+      font-size: 0.95rem;
       transition: all 0.2s;
       cursor: pointer;
     }
     .btn-secondary-premium:hover {
-      background: #e2e8f0;
+      background: var(--border-color);
     }
 
     @media (max-width: 768px) {

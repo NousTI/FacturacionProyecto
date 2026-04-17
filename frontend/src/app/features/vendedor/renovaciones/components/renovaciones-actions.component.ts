@@ -64,7 +64,7 @@ import { FormsModule } from '@angular/forms';
 
           <!-- Botón de Acción -->
           <div class="col-lg-3 text-lg-end d-flex gap-2">
-            <button (click)="onRefresh.emit()" class="btn-system-action bg-light text-dark border flex-shrink-0" title="Actualizar">
+            <button (click)="onRefresh.emit()" class="btn-system-action bg-light-premium flex-shrink-0" title="Actualizar">
               <i class="bi bi-arrow-clockwise"></i>
             </button>
             <button
@@ -83,22 +83,72 @@ import { FormsModule } from '@angular/forms';
   `,
   styles: [`
     :host { display: block; position: relative; z-index: 10; }
-    .actions-bar-container {
-      background: transparent;
-      border: none;
+    .search-box-premium { position: relative; }
+    .search-box-premium i {
+      position: absolute; top: 50%; left: 1.1rem;
+      transform: translateY(-50%); color: var(--text-muted);
+      font-size: 1.1rem; transition: all 0.2s;
+    }
+    .form-control-premium-search {
+      width: 100%; height: 48px; border-radius: 12px;
+      padding: 0 1rem 0 2.75rem; background: #ffffff;
+      border: 1px solid var(--border-color); color: var(--text-main);
+      font-size: var(--text-md); transition: all 0.2s;
+    }
+    .form-control-premium-search:focus {
+      outline: none; border-color: var(--status-info);
+      box-shadow: 0 0 0 4px var(--status-info-bg);
+    }
+    .form-control-premium-search:focus + i { color: var(--status-info); }
+
+    .form-select-premium {
+      width: 100%; height: 48px; border-radius: 12px;
+      padding: 0 1.25rem; background: #ffffff;
+      border: 1px solid var(--border-color); color: var(--text-main);
+      font-weight: 600; font-size: var(--text-md); transition: all 0.2s;
+      box-shadow: none !important;
+    }
+    .form-select-premium:focus {
+      outline: none; border-color: var(--status-info);
+      box-shadow: 0 0 0 4px var(--status-info-bg) !important;
     }
     .dropdown-menu-premium {
-      z-index: 1000;
+      border: 1px solid var(--border-color) !important;
+      box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1) !important;
+      border-radius: 12px !important;
+      padding: 0.5rem !important;
+      z-index: 1050 !important;
     }
+    .dropdown-item {
+      border-radius: 8px !important; padding: 0.6rem 1rem !important;
+      font-weight: 500; color: var(--text-main); transition: all 0.2s;
+    }
+    .dropdown-item:hover {
+      background: var(--status-info-bg) !important;
+      color: var(--status-info-text) !important;
+    }
+
     .restricted-btn {
-      background: #94a3b8 !important;
+      background: var(--status-natural-bg) !important;
+      color: var(--text-muted) !important;
       cursor: not-allowed !important;
       box-shadow: none !important;
       opacity: 0.7;
     }
-    .restricted-btn:hover {
-      transform: none !important;
+    .restricted-btn:hover { transform: none !important; }
+    
+    .btn-system-action {
+      height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center;
+      font-weight: 800; transition: all 0.2s; border: none; padding: 0 1.5rem;
+      background: var(--primary-color); color: white;
     }
+    .btn-system-action:hover:not(.restricted-btn) {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    
+    .bg-light-premium { background: var(--bg-main) !important; border: 1px solid var(--border-color) !important; color: var(--text-main) !important; }
+    .bg-light-premium:hover { background: var(--status-info-bg) !important; color: var(--status-info-text) !important; }
   `]
 })
 export class RenovacionesActionsComponent {
