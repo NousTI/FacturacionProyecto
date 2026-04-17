@@ -138,9 +138,9 @@ import { HasPermissionDirective } from '../../../../core/directives/has-permissi
     .table-editorial { width: 100%; border-collapse: separate; border-spacing: 0; table-layout: fixed; }
     
     .table-editorial th {
-      padding: 1.25rem 1.5rem; background: #f8fafc; font-size: 0.75rem; font-weight: 800;
-      color: #64748b; text-transform: uppercase; letter-spacing: 0.05em;
-      border-bottom: 2px solid #f1f5f9; text-align: left;
+      padding: 1.25rem 1.5rem; background: var(--bg-main, #f8fafc); font-size: 0.75rem; font-weight: 800;
+      color: var(--text-muted, #64748b); text-transform: uppercase; letter-spacing: 0.05em;
+      border-bottom: 2px solid var(--border-color, #f1f5f9); text-align: left;
     }
     .table-editorial td { padding: 1.1rem 1.5rem; border-bottom: 1px solid #f1f5f9; vertical-align: middle; transition: all 0.2s; }
     .table-editorial tbody tr:hover td { background-color: #f8fafc; }
@@ -151,7 +151,7 @@ import { HasPermissionDirective } from '../../../../core/directives/has-permissi
     .details-editorial { display: flex; flex-direction: column; min-width: 0; }
     .name-editorial { font-weight: 700; color: #1e293b; font-size: 0.95rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .sub-editorial { font-size: 0.75rem; color: #94a3b8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .me-label { font-size: 0.65rem; font-weight: 900; color: #3b82f6; background: #eff6ff; padding: 0.1rem 0.5rem; border-radius: 6px; text-transform: uppercase; letter-spacing: 0.02em; }
+    .me-label { font-size: 0.65rem; font-weight: 900; color: var(--status-info-text); background: var(--status-info-bg); padding: 0.1rem 0.5rem; border-radius: 6px; text-transform: uppercase; letter-spacing: 0.02em; }
 
     .role-info-editorial { display: flex; flex-direction: column; gap: 0.25rem; }
     .badge-role-editorial { display: inline-flex; font-size: 0.75rem; font-weight: 800; color: #475569; background: #f1f5f9; padding: 0.3rem 0.75rem; border-radius: 8px; width: fit-content; }
@@ -162,8 +162,8 @@ import { HasPermissionDirective } from '../../../../core/directives/has-permissi
     .contact-item-editorial i { font-size: 0.9rem; color: #94a3b8; }
 
     .badge-status-editorial { display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.35rem 0.8rem; border-radius: 10px; font-size: 0.7rem; font-weight: 800; text-transform: uppercase; }
-    .badge-status-editorial.activo { background: #dcfce7; color: #15803d; }
-    .badge-status-editorial.inactivo { background: #fee2e2; color: #f43f5e; }
+    .badge-status-editorial.activo { background: var(--status-success-bg); color: var(--status-success-text); }
+    .badge-status-editorial.inactivo { background: var(--status-neutral-bg); color: var(--status-neutral-text); }
 
     .btn-action-trigger-editorial {
       width: 34px; height: 34px; border-radius: 10px; border: none; background: transparent; color: #94a3b8;

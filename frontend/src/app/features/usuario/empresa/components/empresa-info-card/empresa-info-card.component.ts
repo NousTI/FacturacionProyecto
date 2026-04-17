@@ -123,7 +123,7 @@ import { CONFIGURACION_PERMISSIONS } from '../../../../../constants/permission-c
     }
 
     .badge-ruc {
-      background: #161d35;
+      background: var(--neutral-700, #1e293b);
       color: white;
       font-size: 0.65rem;
       font-weight: 800;
@@ -133,8 +133,8 @@ import { CONFIGURACION_PERMISSIONS } from '../../../../../constants/permission-c
     }
 
     .badge-type {
-      background: #eff6ff;
-      color: #2563eb;
+      background: var(--status-info-bg);
+      color: var(--status-info-text);
       font-size: 0.65rem;
       font-weight: 800;
       padding: 2px 10px;
@@ -195,8 +195,8 @@ import { CONFIGURACION_PERMISSIONS } from '../../../../../constants/permission-c
     .icon-box-soft {
       width: 44px;
       height: 44px;
-      background: rgba(22, 29, 53, 0.03);
-      color: #161d35;
+      background: var(--status-neutral-bg);
+      color: var(--status-neutral-text);
       border-radius: 14px;
       display: flex;
       align-items: center;

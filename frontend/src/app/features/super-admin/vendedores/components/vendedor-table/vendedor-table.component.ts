@@ -163,8 +163,8 @@ import { Vendedor } from '../../services/vendedor.service';
       border-radius: 12px;
       display: flex; align-items: center; justify-content: center;
       font-weight: 700; font-size: var(--text-base);
-      background: var(--primary-color, #161d35);
-      color: #ffffff;
+      background: var(--status-info-bg);
+      color: var(--status-info-text);
     }
 
     .badge-status-premium {
@@ -175,8 +175,8 @@ import { Vendedor } from '../../services/vendedor.service';
       display: inline-block;
       text-transform: uppercase;
     }
-    .badge-status-premium.activo { background: var(--status-success-bg, #dcfce7); color: var(--status-success-text, #15803d); }
-    .badge-status-premium.inactivo { background: var(--status-danger-bg, #fee2e2); color: var(--status-danger-text, #b91c1c); }
+    .badge-status-premium.activo { background: var(--status-success-bg); color: var(--status-success-text); }
+    .badge-status-premium.inactivo { background: var(--status-neutral-bg); color: var(--status-neutral-text); }
 
     .progress-mini-track {
         height: 6px; background: var(--border-color, #f1f5f9);
@@ -184,7 +184,7 @@ import { Vendedor } from '../../services/vendedor.service';
     }
     .progress-mini-fill {
         height: 100%; border-radius: 10px;
-        background: var(--primary-color, #161d35);
+        background: var(--status-info-text);
     }
 
     .btn-action-trigger {
@@ -213,7 +213,7 @@ import { Vendedor } from '../../services/vendedor.service';
       cursor: pointer;
     }
     .dropdown-item:hover { background: var(--border-color, #f8fafc); color: var(--text-main, #0f172a); }
-    .text-corporate { color: var(--primary-color, #111827) !important; }
+    .text-corporate { color: var(--status-info-text) !important; }
   `],
   standalone: true,
   imports: [CommonModule]

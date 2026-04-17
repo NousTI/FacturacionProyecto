@@ -9,7 +9,7 @@ import { CommonModule } from '@angular/common';
   template: `
     <div class="stats-compact-row">
       <div class="stat-item-mini">
-        <div class="icon-circle" style="background: rgba(30, 41, 59, 0.08); color: #1e293b;">
+        <div class="icon-circle" style="background: var(--status-neutral-bg); color: var(--status-neutral-text);">
           <i class="bi bi-people-fill"></i>
         </div>
         <div class="stat-info">
@@ -21,7 +21,7 @@ import { CommonModule } from '@angular/common';
       <div class="stat-divider"></div>
 
       <div class="stat-item-mini">
-        <div class="icon-circle" style="background: #ecfdf5; color: #10b981;">
+        <div class="icon-circle" style="background: var(--status-success-bg); color: var(--status-success-text);">
           <i class="bi bi-person-check-fill"></i>
         </div>
         <div class="stat-info">
@@ -33,7 +33,7 @@ import { CommonModule } from '@angular/common';
       <div class="stat-divider"></div>
 
       <div class="stat-item-mini">
-        <div class="icon-circle" style="background: #fff1f2; color: #f43f5e;">
+        <div class="icon-circle" style="background: var(--status-danger-bg); color: var(--status-danger-text);">
           <i class="bi bi-person-x-fill"></i>
         </div>
         <div class="stat-info">
@@ -58,8 +58,8 @@ import { CommonModule } from '@angular/common';
     .stat-info { display: flex; flex-direction: column; }
     .stat-label { font-size: 0.65rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; }
     .stat-value { font-size: 1.4rem; font-weight: 850; color: #0f172a; line-height: 1.2; letter-spacing: -0.01em; }
-    .text-success { color: #10b981 !important; }
-    .text-danger { color: #f43f5e !important; }
+    .text-success { color: var(--status-success-text) !important; }
+    .text-danger { color: var(--status-danger-text) !important; }
     .stat-divider { width: 1px; height: 35px; background: #f1f5f9; margin: 0 2rem; }
     @media (max-width: 992px) {
       .stats-compact-row { flex-wrap: wrap; gap: 1.5rem; padding: 1.5rem; }

@@ -188,9 +188,11 @@ import { Suscripcion } from '../../services/suscripcion.service';
       background: var(--bg-main, #ffffff);
       padding: 1rem 1.5rem;
       font-size: var(--text-base);
-      color: #0f172a;
-      font-weight: 600;
+      color: var(--text-main, #0f172a);
+      font-weight: 800;
       border-bottom: 2px solid var(--border-color, #f1f5f9);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
     }
     .table tbody td {
       padding: 1.25rem 1.5rem;
@@ -204,8 +206,8 @@ import { Suscripcion } from '../../services/suscripcion.service';
       border-radius: 12px;
       display: flex; align-items: center; justify-content: center;
       font-weight: 700; font-size: 1rem;
-      background: var(--primary-color, #161d35);
-      color: #ffffff;
+      background: var(--status-info-bg);
+      color: var(--status-info-text);
     }
 
     .badge-status-premium {
@@ -216,18 +218,18 @@ import { Suscripcion } from '../../services/suscripcion.service';
       display: inline-block;
       text-transform: uppercase;
     }
-    .badge-status-premium.activa { background: var(--status-success-bg, #dcfce7); color: var(--status-success-text, #15803d); }
-    .badge-status-premium.vencida { background: var(--status-danger-bg, #fee2e2); color: var(--status-danger-text, #b91c1c); }
-    .badge-status-premium.cancelada { background: var(--border-color, #f1f5f9); color: var(--text-muted, #64748b); }
-    .badge-status-premium.suspendida { background: var(--bg-main, #f8fafc); color: var(--text-muted, #475569); text-decoration: line-through; }
+    .badge-status-premium.activa { background: var(--status-success-bg); color: var(--status-success-text); }
+    .badge-status-premium.vencida { background: var(--status-danger-bg); color: var(--status-danger-text); }
+    .badge-status-premium.cancelada { background: var(--status-neutral-bg); color: var(--status-neutral-text); }
+    .badge-status-premium.suspendida { background: var(--status-warning-bg); color: var(--status-warning-text); }
     
     .badge-pago {
-        padding: 0.3rem 0.6rem; border-radius: 6px; font-size: 0.7rem; font-weight: 700; text-transform: uppercase;
-        color: #ffffff !important; border: none !important;
+        padding: 0.35rem 0.75rem; border-radius: 8px; font-size: 0.7rem; font-weight: 800; text-transform: uppercase;
+        border: none;
     }
-    .badge-pago.pagado { background: #1d4ed8; }
-    .badge-pago.pendiente { background: #c2410c; }
-    .badge-pago.atrasado { background: #b91c1c; }
+    .badge-pago.pagado { background: var(--status-success-bg); color: var(--status-success-text); }
+    .badge-pago.pendiente { background: var(--status-warning-bg); color: var(--status-warning-text); }
+    .badge-pago.atrasado { background: var(--status-danger-bg); color: var(--status-danger-text); }
 
     .btn-action-trigger {
       background: transparent; border: none;
@@ -249,7 +251,7 @@ import { Suscripcion } from '../../services/suscripcion.service';
 
     .fw-600 { font-weight: 600; }
     .fw-700 { font-weight: 700; }
-    .text-corporate { color: var(--primary-color) !important; }
+    .text-corporate { color: var(--status-info-text) !important; }
   `],
   standalone: true,
   imports: [CommonModule]

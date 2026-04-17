@@ -75,13 +75,13 @@ import { Suscripcion } from '../../services/suscripcion.service';
       box-shadow: 0 40px 80px -20px rgba(22, 29, 53, 0.25);
     }
     .modal-header-final { padding: 1.5rem 2.5rem; display: flex; justify-content: space-between; align-items: center; }
-    .modal-title-final { font-size: 1.25rem; font-weight: 800; color: #161d35; margin: 0; }
+    .modal-title-final { font-size: 1.25rem; font-weight: 800; color: var(--text-main); margin: 0; }
     .btn-close-final { background: none; border: none; font-size: 1.5rem; color: #94a3b8; cursor: pointer; }
     .modal-body-final { padding: 0 2.5rem; }
     
     .alert-info-premium {
-      background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 16px; padding: 1rem 1.25rem;
-      display: flex; align-items: center; color: #1e40af; font-size: 0.9rem; line-height: 1.5;
+      background: var(--status-info-bg); border: 1px solid var(--status-info); border-radius: 16px; padding: 1rem 1.25rem;
+      display: flex; align-items: center; color: var(--status-info-text); font-size: 0.9rem; line-height: 1.5;
     }
 
     .label-final { font-size: 0.85rem; font-weight: 700; color: #64748b; margin-bottom: 0.6rem; display: block; }
@@ -89,14 +89,14 @@ import { Suscripcion } from '../../services/suscripcion.service';
       width: 100%; border: 1px solid #e2e8f0; border-radius: 12px;
       padding: 0.75rem 1.25rem; font-size: 0.95rem; color: #475569; font-weight: 600; transition: all 0.2s;
     }
-    .input-final:focus { border-color: #161d35; outline: none; box-shadow: 0 0 0 4px rgba(22, 29, 53, 0.05); }
+    .input-final:focus { border-color: var(--status-info); outline: none; box-shadow: 0 0 0 4px var(--status-info-bg); }
 
     .modal-footer-final { padding: 1.5rem 2.5rem; background: #ffffff; display: flex; justify-content: flex-end; gap: 1rem; border-top: 1px solid #f1f5f9; }
     .btn-submit-final {
-      background: #161d35; color: #ffffff; border: none; padding: 0.75rem 2rem;
+      background: var(--secondary-color, #161d35); color: #ffffff; border: none; padding: 0.75rem 2rem;
       border-radius: 12px; font-weight: 700; transition: all 0.2s;
     }
-    .btn-submit-final:hover:not(:disabled) { background: #232d4d; transform: translateY(-1px); }
+    .btn-submit-final:hover:not(:disabled) { background: var(--neutral-700); transform: translateY(-1px); }
     .btn-submit-final:disabled { opacity: 0.3; cursor: not-allowed; }
     .btn-cancel-final { background: #ffffff; color: #64748b; border: 1px solid #e2e8f0; padding: 0.75rem 1.5rem; border-radius: 12px; font-weight: 600; }
   `]

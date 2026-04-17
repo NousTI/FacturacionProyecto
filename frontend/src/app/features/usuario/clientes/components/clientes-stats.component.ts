@@ -8,7 +8,7 @@ import { CommonModule } from '@angular/common';
   template: `
     <div class="stats-compact-row">
       <div class="stat-item-mini">
-        <div class="icon-circle" style="background: rgba(59, 130, 246, 0.1); color: #3b82f6;">
+        <div class="icon-circle" style="background: var(--status-info-bg); color: var(--status-info-text);">
           <i class="bi bi-people-fill"></i>
         </div>
         <div class="stat-info">
@@ -20,7 +20,7 @@ import { CommonModule } from '@angular/common';
       <div class="stat-divider"></div>
 
       <div class="stat-item-mini">
-        <div class="icon-circle" style="background: rgba(16, 185, 129, 0.1); color: #10b981;">
+        <div class="icon-circle" style="background: var(--status-success-bg); color: var(--status-success-text);">
           <i class="bi bi-person-check-fill"></i>
         </div>
         <div class="stat-info">
@@ -32,7 +32,7 @@ import { CommonModule } from '@angular/common';
       <div class="stat-divider"></div>
 
       <div class="stat-item-mini">
-        <div class="icon-circle" style="background: rgba(245, 158, 11, 0.1); color: #f59e0b;">
+        <div class="icon-circle" style="background: var(--status-orange-bg); color: var(--status-orange-text);">
           <i class="bi bi-credit-card-fill"></i>
         </div>
         <div class="stat-info">
@@ -89,10 +89,10 @@ import { CommonModule } from '@angular/common';
       line-height: 1.2;
     }
     .text-success {
-      color: #10b981 !important;
+      color: var(--status-success-text) !important;
     }
     .text-warning {
-      color: #f59e0b !important;
+      color: var(--status-orange-text) !important;
     }
     .stat-divider {
       width: 1px;

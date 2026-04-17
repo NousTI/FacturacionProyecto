@@ -39,12 +39,12 @@ import { Empresa } from '../../../domain/models/empresa.model';
         <div *ngIf="empresa">
           
           <!-- Banner de Inactividad -->
-          <div *ngIf="!empresa.activo" class="alert alert-danger shadow-sm rounded-4 mb-4 p-4 d-flex align-items-center justify-content-between animate__animated animate__fadeIn">
+          <div *ngIf="!empresa.activo" class="alert-premium-danger mb-4 p-4 d-flex align-items-center justify-content-between animate__animated animate__fadeIn">
             <div class="d-flex align-items-center gap-3">
               <i class="bi bi-exclamation-octagon-fill fs-1"></i>
               <div>
-                <h4 class="alert-heading fw-bold mb-1">Empresa Inhabilitada</h4>
-                <p class="mb-0 fw-medium">Esta empresa ha sido desactivada por el administrador del sistema. El acceso a los módulos operativos está restringido temporalmente.</p>
+                <h4 class="m-0 fw-800 mb-1">Empresa Inhabilitada</h4>
+                <p class="mb-0 fw-medium opacity-75">Esta empresa ha sido desactivada por el administrador del sistema. El acceso a los módulos operativos está restringido temporalmente.</p>
               </div>
             </div>
             <a *ngIf="whatsappUrl" [href]="whatsappUrl" target="_blank" class="btn btn-danger fw-bold rounded-pill px-4 shadow-sm">
@@ -62,7 +62,7 @@ import { Empresa } from '../../../domain/models/empresa.model';
             <!-- STATS Compact Row -->
             <div class="stats-compact-row mt-4">
               <div class="stat-item-mini">
-                <div class="icon-circle" style="background: rgba(22, 29, 53, 0.05); color: #161d35;">
+                <div class="icon-circle" style="background: var(--status-info-bg); color: var(--status-info-text);">
                   <i class="bi bi-houses"></i>
                 </div>
                 <div class="stat-info">
@@ -74,7 +74,7 @@ import { Empresa } from '../../../domain/models/empresa.model';
               <div class="stat-divider"></div>
 
               <div class="stat-item-mini">
-                <div class="icon-circle" style="background: rgba(16, 185, 129, 0.1); color: #10b981;">
+                <div class="icon-circle" style="background: var(--status-success-bg); color: var(--status-success-text);">
                   <i class="bi bi-broadcast-pin"></i>
                 </div>
                 <div class="stat-info">
@@ -86,8 +86,8 @@ import { Empresa } from '../../../domain/models/empresa.model';
               <div class="stat-divider"></div>
 
               <div class="stat-item-mini">
-                <div class="icon-circle" [style.background]="empresa.sri_ambiente === 'PRODUCCION' ? 'rgba(16, 185, 129, 0.1)' : 'rgba(245, 158, 11, 0.1)'" 
-                                    [style.color]="empresa.sri_ambiente === 'PRODUCCION' ? '#10b981' : '#f59e0b'">
+                <div class="icon-circle" [style.background]="empresa.sri_ambiente === 'PRODUCCION' ? 'var(--status-success-bg)' : 'var(--status-warning-bg)'" 
+                                    [style.color]="empresa.sri_ambiente === 'PRODUCCION' ? 'var(--status-success-text)' : 'var(--status-warning-text)'">
                   <i class="bi bi-cloud-check"></i>
                 </div>
                 <div class="stat-info">
@@ -99,8 +99,8 @@ import { Empresa } from '../../../domain/models/empresa.model';
               <div class="stat-divider d-none d-lg-block"></div>
 
               <div class="stat-item-mini">
-                <div class="icon-circle" [style.background]="empresa.firma_expiracion ? 'rgba(37, 99, 235, 0.1)' : 'rgba(239, 68, 68, 0.1)'" 
-                                    [style.color]="empresa.firma_expiracion ? '#2563eb' : '#ef4444'">
+                <div class="icon-circle" [style.background]="empresa.firma_expiracion ? 'var(--status-info-bg)' : 'var(--status-danger-bg)'" 
+                                    [style.color]="empresa.firma_expiracion ? 'var(--status-info-text)' : 'var(--status-danger-text)'">
                   <i class="bi bi-key"></i>
                 </div>
                 <div class="stat-info">
@@ -122,7 +122,7 @@ import { Empresa } from '../../../domain/models/empresa.model';
                 </div>
               </div>
               <div class="text-end">
-                <span class="badge-premium-success">
+                <span class="badge-soft-success py-2 px-3 fw-800">
                   {{ empresa.ultimo_pago_monto | currency:'USD' }}
                 </span>
               </div>
@@ -178,7 +178,7 @@ import { Empresa } from '../../../domain/models/empresa.model';
                     <span class="meter-value">{{ empresa.facturas_consumidas }} / {{ empresa.max_facturas_mes || '∞' }}</span>
                   </div>
                   <div class="progress-premium">
-                    <div class="progress-bar-lux" [style.width.%]="empresa.max_facturas_mes ? (empresa.facturas_consumidas / empresa.max_facturas_mes * 100) : 100"></div>
+                    <div class="progress-bar-lux bg-success" [style.width.%]="empresa.max_facturas_mes ? (empresa.facturas_consumidas / empresa.max_facturas_mes * 100) : 100"></div>
                   </div>
                 </div>
 
@@ -233,6 +233,13 @@ import { Empresa } from '../../../domain/models/empresa.model';
     .empresa-page-container {
       min-height: 100vh;
       background: #f8fafc;
+    }
+
+    .alert-premium-danger {
+      background: var(--status-danger-bg);
+      border-left: 5px solid var(--status-danger-text);
+      border-radius: 20px;
+      color: var(--status-danger-text);
     }
 
     /* STATS ROW - Inspired by facturacion */
@@ -317,11 +324,11 @@ import { Empresa } from '../../../domain/models/empresa.model';
       font-size: 0.7rem;
       font-weight: 800;
     }
-    .status-active { background: #ecfdf5; color: #10b981; }
-    .status-inactive { background: #fef2f2; color: #ef4444; }
-    .status-vencida { background: #fff7ed; color: #f59e0b; }
-    .status-cancelada { background: #f1f5f9; color: #64748b; }
-    .status-suspendida { background: #fee2e2; color: #b91c1c; }
+    .status-active { background: var(--status-success-bg); color: var(--status-success-text); }
+    .status-inactive { background: var(--status-neutral-bg); color: var(--status-neutral-text); }
+    .status-vencida { background: var(--status-warning-bg); color: var(--status-warning-text); }
+    .status-cancelada { background: var(--status-danger-bg); color: var(--status-danger-text); }
+    .status-suspendida { background: var(--status-danger-bg); color: var(--status-danger-text); }
     .pulse-dot {
       width: 6px;
       height: 6px;
@@ -350,10 +357,12 @@ import { Empresa } from '../../../domain/models/empresa.model';
     }
     .progress-bar-lux {
       height: 100%;
-      background: #161d35;
+      background: var(--status-info);
       border-radius: 10px;
       transition: width 0.3s ease;
     }
+    .progress-bar-lux.bg-success { background: var(--status-success) !important; }
+    .progress-bar-lux.bg-info { background: var(--status-info) !important; }
 
     /* Payment Banner */
     .payment-banner-lux {
@@ -369,21 +378,18 @@ import { Empresa } from '../../../domain/models/empresa.model';
     .payment-icon {
       width: 44px;
       height: 44px;
-      background: #ecfdf5;
-      color: #10b981;
+      background: var(--status-success-bg);
+      color: var(--status-success-text);
       border-radius: 12px;
       display: flex;
       align-items: center;
       justify-content: center;
       font-size: 1.3rem;
     }
-    .badge-premium-success {
-      background: #ecfdf5;
-      color: #10b981;
-      padding: 0.5rem 1rem;
+    .badge-soft-success {
+      background: var(--status-success-bg);
+      color: var(--status-success-text);
       border-radius: 12px;
-      font-weight: 800;
-      font-size: 0.9rem;
     }
 
     .fw-800 { font-weight: 800; }

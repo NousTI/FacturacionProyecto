@@ -7,7 +7,7 @@ import { VendedorStats } from '../../services/vendedor.service';
   template: `
     <div class="stats-compact-row">
       <div class="stat-item-mini">
-        <div class="icon-circle" style="background: rgba(22, 29, 53, 0.1); color: var(--primary-color);">
+        <div class="icon-circle" style="background: var(--status-info-bg); color: var(--status-info-text);">
           <i class="bi bi-person-badge-fill"></i>
         </div>
         <div class="stat-info">
@@ -19,7 +19,7 @@ import { VendedorStats } from '../../services/vendedor.service';
       <div class="stat-divider"></div>
 
       <div class="stat-item-mini">
-        <div class="icon-circle" style="background: rgba(16, 185, 129, 0.1); color: var(--status-success);">
+        <div class="icon-circle" style="background: var(--status-success-bg); color: var(--status-success-text);">
           <i class="bi bi-person-fill-check"></i>
         </div>
         <div class="stat-info">
@@ -31,7 +31,7 @@ import { VendedorStats } from '../../services/vendedor.service';
       <div class="stat-divider"></div>
 
       <div class="stat-item-mini">
-        <div class="icon-circle" style="background: rgba(245, 158, 11, 0.1); color: var(--status-warning);">
+        <div class="icon-circle" style="background: var(--status-warning-bg); color: var(--status-warning-text);">
           <i class="bi bi-buildings-fill"></i>
         </div>
         <div class="stat-info">
@@ -43,7 +43,7 @@ import { VendedorStats } from '../../services/vendedor.service';
       <div class="stat-divider"></div>
 
       <div class="stat-item-mini">
-        <div class="icon-circle" style="background: rgba(59, 130, 246, 0.1); color: var(--status-info);">
+        <div class="icon-circle" style="background: var(--status-info-bg); color: var(--status-info-text);">
           <i class="bi bi-currency-dollar"></i>
         </div>
         <div class="stat-info">
@@ -99,8 +99,8 @@ import { VendedorStats } from '../../services/vendedor.service';
       color: #1e293b;
       line-height: 1.2;
     }
-    .text-success { color: var(--status-success) !important; }
-    .text-corporate { color: var(--primary-color) !important; }
+    .text-success { color: var(--status-success-text) !important; }
+    .text-corporate { color: var(--status-info-text) !important; }
 
     .stat-divider {
       width: 1px;

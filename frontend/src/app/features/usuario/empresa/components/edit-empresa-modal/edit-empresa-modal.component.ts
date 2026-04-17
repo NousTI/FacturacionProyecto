@@ -189,6 +189,7 @@ import { SRI_TIPOS_PERSONA, SRI_TIPOS_CONTRIBUYENTE } from '../../../../../core/
     .header-icon {
       width: 48px; height: 48px; border-radius: 14px;
       display: flex; align-items: center; justify-content: center; font-size: 1.5rem;
+      background: var(--status-info-bg); color: var(--status-info-text);
     }
     .modal-title-lux {
       font-size: 1.25rem; font-weight: 800; color: #1e293b; margin: 0;
@@ -200,7 +201,7 @@ import { SRI_TIPOS_PERSONA, SRI_TIPOS_CONTRIBUYENTE } from '../../../../../core/
       background: #f8fafc; border: none; width: 36px; height: 36px; border-radius: 10px;
       display: flex; align-items: center; justify-content: center; color: #94a3b8; transition: all 0.2s;
     }
-    .btn-close-lux:hover { background: #fee2e2; color: #ef4444; }
+    .btn-close-lux:hover { background: var(--status-danger-bg); color: var(--status-danger-text); }
 
     .modal-body-lux {
       padding: 2rem 2.5rem; overflow-y: auto; flex: 1;
@@ -229,10 +230,10 @@ import { SRI_TIPOS_PERSONA, SRI_TIPOS_CONTRIBUYENTE } from '../../../../../core/
       border-top: 1px solid #f1f5f9;
     }
     .btn-submit-lux {
-      background: #161d35; color: #ffffff; border: none; padding: 0.85rem 2.5rem; border-radius: 14px;
+      background: var(--secondary-color, #161d35); color: #ffffff; border: none; padding: 0.85rem 2.5rem; border-radius: 14px;
       font-weight: 700; transition: all 0.2s;
     }
-    .btn-submit-lux:hover:not(:disabled) { background: #232d4d; transform: translateY(-1px); }
+    .btn-submit-lux:hover:not(:disabled) { background: var(--neutral-700); transform: translateY(-1px); }
     .btn-submit-lux:disabled { opacity: 0.6; cursor: not-allowed; }
     
     .btn-cancel-lux {
@@ -248,7 +249,7 @@ import { SRI_TIPOS_PERSONA, SRI_TIPOS_CONTRIBUYENTE } from '../../../../../core/
       background-color: #fef2f2;
     }
     .error-msg-lux {
-      color: #ef4444;
+      color: var(--status-danger-text);
       font-size: 0.7rem;
       font-weight: 700;
       margin-top: 4px;

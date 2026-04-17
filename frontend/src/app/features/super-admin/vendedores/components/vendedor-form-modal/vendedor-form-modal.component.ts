@@ -277,7 +277,7 @@ import { SRI_TIPOS_IDENTIFICACION } from '../../../../../core/constants/sri-iva.
   styles: [`
     .modal-overlay {
       position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-      background: rgba(15, 23, 53, 0.4); backdrop-filter: blur(10px);
+      background: rgba(15, 23, 53, 0.4); backdrop-filter: blur(12px);
       display: flex; align-items: center; justify-content: center; z-index: 10001;
     }
     .modal-content-premium {
@@ -301,14 +301,14 @@ import { SRI_TIPOS_IDENTIFICACION } from '../../../../../core/constants/sri-iva.
       border-bottom: 2px solid transparent; transition: all 0.2s;
       display: flex; align-items: center;
     }
-    .btn-tab-premium:hover { color: #161d35; }
-    .btn-tab-premium.active { color: #161d35; border-bottom-color: #161d35; }
+    .btn-tab-premium:hover { color: var(--status-info-text); }
+    .btn-tab-premium.active { color: var(--status-info-text); border-bottom-color: var(--status-info-text); }
 
     .btn-close-premium {
       background: #f8fafc; border: none; width: 40px; height: 40px;
       border-radius: 12px; color: #94a3b8; font-size: 1.5rem; transition: all 0.2s;
     }
-    .btn-close-premium:hover { background: #161d35; color: white; }
+    .btn-close-premium:hover { background: var(--status-danger-bg); color: var(--status-danger-text); }
 
     .modal-body-premium { padding: 2rem; background: #ffffff; }
     
@@ -345,16 +345,16 @@ import { SRI_TIPOS_IDENTIFICACION } from '../../../../../core/constants/sri-iva.
       padding-right: 3rem;
     }
     .form-control-premium:focus, .form-select-premium:focus {
-      background: #ffffff; border-color: #161d35; box-shadow: 0 0 0 4px rgba(22, 29, 53, 0.05); outline: none;
+      background: #ffffff; border-color: var(--status-info); box-shadow: 0 0 0 4px var(--status-info-bg); outline: none;
     }
     .input-suffix-premium {
-      position: absolute; right: 1.25rem; font-weight: 800; color: #161d35;
+      position: absolute; right: 1.25rem; font-weight: 800; color: var(--status-info-text);
       font-size: 0.95rem; pointer-events: none;
     }
 
     /* COMMISSIONS & PERMISSIONS SPECIFIC */
     .alert-premium-info {
-      background: #f0f9ff; border: 1px solid #e0f2fe; color: #0369a1;
+      background: var(--status-info-bg); border: 1px solid var(--status-info); color: var(--status-info-text);
       padding: 1rem; border-radius: 16px; font-size: 0.85rem; font-weight: 500;
     }
     
@@ -368,13 +368,13 @@ import { SRI_TIPOS_IDENTIFICACION } from '../../../../../core/constants/sri-iva.
       cursor: pointer;
     }
     .permission-horizontal-card:hover { 
-      border-color: #161d35; 
-      background: #f8fafc; 
+      border-color: var(--status-info); 
+      background: var(--bg-main, #f8fafc); 
     }
     .permission-horizontal-card.active {
-      border-color: #161d35;
-      background: rgba(22, 29, 53, 0.02);
-      box-shadow: 0 4px 15px rgba(22, 29, 53, 0.05);
+      border-color: var(--status-success);
+      background: var(--status-success-bg);
+      box-shadow: 0 4px 15px var(--status-success-bg);
     }
     
     .perm-icon-wrapper {
@@ -384,7 +384,7 @@ import { SRI_TIPOS_IDENTIFICACION } from '../../../../../core/constants/sri-iva.
       color: #64748b; font-size: 1.1rem; transition: all 0.2s;
     }
     .permission-horizontal-card.active .perm-icon-wrapper {
-      background: #161d35; color: white;
+      background: var(--status-success); color: white;
     }
     
     .perm-info { display: flex; flex-direction: column; }
@@ -392,14 +392,14 @@ import { SRI_TIPOS_IDENTIFICACION } from '../../../../../core/constants/sri-iva.
     .perm-desc { font-size: 0.75rem; color: #64748b; }
 
     .plan-check { font-size: 1.4rem; color: #cbd5e1; transition: all 0.2s; }
-    .active .plan-check { color: #161d35; }
+    .active .plan-check { color: var(--status-success-text); }
 
     .modal-footer-premium {
       padding: 1.5rem 2rem; background: #f8fafc; border-top: 1px solid #f1f5f9;
       display: flex; justify-content: flex-end; gap: 1rem; width: 100%;
     }
     .btn-primary-premium {
-      background: #161d35; color: white; border: none; padding: 0.85rem 2rem;
+      background: var(--secondary-color, #161d35); color: white; border: none; padding: 0.85rem 2rem;
       border-radius: 14px; font-weight: 700; transition: all 0.2s;
     }
     .btn-primary-premium:disabled { opacity: 0.5; }
@@ -410,11 +410,11 @@ import { SRI_TIPOS_IDENTIFICACION } from '../../../../../core/constants/sri-iva.
     .shadow-premium { box-shadow: 0 40px 80px -20px rgba(22, 29, 53, 0.25); }
     
     .form-control-premium.is-invalid {
-      border-color: #ef4444;
-      background: #fffcfc;
+      border-color: var(--status-danger);
+      background: var(--status-danger-bg);
     }
     .error-feedback {
-      color: #ef4444;
+      color: var(--status-danger-text);
       font-size: 0.7rem;
       font-weight: 700;
       margin-top: 0.4rem;

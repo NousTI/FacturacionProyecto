@@ -97,7 +97,7 @@ import { AuthService } from '../../../../../core/auth/auth.service';
                 
                 <!-- PASSWORD NOTICE FOR NEW USERS -->
                 <div class="col-md-12" *ngIf="!usuario">
-                  <div class="info-notice">
+                  <div class="info-notice warning">
                     <i class="bi bi-shield-lock-fill"></i>
                     <div class="notice-content">
                       <strong>Contraseña Temporal</strong>
@@ -168,51 +168,51 @@ import { AuthService } from '../../../../../core/auth/auth.service';
     .modal-overlay { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.4); backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; z-index: 10000; padding: 1rem; }
     .modal-content-container { background: white; border-radius: 24px; width: 100%; max-width: 600px; max-height: 90vh; display: flex; flex-direction: column; overflow: hidden; border: 1px solid #f1f5f9; }
     .modal-header { padding: 1.5rem 2rem; border-bottom: 1px solid #f1f5f9; display: flex; align-items: center; gap: 1.25rem; position: relative; }
-    .header-icon { width: 48px; height: 48px; border-radius: 14px; background: #f8fafc; color: #1e293b; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; }
+    .header-icon { width: 48px; height: 48px; border-radius: 14px; background: var(--status-info-bg); color: var(--status-info-text); display: flex; align-items: center; justify-content: center; font-size: 1.5rem; }
     .header-text h5 { margin: 0; font-weight: 800; color: #1e293b; font-size: 1.25rem; }
     .header-text span { font-size: 0.85rem; color: #64748b; font-weight: 500; }
     .btn-close-custom { position: absolute; right: 1.5rem; top: 1.5rem; width: 32px; height: 32px; border-radius: 10px; border: none; background: #f1f5f9; color: #64748b; display: flex; align-items: center; justify-content: center; }
-    .btn-close-custom:hover { background: #fee2e2; color: #ef4444; }
+    .btn-close-custom:hover { background: var(--status-danger-bg); color: var(--status-danger-text); }
     .modal-body { padding: 2rem; overflow-y: auto; flex: 1; }
     .form-section { margin-bottom: 2rem; }
     .form-section.last { margin-bottom: 0; }
     .section-title { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1.25rem; color: #1e293b; }
-    .section-title i { font-size: 1.1rem; color: #3b82f6; }
+    .section-title i { font-size: 1.1rem; color: var(--status-info-text); }
     .section-title span { font-size: 0.85rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; }
     .form-label { font-size: 0.8rem; font-weight: 700; color: #475569; margin-bottom: 0.5rem; }
     .form-input-premium { width: 100%; padding: 0.75rem 1rem; border-radius: 12px; border: 1px solid #e2e8f0; background: #f8fafc; font-size: 0.95rem; font-weight: 500; transition: all 0.2s; }
     .form-select-premium { width: 100%; min-height: 58px; padding: 0.5rem 1rem; border-radius: 12px; border: 1px solid #e2e8f0; background: #f8fafc; font-size: 1rem; font-weight: 600; line-height: 1.5; transition: all 0.2s; cursor: pointer; }
-    .form-input-premium:focus, .form-select-premium:focus { outline: none; background: white; border-color: #3b82f6; box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1); }
+    .form-input-premium:focus, .form-select-premium:focus { outline: none; background: white; border-color: var(--status-info); box-shadow: 0 0 0 4px var(--status-info-bg); }
     .form-input-premium[readonly] { background: #f1f5f9; cursor: not-allowed; }
     
     /* VALIDATION STYLES */
-    .is-invalid { border-color: #f43f5e !important; background-color: #fff1f2 !important; }
-    .is-invalid:focus { box-shadow: 0 0 0 4px rgba(244, 63, 94, 0.1) !important; }
-    .invalid-feedback { color: #f43f5e; font-size: 0.75rem; font-weight: 600; margin-top: 0.4rem; padding-left: 0.5rem; display: block; }
+    .is-invalid { border-color: var(--status-danger) !important; background-color: var(--status-danger-bg) !important; }
+    .is-invalid:focus { box-shadow: 0 0 0 4px var(--status-danger-bg) !important; }
+    .invalid-feedback { color: var(--status-danger-text); font-size: 0.75rem; font-weight: 600; margin-top: 0.4rem; padding-left: 0.5rem; display: block; }
 
     .text-muted-xs { font-size: 0.7rem; color: #94a3b8; font-weight: 600; }
-    .info-notice { display: flex; gap: 1rem; padding: 1rem; background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 16px; }
-    .info-notice i { color: #0284c7; font-size: 1.2rem; }
-    .info-notice.warning { background: #fffbeb; border-color: #fef3c7; }
-    .info-notice.warning i { color: #d97706; }
-    .notice-content strong { display: block; font-size: 0.8rem; font-weight: 800; color: #0c4a6e; margin-bottom: 0.2rem; }
-    .notice-content p { font-size: 0.75rem; color: #0369a1; margin: 0; line-height: 1.4; }
-    .notice-content code { background: #e0f2fe; padding: 0.1rem 0.4rem; border-radius: 4px; font-weight: 700; }
+    .info-notice { display: flex; gap: 1rem; padding: 1rem; background: var(--status-info-bg); border: 1px solid var(--status-info); border-radius: 16px; }
+    .info-notice i { color: var(--status-info-text); font-size: 1.2rem; }
+    .info-notice.warning { background: var(--status-warning-bg); border-color: var(--status-warning); }
+    .info-notice.warning i { color: var(--status-warning-text); }
+    .notice-content strong { display: block; font-size: 0.8rem; font-weight: 800; color: #1e293b; margin-bottom: 0.2rem; }
+    .notice-content p { font-size: 0.75rem; color: #475569; margin: 0; line-height: 1.4; }
+    .notice-content code { background: white; padding: 0.1rem 0.4rem; border-radius: 4px; font-weight: 700; border: 1px solid var(--border-color, #f1f5f9); }
     .modal-footer { padding: 1.5rem 2rem; border-top: 1px solid #f1f5f9; display: flex; align-items: center; justify-content: space-between; background: #f8fafc; }
     .status-toggle { display: flex; align-items: center; gap: 1rem; }
     .status-toggle span { font-size: 0.85rem; font-weight: 700; color: #94a3b8; }
-    .status-toggle span.active { color: #10b981; }
-    .info-notice-compact { display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem 0.75rem; background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 8px; color: #0369a1; font-size: 0.75rem; font-weight: 600; }
-    .info-notice-compact i { font-size: 0.9rem; }
+    .status-toggle span.active { color: var(--status-success-text); }
+    .info-notice-compact { display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem 0.75rem; background: var(--status-warning-bg); border: 1px solid var(--status-warning); border-radius: 8px; color: var(--status-warning-text); font-size: 0.75rem; font-weight: 600; }
+    .info-notice-compact i { font-size: 0.9rem; color: var(--status-warning-text); }
     .self-badge { padding: 0.5rem 1rem; background: #ecfdf5; color: #065f46; border-radius: 100px; font-size: 0.75rem; font-weight: 800; display: flex; align-items: center; gap: 0.5rem; }
     .actions { display: flex; gap: 1rem; }
     .btn-cancel { padding: 0.75rem 1.5rem; border-radius: 12px; border: none; background: white; color: #64748b; font-weight: 700; }
     .btn-cancel:hover { background: #f1f5f9; color: #1e293b; }
-    .btn-save { padding: 0.75rem 2rem; border-radius: 12px; border: none; background: #1e293b; color: white; font-weight: 700; transition: all 0.2s; }
-    .btn-save:hover:not(:disabled) { background: #0f172a; transform: translateY(-2px); }
+    .btn-save { padding: 0.75rem 2rem; border-radius: 12px; border: none; background: var(--secondary-color, #1e293b); color: white; font-weight: 700; transition: all 0.2s; }
+    .btn-save:hover:not(:disabled) { background: var(--neutral-700); transform: translateY(-2px); }
     .btn-save:disabled { opacity: 0.6; cursor: not-allowed; }
     .form-check-input { width: 3em; height: 1.5em; cursor: pointer; }
-    .form-check-input:checked { background-color: #10b981; border-color: #10b981; }
+    .form-check-input:checked { background-color: var(--status-success); border-color: var(--status-success); }
     .scroll-custom::-webkit-scrollbar { width: 5px; }
     .scroll-custom::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
   `]

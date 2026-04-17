@@ -88,10 +88,10 @@ import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } 
                 <div class="invalid-feedback" *ngIf="clienteForm.get('email')?.invalid && clienteForm.get('email')?.touched">
                   Ingrese un correo electrónico válido
                 </div>
-                <div class="info-editorial-card mt-2" style="background: #f0f9ff; border-color: #bae6fd;">
+                <div class="info-editorial-card mt-2" style="background: var(--status-warning-bg); border-color: var(--status-warning);">
                   <div class="d-flex align-items-center gap-2">
-                    <i class="bi bi-info-circle-fill text-primary"></i>
-                    <span class="text-muted" style="font-size: 0.75rem; font-weight: 600;">El correo se creará automáticamente basándose en la razón social.</span>
+                    <i class="bi bi-info-circle-fill" style="color: var(--status-warning-text);"></i>
+                    <span style="font-size: 0.75rem; font-weight: 600; color: var(--status-warning-text);">El correo se creará automáticamente basándose en la razón social.</span>
                   </div>
                 </div>
               </div>

@@ -224,7 +224,7 @@ import { SRI_TIPOS_IDENTIFICACION } from '../../../../../core/constants/sri-iva.
     }
     .header-icon {
       width: 48px; height: 48px; border-radius: 14px;
-      background: #f8fafc; color: #1e293b;
+      background: var(--status-info-bg); color: var(--status-info-text);
       display: flex; align-items: center; justify-content: center; font-size: 1.5rem;
     }
     .header-text h5 { margin: 0; font-weight: 800; color: #1e293b; font-size: 1.25rem; }
@@ -236,7 +236,7 @@ import { SRI_TIPOS_IDENTIFICACION } from '../../../../../core/constants/sri-iva.
       background: #f1f5f9; color: #64748b; display: flex;
       align-items: center; justify-content: center; transition: all 0.2s;
     }
-    .btn-close-custom:hover { background: #fee2e2; color: #ef4444; }
+    .btn-close-custom:hover { background: var(--status-danger-bg); color: var(--status-danger-text); }
 
     /* Modal Body */
     .modal-body { padding: 2rem; overflow-y: auto; flex: 1; }
@@ -247,7 +247,7 @@ import { SRI_TIPOS_IDENTIFICACION } from '../../../../../core/constants/sri-iva.
       display: flex; align-items: center; gap: 0.75rem;
       margin-bottom: 1.25rem; color: #1e293b;
     }
-    .section-title i { font-size: 1.1rem; color: #3b82f6; }
+    .section-title i { font-size: 1.1rem; color: var(--status-info-text); }
     .section-title span { font-size: 0.85rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; }
 
     .form-label { font-size: 0.8rem; font-weight: 700; color: #475569; margin-bottom: 0.5rem; }
@@ -258,11 +258,11 @@ import { SRI_TIPOS_IDENTIFICACION } from '../../../../../core/constants/sri-iva.
       font-size: 0.95rem; font-weight: 500; transition: all 0.2s;
     }
     .form-input-premium:focus, .form-select-premium:focus {
-      outline: none; background: white; border-color: #3b82f6;
-      box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+      outline: none; background: white; border-color: var(--status-info);
+      box-shadow: 0 0 0 4px var(--status-info-bg);
     }
     .form-input-premium.is-invalid, .form-select-premium.is-invalid {
-      border-color: #f43f5e; background: #fff1f2;
+      border-color: var(--status-danger); background: var(--status-danger-bg);
     }
 
     .input-group-premium { display: flex; align-items: center; position: relative; }
@@ -271,7 +271,7 @@ import { SRI_TIPOS_IDENTIFICACION } from '../../../../../core/constants/sri-iva.
     }
     .input-group-premium .form-input-premium { padding-left: 2rem; }
 
-    .invalid-feedback { color: #f43f5e; font-size: 0.75rem; font-weight: 600; margin-top: 0.4rem; display: block; }
+    .invalid-feedback { color: var(--status-danger-text); font-size: 0.75rem; font-weight: 600; margin-top: 0.4rem; display: block; }
 
     /* Footer */
     .modal-footer {
@@ -281,7 +281,7 @@ import { SRI_TIPOS_IDENTIFICACION } from '../../../../../core/constants/sri-iva.
     }
     .status-toggle { display: flex; align-items: center; gap: 1rem; }
     .status-toggle span { font-size: 0.85rem; font-weight: 700; color: #94a3b8; }
-    .status-toggle span.active { color: #10b981; }
+    .status-toggle span.active { color: var(--status-success-text); }
 
     .actions { display: flex; gap: 1rem; }
     .btn-cancel {
@@ -291,16 +291,16 @@ import { SRI_TIPOS_IDENTIFICACION } from '../../../../../core/constants/sri-iva.
     .btn-cancel:hover { background: #f1f5f9; color: #1e293b; }
     .btn-save {
       padding: 0.75rem 2rem; border-radius: 12px; border: none;
-      background: #1e293b; color: white; font-weight: 700; transition: all 0.2s;
+      background: var(--secondary-color, #1e293b); color: white; font-weight: 700; transition: all 0.2s;
     }
-    .btn-save:hover:not(:disabled) { background: #0f172a; transform: translateY(-2px); }
+    .btn-save:hover:not(:disabled) { background: var(--neutral-700); transform: translateY(-2px); }
     .btn-save:disabled { opacity: 0.6; cursor: not-allowed; }
 
     .scroll-custom::-webkit-scrollbar { width: 6px; }
     .scroll-custom::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
 
     .form-check-input { width: 3em; height: 1.5em; cursor: pointer; }
-    .form-check-input:checked { background-color: #10b981; border-color: #10b981; }
+    .form-check-input:checked { background-color: var(--status-success); border-color: var(--status-success); }
   `]
 })
 export class ClienteFormModalComponent implements OnInit, OnDestroy {

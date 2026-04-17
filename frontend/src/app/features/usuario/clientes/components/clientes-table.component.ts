@@ -135,14 +135,14 @@ import { GET_IDENTIFICACION_LABEL } from '../../../../core/constants/sri-iva.con
       border-spacing: 0;
     }
     .table-premium thead th {
-      background: #f8fafc;
+      background: var(--bg-main, #f8fafc);
       padding: 1.25rem 1.5rem;
       font-size: 0.75rem;
       font-weight: 800;
-      color: #64748b;
+      color: var(--text-muted, #64748b);
       text-transform: uppercase;
       letter-spacing: 0.05em;
-      border-bottom: 1px solid #f1f5f9;
+      border-bottom: 1px solid var(--border-color, #f1f5f9);
     }
     .table-row {
       transition: all 0.2s;
@@ -217,12 +217,12 @@ import { GET_IDENTIFICACION_LABEL } from '../../../../core/constants/sri-iva.con
       font-weight: 701;
     }
     .status-badge.active {
-      background: #15803d;
-      color: white;
+      background: var(--status-success-bg);
+      color: var(--status-success-text);
     }
     .status-badge.inactive {
-      background: #dc2626;
-      color: white;
+      background: var(--status-neutral-bg);
+      color: var(--status-neutral-text);
     }
 
     /* Contact Info */

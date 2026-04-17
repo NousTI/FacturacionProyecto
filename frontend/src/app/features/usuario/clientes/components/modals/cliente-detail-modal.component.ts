@@ -151,11 +151,11 @@ import { Cliente } from '../../../../../domain/models/cliente.model';
       display: inline-flex; padding: 0.4rem 0.8rem; border-radius: 8px;
       font-size: 0.75rem; font-weight: 700;
     }
-    .status-badge.active { background: #dcfce7; color: #166534; }
-    .status-badge.inactive { background: #fee2e2; color: #991b1b; }
+    .status-badge.active { background: var(--status-success-bg); color: var(--status-success-text); }
+    .status-badge.inactive { background: var(--status-neutral-bg); color: var(--status-neutral-text); }
     
     .type-badge {
-      background: #eff6ff; color: #1e40af; padding: 0.4rem 0.8rem; border-radius: 8px;
+      background: var(--status-info-bg); color: var(--status-info-text); padding: 0.4rem 0.8rem; border-radius: 8px;
       font-size: 0.75rem; font-weight: 700;
     }
 
@@ -164,7 +164,7 @@ import { Cliente } from '../../../../../domain/models/cliente.model';
       background: white; color: #64748b; display: flex;
       align-items: center; justify-content: center; transition: all 0.2s;
     }
-    .btn-close-custom:hover { background: #fee2e2; color: #ef4444; }
+    .btn-close-custom:hover { background: var(--status-danger-bg); color: var(--status-danger-text); }
 
     /* Modal Body */
     .modal-body { padding: 2.5rem; overflow-y: auto; flex: 1; }
@@ -174,7 +174,7 @@ import { Cliente } from '../../../../../domain/models/cliente.model';
       display: flex; align-items: center; gap: 0.75rem;
       margin-bottom: 1.25rem; color: #475569;
     }
-    .group-header i { font-size: 1.1rem; color: #3b82f6; }
+    .group-header i { font-size: 1.1rem; color: var(--status-info-text); }
     .group-header span { font-size: 0.85rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; }
 
     .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
@@ -182,7 +182,7 @@ import { Cliente } from '../../../../../domain/models/cliente.model';
     .info-item.full { grid-column: span 2; }
     .info-item label { font-size: 0.75rem; font-weight: 700; color: #94a3b8; text-transform: uppercase; }
     .info-item span { font-size: 1rem; font-weight: 600; color: #1e293b; }
-    .email-text { color: #2563eb !important; text-decoration: underline; }
+    .email-text { color: var(--status-info-text) !important; text-decoration: underline; }
     .address-text { font-size: 0.9rem !important; color: #64748b !important; line-height: 1.5; }
 
     /* Right Column - Metric Card */
@@ -206,10 +206,10 @@ import { Cliente } from '../../../../../domain/models/cliente.model';
     .modal-footer { padding: 1.5rem 2.5rem; }
     .btn-primary-premium {
       width: 100%; padding: 1rem; border-radius: 16px; border: none;
-      background: #1e293b; color: white; font-weight: 800; font-size: 1rem;
+      background: var(--secondary-color, #1e293b); color: white; font-weight: 800; font-size: 1rem;
       transition: all 0.2s;
     }
-    .btn-primary-premium:hover { background: #0f172a; transform: translateY(-2px); box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); }
+    .btn-primary-premium:hover { background: var(--neutral-700); transform: translateY(-2px); box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); }
 
     .scroll-custom::-webkit-scrollbar { width: 6px; }
     .scroll-custom::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }

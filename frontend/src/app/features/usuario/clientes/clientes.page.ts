@@ -193,8 +193,8 @@ import { CLIENTES_PERMISSIONS } from '../../../constants/permission-codes';
       background: #f8fafc;
     }
     .tab-btn.active {
-      color: #1e293b;
-      border-bottom-color: #3b82f6;
+      color: var(--secondary-color, #1e293b);
+      border-bottom-color: var(--status-info);
     }
     .tab-btn i { font-size: 1.1rem; }
 
@@ -219,15 +219,14 @@ import { CLIENTES_PERMISSIONS } from '../../../constants/permission-codes';
     .icon-lock-wrapper {
       width: 100px;
       height: 100px;
-      background: #fee2e2;
-      color: #ef4444;
+      background: var(--status-danger-bg);
+      color: var(--status-danger-text);
       border-radius: 50%;
       display: flex;
       align-items: center;
       justify-content: center;
       font-size: 3rem;
       margin-bottom: 1.5rem;
-      box-shadow: 0 10px 25px -5px rgba(239, 68, 68, 0.3);
     }
     .no-permission-container h2 { font-weight: 800; color: #1e293b; margin-bottom: 0.5rem; }
     .no-permission-container p { color: #64748b; max-width: 400px; margin-bottom: 2rem; line-height: 1.6; }

@@ -118,9 +118,9 @@ import { FormsModule } from '@angular/forms';
       width: 100%;
     }
     .form-control-premium-search:focus {
-      border-color: #cbd5e1;
+      border-color: var(--status-info);
       outline: none;
-      box-shadow: none;
+      box-shadow: 0 0 0 4px var(--status-info-bg);
     }
     
     .btn-filter-lux {
@@ -139,8 +139,8 @@ import { FormsModule } from '@angular/forms';
     }
     .btn-filter-lux:hover {
       background: #ffffff;
-      border-color: #cbd5e1;
-      color: var(--primary-color, #161d35);
+      border-color: var(--status-info);
+      color: var(--status-info-text);
     }
 
     .form-select-premium {
@@ -156,8 +156,9 @@ import { FormsModule } from '@angular/forms';
       text-align: left;
     }
     .form-select-premium:focus {
-      border-color: #cbd5e1;
+      border-color: var(--status-info);
       outline: none;
+      box-shadow: 0 0 0 4px var(--status-info-bg);
     }
 
     .dropdown-menu-premium {
@@ -176,14 +177,14 @@ import { FormsModule } from '@angular/forms';
       transition: all 0.2s;
     }
     .dropdown-item:hover {
-      background-color: var(--primary-color, #161d35) !important;
-      color: #ffffff !important;
+      background-color: var(--status-info-bg) !important;
+      color: var(--status-info-text) !important;
     }
 
     .btn-action-premium {
-      background: #f8fafc;
+      background: var(--bg-main, #f8fafc);
       border: 1px solid var(--border-color, #e2e8f0);
-      color: var(--primary-color, #161d35);
+      color: var(--status-info-text);
       padding: 0 1.25rem;
       height: 42px;
       border-radius: 12px;
@@ -194,8 +195,9 @@ import { FormsModule } from '@angular/forms';
       transition: all 0.2s;
     }
     .btn-action-premium:hover:not(:disabled) {
-      background: #f1f5f9;
+      background: var(--bg-main);
       transform: translateY(-1px);
+      border-color: var(--status-info);
     }
     .btn-action-premium:disabled {
       opacity: 0.6;
