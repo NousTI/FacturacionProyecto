@@ -20,12 +20,12 @@ import { CommonModule } from '@angular/common';
       <div class="stat-divider"></div>
 
       <div class="stat-item-mini">
-        <div class="icon-circle" style="background: rgba(239, 68, 68, 0.08); color: #ef4444;">
+        <div class="icon-circle" style="background: var(--status-orange-bg); color: var(--status-orange-text);">
           <i class="bi bi-hourglass-split"></i>
         </div>
         <div class="stat-info">
           <span class="stat-label">Pendiente</span>
-          <span class="stat-value text-danger">{{ pendientes | currency:'USD' }}</span>
+          <span class="stat-value text-orange">{{ pendientes | currency:'USD' }}</span>
         </div>
       </div>
          
@@ -89,10 +89,13 @@ import { CommonModule } from '@angular/common';
       line-height: 1.2;
     }
     .text-success {
-      color: var(--status-success, #10b981) !important;
+      color: var(--status-success-text) !important;
     }
     .text-danger {
-      color: var(--status-danger, #ef4444) !important;
+      color: var(--status-danger-text) !important;
+    }
+    .text-orange {
+      color: var(--status-orange-text) !important;
     }
     .stat-divider {
       width: 1px;

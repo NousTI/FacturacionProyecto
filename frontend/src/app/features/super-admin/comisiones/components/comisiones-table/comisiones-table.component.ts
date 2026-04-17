@@ -180,22 +180,10 @@ import { CommonModule } from '@angular/common';
       display: inline-block;
       text-transform: capitalize;
     }
-    .badge-status-premium.active {
-      background: var(--status-success-bg);
-      color: var(--status-success-text);
-    }
-    .badge-status-premium.pending {
-      background: var(--status-warning-bg);
-      color: var(--status-warning-text);
-    }
-    .badge-status-premium.rejected {
-      background: var(--status-danger-bg);
-      color: var(--status-danger-text);
-    }
-    .badge-status-premium.paid {
-      background: var(--status-success-bg);
-      color: var(--status-success-text);
-    }
+    .badge-status-premium.success { background: var(--status-success-bg); color: var(--status-success-text); }
+    .badge-status-premium.warning { background: var(--status-warning-bg); color: var(--status-warning-text); }
+    .badge-status-premium.orange { background: var(--status-orange-bg); color: var(--status-orange-text); }
+    .badge-status-premium.danger { background: var(--status-danger-bg); color: var(--status-danger-text); }
     .btn-action-trigger {
       background: transparent;
       border: none;
@@ -258,10 +246,10 @@ export class ComisionesTableComponent {
 
   getStatusClass(status: string): string {
     switch (status) {
-      case 'APROBADA': return 'active';
-      case 'PENDIENTE': return 'pending';
-      case 'RECHAZADA': return 'rejected';
-      case 'PAGADA': return 'paid';
+      case 'APROBADA': return 'warning';
+      case 'PENDIENTE': return 'orange';
+      case 'RECHAZADA': return 'danger';
+      case 'PAGADA': return 'success';
       default: return '';
     }
   }

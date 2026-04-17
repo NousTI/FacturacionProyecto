@@ -90,9 +90,9 @@ import { Comision } from '../../services/comisiones.service';
       display: flex; align-items: center; justify-content: center;
       font-size: 2rem; margin-bottom: 1.5rem;
     }
-    .icon-wrapper.approve { background: #dcfce7; color: #16a34a; }
-    .icon-wrapper.pay { background: #e0e7ff; color: #4f46e5; }
-    .icon-wrapper.reject { background: #fee2e2; color: #ef4444; }
+    .icon-wrapper.approve { background: var(--status-warning-bg); color: var(--status-warning-text); }
+    .icon-wrapper.pay { background: var(--status-success-bg); color: var(--status-success-text); }
+    .icon-wrapper.reject { background: var(--status-danger-bg); color: var(--status-danger-text); }
     
     .action-title { font-size: 1.25rem; font-weight: 800; color: #1e293b; margin-bottom: 0.75rem; }
     .action-message { font-size: 0.9rem; color: #64748b; margin-bottom: 1.5rem; line-height: 1.5; }
@@ -129,14 +129,14 @@ import { Comision } from '../../services/comisiones.service';
     .btn-cancel { background: #f1f5f9; color: #64748b; }
     .btn-cancel:hover { background: #e2e8f0; }
     
-    .btn-confirm.approve { background: #16a34a; color: white; }
-    .btn-confirm.approve:hover { background: #15803d; box-shadow: 0 4px 12px rgba(22, 163, 74, 0.3); }
+    .btn-confirm.approve { background: var(--status-warning-text); color: white; }
+    .btn-confirm.approve:hover { opacity: 0.9; box-shadow: 0 4px 12px var(--status-warning-bg); }
     
-    .btn-confirm.pay { background: #4f46e5; color: white; }
-    .btn-confirm.pay:hover { background: #4338ca; box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3); }
+    .btn-confirm.pay { background: var(--status-success-text); color: white; }
+    .btn-confirm.pay:hover { opacity: 0.9; box-shadow: 0 4px 12px var(--status-success-bg); }
 
-    .btn-confirm.reject { background: #ef4444; color: white; }
-    .btn-confirm.reject:hover { background: #b91c1c; box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3); }
+    .btn-confirm.reject { background: var(--status-danger-text); color: white; }
+    .btn-confirm.reject:hover { opacity: 0.9; box-shadow: 0 4px 12px var(--status-danger-bg); }
   `],
   standalone: true,
   imports: [CommonModule, FormsModule]

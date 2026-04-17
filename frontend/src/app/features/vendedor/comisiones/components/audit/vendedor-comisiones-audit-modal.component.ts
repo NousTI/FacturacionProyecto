@@ -109,17 +109,20 @@ import { CommonModule } from '@angular/common';
     .timestamp { font-size: 0.8rem; color: #94a3b8; }
 
     /* Colors */
-    .timeline-icon.success { background: #dcfce7; color: #16a34a; }
-    .timeline-icon.warning { background: #fef9c3; color: #ca8a04; }
-    .timeline-icon.danger { background: #fee2e2; color: #ef4444; }
-    .timeline-icon.primary { background: #e0e7ff; color: #4f46e5; }
-    .timeline-icon.secondary { background: #f1f5f9; color: #64748b; }
+    .timeline-icon.success { background: var(--status-success-bg); color: var(--status-success-text); }
+    .timeline-icon.warning { background: var(--status-warning-bg); color: var(--status-warning-text); }
+    .timeline-icon.orange { background: var(--status-orange-bg); color: var(--status-orange-text); }
+    .timeline-icon.danger { background: var(--status-danger-bg); color: var(--status-danger-text); }
+    .timeline-icon.primary { background: var(--status-info-bg); color: var(--status-info-text); }
+    .timeline-icon.secondary { background: var(--status-neutral-bg); color: var(--status-neutral-text); }
 
     .badge { padding: 0.4em 0.8em; border-radius: 6px; font-weight: 600; font-size: 0.75rem; letter-spacing: 0.5px; }
-    .badge-success { background: #dcfce7; color: #166534; }
-    .badge-primary { background: #dbeafe; color: #1e40af; }
-    .badge-danger { background: #fee2e2; color: #991b1b; }
-    .badge-secondary { background: #f1f5f9; color: #475569; }
+    .badge-success { background: var(--status-success-bg); color: var(--status-success-text); }
+    .badge-primary { background: var(--status-info-bg); color: var(--status-info-text); }
+    .badge-danger { background: var(--status-danger-bg); color: var(--status-danger-text); }
+    .badge-warning { background: var(--status-warning-bg); color: var(--status-warning-text); }
+    .badge-orange { background: var(--status-orange-bg); color: var(--status-orange-text); }
+    .badge-secondary { background: var(--status-neutral-bg); color: var(--status-neutral-text); }
   `]
 })
 export class VendedorComisionesAuditModalComponent {
@@ -139,20 +142,20 @@ export class VendedorComisionesAuditModalComponent {
 
     getStatusColor(status: string): string {
         switch (status) {
-            case 'APROBADA': return 'success';
-            case 'PAGADA': return 'primary';
+            case 'APROBADA': return 'warning';
+            case 'PAGADA': return 'success';
             case 'RECHAZADA': return 'danger';
-            case 'PENDIENTE': return 'warning';
+            case 'PENDIENTE': return 'orange';
             default: return 'secondary';
         }
     }
 
     getBadgeClass(status: string): string {
         switch (status) {
-            case 'APROBADA': return 'badge-success';
-            case 'PAGADA': return 'badge-primary';
+            case 'APROBADA': return 'badge-warning';
+            case 'PAGADA': return 'badge-success';
             case 'RECHAZADA': return 'badge-danger';
-            case 'PENDIENTE': return 'bg-warning text-dark';
+            case 'PENDIENTE': return 'badge-orange';
             default: return 'badge-secondary';
         }
     }

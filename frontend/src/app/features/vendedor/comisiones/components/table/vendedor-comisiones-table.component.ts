@@ -172,10 +172,10 @@ import { CommonModule } from '@angular/common';
       display: inline-block;
       text-transform: uppercase;
     }
-    .badge-status-premium.active { background: var(--status-success-bg, #dcfce7); color: var(--status-success-text, #15803d); }
-    .badge-status-premium.pending { background: var(--status-warning-bg, #fff7ed); color: var(--status-warning-text, #c2410c); }
-    .badge-status-premium.rejected { background: var(--status-danger-bg, #fee2e2); color: var(--status-danger-text, #b91c1c); }
-    .badge-status-premium.paid { background: var(--status-info-bg, #e0f2fe); color: var(--status-info-text, #0369a1); }
+    .badge-status-premium.success { background: var(--status-success-bg); color: var(--status-success-text); }
+    .badge-status-premium.orange { background: var(--status-orange-bg); color: var(--status-orange-text); }
+    .badge-status-premium.danger { background: var(--status-danger-bg); color: var(--status-danger-text); }
+    .badge-status-premium.warning { background: var(--status-warning-bg); color: var(--status-warning-text); }
 
     .btn-action-trigger {
       background: transparent; border: none;
@@ -218,10 +218,10 @@ export class VendedorComisionesTableComponent {
 
   getStatusClass(status: string): string {
     switch (status) {
-      case 'APROBADA': return 'active';
-      case 'PENDIENTE': return 'pending';
-      case 'RECHAZADA': return 'rejected';
-      case 'PAGADA': return 'paid';
+      case 'APROBADA': return 'warning';
+      case 'PENDIENTE': return 'orange';
+      case 'RECHAZADA': return 'danger';
+      case 'PAGADA': return 'success';
       default: return '';
     }
   }

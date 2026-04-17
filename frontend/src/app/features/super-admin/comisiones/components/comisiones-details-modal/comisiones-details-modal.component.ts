@@ -167,10 +167,10 @@ import { Comision } from '../../services/comisiones.service';
       font-size: 0.75rem; font-weight: 800; padding: 0.25rem 0.85rem; border-radius: 100px;
       text-transform: uppercase; margin-top: 0.25rem; display: inline-block;
     }
-    .badge-status-details.active { background: #dcfce7; color: #15803d; } 
-    .badge-status-details.pending { background: #fff7ed; color: #c2410c; }
-    .badge-status-details.rejected { background: #fee2e2; color: #b91c1c; }
-    .badge-status-details.paid { background: #d1fae5; color: #059669; }
+    .badge-status-details.success { background: var(--status-success-bg); color: var(--status-success-text); }
+    .badge-status-details.warning { background: var(--status-warning-bg); color: var(--status-warning-text); }
+    .badge-status-details.orange { background: var(--status-orange-bg); color: var(--status-orange-text); }
+    .badge-status-details.danger { background: var(--status-danger-bg); color: var(--status-danger-text); }
 
     .modal-body-final { padding: 0 2.5rem 2rem; overflow-y: auto; flex: 1; }
     .form-section-final { margin-bottom: 2rem; padding-bottom: 2rem; border-bottom: 1px solid #f1f5f9; }
@@ -219,10 +219,10 @@ export class ComisionesDetailsModalComponent {
   getStatusClass(status: string | undefined): string {
     if (!status) return '';
     switch (status) {
-      case 'APROBADA': return 'active';
-      case 'PENDIENTE': return 'pending';
-      case 'RECHAZADA': return 'rejected';
-      case 'PAGADA': return 'paid';
+      case 'APROBADA': return 'warning';
+      case 'PENDIENTE': return 'orange';
+      case 'RECHAZADA': return 'danger';
+      case 'PAGADA': return 'success';
       default: return '';
     }
   }

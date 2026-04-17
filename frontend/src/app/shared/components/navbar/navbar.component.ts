@@ -180,13 +180,13 @@ import { Notificacion } from '../../../domain/models/notificacion.model';
       border-bottom: 1px solid rgba(0,0,0,0.03);
     }
     .notif-item:hover {
-      background: var(--primary-color) !important;
+      background: #f1f5f9 !important;
     }
-    .notif-item:hover .text-muted,
-    .notif-item:hover .smallest,
     .notif-item:hover span,
-    .notif-item:hover p {
-      color: #ffffff !important;
+    .notif-item:hover p,
+    .notif-item:hover .text-muted,
+    .notif-item:hover .smallest {
+      color: #0f172a !important;
     }
     .notif-item.unread {
       background: #f0f9ff;

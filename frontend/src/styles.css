@@ -22,26 +22,30 @@
   --text-muted: #64748b;
   --border-color: #e2e8f0;
 
-  /* Semantic Status Colors */
+  /* Semantic Status Colors - Premium Soft Theme */
   --status-success: #10b981;
-  --status-success-bg: #1f8646;
-  --status-success-text: #ffffff;
+  --status-success-bg: #dcfce7;
+  --status-success-text: #15803d;
 
   --status-danger: #ef4444;
-  --status-danger-bg: #991b1b;
-  --status-danger-text: #ffffff;
+  --status-danger-bg: #fee2e2;
+  --status-danger-text: #b91c1c;
 
   --status-warning: #f59e0b;
-  --status-warning-bg: #92400e;
-  --status-warning-text: #ffffff;
+  --status-warning-bg: #fef9c3;
+  --status-warning-text: #a16207;
+
+  --status-orange: #f97316;
+  --status-orange-bg: #ffedd5;
+  --status-orange-text: #c2410c;
 
   --status-info: #3b82f6;
-  --status-info-bg: #1e40af;
-  --status-info-text: #ffffff;
+  --status-info-bg: #dbeafe;
+  --status-info-text: #1d4ed8;
 
   --status-neutral: #94a3b8;
-  --status-neutral-bg: #475569;
-  --status-neutral-text: #ffffff;
+  --status-neutral-bg: #f1f5f9;
+  --status-neutral-text: #334155;
 }
 
 body {
