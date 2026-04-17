@@ -11,14 +11,14 @@ import { InfoTooltipComponent } from '../../../../shared/components/info-tooltip
     <div class="row g-3 mb-4">
       <div class="col-6 col-lg-3">
         <div class="kpi-card-premium">
-          <div class="icon-circle" style="color: var(--status-success); background: var(--border-color)">
+          <div class="icon-circle" style="background: var(--status-success-bg); color: var(--status-success-text)">
             <i class="bi bi-building-check"></i>
           </div>
           <div class="kpi-content">
             <span class="kpi-label d-flex align-items-center gap-1">Empresas Activas
               <app-info-tooltip message="Número de empresas con suscripción activa en el periodo seleccionado."></app-info-tooltip>
             </span>
-            <span class="kpi-value">{{ kpis?.empresas_activas || 0 }}</span>
+            <span class="kpi-value text-success">{{ kpis?.empresas_activas || 0 }}</span>
           </div>
         </div>
       </div>
@@ -46,21 +46,21 @@ import { InfoTooltipComponent } from '../../../../shared/components/info-tooltip
 
       <div class="col-6 col-lg-3">
         <div class="kpi-card-premium">
-          <div class="icon-circle" style="color: var(--status-warning); background: var(--border-color)">
+          <div class="icon-circle" style="background: var(--status-orange-bg); color: var(--status-orange-text)">
             <i class="bi bi-percent"></i>
           </div>
           <div class="kpi-content">
             <span class="kpi-label d-flex align-items-center gap-1">Comisiones Pend.
               <app-info-tooltip message="Monto total en comisiones de vendedores que aún no han sido liquidadas."></app-info-tooltip>
             </span>
-            <span class="kpi-value text-truncate">{{ kpis?.comisiones_pendientes || 0 | number }}</span>
+            <span class="kpi-value text-orange text-truncate">{{ kpis?.comisiones_pendientes || 0 | number }}</span>
           </div>
         </div>
       </div>
 
       <div class="col-6 col-lg-3">
         <div class="kpi-card-premium">
-          <div class="icon-circle" style="color: var(--status-danger); background: var(--border-color)">
+          <div class="icon-circle" style="background: var(--status-danger-bg); color: var(--status-danger-text)">
             <i class="bi bi-clock-history"></i>
           </div>
           <div class="kpi-content">
@@ -120,12 +120,12 @@ import { InfoTooltipComponent } from '../../../../shared/components/info-tooltip
       font-size: 0.75rem;
       font-weight: 700;
     }
-    .up { color: var(--status-success); }
-    .down { color: var(--status-danger); }
+    .up { color: var(--status-success-text) !important; }
+    .down { color: var(--status-danger-text) !important; }
 
-    .text-danger {
-      color: var(--status-danger) !important;
-    }
+    .text-success { color: var(--status-success-text) !important; }
+    .text-danger { color: var(--status-danger-text) !important; }
+    .text-orange { color: var(--status-orange-text) !important; }
 
     @media (max-width: 1400px) {
       .kpi-value { font-size: 1.15rem; }

@@ -50,19 +50,19 @@ import { InfoTooltipComponent } from '../../../../shared/components/info-tooltip
       transform: translateX(4px);
     }
     .alert-item.critical { 
-      background: var(--border-color); 
-      border-color: var(--border-color); 
-      color: var(--status-danger); 
+      background: var(--status-danger-bg); 
+      border-color: var(--status-danger-bg); 
+      color: var(--status-danger-text); 
     }
     .alert-item.warning { 
-      background: var(--border-color); 
-      border-color: var(--border-color); 
-      color: var(--status-warning); 
+      background: var(--status-warning-bg); 
+      border-color: var(--status-warning-bg); 
+      color: var(--status-warning-text); 
     }
     .alert-item.info { 
-      background: var(--border-color); 
-      border-color: var(--border-color); 
-      color: var(--status-info); 
+      background: var(--status-info-bg); 
+      border-color: var(--status-info-bg); 
+      color: var(--status-info-text); 
     }
     
     .alert-content { 
@@ -82,9 +82,9 @@ import { InfoTooltipComponent } from '../../../../shared/components/info-tooltip
       font-size: 0.75rem; 
       border: none;
     }
-    .badge-critical { background: var(--status-danger); color: white; }
-    .badge-warning { background: var(--status-warning); color: white; }
-    .badge-info { background: var(--status-info); color: white; }
+    .badge-critical { background: var(--status-danger-text); color: white; }
+    .badge-warning { background: var(--status-warning-text); color: white; }
+    .badge-info { background: var(--status-info-text); color: white; }
   `]
 })
 export class SuperAdminAlertsComponent {

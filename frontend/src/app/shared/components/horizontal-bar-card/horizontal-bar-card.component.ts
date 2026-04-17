@@ -68,6 +68,6 @@ export interface HorizontalBarData {
 })
 export class HorizontalBarCardComponent {
     @Input() title: string = '';
-    @Input() barColor: string = '#3b82f6';
+    @Input() barColor: string = '#10b981';
     @Input() data: HorizontalBarData[] = [];
 }

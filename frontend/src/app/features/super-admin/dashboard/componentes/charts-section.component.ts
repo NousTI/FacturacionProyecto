@@ -42,7 +42,7 @@ import { InfoTooltipComponent } from '../../../../shared/components/info-tooltip
         <app-horizontal-bar-card
           title="Empresas por Plan"
           [barColor]="primaryColor"
-          [data]="charts?.empresas_by_plan || []">
+          [data]="planData">
           <app-info-tooltip message="Cantidad de empresas distribuidas según su plan de suscripción actual."></app-info-tooltip>
         </app-horizontal-bar-card>
       </div>
@@ -73,7 +73,7 @@ import { InfoTooltipComponent } from '../../../../shared/components/info-tooltip
             <app-horizontal-bar-card
               title="Empresas por Plan"
               [barColor]="primaryColor"
-              [data]="charts?.empresas_by_plan || []">
+              [data]="planData">
               <app-info-tooltip message="Cantidad de empresas distribuidas según su plan de suscripción actual."></app-info-tooltip>
             </app-horizontal-bar-card>
           </div>
@@ -167,11 +167,24 @@ export class SuperAdminChartsComponent implements OnChanges {
   // Premium Gradient for Income Chart
   incomeGradient = 'linear-gradient(180deg, #A855F7 0%, #6366F1 100%)';
 
-  // Using solid primary color for charts and bars
-  primaryColor = 'var(--primary-color)';
+  // Premium Green Gradient for Plan Bars
+  successGradient = 'linear-gradient(90deg, #10b981 0%, #34d399 100%)';
+
+  // Using successGradient for the plans chart
+  primaryColor = this.successGradient;
 
   ngOnChanges() {
     console.log(`[SuperAdminCharts] ${this.type} updated:`, this.charts);
+  }
+
+  get planData() {
+    if (!this.charts?.empresas_by_plan) return [];
+    
+    // Forzamos el color verde ignorando cualquier color previo que venga del servicio
+    return this.charts.empresas_by_plan.map((item) => ({
+      ...item,
+      color: this.successGradient
+    }));
   }
 
   setPeriod(p: string) {

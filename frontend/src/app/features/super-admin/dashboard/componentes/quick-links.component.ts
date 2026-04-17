@@ -10,7 +10,7 @@ import { RouterModule } from '@angular/router';
     <div class="editorial-panel h-100">
       <div class="panel-header-premium">
         <div class="d-flex align-items-center gap-2">
-          <div class="icon-circle-sm" style="background: var(--border-color); color: var(--status-warning);">
+          <div class="icon-circle-sm" style="background: var(--status-warning-bg); color: var(--status-warning-text);">
             <i class="bi bi-lightning-charge"></i>
           </div>
           <div class="d-flex flex-column">
@@ -22,7 +22,7 @@ import { RouterModule } from '@angular/router';
 
       <div class="quick-links-area">
         <a routerLink="/empresas" [queryParams]="{ new: 'true' }" class="nav-item-premium">
-          <div class="icon-sq" style="color: var(--primary-color); background: var(--border-color)">
+          <div class="icon-sq" style="color: var(--status-info-text); background: var(--status-info-bg)">
             <i class="bi bi-plus-circle"></i>
           </div>
           <span>Nueva Empresa</span>
@@ -36,7 +36,7 @@ import { RouterModule } from '@angular/router';
           <i class="bi bi-chevron-right ms-auto arrow"></i>
         </a>
         <a routerLink="/reportes" class="nav-item-premium">
-          <div class="icon-sq" style="color: var(--status-warning); background: var(--border-color)">
+          <div class="icon-sq" style="color: var(--status-warning-text); background: var(--status-warning-bg)">
             <i class="bi bi-file-earmark-bar-graph"></i>
           </div>
           <span>Reportes Globales</span>

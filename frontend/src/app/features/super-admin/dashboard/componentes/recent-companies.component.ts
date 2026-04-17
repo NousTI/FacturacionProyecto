@@ -146,12 +146,12 @@ import { InfoTooltipComponent } from '../../../../shared/components/info-tooltip
       padding: 4px 8px; border-radius: 6px; display: inline-flex; align-items: center;
     }
     .status-badge.active { 
-      background: var(--status-success); 
-      color: white; 
+      background: var(--status-success-bg); 
+      color: var(--status-success-text); 
     }
     .status-badge.inactive { 
-      background: var(--status-danger); 
-      color: white; 
+      background: var(--status-danger-bg); 
+      color: var(--status-danger-text); 
     }
 
     .date-text { font-size: 0.8rem; color: var(--text-muted); font-weight: 500; }
