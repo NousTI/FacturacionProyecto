@@ -152,12 +152,14 @@ type Tab = 'resumen' | 'ventas' | 'cartera' | 'iva' | 'mis_ventas';
         *ngIf="tabActivo === 'resumen' && resumenData"
         [data]="resumenData"
         [fechaInicio]="fechaInicio"
-        [fechaFin]="fechaFin">
+        [fechaFin]="fechaFin"
+        [rangoTipo]="rangoTipo">
       </app-r028-resumen-ejecutivo>
 
       <app-r001-ventas-generales
         *ngIf="tabActivo === 'ventas' && r001Data"
-        [data]="r001Data">
+        [data]="r001Data"
+        [rangoTipo]="rangoTipo">
       </app-r001-ventas-generales>
 
       <app-r008-cuentas-por-cobrar
@@ -173,7 +175,8 @@ type Tab = 'resumen' | 'ventas' | 'cartera' | 'iva' | 'mis_ventas';
 
       <app-r001-mis-ventas
         *ngIf="tabActivo === 'mis_ventas' && misVentasData"
-        [data]="misVentasData">
+        [data]="misVentasData"
+        [rangoTipo]="rangoTipo">
       </app-r001-mis-ventas>
     </ng-container>
 

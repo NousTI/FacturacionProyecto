@@ -26,13 +26,16 @@ type Tab = 'global' | 'comisiones' | 'uso';
   <div class="header-actions-bar mb-4">
     <div class="tabs-navigation">
       <button class="nav-btn" [class.active]="tabActivo === 'global'" (click)="setTab('global')">
-        <i class="bi bi-globe2 me-2"></i>Reporte Global (R-031)
+        <i class="bi bi-globe2"></i>
+        <span class="nav-label"><span class="nav-name">Reporte Global</span><span class="nav-code">R-031</span></span>
       </button>
       <button class="nav-btn" [class.active]="tabActivo === 'comisiones'" (click)="setTab('comisiones')">
-        <i class="bi bi-cash-coin me-2"></i>Comisiones (R-032)
+        <i class="bi bi-cash-coin"></i>
+        <span class="nav-label"><span class="nav-name">Comisiones</span><span class="nav-code">R-032</span></span>
       </button>
       <button class="nav-btn" [class.active]="tabActivo === 'uso'" (click)="setTab('uso')">
-        <i class="bi bi-bar-chart-line me-2"></i>Uso por Empresa (R-033)
+        <i class="bi bi-bar-chart-line"></i>
+        <span class="nav-label"><span class="nav-name">Uso por Empresa</span><span class="nav-code">R-033</span></span>
       </button>
     </div>
 
@@ -86,12 +89,15 @@ type Tab = 'global' | 'comisiones' | 'uso';
     }
 
     /* TABS MODERNOS */
-    .tabs-navigation { display: flex; gap: 0.5rem; overflow-x: auto; }
+    .tabs-navigation { display: flex; gap: 0.4rem; flex-shrink: 0; }
     .nav-btn {
-      background: none; border: none; padding: 0.75rem 1.25rem; font-weight: 700; color: #64748b;
+      background: none; border: none; padding: 0.5rem 1rem; font-weight: 700; color: #64748b;
       border-radius: 12px; transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); cursor: pointer;
-      position: relative; white-space: nowrap; display: flex; align-items: center;
+      white-space: nowrap; display: flex; align-items: center; gap: 0.5rem; font-size: 0.85rem;
     }
+    .nav-label { display: flex; flex-direction: column; align-items: flex-start; line-height: 1.1; }
+    .nav-name  { font-size: 0.82rem; font-weight: 700; }
+    .nav-code  { font-size: 0.62rem; font-weight: 600; opacity: 0.55; letter-spacing: 0.03em; }
     .nav-btn.active { background: #1e293b; color: #fff; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
     .nav-btn:not(.active):hover { background: #f1f5f9; color: #1e293b; }
 

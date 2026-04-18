@@ -105,7 +105,7 @@ type RangoTipo = 'mes_actual' | 'mes_anterior' | 'anio_actual' | 'personalizado'
     .kpi-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.08); border-color: #e2e8f0; }
 
     .kpi-label { font-size: 0.65rem; font-weight: 700; color: #64748b; text-transform: uppercase; display: block; letter-spacing: 0.05em; }
-    .kpi-value { font-size: 1.1rem; font-weight: 800; color: #0f172a; display: block; line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .kpi-value { font-size: 1.35rem; font-weight: 800; color: #0f172a; display: block; line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .kpi-value-huge { font-size: 1.75rem; font-weight: 800; color: #0f172a; line-height: 1; display: block; }
     .kpi-sub-row { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
     .kpi-growth-badge {

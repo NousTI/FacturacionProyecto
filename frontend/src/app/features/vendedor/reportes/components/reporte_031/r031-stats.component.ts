@@ -95,7 +95,7 @@ import { InfoTooltipComponent } from '../../../../../shared/components/info-tool
   styles: [`
     .stats-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
       gap: 0.75rem;
       margin-bottom: 1.25rem;
     }
@@ -103,7 +103,8 @@ import { InfoTooltipComponent } from '../../../../../shared/components/info-tool
     .stat-card {
       background: white;
       border-radius: 12px;
-      padding: 1rem;
+      padding: 0.85rem 1rem;
+      min-height: 95px;
       box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
       border: 1px solid rgba(226, 232, 240, 0.8);
       transition: transform 0.2s ease, box-shadow 0.2s ease;

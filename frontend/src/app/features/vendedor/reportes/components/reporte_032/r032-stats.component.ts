@@ -99,7 +99,8 @@ Chart.register(...registerables);
     .stat-card {
       background: white;
       border-radius: 10px;
-      padding: 0.65rem 0.8rem;
+      padding: 0.85rem 1rem;
+      min-height: 95px;
       box-shadow: 0 1px 3px rgba(0,0,0,0.06);
       border: 1px solid #f1f5f9;
       transition: all 0.2s ease;
@@ -120,7 +121,7 @@ Chart.register(...registerables);
     .stat-icon { width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 1rem; }
 
     .stat-body { display: flex; flex-direction: column; gap: 0.4rem; }
-    .stat-value { font-size: 1.1rem; font-weight: 800; color: #0f172a; margin: 0; letter-spacing: -0.03em; }
+    .stat-value { font-size: 1.35rem; font-weight: 800; color: #0f172a; margin: 0; letter-spacing: -0.03em; }
 
     .stat-badge {
       display: inline-flex; align-items: center; gap: 0.25rem; font-size: 0.65rem;

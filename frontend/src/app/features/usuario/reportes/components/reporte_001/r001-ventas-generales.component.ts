@@ -1,6 +1,7 @@
 import { Component, Input, OnChanges, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule, CurrencyPipe } from '@angular/common';
 import { R001Report } from '../../services/financial-reports.service';
+import { RangoTipo } from '../../reportes.page';
 import { Chart, ChartConfiguration, registerables } from 'chart.js';
 
 Chart.register(...registerables);
@@ -26,7 +27,7 @@ Chart.register(...registerables);
           <span class="value">{{ data.facturas_emitidas.valor }}</span>
           <div class="trend" [class.up]="data.facturas_emitidas.variacion >= 0" [class.down]="data.facturas_emitidas.variacion < 0">
             <i class="bi" [class.bi-arrow-up]="data.facturas_emitidas.variacion >= 0" [class.bi-arrow-down]="data.facturas_emitidas.variacion < 0"></i>
-            {{ data.facturas_emitidas.variacion | number:'1.1-1' }}% vs anterior
+            {{ data.facturas_emitidas.variacion | number:'1.1-1' }}% {{ labelPeriodoAnt }}
           </div>
         </div>
 
@@ -41,7 +42,7 @@ Chart.register(...registerables);
           <span class="value">{{ data.ticket_promedio.valor | currency }}</span>
           <div class="trend" [class.up]="data.ticket_promedio.variacion >= 0" [class.down]="data.ticket_promedio.variacion < 0">
             <i class="bi" [class.bi-arrow-up]="data.ticket_promedio.variacion >= 0" [class.bi-arrow-down]="data.ticket_promedio.variacion < 0"></i>
-            {{ data.ticket_promedio.variacion | number:'1.1-1' }}% vs anterior
+            {{ data.ticket_promedio.variacion | number:'1.1-1' }}% {{ labelPeriodoAnt }}
           </div>
         </div>
 
@@ -110,7 +111,7 @@ Chart.register(...registerables);
     .fade-in { animation: fadeIn 0.4s ease-out; }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-    .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; }
+    .kpi-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 0.75rem; }
     .kpi-card {
       background: #fff; border: 1px solid #f1f5f9; border-radius: 12px; padding: 0.85rem 1rem;
       box-shadow: 0 1px 3px rgba(0,0,0,0.06); display: flex; flex-direction: column; gap: 0.3rem;
@@ -155,11 +156,25 @@ Chart.register(...registerables);
 })
 export class R001VentasGeneralesComponent implements OnChanges {
   @Input() data!: R001Report;
+  @Input() rangoTipo: RangoTipo = 'mes_actual';
   @ViewChild('pieChart') pieChart?: ElementRef<HTMLCanvasElement>;
 
   private chart?: Chart;
   private colors = ['#6366f1', '#3b82f6', '#10b981', '#f59e0b', '#ef4444'];
   private ivaOrder = ['15%', '8%', '5%', '0%'];
+
+  get labelPeriodoAnt(): string {
+    switch (this.rangoTipo) {
+      case 'mes_actual':        return 'vs mes anterior';
+      case 'mes_anterior':      return 'vs mes previo';
+      case 'anio_actual':       return 'vs año anterior';
+      case 'semestre_1':
+      case 'semestre_2':        return 'vs semestre anterior';
+      case 'personalizado':
+      case 'personalizado_mes': return 'vs período anterior';
+      default:                  return 'vs anterior';
+    }
+  }
 
   get ivaOrdenado() {
     if (!this.data?.iva_desglosado) return [];

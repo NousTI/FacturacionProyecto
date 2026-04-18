@@ -1,6 +1,7 @@
 import { Component, Input, OnChanges } from '@angular/core';
 import { CommonModule, CurrencyPipe, DecimalPipe } from '@angular/common';
 import { MisVentasReport } from '../../services/financial-reports.service';
+import { RangoTipo } from '../../reportes.page';
 
 @Component({
   selector: 'app-r001-mis-ventas',
@@ -8,16 +9,6 @@ import { MisVentasReport } from '../../services/financial-reports.service';
   imports: [CommonModule, CurrencyPipe, DecimalPipe],
   template: `
     <div class="fade-in">
-
-      <!-- Banner informativo -->
-      <div class="info-banner mb-4">
-        <i class="bi bi-info-circle-fill me-2"></i>
-        <span>
-          <strong>Filtro aplicado automáticamente por el sistema:</strong>
-          mostrando únicamente las facturas emitidas por <strong>{{ data.empleado }}</strong>.
-          Solo puedes ver tus propias ventas.
-        </span>
-      </div>
 
       <!-- KPIs -->
       <div class="kpi-grid mb-4">
@@ -28,7 +19,7 @@ import { MisVentasReport } from '../../services/financial-reports.service';
           <span class="subtext">mis ventas</span>
           <span class="trend highlight-trend" [class.up]="data.kpis.total_vendido.variacion >= 0" [class.down]="data.kpis.total_vendido.variacion < 0">
             <i class="bi" [class.bi-arrow-up-short]="data.kpis.total_vendido.variacion >= 0" [class.bi-arrow-down-short]="data.kpis.total_vendido.variacion < 0"></i>
-            {{ data.kpis.total_vendido.variacion | number:'1.1-1' }}% vs período ant.
+            {{ data.kpis.total_vendido.variacion | number:'1.1-1' }}% {{ labelPeriodoAnt }}
           </span>
         </div>
 
@@ -38,7 +29,7 @@ import { MisVentasReport } from '../../services/financial-reports.service';
           <span class="subtext">emitidas por mí</span>
           <span class="trend" [class.up]="data.kpis.mis_facturas.variacion >= 0" [class.down]="data.kpis.mis_facturas.variacion < 0">
             <i class="bi" [class.bi-arrow-up-short]="data.kpis.mis_facturas.variacion >= 0" [class.bi-arrow-down-short]="data.kpis.mis_facturas.variacion < 0"></i>
-            {{ data.kpis.mis_facturas.variacion | number:'1.1-1' }}% vs período ant.
+            {{ data.kpis.mis_facturas.variacion | number:'1.1-1' }}% {{ labelPeriodoAnt }}
           </span>
         </div>
 
@@ -49,7 +40,7 @@ import { MisVentasReport } from '../../services/financial-reports.service';
           <ng-container *ngIf="data.kpis.devoluciones.variacion != null; else sinVariacion">
             <span class="trend" [class.up]="data.kpis.devoluciones.variacion <= 0" [class.down]="data.kpis.devoluciones.variacion > 0">
               <i class="bi" [class.bi-arrow-up-short]="data.kpis.devoluciones.variacion > 0" [class.bi-arrow-down-short]="data.kpis.devoluciones.variacion <= 0"></i>
-              {{ data.kpis.devoluciones.variacion | number:'1.1-1' }}% vs período ant.
+              {{ data.kpis.devoluciones.variacion | number:'1.1-1' }}% {{ labelPeriodoAnt }}
             </span>
           </ng-container>
           <ng-template #sinVariacion>
@@ -63,7 +54,7 @@ import { MisVentasReport } from '../../services/financial-reports.service';
           <span class="subtext">por factura</span>
           <span class="trend" [class.up]="data.kpis.ticket_promedio.variacion >= 0" [class.down]="data.kpis.ticket_promedio.variacion < 0">
             <i class="bi" [class.bi-arrow-up-short]="data.kpis.ticket_promedio.variacion >= 0" [class.bi-arrow-down-short]="data.kpis.ticket_promedio.variacion < 0"></i>
-            {{ data.kpis.ticket_promedio.variacion | number:'1.1-1' }}% vs período ant.
+            {{ data.kpis.ticket_promedio.variacion | number:'1.1-1' }}% {{ labelPeriodoAnt }}
           </span>
         </div>
 
@@ -159,14 +150,6 @@ import { MisVentasReport } from '../../services/financial-reports.service';
     .fade-in { animation: fadeIn 0.4s ease-out; }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-    /* Banner */
-    .info-banner {
-      background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 14px;
-      padding: 0.85rem 1.25rem; font-size: 0.85rem; color: #1e40af;
-      display: flex; align-items: flex-start; gap: 0.25rem;
-    }
-    .info-banner i { font-size: 1rem; margin-top: 1px; flex-shrink: 0; }
-
     /* KPIs */
     .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; }
     .kpi-card {
@@ -224,6 +207,20 @@ import { MisVentasReport } from '../../services/financial-reports.service';
 })
 export class R001MisVentasComponent implements OnChanges {
   @Input() data!: MisVentasReport;
+  @Input() rangoTipo: RangoTipo = 'mes_actual';
+
+  get labelPeriodoAnt(): string {
+    switch (this.rangoTipo) {
+      case 'mes_actual':       return 'vs mes anterior';
+      case 'mes_anterior':     return 'vs mes previo';
+      case 'anio_actual':      return 'vs año anterior';
+      case 'semestre_1':       return 'vs semestre anterior';
+      case 'semestre_2':       return 'vs semestre anterior';
+      case 'personalizado':    return 'vs período anterior';
+      case 'personalizado_mes':return 'vs mes anterior';
+      default:                 return '{{ labelPeriodoAnt }}';
+    }
+  }
 
   ngOnChanges() {}
 }

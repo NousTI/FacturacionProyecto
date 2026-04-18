@@ -1,6 +1,7 @@
 import { Component, Input, OnChanges, SimpleChanges, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule, CurrencyPipe, DecimalPipe } from '@angular/common';
 import { ExecutiveSummary } from '../../services/financial-reports.service';
+import { RangoTipo } from '../../reportes.page';
 import { Chart, ChartConfiguration, registerables } from 'chart.js';
 import { SRI_FORMAS_PAGO } from '../../../../../core/constants/sri-iva.constants';
 import { FormasPagoTooltipComponent } from './formas-pago-tooltip.component';
@@ -26,7 +27,7 @@ Chart.register(...registerables);
             <span class="value">{{ data.total_recaudado.valor | currency }}</span>
             <span class="trend" [class.up]="data.total_recaudado.variacion >= 0" [class.down]="data.total_recaudado.variacion < 0">
               <i class="bi" [class.bi-arrow-up-short]="data.total_recaudado.variacion >= 0" [class.bi-arrow-down-short]="data.total_recaudado.variacion < 0"></i>
-              {{ data.total_recaudado.variacion | number:'1.1-1' }}% vs periodo anterior
+              {{ data.total_recaudado.variacion | number:'1.1-1' }}% {{ labelPeriodoAnt }}
             </span>
           </div>
           <div class="kpi-icon"><i class="bi bi-piggy-bank"></i></div>
@@ -38,7 +39,7 @@ Chart.register(...registerables);
             <span class="value">{{ data.total_facturado.valor | currency }}</span>
             <span class="trend" [class.up]="data.total_facturado.variacion >= 0" [class.down]="data.total_facturado.variacion < 0">
               <i class="bi" [class.bi-arrow-up-short]="data.total_facturado.variacion >= 0" [class.bi-arrow-down-short]="data.total_facturado.variacion < 0"></i>
-              {{ data.total_facturado.variacion | number:'1.1-1' }}% vs periodo anterior
+              {{ data.total_facturado.variacion | number:'1.1-1' }}% {{ labelPeriodoAnt }}
             </span>
           </div>
           <div class="kpi-icon"><i class="bi bi-file-earmark-text"></i></div>
@@ -50,7 +51,7 @@ Chart.register(...registerables);
             <span class="value">{{ data.ingreso_efectivo.valor | currency }}</span>
             <span class="trend" [class.up]="data.ingreso_efectivo.variacion >= 0" [class.down]="data.ingreso_efectivo.variacion < 0">
               <i class="bi" [class.bi-arrow-up-short]="data.ingreso_efectivo.variacion >= 0" [class.bi-arrow-down-short]="data.ingreso_efectivo.variacion < 0"></i>
-              {{ data.ingreso_efectivo.variacion | number:'1.1-1' }}% vs ant.
+              {{ data.ingreso_efectivo.variacion | number:'1.1-1' }}% {{ labelPeriodoAnt }}
             </span>
           </div>
           <div class="kpi-icon"><i class="bi bi-cash-stack"></i></div>
@@ -65,7 +66,7 @@ Chart.register(...registerables);
             <span class="value">{{ data.ingreso_tarjeta.valor | currency }}</span>
             <span class="trend" [class.up]="data.ingreso_tarjeta.variacion >= 0" [class.down]="data.ingreso_tarjeta.variacion < 0">
               <i class="bi" [class.bi-arrow-up-short]="data.ingreso_tarjeta.variacion >= 0" [class.bi-arrow-down-short]="data.ingreso_tarjeta.variacion < 0"></i>
-              {{ data.ingreso_tarjeta.variacion | number:'1.1-1' }}% vs mes anterior
+              {{ data.ingreso_tarjeta.variacion | number:'1.1-1' }}% {{ labelPeriodoAnt }}
             </span>
           </div>
           <div class="kpi-icon"><i class="bi bi-credit-card"></i></div>
@@ -107,7 +108,7 @@ Chart.register(...registerables);
             <span class="value">{{ data.clientes_nuevos.valor }}</span>
             <span class="trend" [class.up]="data.clientes_nuevos.variacion >= 0" [class.down]="data.clientes_nuevos.variacion < 0">
               <i class="bi" [class.bi-arrow-up-short]="data.clientes_nuevos.variacion >= 0" [class.bi-arrow-down-short]="data.clientes_nuevos.variacion < 0"></i>
-              {{ data.clientes_nuevos.variacion | number:'1.1-1' }}% vs mes anterior
+              {{ data.clientes_nuevos.variacion | number:'1.1-1' }}% {{ labelPeriodoAnt }}
             </span>
           </div>
           <div class="kpi-icon"><i class="bi bi-person-plus"></i></div>
@@ -330,7 +331,7 @@ Chart.register(...registerables);
     @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
     /* KPI Grid */
-    .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 1rem; }
+    .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(90px, 1fr)); gap: 1rem; }
     .kpi-card {
       background: #fff; border: 1px solid #f1f5f9; border-radius: 12px; padding: 0.85rem 1rem;
       box-shadow: 0 1px 3px rgba(0,0,0,0.06); display: flex; justify-content: space-between;
@@ -441,6 +442,20 @@ export class R028ResumenEjecutivoComponent implements OnChanges {
   @Input() data!: ExecutiveSummary;
   @Input() fechaInicio = '';
   @Input() fechaFin = '';
+  @Input() rangoTipo: RangoTipo = 'mes_actual';
+
+  get labelPeriodoAnt(): string {
+    switch (this.rangoTipo) {
+      case 'mes_actual':        return 'vs mes anterior';
+      case 'mes_anterior':      return 'vs mes previo';
+      case 'anio_actual':       return 'vs año anterior';
+      case 'semestre_1':
+      case 'semestre_2':        return 'vs semestre anterior';
+      case 'personalizado':
+      case 'personalizado_mes': return 'vs período anterior';
+      default:                  return 'vs período anterior';
+    }
+  }
   @ViewChild('annualChart') annualChart?: ElementRef<HTMLCanvasElement>;
   @ViewChild('profitChart') profitChart?: ElementRef<HTMLCanvasElement>;
 
