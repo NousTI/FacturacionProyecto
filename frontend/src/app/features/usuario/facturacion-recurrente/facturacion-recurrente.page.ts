@@ -210,7 +210,7 @@ import { FacturaProgramada } from '../../../domain/models/facturacion-programada
     </div>
   `,
   styles: [`
-    .recurrente-page-container { min-height: 100vh; background: #f8fafc; }
+    .recurrente-page-container { min-height: 100vh; background: transparent; }
     .page-title { font-size: 1.75rem; font-weight: 900; color: #161d35; margin-bottom: 0.25rem; }
     .page-subtitle { color: #94a3b8; font-size: 0.95rem; font-weight: 500; }
 

@@ -158,7 +158,7 @@ import { SriConfigService } from '../certificado-sri/services/sri-config.service
   styles: [`
     .facturas-page-container {
       min-height: 100vh;
-      background: #f8fafc;
+      background: transparent;
     }
     .page-title {
       font-size: 1.75rem;

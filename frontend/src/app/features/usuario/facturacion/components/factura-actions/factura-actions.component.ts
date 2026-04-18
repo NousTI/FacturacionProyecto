@@ -106,10 +106,9 @@ import { HasPermissionDirective } from '../../../../../shared/directives/has-per
   `,
   styles: [`
     .actions-box-lux {
-      background: white;
-      border: 1px solid #f1f5f9;
-      border-radius: 20px;
-      padding: 1rem 1.5rem;
+      background: transparent;
+      border: none;
+      padding: 0;
       margin-bottom: 2rem;
     }
 
