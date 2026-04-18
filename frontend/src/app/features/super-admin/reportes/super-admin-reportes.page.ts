@@ -70,7 +70,7 @@ type Tab = 'global' | 'comisiones' | 'uso';
 <app-toast></app-toast>
   `,
   styles: [`
-    .reportes-page-wrapper { padding: 1.5rem; background: #f8fafc; min-height: 100vh; }
+    .reportes-page-wrapper { padding: 0; background: transparent; min-height: 100vh; }
 
     .header-actions-bar {
       display: flex;
@@ -95,7 +95,7 @@ type Tab = 'global' | 'comisiones' | 'uso';
     .nav-btn.active { background: #1e293b; color: #fff; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
     .nav-btn:not(.active):hover { background: #f1f5f9; color: #1e293b; }
 
-    .report-content-container { margin-top: 1rem; }
+    .report-content-container { margin-top: 24px; }
   `]
 })
 export class SuperAdminReportesPage implements OnInit, AfterViewInit {

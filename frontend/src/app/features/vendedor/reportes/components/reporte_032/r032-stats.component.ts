@@ -165,7 +165,7 @@ Chart.register(...registerables);
     .chart-title { font-size: 0.85rem; font-weight: 800; color: #1e293b; margin: 0; }
     .chart-subtitle { font-size: 0.72rem; color: #64748b; margin: 0.15rem 0 0; }
 
-    .canvas-container { position: relative; flex: 1; min-height: 180px; }
+    .canvas-container { position: relative; flex: 1; min-height: 140px; max-height: 160px; }
 
     .chart-legend {
       display: flex; align-items: center; gap: 0.35rem; flex-wrap: wrap;

@@ -10,24 +10,11 @@ type RangoTipo = 'mes_actual' | 'mes_anterior' | 'anio_actual' | 'personalizado'
   imports: [CommonModule],
   template: `
     <div class="kpi-grid mb-4">
-      <!-- Empresas Activas -->
+      <!-- Ingresos del Año — DESTACADO -->
       <div class="kpi-card kpi-active-highlight">
-        <span class="kpi-label">Empresas activas</span>
-        <span class="kpi-value-huge">{{ datos.empresas_activas | number }}</span>
-        <div class="kpi-sub-row">
-          <span class="kpi-growth-badge" [class.badge-up]="datos.variacion_empresas_activas_valor >= 0" [class.badge-down]="datos.variacion_empresas_activas_valor < 0">
-            <i class="bi" [class.bi-arrow-up-right]="datos.variacion_empresas_activas_valor >= 0" [class.bi-arrow-down-right]="datos.variacion_empresas_activas_valor < 0"></i>
-            {{ datos.variacion_empresas_activas_valor >= 0 ? '+' : '' }}{{ datos.variacion_empresas_activas_valor }}
-          </span>
-          <span class="kpi-sub-label">{{ periodoLabel }}</span>
-        </div>
-      </div>
-
-      <!-- Ingresos del Año -->
-      <div class="kpi-card">
         <span class="kpi-label">Ingresos del año</span>
         <span class="kpi-value">{{ datos.ingresos_anio | currency:'USD':'symbol':'1.0-2' }}</span>
-        <span class="kpi-sub" [class.text-success]="datos.variacion_ingresos_anio >= 0" [class.text-danger]="datos.variacion_ingresos_anio < 0">
+        <span class="kpi-sub">
           {{ datos.variacion_ingresos_anio >= 0 ? '+' : '' }}{{ datos.variacion_ingresos_anio }}% vs anterior
         </span>
       </div>
@@ -39,6 +26,19 @@ type RangoTipo = 'mes_actual' | 'mes_anterior' | 'anio_actual' | 'personalizado'
         <span class="kpi-sub" [class.text-success]="datos.variacion_ingresos_mes >= 0" [class.text-danger]="datos.variacion_ingresos_mes < 0">
           {{ datos.variacion_ingresos_mes >= 0 ? '+' : '' }}{{ datos.variacion_ingresos_mes }}% vs anterior
         </span>
+      </div>
+
+      <!-- Empresas Activas -->
+      <div class="kpi-card">
+        <span class="kpi-label">Empresas activas</span>
+        <span class="kpi-value-huge">{{ datos.empresas_activas | number }}</span>
+        <div class="kpi-sub-row">
+          <span class="kpi-growth-badge" [class.badge-up]="datos.variacion_empresas_activas_valor >= 0" [class.badge-down]="datos.variacion_empresas_activas_valor < 0">
+            <i class="bi" [class.bi-arrow-up-right]="datos.variacion_empresas_activas_valor >= 0" [class.bi-arrow-down-right]="datos.variacion_empresas_activas_valor < 0"></i>
+            {{ datos.variacion_empresas_activas_valor >= 0 ? '+' : '' }}{{ datos.variacion_empresas_activas_valor }}
+          </span>
+          <span class="kpi-sub-label">{{ periodoLabel }}</span>
+        </div>
       </div>
 
       <!-- Usuarios Nuevos -->
@@ -53,8 +53,6 @@ type RangoTipo = 'mes_actual' | 'mes_anterior' | 'anio_actual' | 'personalizado'
           <span class="kpi-sub-label">{{ periodoLabel }}</span>
         </div>
       </div>
-
-
 
       <!-- Tasa Crecimiento -->
       <div class="kpi-card">
@@ -86,36 +84,62 @@ type RangoTipo = 'mes_actual' | 'mes_anterior' | 'anio_actual' | 'personalizado'
     </div>
   `,
   styles: [`
-    .kpi-grid { 
-      display: grid; 
-      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); 
-      gap: 0.75rem; 
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 0.75rem;
     }
-    .kpi-card { 
-      border: 1px solid #e2e8f0; 
-      border-radius: 8px; 
-      padding: 0.85rem; 
-      background: #f8fafc; 
-      transition: all 0.2s ease;
-    }
-    .kpi-card:hover { transform: translateY(-2px); box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
-    .kpi-label { font-size: 0.65rem; font-weight: 700; color: #64748b; text-transform: uppercase; display: block; margin-bottom: 0.35rem; letter-spacing: 0.5px; }
-    .kpi-value { font-size: 1.1rem; font-weight: 800; color: #1e293b; display: block; line-height: 1; margin-bottom: 0.25rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .kpi-main-content { display: flex; align-items: baseline; gap: 0.75rem; margin-bottom: 0.25rem; }
-    .kpi-value-huge { font-size: 1.75rem; font-weight: 800; color: #1e293b; line-height: 1; display: block; margin-bottom: 0.35rem; }
-    .kpi-sub-row { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
-    .kpi-growth-badge { 
-      padding: 0.25rem 0.5rem; border-radius: 6px; font-size: 0.75rem; font-weight: 700; 
-      display: flex; align-items: center; gap: 0.2rem;
-    }
-    .badge-up { background: #dcfce7; color: #15803d; }
-    .badge-down { background: #fee2e2; color: #b91c1c; }
-    .kpi-sub-label { font-size: 0.75rem; font-weight: 500; color: #94a3b8; }
 
-    .kpi-sub { font-size: 0.75rem; font-weight: 600; }
-    .kpi-active-highlight { background: #ffffff; border-left: 4px solid #1e293b; }
-    .kpi-warning { border-bottom: 3px solid #f59e0b; background: #fffbeb; }
-    .kpi-danger { border-bottom: 3px solid #ef4444; background: #fef2f2; }
+    .kpi-card {
+      background: #ffffff;
+      border: 1px solid #f1f5f9;
+      border-radius: 12px;
+      padding: 0.85rem 1rem;
+      min-height: 95px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      display: flex;
+      flex-direction: column;
+      gap: 0.3rem;
+    }
+    .kpi-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.08); border-color: #e2e8f0; }
+
+    .kpi-label { font-size: 0.65rem; font-weight: 700; color: #64748b; text-transform: uppercase; display: block; letter-spacing: 0.05em; }
+    .kpi-value { font-size: 1.1rem; font-weight: 800; color: #0f172a; display: block; line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .kpi-value-huge { font-size: 1.75rem; font-weight: 800; color: #0f172a; line-height: 1; display: block; }
+    .kpi-sub-row { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
+    .kpi-growth-badge {
+      padding: 0.2rem 0.5rem; border-radius: 6px; font-size: 0.7rem; font-weight: 700;
+      display: inline-flex; align-items: center; gap: 0.2rem;
+    }
+    .badge-up   { background: var(--status-success-bg); color: var(--status-success-text); }
+    .badge-down { background: var(--status-danger-bg);  color: var(--status-danger-text); }
+    .kpi-sub-label { font-size: 0.7rem; font-weight: 500; color: #94a3b8; }
+    .kpi-sub { font-size: 0.72rem; font-weight: 600; }
+
+    /* Highlight */
+    .kpi-active-highlight {
+      background: var(--gradient-highlight);
+      border-color: transparent;
+      box-shadow: 0 4px 18px rgba(168, 85, 247, 0.35);
+    }
+    .kpi-active-highlight .kpi-label      { color: rgba(255,255,255,0.8); }
+    .kpi-active-highlight .kpi-value-huge { color: #fff; }
+    .kpi-active-highlight .kpi-value      { color: #fff; }
+    .kpi-active-highlight .kpi-sub        { color: rgba(255,255,255,0.8); }
+    .kpi-active-highlight .kpi-growth-badge { background: rgba(255,255,255,0.2); color: #fff; }
+    .kpi-active-highlight .kpi-sub-label  { color: rgba(255,255,255,0.7); }
+
+    /* Themed cards */
+    .kpi-warning { background: var(--status-warning-bg); }
+    .kpi-warning .kpi-label { color: var(--status-warning-text); }
+    .kpi-warning .kpi-value { color: var(--status-warning-text); }
+    .kpi-warning .kpi-sub   { color: var(--status-warning-text); }
+
+    .kpi-danger { background: var(--status-danger-bg); }
+    .kpi-danger .kpi-label { color: var(--status-danger-text); }
+    .kpi-danger .kpi-value { color: var(--status-danger-text); }
+    .kpi-danger .kpi-sub   { color: var(--status-danger-text); }
   `]
 })
 export class R031KpisComponent {

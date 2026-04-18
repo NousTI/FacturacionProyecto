@@ -30,30 +30,30 @@ type RangoTipo = 'mes_actual' | 'mes_anterior' | 'anio_actual' | 'personalizado'
     <div *ngIf="datos" id="print-comisiones" class="animate__animated animate__fadeIn">
       <!-- KPIs -->
       <div class="kpi-grid mb-4">
-        <div class="kpi-card kpi-warning">
-          <span class="kpi-label">Comisiones pendientes</span>
-          <span class="kpi-value">{{ datos.kpis.comisiones_pendientes | currency:'USD':'symbol':'1.2-2' }}</span>
-          <span class="kpi-sub text-warning">de aprobación</span>
-        </div>
         <div class="kpi-card kpi-success">
           <span class="kpi-label">Pagadas este mes</span>
           <span class="kpi-value">{{ datos.kpis.pagadas_mes | currency:'USD':'symbol':'1.2-2' }}</span>
-          <span class="kpi-sub text-success">ya procesadas</span>
+          <span class="kpi-sub">ya procesadas</span>
+        </div>
+        <div class="kpi-card kpi-warning">
+          <span class="kpi-label">Comisiones pendientes</span>
+          <span class="kpi-value">{{ datos.kpis.comisiones_pendientes | currency:'USD':'symbol':'1.2-2' }}</span>
+          <span class="kpi-sub">de aprobación</span>
         </div>
         <div class="kpi-card">
           <span class="kpi-label">Vendedores activos</span>
           <span class="kpi-value">{{ datos.kpis.vendedores_activos }}</span>
           <span class="kpi-sub text-muted">en el sistema</span>
         </div>
-        <div class="kpi-card kpi-success">
+        <div class="kpi-card">
           <span class="kpi-label">Upgrades concretados</span>
           <span class="kpi-value">{{ datos.kpis.porcentaje_upgrades ?? 0 }}%</span>
-          <span class="kpi-sub text-success">de éxito</span>
+          <span class="kpi-sub text-muted">de éxito</span>
         </div>
         <div class="kpi-card kpi-danger">
           <span class="kpi-label">Clientes perdidos</span>
           <span class="kpi-value">{{ datos.kpis.porcentaje_clientes_perdidos ?? 0 }}%</span>
-          <span class="kpi-sub text-danger">en zona rescate</span>
+          <span class="kpi-sub">en zona rescate</span>
         </div>
       </div>
 
@@ -162,15 +162,32 @@ type RangoTipo = 'mes_actual' | 'mes_anterior' | 'anio_actual' | 'personalizado'
     .empty-state, .loading-state { text-align: center; padding: 3rem 1rem; color: #64748b; }
     .spinner-grow { width: 2rem; height: 2rem; }
     .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 0.75rem; }
-    .kpi-card { border: 1px solid #e2e8f0; border-radius: 6px; padding: 0.75rem; background: #f8fafc; }
-    .kpi-label { font-size: 0.6rem; font-weight: 700; color: #64748b; text-transform: uppercase; display: block; margin-bottom: 0.25rem; }
-    .kpi-value { font-size: 1.1rem; font-weight: 800; color: #161d35; display: block; }
-    .kpi-sub { font-size: 0.7rem; color: #64748b; }
-    .kpi-warning { border-left: 3px solid #f59e0b; }
-    .kpi-danger { border-left: 3px solid #ef4444; }
-    .kpi-success { border-left: 3px solid #10b981; }
-    .card-graf { border: 1px solid #e2e8f0; border-radius: 6px; padding: 1rem; background: #ffffff; height: 100%; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
-    .graf-title { font-size: 0.85rem; font-weight: 700; color: #161d35; margin-bottom: 1rem; text-transform: uppercase; letter-spacing: 0.5px; text-align: center; }
+    .kpi-card {
+      background: #ffffff;
+      border: 1px solid #f1f5f9;
+      border-radius: 12px;
+      padding: 0.85rem 1rem;
+      min-height: 95px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      display: flex; flex-direction: column; gap: 0.3rem;
+    }
+    .kpi-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.08); border-color: #e2e8f0; }
+    .kpi-label { font-size: 0.65rem; font-weight: 700; color: #64748b; text-transform: uppercase; display: block; letter-spacing: 0.05em; }
+    .kpi-value { font-size: 1.1rem; font-weight: 800; color: #0f172a; display: block; line-height: 1.2; }
+    .kpi-sub { font-size: 0.72rem; font-weight: 600; color: #64748b; }
+    .kpi-warning { background: #ffffff; }
+    .kpi-danger  { background: #ffffff; }
+    .kpi-success {
+      background: var(--gradient-highlight);
+      border-color: transparent;
+      box-shadow: 0 4px 18px rgba(168, 85, 247, 0.35);
+    }
+    .kpi-success .kpi-label { color: rgba(255,255,255,0.8); }
+    .kpi-success .kpi-value { color: #fff; }
+    .kpi-success .kpi-sub   { color: rgba(255,255,255,0.75); }
+    .card-graf { border: 1px solid #f1f5f9; border-radius: 16px; padding: 1.25rem; background: #ffffff; height: 100%; box-shadow: 0 1px 3px rgba(0,0,0,0.06); }
+    .graf-title { font-size: 0.8rem; font-weight: 800; color: #1e293b; margin-bottom: 1rem; text-transform: uppercase; letter-spacing: 0.05em; text-align: center; }
     .chart-container-pie { position: relative; height: 200px; width: 100%; display: flex; justify-content: center; }
     .chart-legend { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.5rem; border-top: 1px solid #f1f5f9; padding-top: 0.75rem; }
     .legend-item { display: flex; align-items: center; gap: 0.5rem; font-size: 0.65rem; color: #4b5563; }

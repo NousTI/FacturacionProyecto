@@ -60,7 +60,7 @@ import { R033TablaComponent } from './components/r-033-tabla.component';
     </div>
   `,
   styles: [`
-    .report-container { padding: 0.5rem; }
+    .report-container { padding: 0; }
     .empty-state, .loading-state { text-align: center; padding: 4rem 1rem; color: #64748b; background: white; border-radius: 12px; border: 2px dashed #e2e8f0; margin: 2rem 0; }
     .spinner-grow { width: 2.5rem; height: 2.5rem; margin-bottom: 1rem; }
     .animate-fade-in { animation: fadeIn 0.4s ease-out; }
