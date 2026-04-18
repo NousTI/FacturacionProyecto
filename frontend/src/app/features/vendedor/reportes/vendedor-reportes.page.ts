@@ -95,23 +95,7 @@ export type ReportTab = 'empresas' | 'comisiones';
       </div>
 
 
-      <div class="row mb-4 animate__animated animate__fadeIn" *ngIf="tabActivo === 'comisiones'">
-          <div class="col-md-6 offset-md-3">
-              <app-vendor-chart
-                  title="Rendimiento: Este Mes vs Mes Anterior"
-                  subtitle="Comparativa de comisiones generadas"
-                  type="doughnut"
-                  [data]="[
-                      {label: 'Este Mes', value: r032Data?.grafica_comparativa?.total_actual},
-                      {label: 'Mes Anterior', value: r032Data?.grafica_comparativa?.total_anterior}
-                  ]"
-                  labelKey="label"
-                  valueKey="value"
-                  [colors]="['#10b981', '#cbd5e1']">
-              </app-vendor-chart>
-          </div>
-      </div>
-      <!-- SECCIONES DE REPORTE (Tablas de Datos) -->
+<!-- SECCIONES DE REPORTE (Tablas de Datos) -->
       <div class="report-content-area">
           <div *ngIf="isLoading" class="loading-state py-5 text-center">
             <div class="spinner-grow text-primary" role="status"></div>

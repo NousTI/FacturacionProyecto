@@ -9,7 +9,7 @@ import { InfoTooltipComponent } from '../../../../../shared/components/info-tool
   template: `
     <div class="stats-grid">
       <!-- Mis empresas activas -->
-      <div class="stat-card primary">
+      <div class="stat-card primary highlight">
         <div class="stat-header">
           <span class="stat-label">Mis empresas activas</span>
           <div class="stat-icon"><i class="bi bi-buildings"></i></div>
@@ -166,17 +166,28 @@ import { InfoTooltipComponent } from '../../../../../shared/components/info-tool
       width: fit-content;
     }
 
-    /* Colors and Variants */
-    .primary .stat-icon { background: #eff6ff; color: #3b82f6; }
-    .warning .stat-icon { background: #fffbeb; color: #f59e0b; }
-    .danger .stat-icon { background: #fef2f2; color: #ef4444; }
-    .info .stat-icon { background: #f0f9ff; color: #0ea5e9; }
-    .purple .stat-icon { background: #f5f3ff; color: #8b5cf6; }
-    .cyan .stat-icon { background: #ecfeff; color: #06b6d4; }
+    /* Highlight card */
+    .stat-card.highlight {
+      background: var(--gradient-highlight);
+      border-color: transparent;
+      box-shadow: 0 4px 18px rgba(168, 85, 247, 0.35);
+    }
+    .stat-card.highlight .stat-label { color: rgba(255,255,255,0.8); }
+    .stat-card.highlight .stat-value { color: #fff; }
+    .stat-card.highlight .stat-icon  { background: rgba(255,255,255,0.2); color: #fff; }
+    .stat-card.highlight .stat-badge { background: rgba(255,255,255,0.2); color: #fff; border: none; }
 
-    .stat-badge.success { background: #dcfce7; color: #15803d; }
-    .stat-badge.warning { background: #fef3c7; color: #b45309; }
-    .stat-badge.danger { background: #fee2e2; color: #b91c1c; }
+    /* Colors and Variants */
+    .primary .stat-icon { background: var(--status-info-bg); color: var(--status-info); }
+    .warning .stat-icon { background: var(--status-warning-bg); color: var(--status-warning); }
+    .danger .stat-icon  { background: var(--status-danger-bg); color: var(--status-danger); }
+    .info .stat-icon    { background: var(--status-info-bg); color: var(--status-info); }
+    .purple .stat-icon  { background: var(--status-orange-bg); color: var(--status-orange); }
+    .cyan .stat-icon    { background: var(--status-success-bg); color: var(--status-success); }
+
+    .stat-badge.success { background: var(--status-success-bg); color: var(--status-success-text); }
+    .stat-badge.warning { background: var(--status-warning-bg); color: var(--status-warning-text); }
+    .stat-badge.danger  { background: var(--status-danger-bg);  color: var(--status-danger-text); }
     .stat-badge:not(.success):not(.warning):not(.danger) { background: #f1f5f9; color: #475569; }
   `]
 })

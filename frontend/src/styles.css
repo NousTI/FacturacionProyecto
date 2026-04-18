@@ -47,6 +47,8 @@
   --status-neutral: #94a3b8;
   --status-neutral-bg: #f1f5f9;
   --status-neutral-text: #334155;
+
+  --gradient-highlight: linear-gradient(135deg, #A855F7 0%, #6366F1 100%);
 }
 
 body {
