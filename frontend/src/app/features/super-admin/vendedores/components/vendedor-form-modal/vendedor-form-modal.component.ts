@@ -262,10 +262,10 @@ import { SRI_TIPOS_IDENTIFICACION } from '../../../../../core/constants/sri-iva.
         </div>
 
         <div class="modal-footer-premium">
-          <button (click)="onClose.emit()" [disabled]="saving" class="btn-secondary-premium">Cancelar</button>
+          <button (click)="onClose.emit()" [disabled]="saving" class="btn-cancel-final">Cancelar</button>
           <button (click)="submit()" 
                   [disabled]="vendedorForm.invalid || !hasAtLeastOnePermission || (editing && !isDirty()) || saving" 
-                  class="btn-primary-premium d-flex align-items-center gap-2">
+                  class="btn-submit-final d-flex align-items-center gap-2">
             <span *ngIf="saving" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
             {{ saving ? (editing ? 'Guardando...' : 'Registrando...') : (editing ? 'Guardar Cambios' : 'Registrar Ahora') }}
           </button>
@@ -398,15 +398,17 @@ import { SRI_TIPOS_IDENTIFICACION } from '../../../../../core/constants/sri-iva.
       padding: 1.5rem 2rem; background: #f8fafc; border-top: 1px solid #f1f5f9;
       display: flex; justify-content: flex-end; gap: 1rem; width: 100%;
     }
-    .btn-primary-premium {
-      background: var(--secondary-color, #161d35); color: white; border: none; padding: 0.85rem 2rem;
+    .btn-submit-final {
+      background: var(--primary-color); color: white; border: none; padding: 0.85rem 2.5rem;
       border-radius: 14px; font-weight: 700; transition: all 0.2s;
     }
-    .btn-primary-premium:disabled { opacity: 0.5; }
-    .btn-secondary-premium {
+    .btn-submit-final:hover:not(:disabled) { background: var(--primary-hover); transform: translateY(-1px); }
+    .btn-submit-final:disabled { opacity: 0.3; cursor: not-allowed; }
+    .btn-cancel-final {
       background: white; border: 1px solid #e2e8f0; padding: 0.85rem 1.5rem;
-      border-radius: 14px; font-weight: 600; color: #64748b;
+      border-radius: 14px; font-weight: 600; color: #64748b; transition: all 0.2s;
     }
+    .btn-cancel-final:hover { background: #f1f5f9; color: #1e293b; }
     .shadow-premium { box-shadow: 0 40px 80px -20px rgba(22, 29, 53, 0.25); }
     
     .form-control-premium.is-invalid {

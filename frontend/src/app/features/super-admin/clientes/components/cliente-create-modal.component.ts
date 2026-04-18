@@ -136,18 +136,12 @@ import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } 
         
         <!-- Footer -->
         <div class="modal-footer">
-          <button class="btn-cancel" (click)="onClose.emit()">
-            Descartar
-          </button>
-          <button 
-            class="btn-editorial py-2" 
-            style="min-width: 180px; font-size: 0.8rem;"
-            [disabled]="clienteForm.invalid || loading"
-            (click)="onSubmit()"
-          >
-            <span *ngIf="!loading">Confirmar Registro</span>
-            <span *ngIf="loading" class="spinner-border spinner-border-sm me-2"></span>
-            <span *ngIf="loading">Procesando...</span>
+          <button (click)="onClose.emit()" [disabled]="loading" class="btn-cancel-final">Descartar</button>
+          <button (click)="onSubmit()" 
+                  [disabled]="clienteForm.invalid || loading" 
+                  class="btn-submit-final d-flex align-items-center gap-2">
+            <span *ngIf="loading" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+            {{ loading ? 'Procesando...' : 'Confirmar Registro' }}
           </button>
         </div>
       </div>
@@ -243,23 +237,18 @@ import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } 
     .modal-footer {
       padding: 1.5rem 3rem 2.5rem 3rem;
       display: flex;
-      justify-content: space-between;
-      align-items: center;
+      justify-content: flex-end;
+      gap: 1rem;
       background: linear-gradient(to top, #ffffff 80%, rgba(255,255,255,0));
     }
-
-    .btn-cancel {
-      background: transparent;
-      color: #94a3b8;
-      border: none;
-      font-weight: 700;
-      font-size: 0.85rem;
-      cursor: pointer;
-      transition: color 0.2s;
+    .btn-submit-final {
+      background: var(--primary-color); color: #ffffff; border: none; padding: 0.75rem 2.5rem;
+      border-radius: 12px; font-weight: 700; transition: all 0.2s;
     }
-    .btn-cancel:hover {
-      color: var(--text-main);
-    }
+    .btn-submit-final:hover:not(:disabled) { background: var(--primary-hover); transform: translateY(-1px); }
+    .btn-submit-final:disabled { opacity: 0.3; cursor: not-allowed; }
+    .btn-cancel-final { background: #ffffff; color: #64748b; border: 1px solid #e2e8f0; padding: 0.75rem 2rem; border-radius: 12px; font-weight: 600; transition: all 0.2s; }
+    .btn-cancel-final:hover { background: #f8fafc; color: var(--text-main); }
 
     .invalid-feedback {
       font-size: 0.65rem;

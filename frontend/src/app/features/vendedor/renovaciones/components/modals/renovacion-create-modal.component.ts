@@ -49,22 +49,22 @@ import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } 
               <div class="col-12">
                 <ng-container *ngIf="!bloqueadaPorEstado">
                   <label class="editorial-label">2. Tipo de Gestión *</label>
-                  <div class="d-flex gap-3">
+                  <div class="d-flex gap-3" [class.opacity-50]="!selectedEmpresaId" [style.pointer-events]="!selectedEmpresaId ? 'none' : 'auto'">
                     <div class="flex-grow-1" *ngIf="estadoActual !== 'CANCELADA'">
-                      <input type="radio" id="tipo_renovacion" formControlName="tipo" value="RENOVACION" class="btn-check">
+                      <input type="radio" id="tipo_renovacion" formControlName="tipo" value="RENOVACION" class="btn-check" [attr.disabled]="!selectedEmpresaId ? true : null">
                       <label
                         class="btn btn-outline-premium w-100 py-3"
                         for="tipo_renovacion"
-                        [class.disabled]="selectedEmpresaPlanId && !esTiempoDeRenovacion"
-                        [title]="!esTiempoDeRenovacion ? 'Solo disponible 30 días antes del vencimiento' : ''"
+                        [class.disabled]="!selectedEmpresaId || (selectedEmpresaPlanId && !esTiempoDeRenovacion)"
+                        [title]="!selectedEmpresaId ? 'Primero selecciona una empresa' : (!esTiempoDeRenovacion ? 'Solo disponible 30 días antes del vencimiento' : '')"
                       >
                         <i class="bi bi-arrow-repeat me-2"></i>
                         Renovación
                       </label>
                     </div>
                     <div class="flex-grow-1">
-                      <input type="radio" id="tipo_upgrade" formControlName="tipo" value="UPGRADE" class="btn-check">
-                      <label class="btn btn-outline-premium w-100 py-3" for="tipo_upgrade">
+                      <input type="radio" id="tipo_upgrade" formControlName="tipo" value="UPGRADE" class="btn-check" [attr.disabled]="!selectedEmpresaId ? true : null">
+                      <label class="btn btn-outline-premium w-100 py-3" for="tipo_upgrade" [class.disabled]="!selectedEmpresaId">
                         <i class="bi bi-arrow-up-circle me-2"></i>
                         Upgrade
                       </label>
@@ -178,18 +178,12 @@ import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } 
         
         <!-- Footer -->
         <div class="modal-footer">
-          <button class="btn-cancel" (click)="onClose.emit()">
-            Cancelar
-          </button>
-          <button 
-            class="btn-editorial py-2" 
-            style="min-width: 180px; font-size: 0.8rem;"
-            [disabled]="renovacionForm.invalid || loading || bloqueadaPorEstado"
-            (click)="onSubmit()"
-          >
-            <span *ngIf="!loading">Enviar Solicitud</span>
-            <span *ngIf="loading" class="spinner-border spinner-border-sm me-2"></span>
-            <span *ngIf="loading">Enviando...</span>
+          <button (click)="onClose.emit()" [disabled]="loading" class="btn-cancel-final">Cancelar</button>
+          <button (click)="onSubmit()" 
+                  [disabled]="renovacionForm.invalid || loading || bloqueadaPorEstado" 
+                  class="btn-submit-final d-flex align-items-center gap-2">
+            <span *ngIf="loading" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+            {{ loading ? 'Enviando...' : 'Enviar Solicitud' }}
           </button>
         </div>
       </div>
@@ -232,8 +226,17 @@ import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } 
       display: flex; align-items: center; justify-content: center; font-size: 1.25rem;
       box-shadow: 0 4px 10px rgba(0,0,0,0.03);
     }
-    .modal-footer { padding: 1.5rem 3rem 2.5rem 3rem; display: flex; justify-content: space-between; align-items: center; }
-    .btn-cancel { background: transparent; color: var(--text-muted); border: none; font-weight: 800; font-size: 0.85rem; cursor: pointer; }
+    .modal-footer { padding: 1.5rem 3rem 2.5rem 3rem; display: flex; justify-content: flex-end; gap: 1rem; }
+    .btn-submit-final {
+      background: var(--primary-color); color: white; border: none;
+      padding: 0.85rem 2rem; border-radius: 16px; font-weight: 800;
+      transition: all 0.2s; cursor: pointer;
+    }
+    .btn-submit-final:hover:not(:disabled) { background: var(--primary-hover); transform: translateY(-2px); }
+    .btn-submit-final:disabled { opacity: 0.5; cursor: not-allowed; }
+    .btn-cancel-final { background: transparent; color: var(--text-muted); border: 2px solid var(--border-color); padding: 0.85rem 2rem; border-radius: 16px; font-weight: 800; font-size: 0.85rem; cursor: pointer; transition: all 0.2s; }
+    .btn-cancel-final:hover { background: #f8fafc; color: var(--text-main); border-color: var(--text-muted); }
+
     .invalid-feedback { font-size: 0.65rem; font-weight: 800; color: var(--status-danger); margin-top: 0.4rem; text-transform: uppercase; }
     .is-invalid { border-color: var(--status-danger) !important; background-color: var(--status-danger-bg) !important; }
     
@@ -242,10 +245,15 @@ import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } 
       font-weight: 800; font-size: 0.8rem; border-radius: 18px; transition: all 0.3s;
     }
     .btn-outline-premium:hover { background: var(--status-info-bg); border-color: var(--status-info-bg); color: var(--status-info-text); }
-    .btn-check:checked + .btn-outline-premium {
-      background: var(--primary-color); border-color: var(--primary-color); color: white;
-      box-shadow: 0 10px 25px -5px rgba(79, 70, 229, 0.4);
+    
+    /* Colores específicos para Tipo de Gestión */
+    #tipo_renovacion:checked + .btn-outline-premium {
+      background: var(--status-info-text); border-color: var(--status-info-text); color: white;
     }
+    #tipo_upgrade:checked + .btn-outline-premium {
+      background: var(--status-success-text); border-color: var(--status-success-text); color: white;
+    }
+    
     .btn-outline-premium.disabled { opacity: 0.4; cursor: not-allowed; pointer-events: none; }
     .italic { font-style: italic; }
     
@@ -260,14 +268,6 @@ import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } 
       box-shadow: 0 0 0 4px var(--status-info-bg);
     }
     .editorial-label { font-size: 0.65rem; font-weight: 800; text-transform: uppercase; color: var(--text-muted); margin-bottom: 0.5rem; display: block; }
-    
-    .btn-editorial {
-      background: var(--primary-color); color: white; border: none;
-      padding: 0.85rem 2rem; border-radius: 16px; font-weight: 800;
-      transition: all 0.2s; cursor: pointer;
-    }
-    .btn-editorial:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 10px 20px -5px rgba(0,0,0,0.2); }
-    .btn-editorial:disabled { opacity: 0.5; cursor: not-allowed; }
   `]
 })
 export class RenovacionCreateModalComponent implements OnInit {
@@ -290,7 +290,7 @@ export class RenovacionCreateModalComponent implements OnInit {
   constructor(private fb: FormBuilder) {
     this.renovacionForm = this.fb.group({
       empresa_id: ['', Validators.required],
-      tipo: ['RENOVACION', Validators.required],
+      tipo: ['', Validators.required],
       plan_id: ['', Validators.required]
     });
 

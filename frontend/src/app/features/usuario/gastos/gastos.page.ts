@@ -27,6 +27,8 @@ import { CategoriasTableComponent } from './components/categorias-table/categori
 import { GastoFormComponent } from './components/gasto-form.component';
 import { PagoFormComponent } from './components/pago-form.component';
 import { CategoriaFormComponent } from './components/categoria-form.component';
+import { PagosActionsComponent } from './components/pagos-actions/pagos-actions.component';
+import { CategoriasActionsComponent } from './components/categorias-actions/categorias-actions.component';
 
 @Component({
   selector: 'app-gastos',
@@ -39,6 +41,8 @@ import { CategoriaFormComponent } from './components/categoria-form.component';
     ToastComponent,
     GastosStatsComponent,
     GastosActionsComponent,
+    PagosActionsComponent,
+    CategoriasActionsComponent,
     GastosTableComponent,
     PagosTableComponent,
     CategoriasTableComponent,
@@ -76,6 +80,7 @@ import { CategoriaFormComponent } from './components/categoria-form.component';
                 <app-gastos-actions 
                   [(searchQuery)]="searchTerm" 
                   [(filterEstado)]="filterEstado"
+                  [(filterTipo)]="filterTipoGastos"
                   (onCreate)="openCreateGastoModal()"
                 ></app-gastos-actions>
 
@@ -92,15 +97,15 @@ import { CategoriaFormComponent } from './components/categoria-form.component';
             <!-- SECCIÓN 2: PAGOS -->
             <div *ngSwitchCase="'pagos'" class="fade-in" style="display: flex; flex-direction: column; gap: 20px;">
               <ng-container *ngIf="canViewPagos">
-                <div class="d-flex justify-content-between align-items-center mb-2">
-                   <h5 class="fw-bold mb-0">Historial de Pagos Registrados</h5>
-                   <button *hasPermission="'GESTIONAR_PAGOS'" class="btn-system-action" (click)="openCreatePagoModal()">
-                      <i class="bi bi-plus-lg me-2"></i> Registrar Pago
-                    </button>
-                </div>
+                <!-- Acciones y Filtros Pagos -->
+                <app-pagos-actions
+                  [(searchQuery)]="searchTermPagos"
+                  [(filterMetodo)]="filterMetodoPagos"
+                  (onCreate)="openCreatePagoModal()"
+                ></app-pagos-actions>
                 
                 <app-pagos-table 
-                  [pagos]="(pagos$ | async) ?? []" 
+                  [pagos]="(filteredPagos$ | async) ?? []" 
                   [gastos]="gastos"
                   (onAction)="handlePagoTableAction($event)"
                 ></app-pagos-table>
@@ -110,15 +115,16 @@ import { CategoriaFormComponent } from './components/categoria-form.component';
             <!-- SECCIÓN 3: CATEGORÍAS -->
             <div *ngSwitchCase="'categorias'" class="fade-in" style="display: flex; flex-direction: column; gap: 20px;">
               <ng-container *ngIf="canViewCategorias">
-                <div class="d-flex justify-content-between align-items-center mb-2">
-                   <h5 class="fw-bold mb-0">Categorización de Egresos</h5>
-                   <button *hasPermission="'GESTIONAR_CATEGORIA_GASTO'" class="btn-system-action" (click)="openCreateCategoriaModal()">
-                      <i class="bi bi-plus-lg me-2"></i> Nueva Categoría
-                    </button>
-                </div>
+                <!-- Acciones y Filtros Categorías -->
+                <app-categorias-actions
+                  [(searchQuery)]="searchTermCategorias"
+                  [(filterTipo)]="filterTipoCategorias"
+                  [(filterActivo)]="filterActivoCategorias"
+                  (onCreate)="openCreateCategoriaModal()"
+                ></app-categorias-actions>
 
                 <app-categorias-table 
-                  [categorias]="(categorias$ | async) ?? []"
+                  [categorias]="(filteredCategorias$ | async) ?? []"
                   (onAction)="handleCatTableAction($event)"
                 ></app-categorias-table>
               </ng-container>
@@ -267,6 +273,8 @@ export class GastosPage implements OnInit, OnDestroy {
   pagos$: Observable<PagoGasto[]>;
   stats$: Observable<GastoStats | null>;
   filteredGastos$: Observable<Gasto[]>;
+  filteredPagos$: Observable<PagoGasto[]>;
+  filteredCategorias$: Observable<CategoriaGasto[]>;
 
   // Data Local
   public gastos: Gasto[] = [];
@@ -296,6 +304,12 @@ export class GastosPage implements OnInit, OnDestroy {
   // Reactive Filter States
   private searchTerm$ = new BehaviorSubject<string>('');
   private filterEstado$ = new BehaviorSubject<string>('');
+  private filterTipoGastos$ = new BehaviorSubject<string>('');
+  private searchTermPagos$ = new BehaviorSubject<string>('');
+  private filterMetodoPagos$ = new BehaviorSubject<string>('');
+  private searchTermCategorias$ = new BehaviorSubject<string>('');
+  private filterTipoCategorias$ = new BehaviorSubject<string>('');
+  private filterActivoCategorias$ = new BehaviorSubject<string>('ALL');
   
   confirmTitle = '';
   confirmMessage = '';
@@ -315,6 +329,8 @@ export class GastosPage implements OnInit, OnDestroy {
     this.pagos$ = this.service.pagos$;
     this.stats$ = this.service.stats$;
     this.filteredGastos$ = this.createFilteredObservable();
+    this.filteredPagos$ = this.createFilteredPagosObservable();
+    this.filteredCategorias$ = this.createFilteredCategoriasObservable();
   }
 
   ngOnInit() {
@@ -383,6 +399,24 @@ export class GastosPage implements OnInit, OnDestroy {
   get filterEstado(): string { return this.filterEstado$.value; }
   set filterEstado(val: string) { this.filterEstado$.next(val); }
 
+  get filterTipoGastos(): string { return this.filterTipoGastos$.value; }
+  set filterTipoGastos(val: string) { this.filterTipoGastos$.next(val); }
+
+  get searchTermPagos(): string { return this.searchTermPagos$.value; }
+  set searchTermPagos(val: string) { this.searchTermPagos$.next(val); }
+
+  get filterMetodoPagos(): string { return this.filterMetodoPagos$.value; }
+  set filterMetodoPagos(val: string) { this.filterMetodoPagos$.next(val); }
+
+  get searchTermCategorias(): string { return this.searchTermCategorias$.value; }
+  set searchTermCategorias(val: string) { this.searchTermCategorias$.next(val); }
+
+  get filterTipoCategorias(): string { return this.filterTipoCategorias$.value; }
+  set filterTipoCategorias(val: string) { this.filterTipoCategorias$.next(val); }
+
+  get filterActivoCategorias(): string { return this.filterActivoCategorias$.value; }
+  set filterActivoCategorias(val: string) { this.filterActivoCategorias$.next(val); }
+
   // --- Event Handlers for Modular Components ---
   handleTableAction(event: any) {
     switch(event.type) {
@@ -412,9 +446,11 @@ export class GastosPage implements OnInit, OnDestroy {
     return combineLatest([
       this.service.gastos$,
       this.searchTerm$,
-      this.filterEstado$
+      this.filterEstado$,
+      this.filterTipoGastos$,
+      this.service.categorias$
     ]).pipe(
-      map(([gastos, searchTerm, filterEstado]) => {
+      map(([gastos, searchTerm, filterEstado, filterTipo, categorias]) => {
         let filtered = [...gastos];
         
         if (searchTerm) {
@@ -429,11 +465,80 @@ export class GastosPage implements OnInit, OnDestroy {
         if (filterEstado) {
           filtered = filtered.filter(g => g.estado_pago === filterEstado);
         }
+
+        if (filterTipo) {
+          filtered = filtered.filter(g => {
+            const cat = categorias.find(c => c.id === g.categoria_gasto_id);
+            return cat?.tipo === filterTipo;
+          });
+        }
         
         return filtered;
       }),
       tap(() => this.cd.markForCheck())
     );
+  }
+
+  private createFilteredPagosObservable(): Observable<PagoGasto[]> {
+    return combineLatest([
+      this.service.pagos$,
+      this.searchTermPagos$,
+      this.filterMetodoPagos$
+    ]).pipe(
+      map(([pagos, searchTerm, filterMetodo]) => {
+        let filtered = [...pagos];
+        
+        if (searchTerm) {
+          const s = searchTerm.toLowerCase().trim();
+          filtered = filtered.filter(p => {
+            const gastoInfo = this.getGastoInfo(p.gasto_id).toLowerCase();
+            return p.numero_referencia?.toLowerCase().includes(s) || gastoInfo.includes(s);
+          });
+        }
+        
+        if (filterMetodo) {
+          filtered = filtered.filter(p => p.metodo_pago === filterMetodo);
+        }
+        
+        return filtered;
+      }),
+      tap(() => this.cd.markForCheck())
+    );
+  }
+
+  private createFilteredCategoriasObservable(): Observable<CategoriaGasto[]> {
+    return combineLatest([
+      this.service.categorias$,
+      this.searchTermCategorias$,
+      this.filterTipoCategorias$,
+      this.filterActivoCategorias$
+    ]).pipe(
+      map(([categorias, searchTerm, filterTipo, filterActivo]) => {
+        let filtered = [...categorias];
+        
+        if (searchTerm) {
+          const s = searchTerm.toLowerCase().trim();
+          filtered = filtered.filter(c => c.nombre.toLowerCase().includes(s));
+        }
+
+        if (filterTipo) {
+          filtered = filtered.filter(c => c.tipo === filterTipo);
+        }
+
+        if (filterActivo !== 'ALL') {
+          const isActive = filterActivo === 'true';
+          filtered = filtered.filter(c => c.activo === isActive);
+        }
+        
+        return filtered;
+      }),
+      tap(() => this.cd.markForCheck())
+    );
+  }
+
+  getGastoInfo(id: string): string {
+    const g = this.gastos.find(x => x.id === id);
+    return g ? `${g.concepto} (${g.numero_factura || 'S/N'})` : `Gasto #${id.substring(0,8)}`;
   }
 
   getProveedorName(id?: string): string {
