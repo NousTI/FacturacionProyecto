@@ -71,7 +71,7 @@ import { CategoriasActionsComponent } from './components/categorias-actions/cate
             </button>
           </div>
 
-          <div [ngSwitch]="activeTab" class="tab-content" style="padding-top: 1.5rem;">
+          <div [ngSwitch]="activeTab" class="tab-content" style="padding-top: 0;">
             
             <!-- SECCIÓN 1: GASTOS GENERALES -->
             <div *ngSwitchCase="'general'" class="fade-in" style="display: flex; flex-direction: column; gap: 20px;">
@@ -208,11 +208,11 @@ import { CategoriasActionsComponent } from './components/categorias-actions/cate
   `,
   styles: [`
     .main-content-card {
-      background: white; border-radius: 24px; padding: 2rem; border: 1px solid var(--border-color);
+      background: transparent; border: none; padding: 0;
     }
 
     .tabs-minimal-premium {
-      display: flex; gap: 0.5rem; border-bottom: 2px solid var(--border-color); margin-bottom: 0.5rem;
+      display: flex; gap: 0.5rem; border-bottom: 2px solid var(--border-color); margin-bottom: 1.5rem;
     }
     .tab-btn {
       background: none; border: none; padding: 0.85rem 1.5rem; cursor: pointer;
