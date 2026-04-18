@@ -220,7 +220,6 @@ import { SriConfigService } from '../certificado-sri/services/sri-config.service
       max-width: 520px;
       width: 100%;
       text-align: center;
-      box-shadow: 0 20px 60px rgba(0,0,0,0.08);
       border: 1px solid #e2e8f0;
       animation: fadeIn 0.4s ease-out;
     }

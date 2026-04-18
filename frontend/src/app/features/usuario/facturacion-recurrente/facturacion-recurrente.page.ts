@@ -1,11 +1,12 @@
 import { Component, OnInit, OnDestroy, ChangeDetectorRef, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { finalize, Subscription, combineLatest, map } from 'rxjs';
+import { finalize, Subscription, combineLatest, map, BehaviorSubject } from 'rxjs';
 import { Router } from '@angular/router';
 import { SriConfigService } from '../certificado-sri/services/sri-config.service';
 
 import { RecurrenteStatsComponent } from './components/recurrente-stats/recurrente-stats.component';
+import { RecurrenteActionsComponent } from './components/recurrente-actions/recurrente-actions.component';
 import { RecurrenteTableComponent } from './components/recurrente-table/recurrente-table.component';
 import { CreateFacturaModalComponent } from '../facturacion/components/create-factura-modal/create-factura-modal.component';
 import { ViewFacturaModalComponent } from '../facturacion/components/view-factura-modal/view-factura-modal.component';
@@ -28,6 +29,7 @@ import { FacturaProgramada } from '../../../domain/models/facturacion-programada
     FormsModule,
     HasPermissionDirective,
     RecurrenteStatsComponent,
+    RecurrenteActionsComponent,
     RecurrenteTableComponent,
     CreateFacturaModalComponent,
     ViewFacturaModalComponent,
@@ -59,33 +61,6 @@ import { FacturaProgramada } from '../../../domain/models/facturacion-programada
       <ng-container *ngIf="canViewModule && !sriError; else noPermission">
         <div class="container-fluid p-0 animate__animated animate__fadeIn">
           
-          <!-- FILTERS & SEARCH + ACTIONS -->
-          <div class="px-4 mb-4">
-            <div class="d-flex justify-content-between align-items-center gap-3">
-               <div class="search-box-premium flex-grow-1">
-                  <i class="bi bi-search"></i>
-                  <input 
-                    type="text" 
-                    [(ngModel)]="searchQuery" 
-                    placeholder="Buscar por cliente o concepto..."
-                    class="form-control-premium"
-                  >
-               </div>
-               <div class="d-flex gap-2">
-<!-- Botón deshabilitado: la ejecución masiva se realiza automáticamente por el cronjob a medianoche
-                  <button *hasPermission="['FACTURA_PROGRAMADA_CREAR', 'FACTURA_PROGRAMADA_EDITAR']" class="btn-bulk-premium" (click)="runBulkExecution()" [disabled]="isProcessing" title="Ejecutar Facturaciones Pendientes">
-                    <i class="bi bi-play-circle-fill me-2"></i>
-                    Ejecutar Pendientes
-                  </button>
-                  -->
-                  <button *hasPermission="'FACTURA_PROGRAMADA_CREAR'" class="btn-create-premium" (click)="openCreateModal()" [disabled]="!!sriError">
-                    <i class="bi bi-plus-lg me-2"></i>
-                    Nueva Programación
-                  </button>
-               </div>
-            </div>
-          </div>
-
           <!-- STATS -->
           <div class="px-4 mb-4">
             <app-recurrente-stats
@@ -93,6 +68,16 @@ import { FacturaProgramada } from '../../../domain/models/facturacion-programada
               [successCount]="stats.successCount"
               [failedCount]="stats.failedCount"
             ></app-recurrente-stats>
+          </div>
+
+          <!-- FILTERS & SEARCH + ACTIONS -->
+          <div class="px-4 mb-4">
+            <app-recurrente-actions
+              [(searchQuery)]="searchQuery"
+              [disabledCreate]="!!sriError"
+              (onFilterChange)="handleFilters($event)"
+              (onCreate)="openCreateModal()"
+            ></app-recurrente-actions>
           </div>
 
           <!-- LOADING STATE -->
@@ -277,7 +262,6 @@ import { FacturaProgramada } from '../../../domain/models/facturacion-programada
     .sri-block-card {
       background: white; border-radius: 24px; padding: 3rem 2.5rem;
       max-width: 480px; width: 100%; text-align: center;
-      box-shadow: 0 10px 40px -10px rgba(0,0,0,0.1);
       animation: fadeIn 0.4s ease-out;
     }
     .sri-block-icon {
@@ -303,12 +287,10 @@ export class FacturacionRecurrentePage implements OnInit, OnDestroy {
   filteredProgramaciones: FacturaProgramada[] = [];
   
   stats = { activeCount: 0, successCount: 0, failedCount: 0 };
-  private _searchQuery: string = '';
-  get searchQuery(): string { return this._searchQuery; }
-  set searchQuery(val: string) {
-    this._searchQuery = val;
-    this.applyFilters();
-  }
+  
+  searchQuery: string = '';
+  private statusFilter$ = new BehaviorSubject<string>('ALL');
+  private frequencyFilter$ = new BehaviorSubject<string>('ALL');
 
   sriError: string | null = null;
   isLoading: boolean = true;
@@ -442,13 +424,30 @@ export class FacturacionRecurrentePage implements OnInit, OnDestroy {
     this.stats.failedCount = this.programaciones.reduce((acc, p) => acc + (p.emisiones_fallidas || 0), 0);
   }
 
+  handleFilters(filters: any) {
+    this.statusFilter$.next(filters.estado);
+    this.frequencyFilter$.next(filters.frecuencia);
+    this.applyFilters();
+  }
+
   applyFilters() {
-    const query = this._searchQuery.toLowerCase().trim();
+    const query = this.searchQuery.toLowerCase().trim();
+    const status = this.statusFilter$.value;
+    const frequency = this.frequencyFilter$.value;
+
     this.filteredProgramaciones = this.programaciones
-      .filter(p =>
-        (p.cliente_nombre?.toLowerCase() || '').includes(query) ||
-        p.concepto.toLowerCase().includes(query)
-      )
+      .filter(p => {
+        const matchSearch = (p.cliente_nombre?.toLowerCase() || '').includes(query) ||
+                            p.concepto.toLowerCase().includes(query);
+        
+        let matchStatus = true;
+        if (status === 'ACTIVO') matchStatus = p.activo === true;
+        if (status === 'INACTIVO') matchStatus = p.activo === false;
+
+        const matchFrequency = frequency === 'ALL' || p.tipo_frecuencia === frequency;
+
+        return matchSearch && matchStatus && matchFrequency;
+      })
       .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
   }
 

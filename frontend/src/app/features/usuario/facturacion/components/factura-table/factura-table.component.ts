@@ -329,7 +329,6 @@ import { HasPermissionDirective } from '../../../../../shared/directives/has-per
       z-index: 9999 !important;
       min-width: 200px;
       border: 1px solid #e2e8f0 !important;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.08) !important;
     }
 
     .dropdown-item {
