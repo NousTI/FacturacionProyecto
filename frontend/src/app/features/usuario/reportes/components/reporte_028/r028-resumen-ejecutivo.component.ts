@@ -125,8 +125,8 @@ Chart.register(...registerables);
 
         <div class="kpi-card dark">
           <div class="kpi-body">
-            <span class="label" style="color:#94a3b8;">Utilidad Neta</span>
-            <span class="value" style="color:#fff;">{{ data.utilidad_neta.valor | currency }}</span>
+            <span class="label">Utilidad Neta</span>
+            <span class="value">{{ data.utilidad_neta.valor | currency }}</span>
             <span class="trend up">Margen: {{ data.utilidad_neta.margen | number:'1.1-1' }}%</span>
           </div>
           <div class="kpi-icon dark-icon"><i class="bi bi-graph-up-arrow"></i></div>
@@ -338,7 +338,10 @@ Chart.register(...registerables);
       align-items: flex-start; min-height: 95px; transition: transform 0.2s ease, box-shadow 0.2s ease;
     }
     .kpi-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.08); border-color: #e2e8f0; }
-    .kpi-card.dark { background: #1e293b; }
+    .kpi-card.dark { background: #ffffff; color: #0f172a; }
+    .kpi-card.dark .label { color: #64748b; }
+    .kpi-card.dark .value { color: #0f172a; }
+    .kpi-card.dark .subtext { color: #94a3b8; }
     .kpi-card.highlight {
       background: var(--gradient-highlight); border-color: transparent;
       box-shadow: 0 4px 18px rgba(168,85,247,0.35);
@@ -362,7 +365,7 @@ Chart.register(...registerables);
       display: flex; align-items: center; justify-content: center;
       font-size: 1.1rem; color: #64748b; flex-shrink: 0;
     }
-    .dark-icon { background: #334155; color: #94a3b8; }
+    .dark-icon { background: #f1f5f9; color: #64748b; }
 
 
     /* Section Cards */
