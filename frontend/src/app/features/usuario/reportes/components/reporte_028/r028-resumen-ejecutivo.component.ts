@@ -1,4 +1,4 @@
-import { Component, Input, OnChanges, ViewChild, ElementRef } from '@angular/core';
+import { Component, Input, OnChanges, SimpleChanges, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule, CurrencyPipe, DecimalPipe } from '@angular/common';
 import { ExecutiveSummary } from '../../services/financial-reports.service';
 import { Chart, ChartConfiguration, registerables } from 'chart.js';
@@ -140,9 +140,9 @@ Chart.register(...registerables);
           <div class="section-card">
             <div class="section-header">
               <div class="title-icon-row">
-                <i class="bi bi-donut icon-badge purple-bg"></i>
+                <i class="bi bi-graph-up icon-badge purple-bg"></i>
                 <div>
-                  <h5>Facturación — Este Año vs Anterior</h5>
+                  <h5>{{ periodoComparativaLabel.titulo }}</h5>
                   <p>Comparativa acumulada del período seleccionado</p>
                 </div>
               </div>
@@ -159,7 +159,7 @@ Chart.register(...registerables);
               <div class="title-icon-row">
                 <i class="bi bi-pie-chart icon-badge emerald-bg"></i>
                 <div>
-                  <h5>Gastos vs Utilidad Neta (Mes)</h5>
+                  <h5>Gastos vs Utilidad Neta ({{ periodoCorto }})</h5>
                   <p>Desglose de costos e ingresos netos del período</p>
                 </div>
               </div>
@@ -439,13 +439,41 @@ Chart.register(...registerables);
 })
 export class R028ResumenEjecutivoComponent implements OnChanges {
   @Input() data!: ExecutiveSummary;
+  @Input() fechaInicio = '';
+  @Input() fechaFin = '';
   @ViewChild('annualChart') annualChart?: ElementRef<HTMLCanvasElement>;
   @ViewChild('profitChart') profitChart?: ElementRef<HTMLCanvasElement>;
 
   private annualChartInstance?: Chart;
   private profitChartInstance?: Chart;
+  private _fechaInicioActiva = '';
+  private _fechaFinActiva = '';
 
   monitorTab: 'vendidos' | 'utilidad' = 'vendidos';
+
+  periodoComparativaLabel: { titulo: string; actual: string; anterior: string } = {
+    titulo: 'Facturación — Período Actual vs Anterior', actual: 'Período Actual', anterior: 'Período Anterior'
+  };
+  periodoCorto = 'Período';
+
+  private calcPeriodoLabel(fi: string, ff: string): { titulo: string; actual: string; anterior: string; corto: string } {
+    if (!fi || !ff) return { titulo: 'Facturación — Período Actual vs Anterior', actual: 'Período Actual', anterior: 'Período Anterior', corto: 'Período' };
+    const d1 = new Date(fi + 'T00:00:00');
+    const d2 = new Date(ff + 'T00:00:00');
+    const dias = Math.round((d2.getTime() - d1.getTime()) / 86400000) + 1;
+    const meses = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+    const mesesFull = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+    if (dias <= 31 && d1.getMonth() === d2.getMonth()) {
+      const mes = meses[d1.getMonth()];
+      const mesAnt = meses[d1.getMonth() === 0 ? 11 : d1.getMonth() - 1];
+      return { titulo: `Facturación — ${mes} vs ${mesAnt}`, actual: mes, anterior: mesAnt, corto: mesesFull[d1.getMonth()] };
+    }
+    const esAnio = d1.getMonth() === 0 && d1.getDate() === 1;
+    if (esAnio) {
+      return { titulo: `Facturación — ${d1.getFullYear()} vs ${d1.getFullYear() - 1}`, actual: `${d1.getFullYear()}`, anterior: `${d1.getFullYear() - 1}`, corto: `${d1.getFullYear()}` };
+    }
+    return { titulo: 'Facturación — Período Actual vs Anterior', actual: 'Período Actual', anterior: 'Período Anterior', corto: 'Período' };
+  }
 
   get currentMonitor() {
     return this.monitorTab === 'vendidos'
@@ -494,21 +522,30 @@ export class R028ResumenEjecutivoComponent implements OnChanges {
       .sort((a, b) => b.total - a.total);
   }
 
-  ngOnChanges() {
-    setTimeout(() => {
-      this.renderAnnualChart();
-      this.renderProfitChart();
-    }, 50);
+  ngOnChanges(changes: SimpleChanges) {
+    if (changes['data']) {
+      // Solo cuando llega data nueva (usuario presionó Generar) capturamos las fechas activas
+      this._fechaInicioActiva = this.fechaInicio;
+      this._fechaFinActiva = this.fechaFin;
+      const label = this.calcPeriodoLabel(this._fechaInicioActiva, this._fechaFinActiva);
+      this.periodoComparativaLabel = label;
+      this.periodoCorto = label.corto;
+      setTimeout(() => {
+        this.renderAnnualChart();
+        this.renderProfitChart();
+      }, 50);
+    }
   }
 
   private renderAnnualChart() {
     if (!this.annualChart?.nativeElement || !this.data?.graficas) return;
 
     const { año_actual, año_anterior } = this.data.graficas.anillo_ventas;
+    const { actual, anterior } = this.periodoComparativaLabel;
     const config: ChartConfiguration<'doughnut'> = {
       type: 'doughnut',
       data: {
-        labels: ['Este Año', 'Año Anterior'],
+        labels: [actual, anterior],
         datasets: [{
           data: [año_actual, año_anterior],
           backgroundColor: ['#818cf8', '#cbd5e1'],

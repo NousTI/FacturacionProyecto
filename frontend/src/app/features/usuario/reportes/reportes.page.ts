@@ -129,7 +129,9 @@ type Tab = 'resumen' | 'ventas' | 'cartera' | 'iva' | 'mis_ventas';
     <ng-container *ngIf="!loading">
       <app-r028-resumen-ejecutivo
         *ngIf="tabActivo === 'resumen' && resumenData"
-        [data]="resumenData">
+        [data]="resumenData"
+        [fechaInicio]="fechaInicio"
+        [fechaFin]="fechaFin">
       </app-r028-resumen-ejecutivo>
 
       <app-r001-ventas-generales

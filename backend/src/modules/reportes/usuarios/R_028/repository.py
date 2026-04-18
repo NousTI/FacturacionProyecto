@@ -295,14 +295,15 @@ class RepositorioR028:
             return float(result['costo_ventas']) if result else 0.0
 
     def obtener_ventas_anio_anterior(self, empresa_id: UUID, fecha_inicio: str, fecha_fin: str) -> Dict[str, Any]:
-        """Obtiene ventas del año anterior para comparativa gráfica."""
+        """Obtiene ventas del período anterior equivalente para comparativa gráfica."""
         from datetime import datetime, timedelta
         d1 = datetime.strptime(fecha_inicio, '%Y-%m-%d')
         d2 = datetime.strptime(fecha_fin, '%Y-%m-%d')
 
-        # Año anterior
-        prev_inicio = (d1 - timedelta(days=365)).strftime('%Y-%m-%d')
-        prev_fin = (d2 - timedelta(days=365)).strftime('%Y-%m-%d')
+        # Período anterior del mismo largo
+        delta = (d2 - d1).days + 1
+        prev_inicio = (d1 - timedelta(days=delta)).strftime('%Y-%m-%d')
+        prev_fin = (d1 - timedelta(days=1)).strftime('%Y-%m-%d')
 
         query = """
             SELECT
