@@ -1,3 +1,19 @@
+<!-- OVERLAY DE EMISIÓN SRI -->
+<div *ngIf="isEmitting" class="sri-emit-overlay">
+  <div class="sri-emit-card">
+    <div class="sri-spinner">
+      <div class="spinner-ring"></div>
+      <i class="bi bi-send-fill sri-icon"></i>
+    </div>
+    <h5 class="sri-title">Enviando al SRI</h5>
+    <p class="sri-subtitle">La factura se está procesando. Por favor espera, no cierres esta ventana.</p>
+    <div class="sri-steps">
+      <span class="sri-step done"><i class="bi bi-check-circle-fill"></i> Factura guardada</span>
+      <span class="sri-step active"><i class="bi bi-arrow-clockwise spin"></i> Enviando al SRI...</span>
+    </div>
+  </div>
+</div>
+
 <div class="modal-backdrop fade show" style="display: block; background-color: rgba(0,0,0,0.4); backdrop-filter: blur(4px);"></div>
 <div class="modal fade show" style="display: block;" tabindex="-1">
   <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
@@ -96,12 +112,21 @@
          <button type="button" class="btn-cancel-lux" (click)="close()">{{ isViewOnly ? 'Cerrar' : 'Cancelar' }}</button>
          <button type="button" class="btn-save-lux ms-3"
                  *ngIf="!isViewOnly"
-                 [disabled]="facturaForm.invalid || isSaving || detalles.length === 0 || isLoadingData || !canSave"
+                 [disabled]="facturaForm.invalid || isSaving || isEmitting || detalles.length === 0 || isLoadingData || !canSave"
                  [title]="!canSave ? (!permissionsService.hasPermission(!facturaId ? 'FACTURAS_CREAR' : 'FACTURAS_EDITAR') ? 'No tienes permisos' : 'El total de la factura debe ser mayor a 0') : ''"
                  (click)="save()">
            <span *ngIf="isSaving" class="spinner-border spinner-border-sm me-2"></span>
            <i *ngIf="!isSaving" class="bi bi-check-circle-fill me-2"></i>
            {{ facturaId ? 'Actualizar Factura' : 'Guardar Factura' }}
+         </button>
+
+         <button type="button" class="btn-emit-sri-lux ms-3"
+                 *ngIf="!isViewOnly && !facturaId && canEnviarSri"
+                 [disabled]="facturaForm.invalid || isSaving || isEmitting || detalles.length === 0 || isLoadingData || !canSave"
+                 (click)="saveAndEmit()">
+           <span *ngIf="isEmitting" class="spinner-border spinner-border-sm me-2"></span>
+           <i *ngIf="!isEmitting" class="bi bi-send-fill me-2"></i>
+           {{ isEmitting ? 'Enviando...' : 'Guardar y Enviar al SRI' }}
          </button>
       </div>
 

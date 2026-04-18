@@ -90,6 +90,13 @@ export class CreateFacturaModalComponent implements OnInit, OnChanges {
   isCreatingProducto = false;
   productoParaEditar: Producto | null = null;
 
+  isEmitting = false;
+  private _emitAfterSave = false;
+
+  get canEnviarSri(): boolean {
+    return this.permissionsService.hasPermission(FACTURAS_PERMISSIONS.ENVIAR_SRI) && this.sriConfig?.estado === 'ACTIVO';
+  }
+
   private destroy$ = new Subject<void>();
 
   constructor(
@@ -767,20 +774,48 @@ export class CreateFacturaModalComponent implements OnInit, OnChanges {
 
         return detalles.length > 0 ? forkJoin(detalles) : of([]);
       }),
-      tap((resDetalles) => {
-        console.log('Detalles guardados exitosamente:', resDetalles);
-        const msg = this.facturaId ? 'Factura actualizada exitosamente' : 'Factura creada exitosamente';
-        this.uiService.showToast(msg, 'success');
-        this.isSaving = false;
-        this.onClose.emit(true);
+      tap((res: any) => {
+        const facturaId = res?.id ?? (Array.isArray(res) ? null : res);
+        if (this._emitAfterSave && facturaId) {
+          this.isSaving = false;
+          this.isEmitting = true;
+          this.uiService.showToast('Factura guardada. Enviando al SRI...', 'success');
+          this.facturasService.enviarSri(facturaId).subscribe({
+            next: () => {
+              this.isEmitting = false;
+              this._emitAfterSave = false;
+              this.uiService.showToast('Factura enviada al SRI exitosamente', 'success');
+              this.onClose.emit(true);
+            },
+            error: (err) => {
+              this.isEmitting = false;
+              this._emitAfterSave = false;
+              this.uiService.showError(err, 'Factura guardada pero error al enviar al SRI');
+              this.onClose.emit(true);
+            }
+          });
+        } else {
+          const msg = this.facturaId ? 'Factura actualizada exitosamente' : 'Factura creada exitosamente';
+          this.uiService.showToast(msg, 'success');
+          this.isSaving = false;
+          this._emitAfterSave = false;
+          this.onClose.emit(true);
+        }
       }),
       catchError(err => {
         console.error('ERROR EN PROCESO DE GUARDADO:', err);
         this.isSaving = false;
+        this.isEmitting = false;
+        this._emitAfterSave = false;
         this.uiService.showError(err, 'Error al guardar factura');
         return of(null);
       })
     ).subscribe();
+  }
+
+  saveAndEmit() {
+    this._emitAfterSave = true;
+    this.save();
   }
 
   close() {

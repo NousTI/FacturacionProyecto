@@ -148,10 +148,10 @@ import { Suscripcion } from '../../services/suscripcion.service';
 
     .modal-footer-final { padding: 1.5rem 2.5rem; background: #ffffff; display: flex; justify-content: flex-end; gap: 1rem; border-top: 1px solid #f1f5f9; }
     .btn-submit-final {
-      background: var(--secondary-color, #161d35); color: #ffffff; border: none; padding: 0.75rem 2.5rem;
+      background: var(--status-success-text); color: #ffffff; border: none; padding: 0.75rem 2.5rem;
       border-radius: 12px; font-weight: 700; transition: all 0.2s;
     }
-    .btn-submit-final:hover:not(:disabled) { background: var(--neutral-700); transform: translateY(-1px); }
+    .btn-submit-final:hover:not(:disabled) { background: var(--status-success); transform: translateY(-1px); }
     .btn-submit-final:disabled { opacity: 0.3; cursor: not-allowed; }
     .btn-cancel-final { background: #ffffff; color: #64748b; border: 1px solid #e2e8f0; padding: 0.75rem 2rem; border-radius: 12px; font-weight: 600; }
   `],
