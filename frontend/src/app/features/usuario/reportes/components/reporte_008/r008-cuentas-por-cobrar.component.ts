@@ -16,7 +16,7 @@ Chart.register(...registerables);
       <!-- KPIs Superiores -->
       <div class="kpi-grid mb-4">
 
-        <div class="kpi-card indigo">
+        <div class="kpi-card highlight">
           <span class="label">Total por Cobrar</span>
           <span class="value">{{ data.kpis.total_por_cobrar | currency }}</span>
           <span class="subtext">Saldo pendiente global</span>
@@ -125,16 +125,20 @@ Chart.register(...registerables);
     .fade-in { animation: fadeIn 0.4s ease-out; }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-    .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.5rem; }
+    .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; }
     .kpi-card {
-      background: #fff; border: 1px solid #f1f5f9; border-radius: 20px; padding: 1.5rem;
-      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); display: flex; flex-direction: column; gap: 0.4rem;
+      background: #fff; border: 1px solid #f1f5f9; border-radius: 12px; padding: 0.85rem 1rem;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06); display: flex; flex-direction: column; gap: 0.3rem;
+      min-height: 95px; transition: transform 0.2s ease, box-shadow 0.2s ease;
     }
-    .kpi-card.indigo { border-top: 4px solid #6366f1; }
-    .kpi-card.amber  { border-top: 4px solid #f59e0b; }
-    .kpi-card.red    { border-top: 4px solid #ef4444; }
-    .kpi-card.morosidad { border-top: 4px solid #10b981; }
-    .kpi-card.morosidad.high-risk { border-top: 4px solid #ef4444; }
+    .kpi-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.08); border-color: #e2e8f0; }
+    .kpi-card.highlight {
+      background: var(--gradient-highlight); border-color: transparent;
+      box-shadow: 0 4px 18px rgba(168,85,247,0.35);
+    }
+    .kpi-card.highlight .label   { color: rgba(255,255,255,0.8); }
+    .kpi-card.highlight .value   { color: #fff; }
+    .kpi-card.highlight .subtext { color: rgba(255,255,255,0.75); }
 
     .label   { font-size: 0.72rem; font-weight: 700; color: #64748b; text-transform: uppercase; }
     .value   { font-size: 1.7rem; font-weight: 800; color: #0f172a; }

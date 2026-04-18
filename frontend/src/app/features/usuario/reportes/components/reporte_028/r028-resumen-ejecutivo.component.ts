@@ -17,7 +17,7 @@ Chart.register(...registerables);
       <!-- ── FILA 1 KPIs FINANCIEROS ── -->
       <div class="kpi-grid mb-4">
 
-        <div class="kpi-card emerald">
+        <div class="kpi-card highlight">
           <div class="kpi-body">
             <span class="label">
               Dinero Recaudado
@@ -92,7 +92,7 @@ Chart.register(...registerables);
       <!-- ── FILA 2 KPIs GESTIÓN ── -->
       <div class="kpi-grid mb-5">
 
-        <div class="kpi-card red">
+        <div class="kpi-card">
           <div class="kpi-body">
             <span class="label">Por Cobrar</span>
             <span class="value">{{ data.por_cobrar.total | currency }}</span>
@@ -330,22 +330,23 @@ Chart.register(...registerables);
     @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
     /* KPI Grid */
-    .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 1.5rem; }
+    .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 1rem; }
     .kpi-card {
-      background: #fff; border: 1px solid #f1f5f9; border-radius: 24px; padding: 1.5rem;
-      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); display: flex; justify-content: space-between;
-      align-items: flex-start;
+      background: #fff; border: 1px solid #f1f5f9; border-radius: 12px; padding: 0.85rem 1rem;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06); display: flex; justify-content: space-between;
+      align-items: flex-start; min-height: 95px; transition: transform 0.2s ease, box-shadow 0.2s ease;
     }
-    .kpi-card:hover { box-shadow: 0 12px 20px -5px rgba(0,0,0,0.08); }
-    .kpi-card.emerald { border-bottom: 4px solid #10b981; }
-    .kpi-card.light-emerald { border-bottom: 4px solid #34d399; }
-    .kpi-card.purple  { border-bottom: 4px solid #818cf8; }
-    .kpi-card.blue    { border-bottom: 4px solid #3b82f6; }
-    .kpi-card.amber   { border-bottom: 4px solid #f59e0b; }
-    .kpi-card.red     { border-bottom: 4px solid #ef4444; }
-    .kpi-card.indigo  { border-bottom: 4px solid #6366f1; }
-    .kpi-card.gold    { border-bottom: 4px solid #fbbf24; }
-    .kpi-card.dark    { background: #1e293b; border-bottom: 4px solid #475569; }
+    .kpi-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.08); border-color: #e2e8f0; }
+    .kpi-card.dark { background: #1e293b; }
+    .kpi-card.highlight {
+      background: var(--gradient-highlight); border-color: transparent;
+      box-shadow: 0 4px 18px rgba(168,85,247,0.35);
+    }
+    .kpi-card.highlight .label   { color: rgba(255,255,255,0.8); }
+    .kpi-card.highlight .value   { color: #fff; }
+    .kpi-card.highlight .subtext { color: rgba(255,255,255,0.75); }
+    .kpi-card.highlight .trend   { color: rgba(255,255,255,0.9) !important; }
+    .kpi-card.highlight .kpi-icon { background: rgba(255,255,255,0.2); color: #fff; }
 
     .kpi-body { display: flex; flex-direction: column; gap: 0.3rem; flex: 1; }
     .label  { font-size: 0.72rem; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.04em; }

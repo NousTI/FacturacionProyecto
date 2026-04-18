@@ -22,6 +22,16 @@ import { MisVentasReport } from '../../services/financial-reports.service';
       <!-- KPIs -->
       <div class="kpi-grid mb-4">
 
+        <div class="kpi-card highlight">
+          <span class="label">Total Vendido</span>
+          <span class="value">{{ data.kpis.total_vendido.valor | currency }}</span>
+          <span class="subtext">mis ventas</span>
+          <span class="trend highlight-trend" [class.up]="data.kpis.total_vendido.variacion >= 0" [class.down]="data.kpis.total_vendido.variacion < 0">
+            <i class="bi" [class.bi-arrow-up-short]="data.kpis.total_vendido.variacion >= 0" [class.bi-arrow-down-short]="data.kpis.total_vendido.variacion < 0"></i>
+            {{ data.kpis.total_vendido.variacion | number:'1.1-1' }}% vs período ant.
+          </span>
+        </div>
+
         <div class="kpi-card blue">
           <span class="label">Mis Facturas (período)</span>
           <span class="value">{{ data.kpis.mis_facturas.valor }}</span>
@@ -29,16 +39,6 @@ import { MisVentasReport } from '../../services/financial-reports.service';
           <span class="trend" [class.up]="data.kpis.mis_facturas.variacion >= 0" [class.down]="data.kpis.mis_facturas.variacion < 0">
             <i class="bi" [class.bi-arrow-up-short]="data.kpis.mis_facturas.variacion >= 0" [class.bi-arrow-down-short]="data.kpis.mis_facturas.variacion < 0"></i>
             {{ data.kpis.mis_facturas.variacion | number:'1.1-1' }}% vs período ant.
-          </span>
-        </div>
-
-        <div class="kpi-card teal">
-          <span class="label">Total Vendido</span>
-          <span class="value">{{ data.kpis.total_vendido.valor | currency }}</span>
-          <span class="subtext">mis ventas</span>
-          <span class="trend" [class.up]="data.kpis.total_vendido.variacion >= 0" [class.down]="data.kpis.total_vendido.variacion < 0">
-            <i class="bi" [class.bi-arrow-up-short]="data.kpis.total_vendido.variacion >= 0" [class.bi-arrow-down-short]="data.kpis.total_vendido.variacion < 0"></i>
-            {{ data.kpis.total_vendido.variacion | number:'1.1-1' }}% vs período ant.
           </span>
         </div>
 
@@ -168,16 +168,22 @@ import { MisVentasReport } from '../../services/financial-reports.service';
     .info-banner i { font-size: 1rem; margin-top: 1px; flex-shrink: 0; }
 
     /* KPIs */
-    .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.25rem; }
+    .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; }
     .kpi-card {
-      background: #fff; border: 1px solid #f1f5f9; border-radius: 20px;
-      padding: 1.4rem 1.5rem; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
-      display: flex; flex-direction: column; gap: 0.3rem;
+      background: #fff; border: 1px solid #f1f5f9; border-radius: 12px;
+      padding: 0.85rem 1rem; box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+      display: flex; flex-direction: column; gap: 0.3rem; min-height: 95px;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
     }
-    .kpi-card.blue   { border-top: 4px solid #3b82f6; }
-    .kpi-card.teal   { border-top: 4px solid #14b8a6; }
-    .kpi-card.amber  { border-top: 4px solid #f59e0b; }
-    .kpi-card.indigo { border-top: 4px solid #6366f1; }
+    .kpi-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.08); border-color: #e2e8f0; }
+    .kpi-card.highlight {
+      background: var(--gradient-highlight); border-color: transparent;
+      box-shadow: 0 4px 18px rgba(168,85,247,0.35);
+    }
+    .kpi-card.highlight .label   { color: rgba(255,255,255,0.8); }
+    .kpi-card.highlight .value   { color: #fff; }
+    .kpi-card.highlight .subtext { color: rgba(255,255,255,0.75); }
+    .highlight-trend { color: rgba(255,255,255,0.9) !important; }
 
     .label   { font-size: 0.7rem; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.04em; }
     .value   { font-size: 1.65rem; font-weight: 800; color: #0f172a; line-height: 1.1; }
