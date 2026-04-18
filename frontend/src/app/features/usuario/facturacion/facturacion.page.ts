@@ -667,20 +667,30 @@ export class FacturacionPage implements OnInit {
 
           this.uiService.showToast(msgText, msgType as any);
 
-          // Actualizar en lista sin recargar todo si es posible
-          const index = this.facturas.findIndex(f => f.id === this.selectedFactura?.id);
+          // ACTUALIZACION REACTIVA (Inmutabilidad)
+          const index = this.facturas.findIndex(f => f.id === id);
           if (index !== -1) {
-            this.facturas[index].estado = estado as any; // Cast to any or strict type
-            // Si fue autorizada, actualizar fecha y autorización
-            if (estado === 'AUTORIZADA') {
-              this.facturas[index].numero_autorizacion = res.numeroAutorizacion;
-              this.facturas[index].fecha_autorizacion = res.fechaAutorizacion;
-            }
+            // Reemplazamos el objeto completo para asegurar la detección de cambios
+            this.facturas[index] = { 
+              ...this.facturas[index], 
+              estado: estado as any,
+              numero_autorizacion: res.numeroAutorizacion || this.facturas[index].numero_autorizacion,
+              fecha_autorizacion: res.fechaAutorizacion || this.facturas[index].fecha_autorizacion
+            };
+            
+            // Forzamos el refresco completo del array para triggers reactivos
+            this.facturas = [...this.facturas];
+            
             this.calculateStats();
             this.applyFilters();
           } else {
-            this.loadData(); // Fallback
+            console.warn(`[REAC] Index not found for ID: ${id}. Standard reload triggered.`);
+            this.loadData();
           }
+          
+          // RECARGA DE SEGURIDAD: Invocamos loadData de todas formas para asegurar sincronización con el servidor
+          console.log(`[SYNC] Action complete for ID: ${id}. Refreshing full list for safety.`);
+          this.loadData();
         },
         error: (err) => this.uiService.showError(err, 'Error envío SRI')
       });
@@ -730,7 +740,30 @@ export class FacturacionPage implements OnInit {
           }
 
           this.uiService.showToast(msgText, estadoMapping === 'AUTORIZADA' ? 'success' : 'warning');
-          this.loadData(); // Recargar para ver cambios
+          
+          // ACTUALIZACION REACTIVA (En lugar de loadData completo)
+          const index = this.facturas.findIndex(f => f.id === id);
+          if (index !== -1) {
+            this.facturas[index] = { 
+              ...this.facturas[index], 
+              estado: estadoMapping,
+              numero_autorizacion: res.numeroAutorizacion || this.facturas[index].numero_autorizacion,
+              fecha_autorizacion: res.fechaAutorizacion || this.facturas[index].fecha_autorizacion
+            };
+            
+            // Reemplazo del array para asegurar triggering
+            this.facturas = [...this.facturas];
+            
+            this.calculateStats();
+            this.applyFilters();
+          } else {
+            console.warn(`[REAC] Index not found for ID: ${id}. Standard reload triggered.`);
+            this.loadData();
+          }
+
+          // RECARGA DE SEGURIDAD
+          console.log(`[SYNC] Consultation complete for ID: ${id}. Refreshing full list.`);
+          this.loadData();
         },
         error: (err) => this.uiService.showError(err, 'Error al consultar SRI')
       });
