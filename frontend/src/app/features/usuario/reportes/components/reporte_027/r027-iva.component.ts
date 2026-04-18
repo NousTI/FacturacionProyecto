@@ -43,13 +43,13 @@ import { R027DetalleModalComponent } from './r027-detalle-modal.component';
         <span class="deadline-main">
           {{ data.fecha_limite?.vencida ? 'Declaración vencida —' : 'Recuerda subir tu declaración hasta el' }}
           <strong>{{ data.fecha_limite?.fecha_limite }}</strong>
+          <app-info-tooltip [text]="tooltipRuc" label="Fecha límite SRI"></app-info-tooltip>
         </span>
         <span class="deadline-sub" *ngIf="!data.fecha_limite?.vencida && (data.fecha_limite?.dias_restantes ?? 99) >= 0">
           quedan <strong>{{ data.fecha_limite?.dias_restantes }}</strong> día(s)
         </span>
       </div>
     </div>
-    <app-info-tooltip [text]="tooltipRuc" label="Fecha límite SRI"></app-info-tooltip>
   </div>
 
   <!-- ══ NOTA FORMULARIO EN CERO ════════════════════════════════════ -->

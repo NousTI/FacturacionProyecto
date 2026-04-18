@@ -11,6 +11,12 @@ SRI_CALENDARIO = {
 }
 
 
+_MESES_ES = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre']
+
+def _fecha_es(d: date) -> str:
+    return f"{d.day} de {_MESES_ES[d.month - 1]} de {d.year}"
+
+
 def _calcular_fecha_limite(ruc: str, fecha_fin: str) -> Dict[str, Any]:
     """Calcula la fecha límite de declaración según el noveno dígito del RUC."""
     try:
@@ -28,7 +34,7 @@ def _calcular_fecha_limite(ruc: str, fecha_fin: str) -> Dict[str, Any]:
         return {
             "noveno_digito": noveno,
             "dia_limite": dia_limite,
-            "fecha_limite": fecha_limite.strftime('%d de %B de %Y'),
+            "fecha_limite": _fecha_es(fecha_limite),
             "dias_restantes": dias_restantes,
             "vencida": dias_restantes < 0,
             "urgente": 0 <= dias_restantes <= 5,

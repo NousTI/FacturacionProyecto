@@ -27,7 +27,7 @@ import { R008CuentasPorCobrarComponent } from './components/reporte_008/r008-cue
 import { R028ResumenEjecutivoComponent } from './components/reporte_028/r028-resumen-ejecutivo.component';
 import { R001MisVentasComponent } from './components/reporte_001_empleados/r001-mis-ventas.component';
 
-export type RangoTipo = 'mes_actual' | 'mes_anterior' | 'anio_actual' | 'semestre_1' | 'semestre_2' | 'personalizado';
+export type RangoTipo = 'mes_actual' | 'mes_anterior' | 'anio_actual' | 'semestre_1' | 'semestre_2' | 'personalizado' | 'personalizado_mes';
 type Tab = 'resumen' | 'ventas' | 'cartera' | 'iva' | 'mis_ventas';
 
 @Component({
@@ -80,14 +80,14 @@ type Tab = 'resumen' | 'ventas' | 'cartera' | 'iva' | 'mis_ventas';
 
       <div class="filters-actions">
         <div class="d-flex align-items-center gap-2">
-          <!-- Selector de rango — R-027 tiene opciones específicas -->
+          <!-- Selector de rango -->
           <select class="select-compact" [(ngModel)]="rangoTipo" (change)="onRangoChangeInternal()">
             <ng-container *ngIf="tabActivo === 'iva'; else otrosRangos">
               <option value="mes_anterior">Mes Anterior</option>
               <option value="mes_actual">Mes Actual</option>
               <option value="semestre_1">Semestre 1 (Ene–Jun)</option>
               <option value="semestre_2">Semestre 2 (Jul–Dic)</option>
-              <option value="personalizado">Personalizado</option>
+              <option value="personalizado_mes">Personalizado</option>
             </ng-container>
             <ng-template #otrosRangos>
               <option value="mes_actual">Mes Actual</option>
@@ -97,8 +97,29 @@ type Tab = 'resumen' | 'ventas' | 'cartera' | 'iva' | 'mis_ventas';
             </ng-template>
           </select>
 
-          <!-- Fechas personalizadas -->
-          <ng-container *ngIf="rangoTipo === 'personalizado'">
+          <!-- Año + Mes para R-027 modo "Mes específico" -->
+          <ng-container *ngIf="tabActivo === 'iva' && rangoTipo === 'personalizado_mes'">
+            <select class="select-compact" [(ngModel)]="ivaAnio" (change)="onIvaFechaChange()">
+              <option *ngFor="let a of ivaAnios" [value]="a">{{ a }}</option>
+            </select>
+            <select class="select-compact" [(ngModel)]="ivaMes" (change)="onIvaFechaChange()">
+              <option value="1">Enero</option>
+              <option value="2">Febrero</option>
+              <option value="3">Marzo</option>
+              <option value="4">Abril</option>
+              <option value="5">Mayo</option>
+              <option value="6">Junio</option>
+              <option value="7">Julio</option>
+              <option value="8">Agosto</option>
+              <option value="9">Septiembre</option>
+              <option value="10">Octubre</option>
+              <option value="11">Noviembre</option>
+              <option value="12">Diciembre</option>
+            </select>
+          </ng-container>
+
+          <!-- Fechas personalizadas para otros reportes -->
+          <ng-container *ngIf="tabActivo !== 'iva' && rangoTipo === 'personalizado'">
             <input type="date" class="control-compact date-small" [(ngModel)]="fechaInicio">
             <span class="sep-text">-</span>
             <input type="date" class="control-compact date-small" [(ngModel)]="fechaFin">
@@ -178,7 +199,7 @@ type Tab = 'resumen' | 'ventas' | 'cartera' | 'iva' | 'mis_ventas';
 </div>
   `,
   styles: [`
-    .reportes-page-container { padding: 1.5rem; background: #f8fafc; min-height: 100vh; }
+    .reportes-page-container { padding: 0; background: transparent; min-height: 100vh; }
 
     /* BARRA PRINCIPAL */
     .header-actions-bar {
@@ -276,6 +297,14 @@ export class ReportesPage implements OnInit {
   fechaInicio = '';
   fechaFin = '';
 
+  // Filtro específico R-027 (año + mes)
+  ivaAnio: number = new Date().getFullYear();
+  ivaMes: number = new Date().getMonth() === 0 ? 12 : new Date().getMonth(); // mes anterior por defecto
+  get ivaAnios(): number[] {
+    const cur = new Date().getFullYear();
+    return [cur, cur - 1, cur - 2, cur - 3];
+  }
+
   resumenData?: ExecutiveSummary;
   r001Data?: R001Report;
   ventasData?: SalesGeneralReport;
@@ -323,6 +352,15 @@ export class ReportesPage implements OnInit {
     return `${y}-${m}-${d}`;
   }
 
+  onIvaFechaChange() {
+    const y = this.ivaAnio;
+    const m = Number(this.ivaMes);
+    const lastDay = new Date(y, m, 0).getDate();
+    this.fechaInicio = `${y}-${String(m).padStart(2, '0')}-01`;
+    this.fechaFin    = `${y}-${String(m).padStart(2, '0')}-${String(lastDay).padStart(2, '0')}`;
+    this.cdr.detectChanges();
+  }
+
   onRangoChangeInternal() {
     const today = new Date();
     switch (this.rangoTipo) {
@@ -353,8 +391,8 @@ export class ReportesPage implements OnInit {
   setTab(tab: Tab) {
     if (this.tabActivo === tab) return;
     this.tabActivo = tab;
-    // Al entrar al R-027 IVA, cambiar a mes anterior por defecto
-    if (tab === 'iva' && this.rangoTipo !== 'personalizado' && this.rangoTipo !== 'semestre_1' && this.rangoTipo !== 'semestre_2') {
+    // Al entrar al R-027 IVA, poner mes anterior por defecto
+    if (tab === 'iva') {
       this.rangoTipo = 'mes_anterior';
       this.onRangoChangeInternal();
     }
