@@ -2,6 +2,7 @@ import { Component, EventEmitter, Input, OnInit, Output, ChangeDetectorRef } fro
 import { CommonModule } from '@angular/common';
 import { FacturasService } from '../../services/facturas.service';
 import { Factura, FacturaDetalle } from '../../../../../domain/models/factura.model';
+import { GET_IVA_PERCENTAGE } from '../../../../../core/constants/sri-iva.constants';
 
 @Component({
   selector: 'app-view-factura-modal',
@@ -118,6 +119,7 @@ import { Factura, FacturaDetalle } from '../../../../../domain/models/factura.mo
                         <th class="py-3 px-4 fw-semibold border-0 text-uppercase text-center">CANTIDAD</th>
                         <th class="py-3 px-4 fw-semibold border-0 text-uppercase text-end">PRECIO UNIT.</th>
                         <th class="py-3 px-4 fw-semibold border-0 text-uppercase text-end">DESC.</th>
+                        <th class="py-3 px-4 fw-semibold border-0 text-uppercase text-end">IVA</th>
                         <th class="py-3 px-4 fw-semibold border-0 text-uppercase text-end">SUBTOTAL</th>
                       </tr>
                     </thead>
@@ -132,6 +134,10 @@ import { Factura, FacturaDetalle } from '../../../../../domain/models/factura.mo
                         <td class="py-3 px-4 text-end text-secondary">
                           <span *ngIf="d.descuento > 0" class="text-danger small">-{{ d.descuento | currency:'USD' }}</span>
                           <span *ngIf="!d.descuento || d.descuento === 0" class="opacity-50">-</span>
+                        </td>
+                        <td class="py-3 px-4 text-end text-secondary">
+                          {{ d.valor_iva | currency:'USD' }}
+                          <span class="text-muted" style="font-size:0.75rem;">({{ getIvaPercentage(d.tipo_iva) }}%)</span>
                         </td>
                         <td class="py-3 px-4 text-end fw-bold text-primary">{{ d.subtotal | currency:'USD' }}</td>
                       </tr>
@@ -269,6 +275,10 @@ export class ViewFacturaModalComponent implements OnInit {
         this.cd.detectChanges();
       }
     });
+  }
+
+  getIvaPercentage(tipoIva: string): number {
+    return GET_IVA_PERCENTAGE(tipoIva);
   }
 
   getFormaPagoLabel(code: string): string {

@@ -47,7 +47,12 @@ class ServicioFacturaDetalles:
                 '0': 0.00,
                 '2': 0.12,
                 '3': 0.14,
-                '4': 0.15
+                '4': 0.15,
+                '5': 0.05,
+                '6': 0.00,
+                '7': 0.00,
+                '8': 0.08,
+                '10': 0.13
             }
             tasa_iva = tarifas_iva.get(tipo_iva, 0.00)
             valor_iva = subtotal * tasa_iva

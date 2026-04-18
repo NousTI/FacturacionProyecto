@@ -92,7 +92,7 @@ import { SRI_IVA_TARIFAS, GET_IVA_PERCENTAGE } from '../../../../../core/constan
                     <label>Precio de Venta (PVP) *</label>
                     <div class="input-with-icon">
                       <span class="prefix">$</span>
-                      <input type="number" [(ngModel)]="formData.precio" name="precio" #precio="ngModel" required min="0.01" step="0.01" (keypress)="validateNoNegative($event)">
+                      <input type="number" [(ngModel)]="formData.precio" name="precio" #precio="ngModel" required min="0.01" step="0.01" (keypress)="validateNoNegative($event)" (focus)="clearIfZero('precio')" (blur)="restoreIfEmpty('precio')" [placeholder]="'0.00'">
                     </div>
                   </div>
                 </div>
@@ -101,7 +101,7 @@ import { SRI_IVA_TARIFAS, GET_IVA_PERCENTAGE } from '../../../../../core/constan
                     <label>Costo de Compra</label>
                     <div class="input-with-icon">
                       <span class="prefix">$</span>
-                      <input type="number" [(ngModel)]="formData.costo" name="costo" #costo="ngModel" min="0" step="0.01" (keypress)="validateNoNegative($event)">
+                      <input type="number" [(ngModel)]="formData.costo" name="costo" #costo="ngModel" min="0" step="0.01" (keypress)="validateNoNegative($event)" (focus)="clearIfZero('costo')" (blur)="restoreIfEmpty('costo')" [placeholder]="'0.00'">
                     </div>
                   </div>
                 </div>
@@ -109,7 +109,7 @@ import { SRI_IVA_TARIFAS, GET_IVA_PERCENTAGE } from '../../../../../core/constan
                   <div class="input-group-modern">
                     <label>Tipo de IVA (SRI)</label>
                     <select [(ngModel)]="formData.tipo_iva" name="tipo_iva" (change)="onIvaChange()">
-                      <option *ngFor="let option of ivaOptions" [value]="option.code">
+                      <option *ngFor="let option of ivaOptions" [value]="option.code" [label]="option.percentage + '%'">
                         {{ option.label }}
                       </option>
                     </select>
@@ -343,6 +343,18 @@ export class ProductoFormModalComponent implements OnInit, OnDestroy {
   validateNoNegative(event: KeyboardEvent) {
     const charCode = event.which ? event.which : event.keyCode;
     if (charCode === 45) event.preventDefault();
+  }
+
+  clearIfZero(field: 'precio' | 'costo') {
+    if (this.formData[field] === 0 || this.formData[field] === null) {
+      (this.formData as any)[field] = null;
+    }
+  }
+
+  restoreIfEmpty(field: 'precio' | 'costo') {
+    if (this.formData[field] === null || this.formData[field] === undefined || this.formData[field] === '') {
+      (this.formData as any)[field] = 0;
+    }
   }
 
   handleSave(form: any) {

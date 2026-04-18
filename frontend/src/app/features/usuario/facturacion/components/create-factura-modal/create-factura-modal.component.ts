@@ -20,6 +20,7 @@ import { ConfigSRI } from '../../../certificado-sri/models/sri-config.model';
 import { ConfirmModalComponent } from '../../../../../shared/components/confirm-modal/confirm-modal.component';
 import { forkJoin, switchMap, tap, catchError, of, filter, take, map, Observable, fromEvent, Subject, takeUntil } from 'rxjs';
 import { ClienteFormModalComponent } from '../../../clientes/components/modals/cliente-form-modal.component';
+import { ProductoFormModalComponent } from '../../../productos/components/modals/producto-form-modal.component';
 import { FacturaCalculationService } from '../../services/factura-calculation.service';
 
 import { FacturaClienteHeaderComponent } from './components/factura-cliente-header/factura-cliente-header.component';
@@ -34,7 +35,8 @@ import { FacturaTotalesPanelComponent } from './components/factura-totales-panel
   encapsulation: ViewEncapsulation.None,
   imports: [
     CommonModule, FormsModule, ReactiveFormsModule, ConfirmModalComponent, ClienteFormModalComponent,
-    FacturaClienteHeaderComponent, FacturaEmisionHeaderComponent, FacturaDetallesTableComponent, 
+    ProductoFormModalComponent,
+    FacturaClienteHeaderComponent, FacturaEmisionHeaderComponent, FacturaDetallesTableComponent,
     FacturaRecurrenteConfigComponent, FacturaTotalesPanelComponent
   ],
   templateUrl: './create-factura-modal.component.html',
@@ -82,6 +84,11 @@ export class CreateFacturaModalComponent implements OnInit, OnChanges {
   showCreateClienteModal = false;
   isCreatingCliente = false;
   clienteParaEditar: Cliente | null = null;
+
+  // Producto Modal properties
+  showCreateProductoModal = false;
+  isCreatingProducto = false;
+  productoParaEditar: Producto | null = null;
 
   private destroy$ = new Subject<void>();
 
@@ -347,6 +354,52 @@ export class CreateFacturaModalComponent implements OnInit, OnChanges {
   closeClienteModal() {
     this.showCreateClienteModal = false;
     this.clienteParaEditar = null;
+  }
+
+  openCreateProductoModal() {
+    this.productoParaEditar = null;
+    this.showCreateProductoModal = true;
+  }
+
+  openEditProductoModal(producto: Producto | undefined) {
+    if (!producto) return;
+    this.productoParaEditar = { ...producto };
+    this.showCreateProductoModal = true;
+  }
+
+  closeProductoModal() {
+    this.showCreateProductoModal = false;
+    this.productoParaEditar = null;
+  }
+
+  handleProductoSave(productoData: any) {
+    this.isCreatingProducto = true;
+    const op = this.productoParaEditar
+      ? this.productosService.updateProducto(this.productoParaEditar.id, productoData)
+      : this.productosService.createProducto(productoData);
+
+    op.subscribe({
+      next: (resp: any) => {
+        const saved = resp?.detalles ?? resp;
+        this.uiService.showToast(this.productoParaEditar ? 'Producto actualizado' : 'Producto creado exitosamente', 'success');
+        if (saved) {
+          if (this.productoParaEditar) {
+            const idx = this.productos.findIndex(p => p.id === saved.id);
+            if (idx !== -1) { const arr = [...this.productos]; arr[idx] = saved; this.productos = arr; }
+          } else {
+            if (!this.productos.find(p => p.id === saved.id)) this.productos = [...this.productos, saved];
+          }
+        }
+        this.isCreatingProducto = false;
+        this.showCreateProductoModal = false;
+        this.productoParaEditar = null;
+        this.cd.detectChanges();
+      },
+      error: (err: any) => {
+        this.uiService.showError(err, 'Error al guardar producto');
+        this.isCreatingProducto = false;
+      }
+    });
   }
 
   handleClienteSave(clienteData: any) {

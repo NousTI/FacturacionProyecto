@@ -63,7 +63,9 @@
             [productos]="productos"
             (onAdd)="addDetalle()"
             (onRemove)="removeDetalle($event)"
-            (onProductSelect)="onProductoSelect($event)">
+            (onProductSelect)="onProductoSelect($event)"
+            (onCreateProducto)="openCreateProductoModal()"
+            (onEditProducto)="openEditProductoModal($event)">
           </app-factura-detalles-table>
 
           <!-- BOTTOM: TOTALS AND OBS -->
@@ -114,6 +116,14 @@
   (onSave)="handleClienteSave($event)"
   (onClose)="closeClienteModal()"
 ></app-cliente-form-modal>
+
+<app-producto-form-modal
+  *ngIf="showCreateProductoModal"
+  [producto]="productoParaEditar"
+  [loading]="isCreatingProducto"
+  (onSave)="handleProductoSave($event)"
+  (onClose)="closeProductoModal()"
+></app-producto-form-modal>
 
 <!-- Modal de confirmación para eliminar ítem -->
 <app-confirm-modal

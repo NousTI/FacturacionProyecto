@@ -101,11 +101,11 @@ class ServicioFacturaCore:
             
             t_iva_item = str(d_dict.get('tipo_iva', '0')).strip()
             # Mapeo de porcentajes (Sincronizado con constants.py)
-            mapping = {'0': 0.0, '2': 12.0, '3': 14.0, '4': 15.0, '5': 5.0, '10': 13.0}
+            mapping = {'0': 0.0, '2': 12.0, '3': 14.0, '4': 15.0, '5': 5.0, '6': 0.0, '7': 0.0, '8': 8.0, '10': 13.0}
             rate = mapping.get(t_iva_item, 0.0)
             val_iva = round(sub_neto * (rate / 100.0), 2)
 
-            if t_iva_item in ['2', '3', '4', '5', '10']: s_con_iva += sub_neto
+            if t_iva_item in ['2', '3', '4', '5', '8', '10']: s_con_iva += sub_neto
             elif t_iva_item == '0': s_sin_iva += sub_neto
             elif t_iva_item in ['6', 'NO_OBJETO']: s_no_objeto += sub_neto
             elif t_iva_item in ['7', 'EXENTO']: s_exento += sub_neto
@@ -162,7 +162,7 @@ class ServicioFacturaCore:
             
             # Mapeo exacto SRI: Código -> Tarifa
             t_iva = str(det_payload.get('tipo_iva', '0'))
-            mapping = {'0': 0.0, '2': 12.0, '3': 14.0, '4': 15.0, '5': 5.0, '10': 13.0}
+            mapping = {'0': 0.0, '2': 12.0, '3': 14.0, '4': 15.0, '5': 5.0, '6': 0.0, '7': 0.0, '8': 8.0, '10': 13.0}
             rate_percent = mapping.get(t_iva, 0.0)
             
             det_payload['tarifa_iva'] = rate_percent
@@ -225,7 +225,7 @@ class ServicioFacturaCore:
             tipo_iva_str = str(tipo_iva).strip()
             
             # Códigos que representan IVA con valor (positivos)
-            if tipo_iva_str in ['2', '3', '4', '5', '10']:
+            if tipo_iva_str in ['2', '3', '4', '5', '8', '10']:
                 subtotal_con_iva += subtotal_detalle
                 total_iva += valor_iva_detalle
             # Códigos que representan IVA 0%

@@ -1,9 +1,11 @@
-import { Component, Input, Output, EventEmitter, OnInit, OnChanges, SimpleChanges, ChangeDetectorRef } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnInit, OnChanges, SimpleChanges, ChangeDetectorRef, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormGroup } from '@angular/forms';
 import { Cliente } from '../../../../../../../domain/models/cliente.model';
 import { fromEvent, Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
+import { PermissionsService } from '../../../../../../../core/auth/permissions.service';
+import { CLIENTES_PERMISSIONS } from '../../../../../../../constants/permission-codes';
 
 @Component({
   selector: 'app-factura-cliente-header',
@@ -15,7 +17,7 @@ import { takeUntil } from 'rxjs/operators';
         <div class="section-title-lux mb-0 border-0 p-0" style="color: #1e293b;">
           <i class="bi bi-person-bounding-box me-2 text-primary"></i> Cliente / Receptor
         </div>
-        <button type="button" class="btn-create-client-lux btn-sm py-1 px-2" (click)="openCreateClienteModal.emit()" title="Nuevo Cliente">
+        <button *ngIf="canCreateCliente" type="button" class="btn-create-client-lux btn-sm py-1 px-2" (click)="openCreateClienteModal.emit()" title="Nuevo Cliente">
           <i class="bi bi-person-plus-fill me-1"></i>
           <span>Nuevo</span>
         </button>
@@ -80,7 +82,7 @@ import { takeUntil } from 'rxjs/operators';
               <i class="bi bi-geo-alt-fill me-1"></i>{{ selectedCliente.direccion || 'Sin dirección registrada' }}
             </div>
           </div>
-          <button type="button" class="btn-edit-client-small ms-2" (click)="openEditClienteModal.emit(selectedCliente)" title="Editar información del cliente">
+          <button *ngIf="canEditCliente" type="button" class="btn-edit-client-small ms-2" (click)="openEditClienteModal.emit(selectedCliente)" title="Editar información del cliente">
             <i class="bi bi-pencil-square"></i>
           </button>
         </div>
@@ -105,6 +107,11 @@ export class FacturaClienteHeaderComponent implements OnInit, OnChanges {
   filteredClientes: Cliente[] = [];
   selectedCliente: Cliente | null = null;
   private destroy$ = new Subject<void>();
+
+  private permissionsService = inject(PermissionsService);
+
+  get canCreateCliente(): boolean { return this.permissionsService.hasPermission(CLIENTES_PERMISSIONS.CREAR); }
+  get canEditCliente(): boolean { return this.permissionsService.hasPermission(CLIENTES_PERMISSIONS.EDITAR); }
 
   constructor(private cd: ChangeDetectorRef) {}
 
