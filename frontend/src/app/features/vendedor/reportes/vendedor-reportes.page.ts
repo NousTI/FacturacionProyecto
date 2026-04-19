@@ -140,8 +140,9 @@ export type ReportTab = 'empresas' | 'comisiones';
     .reportes-page-container { 
       flex: 1;
       overflow-y: auto;
-      padding: 1.5rem; 
-      background: #f8fafc; 
+      overflow-x: hidden;
+      padding: 1.5rem 0; 
+      background: transparent; 
     }
     
     .page-title { font-weight: 900; color: #0f172a; margin: 0; font-size: 1.75rem; letter-spacing: -0.025em; }
@@ -157,8 +158,7 @@ export type ReportTab = 'empresas' | 'comisiones';
       border: 1px solid #e2e8f0;
       box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
       gap: 1.5rem;
-      flex-wrap: nowrap;
-      overflow: hidden;
+      flex-wrap: wrap;
     }
 
     /* TABS MODERNOS */
