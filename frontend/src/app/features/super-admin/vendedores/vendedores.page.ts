@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { VendedorService, VendedorStats, Vendedor } from './services/vendedor.service';
 import { UiService } from '../../../shared/services/ui.service';
+import { PaginationState } from './components/vendedor-paginacion/vendedor-paginacion.component';
 import { VendedorStatsComponent } from './components/vendedor-stats/vendedor-stats.component';
 import { VendedorTableComponent } from './components/vendedor-table/vendedor-table.component';
 import { VendedorFormModalComponent } from './components/vendedor-form-modal/vendedor-form-modal.component';
@@ -33,15 +34,12 @@ import { VendedorActionsComponent } from './components/vendedor-actions/vendedor
       <!-- 3. MÓDULO DE TABLA DE DATOS -->
       <div class="table-wrapper">
         <app-vendedor-table
-          [vendedores]="filteringVendedores"
+          [vendedores]="paginatedVendedores"
+          [pagination]="pagination"
           (onAction)="handleAction($event)"
+          (pageChange)="onPageChange($event)"
+          (pageSizeChange)="onPageSizeChange($event)"
         ></app-vendedor-table>
-
-        <!-- Empty State -->
-        <div *ngIf="!loading && filteringVendedores.length === 0" class="text-center p-5 bg-white rounded-bottom-5">
-            <i class="bi bi-search fs-1 text-muted d-block mb-3"></i>
-            <p class="text-muted">No se encontraron vendedores que coincidan con tu búsqueda.</p>
-        </div>
       </div>
 
       <!-- 4. MODALS -->
@@ -147,6 +145,8 @@ export class VendedoresPage implements OnInit {
     vendedores: Vendedor[] = [];
     loading: boolean = true;
 
+    pagination: PaginationState = { currentPage: 1, pageSize: 25, totalItems: 0 };
+
     // Loading flags for specific actions
     saving: boolean = false;
     savingStatus: boolean = false;
@@ -193,16 +193,15 @@ export class VendedoresPage implements OnInit {
 
     selectTab(tabId: string) {
         this.currentTab = tabId;
+        this.pagination.currentPage = 1;
     }
 
     get filteringVendedores() {
         let temp = this.vendedores;
 
-        // Apply Tab Filter
         if (this.currentTab === 'ACTIVE') temp = temp.filter(v => v.activo);
         else if (this.currentTab === 'INACTIVE') temp = temp.filter(v => !v.activo);
 
-        // Apply Search Filter
         if (this.searchQuery) {
             const q = this.searchQuery.toLowerCase();
             temp = temp.filter(v =>
@@ -212,7 +211,24 @@ export class VendedoresPage implements OnInit {
             );
         }
 
+        this.pagination.totalItems = temp.length;
         return temp;
+    }
+
+    get paginatedVendedores(): Vendedor[] {
+        const inicio = (this.pagination.currentPage - 1) * this.pagination.pageSize;
+        return this.filteringVendedores.slice(inicio, inicio + this.pagination.pageSize);
+    }
+
+    onPageChange(page: number) {
+        this.pagination.currentPage = page;
+        this.cd.detectChanges();
+    }
+
+    onPageSizeChange(pageSize: number) {
+        this.pagination.pageSize = pageSize;
+        this.pagination.currentPage = 1;
+        this.cd.detectChanges();
     }
 
     loadData() {

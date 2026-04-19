@@ -1,11 +1,12 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { LogAuditoria } from '../services/auditoria.service';
+import { AuditoriaPaginacionComponent, PaginationState } from './auditoria-paginacion.component';
 
 @Component({
   selector: 'app-auditoria-table',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, AuditoriaPaginacionComponent],
   template: `
     <section class="module-table">
       <div class="table-container">
@@ -113,6 +114,13 @@ import { LogAuditoria } from '../services/auditoria.service';
             <p class="text-muted small">Consultando registros...</p>
           </div>
         </div>
+
+        <!-- Paginación integrada como footer de la tabla -->
+        <app-auditoria-paginacion
+          [pagination]="pagination"
+          (pageChange)="pageChange.emit($event)"
+          (pageSizeChange)="pageSizeChange.emit($event)"
+        ></app-auditoria-paginacion>
       </div>
     </section>
   `,
@@ -211,8 +219,11 @@ import { LogAuditoria } from '../services/auditoria.service';
 export class AuditoriaTableComponent {
   @Input() logs: LogAuditoria[] = [];
   @Input() isLoading = false;
+  @Input() pagination: PaginationState = { currentPage: 1, pageSize: 25, totalItems: 0 };
 
   @Output() onVerDetalle = new EventEmitter<LogAuditoria>();
+  @Output() pageChange = new EventEmitter<number>();
+  @Output() pageSizeChange = new EventEmitter<number>();
 
   trackById(index: number, item: LogAuditoria): string {
     return item.id;

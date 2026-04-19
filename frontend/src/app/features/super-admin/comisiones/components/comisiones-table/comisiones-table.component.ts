@@ -1,5 +1,6 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { ComisionesPaginacionComponent, PaginationState } from '../comisiones-paginacion/comisiones-paginacion.component';
 
 @Component({
   selector: 'app-comisiones-table',
@@ -101,6 +102,13 @@ import { CommonModule } from '@angular/common';
             </tbody>
           </table>
         </div>
+
+        <!-- Paginación integrada como footer de la tabla -->
+        <app-comisiones-paginacion
+          [pagination]="pagination"
+          (pageChange)="pageChange.emit($event)"
+          (pageSizeChange)="pageSizeChange.emit($event)"
+        ></app-comisiones-paginacion>
       </div>
     </section>
   `,
@@ -125,9 +133,8 @@ import { CommonModule } from '@angular/common';
       border: 1px solid var(--border-color, #f1f5f9);
       display: flex;
       flex-direction: column;
+      flex: 1;
       min-height: 0;
-      height: auto;
-      max-height: 100%;
       overflow: hidden;
       margin-bottom: 0;
     }
@@ -237,12 +244,16 @@ import { CommonModule } from '@angular/common';
     }
   `],
   standalone: true,
-  imports: [CommonModule]
+  imports: [CommonModule, ComisionesPaginacionComponent]
 })
 export class ComisionesTableComponent {
   @Input() comisiones: any[] = [];
   @Input() isAudit: boolean = false;
+  @Input() pagination: PaginationState = { currentPage: 1, pageSize: 25, totalItems: 0 };
+
   @Output() onAction = new EventEmitter<{ type: string, comision: any }>();
+  @Output() pageChange = new EventEmitter<number>();
+  @Output() pageSizeChange = new EventEmitter<number>();
 
   getStatusClass(status: string): string {
     switch (status) {

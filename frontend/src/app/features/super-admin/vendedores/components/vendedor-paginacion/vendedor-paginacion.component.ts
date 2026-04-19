@@ -9,55 +9,32 @@ export interface PaginationState {
 }
 
 @Component({
-  selector: 'app-auditoria-paginacion',
+  selector: 'app-vendedor-paginacion',
   standalone: true,
   imports: [CommonModule, FormsModule],
   template: `
-    <div class="pagination-premium-container mt-auto">
+    <div class="pagination-premium-container">
       <div class="d-flex align-items-center justify-content-between px-4 py-3">
-        <!-- Selector de Tamaño -->
         <div class="d-flex align-items-center gap-3">
           <span class="text-muted fw-600" style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px;">Registros por página:</span>
-          <select
-            class="form-select-premium-sm"
-            [(ngModel)]="pagination.pageSize"
-            (change)="onPageSizeChange()"
-          >
+          <select class="form-select-premium-sm" [(ngModel)]="pagination.pageSize" (change)="onPageSizeChange()">
             <option [value]="10">10</option>
             <option [value]="25">25</option>
             <option [value]="50">50</option>
             <option [value]="100">100</option>
           </select>
         </div>
-
-        <!-- Info de Resultados -->
         <div class="text-center">
           <span class="text-muted fw-500" style="font-size: 0.85rem;">
             Mostrando <strong class="text-dark">{{ startItem }} - {{ endItem }}</strong> de <strong class="text-dark">{{ pagination.totalItems }}</strong> registros
           </span>
         </div>
-
-        <!-- Controles de Navegación -->
         <div class="d-flex align-items-center gap-2">
-          <button 
-            class="btn-nav-premium" 
-            [disabled]="pagination.currentPage === 1" 
-            (click)="onPreviousPage()"
-            title="Anterior"
-          >
+          <button class="btn-nav-premium" [disabled]="pagination.currentPage === 1" (click)="onPreviousPage()" title="Anterior">
             <i class="bi bi-chevron-left"></i>
           </button>
-          
-          <div class="page-indicator-premium">
-            {{ pagination.currentPage }}
-          </div>
-          
-          <button 
-            class="btn-nav-premium" 
-            [disabled]="!hasNextPage" 
-            (click)="onNextPage()"
-            title="Siguiente"
-          >
+          <div class="page-indicator-premium">{{ pagination.currentPage }}</div>
+          <button class="btn-nav-premium" [disabled]="!hasNextPage" (click)="onNextPage()" title="Siguiente">
             <i class="bi bi-chevron-right"></i>
           </button>
         </div>
@@ -77,7 +54,6 @@ export interface PaginationState {
       cursor: pointer; transition: all 0.2s;
     }
     .form-select-premium-sm:focus { border-color: var(--primary-color, #161d35); outline: none; }
-    
     .btn-nav-premium {
       width: 38px; height: 38px; border-radius: 10px;
       border: 1px solid #e2e8f0; background: white;
@@ -86,7 +62,6 @@ export interface PaginationState {
     }
     .btn-nav-premium:hover:not(:disabled) { background: #f8fafc; color: #0f172a; border-color: #cbd5e1; }
     .btn-nav-premium:disabled { opacity: 0.4; cursor: not-allowed; }
-
     .page-indicator-premium {
       min-width: 38px; height: 38px; border-radius: 10px;
       display: flex; align-items: center; justify-content: center;
@@ -97,16 +72,13 @@ export interface PaginationState {
     .fw-500 { font-weight: 500; }
   `]
 })
-export class AuditoriaPaginacionComponent {
-  @Input() pagination: PaginationState = {
-    currentPage: 1,
-    pageSize: 25,
-    totalItems: 0
-  };
+export class VendedorPaginacionComponent {
+  @Input() pagination: PaginationState = { currentPage: 1, pageSize: 25, totalItems: 0 };
   @Output() pageChange = new EventEmitter<number>();
   @Output() pageSizeChange = new EventEmitter<number>();
 
   get startItem(): number {
+    if (this.pagination.totalItems === 0) return 0;
     return (this.pagination.currentPage - 1) * this.pagination.pageSize + 1;
   }
 
@@ -119,18 +91,14 @@ export class AuditoriaPaginacionComponent {
   }
 
   onPreviousPage() {
-    if (this.pagination.currentPage > 1) {
-      this.pageChange.emit(this.pagination.currentPage - 1);
-    }
+    if (this.pagination.currentPage > 1) this.pageChange.emit(this.pagination.currentPage - 1);
   }
 
   onNextPage() {
-    if (this.hasNextPage) {
-      this.pageChange.emit(this.pagination.currentPage + 1);
-    }
+    if (this.hasNextPage) this.pageChange.emit(this.pagination.currentPage + 1);
   }
 
   onPageSizeChange() {
-    this.pageSizeChange.emit(this.pagination.pageSize);
+    this.pageSizeChange.emit(+this.pagination.pageSize);
   }
 }

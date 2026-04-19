@@ -7,6 +7,7 @@ import { SriCertService, SriCertConfig } from './services/sri-cert.service';
 import { CertStatsComponent } from './components/cert-stats/cert-stats.component';
 import { CertTableComponent } from './components/cert-table/cert-table.component';
 import { CertActionsComponent } from './components/cert-actions/cert-actions.component';
+import { PaginationState } from './components/cert-paginacion/cert-paginacion.component';
 
 @Component({
     selector: 'app-certificados-sri',
@@ -27,7 +28,9 @@ import { CertActionsComponent } from './components/cert-actions/cert-actions.com
       <!-- 2. Actions (Search & Filters) -->
       <app-cert-actions
         [(searchQuery)]="searchQuery"
+        (searchQueryChange)="pagination.currentPage = 1"
         [(filterStatus)]="filterStatus"
+        (filterStatusChange)="pagination.currentPage = 1"
       ></app-cert-actions>
 
       <!-- 3. Table -->
@@ -38,9 +41,12 @@ import { CertActionsComponent } from './components/cert-actions/cert-actions.com
 
       <app-cert-table
         *ngIf="!loading"
-        [certificados]="filteredCerts"
+        [certificados]="paginatedCerts"
+        [pagination]="pagination"
         (onViewHistory)="openHistory($event)"
         (onViewDetails)="openDetails($event)"
+        (pageChange)="onPageChange($event)"
+        (pageSizeChange)="onPageSizeChange($event)"
       ></app-cert-table>
 
       <!-- Modal Detalles -->
@@ -178,6 +184,8 @@ export class CertificadosSriPage implements OnInit {
     searchQuery = '';
     filterStatus = 'ALL';
 
+    pagination: PaginationState = { currentPage: 1, pageSize: 25, totalItems: 0 };
+
     showHistoryModal = false;
     selectedCert: SriCertConfig | null = null;
     
@@ -219,7 +227,6 @@ export class CertificadosSriPage implements OnInit {
     get filteredCerts() {
         let filtered = this.certificados;
 
-        // Search
         if (this.searchQuery) {
             const q = this.searchQuery.toLowerCase();
             filtered = filtered.filter(c =>
@@ -228,7 +235,6 @@ export class CertificadosSriPage implements OnInit {
             );
         }
 
-        // Filter Stats
         if (this.filterStatus === 'ACTIVE') {
             filtered = filtered.filter(c => c.estado === 'ACTIVO' && (c.days_until_expiry || 0) > 30);
         } else if (this.filterStatus === 'EXPIRING') {
@@ -237,11 +243,29 @@ export class CertificadosSriPage implements OnInit {
             filtered = filtered.filter(c => c.estado === 'EXPIRADO' || (c.days_until_expiry || 0) < 0);
         }
 
+        this.pagination.totalItems = filtered.length;
         return filtered;
+    }
+
+    get paginatedCerts(): SriCertConfig[] {
+        const inicio = (this.pagination.currentPage - 1) * this.pagination.pageSize;
+        return this.filteredCerts.slice(inicio, inicio + this.pagination.pageSize);
+    }
+
+    onPageChange(page: number) {
+        this.pagination.currentPage = page;
+        this.cdr.detectChanges();
+    }
+
+    onPageSizeChange(pageSize: number) {
+        this.pagination.pageSize = pageSize;
+        this.pagination.currentPage = 1;
+        this.cdr.detectChanges();
     }
 
     setFilter(status: string) {
         this.filterStatus = status;
+        this.pagination.currentPage = 1;
     }
 
     openHistory(cert: SriCertConfig) {

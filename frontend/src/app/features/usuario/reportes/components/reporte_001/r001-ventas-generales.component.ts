@@ -1,5 +1,6 @@
 import { Component, Input, OnChanges, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule, CurrencyPipe } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { R001Report } from '../../services/financial-reports.service';
 import { RangoTipo } from '../../reportes.page';
 import { Chart, ChartConfiguration, registerables } from 'chart.js';
@@ -9,7 +10,7 @@ Chart.register(...registerables);
 @Component({
   selector: 'app-r001-ventas-generales',
   standalone: true,
-  imports: [CommonModule, CurrencyPipe],
+  imports: [CommonModule, CurrencyPipe, FormsModule],
   template: `
     <div class="fade-in">
 
@@ -69,12 +70,12 @@ Chart.register(...registerables);
 
         <!-- Tabla ventas por usuario -->
         <div class="col-lg-8">
-          <div class="section-card h-100">
-            <div class="section-header">
+          <div class="section-card-table h-100">
+            <div class="section-header px-4 pt-4">
               <h5>Ventas por Usuario</h5>
               <p>Facturas, totales, ticket promedio, anuladas y devoluciones</p>
             </div>
-            <div class="table-responsive">
+            <div class="tabla-scroll">
               <table class="table modern-table">
                 <thead>
                   <tr>
@@ -87,7 +88,7 @@ Chart.register(...registerables);
                   </tr>
                 </thead>
                 <tbody>
-                  <tr *ngFor="let u of data.ventas_por_usuario" class="hover-row">
+                  <tr *ngFor="let u of paginatedUsuarios" class="hover-row">
                     <td class="font-medium">{{ u.usuario }}</td>
                     <td>{{ u.facturas }}</td>
                     <td class="font-bold">{{ u.total_ventas | currency }}</td>
@@ -100,6 +101,34 @@ Chart.register(...registerables);
                   </tr>
                 </tbody>
               </table>
+            </div>
+            <!-- Paginación footer -->
+            <div class="pagination-premium-container">
+              <div class="d-flex align-items-center justify-content-between px-4 py-3">
+                <div class="d-flex align-items-center gap-3">
+                  <span class="pag-label">Registros por página:</span>
+                  <select class="form-select-premium-sm" [(ngModel)]="pageSize" (change)="onPageSizeChange($event)">
+                    <option [value]="10">10</option>
+                    <option [value]="25">25</option>
+                    <option [value]="50">50</option>
+                    <option [value]="100">100</option>
+                  </select>
+                </div>
+                <div class="text-center">
+                  <span class="pag-info">
+                    Mostrando <strong>{{ startItem }} - {{ endItem }}</strong> de <strong>{{ data.ventas_por_usuario.length }}</strong> registros
+                  </span>
+                </div>
+                <div class="d-flex align-items-center gap-2">
+                  <button class="btn-nav-premium" [disabled]="currentPage === 1" (click)="currentPage = currentPage - 1">
+                    <i class="bi bi-chevron-left"></i>
+                  </button>
+                  <div class="page-indicator-premium">{{ currentPage }}</div>
+                  <button class="btn-nav-premium" [disabled]="currentPage === totalPages" (click)="currentPage = currentPage + 1">
+                    <i class="bi bi-chevron-right"></i>
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -133,8 +162,18 @@ Chart.register(...registerables);
     .trend.down { color: #ef4444; }
 
     .section-card { background: #fff; border: 1px solid #f1f5f9; border-radius: 20px; padding: 1.75rem; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
+    .section-card-table { background: #fff; border: 1px solid #f1f5f9; border-radius: 20px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); display: flex; flex-direction: column; }
     .section-header h5 { font-weight: 800; color: #1e293b; margin-bottom: 0.2rem; }
     .section-header p  { font-size: 0.83rem; color: #64748b; margin-bottom: 1.25rem; }
+    .tabla-scroll { max-height: 400px; overflow-y: auto; overflow-x: auto; }
+    .pagination-premium-container { background: #fff; border-top: 1px solid #f1f5f9; }
+    .pag-label { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px; color: #64748b; font-weight: 600; }
+    .pag-info  { font-size: 0.85rem; color: #64748b; }
+    .form-select-premium-sm { padding: 0.4rem 2rem 0.4rem 1rem; border-radius: 10px; border: 1px solid #e2e8f0; background-color: #f8fafc; font-size: 0.85rem; font-weight: 600; color: #475569; cursor: pointer; }
+    .btn-nav-premium { width: 38px; height: 38px; border-radius: 10px; border: 1px solid #e2e8f0; background: white; display: flex; align-items: center; justify-content: center; color: #64748b; cursor: pointer; transition: all 0.2s; }
+    .btn-nav-premium:hover:not(:disabled) { background: #f8fafc; color: #0f172a; border-color: #cbd5e1; }
+    .btn-nav-premium:disabled { opacity: 0.4; cursor: not-allowed; }
+    .page-indicator-premium { min-width: 38px; height: 38px; border-radius: 10px; display: flex; align-items: center; justify-content: center; background: #161d35; color: white; font-weight: 700; font-size: 0.9rem; padding: 0 0.75rem; }
 
     .iva-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; }
     .iva-item {
@@ -163,6 +202,19 @@ export class R001VentasGeneralesComponent implements OnChanges {
   private colors = ['#6366f1', '#3b82f6', '#10b981', '#f59e0b', '#ef4444'];
   private ivaOrder = ['15%', '8%', '5%', '0%'];
 
+  currentPage = 1;
+  pageSize = 10;
+
+  get paginatedUsuarios() {
+    if (!this.data?.ventas_por_usuario) return [];
+    const start = (this.currentPage - 1) * this.pageSize;
+    return this.data.ventas_por_usuario.slice(start, start + this.pageSize);
+  }
+  get totalPages() { return Math.ceil((this.data?.ventas_por_usuario?.length || 0) / this.pageSize) || 1; }
+  get startItem() { return this.data?.ventas_por_usuario?.length ? (this.currentPage - 1) * this.pageSize + 1 : 0; }
+  get endItem() { return Math.min(this.currentPage * this.pageSize, this.data?.ventas_por_usuario?.length || 0); }
+  onPageSizeChange(e: Event) { this.pageSize = +(e.target as HTMLSelectElement).value; this.currentPage = 1; }
+
   get labelPeriodoAnt(): string {
     switch (this.rangoTipo) {
       case 'mes_actual':        return 'vs mes anterior';
@@ -184,6 +236,7 @@ export class R001VentasGeneralesComponent implements OnChanges {
   }
 
   ngOnChanges() {
+    this.currentPage = 1;
     setTimeout(() => this.renderChart(), 50);
   }
 

@@ -1,6 +1,7 @@
 import { Component, Input, Output, EventEmitter, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Suscripcion } from '../../services/suscripcion.service';
+import { SuscripcionPaginacionComponent, PaginationState } from '../suscripcion-paginacion/suscripcion-paginacion.component';
 
 @Component({
   selector: 'app-suscripcion-table',
@@ -149,6 +150,13 @@ import { Suscripcion } from '../../services/suscripcion.service';
           </div>
 
         </div>
+
+        <!-- Paginación integrada como footer de la tabla -->
+        <app-suscripcion-paginacion
+          [pagination]="pagination"
+          (pageChange)="pageChange.emit($event)"
+          (pageSizeChange)="pageSizeChange.emit($event)"
+        ></app-suscripcion-paginacion>
       </div>
     </section>
   `,
@@ -172,6 +180,7 @@ import { Suscripcion } from '../../services/suscripcion.service';
       border: 1px solid var(--border-color, #f1f5f9);
       display: flex;
       flex-direction: column;
+      flex: 1;
       min-height: 0;
       overflow: hidden;
     }
@@ -254,15 +263,18 @@ import { Suscripcion } from '../../services/suscripcion.service';
     .text-corporate { color: var(--status-info-text) !important; }
   `],
   standalone: true,
-  imports: [CommonModule]
+  imports: [CommonModule, SuscripcionPaginacionComponent]
 })
 export class SuscripcionTableComponent {
   @Input() loading: boolean = false;
   @Input() suscripciones: Suscripcion[] = [];
-  @Output() onRegistrarPago = new EventEmitter<Suscripcion>();
+  @Input() pagination: PaginationState = { currentPage: 1, pageSize: 25, totalItems: 0 };
 
+  @Output() onRegistrarPago = new EventEmitter<Suscripcion>();
   @Output() onActivar = new EventEmitter<Suscripcion>();
   @Output() onCancelar = new EventEmitter<Suscripcion>();
+  @Output() pageChange = new EventEmitter<number>();
+  @Output() pageSizeChange = new EventEmitter<number>();
   @Output() onSuspender = new EventEmitter<Suscripcion>();
   @Output() onConfirmarPago = new EventEmitter<Suscripcion>();
 

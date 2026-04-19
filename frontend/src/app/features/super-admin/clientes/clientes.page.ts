@@ -2,6 +2,7 @@ import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ClientesService, ClienteUsuario, ClienteConTrazabilidad } from './services/clientes.service';
+import { PaginationState } from './components/clientes-paginacion.component';
 import { ClientesStatsComponent } from './components/clientes-stats.component';
 import { ClientesTableComponent } from './components/clientes-table.component';
 import { ClientesActionsComponent } from './components/clientes-actions.component';
@@ -43,8 +44,11 @@ import { environment } from '../../../../environments/environment';
 
       <!-- 3. MÓDULO DE TABLA DE DATOS -->
       <app-clientes-table
-        [usuarios]="filteredUsuarios"
+        [usuarios]="paginatedUsuarios"
+        [pagination]="pagination"
         (onAction)="handleAction($event)"
+        (pageChange)="onPageChange($event)"
+        (pageSizeChange)="onPageSizeChange($event)"
       ></app-clientes-table>
 
       <!-- 4. MODALS (Detalles) -->
@@ -159,6 +163,8 @@ export class ClientesPage implements OnInit {
   stats: any = { total: 0, activos: 0, nuevos_mes: 0 };
   allUsuarios: ClienteUsuario[] = [];
   filteredUsuarios: ClienteUsuario[] = [];
+
+  pagination: PaginationState = { currentPage: 1, pageSize: 25, totalItems: 0 };
   empresas: string[] = [];
   allEmpresas: any[] = [];
   apiUrl = environment.apiUrl;
@@ -243,6 +249,24 @@ export class ClientesPage implements OnInit {
     }
 
     this.filteredUsuarios = temp;
+    this.pagination.totalItems = temp.length;
+    this.pagination.currentPage = 1;
+    this.cdr.detectChanges();
+  }
+
+  get paginatedUsuarios(): ClienteUsuario[] {
+    const inicio = (this.pagination.currentPage - 1) * this.pagination.pageSize;
+    return this.filteredUsuarios.slice(inicio, inicio + this.pagination.pageSize);
+  }
+
+  onPageChange(page: number) {
+    this.pagination.currentPage = page;
+    this.cdr.detectChanges();
+  }
+
+  onPageSizeChange(pageSize: number) {
+    this.pagination.pageSize = pageSize;
+    this.pagination.currentPage = 1;
     this.cdr.detectChanges();
   }
 

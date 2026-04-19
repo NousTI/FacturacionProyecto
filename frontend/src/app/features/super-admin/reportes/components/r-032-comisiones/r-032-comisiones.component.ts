@@ -91,10 +91,10 @@ type RangoTipo = 'mes_actual' | 'mes_anterior' | 'anio_actual' | 'personalizado'
 
       <!-- Tabla detalle -->
       <div class="card-tabla">
-        <div class="tabla-header">
+        <div class="tabla-header d-flex justify-content-between align-items-center">
           <span><i class="bi bi-table me-2"></i>Detalle de comisiones ({{ datos.detalle.length }} registros)</span>
         </div>
-        <div class="table-responsive">
+        <div class="tabla-scroll">
           <table class="table table-hover align-middle mb-0">
             <thead>
               <tr>
@@ -108,7 +108,7 @@ type RangoTipo = 'mes_actual' | 'mes_anterior' | 'anio_actual' | 'personalizado'
               </tr>
             </thead>
             <tbody>
-              <tr *ngFor="let c of datos.detalle">
+              <tr *ngFor="let c of paginatedDetalle">
                 <td>
                   <div class="d-flex align-items-center gap-2">
                     <div class="avatar-sm">{{ c.vendedor.charAt(0) }}</div>
@@ -140,6 +140,34 @@ type RangoTipo = 'mes_actual' | 'mes_anterior' | 'anio_actual' | 'personalizado'
               </tr>
             </tbody>
           </table>
+        </div>
+        <!-- Paginación footer -->
+        <div class="pagination-premium-container">
+          <div class="d-flex align-items-center justify-content-between px-4 py-3">
+            <div class="d-flex align-items-center gap-3">
+              <span class="text-muted fw-600" style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px;">Registros por página:</span>
+              <select class="form-select-premium-sm" [(ngModel)]="pageSize" (change)="onPageSizeChange($event)">
+                <option [value]="10">10</option>
+                <option [value]="25">25</option>
+                <option [value]="50">50</option>
+                <option [value]="100">100</option>
+              </select>
+            </div>
+            <div class="text-center">
+              <span class="text-muted fw-500" style="font-size: 0.85rem;">
+                Mostrando <strong class="text-dark">{{ startItem }} - {{ endItem }}</strong> de <strong class="text-dark">{{ datos.detalle.length }}</strong> registros
+              </span>
+            </div>
+            <div class="d-flex align-items-center gap-2">
+              <button class="btn-nav-premium" [disabled]="currentPage === 1" (click)="currentPage = currentPage - 1" title="Anterior">
+                <i class="bi bi-chevron-left"></i>
+              </button>
+              <div class="page-indicator-premium">{{ currentPage }}</div>
+              <button class="btn-nav-premium" [disabled]="currentPage === totalPages" (click)="currentPage = currentPage + 1" title="Siguiente">
+                <i class="bi bi-chevron-right"></i>
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -193,12 +221,13 @@ type RangoTipo = 'mes_actual' | 'mes_anterior' | 'anio_actual' | 'personalizado'
     .legend-item { display: flex; align-items: center; gap: 0.5rem; font-size: 0.65rem; color: #4b5563; }
     .dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
     .lbl { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 500; }
-    .card-tabla { border: 1px solid #e2e8f0; border-radius: 6px; overflow: hidden; }
-    .tabla-header { background: #f1f5f9; padding: 0.75rem 1rem; font-weight: 700; font-size: 0.8rem; color: #475569; }
+    .card-tabla { border: 1px solid #e2e8f0; border-radius: 8px; background: white; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+    .tabla-header { background: #f8fafc; padding: 1rem 1.25rem; font-weight: 700; font-size: 0.9rem; color: #1e293b; border-bottom: 1px solid #e2e8f0; }
+    .tabla-scroll { max-height: 575px; overflow-y: auto; overflow-x: auto; }
     table { margin-bottom: 0; }
-    th { background: #f1f5f9; padding: 0.5rem 0.75rem; font-size: 0.7rem; text-transform: uppercase; color: #475569; font-weight: 700; border-bottom: 1px solid #e2e8f0; }
-    td { padding: 0.5rem 0.75rem; border-bottom: 1px solid #f1f5f9; font-size: 0.8rem; }
-    tbody tr:nth-child(even) td { background: #fafbfc; }
+    th { background: #f8fafc; padding: 0.75rem 1rem; font-size: 0.65rem; text-transform: uppercase; color: #64748b; font-weight: 700; letter-spacing: 0.5px; border-bottom: 1px solid #e2e8f0; position: sticky; top: 0; z-index: 1; }
+    td { padding: 0.75rem 1rem; border-bottom: 1px solid #f1f5f9; font-size: 0.85rem; }
+    tbody tr:hover td { background: #f1f5f9; }
     .avatar-sm { width: 1.75rem; height: 1.75rem; background: #dbeafe; color: #1e40af; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; font-weight: 700; }
     .badge-tipo { padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.7rem; font-weight: 600; }
     .tipo-nueva { background: #dcfce7; color: #166534; }
@@ -210,6 +239,15 @@ type RangoTipo = 'mes_actual' | 'mes_anterior' | 'anio_actual' | 'personalizado'
     .estado-pendiente { background: #fef3c7; color: #92400e; }
     .estado-aprobada { background: #dbeafe; color: #1e40af; }
     .estado-pagada { background: #dcfce7; color: #166534; }
+    .pagination-premium-container { background: #ffffff; border-top: 1px solid #e2e8f0; }
+    .form-select-premium-sm { padding: 0.4rem 2rem 0.4rem 1rem; border-radius: 10px; border: 1px solid #e2e8f0; background-color: #f8fafc; font-size: 0.85rem; font-weight: 600; color: #475569; cursor: pointer; transition: all 0.2s; }
+    .form-select-premium-sm:focus { border-color: #161d35; outline: none; }
+    .btn-nav-premium { width: 38px; height: 38px; border-radius: 10px; border: 1px solid #e2e8f0; background: white; display: flex; align-items: center; justify-content: center; color: #64748b; transition: all 0.2s; cursor: pointer; }
+    .btn-nav-premium:hover:not(:disabled) { background: #f8fafc; color: #0f172a; border-color: #cbd5e1; }
+    .btn-nav-premium:disabled { opacity: 0.4; cursor: not-allowed; }
+    .page-indicator-premium { min-width: 38px; height: 38px; border-radius: 10px; display: flex; align-items: center; justify-content: center; background: #161d35; color: white; font-weight: 700; font-size: 0.9rem; padding: 0 0.75rem; }
+    .fw-600 { font-weight: 600; }
+    .fw-500 { font-weight: 500; }
   `]
 })
 export class R032ComisionesComponent implements OnInit, OnDestroy {
@@ -217,6 +255,23 @@ export class R032ComisionesComponent implements OnInit, OnDestroy {
   datos: ReporteComisiones | null = null;
   loading = false;
   loadingPDF = false;
+
+  currentPage = 1;
+  pageSize = 10;
+
+  get paginatedDetalle() {
+    if (!this.datos) return [];
+    const start = (this.currentPage - 1) * this.pageSize;
+    return this.datos.detalle.slice(start, start + this.pageSize);
+  }
+  get totalPages() { return Math.ceil((this.datos?.detalle.length || 0) / this.pageSize) || 1; }
+  get startItem() { return this.datos?.detalle.length ? (this.currentPage - 1) * this.pageSize + 1 : 0; }
+  get endItem() { return Math.min(this.currentPage * this.pageSize, this.datos?.detalle.length || 0); }
+
+  onPageSizeChange(event: Event) {
+    this.pageSize = +(event.target as HTMLSelectElement).value;
+    this.currentPage = 1;
+  }
 
   rangoTipo: RangoTipo = 'mes_actual';
   fechaInicio = '';
@@ -257,6 +312,7 @@ export class R032ComisionesComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (data) => {
           this.datos = data;
+          this.currentPage = 1;
           this.loading = false;
           this.cd.detectChanges();
           setTimeout(() => this.initCharts(), 100);

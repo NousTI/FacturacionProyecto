@@ -8,7 +8,6 @@ import {
   AuditoriaStatsComponent,
   AuditoriaActionsComponent,
   AuditoriaTableComponent,
-  AuditoriaPaginacionComponent,
   AuditoriaDetailModalComponent,
   FiltrosAuditoria,
   PaginationState
@@ -23,7 +22,6 @@ import {
     AuditoriaStatsComponent,
     AuditoriaActionsComponent,
     AuditoriaTableComponent,
-    AuditoriaPaginacionComponent,
     AuditoriaDetailModalComponent
   ],
   template: `
@@ -39,19 +37,15 @@ import {
         (exportar)="exportarExcel()"
       ></app-auditoria-actions>
 
-      <!-- 3. Tabla de Resultados -->
+      <!-- 3. Tabla de Resultados + Paginación integrada -->
       <app-auditoria-table
         [logs]="logsActuales"
         [isLoading]="isLoading"
-        (onVerDetalle)="abrirDetalle($event)"
-      ></app-auditoria-table>
-
-      <!-- 4. Paginación -->
-      <app-auditoria-paginacion
         [pagination]="pagination"
+        (onVerDetalle)="abrirDetalle($event)"
         (pageChange)="onPageChange($event)"
         (pageSizeChange)="onPageSizeChange($event)"
-      ></app-auditoria-paginacion>
+      ></app-auditoria-table>
 
       <!-- 5. Modal de Detalle -->
       <app-auditoria-detail-modal

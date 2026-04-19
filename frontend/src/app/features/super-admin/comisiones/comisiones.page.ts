@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { ComisionesService, Comision, ComisionStats } from './services/comisiones.service';
 import { ComisionesStatsComponent } from './components/comisiones-stats/comisiones-stats.component';
 import { ComisionesTableComponent } from './components/comisiones-table/comisiones-table.component';
+import { PaginationState } from './components/comisiones-paginacion/comisiones-paginacion.component';
 import { ComisionesDetailsModalComponent } from './components/comisiones-details-modal/comisiones-details-modal.component';
 import { ComisionesActionModalComponent, ActionType } from './components/comisiones-action-modal/comisiones-action-modal.component';
 import { ComisionesAuditModalComponent } from './components/comisiones-audit-modal/comisiones-audit-modal.component';
@@ -68,12 +69,15 @@ import { UiService } from '../../../shared/services/ui.service';
       </div>
 
       <!-- 4. CONTENT -->
-      
+
       <!-- Main List View (Generadas, Pendientes, Pagadas) -->
       <ng-container *ngIf="isListView()">
         <app-comisiones-table
-          [comisiones]="filteredComisiones"
+          [comisiones]="paginatedComisiones"
+          [pagination]="pagination"
           (onAction)="handleTableAction($event)"
+          (pageChange)="onPageChange($event)"
+          (pageSizeChange)="onPageSizeChange($event)"
         ></app-comisiones-table>
       </ng-container>
 
@@ -215,6 +219,8 @@ export class ComisionesPage implements OnInit {
   filteredComisiones: Comision[] = [];
   searchQuery: string = '';
 
+  pagination: PaginationState = { currentPage: 1, pageSize: 25, totalItems: 0 };
+
   showDetailsModal: boolean = false;
   selectedComision: Comision | null = null;
 
@@ -294,6 +300,24 @@ export class ComisionesPage implements OnInit {
     }
 
     this.filteredComisiones = temp;
+    this.pagination.totalItems = temp.length;
+    this.pagination.currentPage = 1;
+  }
+
+  get paginatedComisiones(): Comision[] {
+    const inicio = (this.pagination.currentPage - 1) * this.pagination.pageSize;
+    return this.filteredComisiones.slice(inicio, inicio + this.pagination.pageSize);
+  }
+
+  onPageChange(page: number) {
+    this.pagination.currentPage = page;
+    this.cdr.detectChanges();
+  }
+
+  onPageSizeChange(pageSize: number) {
+    this.pagination.pageSize = pageSize;
+    this.pagination.currentPage = 1;
+    this.cdr.detectChanges();
   }
 
   handleTableAction(event: any) {

@@ -1,11 +1,12 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { SriCertConfig } from '../../services/sri-cert.service';
+import { CertPaginacionComponent, PaginationState } from '../cert-paginacion/cert-paginacion.component';
 
 @Component({
     selector: 'app-cert-table',
     standalone: true,
-    imports: [CommonModule],
+    imports: [CommonModule, CertPaginacionComponent],
     template: `
     <section class="module-table">
       <div class="table-container">
@@ -121,9 +122,15 @@ import { SriCertConfig } from '../../services/sri-cert.service';
                 </td>
               </tr>
             </tbody>
->
           </table>
         </div>
+
+        <!-- Paginación integrada como footer de la tabla -->
+        <app-cert-paginacion
+          [pagination]="pagination"
+          (pageChange)="pageChange.emit($event)"
+          (pageSizeChange)="pageSizeChange.emit($event)"
+        ></app-cert-paginacion>
       </div>
     </section>
   `,
@@ -147,6 +154,7 @@ import { SriCertConfig } from '../../services/sri-cert.service';
       border: 1px solid var(--border-color, #f1f5f9);
       display: flex;
       flex-direction: column;
+      flex: 1;
       min-height: 0;
       overflow: hidden;
     }
@@ -237,8 +245,12 @@ import { SriCertConfig } from '../../services/sri-cert.service';
 })
 export class CertTableComponent {
     @Input() certificados: SriCertConfig[] = [];
+    @Input() pagination: PaginationState = { currentPage: 1, pageSize: 25, totalItems: 0 };
+
     @Output() onViewHistory = new EventEmitter<SriCertConfig>();
     @Output() onViewDetails = new EventEmitter<SriCertConfig>();
+    @Output() pageChange = new EventEmitter<number>();
+    @Output() pageSizeChange = new EventEmitter<number>();
 
     getStatusClass(cert: SriCertConfig): string {
         if (cert.estado === 'ACTIVO' && (cert.days_until_expiry || 0) > 30) return 'activo';

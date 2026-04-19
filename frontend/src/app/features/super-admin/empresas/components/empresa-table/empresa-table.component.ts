@@ -1,6 +1,7 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { GET_PERSONA_LABEL, GET_CONTRIBUYENTE_LABEL } from '../../../../../core/constants/sri-iva.constants';
+import { EmpresaPaginacionComponent, PaginationState } from '../empresa-paginacion/empresa-paginacion.component';
 
 @Component({
   selector: 'app-empresa-table',
@@ -149,6 +150,13 @@ import { GET_PERSONA_LABEL, GET_CONTRIBUYENTE_LABEL } from '../../../../../core/
             No se encontraron empresas registradas.
           </div>
         </div>
+
+        <!-- Paginación integrada como footer de la tabla -->
+        <app-empresa-paginacion
+          [pagination]="pagination"
+          (pageChange)="pageChange.emit($event)"
+          (pageSizeChange)="pageSizeChange.emit($event)"
+        ></app-empresa-paginacion>
       </div>
     </section>
   `,
@@ -173,9 +181,8 @@ import { GET_PERSONA_LABEL, GET_CONTRIBUYENTE_LABEL } from '../../../../../core/
       border: 1px solid var(--border-color, #f1f5f9);
       display: flex;
       flex-direction: column;
+      flex: 1;
       min-height: 0;
-      height: auto;
-      max-height: 100%;
       overflow: hidden;
       margin-bottom: 0;
     }
@@ -282,11 +289,15 @@ import { GET_PERSONA_LABEL, GET_CONTRIBUYENTE_LABEL } from '../../../../../core/
     .font-mono { font-family: 'DM Mono', monospace; font-size: 0.8rem; color: #94a3b8; }
   `],
   standalone: true,
-  imports: [CommonModule]
+  imports: [CommonModule, EmpresaPaginacionComponent]
 })
 export class EmpresaTableComponent {
   @Input() empresas: any[] = [];
+  @Input() pagination: PaginationState = { currentPage: 1, pageSize: 25, totalItems: 0 };
+
   @Output() onAction = new EventEmitter<{ type: string, empresa: any }>();
+  @Output() pageChange = new EventEmitter<number>();
+  @Output() pageSizeChange = new EventEmitter<number>();
 
   getInitials(name: string): string {
     if (!name) return '??';

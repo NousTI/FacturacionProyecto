@@ -12,6 +12,7 @@ import { AssignVendedorModalComponent } from './components/assign-vendedor-modal
 import { EmpresaDetailsModalComponent } from './components/empresa-details-modal/empresa-details-modal.component';
 import { UiService } from '../../../shared/services/ui.service';
 import { EmpresaService, EmpresaStats } from './services/empresa.service';
+import { PaginationState } from './components/empresa-paginacion/empresa-paginacion.component';
 import { OnInit, ChangeDetectorRef, OnDestroy } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { Subject, takeUntil, finalize } from 'rxjs';
@@ -39,8 +40,11 @@ import { Subject, takeUntil, finalize } from 'rxjs';
 
       <!-- 3. MÓDULO DE TABLA DE DATOS -->
       <app-empresa-table
-        [empresas]="filteredEmpresas"
+        [empresas]="paginatedEmpresas"
+        [pagination]="pagination"
         (onAction)="handleAction($event)"
+        (pageChange)="onPageChange($event)"
+        (pageSizeChange)="onPageSizeChange($event)"
       ></app-empresa-table>
       
       <!-- 4. MODALS (Creación) -->
@@ -147,6 +151,8 @@ export class EmpresasPage implements OnInit, OnDestroy {
     vendedor: 'ALL'
   };
 
+  pagination: PaginationState = { currentPage: 1, pageSize: 25, totalItems: 0 };
+
   // UI Control
   showCreateModal: boolean = false;
   showDetailsModal: boolean = false;
@@ -224,7 +230,7 @@ export class EmpresasPage implements OnInit, OnDestroy {
   get inactivasCount() { return this.stats.inactivas; }
 
   get filteredEmpresas() {
-    return this.empresas.filter(e => {
+    const filtered = this.empresas.filter(e => {
       const matchSearch = !this.searchQuery ||
         e.razonSocial.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
         e.ruc.includes(this.searchQuery) ||
@@ -242,10 +248,30 @@ export class EmpresasPage implements OnInit, OnDestroy {
 
       return matchSearch && matchEstado && matchPlan && matchVendedor;
     });
+
+    this.pagination.totalItems = filtered.length;
+    return filtered;
+  }
+
+  get paginatedEmpresas(): any[] {
+    const inicio = (this.pagination.currentPage - 1) * this.pagination.pageSize;
+    return this.filteredEmpresas.slice(inicio, inicio + this.pagination.pageSize);
+  }
+
+  onPageChange(page: number) {
+    this.pagination.currentPage = page;
+    this.cd.detectChanges();
+  }
+
+  onPageSizeChange(pageSize: number) {
+    this.pagination.pageSize = pageSize;
+    this.pagination.currentPage = 1;
+    this.cd.detectChanges();
   }
 
   handleFilters(filters: any) {
     this.activeFilters = { ...filters };
+    this.pagination.currentPage = 1;
     this.cd.detectChanges();
   }
 

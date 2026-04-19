@@ -1,11 +1,12 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { SolicitudRenovacion } from '../../../../../domain/models/renovacion.model';
+import { RenovacionesPaginacionComponent, PaginationState } from '../renovaciones-paginacion/renovaciones-paginacion.component';
 
 @Component({
   selector: 'app-renovaciones-table',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, RenovacionesPaginacionComponent],
   template: `
     <section class="module-table">
       <div class="table-container">
@@ -115,6 +116,13 @@ import { SolicitudRenovacion } from '../../../../../domain/models/renovacion.mod
           </div>
 
         </div>
+
+        <!-- Paginación integrada como footer de la tabla -->
+        <app-renovaciones-paginacion
+          [pagination]="pagination"
+          (pageChange)="pageChange.emit($event)"
+          (pageSizeChange)="pageSizeChange.emit($event)"
+        ></app-renovaciones-paginacion>
       </div>
     </section>
   `,
@@ -190,9 +198,12 @@ export class RenovacionesTableComponent {
   @Input() solicitudes: SolicitudRenovacion[] = [];
   @Input() highlightedId: string | null = null;
   @Input() isVendedor: boolean = false;
+  @Input() pagination: PaginationState = { currentPage: 1, pageSize: 10, totalItems: 0 };
 
   @Output() onVerDetalle = new EventEmitter<SolicitudRenovacion>();
   @Output() onRechazar = new EventEmitter<SolicitudRenovacion>();
+  @Output() pageChange = new EventEmitter<number>();
+  @Output() pageSizeChange = new EventEmitter<number>();
 
   trackById(index: number, item: SolicitudRenovacion): string {
     return item.id;

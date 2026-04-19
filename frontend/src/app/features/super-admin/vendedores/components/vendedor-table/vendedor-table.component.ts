@@ -1,6 +1,7 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Vendedor } from '../../services/vendedor.service';
+import { VendedorPaginacionComponent, PaginationState } from '../vendedor-paginacion/vendedor-paginacion.component';
 
 @Component({
   selector: 'app-vendedor-table',
@@ -97,6 +98,13 @@ import { Vendedor } from '../../services/vendedor.service';
             </tbody>
           </table>
         </div>
+
+        <!-- Paginación integrada como footer de la tabla -->
+        <app-vendedor-paginacion
+          [pagination]="pagination"
+          (pageChange)="pageChange.emit($event)"
+          (pageSizeChange)="pageSizeChange.emit($event)"
+        ></app-vendedor-paginacion>
       </div>
     </section>
   `,
@@ -108,7 +116,7 @@ import { Vendedor } from '../../services/vendedor.service';
       min-height: 0;
       width: 100%;
     }
-    .module-table { 
+    .module-table {
       flex: 1;
       display: flex;
       flex-direction: column;
@@ -121,9 +129,8 @@ import { Vendedor } from '../../services/vendedor.service';
       border: 1px solid var(--border-color, #f1f5f9);
       display: flex;
       flex-direction: column;
+      flex: 1;
       min-height: 0;
-      height: auto;
-      max-height: 100%;
       overflow: hidden;
       margin-bottom: 0;
     }
@@ -216,9 +223,13 @@ import { Vendedor } from '../../services/vendedor.service';
     .text-corporate { color: var(--status-info-text) !important; }
   `],
   standalone: true,
-  imports: [CommonModule]
+  imports: [CommonModule, VendedorPaginacionComponent]
 })
 export class VendedorTableComponent {
   @Input() vendedores: Vendedor[] = [];
+  @Input() pagination: PaginationState = { currentPage: 1, pageSize: 25, totalItems: 0 };
+
   @Output() onAction = new EventEmitter<{ type: string, vendedor: Vendedor }>();
+  @Output() pageChange = new EventEmitter<number>();
+  @Output() pageSizeChange = new EventEmitter<number>();
 }

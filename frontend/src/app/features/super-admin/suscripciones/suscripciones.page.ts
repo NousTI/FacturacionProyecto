@@ -17,6 +17,7 @@ import { ToastComponent } from '../../../shared/components/toast/toast.component
 // Services
 import { SuscripcionService, Suscripcion, PagoHistorico } from './services/suscripcion.service';
 import { UiService } from '../../../shared/services/ui.service';
+import { PaginationState } from './components/suscripcion-paginacion/suscripcion-paginacion.component';
 
 @Component({
     selector: 'app-suscripciones',
@@ -49,16 +50,19 @@ import { UiService } from '../../../shared/services/ui.service';
         (onOpenHistory)="showHistorySectionModal = true"
       ></app-suscripcion-actions>
 
-      <!-- 3. Table -->
+      <!-- 3. Table + Paginación integrada -->
       <app-suscripcion-table
-        [suscripciones]="filteredSuscripciones"
+        [suscripciones]="paginatedSuscripciones"
         [loading]="globalLoading"
+        [pagination]="pagination"
         (onRegistrarPago)="openRegistroPago($any($event))"
         (onConfirmarPago)="abrirConfirmarPago($any($event))"
         (onVerHistorial)="openHistorial($any($event))"
         (onActivar)="confirmarAccion($any($event), 'ACTIVAR')"
         (onSuspender)="confirmarAccion($any($event), 'SUSPENDER')"
         (onCancelar)="confirmarAccion($any($event), 'CANCELAR')"
+        (pageChange)="onPageChange($event)"
+        (pageSizeChange)="onPageSizeChange($event)"
       ></app-suscripcion-table>
 
       <!-- 4. Modals -->
@@ -140,6 +144,8 @@ export class SuscripcionesPage implements OnInit {
     searchQuery = '';
     filterStatus = 'ALL';
     filterPagoStatus = 'ALL';
+
+    pagination: PaginationState = { currentPage: 1, pageSize: 25, totalItems: 0 };
 
     // UI State
     globalLoading = false;
@@ -294,8 +300,7 @@ export class SuscripcionesPage implements OnInit {
 
     get filteredSuscripciones() {
         let filtered = this.suscripciones;
- 
-        // Search
+
         if (this.searchQuery) {
             const q = this.searchQuery.toLowerCase();
             filtered = filtered.filter(s =>
@@ -303,22 +308,38 @@ export class SuscripcionesPage implements OnInit {
                 (s.plan_nombre || '').toLowerCase().includes(q)
             );
         }
- 
-        // Status Filter
+
         if (this.filterStatus !== 'ALL') {
             filtered = filtered.filter(s => s.estado === this.filterStatus);
         }
 
-        // Pago Status Filter
         if (this.filterPagoStatus !== 'ALL') {
             filtered = filtered.filter(s => s.estado_pago === this.filterPagoStatus);
         }
- 
+
+        this.pagination.totalItems = filtered.length;
         return filtered;
+    }
+
+    get paginatedSuscripciones(): Suscripcion[] {
+        const inicio = (this.pagination.currentPage - 1) * this.pagination.pageSize;
+        return this.filteredSuscripciones.slice(inicio, inicio + this.pagination.pageSize);
+    }
+
+    onPageChange(page: number) {
+        this.pagination.currentPage = page;
+        this.cdr.detectChanges();
+    }
+
+    onPageSizeChange(pageSize: number) {
+        this.pagination.pageSize = pageSize;
+        this.pagination.currentPage = 1;
+        this.cdr.detectChanges();
     }
 
     setFilter(status: string) {
         this.filterStatus = status;
+        this.pagination.currentPage = 1;
     }
 
     // --- Actions ---

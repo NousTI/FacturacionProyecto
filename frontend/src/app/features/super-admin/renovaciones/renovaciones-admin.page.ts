@@ -12,7 +12,7 @@ import { RenovacionesTableComponent } from './components/renovaciones-table/reno
 import { RenovacionDetailModalComponent } from './components/modals/renovacion-detail-modal.component';
 import { RenovacionProcessModalComponent } from './components/modals/renovacion-process-modal.component';
 import { RenovacionRejectModalComponent } from './components/modals/renovacion-reject-modal.component';
-import { RenovacionesPaginacionComponent, PaginationState } from './components/renovaciones-paginacion/renovaciones-paginacion.component';
+import { PaginationState } from './components/renovaciones-paginacion/renovaciones-paginacion.component';
 
 // Services
 import { RenovacionesApiService } from '../../../core/api/renovaciones-api.service';
@@ -32,8 +32,7 @@ import { UserRole } from '../../../domain/enums/role.enum';
     RenovacionesTableComponent,
     RenovacionDetailModalComponent,
     RenovacionProcessModalComponent,
-    RenovacionRejectModalComponent,
-    RenovacionesPaginacionComponent
+    RenovacionRejectModalComponent
   ],
   template: `
     <div class="renovaciones-page-container animate__animated animate__fadeIn">
@@ -51,21 +50,17 @@ import { UserRole } from '../../../domain/enums/role.enum';
         (onTypeChange)="typeFilter = $event; onSearchOrFilterChange()"
       ></app-renovaciones-actions>
 
-      <!-- 3. Table -->
+      <!-- 3. Table + Paginación integrada -->
       <app-renovaciones-table
         [solicitudes]="paginatedSolicitudes"
         [highlightedId]="highlightedId"
         [isVendedor]="isVendedor"
+        [pagination]="pagination"
         (onVerDetalle)="abrirDetalle($event)"
         (onRechazar)="abrirRechazo($event)"
-      ></app-renovaciones-table>
-
-      <!-- 4. Paginación -->
-      <app-renovaciones-paginacion
-        [pagination]="pagination"
         (pageChange)="onPageChange($event)"
         (pageSizeChange)="onPageSizeChange($event)"
-      ></app-renovaciones-paginacion>
+      ></app-renovaciones-table>
 
       <!-- 5. Modals -->
       <app-renovacion-detail-modal

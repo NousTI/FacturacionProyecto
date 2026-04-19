@@ -1,11 +1,12 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ClienteUsuario } from '../services/clientes.service';
+import { ClientesPaginacionComponent, PaginationState } from './clientes-paginacion.component';
 
 @Component({
   selector: 'app-clientes-table',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, ClientesPaginacionComponent],
   template: `
     <section class="module-table">
       <div class="table-container">
@@ -105,6 +106,13 @@ import { ClienteUsuario } from '../services/clientes.service';
             </tbody>
           </table>
         </div>
+
+        <!-- Paginación integrada como footer de la tabla -->
+        <app-clientes-paginacion
+          [pagination]="pagination"
+          (pageChange)="pageChange.emit($event)"
+          (pageSizeChange)="pageSizeChange.emit($event)"
+        ></app-clientes-paginacion>
       </div>
     </section>
   `,
@@ -129,9 +137,8 @@ import { ClienteUsuario } from '../services/clientes.service';
       border: 1px solid var(--border-color, #f1f5f9);
       display: flex;
       flex-direction: column;
+      flex: 1;
       min-height: 0;
-      height: auto;
-      max-height: 100%;
       overflow: hidden;
       margin-bottom: 0;
     }
@@ -222,7 +229,11 @@ import { ClienteUsuario } from '../services/clientes.service';
 })
 export class ClientesTableComponent {
   @Input() usuarios: ClienteUsuario[] = [];
+  @Input() pagination: PaginationState = { currentPage: 1, pageSize: 25, totalItems: 0 };
+
   @Output() onAction = new EventEmitter<{ type: string, cliente: ClienteUsuario }>();
+  @Output() pageChange = new EventEmitter<number>();
+  @Output() pageSizeChange = new EventEmitter<number>();
 
   getInitials(nombres: string, apellidos: string): string {
     const n = nombres?.[0] || '';

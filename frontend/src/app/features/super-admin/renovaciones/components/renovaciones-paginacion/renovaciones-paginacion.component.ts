@@ -67,9 +67,8 @@ export interface PaginationState {
   styles: [`
     :host { display: block; width: 100%; }
     .pagination-premium-container {
-      background: white; border-radius: 20px;
-      border: 1px solid var(--border-color, #f1f5f9);
-      margin-top: 1rem;
+      background: var(--bg-main, #ffffff);
+      border-top: 1px solid var(--border-color, #f1f5f9);
     }
     .form-select-premium-sm {
       padding: 0.4rem 2rem 0.4rem 1rem; border-radius: 10px;
