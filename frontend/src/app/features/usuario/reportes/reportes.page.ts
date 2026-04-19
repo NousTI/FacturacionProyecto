@@ -234,7 +234,7 @@ type Tab = 'resumen' | 'ventas' | 'cartera' | 'iva' | 'mis_ventas';
     .nav-name  { font-size: 0.82rem; font-weight: 700; }
     .nav-code  { font-size: 0.62rem; font-weight: 600; opacity: 0.55; letter-spacing: 0.03em; }
     .nav-btn:hover { background: #f1f5f9; color: black; }
-    .nav-btn.active { background: var(--primary-color); color: #fff; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
+    .nav-btn.active { background: var(--primary-color); color: #fff; box-shadow: 0 4px 6px -1px rgba(67,82,243,0.25); }
 
     /* FILTROS */
     .filters-actions { flex-shrink: 0; }
@@ -256,7 +256,7 @@ type Tab = 'resumen' | 'ventas' | 'cartera' | 'iva' | 'mis_ventas';
       padding: 0.4rem 1rem; border-radius: 10px; font-weight: 700; font-size: 0.8rem;
       display: flex; align-items: center; cursor: pointer; white-space: nowrap; transition: all 0.2s;
     }
-    .btn-generar:hover:not(:disabled) { background: #000; transform: scale(1.03); }
+    .btn-generar:hover:not(:disabled) { filter: brightness(1.15); transform: scale(1.03); }
     .btn-generar:disabled { opacity: 0.6; cursor: not-allowed; }
 
     .btn-exportar {
