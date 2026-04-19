@@ -26,7 +26,7 @@ import { ReporteAnalisisClientes } from '../../../../../../../domain/models/clie
     }
     .card-subtitle {
       font-size: 0.85rem; font-weight: 800;
-      color: #1e293b; margin: 0 0 1rem;
+      color: var(--primary-color); margin: 0 0 1rem;
     }
     .pareto-note { font-size: 0.78rem; color: #64748b; margin: 0 0 1rem; }
     .pareto-table { max-height: 320px; overflow-y: auto; }
@@ -201,3 +201,4 @@ export class AnaliticaAnalisisComponent implements OnInit, OnDestroy {
             });
     }
 }
+

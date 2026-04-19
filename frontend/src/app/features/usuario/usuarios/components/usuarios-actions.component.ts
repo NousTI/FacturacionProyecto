@@ -114,7 +114,7 @@ import { HasPermissionDirective } from '../../../../core/directives/has-permissi
     }
     .form-control-premium-search {
       background: #ffffff; border: 1px solid var(--border-color); border-radius: 14px;
-      padding: 0 2.5rem 0 2.85rem; height: 44px; font-size: 0.95rem; color: #0f172a;
+      padding: 0 2.5rem 0 2.85rem; height: 44px; font-size: 0.95rem; color: var(--primary-color);
       transition: all 0.2s; width: 100%; font-weight: 500;
     }
     .form-control-premium-search:focus { border-color: var(--primary-color); outline: none; box-shadow: 0 0 0 3px rgba(22, 29, 53, 0.06); }
@@ -207,3 +207,4 @@ export class UsuariosActionsComponent {
     }
   }
 }
+

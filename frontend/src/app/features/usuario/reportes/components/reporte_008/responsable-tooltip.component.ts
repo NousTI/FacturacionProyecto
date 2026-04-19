@@ -37,7 +37,7 @@ import { CommonModule } from '@angular/common';
       top: calc(100% + 8px);
       left: 50%;
       transform: translateX(-50%);
-      background: #1e293b;
+      background: var(--primary-color);
       color: #e2e8f0;
       border-radius: 10px;
       padding: 0.6rem 0.9rem;
@@ -68,3 +68,4 @@ export class ResponsableTooltipComponent {
   @Input() responsable: string = '';
   visible = false;
 }
+

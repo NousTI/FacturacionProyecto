@@ -86,7 +86,7 @@ type Tab = 'mas-vendidos' | 'sin-movimiento' | 'rentabilidad' | 'inventario';
 
     .sidebar-header {
       display: flex; align-items: center; gap: 0.75rem; padding: 0 0.5rem;
-      font-weight: 800; color: #1e293b; font-size: 0.9rem;
+      font-weight: 800; color: var(--primary-color); font-size: 0.9rem;
     }
     .sidebar-header i { color: #3b82f6; font-size: 1.2rem; }
 
@@ -107,7 +107,7 @@ type Tab = 'mas-vendidos' | 'sin-movimiento' | 'rentabilidad' | 'inventario';
 
     .nav-item.active { background: #eff6ff; }
     .nav-item.active i { color: #3b82f6; }
-    .nav-item.active .nav-title { color: #1e293b; }
+    .nav-item.active .nav-title { color: var(--primary-color); }
     .tab-item.active .nav-sub { color: #3b82f6; opacity: 0.8; }
 
     .analitica-content { display: flex; flex-direction: column; min-height: 0; }
@@ -127,3 +127,4 @@ type Tab = 'mas-vendidos' | 'sin-movimiento' | 'rentabilidad' | 'inventario';
 export class ProductosAnaliticaComponent {
   tab: Tab = 'mas-vendidos';
 }
+

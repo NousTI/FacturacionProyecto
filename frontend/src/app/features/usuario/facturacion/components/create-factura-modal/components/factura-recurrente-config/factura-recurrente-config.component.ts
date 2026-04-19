@@ -45,7 +45,7 @@ import { FormsModule, ReactiveFormsModule, FormGroup } from '@angular/forms';
   `,
   styles: [`
     .select-lux option {
-      color: #1e293b;
+      color: var(--primary-color);
       background-color: white;
     }
   `]
@@ -69,3 +69,4 @@ export class FacturaRecurrenteConfigComponent {
     }
   }
 }
+

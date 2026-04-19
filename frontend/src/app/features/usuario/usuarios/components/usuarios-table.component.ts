@@ -158,7 +158,7 @@ import { EmpresaPaginacionComponent, PaginationState } from '../../../super-admi
     .client-info-editorial { display: flex; align-items: center; gap: 1rem; }
     .avatar-soft-editorial { width: 40px; height: 40px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 0.9rem; flex-shrink: 0; background: var(--primary-color); color: #ffffff; }
     .details-editorial { display: flex; flex-direction: column; min-width: 0; }
-    .name-editorial { font-weight: 700; color: #1e293b; font-size: 0.95rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .name-editorial { font-weight: 700; color: var(--primary-color); font-size: 0.95rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .sub-editorial { font-size: 0.75rem; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .me-label { font-size: 0.65rem; font-weight: 900; color: var(--status-info-text); background: var(--status-info-bg); padding: 0.1rem 0.5rem; border-radius: 6px; text-transform: uppercase; letter-spacing: 0.02em; }
 
@@ -178,13 +178,13 @@ import { EmpresaPaginacionComponent, PaginationState } from '../../../super-admi
       width: 34px; height: 34px; border-radius: 10px; border: none; background: transparent; color: #94a3b8;
       display: flex; align-items: center; justify-content: center; transition: all 0.2s;
     }
-    .btn-action-trigger-editorial:hover { background: #f1f5f9; color: #1e293b; }
+    .btn-action-trigger-editorial:hover { background: #f1f5f9; color: var(--primary-color); }
 
     .dropdown-menu { border-radius: 14px; border: 1px solid #f1f5f9; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.08); padding: 0.5rem; z-index: 1050 !important; position: fixed !important; }
     .dropdown-item { border-radius: 10px; padding: 0.65rem 1rem; font-weight: 600; font-size: 0.85rem; display: flex; align-items: center; gap: 0.75rem; color: #475569; cursor: pointer; transition: all 0.2s; }
     .dropdown-item i { font-size: 1.1rem; color: #94a3b8; transition: all 0.2s; }
-    .dropdown-item:hover { background: #f8fafc; color: #1e293b; }
-    .dropdown-item:hover i { color: #1e293b; }
+    .dropdown-item:hover { background: #f8fafc; color: var(--primary-color); }
+    .dropdown-item:hover i { color: var(--primary-color); }
     .dropdown-item.text-danger:hover { background: #fff1f2; color: #f43f5e; }
     .dropdown-item.text-danger:hover i { color: #f43f5e; }
 
@@ -225,3 +225,4 @@ export class UsuariosTableComponent {
     return colors[Math.abs(hash) % colors.length];
   }
 }
+

@@ -105,7 +105,7 @@ import { CONFIGURACION_PERMISSIONS } from '../../../constants/permission-codes';
                         <div class="col-xl-8 col-lg-7">
                             <div class="card-premium h-100">
                                <div class="card-header-glass d-flex justify-content-between align-items-center">
-                                  <h5 class="mb-0 fw-bold d-flex align-items-center gap-2" style="font-size: 0.95rem; color: #1e293b;">
+                                  <h5 class="mb-0 fw-bold d-flex align-items-center gap-2" style="font-size: 0.95rem; color: var(--primary-color);">
                                      <i class="bi bi-file-earmark-lock-fill text-primary"></i> 
                                      Detalles del Certificado
                                   </h5>
@@ -181,7 +181,7 @@ import { CONFIGURACION_PERMISSIONS } from '../../../constants/permission-codes';
                         <div class="col-xl-4 col-lg-5">
                             <div class="card-premium h-100 sri-params-card">
                                <div class="card-header-glass d-flex justify-content-between align-items-center">
-                                  <h5 class="mb-0 fw-bold d-flex align-items-center gap-2" style="font-size: 0.95rem; color: #1e293b;">
+                                  <h5 class="mb-0 fw-bold d-flex align-items-center gap-2" style="font-size: 0.95rem; color: var(--primary-color);">
                                      <i class="bi bi-sliders text-dark"></i> 
                                      Parámetros SRI
                                   </h5>
@@ -485,7 +485,7 @@ import { CONFIGURACION_PERMISSIONS } from '../../../constants/permission-codes';
         }
 
         .btn-action-light:hover {
-            background: #f8fafc; color: #0f172a; border-color: #cbd5e1;
+            background: #f8fafc; color: var(--primary-color); border-color: #cbd5e1;
         }
 
         .param-icon {
@@ -500,10 +500,10 @@ import { CONFIGURACION_PERMISSIONS } from '../../../constants/permission-codes';
         .modern-select {
             padding-left: 2.5rem; border-radius: 12px; border: 1px solid #e2e8f0;
             background-color: #f8fafc; font-size: 0.85rem; font-weight: 600;
-            color: #0f172a; box-shadow: none; transition: all 0.2s;
+            color: var(--primary-color); box-shadow: none; transition: all 0.2s;
         }
         .modern-select:focus { 
-            background-color: #ffffff; border-color: #0f172a; outline: none; box-shadow: 0 0 0 3px rgba(15, 23, 42, 0.05);
+            background-color: #ffffff; border-color: var(--primary-color); outline: none; box-shadow: 0 0 0 3px rgba(15, 23, 42, 0.05);
         }
         .dropdown-icon {
             position: absolute; left: 1rem; top: 50%; transform: translateY(-50%);
@@ -760,3 +760,4 @@ export class CertificadoSriPage implements OnInit, OnDestroy {
         this.onUpload();
     }
 }
+

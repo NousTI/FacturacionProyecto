@@ -60,7 +60,7 @@ import { CommonModule } from '@angular/common';
     .icon-circle.danger  { background: var(--status-danger-bg);  color: var(--status-danger-text); }
     .stat-info { display: flex; flex-direction: column; }
     .stat-label { font-size: 0.65rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; }
-    .stat-value { font-size: 1.4rem; font-weight: 850; color: #0f172a; line-height: 1.2; letter-spacing: -0.01em; }
+    .stat-value { font-size: 1.4rem; font-weight: 850; color: var(--primary-color); line-height: 1.2; letter-spacing: -0.01em; }
     .stat-value.success { color: var(--status-success-text); }
     .stat-value.danger  { color: var(--status-danger-text); }
     .stat-divider { width: 1px; height: 35px; background: var(--border-color); margin: 0 2rem; }
@@ -76,3 +76,4 @@ export class UsuariosStatsComponent {
   @Input() active: number = 0;
   @Input() inactive: number = 0;
 }
+

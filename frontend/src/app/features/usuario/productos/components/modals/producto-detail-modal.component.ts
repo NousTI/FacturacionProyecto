@@ -171,7 +171,7 @@ import { PermissionsService } from '../../../../../core/auth/permissions.service
       justify-content: center; font-size: 1.8rem; font-weight: 900; color: white;
     }
     .brand-info { display: flex; flex-direction: column; gap: 0.5rem; }
-    .modal-title { font-size: 1.6rem; font-weight: 900; color: #1e293b; margin: 0; }
+    .modal-title { font-size: 1.6rem; font-weight: 900; color: var(--primary-color); margin: 0; }
     .status-tags { display: flex; gap: 0.75rem; }
     .type-tag { font-size: 0.7rem; font-weight: 800; color: #3b82f6; background: #eff6ff; padding: 0.25rem 0.75rem; border-radius: 6px; text-transform: uppercase; }
     .active-tag { font-size: 0.7rem; font-weight: 800; color: #059669; background: #ecfdf5; padding: 0.25rem 0.75rem; border-radius: 6px; text-transform: uppercase; }
@@ -181,7 +181,7 @@ import { PermissionsService } from '../../../../../core/auth/permissions.service
       width: 44px; height: 44px; border-radius: 14px; border: none; background: #f8fafc;
       color: #64748b; display: flex; align-items: center; justify-content: center; transition: all 0.2s;
     }
-    .btn-close-editorial:hover { background: #f1f5f9; color: #1e293b; }
+    .btn-close-editorial:hover { background: #f1f5f9; color: var(--primary-color); }
 
     .modal-editorial-body { padding: 0 2.5rem 2.5rem; overflow-y: auto; flex: 1; }
     
@@ -196,16 +196,16 @@ import { PermissionsService } from '../../../../../core/auth/permissions.service
     .detail-item { display: flex; flex-direction: column; gap: 0.25rem; }
     .detail-item.full { grid-column: span 2; }
     .detail-item label { font-size: 0.72rem; font-weight: 700; color: #94a3b8; text-transform: uppercase; }
-    .detail-item .value { font-size: 1rem; font-weight: 700; color: #1e293b; }
+    .detail-item .value { font-size: 1rem; font-weight: 700; color: var(--primary-color); }
     .code-font { font-family: 'JetBrains Mono', monospace; color: #3b82f6 !important; font-size: 1.1rem !important; }
     .description { color: #475569 !important; font-weight: 500 !important; line-height: 1.5; }
-    .price { font-size: 1.4rem !important; color: #1e293b !important; font-weight: 900 !important; }
+    .price { font-size: 1.4rem !important; color: var(--primary-color) !important; font-weight: 900 !important; }
     .price small { font-size: 0.8rem; opacity: 0.5; margin-left: 2px; }
     .margin.margen-success { color: #059669; }
     .margin.margen-warning { color: #d97706; }
     .margin.margen-danger { color: #dc2626; }
 
-    .inventory-card-premium { background: #1e293b; border-radius: 20px; overflow: hidden; padding-bottom: 1.5rem; }
+    .inventory-card-premium { background: var(--primary-color); border-radius: 20px; overflow: hidden; padding-bottom: 1.5rem; }
     .stock-content { padding: 0 1.5rem; display: flex; flex-direction: column; gap: 1.5rem; }
     .stock-main-display { display: flex; flex-direction: column; align-items: center; padding: 1rem 0; }
     .stock-number { font-size: 3.5rem; font-weight: 950; color: white; line-height: 1; letter-spacing: -2px; }
@@ -234,8 +234,8 @@ import { PermissionsService } from '../../../../../core/auth/permissions.service
     .point-content span { font-size: 0.85rem; font-weight: 700; color: #475569; }
 
     .modal-editorial-footer { padding: 1.5rem 2.5rem; background: #f8fafc; border-top: 1px solid #f1f5f9; }
-    .btn-editorial-primary { background: #1e293b; color: white; border: none; padding: 1rem; border-radius: 14px; font-weight: 800; font-size: 0.95rem; transition: all 0.2s; }
-    .btn-editorial-primary:hover { background: #0f172a; transform: translateY(-2px); }
+    .btn-editorial-primary { background: var(--primary-color); color: white; border: none; padding: 1rem; border-radius: 14px; font-weight: 800; font-size: 0.95rem; transition: all 0.2s; }
+    .btn-editorial-primary:hover { background: var(--primary-color); transform: translateY(-2px); }
 
     .scroll-custom::-webkit-scrollbar { width: 6px; }
     .scroll-custom::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
@@ -296,3 +296,4 @@ export class ProductoDetailModalComponent implements OnInit, OnDestroy {
     return colors[Math.abs(hash) % colors.length];
   }
 }
+

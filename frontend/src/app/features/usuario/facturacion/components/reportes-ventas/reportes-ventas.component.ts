@@ -207,7 +207,7 @@ import { UiService } from '../../../../../shared/services/ui.service';
     .custom-table tbody td {
         padding: 15px;
         font-size: 13px;
-        color: #1e293b;
+        color: var(--primary-color);
         border-bottom: 1px solid #f1f5f9;
     }
     .fw-black { font-weight: 900; letter-spacing: -0.02em; }
@@ -358,3 +358,4 @@ export class ReportesVentasComponent implements OnInit {
     });
   }
 }
+

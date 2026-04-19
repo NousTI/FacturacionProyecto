@@ -77,14 +77,14 @@ import { PermissionItemComponent } from './permission-item.component';
       background: #f1f5f9; border: none; width: 42px; height: 42px;
       border-radius: 12px; color: #64748b; font-size: 1.5rem;
       transition: all 0.2s;
-      &:hover { background: #e2e8f0; color: #1e293b; }
+      &:hover { background: #e2e8f0; color: var(--primary-color); }
     }
     
     .editorial-modal-body { overflow-y: auto; flex: 1; }
     .permissions-editorial-stack { display: flex; flex-direction: column; gap: 0.85rem; }
     
     .btn-editorial-action {
-      background: #1e293b; color: white; border: none; height: 52px;
+      background: var(--primary-color); color: white; border: none; height: 52px;
       border-radius: 16px; font-weight: 850; font-size: 0.95rem;
       transition: all 0.2s;
       &:hover { transform: translateY(-2px); box-shadow: 0 10px 20px -5px rgba(0,0,0,0.2); }
@@ -131,3 +131,4 @@ export class ProfilePermissionsModalComponent implements OnInit, OnDestroy {
     return 'bi-folder-fill';
   }
 }
+

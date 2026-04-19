@@ -106,10 +106,10 @@ import { HasPermissionDirective } from '../../../../shared/directives/has-permis
     .module-status-minimal { font-size: 0.7rem; color: #94a3b8; font-weight: 600; }
 
     .btn-minimal-primary {
-      background: #1e293b; color: white; border: none; padding: 0.6rem 1.25rem;
+      background: var(--primary-color); color: white; border: none; padding: 0.6rem 1.25rem;
       border-radius: 12px; font-weight: 700; font-size: 0.8rem; transition: all 0.2s;
     }
-    .btn-minimal-primary:hover { background: #0f172a; }
+    .btn-minimal-primary:hover { background: var(--primary-color); }
     .btn-minimal-danger { background: #fff1f2; color: #e11d48; border: none; padding: 0.6rem 0.8rem; border-radius: 12px; }
     .btn-minimal-danger:hover { background: #e11d48; color: white; }
 
@@ -146,3 +146,4 @@ export class RoleDetailComponent {
     }
   }
 }
+

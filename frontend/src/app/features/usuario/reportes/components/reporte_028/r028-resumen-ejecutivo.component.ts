@@ -338,9 +338,9 @@ Chart.register(...registerables);
       align-items: flex-start; min-height: 95px; transition: transform 0.2s ease, box-shadow 0.2s ease;
     }
     .kpi-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.08); border-color: #e2e8f0; }
-    .kpi-card.dark { background: #ffffff; color: #0f172a; }
+    .kpi-card.dark { background: #ffffff; color: var(--primary-color); }
     .kpi-card.dark .label { color: #64748b; }
-    .kpi-card.dark .value { color: #0f172a; }
+    .kpi-card.dark .value { color: var(--primary-color); }
     .kpi-card.dark .subtext { color: #94a3b8; }
     .kpi-card.highlight {
       background: var(--gradient-highlight); border-color: transparent;
@@ -354,7 +354,7 @@ Chart.register(...registerables);
 
     .kpi-body { display: flex; flex-direction: column; gap: 0.3rem; flex: 1; }
     .label  { font-size: 0.72rem; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.04em; }
-    .value  { font-size: 1.65rem; font-weight: 800; color: #0f172a; line-height: 1.1; }
+    .value  { font-size: 1.65rem; font-weight: 800; color: var(--primary-color); line-height: 1.1; }
     .trend  { font-size: 0.8rem; font-weight: 600; display: flex; align-items: center; gap: 2px; }
     .trend.up   { color: #059669; }
     .trend.down { color: #dc2626; }
@@ -375,7 +375,7 @@ Chart.register(...registerables);
     }
     .section-header { margin-bottom: 1.25rem; }
     .title-icon-row { display: flex; gap: 0.9rem; align-items: center; margin-bottom: 0.5rem; }
-    .title-icon-row h5 { margin: 0; font-weight: 800; color: #1e293b; font-size: 1rem; }
+    .title-icon-row h5 { margin: 0; font-weight: 800; color: var(--primary-color); font-size: 1rem; }
     .title-icon-row p  { margin: 0; font-size: 0.8rem; color: #64748b; }
     .icon-badge {
       width: 44px; height: 44px; border-radius: 14px; display: flex; align-items: center;
@@ -395,7 +395,7 @@ Chart.register(...registerables);
       background: #f1f5f9; border: none; border-radius: 8px; padding: 0.3rem 0.8rem;
       font-size: 0.75rem; font-weight: 700; color: #64748b; cursor: pointer; transition: all 0.15s;
     }
-    .mtab.active { background: #1e293b; color: #fff; }
+    .mtab.active { background: var(--primary-color); color: #fff; }
 
     /* Tables */
     .modern-table { border-collapse: separate; border-spacing: 0 6px; margin-top: -6px; }
@@ -411,7 +411,7 @@ Chart.register(...registerables);
     .hover-row:hover td { background: #f1f5f9; }
 
     .font-medium { font-weight: 600; color: #334155; }
-    .font-bold   { font-weight: 800; color: #1e293b; }
+    .font-bold   { font-weight: 800; color: var(--primary-color); }
     .text-center { text-align: center; }
     .text-end    { text-align: right; }
     .text-muted  { color: #94a3b8 !important; }
@@ -583,7 +583,7 @@ export class R028ResumenEjecutivoComponent implements OnChanges {
             labels: { font: { size: 11, weight: '600' }, padding: 18, usePointStyle: true, color: '#64748b' } as any
           },
           tooltip: {
-            backgroundColor: '#1e293b', padding: 12, cornerRadius: 10,
+            backgroundColor: 'var(--primary-color)', padding: 12, cornerRadius: 10,
             callbacks: {
               label: (ctx) => ` $${(ctx.parsed as number).toLocaleString('es-ES', { maximumFractionDigits: 2 })}`
             }
@@ -621,7 +621,7 @@ export class R028ResumenEjecutivoComponent implements OnChanges {
             labels: { font: { size: 11, weight: '600' }, padding: 18, usePointStyle: true, color: '#64748b' } as any
           },
           tooltip: {
-            backgroundColor: '#1e293b', padding: 12, cornerRadius: 10,
+            backgroundColor: 'var(--primary-color)', padding: 12, cornerRadius: 10,
             callbacks: {
               label: (ctx) => ` $${(ctx.parsed as number).toLocaleString('es-ES', { maximumFractionDigits: 2 })}`
             }
@@ -634,3 +634,4 @@ export class R028ResumenEjecutivoComponent implements OnChanges {
     this.profitChartInstance = new Chart(this.profitChart.nativeElement, config);
   }
 }
+

@@ -56,7 +56,7 @@ import { PerfilUsuario } from '../../../../domain/models/perfil.model';
     }
     
     .badge-editorial-role {
-      background: var(--primary-color, #1e293b); color: white;
+      background: var(--primary-color, var(--primary-color)); color: white;
       padding: 0.35rem 1rem; border-radius: 100px;
       font-size: 0.75rem; font-weight: 800; text-transform: uppercase;
       letter-spacing: 0.03em;
@@ -75,7 +75,7 @@ import { PerfilUsuario } from '../../../../domain/models/perfil.model';
       text-transform: uppercase; letter-spacing: 0.05em;
     }
     
-    .text-corporate { color: var(--primary-color, #1e293b); }
+    .text-corporate { color: var(--primary-color, var(--primary-color)); }
   `]
 })
 export class ProfileInfoCardComponent {
@@ -86,6 +86,7 @@ export class ProfileInfoCardComponent {
   }
 
   getAvatarGradient(): string {
-    return 'linear-gradient(135deg, var(--primary-color, #1e293b) 0%, #334155 100%)';
+    return 'linear-gradient(135deg, var(--primary-color, var(--primary-color)) 0%, #334155 100%)';
   }
 }
+

@@ -105,7 +105,7 @@ import { CommonModule } from '@angular/common';
 
     .btn-cancel:hover:not(:disabled) {
       background: #f1f5f9;
-      color: #1e293b;
+      color: var(--primary-color);
     }
 
     .btn-cancel:disabled {
@@ -114,7 +114,7 @@ import { CommonModule } from '@angular/common';
     }
 
     .btn-save {
-      background: #111827;
+      background: var(--primary-color);
       color: white;
       border: none;
       padding: 0.75rem 2rem;
@@ -128,7 +128,7 @@ import { CommonModule } from '@angular/common';
     }
 
     .btn-save:hover:not(:disabled) {
-      background: #1f2937;
+      background: var(--primary-color);
       transform: translateY(-2px);
     }
 
@@ -167,3 +167,4 @@ export class ModalFormLayoutComponent {
   @Input() viewOnly = false;
   @Output() onCancel = new EventEmitter<void>();
 }
+

@@ -115,7 +115,7 @@ import { PerfilUsuario } from '../../../../domain/models/perfil.model';
     
     .card-header-minimal-editorial {
       padding: 1.25rem 1.5rem; border-bottom: 1px solid #f1f5f9;
-      font-weight: 900; font-size: 0.85rem; color: #1e293b;
+      font-weight: 900; font-size: 0.85rem; color: var(--primary-color);
       background: #f8fafc; text-transform: uppercase; letter-spacing: 0.05em;
     }
     
@@ -136,14 +136,14 @@ import { PerfilUsuario } from '../../../../domain/models/perfil.model';
     .editorial-input-premium {
       width: 100%; padding: 0.75rem 1rem; border-radius: 14px;
       border: 1.5px solid #e2e8f0; background: #f8fafc;
-      font-size: 1rem; font-weight: 700; color: #1e293b; transition: all 0.2s;
+      font-size: 1rem; font-weight: 700; color: var(--primary-color); transition: all 0.2s;
       &:focus { outline: none; border-color: #3b82f6; background: white; box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1); }
     }
     
     .btn-minimal-editorial {
       padding: 0.75rem 1.75rem; border-radius: 14px; font-weight: 850; font-size: 0.85rem;
       border: none; transition: all 0.2s;
-      &.primary { background: #1e293b; color: white; &:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 8px 20px -6px rgba(0,0,0,0.2); } }
+      &.primary { background: var(--primary-color); color: white; &:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 8px 20px -6px rgba(0,0,0,0.2); } }
       &.secondary { background: #f1f5f9; color: #64748b; &:hover { background: #e2e8f0; } }
       &:disabled { opacity: 0.5; cursor: not-allowed; }
     }
@@ -219,3 +219,4 @@ export class ProfilePersonalDataCardComponent {
     this.cdr.markForCheck();
   }
 }
+

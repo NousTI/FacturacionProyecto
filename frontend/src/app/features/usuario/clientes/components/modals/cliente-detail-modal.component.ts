@@ -144,7 +144,7 @@ import { Cliente } from '../../../../../domain/models/cliente.model';
       display: flex; align-items: center; justify-content: center;
       font-size: 1.75rem; font-weight: 800;
     }
-    .brand-text h4 { margin: 0 0 0.5rem 0; font-weight: 800; color: #1e293b; font-size: 1.5rem; }
+    .brand-text h4 { margin: 0 0 0.5rem 0; font-weight: 800; color: var(--primary-color); font-size: 1.5rem; }
     .badges { display: flex; gap: 0.5rem; }
     
     .status-badge {
@@ -181,13 +181,13 @@ import { Cliente } from '../../../../../domain/models/cliente.model';
     .info-item { display: flex; flex-direction: column; gap: 0.3rem; }
     .info-item.full { grid-column: span 2; }
     .info-item label { font-size: 0.75rem; font-weight: 700; color: #94a3b8; text-transform: uppercase; }
-    .info-item span { font-size: 1rem; font-weight: 600; color: #1e293b; }
+    .info-item span { font-size: 1rem; font-weight: 600; color: var(--primary-color); }
     .email-text { color: var(--status-info-text) !important; text-decoration: underline; }
     .address-text { font-size: 0.9rem !important; color: #64748b !important; line-height: 1.5; }
 
     /* Right Column - Metric Card */
     .metric-card {
-      background: #1e293b; border-radius: 24px; padding: 2rem; color: white;
+      background: var(--primary-color); border-radius: 24px; padding: 2rem; color: white;
       margin-bottom: 2rem; box-shadow: 0 10px 25px -5px rgba(30, 41, 59, 0.4);
     }
     .card-title { font-size: 0.75rem; font-weight: 800; text-transform: uppercase; color: #94a3b8; margin-bottom: 1.5rem; letter-spacing: 0.05em; }
@@ -201,12 +201,12 @@ import { Cliente } from '../../../../../domain/models/cliente.model';
     .audit-row { display: flex; justify-content: space-between; margin-bottom: 0.75rem; }
     .audit-row:last-child { margin-bottom: 0; }
     .a-label { font-size: 0.8rem; font-weight: 600; color: #64748b; }
-    .a-value { font-size: 0.8rem; font-weight: 700; color: #1e293b; }
+    .a-value { font-size: 0.8rem; font-weight: 700; color: var(--primary-color); }
 
     .modal-footer { padding: 1.5rem 2.5rem; }
     .btn-primary-premium {
       width: 100%; padding: 1rem; border-radius: 16px; border: none;
-      background: var(--secondary-color, #1e293b); color: white; font-weight: 800; font-size: 1rem;
+      background: var(--secondary-color, var(--primary-color)); color: white; font-weight: 800; font-size: 1rem;
       transition: all 0.2s;
     }
     .btn-primary-premium:hover { background: var(--neutral-700); transform: translateY(-2px); box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); }
@@ -253,3 +253,4 @@ export class ClienteDetailModalComponent implements OnInit, OnDestroy {
     this.onClose.emit();
   }
 }
+

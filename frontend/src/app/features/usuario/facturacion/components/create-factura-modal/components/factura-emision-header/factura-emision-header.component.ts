@@ -11,7 +11,7 @@ import { SRI_FORMAS_PAGO, FORMA_PAGO_REQUIERE_PLAZO } from '../../../../../../..
   imports: [CommonModule, FormsModule, ReactiveFormsModule],
   template: `
     <div class="section-lux h-100 p-3 border shadow-sm rounded-4 bg-white" [formGroup]="parentForm">
-      <div class="section-title-lux mb-3 border-0 p-0" style="color: #1e293b;">
+      <div class="section-title-lux mb-3 border-0 p-0" style="color: var(--primary-color);">
         <i class="bi bi-file-earmark-text-fill me-2 text-primary"></i> Información de Emisión
       </div>
 
@@ -98,3 +98,4 @@ export class FacturaEmisionHeaderComponent implements OnInit {
 
   ngOnInit() {}
 }
+

@@ -123,7 +123,7 @@ import { CONFIGURACION_PERMISSIONS } from '../../../../../constants/permission-c
     }
 
     .badge-ruc {
-      background: var(--neutral-700, #1e293b);
+      background: var(--neutral-700, var(--primary-color));
       color: white;
       font-size: 0.65rem;
       font-weight: 800;
@@ -145,7 +145,7 @@ import { CONFIGURACION_PERMISSIONS } from '../../../../../constants/permission-c
     .razon-social {
       font-size: 1.6rem;
       font-weight: 900;
-      color: #1e293b;
+      color: var(--primary-color);
       letter-spacing: -0.5px;
     }
 
@@ -222,7 +222,7 @@ import { CONFIGURACION_PERMISSIONS } from '../../../../../constants/permission-c
     .info-content .value {
       font-size: 0.95rem;
       font-weight: 700;
-      color: #1e293b;
+      color: var(--primary-color);
       word-break: break-all;
     }
 
@@ -259,3 +259,4 @@ export class EmpresaInfoCardComponent {
     return GET_CONTRIBUYENTE_LABEL(code);
   }
 }
+

@@ -192,7 +192,7 @@ import { SRI_TIPOS_PERSONA, SRI_TIPOS_CONTRIBUYENTE } from '../../../../../core/
       background: var(--status-info-bg); color: var(--status-info-text);
     }
     .modal-title-lux {
-      font-size: 1.25rem; font-weight: 800; color: #1e293b; margin: 0;
+      font-size: 1.25rem; font-weight: 800; color: var(--primary-color); margin: 0;
     }
     .modal-subtitle-lux {
       font-size: 0.85rem; color: #64748b; margin: 2px 0 0 0; font-weight: 500;
@@ -219,7 +219,7 @@ import { SRI_TIPOS_PERSONA, SRI_TIPOS_CONTRIBUYENTE } from '../../../../../core/
     }
     .input-lux, .select-lux {
       width: 100%; border: 1.5px solid #e2e8f0; border-radius: 14px;
-      padding: 0.75rem 1rem; font-size: 0.9rem; color: #1e293b; font-weight: 600;
+      padding: 0.75rem 1rem; font-size: 0.9rem; color: var(--primary-color); font-weight: 600;
       transition: all 0.2s;
     }
     .input-lux:focus, .select-lux:focus {
@@ -321,3 +321,4 @@ export class EditEmpresaModalComponent implements OnInit, OnDestroy {
     }
   }
 }
+

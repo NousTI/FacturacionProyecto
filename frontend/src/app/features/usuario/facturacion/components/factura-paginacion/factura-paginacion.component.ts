@@ -60,7 +60,7 @@ export interface PaginationState {
       display: flex; align-items: center; justify-content: center;
       color: #64748b; transition: all 0.2s; cursor: pointer;
     }
-    .btn-nav-premium:hover:not(:disabled) { background: #f8fafc; color: #0f172a; border-color: #cbd5e1; }
+    .btn-nav-premium:hover:not(:disabled) { background: #f8fafc; color: var(--primary-color); border-color: #cbd5e1; }
     .btn-nav-premium:disabled { opacity: 0.4; cursor: not-allowed; }
     .page-indicator-premium {
       min-width: 38px; height: 38px; border-radius: 10px;
@@ -106,3 +106,4 @@ export class FacturaPaginacionComponent {
     this.pageSizeChange.emit(+this.pagination.pageSize);
   }
 }
+

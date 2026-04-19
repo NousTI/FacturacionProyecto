@@ -59,7 +59,7 @@ import { UsuariosService } from '../../services/usuarios.service';
     .modal-container { background: white; width: 100%; max-width: 480px; border-radius: 28px; padding: 2.5rem; display: flex; flex-direction: column; align-items: center; gap: 1.5rem; }
     .icon-wrapper { width: 72px; height: 72px; border-radius: 22px; background: #f0f9ff; color: #0284c7; display: flex; align-items: center; justify-content: center; font-size: 2.25rem; }
     .modal-content-text { text-align: center; width: 100%; }
-    .modal-title { font-size: 1.4rem; font-weight: 800; color: #1e293b; margin-bottom: 0.5rem; }
+    .modal-title { font-size: 1.4rem; font-weight: 800; color: var(--primary-color); margin-bottom: 0.5rem; }
     .modal-desc { font-size: 0.9rem; color: #64748b; font-weight: 500; line-height: 1.5; margin-bottom: 2rem; }
     .roles-grid { display: flex; flex-direction: column; gap: 0.75rem; width: 100%; }
     .role-card { 
@@ -71,12 +71,12 @@ import { UsuariosService } from '../../services/usuarios.service';
     .role-selector { font-size: 1.25rem; color: #cbd5e1; }
     .active .role-selector { color: #3b82f6; }
     .role-info { display: flex; flex-direction: column; }
-    .r-name { font-size: 0.95rem; font-weight: 800; color: #1e293b; }
+    .r-name { font-size: 0.95rem; font-weight: 800; color: var(--primary-color); }
     .r-desc { font-size: 0.75rem; color: #64748b; font-weight: 600; }
     .modal-actions { display: flex; gap: 0.75rem; width: 100%; margin-top: 1rem; }
     .btn-cancel { flex: 1; padding: 0.85rem; border-radius: 14px; border: 1px solid #e2e8f0; background: white; color: #64748b; font-weight: 700; }
-    .btn-confirm { flex: 1.5; padding: 0.85rem; border-radius: 14px; border: none; background: #1e293b; color: white; font-weight: 800; transition: all 0.2s; }
-    .btn-confirm:hover:not(:disabled) { background: #0f172a; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(15, 23, 42, 0.2); }
+    .btn-confirm { flex: 1.5; padding: 0.85rem; border-radius: 14px; border: none; background: var(--primary-color); color: white; font-weight: 800; transition: all 0.2s; }
+    .btn-confirm:hover:not(:disabled) { background: var(--primary-color); transform: translateY(-2px); box-shadow: 0 4px 12px rgba(15, 23, 42, 0.2); }
     .btn-confirm:disabled { opacity: 0.5; cursor: not-allowed; }
   `]
 })
@@ -122,3 +122,4 @@ export class UsuarioRoleModalComponent implements OnInit, OnDestroy {
   confirm() { if (this.selectedRoleId) this.onSave.emit(this.selectedRoleId); }
   close() { if (!this.loading) this.onClose.emit(); }
 }
+

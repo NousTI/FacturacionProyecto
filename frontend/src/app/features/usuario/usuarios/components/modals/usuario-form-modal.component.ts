@@ -169,14 +169,14 @@ import { AuthService } from '../../../../../core/auth/auth.service';
     .modal-content-container { background: white; border-radius: 24px; width: 100%; max-width: 600px; max-height: 90vh; display: flex; flex-direction: column; overflow: hidden; border: 1px solid #f1f5f9; }
     .modal-header { padding: 1.5rem 2rem; border-bottom: 1px solid #f1f5f9; display: flex; align-items: center; gap: 1.25rem; position: relative; }
     .header-icon { width: 48px; height: 48px; border-radius: 14px; background: var(--status-info-bg); color: var(--status-info-text); display: flex; align-items: center; justify-content: center; font-size: 1.5rem; }
-    .header-text h5 { margin: 0; font-weight: 800; color: #1e293b; font-size: 1.25rem; }
+    .header-text h5 { margin: 0; font-weight: 800; color: var(--primary-color); font-size: 1.25rem; }
     .header-text span { font-size: 0.85rem; color: #64748b; font-weight: 500; }
     .btn-close-custom { position: absolute; right: 1.5rem; top: 1.5rem; width: 32px; height: 32px; border-radius: 10px; border: none; background: #f1f5f9; color: #64748b; display: flex; align-items: center; justify-content: center; }
     .btn-close-custom:hover { background: var(--status-danger-bg); color: var(--status-danger-text); }
     .modal-body { padding: 2rem; overflow-y: auto; flex: 1; }
     .form-section { margin-bottom: 2rem; }
     .form-section.last { margin-bottom: 0; }
-    .section-title { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1.25rem; color: #1e293b; }
+    .section-title { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1.25rem; color: var(--primary-color); }
     .section-title i { font-size: 1.1rem; color: var(--status-info-text); }
     .section-title span { font-size: 0.85rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; }
     .form-label { font-size: 0.8rem; font-weight: 700; color: #475569; margin-bottom: 0.5rem; }
@@ -195,7 +195,7 @@ import { AuthService } from '../../../../../core/auth/auth.service';
     .info-notice i { color: var(--status-info-text); font-size: 1.2rem; }
     .info-notice.warning { background: var(--status-warning-bg); border-color: var(--status-warning); }
     .info-notice.warning i { color: var(--status-warning-text); }
-    .notice-content strong { display: block; font-size: 0.8rem; font-weight: 800; color: #1e293b; margin-bottom: 0.2rem; }
+    .notice-content strong { display: block; font-size: 0.8rem; font-weight: 800; color: var(--primary-color); margin-bottom: 0.2rem; }
     .notice-content p { font-size: 0.75rem; color: #475569; margin: 0; line-height: 1.4; }
     .notice-content code { background: white; padding: 0.1rem 0.4rem; border-radius: 4px; font-weight: 700; border: 1px solid var(--border-color, #f1f5f9); }
     .modal-footer { padding: 1.5rem 2rem; border-top: 1px solid #f1f5f9; display: flex; align-items: center; justify-content: space-between; background: #f8fafc; }
@@ -207,8 +207,8 @@ import { AuthService } from '../../../../../core/auth/auth.service';
     .self-badge { padding: 0.5rem 1rem; background: #ecfdf5; color: #065f46; border-radius: 100px; font-size: 0.75rem; font-weight: 800; display: flex; align-items: center; gap: 0.5rem; }
     .actions { display: flex; gap: 1rem; }
     .btn-cancel { padding: 0.75rem 1.5rem; border-radius: 12px; border: none; background: white; color: #64748b; font-weight: 700; }
-    .btn-cancel:hover { background: #f1f5f9; color: #1e293b; }
-    .btn-save { padding: 0.75rem 2rem; border-radius: 12px; border: none; background: var(--secondary-color, #1e293b); color: white; font-weight: 700; transition: all 0.2s; }
+    .btn-cancel:hover { background: #f1f5f9; color: var(--primary-color); }
+    .btn-save { padding: 0.75rem 2rem; border-radius: 12px; border: none; background: var(--secondary-color, var(--primary-color)); color: white; font-weight: 700; transition: all 0.2s; }
     .btn-save:hover:not(:disabled) { background: var(--neutral-700); transform: translateY(-2px); }
     .btn-save:disabled { opacity: 0.6; cursor: not-allowed; }
     .form-check-input { width: 3em; height: 1.5em; cursor: pointer; }
@@ -338,3 +338,4 @@ export class UsuarioFormModalComponent implements OnInit, OnDestroy {
 
   close() { if (!this.loading) this.onClose.emit(); }
 }
+

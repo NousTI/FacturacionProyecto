@@ -233,7 +233,7 @@ import { PuntoEmision } from '../../../../../domain/models/punto-emision.model';
     .section-header-final {
       font-size: 1rem;
       font-weight: 800;
-      color: #1e293b;
+      color: var(--primary-color);
       margin-bottom: 1.25rem;
     }
 
@@ -336,3 +336,4 @@ export class PuntosEmisionDetailModalComponent {
     this.onClose.emit();
   }
 }
+

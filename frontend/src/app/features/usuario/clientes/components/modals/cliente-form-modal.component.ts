@@ -227,7 +227,7 @@ import { SRI_TIPOS_IDENTIFICACION } from '../../../../../core/constants/sri-iva.
       background: var(--status-info-bg); color: var(--status-info-text);
       display: flex; align-items: center; justify-content: center; font-size: 1.5rem;
     }
-    .header-text h5 { margin: 0; font-weight: 800; color: #1e293b; font-size: 1.25rem; }
+    .header-text h5 { margin: 0; font-weight: 800; color: var(--primary-color); font-size: 1.25rem; }
     .header-text span { font-size: 0.85rem; color: #64748b; font-weight: 500; }
     
     .btn-close-custom {
@@ -245,7 +245,7 @@ import { SRI_TIPOS_IDENTIFICACION } from '../../../../../core/constants/sri-iva.
     
     .section-title {
       display: flex; align-items: center; gap: 0.75rem;
-      margin-bottom: 1.25rem; color: #1e293b;
+      margin-bottom: 1.25rem; color: var(--primary-color);
     }
     .section-title i { font-size: 1.1rem; color: var(--status-info-text); }
     .section-title span { font-size: 0.85rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; }
@@ -288,10 +288,10 @@ import { SRI_TIPOS_IDENTIFICACION } from '../../../../../core/constants/sri-iva.
       padding: 0.75rem 1.5rem; border-radius: 12px; border: none;
       background: white; color: #64748b; font-weight: 700; transition: all 0.2s;
     }
-    .btn-cancel:hover { background: #f1f5f9; color: #1e293b; }
+    .btn-cancel:hover { background: #f1f5f9; color: var(--primary-color); }
     .btn-save {
       padding: 0.75rem 2rem; border-radius: 12px; border: none;
-      background: var(--secondary-color, #1e293b); color: white; font-weight: 700; transition: all 0.2s;
+      background: var(--secondary-color, var(--primary-color)); color: white; font-weight: 700; transition: all 0.2s;
     }
     .btn-save:hover:not(:disabled) { background: var(--neutral-700); transform: translateY(-2px); }
     .btn-save:disabled { opacity: 0.6; cursor: not-allowed; }
@@ -464,3 +464,4 @@ export class ClienteFormModalComponent implements OnInit, OnDestroy {
     if (!this.loading) this.onClose.emit();
   }
 }
+

@@ -255,7 +255,7 @@ import { SriConfigService } from '../certificado-sri/services/sri-config.service
     .sri-block-title {
       font-size: 1.5rem;
       font-weight: 800;
-      color: #1e293b;
+      color: var(--primary-color);
       margin-bottom: 0.75rem;
     }
     .sri-block-message {
@@ -854,3 +854,4 @@ export class FacturacionPage implements OnInit {
     }, 800);
   }
 }
+

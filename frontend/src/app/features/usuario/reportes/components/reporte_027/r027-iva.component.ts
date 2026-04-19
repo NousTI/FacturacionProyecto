@@ -676,7 +676,7 @@ import { R027DetalleModalComponent } from './r027-detalle-modal.component';
 
     /* ── ENCABEZADO ── */
     .page-header { background: #fff; border: 1px solid #f1f5f9; border-radius: 20px; padding: 1.5rem 1.75rem; }
-    .page-title  { font-weight: 900; color: #0f172a; font-size: 1.15rem; margin-bottom: 0.25rem; }
+    .page-title  { font-weight: 900; color: var(--primary-color); font-size: 1.15rem; margin-bottom: 0.25rem; }
     .page-sub    { font-size: 0.82rem; color: #64748b; margin-bottom: 0.75rem; }
     .header-meta-row { display: flex; gap: 0.5rem; flex-wrap: wrap; }
     .meta-badge  {
@@ -731,7 +731,7 @@ import { R027DetalleModalComponent } from './r027-detalle-modal.component';
     .kpi-card.highlight .kpi-value { color: #fff; }
     .kpi-card.highlight .kpi-sub   { color: rgba(255,255,255,0.75); }
     .kpi-label { font-size: 0.68rem; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; display: flex; align-items: center; }
-    .kpi-value { font-size: 1.55rem; font-weight: 800; color: #0f172a; line-height: 1.1; }
+    .kpi-value { font-size: 1.55rem; font-weight: 800; color: var(--primary-color); line-height: 1.1; }
     .kpi-value.not-impl { font-size: 0.82rem; color: #94a3b8; font-style: italic; font-weight: 500; }
     .kpi-sub   { font-size: 0.7rem; color: #94a3b8; }
 
@@ -741,7 +741,7 @@ import { R027DetalleModalComponent } from './r027-detalle-modal.component';
       box-shadow: 0 4px 6px -1px rgba(0,0,0,0.04); overflow: hidden;
     }
     .bloque-header { padding: 1.1rem 1.75rem 0.75rem; border-bottom: 1px solid #f1f5f9; }
-    .bloque-header h5 { font-weight: 800; color: #1e293b; margin-bottom: 0.15rem; font-size: 0.98rem; }
+    .bloque-header h5 { font-weight: 800; color: var(--primary-color); margin-bottom: 0.15rem; font-size: 0.98rem; }
     .bloque-header p  { font-size: 0.77rem; color: #64748b; margin: 0; }
     .bloque-badge {
       display: inline-block; font-size: 0.6rem; font-weight: 800; letter-spacing: 0.08em;
@@ -792,12 +792,12 @@ import { R027DetalleModalComponent } from './r027-detalle-modal.component';
 
     /* Filas totales */
     .total-row td     { background: #f8fafc; border-top: 2px solid #e2e8f0 !important; }
-    .total-val        { font-size: 0.98rem; font-weight: 800; color: #1e293b; }
+    .total-val        { font-size: 0.98rem; font-weight: 800; color: var(--primary-color); }
     .highlight-pay td { background: #fff7ed; }
     .highlight-credit td { background: #f0fdf4; }
 
     /* Grand total */
-    .grand-total td        { background: #0f172a !important; }
+    .grand-total td        { background: var(--primary-color) !important; }
     .grand-total .desc-title { color: #f8fafc !important; }
     .grand-total-val       { font-size: 1.15rem; font-weight: 900; color: #22c55e !important; }
     .cas-badge-grand {
@@ -815,10 +815,10 @@ import { R027DetalleModalComponent } from './r027-detalle-modal.component';
       background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px;
       padding: 0.55rem 0.9rem; min-width: 62px;
     }
-    .cal-item.active { background: #1e293b; border-color: #1e293b; }
+    .cal-item.active { background: var(--primary-color); border-color: var(--primary-color); }
     .cal-item.active .cal-digito,
     .cal-item.active .cal-dia { color: #fff !important; }
-    .cal-digito { font-size: 1.15rem; font-weight: 900; color: #1e293b; line-height: 1.2; }
+    .cal-digito { font-size: 1.15rem; font-weight: 900; color: var(--primary-color); line-height: 1.2; }
     .cal-dia    { font-size: 0.62rem; font-weight: 600; color: #64748b; text-transform: uppercase; }
     .cal-nota   { font-size: 0.74rem; color: #94a3b8; padding: 0 1.75rem 1rem; margin: 0; }
 
@@ -826,7 +826,7 @@ import { R027DetalleModalComponent } from './r027-detalle-modal.component';
     .cell-input {
       width: 110px; text-align: right; font-size: 0.82rem; font-family: monospace;
       border: 1px solid #e2e8f0; border-radius: 6px; padding: 2px 6px;
-      background: #f8fafc; color: #0f172a; outline: none;
+      background: #f8fafc; color: var(--primary-color); outline: none;
       transition: border-color 0.15s, background 0.15s;
     }
     .cell-input:focus { border-color: #6366f1; background: #fff; }
@@ -896,3 +896,4 @@ export class R027IvaComponent implements OnChanges {
     this.manual503 = 0;
   }
 }
+

@@ -236,7 +236,7 @@ import { RecurrentePaginacionComponent, PaginationState } from '../recurrente-pa
     }
     .btn-icon-premium:hover {
       background: white;
-      color: #1e293b;
+      color: var(--primary-color);
       border-color: #cbd5e1;
       transform: translateY(-2px);
       box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
@@ -256,7 +256,7 @@ import { RecurrentePaginacionComponent, PaginationState } from '../recurrente-pa
     }
     .dropdown-premium .dropdown-trigger:hover {
       background: white;
-      color: #1e293b;
+      color: var(--primary-color);
       border-color: #cbd5e1;
       transform: translateY(-2px);
       box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
@@ -284,7 +284,7 @@ import { RecurrentePaginacionComponent, PaginationState } from '../recurrente-pa
     }
     .dropdown-premium .dropdown-item:hover {
       background: #f1f5f9;
-      color: #0f172a;
+      color: var(--primary-color);
       transform: translateX(4px);
     }
     .dropdown-premium .dropdown-header {
@@ -338,3 +338,4 @@ export class RecurrenteTableComponent {
     }
   }
 }
+

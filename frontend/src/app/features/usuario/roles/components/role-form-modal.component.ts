@@ -74,15 +74,15 @@ import { HasPermissionDirective } from '../../../../shared/directives/has-permis
       width: 100%; border: 1px solid #e2e8f0; background: #fff; border-radius: 12px; padding: 10px 14px;
       font-weight: 600; font-size: 0.9rem; transition: all 0.2s;
     }
-    .minimal-form-item input:focus, .minimal-form-item textarea:focus { border-color: #1e293b; outline: none; }
+    .minimal-form-item input:focus, .minimal-form-item textarea:focus { border-color: var(--primary-color); outline: none; }
 
     .minimal-toggle-stack { display: flex; flex-direction: column; gap: 1rem; border-top: 1px solid #f1f5f9; padding-top: 1.25rem; }
     .toggle-item-minimal { display: flex; justify-content: space-between; align-items: center; color: #475569; font-weight: 700; font-size: 0.85rem; }
 
     .custom-switch-lux .form-check-input { width: 2.8rem; height: 1.4rem; cursor: pointer; }
-    .form-check-input:checked { background-color: #1e293b; border-color: #1e293b; }
+    .form-check-input:checked { background-color: var(--primary-color); border-color: var(--primary-color); }
 
-    .btn-minimal-dark { background: #1e293b; color: white; border: none; border-radius: 12px; padding: 0.8rem 1.5rem; font-weight: 700; }
+    .btn-minimal-dark { background: var(--primary-color); color: white; border: none; border-radius: 12px; padding: 0.8rem 1.5rem; font-weight: 700; }
     .btn-minimal-link { background: transparent; border: none; color: #64748b; font-weight: 700; font-size: 0.8rem; }
   `]
 })
@@ -106,3 +106,4 @@ export class RoleFormModalComponent implements OnChanges {
     }
   }
 }
+

@@ -76,7 +76,7 @@ import { take } from 'rxjs';
     .title {
       font-size: 2rem;
       font-weight: 850;
-      color: #0f172a;
+      color: var(--primary-color);
       margin-bottom: 0.5rem;
       letter-spacing: -0.02em;
     }
@@ -117,7 +117,7 @@ import { take } from 'rxjs';
     .btn-logout {
       width: 100%;
       padding: 1rem 1.5rem;
-      background: #0f172a;
+      background: var(--primary-color);
       color: white;
       border: none;
       border-radius: 16px;
@@ -131,7 +131,7 @@ import { take } from 'rxjs';
     }
 
     .btn-logout:hover {
-      background: #1e293b;
+      background: var(--primary-color);
       transform: translateY(-2px);
       box-shadow: 0 15px 30px -10px rgba(15, 23, 42, 0.4);
     }
@@ -157,3 +157,4 @@ export class AccesoDenegadoPage implements OnInit {
     this.authFacade.logout().subscribe();
   }
 }
+

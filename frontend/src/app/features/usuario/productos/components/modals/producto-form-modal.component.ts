@@ -199,13 +199,13 @@ import { SRI_IVA_TARIFAS, GET_IVA_PERCENTAGE } from '../../../../../core/constan
       padding: 1.75rem 2rem; display: flex; justify-content: space-between; align-items: center;
       border-bottom: 1px solid #f1f5f9;
     }
-    .modal-title { font-size: 1.35rem; font-weight: 800; color: #1e293b; margin: 0; }
+    .modal-title { font-size: 1.35rem; font-weight: 800; color: var(--primary-color); margin: 0; }
     .modal-subtitle { font-size: 0.82rem; color: #64748b; margin: 0.25rem 0 0 0; font-weight: 500; }
     .btn-close-editorial {
       width: 40px; height: 40px; border-radius: 12px; border: none; background: #f8fafc;
       color: #64748b; display: flex; align-items: center; justify-content: center; transition: all 0.2s;
     }
-    .btn-close-editorial:hover { background: #f1f5f9; color: #1e293b; }
+    .btn-close-editorial:hover { background: #f1f5f9; color: var(--primary-color); }
 
     .modal-editorial-body { padding: 2rem; overflow-y: auto; flex: 1; }
     .form-section-modern { margin-bottom: 2.5rem; padding-bottom: 2.5rem; border-bottom: 1px solid #f1f5f9; }
@@ -219,7 +219,7 @@ import { SRI_IVA_TARIFAS, GET_IVA_PERCENTAGE } from '../../../../../core/constan
     .input-group-modern label { font-size: 0.8rem; font-weight: 700; color: #475569; }
     .input-group-modern input, .input-group-modern select, .input-group-modern textarea {
       padding: 0.75rem 1rem; border-radius: 12px; border: 1px solid #e2e8f0; background: #f8fafc;
-      font-size: 0.92rem; font-weight: 600; color: #1e293b; transition: all 0.2s;
+      font-size: 0.92rem; font-weight: 600; color: var(--primary-color); transition: all 0.2s;
     }
     .input-group-modern input:focus, .input-group-modern select:focus, .input-group-modern textarea:focus {
       outline: none; border-color: #3b82f6; background: white; box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
@@ -266,16 +266,16 @@ import { SRI_IVA_TARIFAS, GET_IVA_PERCENTAGE } from '../../../../../core/constan
       border-top: 1px solid #f1f5f9; background: #f8fafc;
     }
     .btn-editorial-primary {
-      background: #1e293b; color: white; border: none; padding: 0.8rem 2rem; border-radius: 12px;
+      background: var(--primary-color); color: white; border: none; padding: 0.8rem 2rem; border-radius: 12px;
       font-weight: 700; font-size: 0.9rem; transition: all 0.2s;
     }
-    .btn-editorial-primary:hover:not(:disabled) { background: #0f172a; transform: translateY(-2px); }
+    .btn-editorial-primary:hover:not(:disabled) { background: var(--primary-color); transform: translateY(-2px); }
     .btn-editorial-primary:disabled { opacity: 0.6; cursor: not-allowed; }
     .btn-editorial-ghost {
       background: transparent; color: #64748b; border: 1px solid #e2e8f0; padding: 0.8rem 2rem; border-radius: 12px;
       font-weight: 700; font-size: 0.9rem; transition: all 0.2s;
     }
-    .btn-editorial-ghost:hover { background: #f1f5f9; color: #1e293b; }
+    .btn-editorial-ghost:hover { background: #f1f5f9; color: var(--primary-color); }
 
     .error-text { font-size: 0.72rem; color: #ef4444; font-weight: 700; text-transform: uppercase; margin-top: 0.2rem; }
     .scroll-custom::-webkit-scrollbar { width: 6px; }
@@ -383,3 +383,4 @@ export class ProductoFormModalComponent implements OnInit, OnDestroy {
     return false;
   }
 }
+

@@ -103,7 +103,7 @@ import { FormsModule } from '@angular/forms';
       background: #eff6ff; color: #2563eb;
       display: flex; align-items: center; justify-content: center; font-size: 1.25rem;
     }
-    .header-text h5 { margin: 0; font-weight: 800; color: #1e293b; font-size: 1.15rem; }
+    .header-text h5 { margin: 0; font-weight: 800; color: var(--primary-color); font-size: 1.15rem; }
     .header-text span { font-size: 0.8rem; color: #64748b; font-weight: 500; }
     
     .btn-close-custom {
@@ -129,7 +129,7 @@ import { FormsModule } from '@angular/forms';
     .option-card.active .card-check { color: #3b82f6; }
     
     .card-content { display: flex; flex-direction: column; }
-    .card-title { font-weight: 800; color: #1e293b; font-size: 0.95rem; }
+    .card-title { font-weight: 800; color: var(--primary-color); font-size: 0.95rem; }
     .card-desc { font-size: 0.8rem; color: #64748b; font-weight: 500; }
 
     /* Date Selector */
@@ -148,10 +148,10 @@ import { FormsModule } from '@angular/forms';
     .btn-cancel { padding: 0.75rem 1.5rem; border-radius: 12px; border: none; background: #f1f5f9; color: #64748b; font-weight: 700; }
     .btn-primary-premium {
       padding: 0.75rem 1.5rem; border-radius: 12px; border: none;
-      background: #1e293b; color: white; font-weight: 700;
+      background: var(--primary-color); color: white; font-weight: 700;
       transition: all 0.2s;
     }
-    .btn-primary-premium:hover:not(:disabled) { background: #0f172a; transform: translateY(-2px); }
+    .btn-primary-premium:hover:not(:disabled) { background: var(--primary-color); transform: translateY(-2px); }
   `]
 })
 export class ExportClientesModalComponent {
@@ -171,3 +171,4 @@ export class ExportClientesModalComponent {
     }
   }
 }
+

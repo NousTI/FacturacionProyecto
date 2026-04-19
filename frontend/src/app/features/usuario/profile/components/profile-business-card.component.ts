@@ -44,7 +44,7 @@ import { PerfilUsuario } from '../../../../domain/models/perfil.model';
     .company-business-card { background: white; border: 1px solid #f1f5f9; border-radius: 24px; }
     
     .card-header-minimal-editorial {
-      font-weight: 900; color: #1e293b; font-size: 0.85rem;
+      font-weight: 900; color: var(--primary-color); font-size: 0.85rem;
       text-transform: uppercase; letter-spacing: 0.05em;
     }
     
@@ -57,7 +57,7 @@ import { PerfilUsuario } from '../../../../domain/models/perfil.model';
     }
     .editorial-logo-box img { max-width: 100%; height: auto; border-radius: 6px; }
 
-    .company-display-name-small { font-weight: 850; color: #1e293b; margin: 0; font-size: 1.15rem; letter-spacing: -0.01em; }
+    .company-display-name-small { font-weight: 850; color: var(--primary-color); margin: 0; font-size: 1.15rem; letter-spacing: -0.01em; }
     
     .editorial-badge-ruc {
       font-weight: 900; background: #334155; color: #fff;
@@ -78,3 +78,4 @@ import { PerfilUsuario } from '../../../../domain/models/perfil.model';
 export class ProfileBusinessCardComponent {
   @Input() perfil!: PerfilUsuario;
 }
+

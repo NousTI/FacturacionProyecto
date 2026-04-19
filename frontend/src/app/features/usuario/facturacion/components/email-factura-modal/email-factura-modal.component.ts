@@ -87,7 +87,7 @@ import { Factura } from '../../../../../domain/models/factura.model';
       color: #64748b;
       transition: all 0.2s;
     }
-    .btn-close-lux:hover { background: #e2e8f0; color: #1e293b; }
+    .btn-close-lux:hover { background: #e2e8f0; color: var(--primary-color); }
 
     .invoice-summary-card {
       background: #f8fafc;
@@ -124,7 +124,7 @@ import { Factura } from '../../../../../domain/models/factura.model';
       padding: 0.75rem 1rem 0.75rem 2.75rem;
       font-size: 0.95rem;
       font-weight: 600;
-      color: #1e293b;
+      color: var(--primary-color);
       outline: none;
       transition: all 0.2s;
     }
@@ -175,3 +175,4 @@ export class EmailFacturaModalComponent implements OnInit {
     }
   }
 }
+

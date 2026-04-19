@@ -208,7 +208,7 @@ import { RangoTipo } from '../../reportes.page';
     .highlight-trend { color: rgba(255,255,255,0.9) !important; }
 
     .label   { font-size: 0.7rem; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.04em; }
-    .value   { font-size: 1.65rem; font-weight: 800; color: #0f172a; line-height: 1.1; }
+    .value   { font-size: 1.65rem; font-weight: 800; color: var(--primary-color); line-height: 1.1; }
     .subtext { font-size: 0.72rem; color: #94a3b8; }
     .trend   { font-size: 0.72rem; font-weight: 700; display: flex; align-items: center; gap: 1px; }
     .trend.up   { color: #10b981; }
@@ -224,7 +224,7 @@ import { RangoTipo } from '../../reportes.page';
       overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
       display: flex; flex-direction: column;
     }
-    .section-header h5 { font-weight: 800; color: #1e293b; margin-bottom: 0.2rem; font-size: 1rem; }
+    .section-header h5 { font-weight: 800; color: var(--primary-color); margin-bottom: 0.2rem; font-size: 1rem; }
     .section-header p  { font-size: 0.8rem; color: #64748b; margin-bottom: 1.25rem; }
     .tabla-scroll { max-height: 530px; overflow-y: auto; overflow-x: auto; }
     .pagination-premium-container { background: #fff; border-top: 1px solid #f1f5f9; }
@@ -232,7 +232,7 @@ import { RangoTipo } from '../../reportes.page';
     .pag-info  { font-size: 0.82rem; color: #64748b; }
     .form-select-premium-sm { padding: 0.35rem 1.75rem 0.35rem 0.75rem; border-radius: 10px; border: 1px solid #e2e8f0; background-color: #f8fafc; font-size: 0.82rem; font-weight: 600; color: #475569; cursor: pointer; }
     .btn-nav-premium { width: 34px; height: 34px; border-radius: 10px; border: 1px solid #e2e8f0; background: white; display: flex; align-items: center; justify-content: center; color: #64748b; cursor: pointer; transition: all 0.2s; }
-    .btn-nav-premium:hover:not(:disabled) { background: #f8fafc; color: #0f172a; border-color: #cbd5e1; }
+    .btn-nav-premium:hover:not(:disabled) { background: #f8fafc; color: var(--primary-color); border-color: #cbd5e1; }
     .btn-nav-premium:disabled { opacity: 0.4; cursor: not-allowed; }
     .page-indicator-premium { min-width: 34px; height: 34px; border-radius: 10px; display: flex; align-items: center; justify-content: center; background: var(--primary-color); color: white; font-weight: 700; font-size: 0.85rem; padding: 0 0.6rem; }
 
@@ -245,7 +245,7 @@ import { RangoTipo } from '../../reportes.page';
     .modern-table tbody td { border-bottom: 1px solid #f1f5f9; padding: 0.9rem 1rem; vertical-align: middle; font-size: 0.88rem; }
     .hover-row:hover { background: #f8fafc; }
     .font-medium  { font-weight: 600; color: #334155; }
-    .font-bold    { font-weight: 800; color: #1e293b; }
+    .font-bold    { font-weight: 800; color: var(--primary-color); }
     .font-mono    { font-family: monospace; font-size: 0.82rem; color: #334155; }
     .text-muted-sm { font-size: 0.82rem; color: #94a3b8; }
 
@@ -294,3 +294,4 @@ export class R001MisVentasComponent implements OnChanges {
 
   ngOnChanges() { this.pageF = 1; this.pageC = 1; }
 }
+

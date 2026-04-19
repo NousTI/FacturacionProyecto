@@ -42,13 +42,14 @@ import { Permiso } from '../../../../domain/models/perfil.model';
     .status-indicator-editorial {
       font-size: 0.65rem; font-weight: 900; letter-spacing: 0.05em; display: flex; align-items: center; gap: 6px;
       padding: 5px 12px; border-radius: 8px; background: #f1f5f9; color: #94a3b8;
-      &.granted { background: #1e293b; color: white; box-shadow: 0 4px 10px -2px rgba(0,0,0,0.2); }
+      &.granted { background: var(--primary-color); color: white; box-shadow: 0 4px 10px -2px rgba(0,0,0,0.2); }
     }
 
-    .permiso-label-title { font-size: 1rem; font-weight: 850; color: #1e293b; margin: 0; }
+    .permiso-label-title { font-size: 1rem; font-weight: 850; color: var(--primary-color); margin: 0; }
     .permiso-label-desc { font-size: 0.8rem; color: #64748b; margin: 0.25rem 0 0; font-weight: 600; line-height: 1.5; }
   `]
 })
 export class PermissionItemComponent {
   @Input({ required: true }) permiso!: Permiso;
 }
+

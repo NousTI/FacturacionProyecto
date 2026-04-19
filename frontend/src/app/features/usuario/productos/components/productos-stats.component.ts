@@ -72,7 +72,7 @@ import { CommonModule } from '@angular/common';
     .icon-circle.danger  { background: var(--status-danger-bg);  color: var(--status-danger-text); }
     .stat-info { display: flex; flex-direction: column; }
     .stat-label { font-size: 0.65rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
-    .stat-value { font-size: 1.35rem; font-weight: 800; color: #1e293b; line-height: 1.2; }
+    .stat-value { font-size: 1.35rem; font-weight: 800; color: var(--primary-color); line-height: 1.2; }
     .stat-value.success { color: var(--status-success-text); }
     .stat-value.warning { color: var(--status-warning-text); }
     .stat-value.danger  { color: var(--status-danger-text); }
@@ -93,3 +93,4 @@ export class ProductosStatsComponent {
   @Input() bajoStock: number = 0;
   @Input() sinStock: number = 0;
 }
+

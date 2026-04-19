@@ -119,7 +119,7 @@ import { environment } from '../../../../environments/environment';
     .title {
       font-size: 1.75rem;
       font-weight: 800;
-      color: #1e293b;
+      color: var(--primary-color);
       margin-bottom: 0.5rem;
     }
 
@@ -181,7 +181,7 @@ import { environment } from '../../../../environments/environment';
     .btn-logout {
       width: 100%;
       padding: 0.75rem 1.5rem;
-      background: #1e293b;
+      background: var(--primary-color);
       color: white;
       border: none;
       border-radius: 12px;
@@ -195,7 +195,7 @@ import { environment } from '../../../../environments/environment';
     }
 
     .btn-logout:hover {
-      background: #0f172a;
+      background: var(--primary-color);
       transform: translateY(-2px);
       box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
     }
@@ -274,3 +274,4 @@ export class AccesoRestringidoPage implements OnInit {
     this.authFacade.logout().subscribe();
   }
 }
+

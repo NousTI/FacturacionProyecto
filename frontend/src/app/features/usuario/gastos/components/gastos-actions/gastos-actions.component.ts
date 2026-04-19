@@ -100,7 +100,7 @@ import { HasPermissionDirective } from '../../../../../shared/directives/has-per
     }
     .form-control-premium-search {
       background: #ffffff; border: 1px solid var(--border-color); border-radius: 12px;
-      padding: 0 2.5rem 0 2.75rem; height: 42px; font-size: 0.9rem; color: #0f172a;
+      padding: 0 2.5rem 0 2.75rem; height: 42px; font-size: 0.9rem; color: var(--primary-color);
       transition: all 0.2s; width: 100%;
     }
     .form-control-premium-search:focus {
@@ -190,3 +190,4 @@ export class GastosActionsComponent {
     return labels[this.filterTipo] || 'Tipo';
   }
 }
+

@@ -34,7 +34,7 @@ import { CommonModule } from '@angular/common';
       top: calc(100% + 8px);
       left: 50%;
       transform: translateX(-50%);
-      background: #1e293b;
+      background: var(--primary-color);
       color: #e2e8f0;
       border-radius: 12px;
       padding: 0.75rem 1rem;
@@ -74,3 +74,4 @@ export class FormasPagoTooltipComponent {
   @Input() tooltipTitle: string = 'Desglose formas de pago';
   visible = false;
 }
+

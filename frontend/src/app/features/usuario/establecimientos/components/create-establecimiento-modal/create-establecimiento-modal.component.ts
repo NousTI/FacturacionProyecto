@@ -253,7 +253,7 @@ import { Establecimiento } from '../../../../../domain/models/establecimiento.mo
     .section-header-final {
       font-size: 1rem;
       font-weight: 800;
-      color: #1e293b;
+      color: var(--primary-color);
       margin-bottom: 1.25rem;
     }
 
@@ -517,3 +517,4 @@ export class CreateEstablecimientoModalComponent implements OnInit {
     this.onClose.emit();
   }
 }
+

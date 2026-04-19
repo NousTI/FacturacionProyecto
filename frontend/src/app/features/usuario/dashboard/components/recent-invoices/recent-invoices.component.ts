@@ -61,7 +61,7 @@ import { RouterModule } from '@angular/router';
       padding: 0.9rem 1.25rem;
       font-size: 0.85rem;
       font-weight: 800;
-      color: #1e293b;
+      color: var(--primary-color);
       border-bottom: 1px solid #f1f5f9;
       background: #f8fafc;
       display: flex;
@@ -128,3 +128,4 @@ export class RecentInvoicesComponent {
     return 'badge-borrador';
   }
 }
+

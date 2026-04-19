@@ -187,7 +187,7 @@ import { Chart, ChartConfiguration } from 'chart.js';
     }
     .glass:hover { transform: translateY(-3px); }
     .label { font-size: 0.75rem; font-weight: 700; color: #64748b; text-transform: uppercase; display: block; margin-bottom: 0.5rem; }
-    .value { font-size: 1.6rem; font-weight: 800; color: #0f172a; display: block; }
+    .value { font-size: 1.6rem; font-weight: 800; color: var(--primary-color); display: block; }
     .trend { font-size: 0.8rem; font-weight: 600; margin-top: 0.5rem; display: flex; align-items: center; }
     .trend.up { color: #10b981; }
     .subtext { font-size: 0.75rem; color: #94a3b8; margin-top: 0.5rem; display: block; }
@@ -202,7 +202,7 @@ import { Chart, ChartConfiguration } from 'chart.js';
     }
 
     .section-card { padding: 1.75rem; border-radius: 24px; }
-    .section-header h5 { font-weight: 800; color: #1e293b; margin-bottom: 0.25rem; }
+    .section-header h5 { font-weight: 800; color: var(--primary-color); margin-bottom: 0.25rem; }
     .section-header p { font-size: 0.85rem; color: #64748b; margin-bottom: 1.5rem; }
     .section-header.white h5, .section-header.white p { color: white; }
 
@@ -215,10 +215,10 @@ import { Chart, ChartConfiguration } from 'chart.js';
     .vat-info { display: flex; flex-direction: column; }
     .vat-label { font-weight: 700; color: #334155; font-size: 0.9rem; }
     .vat-base { font-size: 0.75rem; color: #94a3b8; }
-    .vat-value { font-weight: 800; color: #1e293b; font-size: 1.1rem; }
+    .vat-value { font-weight: 800; color: var(--primary-color); font-size: 1.1rem; }
     .vat-value.highlight { color: #6366f1; font-size: 1.3rem; }
 
-    .dark-gradient { background: linear-gradient(135deg, #1e293b, #334155); color: white; }
+    .dark-gradient { background: linear-gradient(135deg, var(--primary-color), #334155); color: white; }
     .progress-track { height: 8px; background: rgba(0,0,0,0.1); border-radius: 4px; overflow: hidden; }
     .progress-track.dark { background: rgba(255,255,255,0.1); }
     .progress-fill.gold { height: 100%; background: #fbbf24; border-radius: 4px; }
@@ -231,7 +231,7 @@ import { Chart, ChartConfiguration } from 'chart.js';
     .mini-progress .fill { height: 100%; background: #10b981; }
 
     .btn-premium-sm {
-      background: #1e293b; color: white; border: none; padding: 0.5rem 1rem; 
+      background: var(--primary-color); color: white; border: none; padding: 0.5rem 1rem; 
       border-radius: 10px; font-size: 0.8rem; font-weight: 600; transition: all 0.2s;
     }
     .btn-premium-sm:hover { background: #334155; transform: scale(1.05); }
@@ -248,7 +248,7 @@ import { Chart, ChartConfiguration } from 'chart.js';
     .progress-bar-custom { height: 100%; border-radius: 4px; transition: width 0.3s ease; }
 
     .item-footer { display: flex; justify-content: space-between; font-size: 0.75rem; }
-    .item-footer .value { font-weight: 700; color: #1e293b; }
+    .item-footer .value { font-weight: 700; color: var(--primary-color); }
     .item-footer .pct { color: #64748b; font-weight: 600; }
 
     .fade-in { animation: fadeIn 0.4s ease-out; }
@@ -317,3 +317,4 @@ export class SalesGeneralComponent implements AfterViewInit {
     return this.colors[index % this.colors.length];
   }
 }
+

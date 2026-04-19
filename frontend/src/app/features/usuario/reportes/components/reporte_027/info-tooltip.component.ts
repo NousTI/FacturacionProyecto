@@ -31,7 +31,7 @@ export class InfoTooltipComponent implements OnDestroy {
     // Crear div directamente en body
     const d = document.createElement('div');
     d.style.cssText = `
-      position:fixed; background:#1e293b; color:#e2e8f0;
+      position:fixed; background:var(--primary-color); color:#e2e8f0;
       border-radius:10px; padding:0.6rem 0.9rem; font-size:0.75rem;
       z-index:99999; box-shadow:0 10px 25px -5px rgba(0,0,0,0.5);
       min-width:220px; max-width:320px; pointer-events:none;
@@ -76,3 +76,4 @@ export class InfoTooltipComponent implements OnDestroy {
 
   ngOnDestroy() { this.hide(); }
 }
+

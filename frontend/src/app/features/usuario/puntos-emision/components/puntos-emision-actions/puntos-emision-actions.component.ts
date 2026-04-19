@@ -95,7 +95,7 @@ import { HasPermissionDirective } from '../../../../../shared/directives/has-per
       padding: 0 2.5rem 0 2.75rem;
       height: 42px;
       font-size: var(--text-md);
-      color: #0f172a;
+      color: var(--primary-color);
       transition: all 0.2s;
       width: 100%;
     }
@@ -154,7 +154,7 @@ import { HasPermissionDirective } from '../../../../../shared/directives/has-per
       color: #ffffff !important;
     }
     .btn-system-action {
-      background: #111827;
+      background: var(--primary-color);
       color: #ffffff;
       border: none;
       padding: 0 1rem;
@@ -169,7 +169,7 @@ import { HasPermissionDirective } from '../../../../../shared/directives/has-per
       white-space: nowrap;
     }
     .btn-system-action:hover {
-      background: #1f2937;
+      background: var(--primary-color);
       transform: translateY(-1px);
     }
   `]
@@ -205,3 +205,4 @@ export class PuntosEmisionActionsComponent {
     return labels[this.estadoFilter] || 'Estado';
   }
 }
+

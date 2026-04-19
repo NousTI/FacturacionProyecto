@@ -98,7 +98,7 @@ import { RoleDeleteModalComponent } from '../../../roles/components/role-delete-
     .config-roles-wrapper { width: 100%; height: 100%; padding: 4px; }
     
     .spinner-premium {
-      width: 40px; height: 40px; border: 3px solid #f1f5f9; border-top-color: #1e293b;
+      width: 40px; height: 40px; border: 3px solid #f1f5f9; border-top-color: var(--primary-color);
       border-radius: 50%; animation: spin 1s linear infinite;
     }
     @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
@@ -298,3 +298,4 @@ export class ConfigRolesComponent implements OnInit {
     });
   }
 }
+

@@ -81,7 +81,7 @@ import { CommonModule } from '@angular/common';
     .stat-value {
       font-size: 1.35rem;
       font-weight: 800;
-      color: #1e293b;
+      color: var(--primary-color);
       line-height: 1.2;
     }
     .stat-divider {
@@ -109,3 +109,4 @@ export class RecurrenteStatsComponent {
   @Input() successCount: number = 0;
   @Input() failedCount: number = 0;
 }
+

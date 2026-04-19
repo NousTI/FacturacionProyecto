@@ -155,7 +155,7 @@ Chart.register(...registerables);
     .kpi-card.highlight .value   { color: #fff; }
     .kpi-card.highlight .subtext { color: rgba(255,255,255,0.75); }
     .label   { font-size: 0.72rem; font-weight: 700; color: #64748b; text-transform: uppercase; }
-    .value   { font-size: 1.7rem; font-weight: 800; color: #0f172a; }
+    .value   { font-size: 1.7rem; font-weight: 800; color: var(--primary-color); }
     .subtext { font-size: 0.72rem; color: #94a3b8; }
     .trend   { font-size: 0.78rem; font-weight: 600; display: flex; align-items: center; gap: 4px; }
     .trend.up   { color: #10b981; }
@@ -163,7 +163,7 @@ Chart.register(...registerables);
 
     .section-card { background: #fff; border: 1px solid #f1f5f9; border-radius: 20px; padding: 1.75rem; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
     .section-card-table { background: #fff; border: 1px solid #f1f5f9; border-radius: 20px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); display: flex; flex-direction: column; }
-    .section-header h5 { font-weight: 800; color: #1e293b; margin-bottom: 0.2rem; }
+    .section-header h5 { font-weight: 800; color: var(--primary-color); margin-bottom: 0.2rem; }
     .section-header p  { font-size: 0.83rem; color: #64748b; margin-bottom: 1.25rem; }
     .tabla-scroll { max-height: 400px; overflow-y: auto; overflow-x: auto; }
     .pagination-premium-container { background: #fff; border-top: 1px solid #f1f5f9; }
@@ -171,7 +171,7 @@ Chart.register(...registerables);
     .pag-info  { font-size: 0.85rem; color: #64748b; }
     .form-select-premium-sm { padding: 0.4rem 2rem 0.4rem 1rem; border-radius: 10px; border: 1px solid #e2e8f0; background-color: #f8fafc; font-size: 0.85rem; font-weight: 600; color: #475569; cursor: pointer; }
     .btn-nav-premium { width: 38px; height: 38px; border-radius: 10px; border: 1px solid #e2e8f0; background: white; display: flex; align-items: center; justify-content: center; color: #64748b; cursor: pointer; transition: all 0.2s; }
-    .btn-nav-premium:hover:not(:disabled) { background: #f8fafc; color: #0f172a; border-color: #cbd5e1; }
+    .btn-nav-premium:hover:not(:disabled) { background: #f8fafc; color: var(--primary-color); border-color: #cbd5e1; }
     .btn-nav-premium:disabled { opacity: 0.4; cursor: not-allowed; }
     .page-indicator-premium { min-width: 38px; height: 38px; border-radius: 10px; display: flex; align-items: center; justify-content: center; background: var(--primary-color); color: white; font-weight: 700; font-size: 0.9rem; padding: 0 0.75rem; }
 
@@ -181,7 +181,7 @@ Chart.register(...registerables);
       display: flex; flex-direction: column; gap: 0.3rem; border: 1px solid #e2e8f0;
     }
     .iva-tarifa { font-size: 0.72rem; font-weight: 700; color: #64748b; text-transform: uppercase; }
-    .iva-monto  { font-size: 1.3rem; font-weight: 800; color: #1e293b; }
+    .iva-monto  { font-size: 1.3rem; font-weight: 800; color: var(--primary-color); }
     .iva-base   { font-size: 0.72rem; color: #94a3b8; }
 
     .chart-wrapper { position: relative; height: 280px; }
@@ -190,7 +190,7 @@ Chart.register(...registerables);
     .modern-table tbody td { border-bottom: 1px solid #f1f5f9; padding: 1rem; vertical-align: middle; font-size: 0.9rem; }
     .hover-row:hover { background: #f8fafc; }
     .font-medium { font-weight: 600; color: #334155; }
-    .font-bold   { font-weight: 800; color: #1e293b; }
+    .font-bold   { font-weight: 800; color: var(--primary-color); }
   `]
 })
 export class R001VentasGeneralesComponent implements OnChanges {
@@ -276,3 +276,4 @@ export class R001VentasGeneralesComponent implements OnChanges {
     this.chart = new Chart(this.pieChart.nativeElement, config);
   }
 }
+

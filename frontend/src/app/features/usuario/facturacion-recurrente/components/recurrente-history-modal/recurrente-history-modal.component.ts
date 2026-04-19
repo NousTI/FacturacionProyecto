@@ -168,7 +168,7 @@ import { HasPermissionDirective } from '../../../../../core/directives/has-permi
       font-size: 1.4rem; color: white;
     }
     .bg-premium { background: var(--primary-color); }
-    .header-text h3 { margin: 0; font-size: 1.25rem; font-weight: 800; color: #0f172a; }
+    .header-text h3 { margin: 0; font-size: 1.25rem; font-weight: 800; color: var(--primary-color); }
     .header-text p { margin: 0; font-size: 0.85rem; color: #64748b; }
     .btn-close-modal {
       width: 36px; height: 36px;
@@ -178,7 +178,7 @@ import { HasPermissionDirective } from '../../../../../core/directives/has-permi
       font-size: 1.5rem; color: #64748b;
       transition: all 0.2s;
     }
-    .btn-close-modal:hover { background: #e2e8f0; color: #0f172a; transform: rotate(90deg); }
+    .btn-close-modal:hover { background: #e2e8f0; color: var(--primary-color); transform: rotate(90deg); }
 
     .modal-body { padding: 1.5rem 2rem; overflow-y: auto; }
     .modal-footer {
@@ -213,7 +213,7 @@ import { HasPermissionDirective } from '../../../../../core/directives/has-permi
       color: #64748b; font-weight: 600; padding: 0.6rem 1.5rem;
       border-radius: 12px; transition: all 0.2s;
     }
-    .btn-secondary-premium:hover { background: #f8fafc; color: #0f172a; border-color: #cbd5e1; }
+    .btn-secondary-premium:hover { background: #f8fafc; color: var(--primary-color); border-color: #cbd5e1; }
 
     .premium-spinner {
       width: 40px; height: 40px;
@@ -316,3 +316,4 @@ export class RecurrenteHistoryModalComponent implements OnInit {
     this.cdr.detectChanges();
   }
 }
+

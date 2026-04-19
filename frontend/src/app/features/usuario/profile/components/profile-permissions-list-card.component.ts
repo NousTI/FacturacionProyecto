@@ -58,7 +58,7 @@ import { ProfilePermissionsModalComponent } from './profile-permissions-modal.co
     .editorial-card { background: white; border: 1px solid #f1f5f9; border-radius: 24px; }
     .card-header-minimal-editorial {
       padding: 1.25rem 1.5rem; border-bottom: 1px solid #f1f5f9;
-      font-weight: 900; font-size: 0.85rem; color: #1e293b;
+      font-weight: 900; font-size: 0.85rem; color: var(--primary-color);
       background: #f8fafc; text-transform: uppercase; letter-spacing: 0.05em;
     }
     
@@ -94,7 +94,7 @@ import { ProfilePermissionsModalComponent } from './profile-permissions-modal.co
     }
 
     .module-info-editorial { display: flex; flex-direction: column; }
-    .module-title-editorial { display: block; font-weight: 850; font-size: 0.95rem; color: #1e293b; text-transform: uppercase; }
+    .module-title-editorial { display: block; font-weight: 850; font-size: 0.95rem; color: var(--primary-color); text-transform: uppercase; }
     .module-count-editorial { font-size: 0.75rem; color: #94a3b8; font-weight: 700; }
   `]
 })
@@ -133,3 +133,4 @@ export class ProfilePermissionsListCardComponent {
     return 'bi-folder-fill';
   }
 }
+

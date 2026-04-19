@@ -281,7 +281,7 @@ import { UiService } from '../../../../../shared/services/ui.service';
     .bg-light-soft { background: #fcfcfd; }
 
     .section-title {
-      font-size: 0.9rem; font-weight: 900; color: #1e293b;
+      font-size: 0.9rem; font-weight: 900; color: var(--primary-color);
       text-transform: uppercase; letter-spacing: 0.5px;
     }
 
@@ -364,7 +364,7 @@ import { UiService } from '../../../../../shared/services/ui.service';
     .status-suspendida { background: #fef2f2; color: #ef4444; }
     .pulse-dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
     
-    .value-premium { font-size: 1.1rem; font-weight: 900; color: #0f172a; line-height: 1.2; }
+    .value-premium { font-size: 1.1rem; font-weight: 900; color: var(--primary-color); line-height: 1.2; }
     .text-primary { color: #2563eb !important; }
 
     .status-row-premium { display: flex; align-items: center; gap: 1rem; }
@@ -389,7 +389,7 @@ import { UiService } from '../../../../../shared/services/ui.service';
     .success-icon { width: 72px; height: 72px; color: #10b981; font-size: 3rem; margin: 0 auto; }
 
     .spinner-premium {
-      width: 40px; height: 40px; border: 3px solid #f1f5f9; border-top-color: #1e293b;
+      width: 40px; height: 40px; border: 3px solid #f1f5f9; border-top-color: var(--primary-color);
       border-radius: 50%; animation: spin 1s linear infinite;
     }
     @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
@@ -537,3 +537,4 @@ export class ConfigSriComponent implements OnInit {
     this.selectedFileName = '';
   }
 }
+

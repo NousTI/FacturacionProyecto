@@ -61,7 +61,7 @@ import { HasPermissionDirective } from '../../../../shared/directives/has-permis
     .perm-row-minimal {
       padding: 1.25rem 2rem; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #f8fafc;
     }
-    .perm-name-minimal { font-weight: 700; color: #1e293b; font-size: 0.85rem; }
+    .perm-name-minimal { font-weight: 700; color: var(--primary-color); font-size: 0.85rem; }
     .perm-desc-minimal { font-size: 0.75rem; color: #94a3b8; font-weight: 500; margin-top: 2px; }
     
     .module-marker { width: 4px; height: 16px; border-radius: 10px; }
@@ -72,9 +72,9 @@ import { HasPermissionDirective } from '../../../../shared/directives/has-permis
     .module-marker.configuracion { background: #64748b; }
 
     .custom-switch-lux .form-check-input { width: 2.8rem; height: 1.4rem; cursor: pointer; }
-    .form-check-input:checked { background-color: #1e293b; border-color: #1e293b; }
+    .form-check-input:checked { background-color: var(--primary-color); border-color: var(--primary-color); }
 
-    .btn-minimal-dark { background: #1e293b; color: white; border: none; border-radius: 12px; padding: 0.8rem 1.5rem; font-weight: 700; }
+    .btn-minimal-dark { background: var(--primary-color); color: white; border: none; border-radius: 12px; padding: 0.8rem 1.5rem; font-weight: 700; }
     .bg-light-soft { background-color: #f8fafc; }
   `]
 })
@@ -87,3 +87,4 @@ export class RolePermissionsModalComponent {
   @Output() onSave = new EventEmitter<void>();
   @Output() onClose = new EventEmitter<void>();
 }
+

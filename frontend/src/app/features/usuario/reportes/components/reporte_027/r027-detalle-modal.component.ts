@@ -172,18 +172,18 @@ const TITULOS: Record<string, string> = {
       background: #f8fafc;
     }
     .modal-cas {
-      display: inline-block; background: #1e293b; color: #fff;
+      display: inline-block; background: var(--primary-color); color: #fff;
       font-size: 0.7rem; font-weight: 800; font-family: monospace;
       padding: 2px 10px; border-radius: 6px; margin-bottom: 4px;
     }
-    .modal-title { font-size: 1rem; font-weight: 800; color: #0f172a; margin: 0; }
+    .modal-title { font-size: 1rem; font-weight: 800; color: var(--primary-color); margin: 0; }
     .modal-sub   { font-size: 0.75rem; color: #94a3b8; margin: 2px 0 0; }
     .modal-close {
       background: none; border: none; font-size: 1.1rem; color: #94a3b8;
       cursor: pointer; padding: 4px 8px; border-radius: 8px; line-height: 1;
       transition: background 0.15s;
     }
-    .modal-close:hover { background: #f1f5f9; color: #0f172a; }
+    .modal-close:hover { background: #f1f5f9; color: var(--primary-color); }
 
     .modal-body { overflow-y: auto; flex: 1; padding: 1rem 1.5rem 1.5rem; }
 
@@ -218,7 +218,7 @@ const TITULOS: Record<string, string> = {
 
     tfoot td { padding: 10px 10px; background: #f8fafc; border-top: 2px solid #e2e8f0; }
     .tot-lbl { font-weight: 700; font-size: 0.78rem; text-transform: uppercase; color: #475569; }
-    .tot     { font-weight: 800; color: #0f172a; }
+    .tot     { font-weight: 800; color: var(--primary-color); }
   `]
 })
 export class R027DetalleModalComponent implements OnInit {
@@ -255,3 +255,4 @@ export class R027DetalleModalComponent implements OnInit {
       });
   }
 }
+

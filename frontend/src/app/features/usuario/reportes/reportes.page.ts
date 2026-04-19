@@ -231,26 +231,26 @@ type Tab = 'resumen' | 'ventas' | 'cartera' | 'iva' | 'mis_ventas';
     .nav-label { display: flex; flex-direction: column; align-items: flex-start; line-height: 1.1; }
     .nav-name  { font-size: 0.82rem; font-weight: 700; }
     .nav-code  { font-size: 0.62rem; font-weight: 600; opacity: 0.55; letter-spacing: 0.03em; }
-    .nav-btn:hover { background: #f1f5f9; color: #0f172a; }
-    .nav-btn.active { background: #1e293b; color: #fff; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
+    .nav-btn:hover { background: #f1f5f9; color: var(--primary-color); }
+    .nav-btn.active { background: var(--primary-color); color: #fff; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
 
     /* FILTROS */
     .filters-actions { flex-shrink: 0; }
 
     .select-compact {
       border-radius: 10px; border: 1px solid #e2e8f0; padding: 0.4rem 0.6rem;
-      font-weight: 700; font-size: 0.8rem; color: #1e293b; background: #f8fafc;
+      font-weight: 700; font-size: 0.8rem; color: var(--primary-color); background: #f8fafc;
       min-width: 120px; cursor: pointer; outline: none;
     }
     .control-compact {
       border-radius: 10px; border: 1px solid #e2e8f0; padding: 0.4rem 0.5rem;
-      font-weight: 600; font-size: 0.75rem; color: #1e293b; background: #f8fafc; outline: none;
+      font-weight: 600; font-size: 0.75rem; color: var(--primary-color); background: #f8fafc; outline: none;
     }
     .date-small { width: 110px; }
     .sep-text { font-size: 0.75rem; font-weight: 900; color: #cbd5e1; }
 
     .btn-generar {
-      background: #1e293b; color: #fff; border: none;
+      background: var(--primary-color); color: #fff; border: none;
       padding: 0.4rem 1rem; border-radius: 10px; font-weight: 700; font-size: 0.8rem;
       display: flex; align-items: center; cursor: pointer; white-space: nowrap; transition: all 0.2s;
     }
@@ -535,3 +535,4 @@ export class ReportesPage implements OnInit {
     this.cdr.detectChanges();
   }
 }
+

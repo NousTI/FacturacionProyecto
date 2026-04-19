@@ -132,7 +132,7 @@ import { HasPermissionDirective } from '../../../../../shared/directives/has-per
       padding: 0.75rem 1rem 0.75rem 2.8rem;
       font-size: 0.9rem;
       font-weight: 600;
-      color: #1e293b;
+      color: var(--primary-color);
       width: 100%;
       outline: none;
       transition: all 0.2s;
@@ -302,3 +302,4 @@ export class FacturaActionsComponent {
     return map[codigo] || 'Método Pago';
   }
 }
+

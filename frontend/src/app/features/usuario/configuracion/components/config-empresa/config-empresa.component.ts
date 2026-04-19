@@ -113,7 +113,7 @@ import { Empresa } from '../../../../../domain/models/empresa.model';
                   <i class="bi bi-patch-check-fill"></i>
                 </div>
                 <div>
-                  <p class="m-0 fw-800" style="font-size: 0.95rem; color: #1e293b;">Último pago registrado</p>
+                  <p class="m-0 fw-800" style="font-size: 0.95rem; color: var(--primary-color);">Último pago registrado</p>
                   <p class="m-0 text-muted" style="font-size: 0.8rem; font-weight: 500;">Procesado el {{ empresa.ultimo_pago_fecha | date:'dd MMM, yyyy' }}</p>
                 </div>
               </div>
@@ -271,7 +271,7 @@ import { Empresa } from '../../../../../domain/models/empresa.model';
     .stat-value {
       font-size: 1.1rem;
       font-weight: 800;
-      color: #1e293b;
+      color: var(--primary-color);
       line-height: 1.2;
     }
     .stat-divider {
@@ -299,7 +299,7 @@ import { Empresa } from '../../../../../domain/models/empresa.model';
     .section-title {
       font-size: 0.9rem;
       font-weight: 900;
-      color: #1e293b;
+      color: var(--primary-color);
       text-transform: uppercase;
       letter-spacing: 0.5px;
     }
@@ -332,7 +332,7 @@ import { Empresa } from '../../../../../domain/models/empresa.model';
     }
     .detail-row:last-child { border-bottom: none; }
     .detail-row .label { font-size: 0.85rem; color: #64748b; font-weight: 500; }
-    .detail-row .value { font-size: 0.85rem; color: #1e293b; font-weight: 800; }
+    .detail-row .value { font-size: 0.85rem; color: var(--primary-color); font-weight: 800; }
 
     .progress-premium {
       height: 6px;
@@ -378,7 +378,7 @@ import { Empresa } from '../../../../../domain/models/empresa.model';
     }
 
     .spinner-premium {
-      width: 40px; height: 40px; border: 3px solid #f1f5f9; border-top-color: #1e293b;
+      width: 40px; height: 40px; border: 3px solid #f1f5f9; border-top-color: var(--primary-color);
       border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto;
     }
 
@@ -515,3 +515,4 @@ export class ConfigEmpresaComponent implements OnInit {
     return GET_CONTRIBUYENTE_LABEL(code);
   }
 }
+

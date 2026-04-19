@@ -14,7 +14,7 @@ import { CLIENTES_PERMISSIONS } from '../../../../../../../constants/permission-
   template: `
     <div class="section-lux h-100 p-3 border shadow-sm rounded-4 bg-white" [formGroup]="parentForm">
       <div class="d-flex justify-content-between align-items-center mb-3">
-        <div class="section-title-lux mb-0 border-0 p-0" style="color: #1e293b;">
+        <div class="section-title-lux mb-0 border-0 p-0" style="color: var(--primary-color);">
           <i class="bi bi-person-bounding-box me-2 text-primary"></i> Cliente / Receptor
         </div>
         <button *ngIf="canCreateCliente" type="button" class="btn-create-client-lux btn-sm py-1 px-2" (click)="openCreateClienteModal.emit()" title="Nuevo Cliente">
@@ -187,3 +187,4 @@ export class FacturaClienteHeaderComponent implements OnInit, OnChanges {
     this.isClientDropdownOpen = false;
   }
 }
+

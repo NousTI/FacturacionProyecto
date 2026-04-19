@@ -181,7 +181,7 @@ import { EmpresaPaginacionComponent, PaginationState } from '../../../super-admi
     }
     .name {
       font-weight: 700;
-      color: #1e293b;
+      color: var(--primary-color);
       font-size: 0.95rem;
     }
     .sub {
@@ -239,7 +239,7 @@ import { EmpresaPaginacionComponent, PaginationState } from '../../../super-admi
     }
     .amount {
       font-weight: 800;
-      color: #1e293b;
+      color: var(--primary-color);
       font-size: 0.9rem;
     }
     .days {
@@ -263,7 +263,7 @@ import { EmpresaPaginacionComponent, PaginationState } from '../../../super-admi
     }
     .btn-actions:hover {
       background: #f1f5f9;
-      color: #1e293b;
+      color: var(--primary-color);
     }
     .dropdown-menu {
       border-radius: 12px;
@@ -308,7 +308,7 @@ import { EmpresaPaginacionComponent, PaginationState } from '../../../super-admi
     }
     .empty-state h3 {
       font-weight: 800;
-      color: #1e293b;
+      color: var(--primary-color);
       margin-bottom: 0.5rem;
     }
     .empty-state p {
@@ -357,3 +357,4 @@ export class ClientesTableComponent {
     return colors[Math.abs(hash) % colors.length];
   }
 }
+

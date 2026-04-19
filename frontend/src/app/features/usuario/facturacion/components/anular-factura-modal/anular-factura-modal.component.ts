@@ -160,7 +160,7 @@ import { PremiumAlertComponent } from '../../../../../shared/components/premium-
       background: #f1f5f9; border: none; width: 32px; height: 32px; border-radius: 10px;
       display: flex; align-items: center; justify-content: center; color: #64748b; transition: all 0.2s;
     }
-    .btn-close-lux:hover:not(:disabled) { background: #e2e8f0; color: #1e293b; }
+    .btn-close-lux:hover:not(:disabled) { background: #e2e8f0; color: var(--primary-color); }
 
     .invoice-summary-card {
       background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 16px; padding: 1.25rem;
@@ -195,7 +195,7 @@ import { PremiumAlertComponent } from '../../../../../shared/components/premium-
     }
 
     .btn-dark-lux {
-      background: #1e293b; color: white; border: none; transition: all 0.2s;
+      background: var(--primary-color); color: white; border: none; transition: all 0.2s;
     }
 
     /* Animation Wrapper Success */
@@ -292,3 +292,4 @@ export class AnularFacturaModalComponent implements OnInit {
     });
   }
 }
+

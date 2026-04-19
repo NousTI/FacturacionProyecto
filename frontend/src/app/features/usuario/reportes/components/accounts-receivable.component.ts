@@ -117,7 +117,7 @@ import { Chart, ChartConfiguration } from 'chart.js';
       box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); transition: transform 0.2s;
     }
     .label { font-size: 0.72rem; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; display: block; margin-bottom: 0.5rem; }
-    .value { font-size: 1.7rem; font-weight: 850; color: #1e293b; display: block; }
+    .value { font-size: 1.7rem; font-weight: 850; color: var(--primary-color); display: block; }
     .subtext { font-size: 0.75rem; color: #94a3b8; margin-top: 0.5rem; display: block; }
 
     .primary { border-left: 5px solid #6366f1; }
@@ -137,7 +137,7 @@ import { Chart, ChartConfiguration } from 'chart.js';
     }
 
     .section-card { padding: 1.75rem; border-radius: 28px; }
-    .dark-sidebar { background: #1e293b; color: white; }
+    .dark-sidebar { background: var(--primary-color); color: white; }
     
     .aging-summary-list { display: flex; flex-direction: column; gap: 1.25rem; margin-top: 1.5rem; }
     .aging-item { display: flex; justify-content: space-between; font-size: 0.9rem; color: #cbd5e1; }
@@ -224,3 +224,4 @@ export class AccountsReceivableComponent implements AfterViewInit {
     this.chart = new Chart(this.donutChart.nativeElement, config);
   }
 }
+

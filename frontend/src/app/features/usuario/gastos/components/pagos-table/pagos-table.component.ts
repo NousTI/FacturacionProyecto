@@ -127,7 +127,7 @@ import { EmpresaPaginacionComponent, PaginationState } from '../../../../super-a
     .btn-action-trigger-editorial {
       width: 32px; height: 32px; border-radius: 8px; border: none; background: transparent; color: #94a3b8; transition: all 0.2s; display: inline-flex; align-items: center; justify-content: center;
     }
-    .btn-action-trigger-editorial:hover { background: #f1f5f9; color: #1e293b; }
+    .btn-action-trigger-editorial:hover { background: #f1f5f9; color: var(--primary-color); }
 
     .dropdown-menu {
       z-index: 1050; border: 1px solid #f1f5f9 !important; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1) !important;
@@ -135,7 +135,7 @@ import { EmpresaPaginacionComponent, PaginationState } from '../../../../super-a
     .dropdown-item {
       font-size: 0.9rem; font-weight: 500; color: #64748b; padding: 0.5rem 1rem; display: flex; align-items: center; cursor: pointer;
     }
-    .dropdown-item:hover { background: #f8fafc; color: #1e293b; }
+    .dropdown-item:hover { background: #f8fafc; color: var(--primary-color); }
     .dropdown-item i { font-size: 1.1rem; margin-right: 0.75rem; }
     .dropdown-item.text-danger:hover { background: #fef2f2; }
   `]
@@ -192,3 +192,4 @@ export class PagosTableComponent {
     return method ? method.label : codigo.replace(/_/g, ' ');
   }
 }
+

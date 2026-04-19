@@ -121,7 +121,7 @@ import { Proveedor } from '../../../../../domain/models/proveedor.model';
     .detail-header { padding: 2rem 2.5rem; background: #f8fafc; border-bottom: 1px solid #f1f5f9; display: flex; align-items: center; justify-content: space-between; }
     .client-brand { display: flex; align-items: center; gap: 1.5rem; }
     .avatar-large { width: 68px; height: 68px; border-radius: 20px; display: flex; align-items: center; justify-content: center; font-size: 1.75rem; font-weight: 800; }
-    .brand-text h4 { margin: 0 0 0.5rem 0; font-weight: 800; color: #1e293b; font-size: 1.5rem; }
+    .brand-text h4 { margin: 0 0 0.5rem 0; font-weight: 800; color: var(--primary-color); font-size: 1.5rem; }
     .badges { display: flex; gap: 0.5rem; }
     .status-badge { display: inline-flex; padding: 0.4rem 0.8rem; border-radius: 8px; font-size: 0.75rem; font-weight: 700; }
     .status-badge.active { background: #15803d; color: white; }
@@ -138,10 +138,10 @@ import { Proveedor } from '../../../../../domain/models/proveedor.model';
     .info-item { display: flex; flex-direction: column; gap: 0.3rem; }
     .info-item.full { grid-column: span 2; }
     .info-item label { font-size: 0.75rem; font-weight: 700; color: #94a3b8; text-transform: uppercase; }
-    .info-item span { font-size: 1rem; font-weight: 600; color: #1e293b; }
+    .info-item span { font-size: 1rem; font-weight: 600; color: var(--primary-color); }
     .email-text { color: #2563eb !important; text-decoration: underline; }
     .address-text { font-size: 0.9rem !important; color: #64748b !important; line-height: 1.5; }
-    .metric-card { background: #1e293b; border-radius: 24px; padding: 2rem; color: white; margin-bottom: 2rem; }
+    .metric-card { background: var(--primary-color); border-radius: 24px; padding: 2rem; color: white; margin-bottom: 2rem; }
     .card-title { font-size: 0.75rem; font-weight: 800; text-transform: uppercase; color: #94a3b8; margin-bottom: 1.5rem; letter-spacing: 0.05em; }
     .metric-item { display: flex; flex-direction: column; gap: 0.5rem; }
     .m-label { font-size: 0.8rem; color: #94a3b8; font-weight: 600; }
@@ -151,10 +151,10 @@ import { Proveedor } from '../../../../../domain/models/proveedor.model';
     .audit-row { display: flex; justify-content: space-between; margin-bottom: 0.75rem; }
     .audit-row:last-child { margin-bottom: 0; }
     .a-label { font-size: 0.8rem; font-weight: 600; color: #64748b; }
-    .a-value { font-size: 0.8rem; font-weight: 700; color: #1e293b; }
+    .a-value { font-size: 0.8rem; font-weight: 700; color: var(--primary-color); }
     .modal-footer { padding: 1.5rem 2.5rem; }
-    .btn-primary-premium { width: 100%; padding: 1rem; border-radius: 16px; border: none; background: #1e293b; color: white; font-weight: 800; font-size: 1rem; transition: all 0.2s; }
-    .btn-primary-premium:hover { background: #0f172a; transform: translateY(-2px); }
+    .btn-primary-premium { width: 100%; padding: 1rem; border-radius: 16px; border: none; background: var(--primary-color); color: white; font-weight: 800; font-size: 1rem; transition: all 0.2s; }
+    .btn-primary-premium:hover { background: var(--primary-color); transform: translateY(-2px); }
     .scroll-custom::-webkit-scrollbar { width: 6px; }
     .scroll-custom::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
   `]
@@ -185,3 +185,4 @@ export class ProveedorDetailModalComponent implements OnInit, OnDestroy {
 
   close() { this.onClose.emit(); }
 }
+

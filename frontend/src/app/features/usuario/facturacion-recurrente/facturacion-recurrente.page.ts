@@ -232,7 +232,7 @@ import { PaginationState } from './components/recurrente-paginacion/recurrente-p
       font-weight: 700; display: flex; align-items: center;
       transition: all 0.2s;
     }
-    .btn-create-premium:hover { background: #0f172a; transform: translateY(-2px); box-shadow: 0 8px 20px rgba(0,0,0,0.1); }
+    .btn-create-premium:hover { background: var(--primary-color); transform: translateY(-2px); box-shadow: 0 8px 20px rgba(0,0,0,0.1); }
 
     .btn-bulk-premium {
       background: #f1f5f9; color: var(--primary-color); border: 1.5px solid var(--primary-color);
@@ -288,7 +288,7 @@ import { PaginationState } from './components/recurrente-paginacion/recurrente-p
       font-size: 2.5rem; color: #d97706; margin: 0 auto 1.5rem;
       box-shadow: 0 10px 25px rgba(217, 119, 6, 0.2);
     }
-    .sri-block-title { font-size: 1.5rem; font-weight: 800; color: #1e293b; margin-bottom: 0.75rem; }
+    .sri-block-title { font-size: 1.5rem; font-weight: 800; color: var(--primary-color); margin-bottom: 0.75rem; }
     .sri-block-message { font-size: 0.95rem; font-weight: 600; color: #d97706; margin-bottom: 1rem; }
     .sri-block-hint { font-size: 0.875rem; color: #94a3b8; margin-bottom: 2rem; }
     .sri-block-btn {
@@ -296,7 +296,7 @@ import { PaginationState } from './components/recurrente-paginacion/recurrente-p
       padding: 0.875rem 2rem; border-radius: 14px;
       font-weight: 700; font-size: 0.9rem; cursor: pointer; transition: all 0.2s;
     }
-    .sri-block-btn:hover { background: #0f172a; transform: translateY(-2px); box-shadow: 0 8px 20px rgba(0,0,0,0.15); }
+    .sri-block-btn:hover { background: var(--primary-color); transform: translateY(-2px); box-shadow: 0 8px 20px rgba(0,0,0,0.15); }
   `]
 })
 export class FacturacionRecurrentePage implements OnInit, OnDestroy {
@@ -628,3 +628,4 @@ export class FacturacionRecurrentePage implements OnInit, OnDestroy {
     });
   }
 }
+

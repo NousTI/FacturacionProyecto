@@ -95,7 +95,7 @@ import { HasPermissionDirective } from '../../../../../shared/directives/has-per
       padding: 0 2.5rem 0 2.75rem;
       height: 42px;
       font-size: 0.9rem;
-      color: #0f172a;
+      color: var(--primary-color);
       transition: all 0.2s;
       width: 100%;
       font-weight: 500;
@@ -124,7 +124,7 @@ import { HasPermissionDirective } from '../../../../../shared/directives/has-per
     }
     .btn-clear-search-premium:hover {
       background: #e2e8f0;
-      color: #0f172a;
+      color: var(--primary-color);
     }
 
     .form-select-premium {
@@ -162,7 +162,7 @@ import { HasPermissionDirective } from '../../../../../shared/directives/has-per
     }
 
     .btn-system-action {
-      background: #0f172a;
+      background: var(--primary-color);
       color: white;
       border: none;
       height: 42px;
@@ -176,7 +176,7 @@ import { HasPermissionDirective } from '../../../../../shared/directives/has-per
       transition: all 0.2s;
     }
     .btn-system-action:hover {
-      background: #1f2937;
+      background: var(--primary-color);
       transform: translateY(-1px);
     }
   `]
@@ -212,3 +212,4 @@ export class EstablecimientoActionsComponent {
     return labels[this.estadoFilter] || 'Estado';
   }
 }
+

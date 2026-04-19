@@ -161,7 +161,7 @@ import { EmpresaPaginacionComponent, PaginationState } from '../../../super-admi
     .client-info-editorial { display: flex; align-items: center; gap: 1rem; }
     .avatar-editorial { width: 38px; height: 38px; border-radius: 10px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 0.85rem; background: var(--primary-color); color: #ffffff; }
     .details-editorial { display: flex; flex-direction: column; min-width: 0; }
-    .name-editorial { font-weight: 700; color: #1e293b; font-size: 0.95rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .name-editorial { font-weight: 700; color: var(--primary-color); font-size: 0.95rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .sub-editorial { font-size: 0.75rem; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
     .id-info-editorial { display: flex; flex-direction: column; }
@@ -177,7 +177,7 @@ import { EmpresaPaginacionComponent, PaginationState } from '../../../super-admi
     .contact-item-editorial i { font-size: 0.9rem; color: var(--text-muted); }
 
     .credit-info-editorial { display: flex; flex-direction: column; }
-    .amount-editorial { font-weight: 700; color: #1e293b; font-size: 0.9rem; }
+    .amount-editorial { font-weight: 700; color: var(--primary-color); font-size: 0.9rem; }
     .days-editorial { font-size: 0.75rem; color: var(--text-muted); }
 
     .btn-action-trigger-editorial {
@@ -224,3 +224,4 @@ export class ProveedoresTableComponent {
     return colors[Math.abs(hash) % colors.length];
   }
 }
+

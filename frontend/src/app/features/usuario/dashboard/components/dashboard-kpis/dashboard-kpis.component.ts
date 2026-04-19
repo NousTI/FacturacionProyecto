@@ -150,7 +150,7 @@ import { DashboardKPIs } from '../../../../../shared/services/dashboard.service'
     .kpi-value {
       font-size: 1.35rem;
       font-weight: 800;
-      color: #1e293b;
+      color: var(--primary-color);
       line-height: 1.2;
     }
     .kpi-trend {
@@ -187,3 +187,4 @@ export class DashboardKpisComponent {
     return map[this.selectedPeriod];
   }
 }
+
