@@ -142,20 +142,20 @@ export class ComisionesAuditModalComponent {
 
     getStatusColor(status: string): string {
         switch (status) {
-            case 'APROBADA': return 'warning';
+            case 'APROBADA': return 'orange';
             case 'PAGADA': return 'success';
             case 'RECHAZADA': return 'danger';
-            case 'PENDIENTE': return 'orange';
+            case 'PENDIENTE': return 'warning';
             default: return 'secondary';
         }
     }
 
     getBadgeClass(status: string): string {
         switch (status) {
-            case 'APROBADA': return 'badge-warning';
+            case 'APROBADA': return 'badge-orange';
             case 'PAGADA': return 'badge-success';
             case 'RECHAZADA': return 'badge-danger';
-            case 'PENDIENTE': return 'badge-orange';
+            case 'PENDIENTE': return 'badge-warning';
             default: return 'badge-secondary';
         }
     }

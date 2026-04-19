@@ -114,12 +114,13 @@ import { EmpresaPaginacionComponent, PaginationState } from '../../../../super-a
             <p class="fw-600">No se encontraron planes para mostrar.</p>
           </div>
         </div>
+
+        <app-empresa-paginacion
+          [pagination]="pagination"
+          (pageChange)="pageChange.emit($event)"
+          (pageSizeChange)="pageSizeChange.emit($event)"
+        ></app-empresa-paginacion>
       </div>
-      <app-empresa-paginacion
-        [pagination]="pagination"
-        (pageChange)="pageChange.emit($event)"
-        (pageSizeChange)="pageSizeChange.emit($event)"
-      ></app-empresa-paginacion>
     </section>
   `,
   styles: [`
@@ -140,9 +141,9 @@ import { EmpresaPaginacionComponent, PaginationState } from '../../../../super-a
       background: var(--bg-main, #ffffff);
       border-radius: 20px;
       border: 1px solid var(--border-color, #f1f5f9);
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
       display: flex;
       flex-direction: column;
+      flex: 1;
       min-height: 0;
       overflow: hidden;
     }
@@ -195,8 +196,8 @@ import { EmpresaPaginacionComponent, PaginationState } from '../../../../super-a
     }
     .activo { background: var(--status-success-bg); color: var(--status-success-text); }
     .inactivo { background: var(--status-danger-bg); color: var(--status-danger-text); }
-    .visible { background: var(--status-info-bg); color: var(--status-info-text); }
-    .oculto { background: var(--status-natural-bg); color: var(--text-main); }
+    .visible { background: var(--status-success-bg); color: var(--status-success-text); }
+    .oculto { background: var(--status-danger-bg); color: var(--status-danger-text); }
 
     .badge-role-premium {
       padding: 0.4rem 0.85rem;

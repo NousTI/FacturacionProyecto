@@ -85,7 +85,7 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
             <div class="d-flex w-100 gap-2">
               <button class="btn-lux-secondary flex-grow-1" (click)="onClose.emit()">Cerrar</button>
               <ng-container *ngIf="seleccionada?.estado === 'PENDIENTE'">
-                <button class="btn btn-outline-danger px-4 border-0 fw-bold" (click)="onRejectAction.emit()">Rechazar</button>
+                <button class="btn-reject px-4 fw-bold" (click)="onRejectAction.emit()">Rechazar</button>
                 <button
                   class="btn-lux-primary px-4 fw-bold"
                   [disabled]="cargando || (pagoRecibido && requiereComprobante && !numero_comprobante.trim())"
@@ -130,6 +130,13 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
       transition: all 0.2s;
     }
     .btn-lux-secondary:hover { background: var(--status-neutral-bg); color: var(--text-main); }
+
+    .btn-reject {
+      background: var(--status-danger); color: #ffffff; border: none;
+      padding: 0.75rem 1.5rem; border-radius: 12px; font-weight: 600;
+      transition: all 0.2s;
+    }
+    .btn-reject:hover { opacity: 0.85; transform: translateY(-1px); }
 
     .pago-toggle-box {
       border-radius: 12px; border: 1px solid;

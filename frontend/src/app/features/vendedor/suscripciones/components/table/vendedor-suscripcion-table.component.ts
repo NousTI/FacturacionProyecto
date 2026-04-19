@@ -114,12 +114,13 @@ import { EmpresaPaginacionComponent, PaginationState } from '../../../../super-a
             No se encontraron suscripciones asociadas.
           </div>
         </div>
+
+        <app-empresa-paginacion
+          [pagination]="pagination"
+          (pageChange)="pageChange.emit($event)"
+          (pageSizeChange)="pageSizeChange.emit($event)"
+        ></app-empresa-paginacion>
       </div>
-      <app-empresa-paginacion
-        [pagination]="pagination"
-        (pageChange)="pageChange.emit($event)"
-        (pageSizeChange)="pageSizeChange.emit($event)"
-      ></app-empresa-paginacion>
     </section>
   `,
   styles: [`
@@ -130,7 +131,7 @@ import { EmpresaPaginacionComponent, PaginationState } from '../../../../super-a
       min-height: 0;
       width: 100%;
     }
-    .module-table { 
+    .module-table {
       flex: 1;
       display: flex;
       flex-direction: column;
@@ -142,6 +143,7 @@ import { EmpresaPaginacionComponent, PaginationState } from '../../../../super-a
       border: 1px solid var(--border-color, #f1f5f9);
       display: flex;
       flex-direction: column;
+      flex: 1;
       min-height: 0;
       overflow: hidden;
       margin-bottom: 0;

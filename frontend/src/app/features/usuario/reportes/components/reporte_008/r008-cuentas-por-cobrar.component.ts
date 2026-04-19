@@ -243,9 +243,9 @@ Chart.register(...registerables);
     .days-badge.vigente { color: #10b981; background: #f0fdf4; }
 
     .badge-status-v2 { font-size: 0.65rem; font-weight: 800; text-transform: uppercase; padding: 0.35rem 0.75rem; border-radius: 10px; }
-    .badge-status-v2.critico { background: #ef4444; color: #fff; }
-    .badge-status-v2.vencido { background: #f59e0b; color: #fff; }
-    .badge-status-v2.vigente { background: #10b981; color: #fff; }
+    .badge-status-v2.critico { background: var(--status-danger-bg); color: var(--status-danger-text); }
+    .badge-status-v2.vencido { background: var(--status-warning-bg); color: var(--status-warning-text); }
+    .badge-status-v2.vigente { background: var(--status-success-bg); color: var(--status-success-text); }
     
     .fw-600 { font-weight: 600; }
     .font-mono { font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; }

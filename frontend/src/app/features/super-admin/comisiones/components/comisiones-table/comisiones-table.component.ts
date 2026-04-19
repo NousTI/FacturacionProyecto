@@ -259,8 +259,8 @@ export class ComisionesTableComponent {
 
   getStatusClass(status: string): string {
     switch (status) {
-      case 'APROBADA': return 'warning';
-      case 'PENDIENTE': return 'orange';
+      case 'APROBADA': return 'orange';
+      case 'PENDIENTE': return 'warning';
       case 'RECHAZADA': return 'danger';
       case 'PAGADA': return 'success';
       default: return '';

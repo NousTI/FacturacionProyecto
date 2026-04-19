@@ -232,12 +232,12 @@ type RangoTipo = 'mes_actual' | 'mes_anterior' | 'anio_actual' | 'personalizado'
     .badge-tipo { padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.7rem; font-weight: 600; }
     .tipo-nueva { background: #dcfce7; color: #166534; }
     .tipo-upgrade { background: #fef3c7; color: #92400e; }
-    .tipo-renovacion { background: #dbeafe; color: #1e40af; }
+    .tipo-renovacion { background: var(--status-orange-bg); color: var(--status-orange-text); }
     .badge-plan { background: #dbeafe; color: #1e40af; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.7rem; font-weight: 600; }
     .badge-estado { padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.7rem; font-weight: 600; cursor: help; }
     .top-vendedor-icon { font-size: 0.75rem; line-height: 1; }
-    .estado-pendiente { background: #fef3c7; color: #92400e; }
-    .estado-aprobada { background: #dbeafe; color: #1e40af; }
+    .estado-pendiente { background: var(--status-warning-bg); color: var(--status-warning-text); }
+    .estado-aprobada { background: var(--status-orange-bg); color: var(--status-orange-text); }
     .estado-pagada { background: #dcfce7; color: #166534; }
     .pagination-premium-container { background: #ffffff; border-top: 1px solid #e2e8f0; }
     .form-select-premium-sm { padding: 0.4rem 2rem 0.4rem 1rem; border-radius: 10px; border: 1px solid #e2e8f0; background-color: #f8fafc; font-size: 0.85rem; font-weight: 600; color: #475569; cursor: pointer; transition: all 0.2s; }

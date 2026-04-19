@@ -114,7 +114,22 @@ import { FormsModule } from '@angular/forms';
       transform: none !important;
     }
     .btn-system-action {
+      background: var(--primary-color);
+      color: #ffffff;
+      border: none;
+      padding: 0 1.5rem;
       height: 48px;
+      border-radius: 12px;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+      font-size: var(--text-base);
+    }
+    .btn-system-action:hover:not(:disabled) {
+      filter: brightness(1.1);
+      transform: translateY(-1px);
     }
   `]
 })

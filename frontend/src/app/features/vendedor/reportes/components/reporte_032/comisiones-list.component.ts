@@ -103,9 +103,9 @@ import { InfoTooltipComponent } from '../../../../../shared/components/info-tool
 
     .plan-badge { background: #f1f5f9; color: #475569; padding: 0.25rem 0.6rem; border-radius: 6px; font-weight: 700; font-size: 0.75rem; }
     .badge-status { padding: 0.35rem 0.75rem; border-radius: 999px; font-size: 0.7rem; font-weight: 700; background: #f1f5f9; color: #64748b; }
-    .badge-status.pagada { background: #dcfce7; color: #16a34a; }
-    .badge-status.aprobada { background: #eff6ff; color: #2563eb; }
-    .badge-status.pendiente { background: #fef9c3; color: #854d0e; }
+    .badge-status.pagada { background: var(--status-success-bg); color: var(--status-success-text); }
+    .badge-status.aprobada { background: var(--status-orange-bg); color: var(--status-orange-text); }
+    .badge-status.pendiente { background: var(--status-warning-bg); color: var(--status-warning-text); }
     .bg-primary-light { background: #eff6ff; }
 
     .pagination-premium-container { background: #fff; border-top: 1px solid #e2e8f0; }

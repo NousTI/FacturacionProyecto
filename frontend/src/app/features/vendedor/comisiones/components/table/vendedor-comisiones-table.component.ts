@@ -94,12 +94,13 @@ import { EmpresaPaginacionComponent, PaginationState } from '../../../../super-a
             </tbody>
           </table>
         </div>
+
+        <app-empresa-paginacion
+          [pagination]="pagination"
+          (pageChange)="pageChange.emit($event)"
+          (pageSizeChange)="pageSizeChange.emit($event)"
+        ></app-empresa-paginacion>
       </div>
-      <app-empresa-paginacion
-        [pagination]="pagination"
-        (pageChange)="pageChange.emit($event)"
-        (pageSizeChange)="pageSizeChange.emit($event)"
-      ></app-empresa-paginacion>
     </section>
   `,
   styles: [`
@@ -110,12 +111,12 @@ import { EmpresaPaginacionComponent, PaginationState } from '../../../../super-a
       min-height: 0;
       width: 100%;
     }
-    .module-table { 
+    .module-table {
       flex: 1;
       display: flex;
       flex-direction: column;
       min-height: 0;
-      margin-top: 0; 
+      margin-top: 0;
     }
     .table-container {
       background: var(--bg-main, #ffffff);
@@ -123,9 +124,8 @@ import { EmpresaPaginacionComponent, PaginationState } from '../../../../super-a
       border: 1px solid var(--border-color, #f1f5f9);
       display: flex;
       flex-direction: column;
+      flex: 1;
       min-height: 0;
-      height: auto;
-      max-height: 100%;
       overflow: hidden;
       margin-bottom: 0;
     }
@@ -228,8 +228,8 @@ export class VendedorComisionesTableComponent {
 
   getStatusClass(status: string): string {
     switch (status) {
-      case 'APROBADA': return 'warning';
-      case 'PENDIENTE': return 'orange';
+      case 'APROBADA': return 'orange';
+      case 'PENDIENTE': return 'warning';
       case 'RECHAZADA': return 'danger';
       case 'PAGADA': return 'success';
       default: return '';

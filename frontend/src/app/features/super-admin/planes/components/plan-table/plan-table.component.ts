@@ -198,8 +198,8 @@ import { Plan } from '../../services/plan.service';
     }
     .badge-status-premium.activo { background: var(--status-success-bg); color: var(--status-success-text); }
     .badge-status-premium.inactivo { background: var(--status-danger-bg); color: var(--status-danger-text); }
-    .badge-status-premium.visible { background: var(--status-info-bg); color: var(--status-info-text); }
-    .badge-status-premium.oculto { background: var(--status-neutral-bg); color: var(--status-neutral-text); }
+    .badge-status-premium.visible { background: var(--status-success-bg); color: var(--status-success-text); }
+    .badge-status-premium.oculto { background: var(--status-danger-bg); color: var(--status-danger-text); }
 
     .btn-action-trigger {
       background: transparent; border: none;

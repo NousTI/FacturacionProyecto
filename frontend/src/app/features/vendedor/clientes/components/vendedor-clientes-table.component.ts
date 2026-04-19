@@ -93,14 +93,13 @@ import { EmpresaPaginacionComponent, PaginationState } from '../../../super-admi
             No se encontraron usuarios para mostrar.
           </div>
         </div>
-      </div>
 
-      <!-- PAGINACIÓN -->
-      <app-empresa-paginacion
-        [pagination]="pagination"
-        (pageChange)="pageChange.emit($event)"
-        (pageSizeChange)="pageSizeChange.emit($event)"
-      ></app-empresa-paginacion>
+        <app-empresa-paginacion
+          [pagination]="pagination"
+          (pageChange)="pageChange.emit($event)"
+          (pageSizeChange)="pageSizeChange.emit($event)"
+        ></app-empresa-paginacion>
+      </div>
     </section>
   `,
   styles: [`
@@ -111,7 +110,7 @@ import { EmpresaPaginacionComponent, PaginationState } from '../../../super-admi
       width: 100%;
       min-height: 0;
     }
-    .module-table { 
+    .module-table {
       flex: 1;
       display: flex;
       flex-direction: column;
@@ -123,6 +122,7 @@ import { EmpresaPaginacionComponent, PaginationState } from '../../../super-admi
       border: 1px solid var(--border-color, #f1f5f9);
       display: flex;
       flex-direction: column;
+      flex: 1;
       min-height: 0;
       overflow: hidden;
     }

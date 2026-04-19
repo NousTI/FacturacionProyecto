@@ -70,22 +70,40 @@ import { EmpresaPaginacionComponent, PaginationState } from '../../../super-admi
             </tbody>
           </table>
         </div>
+
+        <app-empresa-paginacion
+          [pagination]="pagination"
+          (pageChange)="pageChange.emit($event)"
+          (pageSizeChange)="pageSizeChange.emit($event)"
+        ></app-empresa-paginacion>
       </div>
-      <app-empresa-paginacion
-        [pagination]="pagination"
-        (pageChange)="pageChange.emit($event)"
-        (pageSizeChange)="pageSizeChange.emit($event)"
-      ></app-empresa-paginacion>
     </section>
   `,
   styles: [`
-    :host { display: block; width: 100%; }
-    .table-container {
-      background: var(--bg-main); border-radius: 20px;
-      border: 1px solid var(--border-color); overflow: hidden;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+    :host {
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      min-height: 0;
+      width: 100%;
     }
-    .table-responsive-premium { overflow-x: auto; }
+    .module-table {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+    }
+    .table-container {
+      background: var(--bg-main);
+      border-radius: 20px;
+      border: 1px solid var(--border-color);
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      min-height: 0;
+      overflow: hidden;
+    }
+    .table-responsive-premium { flex: 1; overflow-x: auto; overflow-y: auto; position: relative; }
     .table thead th {
       background: var(--bg-main); padding: 1rem 1.5rem;
       font-size: 0.75rem; font-weight: 800;

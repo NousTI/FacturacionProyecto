@@ -149,6 +149,8 @@ Chart.register(...registerables);
     .stat-badge.indigo  { background: transparent; color: var(--status-info); border: none; }
     .danger .stat-icon  { background: var(--status-danger-bg); color: var(--status-danger); }
     .stat-badge.danger  { background: transparent; color: var(--status-danger); border: none; }
+    .orange .stat-icon  { background: var(--status-orange-bg); color: var(--status-orange); }
+    .stat-badge.orange  { background: transparent; color: var(--status-orange); border: none; }
 
     /* Chart panel */
     .chart-panel {
