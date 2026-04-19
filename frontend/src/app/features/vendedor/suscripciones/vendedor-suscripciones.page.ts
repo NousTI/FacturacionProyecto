@@ -7,6 +7,7 @@ import { Subject, takeUntil } from 'rxjs';
 import { VendedorSuscripcionStatsComponent } from './components/vendedor-suscripcion-stats.component';
 import { VendedorSuscripcionActionsComponent } from './components/vendedor-suscripcion-actions.component';
 import { VendedorSuscripcionTableComponent } from './components/table/vendedor-suscripcion-table.component';
+import { PaginationState } from '../../super-admin/empresas/components/empresa-paginacion/empresa-paginacion.component';
 import { VendedorHistoryModalComponent } from './components/history-modal/vendedor-history-modal.component';
 
 import { ToastComponent } from '../../../shared/components/toast/toast.component';
@@ -48,7 +49,10 @@ import { UiService } from '../../../shared/services/ui.service';
 
       <!-- TABLE -->
       <app-vendedor-suscripcion-table
-        [suscripciones]="filteredSuscripciones"
+        [suscripciones]="paginatedSuscripciones"
+        [pagination]="pagination"
+        (pageChange)="onPageChange($event)"
+        (pageSizeChange)="onPageSizeChange($event)"
       ></app-vendedor-suscripcion-table>
 
       <!-- 5. MODALES -->
@@ -99,6 +103,7 @@ export class VendedorSuscripcionesPage implements OnInit {
   filterPlan = 'ALL';
 
   showGeneralHistoryModal = false;
+  pagination: PaginationState = { currentPage: 1, pageSize: 25, totalItems: 0 };
 
   stats = {
     active: 0,
@@ -176,7 +181,24 @@ export class VendedorSuscripcionesPage implements OnInit {
       filtered = filtered.filter(s => s.plan_id?.toString() === this.filterPlan.toString());
     }
 
+    this.pagination.totalItems = filtered.length;
     return filtered;
+  }
+
+  get paginatedSuscripciones(): Suscripcion[] {
+    const inicio = (this.pagination.currentPage - 1) * this.pagination.pageSize;
+    return this.filteredSuscripciones.slice(inicio, inicio + this.pagination.pageSize);
+  }
+
+  onPageChange(page: number) {
+    this.pagination.currentPage = page;
+    this.cd.detectChanges();
+  }
+
+  onPageSizeChange(pageSize: number) {
+    this.pagination.pageSize = pageSize;
+    this.pagination.currentPage = 1;
+    this.cd.detectChanges();
   }
 
   setFilter(status: string) {

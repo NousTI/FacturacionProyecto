@@ -1,11 +1,12 @@
 import { Component, Input, Output, EventEmitter, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Suscripcion } from '../../services/vendedor-suscripcion.service';
+import { EmpresaPaginacionComponent, PaginationState } from '../../../../../super-admin/empresas/components/empresa-paginacion/empresa-paginacion.component';
 
 @Component({
   selector: 'app-vendedor-suscripcion-table',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, EmpresaPaginacionComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <section class="module-table">
@@ -114,6 +115,11 @@ import { Suscripcion } from '../../services/vendedor-suscripcion.service';
           </div>
         </div>
       </div>
+      <app-empresa-paginacion
+        [pagination]="pagination"
+        (pageChange)="pageChange.emit($event)"
+        (pageSizeChange)="pageSizeChange.emit($event)"
+      ></app-empresa-paginacion>
     </section>
   `,
   styles: [`
@@ -240,6 +246,9 @@ import { Suscripcion } from '../../services/vendedor-suscripcion.service';
 })
 export class VendedorSuscripcionTableComponent {
   @Input() suscripciones: Suscripcion[] = [];
+  @Input() pagination: PaginationState = { currentPage: 1, pageSize: 25, totalItems: 0 };
+  @Output() pageChange = new EventEmitter<number>();
+  @Output() pageSizeChange = new EventEmitter<number>();
 
 
 

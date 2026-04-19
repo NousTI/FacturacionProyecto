@@ -1,11 +1,12 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { SolicitudRenovacion } from '../../../../domain/models/renovacion.model';
+import { EmpresaPaginacionComponent, PaginationState } from '../../../../super-admin/empresas/components/empresa-paginacion/empresa-paginacion.component';
 
 @Component({
   selector: 'app-renovaciones-table',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, EmpresaPaginacionComponent],
   template: `
     <section class="module-table">
       <div class="table-container">
@@ -70,6 +71,11 @@ import { SolicitudRenovacion } from '../../../../domain/models/renovacion.model'
           </table>
         </div>
       </div>
+      <app-empresa-paginacion
+        [pagination]="pagination"
+        (pageChange)="pageChange.emit($event)"
+        (pageSizeChange)="pageSizeChange.emit($event)"
+      ></app-empresa-paginacion>
     </section>
   `,
   styles: [`
@@ -124,7 +130,10 @@ import { SolicitudRenovacion } from '../../../../domain/models/renovacion.model'
 export class RenovacionesTableComponent {
   @Input() solicitudes: SolicitudRenovacion[] = [];
   @Input() highlightedId: string | null = null;
+  @Input() pagination: PaginationState = { currentPage: 1, pageSize: 25, totalItems: 0 };
   @Output() onVerDetalle = new EventEmitter<SolicitudRenovacion>();
+  @Output() pageChange = new EventEmitter<number>();
+  @Output() pageSizeChange = new EventEmitter<number>();
 
   getEstadoClass(estado: string): string {
     switch (estado) {

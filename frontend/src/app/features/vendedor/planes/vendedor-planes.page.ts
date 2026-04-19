@@ -4,6 +4,7 @@ import { PlanService, Plan } from '../../super-admin/planes/services/plan.servic
 import { VendedorPlanStatsComponent } from './components/vendedor-plan-stats.component';
 import { VendedorPlanActionsComponent } from './components/plan-actions/vendedor-plan-actions.component';
 import { VendedorPlanTableComponent } from './components/plan-table/vendedor-plan-table.component';
+import { PaginationState } from '../../super-admin/empresas/components/empresa-paginacion/empresa-paginacion.component';
 import { PlanCompaniesModalComponent } from '../../super-admin/planes/components/plan-companies-modal/plan-companies-modal.component';
 import { PlanDetailsModalComponent } from '../../super-admin/planes/components/plan-details-modal/plan-details-modal.component';
 import { UiService } from '../../../shared/services/ui.service';
@@ -45,9 +46,12 @@ import { map } from 'rxjs/operators';
       <!-- 3. TABLE -->
       <div class="page-content-wrapper">
         <app-vendedor-plan-table
-          [planes]="filteredPlanes"
+          [planes]="paginatedPlanes"
+          [pagination]="pagination"
           (onViewCompanies)="viewCompanies($event)"
           (onViewDetails)="viewDetails($event)"
+          (pageChange)="onPageChange($event)"
+          (pageSizeChange)="onPageSizeChange($event)"
         ></app-vendedor-plan-table>
       </div>
 
@@ -115,6 +119,7 @@ export class VendedorPlanesPage implements OnInit {
   selectedPlanCompanies: any[] = [];
 
   companiesCache: Map<string, any[]> = new Map();
+  pagination: PaginationState = { currentPage: 1, pageSize: 25, totalItems: 0 };
 
   constructor(
     private planService: PlanService,
@@ -185,6 +190,24 @@ export class VendedorPlanesPage implements OnInit {
     }
 
     this.filteredPlanes = temp;
+    this.pagination.totalItems = temp.length;
+    this.pagination.currentPage = 1;
+    this.cdr.detectChanges();
+  }
+
+  get paginatedPlanes(): Plan[] {
+    const inicio = (this.pagination.currentPage - 1) * this.pagination.pageSize;
+    return this.filteredPlanes.slice(inicio, inicio + this.pagination.pageSize);
+  }
+
+  onPageChange(page: number) {
+    this.pagination.currentPage = page;
+    this.cdr.detectChanges();
+  }
+
+  onPageSizeChange(pageSize: number) {
+    this.pagination.pageSize = pageSize;
+    this.pagination.currentPage = 1;
     this.cdr.detectChanges();
   }
 

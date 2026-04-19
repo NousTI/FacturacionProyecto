@@ -1,10 +1,11 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { EmpresaPaginacionComponent, PaginationState } from '../../../../../super-admin/empresas/components/empresa-paginacion/empresa-paginacion.component';
 
 @Component({
   selector: 'app-vendedor-comisiones-table',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, EmpresaPaginacionComponent],
   template: `
     <section class="module-table">
       <div class="table-container">
@@ -94,6 +95,11 @@ import { CommonModule } from '@angular/common';
           </table>
         </div>
       </div>
+      <app-empresa-paginacion
+        [pagination]="pagination"
+        (pageChange)="pageChange.emit($event)"
+        (pageSizeChange)="pageSizeChange.emit($event)"
+      ></app-empresa-paginacion>
     </section>
   `,
   styles: [`
@@ -215,7 +221,10 @@ import { CommonModule } from '@angular/common';
 })
 export class VendedorComisionesTableComponent {
   @Input() comisiones: any[] = [];
+  @Input() pagination: PaginationState = { currentPage: 1, pageSize: 25, totalItems: 0 };
   @Output() onAction = new EventEmitter<{ type: string, comision: any }>();
+  @Output() pageChange = new EventEmitter<number>();
+  @Output() pageSizeChange = new EventEmitter<number>();
 
   getStatusClass(status: string): string {
     switch (status) {

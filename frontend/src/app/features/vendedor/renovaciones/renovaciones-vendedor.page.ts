@@ -13,6 +13,7 @@ import { finalize, Subject, takeUntil } from 'rxjs';
 import { RenovacionesStatsComponent } from './components/renovaciones-stats.component';
 import { RenovacionesActionsComponent } from './components/renovaciones-actions.component';
 import { RenovacionesTableComponent } from './components/renovaciones-table.component';
+import { PaginationState } from '../../super-admin/empresas/components/empresa-paginacion/empresa-paginacion.component';
 import { RenovacionCreateModalComponent } from './components/modals/renovacion-create-modal.component';
 import { RenovacionDetailModalComponent } from './components/modals/renovacion-detail-modal.component';
 
@@ -48,9 +49,12 @@ import { RenovacionDetailModalComponent } from './components/modals/renovacion-d
 
       <!-- 3. Table -->
       <app-renovaciones-table
-        [solicitudes]="filteredSolicitudes"
+        [solicitudes]="paginatedSolicitudes"
         [highlightedId]="highlightedId"
+        [pagination]="pagination"
         (onVerDetalle)="abrirDetalle($event)"
+        (pageChange)="onPageChange($event)"
+        (pageSizeChange)="onPageSizeChange($event)"
       ></app-renovaciones-table>
 
       <!-- 4. Modals -->
@@ -114,6 +118,7 @@ export class RenovacionesVendedorPage implements OnInit, OnDestroy {
   showCreateModal = false;
   showDetailModal = false;
   canCreate: boolean = false;
+  pagination: PaginationState = { currentPage: 1, pageSize: 25, totalItems: 0 };
   
   private lastOpenedId: string | null = null;
   private destroy$ = new Subject<void>();
@@ -179,6 +184,23 @@ export class RenovacionesVendedorPage implements OnInit, OnDestroy {
       accepted: this.solicitudes.filter(s => s.estado === 'ACEPTADA').length,
       rejected: this.solicitudes.filter(s => s.estado === 'RECHAZADA').length
     };
+  }
+
+  get paginatedSolicitudes(): SolicitudRenovacion[] {
+    const inicio = (this.pagination.currentPage - 1) * this.pagination.pageSize;
+    this.pagination.totalItems = this.filteredSolicitudes.length;
+    return this.filteredSolicitudes.slice(inicio, inicio + this.pagination.pageSize);
+  }
+
+  onPageChange(page: number) {
+    this.pagination.currentPage = page;
+    this.cd.detectChanges();
+  }
+
+  onPageSizeChange(pageSize: number) {
+    this.pagination.pageSize = pageSize;
+    this.pagination.currentPage = 1;
+    this.cd.detectChanges();
   }
 
   get filteredSolicitudes() {

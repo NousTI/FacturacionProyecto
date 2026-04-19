@@ -7,6 +7,7 @@ import { VendedorEmpresaService } from '../empresas/services/vendedor-empresa.se
 import { RolesService, Rol } from '../../../shared/services/roles.service';
 // Components
 import { VendedorClientesTableComponent } from './components/vendedor-clientes-table.component';
+import { PaginationState } from '../../super-admin/empresas/components/empresa-paginacion/empresa-paginacion.component';
 import { VendedorClientesActionsComponent } from './components/vendedor-clientes-actions.component';
 import { ClientesStatsComponent } from './components/clientes-stats.component';
 import { ClienteDetailsModalComponent } from './components/cliente-details-modal.component';
@@ -58,8 +59,11 @@ interface ClienteStats {
 
       <!-- TABLE -->
       <app-vendedor-clientes-table
-        [clientes]="filteredClientes"
+        [clientes]="paginatedClientes"
+        [pagination]="pagination"
         (onAction)="handleAction($event)"
+        (pageChange)="onPageChange($event)"
+        (pageSizeChange)="onPageSizeChange($event)"
       ></app-vendedor-clientes-table>
 
       <!-- MODAL DETAILS -->
@@ -116,6 +120,7 @@ export class VendedorClientesPage implements OnInit, OnDestroy {
   selectedCliente: any = null;
 
   canCreate = false;
+  pagination: PaginationState = { currentPage: 1, pageSize: 25, totalItems: 0 };
 
   private destroy$ = new Subject<void>();
 
@@ -177,7 +182,7 @@ export class VendedorClientesPage implements OnInit, OnDestroy {
   }
 
   get filteredClientes() {
-    return this.clientes.filter(c => {
+    const filtered = this.clientes.filter(c => {
       const matchSearch = !this.searchQuery ||
         c.nombres.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
         c.apellidos.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
@@ -191,6 +196,24 @@ export class VendedorClientesPage implements OnInit, OnDestroy {
 
       return matchSearch && matchEstado && matchEmpresa;
     });
+    this.pagination.totalItems = filtered.length;
+    return filtered;
+  }
+
+  get paginatedClientes(): ClienteUsuario[] {
+    const inicio = (this.pagination.currentPage - 1) * this.pagination.pageSize;
+    return this.filteredClientes.slice(inicio, inicio + this.pagination.pageSize);
+  }
+
+  onPageChange(page: number) {
+    this.pagination.currentPage = page;
+    this.cd.detectChanges();
+  }
+
+  onPageSizeChange(pageSize: number) {
+    this.pagination.pageSize = pageSize;
+    this.pagination.currentPage = 1;
+    this.cd.detectChanges();
   }
 
   openCreateModal() {

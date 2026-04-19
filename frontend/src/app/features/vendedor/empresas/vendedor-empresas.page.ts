@@ -4,6 +4,7 @@ import { Subject, takeUntil } from 'rxjs';
 import { FormsModule } from '@angular/forms';
 import { VendedorEmpresaService, VendedorEmpresaStats } from './services/vendedor-empresa.service';
 import { VendedorEmpresaTableComponent } from './components/empresa-table/vendedor-empresa-table.component';
+import { PaginationState } from '../../super-admin/empresas/components/empresa-paginacion/empresa-paginacion.component';
 import { VendedorCreateEmpresaModalComponent } from './components/create-empresa-modal/vendedor-create-empresa-modal.component';
 import { VendedorEmpresaDetailsModalComponent } from './components/details-modal/vendedor-empresa-details-modal.component';
 import { VendedorChangePlanModalComponent } from './components/change-plan-modal/vendedor-change-plan-modal.component';
@@ -49,9 +50,12 @@ import { PermissionsService } from '../../../core/auth/permissions.service';
 
       <!-- TABLE -->
       <app-vendedor-empresa-table
-        [empresas]="filteredEmpresas"
+        [empresas]="paginatedEmpresas"
         [canAccess]="canAccess"
+        [pagination]="pagination"
         (onAction)="handleAction($event)"
+        (pageChange)="onPageChange($event)"
+        (pageSizeChange)="onPageSizeChange($event)"
       ></app-vendedor-empresa-table>
       
       <!-- MODAL CREATE -->
@@ -121,6 +125,8 @@ export class VendedorEmpresasPage implements OnInit, OnDestroy {
     canAccess = false;
     canChangePlan = false;
 
+    pagination: PaginationState = { currentPage: 1, pageSize: 25, totalItems: 0 };
+
     private destroy$ = new Subject<void>();
 
     constructor(
@@ -169,7 +175,7 @@ export class VendedorEmpresasPage implements OnInit, OnDestroy {
     }
 
     get filteredEmpresas() {
-        return this.empresas.filter(e => {
+        const filtered = this.empresas.filter(e => {
             const matchSearch = !this.searchQuery ||
                 e.razonSocial.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
                 (e.ruc && e.ruc.includes(this.searchQuery));
@@ -178,11 +184,29 @@ export class VendedorEmpresasPage implements OnInit, OnDestroy {
                 (this.filterEstado === 'ACTIVO' && e.activo) ||
                 (this.filterEstado === 'INACTIVO' && !e.activo);
 
-            const matchPlan = this.filterPlan === 'ALL' || 
+            const matchPlan = this.filterPlan === 'ALL' ||
                 (e.planId?.toString() === this.filterPlan.toString());
 
             return matchSearch && matchEstado && matchPlan;
         });
+        this.pagination.totalItems = filtered.length;
+        return filtered;
+    }
+
+    get paginatedEmpresas(): any[] {
+        const inicio = (this.pagination.currentPage - 1) * this.pagination.pageSize;
+        return this.filteredEmpresas.slice(inicio, inicio + this.pagination.pageSize);
+    }
+
+    onPageChange(page: number) {
+        this.pagination.currentPage = page;
+        this.cd.detectChanges();
+    }
+
+    onPageSizeChange(pageSize: number) {
+        this.pagination.pageSize = pageSize;
+        this.pagination.currentPage = 1;
+        this.cd.detectChanges();
     }
 
     calculateStats(data: any[]) {

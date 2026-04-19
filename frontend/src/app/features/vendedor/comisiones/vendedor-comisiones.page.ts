@@ -6,6 +6,7 @@ import { VendedorComisionesService, Comision, ComisionStats } from './services/v
 import { VendedorComisionesStatsComponent } from './components/stats/vendedor-comisiones-stats.component';
 import { VendedorComisionesActionsComponent } from './components/actions/vendedor-comisiones-actions.component';
 import { VendedorComisionesTableComponent } from './components/table/vendedor-comisiones-table.component';
+import { PaginationState } from '../../super-admin/empresas/components/empresa-paginacion/empresa-paginacion.component';
 import { VendedorComisionesDetailsModalComponent } from './components/details/vendedor-comisiones-details-modal.component';
 import { VendedorComisionesAuditModalComponent } from './components/audit/vendedor-comisiones-audit-modal.component';
 import { UiService } from '../../../shared/services/ui.service';
@@ -48,8 +49,11 @@ import { UiService } from '../../../shared/services/ui.service';
          <!-- Main List View -->
         <ng-container *ngIf="isListView()">
           <app-vendedor-comisiones-table
-            [comisiones]="filteredComisiones"
+            [comisiones]="paginatedComisiones"
+            [pagination]="pagination"
             (onAction)="handleAction($event)"
+            (pageChange)="onPageChange($event)"
+            (pageSizeChange)="onPageSizeChange($event)"
           ></app-vendedor-comisiones-table>
         </ng-container>
       </div>
@@ -109,6 +113,7 @@ export class VendedorComisionesPage implements OnInit {
 
   showDetailsModal = false;
   selectedComision: Comision | null = null;
+  pagination: PaginationState = { currentPage: 1, pageSize: 25, totalItems: 0 };
 
   showAuditModal = false;
   auditLogs: any[] = [];
@@ -161,6 +166,23 @@ export class VendedorComisionesPage implements OnInit {
     return !['RULES', 'AUDIT'].includes(this.currentTab);
   }
 
+  get paginatedComisiones(): Comision[] {
+    const inicio = (this.pagination.currentPage - 1) * this.pagination.pageSize;
+    this.pagination.totalItems = this.filteredComisiones.length;
+    return this.filteredComisiones.slice(inicio, inicio + this.pagination.pageSize);
+  }
+
+  onPageChange(page: number) {
+    this.pagination.currentPage = page;
+    this.cdr.detectChanges();
+  }
+
+  onPageSizeChange(pageSize: number) {
+    this.pagination.pageSize = pageSize;
+    this.pagination.currentPage = 1;
+    this.cdr.detectChanges();
+  }
+
   filterComisiones() {
     let temp = [...this.allComisiones];
 
@@ -184,6 +206,8 @@ export class VendedorComisionesPage implements OnInit {
     }
 
     this.filteredComisiones = temp;
+    this.pagination.currentPage = 1;
+    this.pagination.totalItems = temp.length;
   }
 
   handleAction(event: { type: string, comision: Comision }) {
