@@ -18,7 +18,7 @@ Chart.register(...registerables);
       <div class="row g-4 mb-4">
         
         <!-- KPIs 2x2 -->
-        <div class="col-lg-7 col-xl-8">
+        <div class="col-lg-6">
           <div class="kpi-2x2-grid h-100">
             <div class="kpi-card highlight">
               <span class="label">Total por Cobrar</span>
@@ -47,7 +47,7 @@ Chart.register(...registerables);
         </div>
 
         <!-- Grafico de Anillo -->
-        <div class="col-lg-5 col-xl-4">
+        <div class="col-lg-6">
           <div class="section-card h-100 d-flex flex-column">
             <div class="section-header">
               <h5>Análisis de Cartera</h5>
