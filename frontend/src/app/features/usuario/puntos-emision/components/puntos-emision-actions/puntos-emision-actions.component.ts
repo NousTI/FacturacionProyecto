@@ -150,7 +150,7 @@ import { HasPermissionDirective } from '../../../../../shared/directives/has-per
       transition: all 0.2s;
     }
     .dropdown-item:hover {
-      background-color: var(--primary-color, #161d35) !important;
+      background-color: var(--primary-color, var(--primary-color)) !important;
       color: #ffffff !important;
     }
     .btn-system-action {

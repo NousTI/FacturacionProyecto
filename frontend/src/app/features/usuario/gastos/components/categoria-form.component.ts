@@ -80,7 +80,7 @@ import { ModalFormLayoutComponent } from './modal-form-layout.component';
     .editorial-input {
       width: 100%; padding: 0.85rem 1.25rem; border-radius: 12px; border: 1.5px solid #e2e8f0; font-size: 0.95rem; font-weight: 500; color: #1a1a1a; transition: all 0.2s ease; background: #ffffff;
     }
-    .editorial-input:focus { outline: none; border-color: #161d35; background-color: #ffffff; }
+    .editorial-input:focus { outline: none; border-color: var(--primary-color); background-color: #ffffff; }
     .editorial-input.is-invalid { border-color: #ef4444; }
 
     .invalid-feedback-minimal { font-size: 0.75rem; color: #ef4444; font-weight: 500; margin-top: 0.4rem; }

@@ -142,11 +142,11 @@ import { Plan } from '../../services/plan.service';
     }
     .header-content { display: flex; gap: 1rem; align-items: flex-start; }
     .plan-badge-icon {
-      width: 48px; height: 48px; background: #f1f5f9; color: #161d35;
+      width: 48px; height: 48px; background: #f1f5f9; color: var(--primary-color);
       border-radius: 14px; display: flex; align-items: center; justify-content: center;
       font-size: 1.5rem; flex-shrink: 0;
     }
-    .modal-title-details { font-size: 1.5rem; font-weight: 800; color: #161d35; margin: 0; line-height: 1.2; }
+    .modal-title-details { font-size: 1.5rem; font-weight: 800; color: var(--primary-color); margin: 0; line-height: 1.2; }
     .modal-subtitle-details { font-size: 0.9rem; color: #64748b; margin: 0.25rem 0 0; font-weight: 500; }
     .btn-close-details {
       background: #f8fafc; border: none; width: 32px; height: 32px; border-radius: 50%;
@@ -166,7 +166,7 @@ import { Plan } from '../../services/plan.service';
       display: flex; justify-content: space-between; align-items: center;
       margin-bottom: 2rem; border: 1px solid #f1f5f9;
     }
-    .price-header { display: flex; align-items: baseline; color: #161d35; }
+    .price-header { display: flex; align-items: baseline; color: var(--primary-color); }
     .currency { font-size: 1.2rem; font-weight: 600; margin-right: 2px; }
     .amount { font-size: 2.5rem; font-weight: 800; letter-spacing: -1px; }
     .period { color: #64748b; font-weight: 600; font-size: 0.9rem; margin-left: 4px; }
@@ -194,9 +194,9 @@ import { Plan } from '../../services/plan.service';
       padding: 1rem; text-align: center;
       box-shadow: 0 4px 12px rgba(0,0,0,0.02);
     }
-    .limit-icon { font-size: 1.5rem; color: #161d35; margin-bottom: 0.5rem; }
+    .limit-icon { font-size: 1.5rem; color: var(--primary-color); margin-bottom: 0.5rem; }
     .limit-info { display: flex; flex-direction: column; }
-    .limit-value { font-weight: 800; color: #161d35; font-size: 1.1rem; }
+    .limit-value { font-weight: 800; color: var(--primary-color); font-size: 1.1rem; }
     .limit-label { font-size: 0.7rem; color: #64748b; font-weight: 600; }
 
     /* Features List */
@@ -208,7 +208,7 @@ import { Plan } from '../../services/plan.service';
     }
     .feature-item.included { color: #334155; font-weight: 600; background: #f8fafc; }
     .feature-item i { font-size: 1.1rem; }
-    .feature-item.included i { color: #161d35; }
+    .feature-item.included i { color: var(--primary-color); }
 
     /* Footer */
     .modal-footer-details {
@@ -216,7 +216,7 @@ import { Plan } from '../../services/plan.service';
       display: flex; justify-content: center;
     }
     .btn-close-modal {
-      background: #161d35; color: #ffffff; border: none;
+      background: var(--primary-color); color: #ffffff; border: none;
       padding: 0.75rem 3rem; border-radius: 12px; font-weight: 700;
       font-size: 0.9rem; cursor: pointer; transition: transform 0.2s;
     }

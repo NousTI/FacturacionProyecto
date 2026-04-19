@@ -177,7 +177,7 @@ import { ClientesPaginacionComponent, PaginationState } from './clientes-paginac
       border-radius: 12px;
       display: flex; align-items: center; justify-content: center;
       font-weight: 700; font-size: var(--text-base);
-      background: var(--primary-color, #161d35);
+      background: var(--primary-color, var(--primary-color));
       color: #ffffff;
     }
     

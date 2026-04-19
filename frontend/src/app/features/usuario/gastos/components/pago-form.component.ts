@@ -125,12 +125,12 @@ import { SRI_FORMAS_PAGO } from '../../../../core/constants/sri-iva.constants';
     :host { display: contents; }
 
     .summary-ticket-premium {
-      background: #f8fafc; padding: 1.5rem; border-radius: 20px; border: 1.5px solid #e2e8f0; border-left: 6px solid #161d35;
+      background: #f8fafc; padding: 1.5rem; border-radius: 20px; border: 1.5px solid #e2e8f0; border-left: 6px solid var(--primary-color);
     }
     .editorial-label-muted { font-size: 0.7rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.15em; }
     .summary-title { font-size: 1.15rem; font-weight: 900; color: #1a1a1a; display: block; letter-spacing: -0.01em; }
     .total-label { font-size: 0.65rem; font-weight: 800; color: #64748b; margin-bottom: 0.25rem; }
-    .total-amount { font-size: 1.5rem; font-weight: 900; color: #161d35; letter-spacing: -0.02em; }
+    .total-amount { font-size: 1.5rem; font-weight: 900; color: var(--primary-color); letter-spacing: -0.02em; }
 
     .alert-minimalist {
       background: #f1f5f9; color: #475569; padding: 0.85rem 1rem; border-radius: 12px; font-size: 0.75rem; font-weight: 700; border: 1.5px solid #e2e8f0; text-align: center; letter-spacing: 0.05em;
@@ -146,11 +146,11 @@ import { SRI_FORMAS_PAGO } from '../../../../core/constants/sri-iva.constants';
     .editorial-input {
       width: 100%; padding: 0.85rem 1.25rem; border-radius: 12px; border: 1.5px solid #e2e8f0; font-size: 0.95rem; font-weight: 500; color: #1a1a1a; transition: all 0.2s ease; background: #ffffff;
     }
-    .editorial-input:focus { outline: none; border-color: #161d35; background-color: #ffffff; }
+    .editorial-input:focus { outline: none; border-color: var(--primary-color); background-color: #ffffff; }
     .editorial-input.is-invalid { border-color: #ef4444; }
 
     .input-editorial-group { display: flex; align-items: stretch; border-radius: 12px; overflow: hidden; border: 1.5px solid #e2e8f0; }
-    .input-editorial-group:focus-within { border-color: #161d35; }
+    .input-editorial-group:focus-within { border-color: var(--primary-color); }
     .addon { background: #f8fafc; padding: 0 1rem; display: flex; align-items: center; border-right: 1.5px solid #e2e8f0; color: #64748b; font-weight: 700; }
     .addon-field { border: none !important; border-radius: 0; }
 

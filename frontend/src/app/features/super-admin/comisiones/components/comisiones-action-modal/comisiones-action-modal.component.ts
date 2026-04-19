@@ -115,7 +115,7 @@ import { Comision } from '../../services/comisiones.service';
         border-radius: 12px; font-size: 0.9rem; padding: 0.75rem;
     }
     .form-control:focus, .form-select:focus {
-        border-color: #161d35; box-shadow: 0 0 0 4px rgba(22, 29, 53, 0.05);
+        border-color: var(--primary-color); box-shadow: 0 0 0 4px rgba(22, 29, 53, 0.05);
     }
 
     .modal-actions {

@@ -93,7 +93,7 @@ import { CommonModule } from '@angular/common';
       width: 100%;
       padding: 0.75rem;
       border-radius: 10px;
-      background: #161d35;
+      background: var(--primary-color);
       color: white;
       border: none;
       font-weight: 700;

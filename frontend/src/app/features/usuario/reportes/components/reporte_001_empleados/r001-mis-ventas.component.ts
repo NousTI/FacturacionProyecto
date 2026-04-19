@@ -234,7 +234,7 @@ import { RangoTipo } from '../../reportes.page';
     .btn-nav-premium { width: 34px; height: 34px; border-radius: 10px; border: 1px solid #e2e8f0; background: white; display: flex; align-items: center; justify-content: center; color: #64748b; cursor: pointer; transition: all 0.2s; }
     .btn-nav-premium:hover:not(:disabled) { background: #f8fafc; color: #0f172a; border-color: #cbd5e1; }
     .btn-nav-premium:disabled { opacity: 0.4; cursor: not-allowed; }
-    .page-indicator-premium { min-width: 34px; height: 34px; border-radius: 10px; display: flex; align-items: center; justify-content: center; background: #161d35; color: white; font-weight: 700; font-size: 0.85rem; padding: 0 0.6rem; }
+    .page-indicator-premium { min-width: 34px; height: 34px; border-radius: 10px; display: flex; align-items: center; justify-content: center; background: var(--primary-color); color: white; font-weight: 700; font-size: 0.85rem; padding: 0 0.6rem; }
 
     /* Tabla */
     .modern-table thead th {

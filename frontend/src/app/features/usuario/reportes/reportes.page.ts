@@ -146,8 +146,8 @@ type Tab = 'resumen' | 'ventas' | 'cartera' | 'iva' | 'mis_ventas';
       <p class="mt-3 text-muted fw-bold">Consolidando métricas financieras...</p>
     </div>
 
-    <!-- CONTENIDO -->
-    <ng-container *ngIf="!loading">
+    <!-- CONTENIDO CON SCROLL -->
+    <div class="reports-scroll-viewport" *ngIf="!loading">
       <app-r028-resumen-ejecutivo
         *ngIf="tabActivo === 'resumen' && resumenData"
         [data]="resumenData"
@@ -155,30 +155,30 @@ type Tab = 'resumen' | 'ventas' | 'cartera' | 'iva' | 'mis_ventas';
         [fechaFin]="fechaFin"
         [rangoTipo]="rangoTipo">
       </app-r028-resumen-ejecutivo>
-
+  
       <app-r001-ventas-generales
         *ngIf="tabActivo === 'ventas' && r001Data"
         [data]="r001Data"
         [rangoTipo]="rangoTipo">
       </app-r001-ventas-generales>
-
+  
       <app-r008-cuentas-por-cobrar
         *ngIf="tabActivo === 'cartera' && carteraData"
         [data]="carteraData">
       </app-r008-cuentas-por-cobrar>
-
+  
       <app-r027-iva
         *ngIf="tabActivo === 'iva' && ivaR027Data"
         [data]="ivaR027Data"
         (manualesChange)="ivaR027Manuales = $event">
       </app-r027-iva>
-
+  
       <app-r001-mis-ventas
         *ngIf="tabActivo === 'mis_ventas' && misVentasData"
         [data]="misVentasData"
         [rangoTipo]="rangoTipo">
       </app-r001-mis-ventas>
-    </ng-container>
+    </div>
 
   </ng-container>
 
@@ -202,7 +202,8 @@ type Tab = 'resumen' | 'ventas' | 'cartera' | 'iva' | 'mis_ventas';
 </div>
   `,
   styles: [`
-    .reportes-page-container { padding: 0; background: transparent; min-height: 100vh; }
+    :host { display: flex; flex-direction: column; flex: 1; min-height: 0; height: 100%; width: 100%; }
+    .reportes-page-container { flex: 1; display: flex; flex-direction: column; height: 100%; overflow: hidden; background: transparent; padding: 0.5rem 0 0 0; }
 
     /* BARRA PRINCIPAL */
     .header-actions-bar {
@@ -210,13 +211,14 @@ type Tab = 'resumen' | 'ventas' | 'cartera' | 'iva' | 'mis_ventas';
       justify-content: space-between;
       align-items: center;
       background: white;
-      padding: 0.5rem 1rem;
+      padding: 0.65rem 1.25rem;
       border-radius: 20px;
       border: 1px solid #e2e8f0;
-      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.03);
       gap: 1.5rem;
       flex-wrap: nowrap;
-      overflow: hidden;
+      flex-shrink: 0;
+      margin-bottom: 24px !important;
     }
 
     /* TABS */
@@ -273,6 +275,23 @@ type Tab = 'resumen' | 'ventas' | 'cartera' | 'iva' | 'mis_ventas';
       border-radius: 30px; display: flex; align-items: center; justify-content: center;
       box-shadow: 0 15px 35px -10px rgba(225,29,72,0.15);
     }
+
+    /* VIEWPORT DE SCROLL */
+    .reports-scroll-viewport {
+      flex: 1;
+      overflow-y: auto;
+      overflow-x: hidden;
+      padding-right: 4px; /* Evitar layout shift */
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    /* Scrollbar minimalista */
+    .reports-scroll-viewport::-webkit-scrollbar { width: 6px; }
+    .reports-scroll-viewport::-webkit-scrollbar-track { background: transparent; }
+    .reports-scroll-viewport::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
+    .reports-scroll-viewport::-webkit-scrollbar-thumb:hover { background: #cbd5e1; }
   `]
 })
 export class ReportesPage implements OnInit {

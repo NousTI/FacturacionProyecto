@@ -68,7 +68,7 @@ import { RouterModule } from '@angular/router';
       border-bottom: 1px solid #f8fafc;
       transition: background 0.15s;
     }
-    .quick-link:hover { background: #f8fafc; color: #161d35; }
+    .quick-link:hover { background: #f8fafc; color: var(--primary-color); }
     .quick-link:last-child { border-bottom: none; }
     .ql-icon {
       width: 34px; height: 34px;

@@ -155,7 +155,7 @@ import { Comision } from '../../services/comisiones.service';
       box-shadow: 0 40px 80px -20px rgba(22, 29, 53, 0.25);
     }
     .modal-header-final { padding: 1.5rem 2.5rem; display: flex; justify-content: space-between; align-items: center; }
-    .modal-title-final { font-size: 1.25rem; font-weight: 800; color: #161d35; margin: 0; }
+    .modal-title-final { font-size: 1.25rem; font-weight: 800; color: var(--primary-color); margin: 0; }
     .btn-close-final { background: none; border: none; font-size: 1.5rem; color: #94a3b8; cursor: pointer; }
     
     .avatar-details-premium {
@@ -191,7 +191,7 @@ import { Comision } from '../../services/comisiones.service';
       border: 1px solid #f1f5f9;
     }
 
-    .text-corporate { color: #161d35 !important; }
+    .text-corporate { color: var(--primary-color) !important; }
     .font-mono { font-family: 'DM Mono', monospace; letter-spacing: -0.5px; }
     
     .modal-footer-final {

@@ -150,7 +150,7 @@ import { environment } from '../../../../environments/environment';
     }
     .btn-cancel:hover { background: #e2e8f0; }
     .btn-confirm {
-      background: #161d35; color: white;
+      background: var(--primary-color); color: white;
     }
     .btn-confirm.danger {
       background: #dc2626;

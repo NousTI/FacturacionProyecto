@@ -179,7 +179,7 @@ type RangoTipo = 'mes_actual' | 'mes_anterior' | 'anio_actual' | 'personalizado'
       align-items: flex-start;
       gap: 1.5rem;
     }
-    .section-title { font-size: 1.1rem; font-weight: 700; color: #161d35; margin: 0; }
+    .section-title { font-size: 1.1rem; font-weight: 700; color: var(--primary-color); margin: 0; }
     .section-sub { color: #64748b; font-size: 0.85rem; margin: 0.25rem 0 0; }
     .btn-generar { padding: 0.5rem 1rem; background: #3b82f6; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; }
     .btn-pdf { padding: 0.5rem 1rem; background: #10b981; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; }
@@ -241,11 +241,11 @@ type RangoTipo = 'mes_actual' | 'mes_anterior' | 'anio_actual' | 'personalizado'
     .estado-pagada { background: #dcfce7; color: #166534; }
     .pagination-premium-container { background: #ffffff; border-top: 1px solid #e2e8f0; }
     .form-select-premium-sm { padding: 0.4rem 2rem 0.4rem 1rem; border-radius: 10px; border: 1px solid #e2e8f0; background-color: #f8fafc; font-size: 0.85rem; font-weight: 600; color: #475569; cursor: pointer; transition: all 0.2s; }
-    .form-select-premium-sm:focus { border-color: #161d35; outline: none; }
+    .form-select-premium-sm:focus { border-color: var(--primary-color); outline: none; }
     .btn-nav-premium { width: 38px; height: 38px; border-radius: 10px; border: 1px solid #e2e8f0; background: white; display: flex; align-items: center; justify-content: center; color: #64748b; transition: all 0.2s; cursor: pointer; }
     .btn-nav-premium:hover:not(:disabled) { background: #f8fafc; color: #0f172a; border-color: #cbd5e1; }
     .btn-nav-premium:disabled { opacity: 0.4; cursor: not-allowed; }
-    .page-indicator-premium { min-width: 38px; height: 38px; border-radius: 10px; display: flex; align-items: center; justify-content: center; background: #161d35; color: white; font-weight: 700; font-size: 0.9rem; padding: 0 0.75rem; }
+    .page-indicator-premium { min-width: 38px; height: 38px; border-radius: 10px; display: flex; align-items: center; justify-content: center; background: var(--primary-color); color: white; font-weight: 700; font-size: 0.9rem; padding: 0 0.75rem; }
     .fw-600 { font-weight: 600; }
     .fw-500 { font-weight: 500; }
   `]

@@ -179,7 +179,7 @@ import { SriConfigService } from '../certificado-sri/services/sri-config.service
     .page-title {
       font-size: 1.75rem;
       font-weight: 900;
-      color: #161d35;
+      color: var(--primary-color);
       margin-bottom: 0.25rem;
     }
     .page-subtitle {
@@ -201,7 +201,7 @@ import { SriConfigService } from '../certificado-sri/services/sri-config.service
     }
     .btn-refresh-premium:hover {
       background: #f8fafc;
-      color: #161d35;
+      color: var(--primary-color);
       border-color: #cbd5e1;
     }
     .spinning i {
@@ -275,7 +275,7 @@ import { SriConfigService } from '../certificado-sri/services/sri-config.service
       margin-bottom: 2rem;
     }
     .sri-block-btn {
-      background: #161d35;
+      background: var(--primary-color);
       color: white;
       border: none;
       padding: 0.9rem 2rem;

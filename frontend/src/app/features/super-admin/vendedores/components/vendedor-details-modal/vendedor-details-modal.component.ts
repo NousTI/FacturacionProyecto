@@ -173,7 +173,7 @@ import { GET_IDENTIFICACION_LABEL } from '../../../../../core/constants/sri-iva.
     }
     .vendedor-avatar-lg {
       width: 64px; height: 64px;
-      background: #161d35; color: white;
+      background: var(--primary-color); color: white;
       border-radius: 18px; display: flex;
       align-items: center; justify-content: center;
       font-weight: 800; font-size: 1.5rem;
@@ -240,7 +240,7 @@ import { GET_IDENTIFICACION_LABEL } from '../../../../../core/constants/sri-iva.
         border-radius: 16px;
         transition: all 0.2s;
     }
-    .company-mini-card:hover { border-color: #161d35; background: #f8fafc; }
+    .company-mini-card:hover { border-color: var(--primary-color); background: #f8fafc; }
     
     .company-icon {
         width: 40px; height: 40px;
@@ -260,7 +260,7 @@ import { GET_IDENTIFICACION_LABEL } from '../../../../../core/constants/sri-iva.
     .badge-mini.inactive { background: #fee2e2; color: #b91c1c; }
 
     .btn-primary-premium {
-      background: #161d35; color: white; border: none; padding: 0.85rem 2rem;
+      background: var(--primary-color); color: white; border: none; padding: 0.85rem 2rem;
       border-radius: 14px; font-weight: 700; transition: all 0.2s;
     }
     .btn-close-premium {

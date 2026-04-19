@@ -170,9 +170,9 @@ import { CONFIGURACION_PERMISSIONS } from '../../../../../constants/permission-c
     }
 
     .btn-edit-lux:hover {
-      background: #161d35;
+      background: var(--primary-color);
       color: white;
-      border-color: #161d35;
+      border-color: var(--primary-color);
       transform: translateY(-2px);
     }
 

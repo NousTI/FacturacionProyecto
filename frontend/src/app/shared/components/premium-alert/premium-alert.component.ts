@@ -54,7 +54,7 @@ import { CommonModule } from '@angular/common';
     .icon-premium-container.success { background: #ecfdf5; color: #10b981; }
     .icon-premium-container.warning { background: #fffbeb; color: #f59e0b; }
     .icon-premium-container.info { background: #eff6ff; color: #3b82f6; }
-    .icon-premium-container.primary { background: #f8fafc; color: #161d35; }
+    .icon-premium-container.primary { background: #f8fafc; color: var(--primary-color); }
 
     .premium-title {
       font-size: 1.1rem;

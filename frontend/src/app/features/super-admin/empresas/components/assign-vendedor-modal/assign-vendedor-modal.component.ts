@@ -101,7 +101,7 @@ import { EmpresaService } from '../../services/empresa.service';
       box-shadow: 0 40px 80px -20px rgba(22, 29, 53, 0.25);
     }
     .modal-header-final { padding: 1.5rem 2rem; display: flex; justify-content: space-between; align-items: center; }
-    .modal-title-final { font-size: 1.15rem; font-weight: 800; color: #161d35; margin: 0; }
+    .modal-title-final { font-size: 1.15rem; font-weight: 800; color: var(--primary-color); margin: 0; }
     .btn-close-final { background: none; border: none; font-size: 1.5rem; color: #94a3b8; cursor: pointer; }
     
     .modal-body-final { padding: 0 2rem 2rem; flex: 1; }
@@ -117,9 +117,9 @@ import { EmpresaService } from '../../services/empresa.service';
       padding: 1rem 1.5rem; border: 1px solid #e2e8f0; border-radius: 18px;
       display: flex; align-items: center; gap: 1.25rem; cursor: pointer; transition: all 0.2s;
     }
-    .selection-card-premium:hover { border-color: #161d35; background: #fbfcfe; }
+    .selection-card-premium:hover { border-color: var(--primary-color); background: #fbfcfe; }
     .selection-card-premium.selected {
-      border-color: #161d35; background: rgba(22, 29, 53, 0.02);
+      border-color: var(--primary-color); background: rgba(22, 29, 53, 0.02);
       box-shadow: 0 4px 15px rgba(22, 29, 53, 0.05);
     }
     .selection-card-premium.disabled {
@@ -156,7 +156,7 @@ import { EmpresaService } from '../../services/empresa.service';
     .selection-desc { font-size: 0.75rem; color: #64748b; margin-top: 1px; }
     
     .selection-check { font-size: 1.25rem; color: #cbd5e1; }
-    .selected .selection-check { color: #161d35; }
+    .selected .selection-check { color: var(--primary-color); }
     
     .modal-footer-final {
       padding: 1.5rem 2rem; background: #f8fafc;
@@ -164,7 +164,7 @@ import { EmpresaService } from '../../services/empresa.service';
       border-top: 1px solid #f1f5f9;
     }
     .btn-submit-final {
-      background: #161d35; color: #ffffff; border: none;
+      background: var(--primary-color); color: #ffffff; border: none;
       padding: 0.75rem 2.5rem; border-radius: 12px; font-weight: 700;
       transition: all 0.2s;
     }

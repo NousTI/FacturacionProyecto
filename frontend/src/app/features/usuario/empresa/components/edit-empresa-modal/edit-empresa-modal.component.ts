@@ -223,14 +223,14 @@ import { SRI_TIPOS_PERSONA, SRI_TIPOS_CONTRIBUYENTE } from '../../../../../core/
       transition: all 0.2s;
     }
     .input-lux:focus, .select-lux:focus {
-      border-color: #161d35; outline: none; box-shadow: 0 0 0 4px rgba(22, 29, 53, 0.05);
+      border-color: var(--primary-color); outline: none; box-shadow: 0 0 0 4px rgba(22, 29, 53, 0.05);
     }
     .modal-footer-lux {
       padding: 1.5rem 2.5rem; background: #f8fafc; display: flex; justify-content: flex-end; gap: 1rem;
       border-top: 1px solid #f1f5f9;
     }
     .btn-submit-lux {
-      background: var(--secondary-color, #161d35); color: #ffffff; border: none; padding: 0.85rem 2.5rem; border-radius: 14px;
+      background: var(--secondary-color, var(--primary-color)); color: #ffffff; border: none; padding: 0.85rem 2.5rem; border-radius: 14px;
       font-weight: 700; transition: all 0.2s;
     }
     .btn-submit-lux:hover:not(:disabled) { background: var(--neutral-700); transform: translateY(-1px); }
@@ -242,7 +242,7 @@ import { SRI_TIPOS_PERSONA, SRI_TIPOS_CONTRIBUYENTE } from '../../../../../core/
     }
     .btn-cancel-lux:hover { background: #f8fafc; }
 
-    .switch-lux .form-check-input:checked { background-color: #161d35; border-color: #161d35; }
+    .switch-lux .form-check-input:checked { background-color: var(--primary-color); border-color: var(--primary-color); }
 
     .is-invalid-lux {
       border-color: #ef4444 !important;

@@ -197,7 +197,7 @@ import { Observable } from 'rxjs';
     .modal-title-final {
       font-size: 1.25rem;
       font-weight: 800;
-      color: #161d35;
+      color: var(--primary-color);
       margin: 0;
     }
 
@@ -212,7 +212,7 @@ import { Observable } from 'rxjs';
     }
 
     .btn-close-final:hover:not(:disabled) {
-      color: #161d35;
+      color: var(--primary-color);
       transform: rotate(90deg);
     }
 
@@ -302,7 +302,7 @@ import { Observable } from 'rxjs';
     }
 
     .input-final:focus {
-      border-color: #161d35;
+      border-color: var(--primary-color);
       outline: none;
       box-shadow: 0 0 0 4px rgba(22, 29, 53, 0.05);
     }
@@ -334,8 +334,8 @@ import { Observable } from 'rxjs';
     }
 
     select.input-final option:checked {
-      background: linear-gradient(#161d35, #161d35);
-      background-color: #161d35 !important;
+      background: linear-gradient(var(--primary-color), var(--primary-color));
+      background-color: var(--primary-color) !important;
       color: #ffffff !important;
     }
 
@@ -382,7 +382,7 @@ import { Observable } from 'rxjs';
     }
 
     .btn-submit-final {
-      background: #161d35;
+      background: var(--primary-color);
       color: #ffffff;
       border: none;
       padding: 0.75rem 2rem;

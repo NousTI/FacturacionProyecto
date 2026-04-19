@@ -129,12 +129,12 @@ import { Factura } from '../../../../../domain/models/factura.model';
       transition: all 0.2s;
     }
     .input-lux:focus {
-      border-color: #161d35;
+      border-color: var(--primary-color);
       box-shadow: 0 0 0 4px rgba(22, 29, 53, 0.05);
     }
 
     .btn-send-lux {
-      background: #161d35;
+      background: var(--primary-color);
       color: white;
       border: none;
       padding: 0.85rem;

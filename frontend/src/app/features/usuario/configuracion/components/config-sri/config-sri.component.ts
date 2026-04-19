@@ -298,7 +298,7 @@ import { UiService } from '../../../../../shared/services/ui.service';
       background: #f8fafc; border-radius: 12px; border: 1px solid #e2e8f0;
       padding: 0 1rem; transition: all 0.2s;
     }
-    .input-premium-wrapper:focus-within { border-color: #161d35; background: white; box-shadow: 0 0 0 3px rgba(22, 29, 53, 0.05); }
+    .input-premium-wrapper:focus-within { border-color: var(--primary-color); background: white; box-shadow: 0 0 0 3px rgba(22, 29, 53, 0.05); }
     .input-premium-wrapper i { color: #94a3b8; }
     .input-premium {
       width: 100%; border: none; background: transparent; padding: 0.75rem 1rem;
@@ -316,7 +316,7 @@ import { UiService } from '../../../../../shared/services/ui.service';
 
     /* Buttons */
     .btn-premium-dark {
-      background: #161d35; color: white; border: none; border-radius: 12px;
+      background: var(--primary-color); color: white; border: none; border-radius: 12px;
       font-weight: 800; font-size: 0.85rem; letter-spacing: 0.5px; transition: all 0.2s;
     }
     .btn-premium-dark:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(22, 29, 53, 0.2); }
@@ -327,7 +327,7 @@ import { UiService } from '../../../../../shared/services/ui.service';
       font-weight: 800; font-size: 0.85rem; transition: all 0.2s;
     }
     .btn-mini-premium {
-      background: #161d35; color: white; border: none; border-radius: 8px;
+      background: var(--primary-color); color: white; border: none; border-radius: 8px;
       font-weight: 800; font-size: 0.7rem; letter-spacing: 0.5px;
     }
 
@@ -335,11 +335,11 @@ import { UiService } from '../../../../../shared/services/ui.service';
       background: transparent; border: none; color: #94a3b8; font-size: 1.1rem;
       transition: color 0.2s; cursor: pointer;
     }
-    .btn-icon-minimal:hover { color: #161d35; }
+    .btn-icon-minimal:hover { color: var(--primary-color); }
 
     /* Icons */
     .icon-circle-large {
-      width: 72px; height: 72px; border-radius: 50%; background: #161d35;
+      width: 72px; height: 72px; border-radius: 50%; background: var(--primary-color);
       color: white; display: flex; align-items: center; justify-content: center; font-size: 2rem;
     }
     .icon-circle-mini {
@@ -352,7 +352,7 @@ import { UiService } from '../../../../../shared/services/ui.service';
       border: 2px dashed #cbd5e1; border-radius: 20px; padding: 3rem 2rem;
       text-align: center; cursor: pointer; transition: all 0.2s; background: white;
     }
-    .upload-area:hover, .upload-area.is-dragging { border-color: #161d35; background: #fcfcfd; }
+    .upload-area:hover, .upload-area.is-dragging { border-color: var(--primary-color); background: #fcfcfd; }
     .upload-area i { font-size: 2.5rem; color: #cbd5e1; }
 
     /* Statuses */

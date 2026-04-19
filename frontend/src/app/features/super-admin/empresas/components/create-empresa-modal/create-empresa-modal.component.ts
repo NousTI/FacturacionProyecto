@@ -261,7 +261,7 @@ import { SRI_TIPOS_PERSONA, SRI_TIPOS_CONTRIBUYENTE } from '../../../../../core/
     .modal-title-final {
       font-size: 1.25rem;
       font-weight: 800;
-      color: #161d35;
+      color: var(--primary-color);
       margin: 0;
     }
     .btn-close-final {
@@ -332,7 +332,7 @@ import { SRI_TIPOS_PERSONA, SRI_TIPOS_CONTRIBUYENTE } from '../../../../../core/
       border-top: 1px solid #f1f5f9;
     }
     .btn-submit-final {
-      background: #161d35;
+      background: var(--primary-color);
       color: #ffffff;
       border: none;
       padding: 0.75rem 2.5rem;
@@ -357,8 +357,8 @@ import { SRI_TIPOS_PERSONA, SRI_TIPOS_CONTRIBUYENTE } from '../../../../../core/
       font-weight: 600;
     }
     .switch-final .form-check-input:checked {
-      background-color: #161d35;
-      border-color: #161d35;
+      background-color: var(--primary-color);
+      border-color: var(--primary-color);
     }
     .switch-final .form-check-label {
       font-size: 0.85rem;

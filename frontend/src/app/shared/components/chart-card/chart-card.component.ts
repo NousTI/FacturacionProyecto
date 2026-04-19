@@ -174,7 +174,7 @@ import { CommonModule } from '@angular/common';
 })
 export class ChartCardComponent {
   @Input() title: string = '';
-  @Input() barColor: string = '#161d35';
+  @Input() barColor: string = 'var(--primary-color)';
   @Input() orientation: 'vertical' | 'horizontal' = 'vertical';
   @Input() chartType: 'bar' | 'line' = 'bar';
   @Input() data: { label: string, value: number, value_prev?: number }[] = [];

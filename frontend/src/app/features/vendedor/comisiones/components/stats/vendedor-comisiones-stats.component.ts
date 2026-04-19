@@ -8,7 +8,7 @@ import { CommonModule } from '@angular/common';
   template: `
     <div class="stats-compact-row">
       <div class="stat-item-mini">
-        <div class="icon-circle" style="background: rgba(22, 29, 53, 0.05); color: #161d35;">
+        <div class="icon-circle" style="background: rgba(22, 29, 53, 0.05); color: var(--primary-color);">
           <i class="bi bi-cash-stack"></i>
         </div>
         <div class="stat-info">

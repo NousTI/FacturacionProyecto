@@ -3,8 +3,9 @@
 
 :root {
   /* Brand Colors */
-  --primary-color: #161d35;
-  --primary-hover: #000000;
+  /* --primary-color: #161d35; */
+  --primary-color: #6366F1;
+  --primary-hover: #6366F1;
   
   /* Typography - Unified Inter */
   --font-main: 'Inter', sans-serif;

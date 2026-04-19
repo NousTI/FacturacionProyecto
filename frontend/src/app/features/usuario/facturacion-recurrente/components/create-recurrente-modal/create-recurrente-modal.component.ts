@@ -180,7 +180,7 @@ import { finalize } from 'rxjs';
       display: flex; align-items: center; justify-content: center;
       font-size: 1.4rem; color: white;
     }
-    .bg-premium { background: #161d35; }
+    .bg-premium { background: var(--primary-color); }
     .header-text h3 { margin: 0; font-size: 1.25rem; font-weight: 800; color: #0f172a; }
     .header-text p { margin: 0; font-size: 0.85rem; color: #64748b; }
     .btn-close-modal {
@@ -215,7 +215,7 @@ import { finalize } from 'rxjs';
       color: #1e293b; transition: all 0.2s;
     }
     .form-control-premium:focus, .form-select-premium:focus {
-      border-color: #161d35; background: white;
+      border-color: var(--primary-color); background: white;
       box-shadow: 0 0 0 4px rgba(22, 29, 53, 0.05); outline: none;
     }
     .readonly-field .form-control-premium, .readonly-field .form-select-premium {
@@ -231,7 +231,7 @@ import { finalize } from 'rxjs';
     .form-switch-premium .form-check-label { font-size: 0.9rem; font-weight: 600; color: #475569; }
 
     .btn-primary-premium {
-      background: #161d35; color: white; border: none;
+      background: var(--primary-color); color: white; border: none;
       padding: 0.75rem 2rem; border-radius: 14px; font-weight: 700;
       transition: all 0.2s;
     }

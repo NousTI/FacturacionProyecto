@@ -115,7 +115,7 @@ import { CommonModule } from '@angular/common';
     .btn-confirm-primary.success { background: var(--status-success); }
     .btn-confirm-primary.success:hover { opacity: 0.85; filter: brightness(1.1); } /* Softer/Lighter green on hover */
     
-    .btn-confirm-primary.primary { background: var(--secondary-color, #161d35); }
+    .btn-confirm-primary.primary { background: var(--secondary-color, var(--primary-color)); }
     .btn-confirm-primary.primary:hover { background: var(--status-info-text); }
     
     .btn-confirm-primary.warning { background: var(--status-warning); color: #ffffff; }

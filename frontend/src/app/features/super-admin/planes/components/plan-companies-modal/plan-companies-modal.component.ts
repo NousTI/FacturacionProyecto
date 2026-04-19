@@ -79,7 +79,7 @@ import { PlanService } from '../../services/plan.service';
       box-shadow: 0 40px 80px -20px rgba(22, 29, 53, 0.25);
     }
     .modal-header-final { padding: 1.5rem 2rem; display: flex; justify-content: space-between; align-items: flex-start; }
-    .modal-title-final { font-size: 1.15rem; font-weight: 800; color: #161d35; margin: 0; }
+    .modal-title-final { font-size: 1.15rem; font-weight: 800; color: var(--primary-color); margin: 0; }
     .btn-close-final { background: none; border: none; font-size: 1.5rem; color: #94a3b8; cursor: pointer; }
     .modal-body-final { padding: 0 2rem 2rem; overflow-y: auto; flex: 1; }
     
@@ -170,7 +170,7 @@ import { PlanService } from '../../services/plan.service';
     .status-inactive .dot { background: #94a3b8; }
 
     .modal-footer-final { padding: 1.25rem 2rem; display: flex; justify-content: flex-end; border-top: 1px solid #f1f5f9; }
-    .btn-submit-final { background: #161d35; color: white; border: none; padding: 0.6rem 2rem; border-radius: 12px; font-weight: 700; transition: all 0.2s; }
+    .btn-submit-final { background: var(--primary-color); color: white; border: none; padding: 0.6rem 2rem; border-radius: 12px; font-weight: 700; transition: all 0.2s; }
     .btn-submit-final:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(22, 29, 53, 0.15); }
 
     .scroll-custom::-webkit-scrollbar { width: 5px; }

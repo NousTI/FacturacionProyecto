@@ -76,7 +76,7 @@ export interface PaginationState {
       font-size: 0.85rem; font-weight: 600; color: #475569;
       cursor: pointer; transition: all 0.2s;
     }
-    .form-select-premium-sm:focus { border-color: var(--primary-color, #161d35); outline: none; }
+    .form-select-premium-sm:focus { border-color: var(--primary-color, var(--primary-color)); outline: none; }
     
     .btn-nav-premium {
       width: 38px; height: 38px; border-radius: 10px;
@@ -90,7 +90,7 @@ export interface PaginationState {
     .page-indicator-premium {
       min-width: 38px; height: 38px; border-radius: 10px;
       display: flex; align-items: center; justify-content: center;
-      background: var(--primary-color, #161d35); color: white;
+      background: var(--primary-color, var(--primary-color)); color: white;
       font-weight: 700; font-size: 0.9rem; padding: 0 0.75rem;
     }
     .fw-600 { font-weight: 600; }

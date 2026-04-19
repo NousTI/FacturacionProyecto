@@ -205,7 +205,7 @@ import { FormsModule } from '@angular/forms';
     .avatar-circle {
       width: 70px;
       height: 70px;
-      background: #161d35;
+      background: var(--primary-color);
       color: white;
       border-radius: 50%;
       display: flex;
@@ -241,7 +241,7 @@ import { FormsModule } from '@angular/forms';
       height: 40px;
       font-size: 0.9rem;
       font-weight: 500;
-      color: #161d35;
+      color: var(--primary-color);
       transition: all 0.2s;
       width: 100%;
     }
@@ -266,7 +266,7 @@ import { FormsModule } from '@angular/forms';
     .stats-container { background: #fafafa; }
 
     .btn-premium-primary {
-        background: #161d35;
+        background: var(--primary-color);
         color: #ffffff;
         border: none;
         padding: 0 1.5rem;

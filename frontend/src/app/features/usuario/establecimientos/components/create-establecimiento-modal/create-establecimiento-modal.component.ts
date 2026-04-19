@@ -191,7 +191,7 @@ import { Establecimiento } from '../../../../../domain/models/establecimiento.mo
     .modal-title-final {
       font-size: 1.25rem;
       font-weight: 800;
-      color: #161d35;
+      color: var(--primary-color);
       margin: 0;
     }
 
@@ -206,7 +206,7 @@ import { Establecimiento } from '../../../../../domain/models/establecimiento.mo
     }
 
     .btn-close-final:hover:not(:disabled) {
-      color: #161d35;
+      color: var(--primary-color);
       transform: rotate(90deg);
     }
 
@@ -279,7 +279,7 @@ import { Establecimiento } from '../../../../../domain/models/establecimiento.mo
     }
 
     .input-final:focus {
-      border-color: #161d35;
+      border-color: var(--primary-color);
       outline: none;
     }
 
@@ -354,7 +354,7 @@ import { Establecimiento } from '../../../../../domain/models/establecimiento.mo
     }
 
     .btn-submit-final {
-      background: #161d35;
+      background: var(--primary-color);
       color: #ffffff;
       border: none;
       padding: 0.75rem 2rem;

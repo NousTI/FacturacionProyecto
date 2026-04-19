@@ -186,11 +186,11 @@ import { UiService } from '../../../shared/services/ui.service';
       transition: all 0.2s;
     }
     .dropdown-item:hover {
-      background-color: var(--primary-color, #161d35) !important;
+      background-color: var(--primary-color, var(--primary-color)) !important;
       color: #ffffff !important;
     }
     .dropdown-item.active {
-      background-color: var(--primary-color, #161d35) !important;
+      background-color: var(--primary-color, var(--primary-color)) !important;
       color: #ffffff !important;
     }
 

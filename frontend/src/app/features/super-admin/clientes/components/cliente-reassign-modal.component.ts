@@ -132,7 +132,7 @@ import { ClienteUsuario } from '../services/clientes.service';
     .icon-wrapper {
       width: 48px;
       height: 48px;
-      background: #161d35;
+      background: var(--primary-color);
       border-radius: 12px;
       display: flex;
       align-items: center;
@@ -145,7 +145,7 @@ import { ClienteUsuario } from '../services/clientes.service';
     .modal-title {
       font-size: 1.5rem;
       font-weight: 800;
-      color: #161d35;
+      color: var(--primary-color);
       margin: 0;
     }
 
@@ -170,7 +170,7 @@ import { ClienteUsuario } from '../services/clientes.service';
       flex-shrink: 0;
     }
     .btn-close-premium:hover {
-      background: #161d35;
+      background: var(--primary-color);
       color: white;
     }
 
@@ -193,7 +193,7 @@ import { ClienteUsuario } from '../services/clientes.service';
     .cliente-avatar {
       width: 56px;
       height: 56px;
-      background: #161d35;
+      background: var(--primary-color);
       color: white;
       border-radius: 14px;
       display: flex;
@@ -211,7 +211,7 @@ import { ClienteUsuario } from '../services/clientes.service';
     .cliente-name {
       font-size: 1rem;
       font-weight: 700;
-      color: #161d35;
+      color: var(--primary-color);
       margin-bottom: 0.25rem;
     }
 
@@ -234,7 +234,7 @@ import { ClienteUsuario } from '../services/clientes.service';
     }
 
     .current-company i {
-      color: #161d35;
+      color: var(--primary-color);
     }
 
     .form-group {
@@ -258,13 +258,13 @@ import { ClienteUsuario } from '../services/clientes.service';
       padding: 0.75rem 1rem;
       font-size: 0.95rem;
       font-weight: 500;
-      color: #161d35;
+      color: var(--primary-color);
       transition: all 0.2s;
       width: 100%;
     }
     .form-select-premium:focus {
       background: #ffffff;
-      border-color: #161d35;
+      border-color: var(--primary-color);
       box-shadow: 0 0 0 4px rgba(22, 29, 53, 0.1);
       outline: none;
     }
@@ -320,7 +320,7 @@ import { ClienteUsuario } from '../services/clientes.service';
     }
 
     .btn-primary-premium {
-      background: #161d35;
+      background: var(--primary-color);
       color: #ffffff;
       border: none;
       padding: 0.75rem 1.5rem;

@@ -57,7 +57,7 @@ import { CommonModule } from '@angular/common';
     .modal-form-title {
       font-size: 1.2rem;
       font-weight: 800;
-      color: #161d35;
+      color: var(--primary-color);
       margin: 0;
     }
 

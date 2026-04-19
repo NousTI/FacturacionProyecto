@@ -131,7 +131,7 @@ import { Vendedor } from '../../services/vendedor.service';
       font-size: 0.9rem; font-weight: 600; width: 100%; transition: all 0.2s;
     }
     .form-control-premium:focus {
-      background: #ffffff; border-color: #161d35; box-shadow: 0 0 0 4px rgba(22, 29, 53, 0.05); outline: none;
+      background: #ffffff; border-color: var(--primary-color); box-shadow: 0 0 0 4px rgba(22, 29, 53, 0.05); outline: none;
     }
 
     /* Companies Grid & Selection Cards */
@@ -149,11 +149,11 @@ import { Vendedor } from '../../services/vendedor.service';
         background: #fff;
     }
     .company-selection-card:hover { 
-        border-color: #161d35; 
+        border-color: var(--primary-color); 
         background: #f8fafc;
     }
     .company-selection-card.selected {
-        border-color: #161d35;
+        border-color: var(--primary-color);
         background: rgba(22, 29, 53, 0.02);
         box-shadow: 0 4px 15px rgba(22, 29, 53, 0.05);
     }
@@ -177,7 +177,7 @@ import { Vendedor } from '../../services/vendedor.service';
       display: flex; justify-content: flex-end; gap: 1rem;
     }
     .btn-primary-premium {
-      background: #161d35; color: white; border: none; padding: 0.85rem 2rem;
+      background: var(--primary-color); color: white; border: none; padding: 0.85rem 2rem;
       border-radius: 14px; font-weight: 700; transition: all 0.2s;
     }
     .btn-primary-premium:disabled { opacity: 0.4; cursor: not-allowed; }

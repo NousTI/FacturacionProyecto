@@ -166,7 +166,7 @@ import { EmpresaPaginacionComponent, PaginationState } from '../../../../super-a
       border-radius: 12px;
       display: flex; align-items: center; justify-content: center;
       font-weight: 700; font-size: 0.95rem;
-      background: var(--primary-color, #161d35);
+      background: var(--primary-color, var(--primary-color));
       color: #ffffff;
       flex-shrink: 0;
     }

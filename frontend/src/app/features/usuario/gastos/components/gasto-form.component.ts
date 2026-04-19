@@ -136,7 +136,7 @@ import { SRI_IVA_TARIFAS } from '../../../../core/constants/sri-iva.constants';
     .input-editorial-group:focus-within { border-color: #3b82f6; }
     .addon { background: #f8fafc; padding: 0 1rem; display: flex; align-items: center; border-right: 1.5px solid #e2e8f0; color: #64748b; font-weight: 600; }
     .addon-field { border: none !important; border-radius: 0; flex: 1; padding: 0.85rem 1.25rem; outline: none; font-weight: 500; }
-    .total-result-area { background: #161d35; padding: 1rem; border-radius: 16px; color: white; }
+    .total-result-area { background: var(--primary-color); padding: 1rem; border-radius: 16px; color: white; }
     .currency-symbol { font-size: 1rem; color: white; margin-right: 0.5rem; }
     .total-input-clean { background: transparent; border: none; font-size: 1.75rem; font-weight: 900; color: white; width: 100%; outline: none; }
     

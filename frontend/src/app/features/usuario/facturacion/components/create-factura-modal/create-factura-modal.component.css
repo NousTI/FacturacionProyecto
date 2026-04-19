@@ -6,7 +6,7 @@
 .icon-header-lux {
   width: 48px;
   height: 48px;
-  background: #161d35;
+  background: var(--primary-color);
   color: white;
   border-radius: 14px;
   display: flex;
@@ -53,7 +53,7 @@
   padding: 1.25rem;
 }
 .section-lux-dark {
-  background: #161d35;
+  background: var(--primary-color);
   border-radius: 18px;
   padding: 1.25rem;
 }
@@ -95,7 +95,7 @@
 }
 .input-lux-wrapper .input-lux { padding-left: 2.5rem; }
 .input-lux:focus, .select-lux:focus {
-  border-color: #161d35;
+  border-color: var(--primary-color);
   background: white;
   box-shadow: 0 0 0 4px rgba(22, 29, 53, 0.05);
 }
@@ -138,7 +138,7 @@
 
 /* BUTTONS LUX */
 .btn-add-lux-white {
-  background: #161d35;
+  background: var(--primary-color);
   color: white;
   border: none;
   border-radius: 10px;
@@ -172,7 +172,7 @@
 .total-divider { border-top: 2px dashed #e2e8f0; }
 
 .btn-save-lux {
-  background: #161d35;
+  background: var(--primary-color);
   color: white;
   border: none;
   padding: 0.75rem 2rem;
@@ -315,10 +315,10 @@
 .btn-create-client-lux {
   background: white; border: 1.5px solid #f1f5f9; border-radius: 12px;
   padding: 0.45rem 0.85rem; height: 38px; display: flex; align-items: center; gap: 0.5rem;
-  color: #161d35; font-weight: 700; font-size: 0.75rem; transition: all 0.2s;
+  color: var(--primary-color); font-weight: 700; font-size: 0.75rem; transition: all 0.2s;
 }
 .btn-create-client-lux:hover { background: #f1f5f9; transform: translateY(-2px); border-color: #cbd5e1; }
-.btn-create-client-lux i { font-size: 1rem; color: #161d35; }
+.btn-create-client-lux i { font-size: 1rem; color: var(--primary-color); }
 
 .btn-edit-client-small {
   background: white;
@@ -334,7 +334,7 @@
 }
 .btn-edit-client-small:hover {
   background: #f1f5f9;
-  color: #161d35;
+  color: var(--primary-color);
   border-color: #cbd5e1;
 }
 

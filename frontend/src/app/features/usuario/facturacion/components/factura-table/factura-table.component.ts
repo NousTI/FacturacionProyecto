@@ -34,7 +34,7 @@ import { FacturaPaginacionComponent, PaginationState } from '../factura-paginaci
               <!-- Numero y Secuencial -->
               <td class="ps-4">
                 <div class="d-flex align-items-center">
-                  <div class="item-icon-wrapper me-3" style="background: #f1f5f9; color: #161d35;">
+                  <div class="item-icon-wrapper me-3" style="background: #f1f5f9; color: var(--primary-color);">
                     <i class="bi bi-file-earmark-text-fill"></i>
                   </div>
                   <div>
@@ -292,7 +292,7 @@ import { FacturaPaginacionComponent, PaginationState } from '../factura-paginaci
     .price-lux {
       font-size: 0.95rem;
       font-weight: 800;
-      color: #161d35;
+      color: var(--primary-color);
     }
 
     .payment-method-lux {
@@ -361,7 +361,7 @@ import { FacturaPaginacionComponent, PaginationState } from '../factura-paginaci
 
     .btn-trigger-lux:hover, .btn-trigger-lux[aria-expanded="true"] {
       background: #f1f5f9;
-      color: #161d35;
+      color: var(--primary-color);
     }
 
     .dropdown-menu {
@@ -383,7 +383,7 @@ import { FacturaPaginacionComponent, PaginationState } from '../factura-paginaci
 
     .dropdown-item:hover {
       background: #f8fafc;
-      color: #161d35;
+      color: var(--primary-color);
     }
 
     .icon-item {

@@ -145,7 +145,7 @@ import { Establecimiento } from '../../../../../domain/models/establecimiento.mo
     .modal-title-final {
       font-size: 1.25rem;
       font-weight: 800;
-      color: #161d35;
+      color: var(--primary-color);
       margin: 0;
     }
 
@@ -160,7 +160,7 @@ import { Establecimiento } from '../../../../../domain/models/establecimiento.mo
     }
 
     .btn-close-final:hover {
-      color: #161d35;
+      color: var(--primary-color);
       transform: rotate(90deg);
     }
 

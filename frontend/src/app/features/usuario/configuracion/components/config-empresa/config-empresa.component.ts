@@ -58,7 +58,7 @@ import { Empresa } from '../../../../../domain/models/empresa.model';
             <!-- STATS Compact Row -->
             <div class="stats-compact-row mt-4">
               <div class="stat-item-mini">
-                <div class="icon-circle" style="background: rgba(22, 29, 53, 0.05); color: #161d35;">
+                <div class="icon-circle" style="background: rgba(22, 29, 53, 0.05); color: var(--primary-color);">
                   <i class="bi bi-houses"></i>
                 </div>
                 <div class="stat-info">
@@ -342,7 +342,7 @@ import { Empresa } from '../../../../../domain/models/empresa.model';
     }
     .progress-bar-lux {
       height: 100%;
-      background: #161d35;
+      background: var(--primary-color);
       border-radius: 10px;
       transition: width 0.3s ease;
     }

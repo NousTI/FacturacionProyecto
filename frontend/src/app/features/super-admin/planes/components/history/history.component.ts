@@ -49,7 +49,7 @@ interface Company {
                             [class.active]="(selectedCompany | async)?.id === company.id">
                         
                         <div class="avatar rounded-4 text-white d-flex align-items-center justify-content-center fw-bold shadow-sm flex-shrink-0"
-                             style="background-color: #161d35; color: #fff; width: 48px; height: 48px; font-size: 1.1rem; transition: all 0.2s;">
+                             style="background-color: var(--primary-color); color: #fff; width: 48px; height: 48px; font-size: 1.1rem; transition: all 0.2s;">
                             {{ company.name.charAt(0).toUpperCase() }}
                         </div>
                         
@@ -90,7 +90,7 @@ interface Company {
                 <div class="d-flex align-items-end justify-content-between p-5 pb-0 mb-4 bg-white fade-in-up">
                     <div class="d-flex align-items-center gap-4">
                         <div class="detail-avatar rounded-4 d-flex align-items-center justify-content-center text-white fw-bolder shadow-lg"
-                             style="width: 80px; height: 80px; font-size: 2rem; background: linear-gradient(135deg, #161d35 0%, #2a3555 100%);">
+                             style="width: 80px; height: 80px; font-size: 2rem; background: linear-gradient(135deg, var(--primary-color) 0%, #2a3555 100%);">
                             {{ company.name.charAt(0).toUpperCase() }}
                         </div>
                         <div>

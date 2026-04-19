@@ -30,14 +30,14 @@ import { CommonModule } from '@angular/common';
       width: 40px;
       height: 40px;
       border: 3px solid #f1f5f9;
-      border-top: 3px solid #161d35;
+      border-top: 3px solid var(--primary-color);
       border-radius: 50%;
       animation: spin 0.8s linear infinite;
     }
     .loading-message {
       font-size: 0.9rem;
       font-weight: 700;
-      color: #161d35;
+      color: var(--primary-color);
       text-transform: uppercase;
       letter-spacing: 1px;
     }

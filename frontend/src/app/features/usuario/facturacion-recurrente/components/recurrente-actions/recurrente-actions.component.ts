@@ -103,7 +103,7 @@ import { HasPermissionDirective } from '../../../../../shared/directives/has-per
     }
 
     .search-input-lux:focus {
-      border-color: #161d35;
+      border-color: var(--primary-color);
       background: white;
       box-shadow: 0 0 0 4px rgba(22, 29, 53, 0.05);
     }
@@ -126,11 +126,11 @@ import { HasPermissionDirective } from '../../../../../shared/directives/has-per
     .btn-filter-lux:hover {
       background: #f8fafc;
       border-color: #cbd5e1;
-      color: #161d35;
+      color: var(--primary-color);
     }
 
     .btn-create-lux {
-      background: #161d35;
+      background: var(--primary-color);
       color: white;
       border: none;
       padding: 0.75rem 1.5rem;
@@ -174,7 +174,7 @@ import { HasPermissionDirective } from '../../../../../shared/directives/has-per
 
     .dropdown-item:hover, .dropdown-item.active {
       background: #f8fafc;
-      color: #161d35;
+      color: var(--primary-color);
     }
   `]
 })

@@ -167,7 +167,7 @@ import { HasPermissionDirective } from '../../../../../core/directives/has-permi
       display: flex; align-items: center; justify-content: center;
       font-size: 1.4rem; color: white;
     }
-    .bg-premium { background: #161d35; }
+    .bg-premium { background: var(--primary-color); }
     .header-text h3 { margin: 0; font-size: 1.25rem; font-weight: 800; color: #0f172a; }
     .header-text p { margin: 0; font-size: 0.85rem; color: #64748b; }
     .btn-close-modal {
@@ -218,7 +218,7 @@ import { HasPermissionDirective } from '../../../../../core/directives/has-permi
     .premium-spinner {
       width: 40px; height: 40px;
       border: 3px solid #f1f5f9;
-      border-top: 3px solid #161d35;
+      border-top: 3px solid var(--primary-color);
       border-radius: 50%;
       animation: spin 1s linear infinite;
       margin: 0 auto;
@@ -238,7 +238,7 @@ import { HasPermissionDirective } from '../../../../../core/directives/has-permi
     .cursor-pointer { cursor: pointer; }
     .hover-shadow:hover { 
       box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-      border-color: #161d35 !important;
+      border-color: var(--primary-color) !important;
       background: #f8fafc !important;
     }
   `]
