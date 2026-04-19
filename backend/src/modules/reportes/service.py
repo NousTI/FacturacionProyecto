@@ -472,7 +472,9 @@ class ServicioReportes:
                 inyectar_footer_contexto(context)
                 return render_to_pdf("reports/usuarios/reporte-r001-empleados.html", context)
             else:
-                raise AppError("Formato no soportado para este reporte", 400)
+                headers = ["N° Factura", "Cliente", "Fecha", "Total", "Estado"]
+                keys = ["numero_factura", "cliente", "fecha", "total", "estado"]
+                return generate_excel_report(f"Mis Facturas Recientes - {data['empleado']}", headers, data["facturas_recientes"], keys)
 
         elif tipo in ['FINANCIERO_IVA', 'FINANCIERO_RESUMEN', 'FINANCIERO_CARTERA']:
             empresa = self.repo_empresas.obtener_por_id(empresa_id)

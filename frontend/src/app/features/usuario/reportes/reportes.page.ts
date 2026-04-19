@@ -176,7 +176,9 @@ type Tab = 'resumen' | 'ventas' | 'cartera' | 'iva' | 'mis_ventas';
       <app-r001-mis-ventas
         *ngIf="tabActivo === 'mis_ventas' && misVentasData"
         [data]="misVentasData"
-        [rangoTipo]="rangoTipo">
+        [rangoTipo]="rangoTipo"
+        [fechaInicio]="fechaInicio"
+        [fechaFin]="fechaFin">
       </app-r001-mis-ventas>
     </div>
 

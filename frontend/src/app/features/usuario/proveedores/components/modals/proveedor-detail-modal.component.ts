@@ -142,10 +142,10 @@ import { Proveedor } from '../../../../../domain/models/proveedor.model';
     .email-text { color: #2563eb !important; text-decoration: underline; }
     .address-text { font-size: 0.9rem !important; color: #64748b !important; line-height: 1.5; }
     .metric-card { background: var(--primary-color); border-radius: 24px; padding: 2rem; color: white; margin-bottom: 2rem; }
-    .card-title { font-size: 0.75rem; font-weight: 800; text-transform: uppercase; color: #94a3b8; margin-bottom: 1.5rem; letter-spacing: 0.05em; }
+    .card-title { font-size: 0.75rem; font-weight: 800; text-transform: uppercase; color: white; margin-bottom: 1.5rem; letter-spacing: 0.05em; }
     .metric-item { display: flex; flex-direction: column; gap: 0.5rem; }
-    .m-label { font-size: 0.8rem; color: #94a3b8; font-weight: 600; }
-    .m-value { font-size: 2.5rem; font-weight: 900; letter-spacing: -0.02em; }
+    .m-label { font-size: 0.8rem; color: white; font-weight: 600; }
+    .m-value { font-size: 2.5rem; font-weight: 900; letter-spacing: -0.02em; color: white; }
     .audit-info { background: #f8fafc; border-radius: 20px; padding: 1.5rem; border: 1px solid #f1f5f9; }
     .info-title { font-size: 0.75rem; font-weight: 800; color: #94a3b8; margin-bottom: 1rem; text-transform: uppercase; }
     .audit-row { display: flex; justify-content: space-between; margin-bottom: 0.75rem; }

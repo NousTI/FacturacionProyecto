@@ -1,8 +1,10 @@
 import { Component, Input, OnChanges } from '@angular/core';
 import { CommonModule, CurrencyPipe, DecimalPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { MisVentasReport } from '../../services/financial-reports.service';
+import { MisVentasReport, FinancialReportsService } from '../../services/financial-reports.service';
 import { RangoTipo } from '../../reportes.page';
+import { inject } from '@angular/core';
+import { UiService } from '../../../../../shared/services/ui.service';
 
 @Component({
   selector: 'app-r001-mis-ventas',
@@ -66,9 +68,14 @@ import { RangoTipo } from '../../reportes.page';
         <!-- Facturas Recientes -->
         <div class="col-lg-6">
           <div class="section-card-table h-100">
-            <div class="section-header px-4 pt-4">
-              <h5><i class="bi bi-receipt me-2"></i>Mis Facturas Recientes</h5>
-              <p>Últimas facturas emitidas en el período</p>
+            <div class="section-header px-4 pt-4 d-flex justify-content-between align-items-start">
+              <div>
+                <h5><i class="bi bi-receipt me-2"></i>Mis Facturas Recientes</h5>
+                <p>Últimas facturas emitidas en el período</p>
+              </div>
+              <button class="btn-export-excel" (click)="exportarExcel()">
+                <i class="bi bi-file-earmark-excel me-1"></i> Exportar
+              </button>
             </div>
             <div class="tabla-scroll">
               <table class="table modern-table">
@@ -257,11 +264,23 @@ import { RangoTipo } from '../../reportes.page';
     .estado-badge.autorizada { background: #f0fdf4; color: #166534; }
     .estado-badge.anulada    { background: #fef2f2; color: #991b1b; }
     .estado-badge.pendiente  { background: #fffbeb; color: #854d0e; }
+
+    .btn-export-excel {
+      background: #f0fdf4; color: #166534; border: 1px solid #bbf7d0;
+      padding: 0.35rem 0.8rem; border-radius: 10px; font-weight: 700; font-size: 0.75rem;
+      display: flex; align-items: center; cursor: pointer; transition: all 0.2s;
+    }
+    .btn-export-excel:hover { background: #dcfce7; border-color: #86efac; transform: translateY(-1px); }
   `]
 })
 export class R001MisVentasComponent implements OnChanges {
   @Input() data!: MisVentasReport;
   @Input() rangoTipo: RangoTipo = 'mes_actual';
+  @Input() fechaInicio!: string;
+  @Input() fechaFin!: string;
+
+  private reportsSvc = inject(FinancialReportsService);
+  private ui = inject(UiService);
 
   // Paginación facturas
   pageF = 1; pageSizeF = 10;
@@ -290,6 +309,32 @@ export class R001MisVentasComponent implements OnChanges {
       case 'personalizado_mes':return 'vs mes anterior';
       default:                 return '{{ labelPeriodoAnt }}';
     }
+  }
+
+  exportarExcel() {
+    if (!this.fechaInicio || !this.fechaFin) {
+      this.ui.showToast('Rango de fechas no definido', 'warning');
+      return;
+    }
+
+    this.ui.showToast('Generando archivo Excel...', 'info');
+    this.reportsSvc.exportarMisVentasExcel(this.fechaInicio, this.fechaFin).subscribe({
+      next: (blob) => {
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `mis-facturas_${this.fechaInicio}_al_${this.fechaFin}.xlsx`;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+        this.ui.showToast('Archivo Excel descargado con éxito', 'success');
+      },
+      error: (err) => {
+        console.error('Error exportando excel:', err);
+        this.ui.showToast('Error al exportar a Excel', 'danger');
+      }
+    });
   }
 
   ngOnChanges() { this.pageF = 1; this.pageC = 1; }

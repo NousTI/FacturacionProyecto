@@ -32,11 +32,13 @@ Chart.register(...registerables);
           </div>
         </div>
 
-        <div class="kpi-card green" *ngFor="let iva of ivaOrdenado">
-          <span class="label">IVA Cobrado ({{ iva.tarifa }})</span>
-          <span class="value">{{ iva.iva_cobrado | currency }}</span>
-          <span class="subtext">A declarar al SRI</span>
-        </div>
+        <ng-container *ngFor="let iva of ivaOrdenado">
+          <div class="kpi-card green" *ngIf="iva.tarifa !== '0%'">
+            <span class="label">IVA Cobrado ({{ iva.tarifa }})</span>
+            <span class="value">{{ iva.iva_cobrado | currency }}</span>
+            <span class="subtext">A declarar al SRI</span>
+          </div>
+        </ng-container>
 
         <div class="kpi-card amber">
           <span class="label">Ticket Promedio</span>

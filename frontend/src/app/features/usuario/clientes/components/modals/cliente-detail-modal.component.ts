@@ -190,9 +190,9 @@ import { Cliente } from '../../../../../domain/models/cliente.model';
       background: var(--primary-color); border-radius: 24px; padding: 2rem; color: white;
       margin-bottom: 2rem; box-shadow: 0 10px 25px -5px rgba(30, 41, 59, 0.4);
     }
-    .card-title { font-size: 0.75rem; font-weight: 800; text-transform: uppercase; color: #94a3b8; margin-bottom: 1.5rem; letter-spacing: 0.05em; }
+    .card-title { font-size: 0.75rem; font-weight: 800; text-transform: uppercase; color: white; opacity: 0.8; margin-bottom: 1.5rem; letter-spacing: 0.05em; }
     .metric-item { display: flex; flex-direction: column; gap: 0.5rem; }
-    .m-label { font-size: 0.8rem; color: #94a3b8; font-weight: 600; }
+    .m-label { font-size: 0.8rem; color: white; font-weight: 600; }
     .m-value { font-size: 2rem; font-weight: 900; letter-spacing: -0.02em; }
     .metric-divider { height: 1px; background: rgba(255, 255, 255, 0.1); margin: 1.5rem 0; }
 

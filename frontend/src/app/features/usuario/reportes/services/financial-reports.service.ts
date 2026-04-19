@@ -287,6 +287,18 @@ export class FinancialReportsService {
     });
   }
 
+  exportarMisVentasExcel(fecha_inicio: string, fecha_fin: string): Observable<Blob> {
+    const params = new HttpParams()
+      .set('tipo', 'MIS_VENTAS')
+      .set('formato', 'excel')
+      .set('fecha_inicio', fecha_inicio)
+      .set('fecha_fin', fecha_fin);
+    return this.http.get(`${environment.apiUrl}/reportes/exportar`, {
+      params,
+      responseType: 'blob'
+    });
+  }
+
   obtenerDetalleCasilleroR027(casillero: string, fecha_inicio: string, fecha_fin: string): Observable<any[]> {
     const params = new HttpParams()
       .set('casillero', casillero)

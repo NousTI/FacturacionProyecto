@@ -137,13 +137,13 @@ import { User } from '../../../../../domain/models/user.model';
     .info-item span { font-size: 1rem; font-weight: 600; color: black; }
     .email-text { color: #2563eb !important; text-decoration: underline; }
     .control-card { background: var(--primary-color); border-radius: 24px; padding: 2rem; color: white; margin-bottom: 2rem; }
-    .card-title { font-size: 0.75rem; font-weight: 800; text-transform: uppercase; color: #94a3b8; margin-bottom: 1.5rem; letter-spacing: 0.05em; }
+    .card-title { font-size: 0.75rem; font-weight: 800; text-transform: uppercase; color: white; opacity: 0.8; margin-bottom: 1.5rem; letter-spacing: 0.05em; }
     .audit-item { display: flex; flex-direction: column; gap: 0.5rem; }
-    .a-label { font-size: 0.8rem; color: #94a3b8; font-weight: 600; }
+    .a-label { font-size: 0.8rem; color: white; opacity: 0.7; font-weight: 600; }
     .a-status { display: flex; align-items: center; gap: 0.5rem; font-weight: 800; font-size: 1.1rem; }
-    .a-status.success { color: #10b981; }
-    .a-status.danger { color: #f43f5e; }
-    .a-value { font-size: 0.85rem; font-weight: 700; color: #cbd5e1; }
+    .a-status.success { color: white; }
+    .a-status.danger { color: white; }
+    .a-value { font-size: 0.85rem; font-weight: 700; color: white; }
     .info-tip { display: flex; gap: 1rem; padding: 1.25rem; background: #fafafa; border-radius: 16px; border: 1px solid #f1f5f9; }
     .info-tip i { color: #94a3b8; }
     .info-tip p { font-size: 0.75rem; color: #64748b; margin: 0; line-height: 1.5; font-weight: 500; }

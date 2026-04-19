@@ -74,8 +74,8 @@ class RepositorioR001Empleados:
                 "devoluciones": 0, "devoluciones_anterior": 0, "devoluciones_variacion_pct": None
             }
 
-    def obtener_facturas_recientes(self, empresa_id: UUID, usuario_id: UUID, fecha_inicio: str, fecha_fin: str, limit: int = 10) -> List[Dict[str, Any]]:
-        """Últimas facturas emitidas por el empleado en el período."""
+    def obtener_facturas_recientes(self, empresa_id: UUID, usuario_id: UUID, fecha_inicio: str, fecha_fin: str) -> List[Dict[str, Any]]:
+        """Todas las facturas emitidas por el empleado en el período."""
         query = """
             SELECT
                 f.numero_factura,
@@ -90,10 +90,9 @@ class RepositorioR001Empleados:
               AND f.estado != 'BORRADOR'
               AND f.fecha_emision BETWEEN %s AND %s::timestamp + interval '1 day' - interval '1 second'
             ORDER BY f.fecha_emision DESC
-            LIMIT %s
         """
         with self.db.cursor() as cur:
-            cur.execute(query, (str(empresa_id), str(usuario_id), fecha_inicio, fecha_fin, limit))
+            cur.execute(query, (str(empresa_id), str(usuario_id), fecha_inicio, fecha_fin))
             return [dict(row) for row in cur.fetchall()]
 
     def obtener_mis_clientes(self, empresa_id: UUID, usuario_id: UUID, fecha_inicio: str, fecha_fin: str) -> List[Dict[str, Any]]:

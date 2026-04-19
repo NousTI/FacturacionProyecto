@@ -191,6 +191,7 @@ import { PermissionsService } from '../../../../../core/auth/permissions.service
       display: flex; align-items: center; gap: 0.75rem; font-size: 0.8rem; font-weight: 800; text-transform: uppercase;
     }
     .card-header-editorial i { color: black; font-size: 1rem; }
+    .inventory-card-premium .card-header-editorial i { color: white; }
 
     .detail-grid { padding: 1.5rem; display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem; }
     .detail-item { display: flex; flex-direction: column; gap: 0.25rem; }
@@ -209,15 +210,15 @@ import { PermissionsService } from '../../../../../core/auth/permissions.service
     .stock-content { padding: 0 1.5rem; display: flex; flex-direction: column; gap: 1.5rem; }
     .stock-main-display { display: flex; flex-direction: column; align-items: center; padding: 1rem 0; }
     .stock-number { font-size: 3.5rem; font-weight: 950; color: white; line-height: 1; letter-spacing: -2px; }
-    .stock-unit { font-size: 0.8rem; color: #94a3b8; font-weight: 700; text-transform: uppercase; margin-top: 0.5rem; }
+    .stock-unit { font-size: 0.8rem; color: white; font-weight: 700; text-transform: uppercase; margin-top: 0.5rem; }
     
     .stock-meta { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
     .meta-item { display: flex; flex-direction: column; gap: 0.5rem; }
-    .meta-item label { font-size: 0.65rem; font-weight: 800; color: #64748b; text-transform: uppercase; }
-    .alert-badge { padding: 0.5rem; border-radius: 10px; font-size: 0.65rem; font-weight: 900; text-align: center; }
-    .alert-badge.stock-success { background: rgba(16, 185, 129, 0.1); color: #10b981; }
-    .alert-badge.stock-warning { background: rgba(245, 158, 11, 0.1); color: #f59e0b; }
-    .alert-badge.stock-danger { background: rgba(239, 68, 68, 0.1); color: #ef4444; }
+    .meta-item label { font-size: 0.65rem; font-weight: 800; color: white; text-transform: uppercase; }
+    .alert-badge { padding: 0.5rem; border-radius: 10px; font-size: 0.65rem; font-weight: 900; text-align: center; color: white; }
+    .alert-badge.stock-success { background: #10b981; }
+    .alert-badge.stock-warning { background: #f59e0b; }
+    .alert-badge.stock-danger { background: #ef4444; }
     .meta-value { font-size: 1.1rem; font-weight: 800; color: white; }
 
     .no-stock-msg { padding: 3rem 1rem; text-align: center; color: #475569; }
