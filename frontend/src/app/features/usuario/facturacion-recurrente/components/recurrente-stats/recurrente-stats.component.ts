@@ -6,7 +6,7 @@ import { CommonModule } from '@angular/common';
   standalone: true,
   imports: [CommonModule],
   template: `
-    <div class="stats-compact-row mb-4">
+    <div class="stats-compact-row">
       <div class="stat-item-mini">
         <div class="icon-circle" style="background: rgba(79, 70, 229, 0.05); color: #4f46e5;">
           <i class="bi bi-calendar-event"></i>

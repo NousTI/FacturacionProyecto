@@ -58,11 +58,10 @@ import { EmpresaPaginacionComponent, PaginationState } from '../../../super-admi
                 <span class="iva-pill">{{ p.porcentaje_iva }}%</span>
               </td>
 
-              <!-- ESTADO -->
               <td>
-                <span class="status-badge" [ngClass]="p.activo ? 'active' : 'inactive'">
+                <span class="badge-status-editorial" [ngClass]="p.activo ? 'activo' : 'inactivo'">
                   <i class="bi" [ngClass]="p.activo ? 'bi-check-circle-fill' : 'bi-x-circle-fill'"></i>
-                  {{ p.activo ? 'Habilitado' : 'Inactivo' }}
+                  {{ p.activo ? 'Activo' : 'Inactivo' }}
                 </span>
               </td>
 
@@ -148,9 +147,12 @@ import { EmpresaPaginacionComponent, PaginationState } from '../../../super-admi
 
     .iva-pill { background: var(--status-neutral-bg); color: var(--text-muted); font-weight: 800; font-size: 0.75rem; padding: 0.3rem 0.6rem; border-radius: 6px; }
 
-    .status-badge { display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.4rem 0.8rem; border-radius: 100px; font-size: 0.72rem; font-weight: 700; }
-    .status-badge.active   { background: var(--status-success-bg); color: var(--status-success-text); }
-    .status-badge.inactive { background: var(--status-neutral-bg); color: var(--status-neutral-text); }
+    .badge-status-editorial {
+      display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.35rem 0.8rem;
+      border-radius: 10px; font-size: 0.72rem; font-weight: 800; text-transform: uppercase;
+    }
+    .badge-status-editorial.activo { background: var(--status-success-bg); color: var(--status-success-text); }
+    .badge-status-editorial.inactivo { background: var(--status-neutral-bg); color: var(--status-neutral-text); }
 
     .btn-actions {
       width: 36px; height: 36px; border-radius: 10px; border: none; background: transparent; color: var(--text-muted);

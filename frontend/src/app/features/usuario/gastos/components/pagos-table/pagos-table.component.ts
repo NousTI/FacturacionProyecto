@@ -40,7 +40,10 @@ import { EmpresaPaginacionComponent, PaginationState } from '../../../../super-a
                   <span class="text-muted" style="font-size: 0.85rem;">{{ pago.fecha_pago | date:'mediumDate' }}</span>
                 </td>
                 <td>
-                  <span class="text-capitalize badge-method-editorial">{{ getMetodoPagoLabel(pago.metodo_pago) }}</span>
+                  <span class="text-capitalize badge-method-editorial">
+                    <i class="bi bi-wallet2 me-1"></i>
+                    {{ getMetodoPagoLabel(pago.metodo_pago) }}
+                  </span>
                 </td>
                 <td>
                   <code class="text-muted">{{ pago.numero_referencia || '-' }}</code>
@@ -116,7 +119,9 @@ import { EmpresaPaginacionComponent, PaginationState } from '../../../../super-a
     .table-editorial tbody tr:hover td { background-color: #f8fafc; }
 
     .badge-method-editorial {
-      background: #f1f5f9; color: #475569; padding: 0.35rem 0.6rem; border-radius: 8px; font-weight: 600; font-size: 0.75rem;
+      display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.35rem 0.8rem;
+      border-radius: 10px; font-size: 0.7rem; font-weight: 800; text-transform: uppercase;
+      background: #f1f5f9; color: #475569;
     }
 
     .btn-action-trigger-editorial {

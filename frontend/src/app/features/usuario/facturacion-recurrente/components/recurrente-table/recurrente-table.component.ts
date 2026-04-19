@@ -3,29 +3,30 @@ import { CommonModule } from '@angular/common';
 import { FacturaProgramada } from '../../../../../domain/models/facturacion-programada.model';
 import { HasPermissionDirective } from '../../../../../core/directives/has-permission.directive';
 import { FACTURACION_PROGRAMADA_PERMISSIONS } from '../../../../../constants/permission-codes';
+import { RecurrentePaginacionComponent, PaginationState } from '../recurrente-paginacion/recurrente-paginacion.component';
 
 @Component({
   selector: 'app-recurrente-table',
   standalone: true,
-  imports: [CommonModule, HasPermissionDirective],
+  imports: [CommonModule, HasPermissionDirective, RecurrentePaginacionComponent],
   template: `
-    <div class="table-card animate__animated animate__fadeIn">
-      <div class="table-responsive">
+    <div class="table-container-lux animate__animated animate__fadeIn">
+      <div class="table-responsive-lux">
         <table class="table custom-table mb-0">
           <thead>
             <tr>
-              <th>Cliente</th>
+              <th class="ps-4">Cliente</th>
               <th class="text-center">Monto</th>
               <th class="text-center">Frecuencia</th>
               <th class="text-center">Próxima Emisión</th>
               <th class="text-center">Estadísticas</th>
               <th class="text-center">Estado</th>
-              <th class="text-end">Acciones</th>
+              <th class="text-end pe-4">Acciones</th>
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let prog of programaciones" class="align-middle">
-              <td>
+            <tr *ngFor="let prog of programaciones" class="align-middle row-lux">
+              <td class="ps-4">
                 <div class="d-flex align-items-center">
                   <div class="client-avatar me-3">
                     {{ (prog.cliente_nombre || 'C')[0] | uppercase }}
@@ -57,11 +58,12 @@ import { FACTURACION_PROGRAMADA_PERMISSIONS } from '../../../../../constants/per
                 <div class="text-muted smallest">Total: {{ prog.total_emisiones }}</div>
               </td>
               <td class="text-center">
-                <span class="status-badge" [class.active]="prog.activo" [class.inactive]="!prog.activo">
+                <span class="badge-status-editorial" [ngClass]="prog.activo ? 'activo' : 'inactivo'">
+                  <i class="bi" [ngClass]="prog.activo ? 'bi-check-circle-fill' : 'bi-x-circle-fill'"></i>
                   {{ prog.activo ? 'ACTIVA' : 'INACTIVA' }}
                 </span>
               </td>
-              <td class="text-end">
+              <td class="text-end pe-4">
                 <div class="dropdown dropdown-premium">
                   <button class="btn btn-icon-premium dropdown-trigger shadow-sm" type="button" data-bs-toggle="dropdown" aria-expanded="false">
                     <i class="bi bi-three-dots-vertical"></i>
@@ -131,22 +133,48 @@ import { FACTURACION_PROGRAMADA_PERMISSIONS } from '../../../../../constants/per
           </tbody>
         </table>
       </div>
+
+      <!-- Paginación integrada -->
+      <app-recurrente-paginacion
+        [pagination]="pagination"
+        (pageChange)="pageChange.emit($event)"
+        (pageSizeChange)="pageSizeChange.emit($event)"
+      ></app-recurrente-paginacion>
     </div>
   `,
   styles: [`
-    .table-card {
+    :host {
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      min-height: 0;
+      width: 100%;
+    }
+
+    .table-container-lux {
       background: white;
-      border-radius: 20px;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04);
       border: 1px solid #f1f5f9;
-      margin-bottom: 2rem;
+      border-radius: 20px;
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      min-height: 0;
+      overflow: hidden;
+      margin-top: 0;
+      margin-bottom: 0;
+    }
+
+    .table-responsive-lux {
+      flex: 1;
+      overflow-y: auto;
+      overflow-x: auto;
       position: relative;
-      z-index: 1;
     }
-    .table-responsive {
-      overflow: visible !important;
-    }
+
     .custom-table thead th {
+      position: sticky;
+      top: 0;
+      z-index: 10;
       background: #f8fafc;
       padding: 1.25rem 1.5rem;
       font-size: 0.75rem;
@@ -185,15 +213,12 @@ import { FACTURACION_PROGRAMADA_PERMISSIONS } from '../../../../../constants/per
     .badge-frecuencia.trimestral { background: #fef3c7; color: #b45309; }
     .badge-frecuencia.anual { background: #dcfce7; color: #15803d; }
  
-    .status-badge {
-      display: inline-block;
-      padding: 0.4rem 0.9rem;
-      border-radius: 10px;
-      font-size: 0.7rem;
-      font-weight: 800;
+    .badge-status-editorial {
+      display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.35rem 0.8rem;
+      border-radius: 10px; font-size: 0.7rem; font-weight: 800; text-transform: uppercase;
     }
-    .status-badge.active { background: rgba(16, 185, 129, 0.1); color: #10b981; }
-    .status-badge.inactive { background: #f1f5f9; color: #94a3b8; }
+    .badge-status-editorial.activo { background: var(--status-success-bg); color: var(--status-success-text); }
+    .badge-status-editorial.inactivo { background: var(--status-neutral-bg); color: var(--status-neutral-text); }
  
     .btn-icon-premium {
       width: 34px;
@@ -286,7 +311,10 @@ import { FACTURACION_PROGRAMADA_PERMISSIONS } from '../../../../../constants/per
 })
 export class RecurrenteTableComponent {
   @Input() programaciones: FacturaProgramada[] = [];
+  @Input() pagination: PaginationState = { currentPage: 1, pageSize: 25, totalItems: 0 };
   @Output() onAction = new EventEmitter<{type: string, data: FacturaProgramada}>();
+  @Output() pageChange = new EventEmitter<number>();
+  @Output() pageSizeChange = new EventEmitter<number>();
 
   get hasPermissionEditar(): boolean {
     return true; // Simplificado ya que el componente padre controla la visibilidad técnica, pero usaremos el directive si es posible o una prop

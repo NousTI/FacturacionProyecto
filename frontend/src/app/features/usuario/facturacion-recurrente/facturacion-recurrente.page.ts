@@ -20,6 +20,7 @@ import { UiService } from '../../../shared/services/ui.service';
 import { PermissionsService } from '../../../core/auth/permissions.service';
 import { FACTURACION_PROGRAMADA_PERMISSIONS } from '../../../constants/permission-codes';
 import { FacturaProgramada } from '../../../domain/models/facturacion-programada.model';
+import { PaginationState } from './components/recurrente-paginacion/recurrente-paginacion.component';
 
 @Component({
   selector: 'app-usuario-facturacion-recurrente',
@@ -59,26 +60,22 @@ import { FacturaProgramada } from '../../../domain/models/facturacion-programada
       </ng-container>
 
       <ng-container *ngIf="canViewModule && !sriError; else noPermission">
-        <div class="container-fluid p-0 animate__animated animate__fadeIn">
+        <div class="container-fluid p-0 animate__animated animate__fadeIn d-flex flex-column flex-grow-1 overflow-hidden" style="gap: 24px;">
           
           <!-- STATS -->
-          <div class="px-4 mb-4">
-            <app-recurrente-stats
-              [activeCount]="stats.activeCount"
-              [successCount]="stats.successCount"
-              [failedCount]="stats.failedCount"
-            ></app-recurrente-stats>
-          </div>
+          <app-recurrente-stats
+            [activeCount]="stats.activeCount"
+            [successCount]="stats.successCount"
+            [failedCount]="stats.failedCount"
+          ></app-recurrente-stats>
 
           <!-- FILTERS & SEARCH + ACTIONS -->
-          <div class="px-4 mb-4">
-            <app-recurrente-actions
-              [(searchQuery)]="searchQuery"
-              [disabledCreate]="!!sriError"
-              (onFilterChange)="handleFilters($event)"
-              (onCreate)="openCreateModal()"
-            ></app-recurrente-actions>
-          </div>
+          <app-recurrente-actions
+            [(searchQuery)]="searchQuery"
+            [disabledCreate]="!!sriError"
+            (onFilterChange)="handleFilters($event)"
+            (onCreate)="openCreateModal()"
+          ></app-recurrente-actions>
 
           <!-- LOADING STATE -->
           <div *ngIf="isLoading" class="d-flex flex-column align-items-center justify-content-center py-5">
@@ -92,12 +89,15 @@ import { FacturaProgramada } from '../../../domain/models/facturacion-programada
           </div>
 
           <!-- TABLE -->
-          <div class="px-4" *ngIf="!isLoading">
-            <app-recurrente-table
-              [programaciones]="filteredProgramaciones"
-              (onAction)="handleAction($event)"
-            ></app-recurrente-table>
-          </div>
+          <app-recurrente-table
+            class="d-flex flex-column flex-grow-1 overflow-hidden"
+            *ngIf="!isLoading"
+            [programaciones]="paginatedProgramaciones"
+            [pagination]="pagination"
+            (onAction)="handleAction($event)"
+            (pageChange)="onPageChange($event)"
+            (pageSizeChange)="onPageSizeChange($event)"
+          ></app-recurrente-table>
 
           <!-- MODALS -->
           <app-create-factura-modal
@@ -195,7 +195,24 @@ import { FacturaProgramada } from '../../../domain/models/facturacion-programada
     </div>
   `,
   styles: [`
-    .recurrente-page-container { min-height: 100vh; background: transparent; }
+    :host {
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      width: 100%;
+      overflow: hidden;
+      min-height: 0;
+    }
+    .recurrente-page-container { 
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      background: transparent;
+      overflow: hidden;
+      min-height: 0;
+      gap: 24px;
+      padding: 0;
+    }
     .page-title { font-size: 1.75rem; font-weight: 900; color: #161d35; margin-bottom: 0.25rem; }
     .page-subtitle { color: #94a3b8; font-size: 0.95rem; font-weight: 500; }
 
@@ -291,6 +308,8 @@ export class FacturacionRecurrentePage implements OnInit, OnDestroy {
   searchQuery: string = '';
   private statusFilter$ = new BehaviorSubject<string>('ALL');
   private frequencyFilter$ = new BehaviorSubject<string>('ALL');
+
+  pagination: PaginationState = { currentPage: 1, pageSize: 25, totalItems: 0 };
 
   sriError: string | null = null;
   isLoading: boolean = true;
@@ -427,6 +446,7 @@ export class FacturacionRecurrentePage implements OnInit, OnDestroy {
   handleFilters(filters: any) {
     this.statusFilter$.next(filters.estado);
     this.frequencyFilter$.next(filters.frecuencia);
+    this.pagination.currentPage = 1;
     this.applyFilters();
   }
 
@@ -449,6 +469,25 @@ export class FacturacionRecurrentePage implements OnInit, OnDestroy {
         return matchSearch && matchStatus && matchFrequency;
       })
       .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+    
+    this.pagination.totalItems = this.filteredProgramaciones.length;
+    this.cdr.detectChanges();
+  }
+
+  get paginatedProgramaciones(): FacturaProgramada[] {
+    const inicio = (this.pagination.currentPage - 1) * this.pagination.pageSize;
+    return this.filteredProgramaciones.slice(inicio, inicio + this.pagination.pageSize);
+  }
+
+  onPageChange(page: number) {
+    this.pagination.currentPage = page;
+    this.cdr.detectChanges();
+  }
+
+  onPageSizeChange(pageSize: number) {
+    this.pagination.pageSize = pageSize;
+    this.pagination.currentPage = 1;
+    this.cdr.detectChanges();
   }
 
   openCreateModal() {

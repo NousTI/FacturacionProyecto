@@ -20,6 +20,7 @@ import { UiService } from '../../../shared/services/ui.service';
 import { PermissionsService } from '../../../core/auth/permissions.service';
 import { Factura, FacturaListadoFiltros } from '../../../domain/models/factura.model';
 import { FACTURAS_PERMISSIONS } from '../../../constants/permission-codes';
+import { PaginationState } from './components/factura-paginacion/factura-paginacion.component';
 
 import { SriConfigService } from '../certificado-sri/services/sri-config.service';
 
@@ -43,7 +44,7 @@ import { SriConfigService } from '../certificado-sri/services/sri-config.service
   template: `
     <div class="facturas-page-container">
       <ng-container *ngIf="canView; else noPermission">
-        <div class="container-fluid p-0">
+        <div class="container-fluid p-0 d-flex flex-column flex-grow-1 overflow-hidden">
 
           <!-- BLOQUEO SRI -->
           <ng-container *ngIf="sriError; else contenidoFacturacion">
@@ -82,9 +83,12 @@ import { SriConfigService } from '../certificado-sri/services/sri-config.service
 
             <!-- TABLE -->
             <app-factura-table
-              [facturas]="filteredFacturas"
+              [facturas]="paginatedFacturas"
+              [pagination]="pagination"
               [processingStates]="processingStates"
               (onAction)="handleAction($event)"
+              (pageChange)="onPageChange($event)"
+              (pageSizeChange)="onPageSizeChange($event)"
             ></app-factura-table>
           </ng-template>
 
@@ -156,9 +160,21 @@ import { SriConfigService } from '../certificado-sri/services/sri-config.service
     </div>
   `,
   styles: [`
+    :host {
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      width: 100%;
+      overflow: hidden;
+      min-height: 0;
+    }
     .facturas-page-container {
-      min-height: 100vh;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
       background: transparent;
+      overflow: hidden;
+      min-height: 0;
     }
     .page-title {
       font-size: 1.75rem;
@@ -301,6 +317,8 @@ export class FacturacionPage implements OnInit {
 
   searchQuery: string = '';
   filters = { estado: 'ALL', estado_pago: 'ALL' };
+
+  pagination: PaginationState = { currentPage: 1, pageSize: 25, totalItems: 0 };
 
   selectedFactura: Factura | null = null;
   isLoading: boolean = false;
@@ -449,11 +467,30 @@ export class FacturacionPage implements OnInit {
 
       return matchSearch && matchEstado && matchPago;
     });
+    
+    this.pagination.totalItems = this.filteredFacturas.length;
+    this.cd.detectChanges();
+  }
+
+  get paginatedFacturas(): Factura[] {
+    const inicio = (this.pagination.currentPage - 1) * this.pagination.pageSize;
+    return this.filteredFacturas.slice(inicio, inicio + this.pagination.pageSize);
+  }
+
+  onPageChange(page: number) {
+    this.pagination.currentPage = page;
+    this.cd.detectChanges();
+  }
+
+  onPageSizeChange(pageSize: number) {
+    this.pagination.pageSize = pageSize;
+    this.pagination.currentPage = 1;
     this.cd.detectChanges();
   }
 
   handleFilters(filters: any) {
     this.filters = filters;
+    this.pagination.currentPage = 1;
     this.applyFilters();
   }
 

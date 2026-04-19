@@ -36,6 +36,7 @@ import { EmpresaPaginacionComponent, PaginationState } from '../../../../super-a
                 </td>
                 <td class="text-center">
                   <span class="badge-status-editorial" [ngClass]="cat.activo ? 'activo' : 'inactivo'">
+                    <i class="bi" [ngClass]="cat.activo ? 'bi-check-circle-fill' : 'bi-x-circle-fill'"></i>
                     {{ cat.activo ? 'Activa' : 'Inactiva' }}
                   </span>
                 </td>
@@ -105,10 +106,11 @@ import { EmpresaPaginacionComponent, PaginationState } from '../../../../super-a
     }
 
     .badge-status-editorial {
-      display: inline-flex; align-items: center; padding: 0.25rem 0.75rem; border-radius: 8px; font-size: 0.65rem; font-weight: 700; text-transform: uppercase;
+      display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.35rem 0.8rem;
+      border-radius: 10px; font-size: 0.7rem; font-weight: 800; text-transform: uppercase;
     }
-    .badge-status-editorial.activo { background: #f0fdf4; color: #166534; }
-    .badge-status-editorial.inactivo { background: #fef2f2; color: #991b1b; }
+    .badge-status-editorial.activo { background: var(--status-success-bg); color: var(--status-success-text); }
+    .badge-status-editorial.inactivo { background: var(--status-neutral-bg); color: var(--status-neutral-text); }
 
     .btn-action-trigger-editorial {
       width: 32px; height: 32px; border-radius: 8px; border: none; background: transparent; color: #94a3b8; transition: all 0.2s; display: inline-flex; align-items: center; justify-content: center;

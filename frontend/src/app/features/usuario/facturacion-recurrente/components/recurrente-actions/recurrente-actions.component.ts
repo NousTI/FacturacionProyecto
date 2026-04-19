@@ -74,7 +74,6 @@ import { HasPermissionDirective } from '../../../../../shared/directives/has-per
   `,
   styles: [`
     .recurrente-actions-container {
-      margin-bottom: 2rem;
     }
 
     .search-input-wrapper {

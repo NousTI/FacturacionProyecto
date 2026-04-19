@@ -2,204 +2,243 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Factura } from '../../../../../domain/models/factura.model';
 import { HasPermissionDirective } from '../../../../../shared/directives/has-permission.directive';
+import { FacturaPaginacionComponent, PaginationState } from '../factura-paginacion/factura-paginacion.component';
+
+// - [x] Create `FacturaPaginacionComponent`
+// - [x] Update `FacturaTableComponent` to include pagination
+// - [x] Fix `FacturacionPage` layout and styles
+// - [x] Adjust `FacturaTableComponent` fine-tuning (margins, etc.)
+// - [ ] Verify implementation
 
 @Component({
   selector: 'app-factura-table',
   standalone: true,
-  imports: [CommonModule, HasPermissionDirective],
+  imports: [CommonModule, HasPermissionDirective, FacturaPaginacionComponent],
   template: `
     <div class="table-container-lux">
-      <table class="table mb-0 align-middle">
-        <thead>
-          <tr>
-            <th class="ps-4">Comprobante / ID</th>
-            <th>Cliente / Receptor</th>
-            <th style="width: 130px">Emisión</th>
-            <th style="width: 140px">Total (USD)</th>
-            <th style="width: 160px">Método Pago</th>
-            <th style="width: 140px">Estado</th>
-            <th class="text-end pe-4" style="width: 80px">Gesti&oacute;n</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let factura of facturas" class="row-lux">
-            <!-- Numero y Secuencial -->
-            <td class="ps-4">
-              <div class="d-flex align-items-center">
-                <div class="item-icon-wrapper me-3" style="background: #f1f5f9; color: #161d35;">
-                  <i class="bi bi-file-earmark-text-fill"></i>
+      <div class="table-responsive-lux">
+        <table class="table mb-0 align-middle">
+          <thead>
+            <tr>
+              <th class="ps-4">Comprobante / ID</th>
+              <th>Cliente / Receptor</th>
+              <th style="width: 130px">Emisión</th>
+              <th style="width: 140px">Total (USD)</th>
+              <th style="width: 160px">Método Pago</th>
+              <th style="width: 140px">Estado</th>
+              <th class="text-end pe-4" style="width: 80px">Gesti&oacute;n</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let factura of facturas" class="row-lux">
+              <!-- Numero y Secuencial -->
+              <td class="ps-4">
+                <div class="d-flex align-items-center">
+                  <div class="item-icon-wrapper me-3" style="background: #f1f5f9; color: #161d35;">
+                    <i class="bi bi-file-earmark-text-fill"></i>
+                  </div>
+                  <div>
+                    <span class="fw-bold text-dark d-block mb-0">{{ factura.numero_factura || 'BORRADOR' }}</span>
+                    <small *ngIf="factura.numero_autorizacion" class="text-muted text-uppercase fw-800" style="font-size: 0.65rem; letter-spacing: 0.5px;">
+                      AUTH: {{ factura.numero_autorizacion | slice:0:8 }}...
+                    </small>
+                  </div>
                 </div>
-                <div>
-                  <span class="fw-bold text-dark d-block mb-0">{{ factura.numero_factura || 'BORRADOR' }}</span>
-                  <small *ngIf="factura.numero_autorizacion" class="text-muted text-uppercase fw-800" style="font-size: 0.65rem; letter-spacing: 0.5px;">
-                    AUTH: {{ factura.numero_autorizacion | slice:0:8 }}...
-                  </small>
+              </td>
+
+              <!-- Cliente -->
+              <td>
+                <div class="d-flex align-items-center">
+                  <div class="avatar-soft-lux me-3" [style.background]="getAvatarColor(factura.snapshot_cliente?.razon_social || 'C', 0.1)" [style.color]="getAvatarColor(factura.snapshot_cliente?.razon_social || 'C', 1)">
+                    {{ getInitials(factura.snapshot_cliente?.razon_social || 'Cliente') }}
+                  </div>
+                  <div>
+                    <span class="fw-bold text-dark d-block mb-0">{{ factura.snapshot_cliente?.razon_social || 'Consumidor Final' }}</span>
+                    <small class="text-muted" style="font-size: 0.75rem;">{{ factura.snapshot_cliente?.identificacion || '9999999999999' }}</small>
+                  </div>
                 </div>
-              </div>
-            </td>
+              </td>
 
-            <!-- Cliente -->
-            <td>
-              <div class="d-flex align-items-center">
-                <div class="avatar-soft-lux me-3" [style.background]="getAvatarColor(factura.snapshot_cliente?.razon_social || 'C', 0.1)" [style.color]="getAvatarColor(factura.snapshot_cliente?.razon_social || 'C', 1)">
-                  {{ getInitials(factura.snapshot_cliente?.razon_social || 'Cliente') }}
+              <!-- Fecha -->
+              <td>
+                <div class="date-lux">{{ factura.fecha_emision | date:'dd MMM, yyyy' }}</div>
+              </td>
+
+               <!-- Total -->
+              <td>
+                <span class="price-lux">{{ factura.total | currency:'USD' }}</span>
+              </td>
+
+              <!-- Método Pago -->
+              <td>
+                <div class="payment-method-lux">
+                  <i class="bi bi-wallet2 me-1"></i>
+                  {{ getFormaPagoString(factura.forma_pago_sri) }}
                 </div>
-                <div>
-                  <span class="fw-bold text-dark d-block mb-0">{{ factura.snapshot_cliente?.razon_social || 'Consumidor Final' }}</span>
-                  <small class="text-muted" style="font-size: 0.75rem;">{{ factura.snapshot_cliente?.identificacion || '9999999999999' }}</small>
+              </td>
+
+              <!-- Estado Emisión -->
+              <td>
+                <div class="badge-status-lux mb-1" [ngClass]="getStatusClass(factura.estado)">
+                  <div class="dot" *ngIf="!processingStates.has(factura.id)"></div>
+                  <div class="spinner-border spinner-border-sm me-2" role="status" *ngIf="processingStates.has(factura.id)" style="width: 10px; height: 10px; border-width: 2px;"></div>
+                  {{ processingStates.has(factura.id) ? (processingStates.get(factura.id) === 'emitir' ? 'ENVIANDO...' : 'CONSULTANDO...') : factura.estado }}
                 </div>
-              </div>
-            </td>
+                <div *ngIf="factura.estado === 'AUTORIZADA' || factura.estado === 'ANULADA'" class="badge-status-lux w-100" [ngClass]="getPaymentStatusClass(factura.estado_pago)">
+                  <i class="bi bi-cash-stack me-1" style="font-size: 0.8rem;"></i>
+                  {{ factura.estado_pago }}
+                </div>
+              </td>
 
-            <!-- Fecha -->
-            <td>
-              <div class="date-lux">{{ factura.fecha_emision | date:'dd MMM, yyyy' }}</div>
-            </td>
-
-             <!-- Total -->
-            <td>
-              <span class="price-lux">{{ factura.total | currency:'USD' }}</span>
-            </td>
-
-            <!-- Método Pago -->
-            <td>
-              <div class="payment-method-lux">
-                <i class="bi bi-wallet2 me-1"></i>
-                {{ getFormaPagoString(factura.forma_pago_sri) }}
-              </div>
-            </td>
-
-            <!-- Estado Emisión -->
-            <td>
-              <div class="badge-status-lux mb-1" [ngClass]="getStatusClass(factura.estado)">
-                <div class="dot" *ngIf="!processingStates.has(factura.id)"></div>
-                <div class="spinner-border spinner-border-sm me-2" role="status" *ngIf="processingStates.has(factura.id)" style="width: 10px; height: 10px; border-width: 2px;"></div>
-                {{ processingStates.has(factura.id) ? (processingStates.get(factura.id) === 'emitir' ? 'ENVIANDO...' : 'CONSULTANDO...') : factura.estado }}
-              </div>
-              <div *ngIf="factura.estado === 'AUTORIZADA' || factura.estado === 'ANULADA'" class="badge-status-lux w-100" [ngClass]="getPaymentStatusClass(factura.estado_pago)">
-                <i class="bi bi-cash-stack me-1" style="font-size: 0.8rem;"></i>
-                {{ factura.estado_pago }}
-              </div>
-            </td>
-
-            <!-- Acciones -->
-            <td class="text-end pe-4">
-              <div class="dropdown">
-                <button 
-                  class="btn-trigger-lux" 
-                  type="button" 
-                  [id]="'actions-f-' + factura.id" 
-                  data-bs-toggle="dropdown" 
-                  aria-expanded="false"
-                >
-                  <i class="bi bi-three-dots-vertical"></i>
-                </button>
-                <ul class="dropdown-menu dropdown-menu-end border-0 p-2 rounded-4" [attr.aria-labelledby]="'actions-f-' + factura.id">
-                  
-                  <li> 
-                    <a class="dropdown-item py-2" href="javascript:void(0)" (click)="onAction.emit({type: 'view', factura})">
-                      <div class="icon-item bg-soft-info"><i class="bi bi-eye-fill"></i></div>
-                      <span class="ms-2">Ver Detalles</span>
-                    </a>
-                  </li>
-
-                  <ng-container *hasPermission="'FACTURAS_EDITAR'">
-                    <li *ngIf="factura.estado === 'BORRADOR'">
-                      <a class="dropdown-item py-2" href="javascript:void(0)" (click)="onAction.emit({type: 'edit', factura})">
-                        <div class="icon-item bg-soft-primary"><i class="bi bi-pencil-fill"></i></div>
-                        <span class="ms-2">Editar</span>
-                      </a>
-                    </li>
-                  </ng-container>
-
-                  <ng-container *hasPermission="'FACTURAS_ENVIAR_SRI'">
-                    <li *ngIf="['BORRADOR', 'DEVUELTA', 'ERROR_TECNICO'].includes(factura.estado)">
-                      <a class="dropdown-item py-2" href="javascript:void(0)" (click)="onAction.emit({type: 'sri', factura})">
-                        <div class="icon-item bg-soft-success"><i class="bi bi-cloud-arrow-up-fill"></i></div>
-                        <span class="ms-2 text-success">Enviar al SRI</span>
+              <!-- Acciones -->
+              <td class="text-end pe-4">
+                <div class="dropdown">
+                  <button 
+                    class="btn-trigger-lux" 
+                    type="button" 
+                    [id]="'actions-f-' + factura.id" 
+                    data-bs-toggle="dropdown" 
+                    aria-expanded="false"
+                  >
+                    <i class="bi bi-three-dots-vertical"></i>
+                  </button>
+                  <ul class="dropdown-menu dropdown-menu-end border-0 p-2 rounded-4" [attr.aria-labelledby]="'actions-f-' + factura.id">
+                    
+                    <li> 
+                      <a class="dropdown-item py-2" href="javascript:void(0)" (click)="onAction.emit({type: 'view', factura})">
+                        <div class="icon-item bg-soft-info"><i class="bi bi-eye-fill"></i></div>
+                        <span class="ms-2">Ver Detalles</span>
                       </a>
                     </li>
 
-                    <li *ngIf="factura.estado === 'EN_PROCESO'">
-                      <a class="dropdown-item py-2" href="javascript:void(0)" (click)="onAction.emit({type: 'consultar', factura})">
-                        <div class="icon-item bg-soft-info"><i class="bi bi-arrow-clockwise"></i></div>
-                        <span class="ms-2 text-info">Consultar SRI</span>
-                      </a>
-                    </li>
-                  </ng-container>
+                    <ng-container *hasPermission="'FACTURAS_EDITAR'">
+                      <li *ngIf="factura.estado === 'BORRADOR'">
+                        <a class="dropdown-item py-2" href="javascript:void(0)" (click)="onAction.emit({type: 'edit', factura})">
+                          <div class="icon-item bg-soft-primary"><i class="bi bi-pencil-fill"></i></div>
+                          <span class="ms-2">Editar</span>
+                        </a>
+                      </li>
+                    </ng-container>
 
-                  <ng-container *hasPermission="'FACTURAS_DESCARGAR_PDF'">
-                    <li *ngIf="factura.estado === 'AUTORIZADA' || factura.estado === 'ANULADA'">
-                      <a class="dropdown-item py-2" href="javascript:void(0)" (click)="onAction.emit({type: 'pdf', factura})">
-                        <div class="icon-item bg-soft-danger"><i class="bi bi-file-earmark-pdf-fill"></i></div>
-                        <span class="ms-2">Descargar PDF</span>
-                      </a>
-                    </li>
-                  </ng-container>
+                    <ng-container *hasPermission="'FACTURAS_ENVIAR_SRI'">
+                      <li *ngIf="['BORRADOR', 'DEVUELTA', 'ERROR_TECNICO'].includes(factura.estado)">
+                        <a class="dropdown-item py-2" href="javascript:void(0)" (click)="onAction.emit({type: 'sri', factura})">
+                          <div class="icon-item bg-soft-success"><i class="bi bi-cloud-arrow-up-fill"></i></div>
+                          <span class="ms-2 text-success">Enviar al SRI</span>
+                        </a>
+                      </li>
 
-                  <ng-container *hasPermission="'FACTURAS_ENVIAR_EMAIL'">
-                    <li *ngIf="factura.estado === 'AUTORIZADA' || factura.estado === 'ANULADA'">
-                      <a class="dropdown-item py-2" href="javascript:void(0)" (click)="onAction.emit({type: 'email', factura})">
-                        <div class="icon-item bg-soft-secondary"><i class="bi bi-envelope-fill"></i></div>
-                        <span class="ms-2">Enviar Email</span>
-                      </a>
-                    </li>
-                  </ng-container>
+                      <li *ngIf="factura.estado === 'EN_PROCESO'">
+                        <a class="dropdown-item py-2" href="javascript:void(0)" (click)="onAction.emit({type: 'consultar', factura})">
+                          <div class="icon-item bg-soft-info"><i class="bi bi-arrow-clockwise"></i></div>
+                          <span class="ms-2 text-info">Consultar SRI</span>
+                        </a>
+                      </li>
+                    </ng-container>
 
-                  <ng-container *hasPermission="'FACTURAS_ANULAR'">
-                    <li *ngIf="factura.estado === 'AUTORIZADA'">
-                      <a class="dropdown-item py-2 text-danger" href="javascript:void(0)" (click)="onAction.emit({type: 'anular', factura})">
-                        <div class="icon-item bg-soft-danger"><i class="bi bi-x-circle-fill"></i></div>
-                        <span class="ms-2">Anular Factura</span>
-                      </a>
-                    </li>
-                  </ng-container>
+                    <ng-container *hasPermission="'FACTURAS_DESCARGAR_PDF'">
+                      <li *ngIf="factura.estado === 'AUTORIZADA' || factura.estado === 'ANULADA'">
+                        <a class="dropdown-item py-2" href="javascript:void(0)" (click)="onAction.emit({type: 'pdf', factura})">
+                          <div class="icon-item bg-soft-danger"><i class="bi bi-file-earmark-pdf-fill"></i></div>
+                          <span class="ms-2">Descargar PDF</span>
+                        </a>
+                      </li>
+                    </ng-container>
 
-                  <ng-container *hasPermission="'PAGO_FACTURA_CREAR'">
-                    <li *ngIf="factura.estado === 'AUTORIZADA'">
-                      <a class="dropdown-item py-2" href="javascript:void(0)" (click)="onAction.emit({type: 'abono', factura})">
-                        <div class="icon-item bg-soft-primary">
-                           <i class="bi bi-wallet2 text-primary"></i>
-                        </div>
-                        <span class="ms-2 fw-bold text-primary">Detalle de Pagos / Abonos</span>
-                      </a>
-                    </li>
-                  </ng-container>
+                    <ng-container *hasPermission="'FACTURAS_ENVIAR_EMAIL'">
+                      <li *ngIf="factura.estado === 'AUTORIZADA' || factura.estado === 'ANULADA'">
+                        <a class="dropdown-item py-2" href="javascript:void(0)" (click)="onAction.emit({type: 'email', factura})">
+                          <div class="icon-item bg-soft-secondary"><i class="bi bi-envelope-fill"></i></div>
+                          <span class="ms-2">Enviar Email</span>
+                        </a>
+                      </li>
+                    </ng-container>
 
-                  <ng-container *hasPermission="'FACTURAS_EDITAR'">
-                    <li *ngIf="factura.estado === 'BORRADOR'">
-                      <a class="dropdown-item py-2 text-danger" href="javascript:void(0)" (click)="onAction.emit({type: 'delete', factura})">
-                        <div class="icon-item bg-soft-danger"><i class="bi bi-trash3-fill"></i></div>
-                        <span class="ms-2">Eliminar</span>
-                      </a>
-                    </li>
-                  </ng-container>
-                </ul>
-              </div>
-            </td>
-          </tr>
-        </tbody>
-      </table>
+                    <ng-container *hasPermission="'FACTURAS_ANULAR'">
+                      <li *ngIf="factura.estado === 'AUTORIZADA'">
+                        <a class="dropdown-item py-2 text-danger" href="javascript:void(0)" (click)="onAction.emit({type: 'anular', factura})">
+                          <div class="icon-item bg-soft-danger"><i class="bi bi-x-circle-fill"></i></div>
+                          <span class="ms-2">Anular Factura</span>
+                        </a>
+                      </li>
+                    </ng-container>
 
-      <div *ngIf="facturas.length === 0" class="empty-state py-5 text-center">
-        <div class="empty-icon-bg mb-3 mx-auto">
-          <i class="bi bi-receipt"></i>
+                    <ng-container *hasPermission="'PAGO_FACTURA_CREAR'">
+                      <li *ngIf="factura.estado === 'AUTORIZADA'">
+                        <a class="dropdown-item py-2" href="javascript:void(0)" (click)="onAction.emit({type: 'abono', factura})">
+                          <div class="icon-item bg-soft-primary">
+                             <i class="bi bi-wallet2 text-primary"></i>
+                          </div>
+                          <span class="ms-2 fw-bold text-primary">Detalle de Pagos / Abonos</span>
+                        </a>
+                      </li>
+                    </ng-container>
+
+                    <ng-container *hasPermission="'FACTURAS_EDITAR'">
+                      <li *ngIf="factura.estado === 'BORRADOR'">
+                        <a class="dropdown-item py-2 text-danger" href="javascript:void(0)" (click)="onAction.emit({type: 'delete', factura})">
+                          <div class="icon-item bg-soft-danger"><i class="bi bi-trash3-fill"></i></div>
+                          <span class="ms-2">Eliminar</span>
+                        </a>
+                      </li>
+                    </ng-container>
+                  </ul>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div *ngIf="facturas.length === 0" class="empty-state py-5 text-center">
+          <div class="empty-icon-bg mb-3 mx-auto">
+            <i class="bi bi-receipt"></i>
+          </div>
+          <h5 class="fw-bold text-dark">No hay registros</h5>
+          <p class="text-muted small">No se encontraron facturas con los filtros actuales.</p>
         </div>
-        <h5 class="fw-bold text-dark">No hay registros</h5>
-        <p class="text-muted small">No se encontraron facturas con los filtros actuales.</p>
       </div>
+
+      <!-- Paginación integrada -->
+      <app-factura-paginacion
+        [pagination]="pagination"
+        (pageChange)="pageChange.emit($event)"
+        (pageSizeChange)="pageSizeChange.emit($event)"
+      ></app-factura-paginacion>
     </div>
   `,
   styles: [`
+    :host {
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      min-height: 0;
+      width: 100%;
+    }
+
     .table-container-lux {
       background: white;
       border: 1px solid #f1f5f9;
       border-radius: 24px;
-      overflow: visible;
-      margin-top: 1rem;
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      min-height: 0;
+      overflow: hidden;
+      margin-top: 0;
+      margin-bottom: 0;
+    }
+
+    .table-responsive-lux {
+      flex: 1;
+      overflow-y: auto;
+      overflow-x: auto;
+      position: relative;
     }
 
     .table thead th {
+      position: sticky;
+      top: 0;
+      z-index: 10;
       background: #fcfdfe;
       padding: 1.25rem 1rem;
       font-size: 0.65rem;
@@ -381,8 +420,12 @@ import { HasPermissionDirective } from '../../../../../shared/directives/has-per
 })
 export class FacturaTableComponent {
   @Input() facturas: Factura[] = [];
+  @Input() pagination: PaginationState = { currentPage: 1, pageSize: 25, totalItems: 0 };
   @Input() processingStates: Map<string, 'consultar' | 'emitir'> = new Map();
+
   @Output() onAction = new EventEmitter<{ type: string, factura: Factura }>();
+  @Output() pageChange = new EventEmitter<number>();
+  @Output() pageSizeChange = new EventEmitter<number>();
 
   getInitials(name: string): string {
     if (!name) return '??';

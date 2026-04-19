@@ -46,9 +46,8 @@ import { EmpresaPaginacionComponent, PaginationState } from '../../../super-admi
                 </div>
               </td>
 
-              <!-- ESTADO -->
               <td>
-                <span class="status-badge" [ngClass]="cliente.activo ? 'active' : 'inactive'">
+                <span class="badge-status-editorial" [ngClass]="cliente.activo ? 'activo' : 'inactivo'">
                   <i class="bi" [ngClass]="cliente.activo ? 'bi-check-circle-fill' : 'bi-x-circle-fill'"></i>
                   {{ cliente.activo ? 'Activo' : 'Inactivo' }}
                 </span>
@@ -208,23 +207,12 @@ import { EmpresaPaginacionComponent, PaginationState } from '../../../super-admi
     }
 
     /* Status Badge */
-    .status-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.4rem;
-      padding: 0.4rem 0.8rem;
-      border-radius: 100px;
-      font-size: 0.75rem;
-      font-weight: 701;
+    .badge-status-editorial {
+      display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.35rem 0.8rem;
+      border-radius: 10px; font-size: 0.72rem; font-weight: 800; text-transform: uppercase;
     }
-    .status-badge.active {
-      background: var(--status-success-bg);
-      color: var(--status-success-text);
-    }
-    .status-badge.inactive {
-      background: var(--status-neutral-bg);
-      color: var(--status-neutral-text);
-    }
+    .badge-status-editorial.activo { background: var(--status-success-bg); color: var(--status-success-text); }
+    .badge-status-editorial.inactivo { background: var(--status-neutral-bg); color: var(--status-neutral-text); }
 
     /* Contact Info */
     .contact-info {

@@ -46,6 +46,11 @@ import { EmpresaPaginacionComponent, PaginationState } from '../../../../super-a
                 </td>
                 <td class="text-center">
                   <span class="badge-status-editorial" [ngClass]="gasto.estado_pago">
+                    <i class="bi" [ngClass]="{
+                      'bi-check-circle-fill': gasto.estado_pago === 'pagado',
+                      'bi-clock-history': gasto.estado_pago === 'pendiente',
+                      'bi-exclamation-circle-fill': gasto.estado_pago === 'vencido'
+                    }"></i>
                     {{ gasto.estado_pago }}
                   </span>
                 </td>
@@ -146,8 +151,8 @@ import { EmpresaPaginacionComponent, PaginationState } from '../../../../super-a
     }
 
     .badge-status-editorial {
-      display: inline-flex; align-items: center; padding: 0.25rem 0.75rem;
-      border-radius: 8px; font-size: 0.65rem; font-weight: 700; text-transform: uppercase;
+      display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.35rem 0.8rem;
+      border-radius: 10px; font-size: 0.7rem; font-weight: 800; text-transform: uppercase;
     }
     .badge-status-editorial.pendiente { background: var(--status-warning-bg); color: var(--status-warning-text); }
     .badge-status-editorial.pagado    { background: var(--status-success-bg); color: var(--status-success-text); }
