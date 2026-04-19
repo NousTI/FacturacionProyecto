@@ -176,9 +176,9 @@ import { EmpresaPaginacionComponent, PaginationState } from '../empresa-paginaci
       margin-top: 0; 
     }
     .table-container {
-      background: var(--bg-main, #ffffff);
+      background: var(--bg-main);
       border-radius: 20px;
-      border: 1px solid var(--border-color, #f1f5f9);
+      border: 1px solid var(--border-color);
       display: flex;
       flex-direction: column;
       flex: 1;
@@ -201,20 +201,20 @@ import { EmpresaPaginacionComponent, PaginationState } from '../empresa-paginaci
       position: sticky;
       top: 0;
       z-index: 10;
-      background: var(--bg-main, #ffffff);
+      background: var(--bg-main);
       padding: 1rem 1.5rem;
       font-size: var(--text-base);
       text-transform: capitalize;
       letter-spacing: 0;
-      color: #0f172a;
+      color: var(--text-main);
       font-weight: 600;
-      border-bottom: 2px solid var(--border-color, #f1f5f9);
+      border-bottom: 2px solid var(--border-color);
       vertical-align: middle;
     }
     .table tbody td {
       padding: 1.25rem 1.5rem;
-      border-bottom: 1px solid var(--border-color, #f1f5f9);
-      color: var(--text-muted, #475569);
+      border-bottom: 1px solid var(--border-color);
+      color: var(--text-muted);
       font-size: var(--text-md);
     }
     
@@ -223,7 +223,7 @@ import { EmpresaPaginacionComponent, PaginationState } from '../empresa-paginaci
       border-radius: 12px;
       display: flex; align-items: center; justify-content: center;
       font-weight: 700; font-size: var(--text-base);
-      background: var(--primary-color, var(--primary-color));
+      background: var(--primary-color);
       color: #ffffff;
       flex-shrink: 0;
     }
@@ -245,13 +245,13 @@ import { EmpresaPaginacionComponent, PaginationState } from '../empresa-paginaci
     .usage-container { width: 100%; max-width: 120px; }
     .progress-premium {
       height: 4px;
-      background: #f1f5f9;
+      background: var(--status-neutral-bg);
       border-radius: 10px;
       overflow: hidden;
     }
     .progress-bar-premium {
       height: 100%;
-      background: #111827;
+      background: var(--primary-color);
       border-radius: 10px;
       transition: width 0.3s ease;
     }
@@ -259,16 +259,17 @@ import { EmpresaPaginacionComponent, PaginationState } from '../empresa-paginaci
     .btn-action-trigger {
       background: transparent; border: none;
       width: 32px; height: 32px;
-      border-radius: 8px; color: #94a3b8;
+      border-radius: 8px; color: var(--text-muted);
       transition: all 0.2s;
     }
     .btn-action-trigger:hover, .btn-action-trigger[aria-expanded="true"] {
-      background: #f8fafc; color: #0f172a;
+      background: var(--status-neutral-bg); color: var(--text-main);
     }
     
     .dropdown-menu {
-      border: 1px solid var(--border-color, #e2e8f0) !important;
-      box-shadow: none !important;
+      background: var(--bg-main) !important;
+      border: 1px solid var(--border-color) !important;
+      box-shadow: 0 10px 30px -10px rgba(0,0,0,0.1) !important;
       border-radius: 12px !important;
       padding: 0.5rem !important;
     }
@@ -276,17 +277,17 @@ import { EmpresaPaginacionComponent, PaginationState } from '../empresa-paginaci
       border-radius: 8px !important;
       font-size: var(--text-base);
       font-weight: 500;
-      color: var(--text-muted, #475569); padding: 0.5rem 1rem;
+      color: var(--text-muted); padding: 0.5rem 1rem;
       display: flex; align-items: center;
       cursor: pointer;
     }
-    .dropdown-item:hover { background: #f8fafc; color: #0f172a; }
+    .dropdown-item:hover { background: var(--status-neutral-bg); color: var(--text-main); }
     .dropdown-item i { font-size: 1.1rem; margin-right: 0.75rem; }
     
     .fw-800 { font-weight: 800; }
     .fw-600 { font-weight: 600; }
-    .text-corporate { color: var(--primary-color, #111827) !important; }
-    .font-mono { font-family: 'DM Mono', monospace; font-size: 0.8rem; color: #94a3b8; }
+    .text-corporate { color: var(--primary-color) !important; }
+    .font-mono { font-family: 'DM Mono', monospace; font-size: 0.8rem; color: var(--text-muted); }
   `],
   standalone: true,
   imports: [CommonModule, EmpresaPaginacionComponent]

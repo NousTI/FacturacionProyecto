@@ -115,7 +115,7 @@ import { SolicitudRenovacion } from '../../../../../domain/models/renovacion.mod
     
     .grid-details {
       display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;
-      padding-top: 1.5rem; border-top: 1px solid #e2e8f0;
+      padding-top: 1.5rem; border-top: 1px solid var(--border-color);
     }
     .detail-item label {
       display: block; font-size: 0.65rem; font-weight: 800;
@@ -128,12 +128,12 @@ import { SolicitudRenovacion } from '../../../../../domain/models/renovacion.mod
     }
 
     .btn-attachment {
-      background: #ffffff; border: 1px solid #e2e8f0; border-radius: 10px;
+      background: var(--bg-main); border: 1px solid var(--border-color); border-radius: 10px;
       padding: 0.75rem 1rem; display: flex; align-items: center;
-      text-decoration: none; color: #475569; font-weight: 600; font-size: 0.85rem;
+      text-decoration: none; color: var(--text-main); font-weight: 600; font-size: 0.85rem;
       transition: all 0.2s;
     }
-    .btn-attachment:hover { background: #f1f5f9; color: var(--primary-color); border-color: #cbd5e1; }
+    .btn-attachment:hover { background: var(--status-neutral-bg); color: var(--primary-color); border-color: var(--status-info); }
 
     .btn-lux-primary {
       background: var(--status-success); color: #ffffff;
@@ -143,11 +143,11 @@ import { SolicitudRenovacion } from '../../../../../domain/models/renovacion.mod
     .btn-lux-primary:hover { opacity: 0.85; filter: brightness(1.1); transform: translateY(-1px); }
     
     .btn-lux-secondary {
-      background: #ffffff; color: var(--text-muted); border: 1px solid var(--border-color);
+      background: var(--bg-main); color: var(--text-muted); border: 1px solid var(--border-color);
       padding: 0.75rem 1.5rem; border-radius: 12px; font-weight: 600;
       transition: all 0.2s;
     }
-    .btn-lux-secondary:hover { background: var(--bg-main); }
+    .btn-lux-secondary:hover { background: var(--status-neutral-bg); color: var(--text-main); }
 
     .badge-status-premium {
       padding: 0.2rem 0.6rem; border-radius: 6px; font-size: 0.7rem;

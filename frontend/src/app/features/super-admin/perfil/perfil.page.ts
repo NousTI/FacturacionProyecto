@@ -38,14 +38,14 @@ import { SuperadminPerfil, SuperadminPerfilUpdate } from '../../../domain/models
             <div class="status-summary border-top pt-4 text-start">
               <div class="info-row d-flex justify-content-between align-items-center mb-3">
                 <label class="mb-0">Estado de Acceso</label>
-                <div class="d-flex align-items-center fw-bold text-corporate small">
+                <div class="d-flex align-items-center fw-bold text-dark small">
                   <span class="status-indicator me-2" [class.active]="(perfil$ | async)?.estado === 'ACTIVA'"></span>
                   {{ (perfil$ | async)?.estado }}
                 </div>
               </div>
               <div class="info-row d-flex justify-content-between align-items-center">
                 <label class="mb-0">Perfil de Sistema</label>
-                <div class="fw-bold text-corporate small">
+                <div class="fw-bold text-dark small">
                   {{ (perfil$ | async)?.activo ? 'HABILITADO' : 'DESHABILITADO' }}
                 </div>
               </div>
@@ -100,7 +100,7 @@ import { SuperadminPerfil, SuperadminPerfilUpdate } from '../../../domain/models
                   <div class="col-md-6">
                     <div class="info-row">
                       <label class="editorial-label">Correo Electrónico de Acceso</label>
-                      <div class="value text-corporate">{{ (perfil$ | async)?.email }}</div>
+                      <div class="value">{{ (perfil$ | async)?.email }}</div>
                     </div>
                   </div>
                   <div class="col-md-6">
@@ -160,7 +160,7 @@ import { SuperadminPerfil, SuperadminPerfilUpdate } from '../../../domain/models
                     <div class="col-md-6">
                       <div class="info-row">
                         <label class="editorial-label">Correo Electrónico de Acceso</label>
-                        <div class="value text-corporate">{{ (perfil$ | async)?.email }}</div>
+                        <div class="value">{{ (perfil$ | async)?.email }}</div>
                         <small class="text-muted" style="font-size: 0.75rem;">El correo electrónico no se puede cambiar.</small>
                       </div>
                     </div>
@@ -184,7 +184,7 @@ import { SuperadminPerfil, SuperadminPerfilUpdate } from '../../../domain/models
           <div class="editorial-card mt-4 p-0" style="max-width: none; overflow: hidden;">
             <div class="card-header-minimal px-4 d-flex justify-content-between align-items-center">
                <div><i class="bi bi-shield-lock me-2"></i> Seguridad de la Cuenta</div>
-               <button *ngIf="!isChangingPassword" class="btn btn-sm btn-link text-primary fw-bold text-decoration-none" (click)="startChangePassword()">
+               <button *ngIf="!isChangingPassword" class="btn btn-sm btn-link text-dark fw-bold text-decoration-none" (click)="startChangePassword()">
                   Cambiar Contraseña
                </button>
             </div>
@@ -244,8 +244,8 @@ import { SuperadminPerfil, SuperadminPerfilUpdate } from '../../../domain/models
       border-bottom: 1px solid var(--border-color);
       font-weight: 800;
       font-size: 0.95rem;
-      color: var(--primary-color);
-      background: #f8fafc;
+      color: var(--text-main);
+      background: var(--bg-main);
     }
     .info-row label {
       /* Ya manejado por .editorial-label */
@@ -253,7 +253,7 @@ import { SuperadminPerfil, SuperadminPerfilUpdate } from '../../../domain/models
     .info-row .value {
       font-size: 1.1rem;
       font-weight: 700;
-      color: var(--primary-color);
+      color: var(--text-main);
     }
     .info-row .value-small {
       font-size: 0.9rem;

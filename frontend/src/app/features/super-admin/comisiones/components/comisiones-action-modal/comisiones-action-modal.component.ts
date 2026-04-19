@@ -76,7 +76,7 @@ import { Comision } from '../../services/comisiones.service';
       display: flex; align-items: center; justify-content: center; z-index: 10010;
     }
     .modal-container-action {
-      background: white; width: 450px; max-width: 90vw;
+      background: var(--bg-main); width: 450px; max-width: 90vw;
       border-radius: 24px; overflow: hidden;
       box-shadow: 0 20px 60px -10px rgba(22, 29, 53, 0.2);
     }
@@ -94,25 +94,25 @@ import { Comision } from '../../services/comisiones.service';
     .icon-wrapper.pay { background: var(--status-success-bg); color: var(--status-success-text); }
     .icon-wrapper.reject { background: var(--status-danger-bg); color: var(--status-danger-text); }
     
-    .action-title { font-size: 1.25rem; font-weight: 800; color: #1e293b; margin-bottom: 0.75rem; }
-    .action-message { font-size: 0.9rem; color: #64748b; margin-bottom: 1.5rem; line-height: 1.5; }
+    .action-title { font-size: 1.25rem; font-weight: 800; color: var(--text-main); margin-bottom: 0.75rem; }
+    .action-message { font-size: 0.9rem; color: var(--text-muted); margin-bottom: 1.5rem; line-height: 1.5; }
     
     .comision-preview {
-      background: #f8fafc; width: 100%; border-radius: 16px;
+      background: var(--status-neutral-bg); width: 100%; border-radius: 16px;
       padding: 1rem; margin-bottom: 1.5rem;
-      border: 1px solid #f1f5f9;
+      border: 1px solid var(--border-color);
     }
     .preview-row {
       display: flex; justify-content: space-between; margin-bottom: 0.5rem;
       font-size: 0.9rem;
     }
     .preview-row:last-child { margin-bottom: 0; }
-    .preview-row .label { color: #94a3b8; font-weight: 600; }
-    .preview-row .value { color: #1e293b; font-weight: 600; }
+    .preview-row .label { color: var(--text-muted); font-weight: 600; }
+    .preview-row .value { color: var(--text-main); font-weight: 600; }
     
     .form-control, .form-select {
-        background: #f8fafc; border: 1px solid #e2e8f0;
-        border-radius: 12px; font-size: 0.9rem; padding: 0.75rem;
+        background: var(--bg-main); border: 1px solid var(--border-color);
+        border-radius: 12px; font-size: 0.9rem; padding: 0.75rem; color: var(--text-main);
     }
     .form-control:focus, .form-select:focus {
         border-color: var(--primary-color); box-shadow: 0 0 0 4px rgba(22, 29, 53, 0.05);
@@ -126,8 +126,8 @@ import { Comision } from '../../services/comisiones.service';
       font-weight: 700; font-size: 0.95rem; border: none;
       transition: all 0.2s;
     }
-    .btn-cancel { background: #f1f5f9; color: #64748b; }
-    .btn-cancel:hover { background: #e2e8f0; }
+    .btn-cancel { background: var(--status-neutral-bg); color: var(--text-muted); border: 1px solid var(--border-color); }
+    .btn-cancel:hover { background: var(--border-color); color: var(--text-main); }
     
     .btn-confirm.approve { background: var(--status-warning-text); color: white; }
     .btn-confirm.approve:hover { opacity: 0.9; box-shadow: 0 4px 12px var(--status-warning-bg); }

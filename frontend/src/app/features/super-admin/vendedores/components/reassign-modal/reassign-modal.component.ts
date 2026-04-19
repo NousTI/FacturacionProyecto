@@ -94,17 +94,17 @@ import { Vendedor } from '../../services/vendedor.service';
       display: flex; align-items: center; justify-content: center; z-index: 10001;
     }
     .modal-content-premium.selective-modal {
-      background: #ffffff; width: 100%; max-width: 650px;
+      background: var(--bg-main); width: 100%; max-width: 650px;
       height: 700px; /* ALTO FIJO SOLICITADO */
       border-radius: 32px; overflow: hidden; display: flex; flex-direction: column;
     }
     .modal-header-premium {
       padding: 1.5rem 2.5rem; display: flex; justify-content: space-between; align-items: center;
-      background: #fff; border-bottom: 1px solid #f1f5f9;
+      background: var(--bg-main); border-bottom: 1px solid var(--border-color);
     }
     .modal-title-premium { font-size: 1.15rem; }
     .btn-close-premium {
-      background: none; border: none; font-size: 1.5rem; color: #94a3b8;
+      background: none; border: none; font-size: 1.5rem; color: var(--text-muted);
     }
 
     .modal-body-premium { 
@@ -114,24 +114,24 @@ import { Vendedor } from '../../services/vendedor.service';
     }
     
     .scroll-custom::-webkit-scrollbar { width: 5px; }
-    .scroll-custom::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
+    .scroll-custom::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 10px; }
 
     .form-label-premium {
-      font-size: 0.75rem; font-weight: 800; color: #64748b;
+      font-size: 0.75rem; font-weight: 800; color: var(--text-muted);
       margin-bottom: 0.65rem; text-transform: uppercase; letter-spacing: 0.5px;
       display: block;
     }
     
     .input-premium-group { position: relative; display: flex; align-items: center; }
-    .input-icon { position: absolute; left: 1rem; color: #94a3b8; z-index: 10; }
+    .input-icon { position: absolute; left: 1rem; color: var(--text-muted); z-index: 10; }
     
     .form-control-premium {
       padding: 0.85rem 1rem 0.85rem 2.8rem; border-radius: 14px;
-      background: #f8fafc; border: 1px solid #e2e8f0;
+      background: var(--status-neutral-bg); border: 1px solid var(--border-color);
       font-size: 0.9rem; font-weight: 600; width: 100%; transition: all 0.2s;
     }
     .form-control-premium:focus {
-      background: #ffffff; border-color: var(--primary-color); box-shadow: 0 0 0 4px rgba(22, 29, 53, 0.05); outline: none;
+      background: var(--bg-main); border-color: var(--primary-color); box-shadow: 0 0 0 4px rgba(22, 29, 53, 0.05); outline: none;
     }
 
     /* Companies Grid & Selection Cards */
@@ -142,15 +142,15 @@ import { Vendedor } from '../../services/vendedor.service';
     }
     .company-selection-card {
         padding: 1rem 1.25rem;
-        border: 1px solid #e2e8f0;
+        border: 1px solid var(--border-color);
         border-radius: 16px;
         cursor: pointer;
         transition: all 0.2s;
-        background: #fff;
+        background: var(--bg-main);
     }
     .company-selection-card:hover { 
         border-color: var(--primary-color); 
-        background: #f8fafc;
+        background: var(--status-neutral-bg);
     }
     .company-selection-card.selected {
         border-color: var(--primary-color);
@@ -165,7 +165,7 @@ import { Vendedor } from '../../services/vendedor.service';
     }
     .company-name {
         font-weight: 700;
-        color: #1e293b;
+        color: var(--text-main);
         font-size: 0.9rem;
     }
     .company-card-body {
@@ -173,7 +173,7 @@ import { Vendedor } from '../../services/vendedor.service';
     }
 
     .modal-footer-premium {
-      padding: 1.5rem 2.5rem; background: #ffffff; border-top: 1px solid #f1f5f9;
+      padding: 1.5rem 2.5rem; background: var(--status-neutral-bg); border-top: 1px solid var(--border-color);
       display: flex; justify-content: flex-end; gap: 1rem;
     }
     .btn-primary-premium {
@@ -182,8 +182,8 @@ import { Vendedor } from '../../services/vendedor.service';
     }
     .btn-primary-premium:disabled { opacity: 0.4; cursor: not-allowed; }
     .btn-secondary-premium {
-      background: white; border: 1px solid #e2e8f0; padding: 0.85rem 1.5rem;
-      border-radius: 14px; font-weight: 600; color: #64748b;
+      background: var(--bg-main); border: 1px solid var(--border-color); padding: 0.85rem 1.5rem;
+      border-radius: 14px; font-weight: 600; color: var(--text-muted);
     }
     .shadow-premium { box-shadow: 0 40px 80px -20px rgba(22, 29, 53, 0.25); }
   `],

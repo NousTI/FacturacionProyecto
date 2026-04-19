@@ -24,7 +24,7 @@ import { VendedorStats } from '../../services/vendedor.service';
         </div>
         <div class="stat-info">
           <span class="stat-label">Vendedores Activos</span>
-          <span class="stat-value text-success">{{ stats.activos }}</span>
+          <span class="stat-value">{{ stats.activos }}</span>
         </div>
       </div>
 
@@ -36,7 +36,7 @@ import { VendedorStats } from '../../services/vendedor.service';
         </div>
         <div class="stat-info">
           <span class="stat-label">Empresas Captadas</span>
-          <span class="stat-value text-corporate">{{ stats.empresasTotales }}</span>
+          <span class="stat-value">{{ stats.empresasTotales }}</span>
         </div>
       </div>
 
@@ -58,13 +58,13 @@ import { VendedorStats } from '../../services/vendedor.service';
       display: block;
     }
     .stats-compact-row {
-      background: white;
+      background: var(--bg-main);
       border-radius: 20px;
       padding: 1.25rem 2rem;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      border: 1px solid #f1f5f9;
+      border: 1px solid var(--border-color);
       margin-bottom: 0;
     }
     .stat-item-mini {
@@ -89,23 +89,21 @@ import { VendedorStats } from '../../services/vendedor.service';
     .stat-label {
       font-size: 0.65rem;
       font-weight: 800;
-      color: #94a3b8;
+      color: var(--text-muted);
       text-transform: uppercase;
       letter-spacing: 0.5px;
     }
     .stat-value {
       font-size: 1.35rem;
       font-weight: 800;
-      color: #1e293b;
+      color: var(--text-main);
       line-height: 1.2;
     }
-    .text-success { color: var(--status-success-text) !important; }
-    .text-corporate { color: var(--status-info-text) !important; }
 
     .stat-divider {
       width: 1px;
       height: 35px;
-      background: #f1f5f9;
+      background: var(--border-color);
       margin: 0 1.5rem;
     }
     @media (max-width: 992px) {

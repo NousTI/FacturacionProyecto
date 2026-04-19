@@ -103,65 +103,68 @@ import { FormsModule } from '@angular/forms';
       left: 1rem;
       top: 50%;
       transform: translateY(-50%);
-      color: #94a3b8;
+      color: var(--text-muted);
       font-size: 1rem;
     }
     .form-control-premium-search {
-      background: #ffffff;
-      border: 1px solid #e2e8f0;
+      background: var(--bg-main);
+      border: 1px solid var(--border-color);
       border-radius: 12px;
       padding: 0 1rem 0 2.75rem;
       height: 42px;
       font-size: var(--text-md);
-      color: #0f172a;
+      color: var(--text-main);
       transition: all 0.2s;
       width: 100%;
     }
     .form-control-premium-search:focus {
-      border-color: var(--status-info);
+      border-color: var(--primary-color);
       outline: none;
-      box-shadow: 0 0 0 4px var(--status-info-bg);
+      box-shadow: none;
     }
     
     .btn-filter-lux {
-      background: #ffffff;
-      border: 1px solid var(--border-color, #e2e8f0);
-      color: #64748b;
+      background: var(--bg-main);
+      border: 1px solid var(--border-color);
+      color: var(--text-muted);
       padding: 0 1.25rem;
       height: 42px;
       border-radius: 12px;
       font-weight: 700;
-      font-size: var(--text-base, 0.85rem);
+      font-size: var(--text-base);
       display: flex;
       align-items: center;
       gap: 0.6rem;
       transition: all 0.2s;
     }
     .btn-filter-lux:hover {
-      background: #ffffff;
-      border-color: var(--status-info);
-      color: var(--status-info-text);
+      background: var(--status-neutral-bg);
+      border-color: var(--primary-color);
+      color: var(--text-main);
     }
 
     .form-select-premium {
-      background: #ffffff;
-      border: 1px solid #e2e8f0;
+      background: var(--bg-main);
+      border: 1px solid var(--border-color);
       border-radius: 12px;
       padding: 0 1rem;
       height: 42px;
       font-size: var(--text-base);
-      color: #475569;
+      color: var(--text-muted);
       width: 100%;
       cursor: pointer;
       text-align: left;
     }
     .form-select-premium:focus {
-      border-color: var(--status-info);
+      border-color: var(--primary-color);
       outline: none;
-      box-shadow: 0 0 0 4px var(--status-info-bg);
+      box-shadow: none;
     }
 
     .dropdown-menu-premium {
+      background: var(--bg-main) !important;
+      border: 1px solid var(--border-color) !important;
+      box-shadow: 0 10px 30px -10px rgba(0,0,0,0.1) !important;
       border-radius: 12px !important;
       padding: 0.5rem !important;
       min-width: 100%;
@@ -170,34 +173,34 @@ import { FormsModule } from '@angular/forms';
     .dropdown-item {
       border-radius: 8px !important;
       padding: 0.6rem 1rem !important;
-      color: #475569 !important;
+      color: var(--text-muted) !important;
       font-size: var(--text-base) !important;
       font-weight: 500 !important;
       cursor: pointer;
       transition: all 0.2s;
     }
     .dropdown-item:hover {
-      background-color: var(--status-info-bg) !important;
-      color: var(--status-info-text) !important;
+      background-color: var(--status-neutral-bg) !important;
+      color: var(--text-main) !important;
     }
 
     .btn-action-premium {
-      background: var(--bg-main, #f8fafc);
-      border: 1px solid var(--border-color, #e2e8f0);
-      color: var(--status-info-text);
+      background: var(--bg-main);
+      border: 1px solid var(--border-color);
+      color: var(--primary-color);
       padding: 0 1.25rem;
       height: 42px;
       border-radius: 12px;
       font-weight: 700;
-      font-size: var(--text-base, 0.85rem);
+      font-size: var(--text-base);
       display: flex;
       align-items: center;
       transition: all 0.2s;
     }
     .btn-action-premium:hover:not(:disabled) {
-      background: var(--bg-main);
+      background: var(--status-neutral-bg);
       transform: translateY(-1px);
-      border-color: var(--status-info);
+      border-color: var(--primary-color);
     }
     .btn-action-premium:disabled {
       opacity: 0.6;

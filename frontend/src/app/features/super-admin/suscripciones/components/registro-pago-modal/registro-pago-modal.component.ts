@@ -111,20 +111,20 @@ import { Suscripcion } from '../../services/suscripcion.service';
       display: flex; align-items: center; justify-content: center; z-index: 10000; padding: 1rem;
     }
     .modal-container-final {
-      background: #ffffff; width: 520px; max-width: 95vw; height: auto;
+      background: var(--bg-main); width: 520px; max-width: 95vw; height: auto;
       border-radius: 28px; display: flex; flex-direction: column; overflow: hidden;
       box-shadow: 0 40px 80px -20px rgba(22, 29, 53, 0.25);
     }
     .modal-header-final { padding: 1.5rem 2.5rem; display: flex; justify-content: space-between; align-items: center; }
     .modal-title-final { font-size: 1.25rem; font-weight: 800; color: var(--text-main); margin: 0; }
-    .btn-close-final { background: none; border: none; font-size: 1.5rem; color: #94a3b8; cursor: pointer; }
+    .btn-close-final { background: none; border: none; font-size: 1.5rem; color: var(--text-muted); cursor: pointer; }
     .modal-body-final { padding: 0 2.5rem 1rem; flex: 1; }
     .form-section-final { margin-bottom: 2rem; padding-bottom: 0; }
-    .label-final { font-size: 0.85rem; font-weight: 700; color: #64748b; margin-bottom: 0.6rem; display: block; }
+    .label-final { font-size: 0.85rem; font-weight: 700; color: var(--text-muted); margin-bottom: 0.6rem; display: block; }
     .input-final {
-      width: 100%; border: 1px solid #e2e8f0; border-radius: 12px;
-      padding: 0.75rem 1.5rem; font-size: 0.95rem; color: #475569; font-weight: 600; transition: all 0.2s;
-      background: #ffffff;
+      width: 100%; border: 1px solid var(--border-color); border-radius: 12px;
+      padding: 0.75rem 1.5rem; font-size: 0.95rem; color: var(--text-main); font-weight: 600; transition: all 0.2s;
+      background: var(--bg-main);
     }
     .input-final:focus {
       border-color: var(--status-info); outline: none;
@@ -142,18 +142,19 @@ import { Suscripcion } from '../../services/suscripcion.service';
     }
     .icon-payment {
       width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center;
-      background: #f1f5f9; color: #94a3b8; font-size: 1.4rem; transition: all 0.2s;
+      background: var(--status-neutral-bg); color: var(--text-muted); font-size: 1.4rem; transition: all 0.2s;
     }
     .icon-payment.active { background: var(--status-success-bg); color: var(--status-success-text); }
 
-    .modal-footer-final { padding: 1.5rem 2.5rem; background: #ffffff; display: flex; justify-content: flex-end; gap: 1rem; border-top: 1px solid #f1f5f9; }
+    .modal-footer-final { padding: 1.5rem 2.5rem; background: var(--bg-main); display: flex; justify-content: flex-end; gap: 1rem; border-top: 1px solid var(--border-color); }
     .btn-submit-final {
       background: var(--status-success-text); color: #ffffff; border: none; padding: 0.75rem 2.5rem;
       border-radius: 12px; font-weight: 700; transition: all 0.2s;
     }
     .btn-submit-final:hover:not(:disabled) { background: var(--status-success); transform: translateY(-1px); }
     .btn-submit-final:disabled { opacity: 0.3; cursor: not-allowed; }
-    .btn-cancel-final { background: #ffffff; color: #64748b; border: 1px solid #e2e8f0; padding: 0.75rem 2rem; border-radius: 12px; font-weight: 600; }
+    .btn-cancel-final { background: var(--bg-main); color: var(--text-muted); border: 1px solid var(--border-color); padding: 0.75rem 2rem; border-radius: 12px; font-weight: 600; }
+    .btn-cancel-final:hover { background: var(--status-neutral-bg); color: var(--text-main); }
   `],
     standalone: true,
     imports: [CommonModule, ReactiveFormsModule]

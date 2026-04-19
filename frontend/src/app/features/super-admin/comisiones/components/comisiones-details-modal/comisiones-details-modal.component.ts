@@ -149,17 +149,17 @@ import { Comision } from '../../services/comisiones.service';
       padding: 1rem;
     }
     .modal-container-final {
-      background: #ffffff; width: 680px;
+      background: var(--bg-main); width: 680px;
       max-width: 95vw; max-height: 90vh; border-radius: 28px;
       display: flex; flex-direction: column; overflow: hidden;
       box-shadow: 0 40px 80px -20px rgba(22, 29, 53, 0.25);
     }
     .modal-header-final { padding: 1.5rem 2.5rem; display: flex; justify-content: space-between; align-items: center; }
     .modal-title-final { font-size: 1.25rem; font-weight: 800; color: var(--primary-color); margin: 0; }
-    .btn-close-final { background: none; border: none; font-size: 1.5rem; color: #94a3b8; cursor: pointer; }
+    .btn-close-final { background: none; border: none; font-size: 1.5rem; color: var(--text-muted); cursor: pointer; }
     
     .avatar-details-premium {
-      width: 44px; height: 44px; background: #e0e7ff; color: #4338ca;
+      width: 44px; height: 44px; background: var(--status-info-bg); color: var(--status-info-text);
       border-radius: 12px; display: flex; align-items: center; justify-content: center;
       font-weight: 800; font-size: 1.2rem;
     }
@@ -173,41 +173,41 @@ import { Comision } from '../../services/comisiones.service';
     .badge-status-details.danger { background: var(--status-danger-bg); color: var(--status-danger-text); }
 
     .modal-body-final { padding: 0 2.5rem 2rem; overflow-y: auto; flex: 1; }
-    .form-section-final { margin-bottom: 2rem; padding-bottom: 2rem; border-bottom: 1px solid #f1f5f9; }
-    .section-header-final { font-size: 1rem; font-weight: 800; color: #1e293b; margin-bottom: 1.5rem; }
-    .label-final { font-size: 0.85rem; font-weight: 700; color: #64748b; margin-bottom: 0.6rem; display: block; }
+    .form-section-final { margin-bottom: 2rem; padding-bottom: 2rem; border-bottom: 1px solid var(--border-color); }
+    .section-header-final { font-size: 1rem; font-weight: 800; color: var(--text-main); margin-bottom: 1.5rem; }
+    .label-final { font-size: 0.85rem; font-weight: 700; color: var(--text-muted); margin-bottom: 0.6rem; display: block; }
     
     .value-display-premium {
-      width: 100%; background: #f8fafc; border: 1px solid #f1f5f9;
+      width: 100%; background: var(--status-neutral-bg); border: 1px solid var(--border-color);
       border-radius: 100px; padding: 0.65rem 1.5rem;
-      font-size: 0.9rem; color: #1e293b; font-weight: 600;
+      font-size: 0.9rem; color: var(--text-main); font-weight: 600;
     }
     .value-display-premium.no-data {
-      color: #94a3b8; font-style: italic;
+      color: var(--text-muted); font-style: italic;
     }
     
     .system-card-premium {
-      background: #fbfcfe; padding: 1.5rem; border-radius: 24px;
-      border: 1px solid #f1f5f9;
+      background: var(--status-neutral-bg); padding: 1.5rem; border-radius: 24px;
+      border: 1px solid var(--border-color);
     }
 
     .text-corporate { color: var(--primary-color) !important; }
     .font-mono { font-family: 'DM Mono', monospace; letter-spacing: -0.5px; }
     
     .modal-footer-final {
-      padding: 1.5rem 2.5rem; background: #ffffff;
+      padding: 1.5rem 2.5rem; background: var(--bg-main);
       display: flex; justify-content: flex-end; gap: 1rem;
-      border-top: 1px solid #f1f5f9;
+      border-top: 1px solid var(--border-color);
     }
     .btn-cancel-final {
-      background: #ffffff; color: #64748b; border: 1px solid #e2e8f0;
+      background: var(--bg-main); color: var(--text-muted); border: 1px solid var(--border-color);
       padding: 0.75rem 2rem; border-radius: 12px; font-weight: 600;
       min-width: 120px;
     }
     .border-danger-soft { border: 1px solid rgba(239, 68, 68, 0.2) !important; background: #fff5f5 !important; }
     
     .scroll-custom::-webkit-scrollbar { width: 5px; }
-    .scroll-custom::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
+    .scroll-custom::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 10px; }
   `],
   standalone: true,
   imports: [CommonModule]

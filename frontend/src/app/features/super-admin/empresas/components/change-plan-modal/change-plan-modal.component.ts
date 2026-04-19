@@ -126,29 +126,29 @@ import { EmpresaService } from '../../services/empresa.service';
       display: flex; align-items: center; justify-content: center; z-index: 10001;
     }
     .modal-container-plan {
-      background: #ffffff; width: 100%; max-width: 500px; border-radius: 28px;
+      background: var(--bg-main); width: 100%; max-width: 500px; border-radius: 28px;
       overflow: hidden; display: flex; flex-direction: column; max-height: 90vh;
     }
-    .modal-header-plan { padding: 1.5rem 2rem; display: flex; justify-content: space-between; align-items: center; background: #fff; }
+    .modal-header-plan { padding: 1.5rem 2rem; display: flex; justify-content: space-between; align-items: center; background: var(--bg-main); }
     .modal-title-plan { font-size: 1.15rem; font-weight: 800; color: var(--text-main); margin: 0; }
-    .plan-subtitle { font-size: 0.9rem; color: #64748b; }
-    .btn-close-plan { background: none; border: none; font-size: 1.5rem; color: #94a3b8; cursor: pointer; }
+    .plan-subtitle { font-size: 0.9rem; color: var(--text-muted); }
+    .btn-close-plan { background: none; border: none; font-size: 1.5rem; color: var(--text-muted); cursor: pointer; }
     .modal-body-plan { padding: 0 2rem 2rem; overflow-y: auto; }
     .plans-list { display: flex; flex-direction: column; gap: 0.75rem; }
-    .plan-card { padding: 0.75rem 1.25rem; border: 1px solid #e2e8f0; border-radius: 16px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; transition: all 0.2s; }
+    .plan-card { padding: 0.75rem 1.25rem; border: 1px solid var(--border-color); border-radius: 16px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; transition: all 0.2s; }
     .plan-card:hover:not(.disabled) { border-color: var(--status-info); background: var(--bg-main); }
     .plan-card.selected { border-color: var(--status-info); background: var(--status-info-bg); box-shadow: 0 4px 15px var(--status-info-bg); }
     .plan-card.disabled { opacity: 0.6; cursor: not-allowed; background: var(--bg-main); border-color: var(--border-color); }
-    .badge-current { font-size: 0.6rem; background: #e2e8f0; color: #64748b; padding: 2px 8px; border-radius: 6px; font-weight: 700; }
+    .badge-current { font-size: 0.6rem; background: var(--status-neutral-bg); color: var(--text-muted); padding: 2px 8px; border-radius: 6px; font-weight: 700; }
     .plan-info { display: flex; flex-direction: column; }
-    .plan-name { font-weight: 800; color: #1e293b; font-size: 0.95rem; }
-    .plan-desc { font-size: 0.75rem; color: #64748b; }
-    .plan-check { font-size: 1.1rem; color: #94a3b8; }
+    .plan-name { font-weight: 800; color: var(--text-main); font-size: 0.95rem; }
+    .plan-desc { font-size: 0.75rem; color: var(--text-muted); }
+    .plan-check { font-size: 1.1rem; color: var(--border-color); }
     .selected .plan-check { color: var(--status-info-text); }
     
     .icon-payment {
       width: 38px; height: 38px; border-radius: 10px; display: flex; align-items: center; justify-content: center;
-      background: #f1f5f9; color: #94a3b8; font-size: 1.2rem; transition: all 0.2s;
+      background: var(--status-neutral-bg); color: var(--text-muted); font-size: 1.2rem; transition: all 0.2s;
     }
     .icon-payment.active { background: var(--status-success-bg); color: var(--status-success-text); }
 
@@ -159,7 +159,7 @@ import { EmpresaService } from '../../services/empresa.service';
     .btn-plan-primary { background: var(--status-success); color: white; border: none; padding: 0.75rem 2rem; border-radius: 12px; font-weight: 700; transition: all 0.2s; }
     .btn-plan-primary:hover:not(:disabled) { opacity: 0.85; filter: brightness(1.1); }
     .btn-plan-primary:disabled { opacity: 0.4; cursor: not-allowed; }
-    .btn-plan-secondary { background: white; color: var(--text-muted); border: 1px solid var(--border-color); padding: 0.75rem 1.5rem; border-radius: 12px; font-weight: 600; }
+    .btn-plan-secondary { background: var(--bg-main); color: var(--text-muted); border: 1px solid var(--border-color); padding: 0.75rem 1.5rem; border-radius: 12px; font-weight: 600; }
     .shadow-premium { box-shadow: 0 40px 80px -20px rgba(22, 29, 53, 0.25); }
   `],
   standalone: true,

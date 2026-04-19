@@ -281,12 +281,12 @@ import { SRI_TIPOS_IDENTIFICACION } from '../../../../../core/constants/sri-iva.
       display: flex; align-items: center; justify-content: center; z-index: 10001;
     }
     .modal-content-premium {
-      background: #ffffff; width: 100%; max-width: 600px;
+      background: var(--bg-main); width: 100%; max-width: 600px;
       border-radius: 32px; overflow: hidden; display: flex; flex-direction: column;
     }
     .modal-header-premium {
       padding: 1.5rem 2rem 0; display: flex; justify-content: space-between; align-items: center;
-      background: #fff; border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+      background: var(--bg-main); border-bottom: 1px solid var(--border-color);
     }
     .modal-title-premium { font-size: 1.25rem; letter-spacing: -0.5px; }
     
@@ -297,7 +297,7 @@ import { SRI_TIPOS_IDENTIFICACION } from '../../../../../core/constants/sri-iva.
     }
     .btn-tab-premium {
       padding: 0.75rem 1.25rem; border: none; background: transparent;
-      font-size: 0.85rem; font-weight: 700; color: #94a3b8;
+      font-size: 0.85rem; font-weight: 700; color: var(--text-muted);
       border-bottom: 2px solid transparent; transition: all 0.2s;
       display: flex; align-items: center;
     }
@@ -305,27 +305,27 @@ import { SRI_TIPOS_IDENTIFICACION } from '../../../../../core/constants/sri-iva.
     .btn-tab-premium.active { color: var(--status-info-text); border-bottom-color: var(--status-info-text); }
 
     .btn-close-premium {
-      background: #f8fafc; border: none; width: 40px; height: 40px;
-      border-radius: 12px; color: #94a3b8; font-size: 1.5rem; transition: all 0.2s;
+      background: var(--status-neutral-bg); border: none; width: 40px; height: 40px;
+      border-radius: 12px; color: var(--text-muted); font-size: 1.5rem; transition: all 0.2s;
     }
     .btn-close-premium:hover { background: var(--status-danger-bg); color: var(--status-danger-text); }
 
-    .modal-body-premium { padding: 2rem; background: #ffffff; }
+    .modal-body-premium { padding: 2rem; background: var(--bg-main); }
     
     .form-label-premium {
-      font-size: 0.75rem; font-weight: 800; color: #64748b;
+      font-size: 0.75rem; font-weight: 800; color: var(--text-muted);
       margin-bottom: 0.65rem; text-transform: uppercase; letter-spacing: 0.5px;
     }
     .input-premium-group { position: relative; display: flex; align-items: center; }
-    .input-icon { position: absolute; left: 1rem; color: #94a3b8; font-size: 1rem; }
+    .input-icon { position: absolute; left: 1rem; color: var(--text-muted); font-size: 1rem; }
     
     .form-control-premium, .form-select-premium {
       height: 55px;
       padding: 0 1.25rem 0 3.25rem; 
       border-radius: 14px;
-      background: #f8fafc; border: 1px solid rgba(0, 0, 0, 0.05);
+      background: var(--status-neutral-bg); border: 1px solid var(--border-color);
       font-size: 0.95rem; font-weight: 500; width: 100%; transition: all 0.2s;
-      color: #1e293b;
+      color: var(--text-main);
       line-height: 48px;
     }
     
@@ -345,7 +345,7 @@ import { SRI_TIPOS_IDENTIFICACION } from '../../../../../core/constants/sri-iva.
       padding-right: 3rem;
     }
     .form-control-premium:focus, .form-select-premium:focus {
-      background: #ffffff; border-color: var(--status-info); box-shadow: 0 0 0 4px var(--status-info-bg); outline: none;
+      background: var(--bg-main); border-color: var(--status-info); box-shadow: 0 0 0 4px var(--status-info-bg); outline: none;
     }
     .input-suffix-premium {
       position: absolute; right: 1.25rem; font-weight: 800; color: var(--status-info-text);
@@ -362,14 +362,14 @@ import { SRI_TIPOS_IDENTIFICACION } from '../../../../../core/constants/sri-iva.
       display: flex; flex-direction: column; gap: 0.75rem;
     }
     .permission-horizontal-card {
-      padding: 0.85rem 1.25rem; border-radius: 16px; background: #ffffff;
-      border: 1px solid #e2e8f0; transition: all 0.2s;
+      padding: 0.85rem 1.25rem; border-radius: 16px; background: var(--bg-main);
+      border: 1px solid var(--border-color); transition: all 0.2s;
       display: flex; align-items: center; justify-content: space-between;
       cursor: pointer;
     }
     .permission-horizontal-card:hover { 
       border-color: var(--status-info); 
-      background: var(--bg-main, #f8fafc); 
+      background: var(--status-neutral-bg); 
     }
     .permission-horizontal-card.active {
       border-color: var(--status-success);
@@ -388,27 +388,27 @@ import { SRI_TIPOS_IDENTIFICACION } from '../../../../../core/constants/sri-iva.
     }
     
     .perm-info { display: flex; flex-direction: column; }
-    .perm-title { font-weight: 800; color: #1e293b; font-size: 0.95rem; }
-    .perm-desc { font-size: 0.75rem; color: #64748b; }
+    .perm-title { font-weight: 800; color: var(--text-main); font-size: 0.95rem; }
+    .perm-desc { font-size: 0.75rem; color: var(--text-muted); }
 
-    .plan-check { font-size: 1.4rem; color: #cbd5e1; transition: all 0.2s; }
+    .plan-check { font-size: 1.4rem; color: var(--border-color); transition: all 0.2s; }
     .active .plan-check { color: var(--status-success-text); }
 
     .modal-footer-premium {
-      padding: 1.5rem 2rem; background: #f8fafc; border-top: 1px solid #f1f5f9;
+      padding: 1.5rem 2rem; background: var(--status-neutral-bg); border-top: 1px solid var(--border-color);
       display: flex; justify-content: flex-end; gap: 1rem; width: 100%;
     }
     .btn-submit-final {
-      background: var(--primary-color); color: white; border: none; padding: 0.85rem 2.5rem;
+      background: var(--primary-color); color: #ffffff; border: none; padding: 0.85rem 2.5rem;
       border-radius: 14px; font-weight: 700; transition: all 0.2s;
     }
     .btn-submit-final:hover:not(:disabled) { background: var(--primary-hover); transform: translateY(-1px); }
     .btn-submit-final:disabled { opacity: 0.3; cursor: not-allowed; }
     .btn-cancel-final {
-      background: white; border: 1px solid #e2e8f0; padding: 0.85rem 1.5rem;
-      border-radius: 14px; font-weight: 600; color: #64748b; transition: all 0.2s;
+      background: var(--bg-main); border: 1px solid var(--border-color); padding: 0.85rem 1.5rem;
+      border-radius: 14px; font-weight: 600; color: var(--text-muted); transition: all 0.2s;
     }
-    .btn-cancel-final:hover { background: #f1f5f9; color: #1e293b; }
+    .btn-cancel-final:hover { background: var(--status-neutral-bg); color: var(--text-main); }
     .shadow-premium { box-shadow: 0 40px 80px -20px rgba(22, 29, 53, 0.25); }
     
     .form-control-premium.is-invalid {
@@ -429,7 +429,7 @@ import { SRI_TIPOS_IDENTIFICACION } from '../../../../../core/constants/sri-iva.
       overflow-y: auto;
     }
     .scroll-custom::-webkit-scrollbar { width: 5px; }
-    .scroll-custom::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
+    .scroll-custom::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 10px; }
   `],
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule]

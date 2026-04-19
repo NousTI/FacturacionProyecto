@@ -18,7 +18,7 @@ import { InfoTooltipComponent } from '../../../../shared/components/info-tooltip
             <span class="kpi-label d-flex align-items-center gap-1">Empresas Activas
               <app-info-tooltip message="Número de empresas con suscripción activa en el periodo seleccionado."></app-info-tooltip>
             </span>
-            <span class="kpi-value text-success">{{ kpis?.empresas_activas || 0 }}</span>
+            <span class="kpi-value">{{ kpis?.empresas_activas || 0 }}</span>
           </div>
         </div>
       </div>
@@ -53,7 +53,7 @@ import { InfoTooltipComponent } from '../../../../shared/components/info-tooltip
             <span class="kpi-label d-flex align-items-center gap-1">Comisiones Pend.
               <app-info-tooltip message="Monto total en comisiones de vendedores que aún no han sido liquidadas."></app-info-tooltip>
             </span>
-            <span class="kpi-value text-orange text-truncate">{{ kpis?.comisiones_pendientes || 0 | number }}</span>
+            <span class="kpi-value text-truncate">{{ kpis?.comisiones_pendientes || 0 | number }}</span>
           </div>
         </div>
       </div>
@@ -67,7 +67,7 @@ import { InfoTooltipComponent } from '../../../../shared/components/info-tooltip
             <span class="kpi-label d-flex align-items-center gap-1">Próximos Venc.
               <app-info-tooltip message="Empresas cuya suscripción vence en los próximos 7 días y requieren atención."></app-info-tooltip>
             </span>
-            <span class="kpi-value" [class.text-danger]="(kpis?.empresas_por_vencer || 0) > 0">
+            <span class="kpi-value">
               {{ kpis?.empresas_por_vencer || 0 }}
             </span>
           </div>
@@ -113,7 +113,7 @@ import { InfoTooltipComponent } from '../../../../shared/components/info-tooltip
     .kpi-value {
       font-size: 1.35rem;
       font-weight: 800;
-      color: var(--primary-color);
+      color: var(--text-main);
       line-height: 1.2;
     }
     .kpi-trend {

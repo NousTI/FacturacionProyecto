@@ -34,13 +34,13 @@ import { HistoryComponent } from '../history/history.component';
       display: flex; align-items: center; justify-content: center; z-index: 10000; padding: 1rem;
     }
     .modal-container-final {
-      background: #ffffff; width: 95vw; max-width: 1200px; height: 90vh; /* Increased size */
+      background: var(--bg-main); width: 95vw; max-width: 1200px; height: 90vh; /* Increased size */
       border-radius: 24px; display: flex; flex-direction: column; overflow: hidden;
       box-shadow: 0 40px 80px -20px rgba(22, 29, 53, 0.25);
     }
-    .modal-header-final { padding: 1.5rem 2rem; display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 1px solid #f1f5f9; }
+    .modal-header-final { padding: 1.5rem 2rem; display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 1px solid var(--border-color); }
     .modal-title-final { font-size: 1.15rem; font-weight: 800; color: var(--primary-color); margin: 0; }
-    .btn-close-final { background: none; border: none; font-size: 1.5rem; color: #94a3b8; cursor: pointer; }
+    .btn-close-final { background: none; border: none; font-size: 1.5rem; color: var(--text-muted); cursor: pointer; }
     
     /* Remove padding for the body to let the component fill it */
     .modal-body-final { padding: 0; overflow: hidden; flex: 1; display: flex; flex-direction: column; }

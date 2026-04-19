@@ -52,16 +52,16 @@ import { FormsModule } from '@angular/forms';
       font-size: 0.9rem; font-weight: 500; transition: all 0.2s; color: var(--text-main);
     }
     .form-control-premium:focus {
-        outline: none; border-color: var(--status-danger); background: #ffffff;
+        outline: none; border-color: var(--status-danger); background: var(--bg-main);
         box-shadow: 0 0 0 4px var(--status-danger-bg);
     }
 
     .btn-lux-secondary {
-      background: #ffffff; color: var(--text-muted); border: 1px solid var(--border-color);
+      background: var(--bg-main); color: var(--text-muted); border: 1px solid var(--border-color);
       padding: 0.75rem 1.5rem; border-radius: 12px; font-weight: 600;
       transition: all 0.2s;
     }
-    .btn-lux-secondary:hover:not(:disabled) { background: var(--bg-main); }
+    .btn-lux-secondary:hover:not(:disabled) { background: var(--status-neutral-bg); color: var(--text-main); }
 
     .smallest { font-size: 0.65rem; }
     .fw-800 { font-weight: 800; }

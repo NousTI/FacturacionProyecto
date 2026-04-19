@@ -241,7 +241,7 @@ import { SRI_TIPOS_PERSONA, SRI_TIPOS_CONTRIBUYENTE } from '../../../../../core/
       padding: 1rem;
     }
     .modal-container-final {
-      background: #ffffff;
+      background: var(--bg-main);
       width: 780px; /* 20% más ancho que 650px */
       height: 750px; /* Altura aumentada para nuevos campos */
       max-width: 95vw;
@@ -268,45 +268,46 @@ import { SRI_TIPOS_PERSONA, SRI_TIPOS_CONTRIBUYENTE } from '../../../../../core/
       background: none;
       border: none;
       font-size: 1.5rem;
-      color: #94a3b8;
+      color: var(--text-muted);
       cursor: pointer;
     }
     .modal-body-final {
       padding: 0 2.5rem 2rem;
       overflow-y: auto;
       flex: 1;
+      background: var(--bg-main);
     }
     .form-section-final {
       margin-bottom: 2rem;
       padding-bottom: 2rem;
-      border-bottom: 1px solid #f1f5f9;
+      border-bottom: 1px solid var(--border-color);
     }
     .section-header-final {
       font-size: 1.1rem;
       font-weight: 800;
-      color: #1e293b;
+      color: var(--text-main);
       margin-bottom: 1.5rem;
     }
     .label-final {
       font-size: 0.85rem;
       font-weight: 700;
-      color: #64748b;
+      color: var(--text-muted);
       margin-bottom: 0.6rem;
       display: block;
     }
     .input-final, .select-final {
       width: 100%;
-      background: #ffffff;
-      border: 1px solid #e2e8f0;
+      background: var(--bg-main);
+      border: 1px solid var(--border-color);
       border-radius: 12px;
       padding: 0.75rem 1.5rem;
       font-size: 0.95rem;
-      color: #475569;
+      color: var(--text-main);
       font-weight: 600;
       transition: all 0.2s;
     }
     .input-final::placeholder {
-      color: #94a3b8;
+      color: var(--text-muted);
       font-weight: 600;
     }
     .input-final.is-invalid, .select-final.is-invalid {
@@ -319,17 +320,17 @@ import { SRI_TIPOS_PERSONA, SRI_TIPOS_CONTRIBUYENTE } from '../../../../../core/
     .hint-final {
       display: block;
       font-size: 0.75rem;
-      color: #94a3b8;
+      color: var(--text-muted);
       margin-top: 0.4rem;
       padding-left: 1rem;
     }
     .modal-footer-final {
       padding: 1.5rem 2.5rem;
-      background: #ffffff;
+      background: var(--status-neutral-bg);
       display: flex;
       justify-content: flex-end;
       gap: 1rem;
-      border-top: 1px solid #f1f5f9;
+      border-top: 1px solid var(--border-color);
     }
     .btn-submit-final {
       background: var(--primary-color);
@@ -349,12 +350,17 @@ import { SRI_TIPOS_PERSONA, SRI_TIPOS_CONTRIBUYENTE } from '../../../../../core/
       cursor: not-allowed;
     }
     .btn-cancel-final {
-      background: #ffffff;
-      color: #64748b;
-      border: 1px solid #e2e8f0;
+      background: var(--bg-main);
+      color: var(--text-muted);
+      border: 1px solid var(--border-color);
       padding: 0.75rem 2rem;
       border-radius: 12px;
       font-weight: 600;
+      transition: all 0.2s;
+    }
+    .btn-cancel-final:hover {
+      background: var(--status-neutral-bg);
+      color: var(--text-main);
     }
     .switch-final .form-check-input:checked {
       background-color: var(--primary-color);
@@ -363,13 +369,13 @@ import { SRI_TIPOS_PERSONA, SRI_TIPOS_CONTRIBUYENTE } from '../../../../../core/
     .switch-final .form-check-label {
       font-size: 0.85rem;
       font-weight: 700;
-      color: #475569;
+      color: var(--text-main);
     }
     .scroll-custom::-webkit-scrollbar {
       width: 5px;
     }
     .scroll-custom::-webkit-scrollbar-thumb {
-      background: #e2e8f0;
+      background: var(--border-color);
       border-radius: 10px;
     }
     .error-feedback {

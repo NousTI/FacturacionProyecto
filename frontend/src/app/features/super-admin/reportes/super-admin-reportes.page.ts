@@ -73,35 +73,56 @@ type Tab = 'global' | 'comisiones' | 'uso';
 <app-toast></app-toast>
   `,
   styles: [`
-    .reportes-page-wrapper { padding: 0; background: transparent; min-height: 100vh; }
-
+    :host {
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      overflow: hidden;
+      max-width: 100%;
+    }
+    .reportes-page-wrapper {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      padding: 0;
+      background: transparent;
+      overflow: hidden;
+      max-width: 100%;
+    }
     .header-actions-bar {
+      flex-shrink: 0;
       display: flex;
       justify-content: space-between;
       align-items: center;
       background: white;
       padding: 0.5rem 1rem;
       border-radius: 20px;
-      border: 1px solid #e2e8f0;
+      border: 1px solid var(--border-color);
       box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
       gap: 1.5rem;
-      flex-wrap: nowrap;
+      flex-wrap: wrap;
+      margin-bottom: 1rem;
     }
 
     /* TABS MODERNOS */
-    .tabs-navigation { display: flex; gap: 0.4rem; flex-shrink: 0; }
+    .tabs-navigation { display: flex; gap: 0.4rem; flex-shrink: 0; flex-wrap: wrap; }
     .nav-btn {
-      background: none; border: none; padding: 0.5rem 1rem; font-weight: 700; color: #64748b;
+      background: none; border: none; padding: 0.5rem 1rem; font-weight: 700; color: var(--text-muted);
       border-radius: 12px; transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); cursor: pointer;
       white-space: nowrap; display: flex; align-items: center; gap: 0.5rem; font-size: 0.85rem;
     }
     .nav-label { display: flex; flex-direction: column; align-items: flex-start; line-height: 1.1; }
     .nav-name  { font-size: 0.82rem; font-weight: 700; }
     .nav-code  { font-size: 0.62rem; font-weight: 600; opacity: 0.55; letter-spacing: 0.03em; }
-    .nav-btn.active { background: #1e293b; color: #fff; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
-    .nav-btn:not(.active):hover { background: #f1f5f9; color: #1e293b; }
+    .nav-btn.active { background: var(--primary-color); color: #fff; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
+    .nav-btn:not(.active):hover { background: var(--status-neutral-bg); color: var(--text-main); }
 
-    .report-content-container { margin-top: 24px; }
+    .report-content-container {
+      flex: 1;
+      overflow-y: auto;
+      overflow-x: hidden;
+      padding-right: 4px; /* Espacio para scroll */
+    }
   `]
 })
 export class SuperAdminReportesPage implements OnInit, AfterViewInit {
@@ -120,8 +141,10 @@ export class SuperAdminReportesPage implements OnInit, AfterViewInit {
   ngOnInit() {}
 
   ngAfterViewInit() {
-    this.syncFiltersToActiveComponent();
-    this.handleGenerate();
+    setTimeout(() => {
+      this.syncFiltersToActiveComponent();
+      this.handleGenerate();
+    }, 100);
   }
 
   setTab(tab: Tab) {
@@ -131,8 +154,11 @@ export class SuperAdminReportesPage implements OnInit, AfterViewInit {
     if (this.pdfPoll) { clearInterval(this.pdfPoll); this.pdfPoll = null; }
     this.isLoadingPDF = false;
     this.cd.detectChanges(); // forzar render del *ngIf antes de acceder al ViewChild
-    this.syncFiltersToActiveComponent();
-    this.handleGenerate();
+    
+    setTimeout(() => {
+      this.syncFiltersToActiveComponent();
+      this.handleGenerate();
+    }, 50);
   }
 
   onFiltersChanged(filters: any) {

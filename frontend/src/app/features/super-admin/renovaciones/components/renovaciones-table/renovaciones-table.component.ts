@@ -130,21 +130,21 @@ import { RenovacionesPaginacionComponent, PaginationState } from '../renovacione
     :host { display: flex; flex-direction: column; flex: 1; min-height: 0; width: 100%; }
     .module-table { flex: 1; display: flex; flex-direction: column; min-height: 0; }
     .table-container {
-      background: var(--bg-main, #ffffff); border-radius: 20px;
-      border: 1px solid var(--border-color, #f1f5f9);
+      background: var(--bg-main); border-radius: 20px;
+      border: 1px solid var(--border-color);
       display: flex; flex-direction: column; min-height: 0; overflow: hidden;
     }
     .table-responsive-premium { flex: 1; overflow-y: auto; overflow-x: auto; position: relative; }
     .table thead th {
       position: sticky; top: 0; z-index: 10;
-      background: var(--bg-main, #ffffff); padding: 1rem 1.5rem;
+      background: var(--bg-main); padding: 1rem 1.5rem;
       font-size: var(--text-base); color: var(--text-main); font-weight: 800;
-      border-bottom: 2px solid var(--border-color, #f1f5f9);
+      border-bottom: 2px solid var(--border-color);
       text-transform: uppercase; letter-spacing: 0.05em;
     }
     .table tbody td {
-      padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--border-color, #f1f5f9);
-      color: var(--text-muted, #475569); font-size: var(--text-md);
+      padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--border-color);
+      color: var(--text-muted); font-size: var(--text-md);
     }
     
     .avatar-soft-premium {
@@ -172,10 +172,10 @@ import { RenovacionesPaginacionComponent, PaginationState } from '../renovacione
     
     .btn-action-trigger {
       background: transparent; border: none; width: 32px; height: 32px;
-      border-radius: 8px; color: #94a3b8; transition: all 0.2s;
+      border-radius: 8px; color: var(--text-muted); transition: all 0.2s;
     }
     .btn-action-trigger:hover, .btn-action-trigger[aria-expanded="true"] {
-      background: var(--bg-main); color: var(--text-main);
+      background: var(--status-neutral-bg); color: var(--text-main);
     }
 
     .dropdown-item {
@@ -184,7 +184,7 @@ import { RenovacionesPaginacionComponent, PaginationState } from '../renovacione
       color: var(--text-muted); cursor: pointer; border: none; background: transparent; width: 100%; text-align: left;
     }
     .dropdown-item i { font-size: 1.1rem; margin-right: 0.75rem; }
-    .dropdown-item:hover { background: var(--status-info-bg); color: var(--status-info-text); }
+    .dropdown-item:hover { background: var(--status-neutral-bg); color: var(--text-main); }
 
     .table-highlighted { 
       background-color: var(--status-info-bg) !important; 

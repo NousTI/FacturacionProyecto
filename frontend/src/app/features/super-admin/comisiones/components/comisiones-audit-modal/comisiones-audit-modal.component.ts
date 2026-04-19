@@ -63,20 +63,20 @@ import { CommonModule } from '@angular/common';
       display: flex; align-items: center; justify-content: center; z-index: 10010;
     }
     .modal-container-audit {
-      background: white; width: 600px; max-width: 95vw; height: 80vh;
+      background: var(--bg-main); width: 600px; max-width: 95vw; height: 80vh;
       border-radius: 20px; overflow: hidden; display: flex; flex-direction: column;
       box-shadow: 0 20px 60px -10px rgba(22, 29, 53, 0.2);
     }
     .modal-header {
-      padding: 1.5rem 2rem; border-bottom: 1px solid #f1f5f9;
+      padding: 1.5rem 2rem; border-bottom: 1px solid var(--border-color);
       display: flex; justify-content: space-between; align-items: flex-start;
-      background: #fff;
+      background: var(--bg-main);
     }
-    .modal-title { font-size: 1.25rem; font-weight: 800; color: #1e293b; margin: 0; }
-    .modal-subtitle { font-size: 0.9rem; color: #64748b; margin: 0; }
+    .modal-title { font-size: 1.25rem; font-weight: 800; color: var(--text-main); margin: 0; }
+    .modal-subtitle { font-size: 0.9rem; color: var(--text-muted); margin: 0; }
     
     .btn-close-modal {
-      background: #f1f5f9; border: none; color: #64748b;
+      background: var(--status-neutral-bg); border: none; color: var(--text-muted);
       width: 36px; height: 36px; border-radius: 50%;
       display: flex; align-items: center; justify-content: center;
       transition: all 0.2s;
@@ -84,27 +84,27 @@ import { CommonModule } from '@angular/common';
     .btn-close-modal:hover { background: #e2e8f0; color: #ef4444; transform: rotate(90deg); }
 
     .modal-body-audit {
-        padding: 2rem; overflow-y: auto; flex: 1; background: #f8fafc;
+        padding: 2rem; overflow-y: auto; flex: 1; background: var(--bg-main);
     }
 
     /* Timeline */
     .timeline { position: relative; padding-left: 2rem; }
     .timeline::before {
         content: ''; position: absolute; left: 0.9rem; top: 0.5rem; bottom: 0;
-        width: 2px; background: #e2e8f0;
+        width: 2px; background: var(--border-color);
     }
     .timeline-item { position: relative; margin-bottom: 2rem; }
     .timeline-icon {
         position: absolute; left: -2.1rem; top: 0;
         width: 36px; height: 36px; border-radius: 50%;
         display: flex; align-items: center; justify-content: center;
-        border: 3px solid #f8fafc; z-index: 2;
+        border: 3px solid var(--bg-main); z-index: 2;
     }
     .timeline-content {
-        background: white; padding: 1rem; border-radius: 12px;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.03); border: 1px solid #f1f5f9;
+        background: var(--status-neutral-bg); padding: 1rem; border-radius: 12px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.03); border: 1px solid var(--border-color);
     }
-    .timestamp { font-size: 0.8rem; color: #94a3b8; }
+    .timestamp { font-size: 0.8rem; color: var(--text-muted); }
 
     /* Colors */
     .timeline-icon.success { background: var(--status-success-bg); color: var(--status-success-text); }

@@ -115,7 +115,7 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
       text-decoration: none; color: #475569; font-weight: 600; font-size: 0.85rem;
       transition: all 0.2s;
     }
-    .btn-attachment:hover { background: var(--bg-main); color: var(--status-info-text); }
+    .btn-attachment:hover { background: var(--status-neutral-bg); color: var(--status-info-text); }
 
     .btn-lux-primary {
       background: var(--status-success); color: #ffffff;
@@ -125,11 +125,11 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
     .btn-lux-primary:hover:not(:disabled) { opacity: 0.85; filter: brightness(1.1); transform: translateY(-1px); }
     
     .btn-lux-secondary {
-      background: #ffffff; color: var(--text-muted); border: 1px solid var(--border-color);
+      background: var(--bg-main); color: var(--text-muted); border: 1px solid var(--border-color);
       padding: 0.75rem 1.5rem; border-radius: 12px; font-weight: 600;
       transition: all 0.2s;
     }
-    .btn-lux-secondary:hover { background: var(--bg-main); }
+    .btn-lux-secondary:hover { background: var(--status-neutral-bg); color: var(--text-main); }
 
     .pago-toggle-box {
       border-radius: 12px; border: 1px solid;

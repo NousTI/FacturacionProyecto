@@ -44,23 +44,23 @@ export interface PaginationState {
   styles: [`
     :host { display: block; width: 100%; }
     .pagination-premium-container {
-      background: var(--bg-main, #ffffff);
-      border-top: 1px solid var(--border-color, #f1f5f9);
+      background: var(--bg-main);
+      border-top: 1px solid var(--border-color);
     }
     .form-select-premium-sm {
       padding: 0.4rem 2rem 0.4rem 1rem; border-radius: 10px;
-      border: 1px solid #e2e8f0; background-color: #f8fafc;
-      font-size: 0.85rem; font-weight: 600; color: #475569;
+      border: 1px solid var(--border-color); background-color: var(--status-neutral-bg);
+      font-size: 0.85rem; font-weight: 600; color: var(--text-muted);
       cursor: pointer; transition: all 0.2s;
     }
     .form-select-premium-sm:focus { border-color: var(--primary-color, var(--primary-color)); outline: none; }
     .btn-nav-premium {
       width: 38px; height: 38px; border-radius: 10px;
-      border: 1px solid #e2e8f0; background: white;
+      border: 1px solid var(--border-color); background: var(--bg-main);
       display: flex; align-items: center; justify-content: center;
-      color: #64748b; transition: all 0.2s; cursor: pointer;
+      color: var(--text-muted); transition: all 0.2s; cursor: pointer;
     }
-    .btn-nav-premium:hover:not(:disabled) { background: #f8fafc; color: #0f172a; border-color: #cbd5e1; }
+    .btn-nav-premium:hover:not(:disabled) { background: var(--status-neutral-bg); color: var(--text-main); border-color: var(--border-color); }
     .btn-nav-premium:disabled { opacity: 0.4; cursor: not-allowed; }
     .page-indicator-premium {
       min-width: 38px; height: 38px; border-radius: 10px;

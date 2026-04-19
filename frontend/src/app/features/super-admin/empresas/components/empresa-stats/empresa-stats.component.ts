@@ -6,7 +6,7 @@ import { CommonModule } from '@angular/common';
   template: `
     <div class="stats-compact-row">
       <div class="stat-item-mini">
-        <div class="icon-circle" style="background: rgba(59, 130, 246, 0.1); color: var(--status-info);">
+        <div class="icon-circle" style="background: var(--status-info-bg); color: var(--status-info-text);">
           <i class="bi bi-building"></i>
         </div>
         <div class="stat-info">
@@ -18,24 +18,24 @@ import { CommonModule } from '@angular/common';
       <div class="stat-divider"></div>
 
       <div class="stat-item-mini">
-        <div class="icon-circle" style="background: rgba(16, 185, 129, 0.1); color: var(--status-success);">
+        <div class="icon-circle" style="background: var(--status-success-bg); color: var(--status-success-text);">
           <i class="bi bi-check-circle-fill"></i>
         </div>
         <div class="stat-info">
           <span class="stat-label">Empresas Activas</span>
-          <span class="stat-value text-success">{{ active }}</span>
+          <span class="stat-value">{{ active }}</span>
         </div>
       </div>
 
       <div class="stat-divider"></div>
 
       <div class="stat-item-mini">
-        <div class="icon-circle" style="background: rgba(239, 68, 68, 0.1); color: var(--status-danger);">
+        <div class="icon-circle" style="background: var(--status-danger-bg); color: var(--status-danger-text);">
           <i class="bi bi-x-circle-fill"></i>
         </div>
         <div class="stat-info">
           <span class="stat-label">Empresas Inactivas</span>
-          <span class="stat-value" [class.text-danger]="inactive > 0">{{ inactive }}</span>
+          <span class="stat-value">{{ inactive }}</span>
         </div>
       </div>
     </div>
@@ -45,13 +45,13 @@ import { CommonModule } from '@angular/common';
       display: block;
     }
     .stats-compact-row {
-      background: white;
+      background: var(--bg-main);
       border-radius: 20px;
       padding: 1.25rem 2rem;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      border: 1px solid #f1f5f9;
+      border: 1px solid var(--border-color);
       margin-bottom: 0;
     }
     .stat-item-mini {
@@ -76,26 +76,20 @@ import { CommonModule } from '@angular/common';
     .stat-label {
       font-size: 0.65rem;
       font-weight: 800;
-      color: #94a3b8;
+      color: var(--text-muted);
       text-transform: uppercase;
       letter-spacing: 0.5px;
     }
     .stat-value {
       font-size: 1.35rem;
       font-weight: 800;
-      color: #1e293b;
+      color: var(--text-main);
       line-height: 1.2;
-    }
-    .text-success {
-      color: var(--status-success) !important;
-    }
-    .text-danger {
-      color: var(--status-danger) !important;
     }
     .stat-divider {
       width: 1px;
       height: 35px;
-      background: #f1f5f9;
+      background: var(--border-color);
       margin: 0 1.5rem;
     }
     @media (max-width: 992px) {

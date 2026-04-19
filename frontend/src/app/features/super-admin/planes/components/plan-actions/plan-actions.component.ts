@@ -84,6 +84,90 @@ import { FormsModule } from '@angular/forms';
       background: transparent;
       border: none;
     }
+    .search-box-premium {
+      position: relative;
+      width: 100%;
+    }
+    .search-box-premium i {
+      position: absolute;
+      left: 1rem;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-muted);
+      font-size: 1rem;
+    }
+    .form-control-premium-search {
+      background: var(--bg-main);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 0 1rem 0 2.75rem;
+      height: 42px;
+      font-size: var(--text-md);
+      color: var(--text-main);
+      transition: all 0.2s;
+      width: 100%;
+    }
+    .form-control-premium-search:focus {
+      border-color: var(--primary-color);
+      outline: none;
+      box-shadow: none;
+    }
+    .form-select-premium {
+      background: var(--bg-main);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 0 1rem;
+      height: 42px;
+      font-size: var(--text-base);
+      color: var(--text-muted);
+      width: 100%;
+      cursor: pointer;
+      text-align: left;
+    }
+    .form-select-premium:focus {
+      border-color: var(--primary-color);
+      outline: none;
+    }
+    .dropdown-menu-premium {
+      background: var(--bg-main) !important;
+      border: 1px solid var(--border-color) !important;
+      box-shadow: 0 10px 30px -10px rgba(0,0,0,0.1) !important;
+      border-radius: 12px !important;
+      padding: 0.5rem !important;
+      min-width: 100%;
+      margin-top: 0.5rem !important;
+    }
+    .dropdown-item {
+      border-radius: 8px !important;
+      padding: 0.6rem 1rem !important;
+      color: var(--text-muted) !important;
+      font-size: var(--text-base) !important;
+      font-weight: 500 !important;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .dropdown-item:hover {
+      background-color: var(--status-neutral-bg) !important;
+      color: var(--text-main) !important;
+    }
+    .btn-system-action {
+      background: var(--primary-color);
+      color: #ffffff;
+      border: none;
+      padding: 0 1.5rem;
+      height: 42px;
+      border-radius: 12px;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+      font-size: var(--text-base);
+    }
+    .btn-system-action:hover {
+      filter: brightness(1.1);
+      transform: translateY(-1px);
+    }
   `],
   standalone: true,
   imports: [CommonModule, FormsModule]

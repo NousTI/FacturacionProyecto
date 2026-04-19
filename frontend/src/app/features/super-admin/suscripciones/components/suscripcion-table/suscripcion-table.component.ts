@@ -175,9 +175,9 @@ import { SuscripcionPaginacionComponent, PaginationState } from '../suscripcion-
       min-height: 0;
     }
     .table-container {
-      background: var(--bg-main, #ffffff);
+      background: var(--bg-main);
       border-radius: 20px;
-      border: 1px solid var(--border-color, #f1f5f9);
+      border: 1px solid var(--border-color);
       display: flex;
       flex-direction: column;
       flex: 1;
@@ -194,19 +194,19 @@ import { SuscripcionPaginacionComponent, PaginationState } from '../suscripcion-
       position: sticky;
       top: 0;
       z-index: 10;
-      background: var(--bg-main, #ffffff);
+      background: var(--bg-main);
       padding: 1rem 1.5rem;
       font-size: var(--text-base);
-      color: var(--text-main, #0f172a);
+      color: var(--text-main);
       font-weight: 800;
-      border-bottom: 2px solid var(--border-color, #f1f5f9);
+      border-bottom: 2px solid var(--border-color);
       text-transform: uppercase;
       letter-spacing: 0.05em;
     }
     .table tbody td {
       padding: 1.25rem 1.5rem;
-      border-bottom: 1px solid var(--border-color, #f1f5f9);
-      color: var(--text-muted, #475569);
+      border-bottom: 1px solid var(--border-color);
+      color: var(--text-muted);
       font-size: var(--text-md);
     }
     
@@ -243,11 +243,11 @@ import { SuscripcionPaginacionComponent, PaginationState } from '../suscripcion-
     .btn-action-trigger {
       background: transparent; border: none;
       width: 32px; height: 32px;
-      border-radius: 8px; color: #94a3b8;
+      border-radius: 8px; color: var(--text-muted);
       transition: all 0.2s;
     }
     .btn-action-trigger:hover, .btn-action-trigger[aria-expanded="true"] {
-      background: #f8fafc; color: #0f172a;
+      background: var(--status-neutral-bg); color: var(--text-main);
     }
 
     .dropdown-item {
@@ -256,7 +256,7 @@ import { SuscripcionPaginacionComponent, PaginationState } from '../suscripcion-
       color: var(--text-muted); cursor: pointer; border: none; background: transparent; width: 100%; text-align: left;
     }
     .dropdown-item i { font-size: 1.1rem; margin-right: 0.75rem; }
-    .dropdown-item:hover { background: #f8fafc; color: #0f172a; }
+    .dropdown-item:hover { background: var(--status-neutral-bg); color: var(--text-main); }
 
     .fw-600 { font-weight: 600; }
     .fw-700 { font-weight: 700; }

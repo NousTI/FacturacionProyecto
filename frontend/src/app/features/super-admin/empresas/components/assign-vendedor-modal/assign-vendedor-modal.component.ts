@@ -96,16 +96,16 @@ import { EmpresaService } from '../../services/empresa.service';
       padding: 1rem;
     }
     .modal-container-final {
-      background: #ffffff; width: 100%; max-width: 520px;
+      background: var(--bg-main); width: 100%; max-width: 520px;
       border-radius: 28px; overflow: hidden; display: flex; flex-direction: column;
       box-shadow: 0 40px 80px -20px rgba(22, 29, 53, 0.25);
     }
     .modal-header-final { padding: 1.5rem 2rem; display: flex; justify-content: space-between; align-items: center; }
     .modal-title-final { font-size: 1.15rem; font-weight: 800; color: var(--primary-color); margin: 0; }
-    .btn-close-final { background: none; border: none; font-size: 1.5rem; color: #94a3b8; cursor: pointer; }
+    .btn-close-final { background: none; border: none; font-size: 1.5rem; color: var(--text-muted); cursor: pointer; }
     
     .modal-body-final { padding: 0 2rem 2rem; flex: 1; }
-    .subtitle-premium { font-size: 0.85rem; color: #64748b; line-height: 1.5; }
+    .subtitle-premium { font-size: 0.85rem; color: var(--text-muted); line-height: 1.5; }
     
     .selection-list-premium { 
       display: flex; flex-direction: column; gap: 0.85rem; 
@@ -114,7 +114,7 @@ import { EmpresaService } from '../../services/empresa.service';
     .disabled-content { opacity: 0.6; pointer-events: none; }
     
     .selection-card-premium {
-      padding: 1rem 1.5rem; border: 1px solid #e2e8f0; border-radius: 18px;
+      padding: 1rem 1.5rem; border: 1px solid var(--border-color); border-radius: 18px;
       display: flex; align-items: center; gap: 1.25rem; cursor: pointer; transition: all 0.2s;
     }
     .selection-card-premium:hover { border-color: var(--primary-color); background: #fbfcfe; }
@@ -125,18 +125,18 @@ import { EmpresaService } from '../../services/empresa.service';
     .selection-card-premium.disabled {
       opacity: 0.6;
       cursor: not-allowed;
-      background: #f1f5f9;
-      border-color: #e2e8f0;
+      background: var(--status-neutral-bg);
+      border-color: var(--border-color);
     }
     .selection-card-premium.is-current {
       border-style: dashed;
-      border-color: #cbd5e1;
+      border-color: var(--border-color);
     }
     
     .badge-current {
       font-size: 0.65rem;
-      background: #e2e8f0;
-      color: #64748b;
+      background: var(--status-neutral-bg);
+      color: var(--text-muted);
       padding: 2px 8px;
       border-radius: 6px;
       font-weight: 700;
@@ -144,24 +144,24 @@ import { EmpresaService } from '../../services/empresa.service';
     }
     
     .selection-icon-box {
-      width: 40px; height: 40px; background: #f1f5f9; color: #64748b; 
+      width: 40px; height: 40px; background: var(--status-neutral-bg); color: var(--text-muted); 
       border-radius: 10px; display: flex; align-items: center; justify-content: center;
       font-weight: 800; font-size: 1rem; flex-shrink: 0;
     }
-    .selection-icon-box.direct { background: #ecfdf5; color: #10b981; font-size: 1.2rem; }
-    .selection-icon-box.v-icon { color: #64748b; }
+    .selection-icon-box.direct { background: var(--status-success-bg); color: var(--status-success-text); font-size: 1.2rem; }
+    .selection-icon-box.v-icon { color: var(--text-muted); }
     
     .selection-info { display: flex; flex-direction: column; flex: 1; }
-    .selection-name { font-weight: 800; color: #1e293b; font-size: 0.9rem; }
-    .selection-desc { font-size: 0.75rem; color: #64748b; margin-top: 1px; }
+    .selection-name { font-weight: 800; color: var(--text-main); font-size: 0.9rem; }
+    .selection-desc { font-size: 0.75rem; color: var(--text-muted); margin-top: 1px; }
     
-    .selection-check { font-size: 1.25rem; color: #cbd5e1; }
+    .selection-check { font-size: 1.25rem; color: var(--border-color); }
     .selected .selection-check { color: var(--primary-color); }
     
     .modal-footer-final {
-      padding: 1.5rem 2rem; background: #f8fafc;
+      padding: 1.5rem 2rem; background: var(--status-neutral-bg);
       display: flex; justify-content: flex-end; gap: 1rem;
-      border-top: 1px solid #f1f5f9;
+      border-top: 1px solid var(--border-color);
     }
     .btn-submit-final {
       background: var(--primary-color); color: #ffffff; border: none;
@@ -171,12 +171,12 @@ import { EmpresaService } from '../../services/empresa.service';
     .btn-submit-final:hover { background: #232d4d; }
     .btn-submit-final:disabled { opacity: 0.7; cursor: not-allowed; }
     .btn-cancel-final {
-      background: #ffffff; color: #64748b; border: 1px solid #e2e8f0;
+      background: var(--bg-main); color: var(--text-muted); border: 1px solid var(--border-color);
       padding: 0.75rem 2rem; border-radius: 12px; font-weight: 600;
     }
     
     .scroll-custom::-webkit-scrollbar { width: 5px; }
-    .scroll-custom::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
+    .scroll-custom::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 10px; }
   `],
   standalone: true,
   imports: [CommonModule]

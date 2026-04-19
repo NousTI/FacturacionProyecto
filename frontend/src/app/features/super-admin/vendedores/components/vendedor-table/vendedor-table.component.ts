@@ -124,9 +124,9 @@ import { VendedorPaginacionComponent, PaginationState } from '../vendedor-pagina
       margin-top: 0; 
     }
     .table-container {
-      background: var(--bg-main, #ffffff);
+      background: var(--bg-main);
       border-radius: 20px;
-      border: 1px solid var(--border-color, #f1f5f9);
+      border: 1px solid var(--border-color);
       display: flex;
       flex-direction: column;
       flex: 1;
@@ -149,19 +149,19 @@ import { VendedorPaginacionComponent, PaginationState } from '../vendedor-pagina
       position: sticky;
       top: 0;
       z-index: 10;
-      background: var(--bg-main, #ffffff);
+      background: var(--bg-main);
       padding: 1rem 1.5rem;
       font-size: var(--text-base);
-      color: var(--text-main, #0f172a);
+      color: var(--text-main);
       font-weight: 600;
-      border-bottom: 2px solid var(--border-color, #f1f5f9);
+      border-bottom: 2px solid var(--border-color);
       vertical-align: middle;
     }
     
     .table tbody td {
       padding: 1.25rem 1.5rem;
-      border-bottom: 1px solid var(--border-color, #f1f5f9);
-      color: var(--text-muted, #64748b);
+      border-bottom: 1px solid var(--border-color);
+      color: var(--text-muted);
       font-size: var(--text-md);
     }
 
@@ -186,27 +186,28 @@ import { VendedorPaginacionComponent, PaginationState } from '../vendedor-pagina
     .badge-status-premium.inactivo { background: var(--status-neutral-bg); color: var(--status-neutral-text); }
 
     .progress-mini-track {
-        height: 6px; background: var(--border-color, #f1f5f9);
+        height: 6px; background: var(--border-color);
         border-radius: 10px; width: 60px; overflow: hidden;
     }
     .progress-mini-fill {
         height: 100%; border-radius: 10px;
-        background: var(--status-info-text);
+        background: var(--primary-color);
     }
 
     .btn-action-trigger {
       background: transparent; border: none;
       width: 32px; height: 32px;
-      border-radius: 8px; color: var(--status-neutral, #94a3b8);
+      border-radius: 8px; color: var(--text-muted);
       transition: all 0.2s;
     }
     .btn-action-trigger:hover, .btn-action-trigger[aria-expanded="true"] {
-      background: var(--border-color, #f8fafc); color: var(--text-main, #0f172a);
+      background: var(--status-neutral-bg); color: var(--text-main);
     }
 
     .dropdown-menu {
-      border: 1px solid var(--border-color, #e2e8f0) !important;
-      box-shadow: none !important;
+      background: var(--bg-main) !important;
+      border: 1px solid var(--border-color) !important;
+      box-shadow: 0 10px 30px -10px rgba(0,0,0,0.1) !important;
       border-radius: 12px !important;
       padding: 0.5rem !important;
       z-index: 1050;
@@ -215,12 +216,12 @@ import { VendedorPaginacionComponent, PaginationState } from '../vendedor-pagina
       border-radius: 8px !important;
       font-size: var(--text-base);
       font-weight: 500;
-      color: var(--text-muted, #475569); padding: 0.5rem 1rem;
+      color: var(--text-muted); padding: 0.5rem 1rem;
       display: flex; align-items: center;
       cursor: pointer;
     }
-    .dropdown-item:hover { background: var(--border-color, #f8fafc); color: var(--text-main, #0f172a); }
-    .text-corporate { color: var(--status-info-text) !important; }
+    .dropdown-item:hover { background: var(--status-neutral-bg); color: var(--text-main); }
+    .text-corporate { color: var(--primary-color) !important; }
   `],
   standalone: true,
   imports: [CommonModule, VendedorPaginacionComponent]

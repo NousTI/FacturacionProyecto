@@ -163,13 +163,13 @@ import { GET_IDENTIFICACION_LABEL } from '../../../../../core/constants/sri-iva.
       display: flex; align-items: center; justify-content: center; z-index: 10001;
     }
     .modal-content-premium {
-      background: #ffffff; width: 100%; max-width: 680px;
+      background: var(--bg-main); width: 100%; max-width: 680px;
       border-radius: 32px; overflow: hidden; display: flex; flex-direction: column;
       max-height: 90vh;
     }
     .modal-header-premium {
       padding: 2rem; display: flex; justify-content: space-between; align-items: center;
-      background: #fff; border-bottom: 1px solid #f8fafc;
+      background: var(--bg-main); border-bottom: 1px solid var(--border-color);
     }
     .vendedor-avatar-lg {
       width: 64px; height: 64px;
@@ -190,20 +190,20 @@ import { GET_IDENTIFICACION_LABEL } from '../../../../../core/constants/sri-iva.
     }
     
     .perf-card {
-        background: #f8fafc; border: 1px solid #f1f5f9;
+        background: var(--status-neutral-bg); border: 1px solid var(--border-color);
         padding: 1.25rem; border-radius: 20px; text-align: center;
         transition: transform 0.2s;
     }
     .perf-card:hover { transform: translateY(-5px); }
-    .perf-card .label { font-size: 0.7rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; display: block; margin-bottom: 5px; }
-    .perf-card .value { font-size: 1.5rem; font-weight: 800; color: #1e293b; }
+    .perf-card .label { font-size: 0.7rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; display: block; margin-bottom: 5px; }
+    .perf-card .value { font-size: 1.5rem; font-weight: 800; color: var(--text-main); }
 
     .details-section {
-        background: #ffffff; border: 1px solid rgba(0, 0, 0, 0.05);
+        background: var(--bg-main); border: 1px solid var(--border-color);
         padding: 1.5rem; border-radius: 24px;
     }
     .section-title { 
-        font-size: 0.7rem; font-weight: 800; color: #94a3b8; 
+        font-size: 0.7rem; font-weight: 800; color: var(--text-muted); 
         text-transform: uppercase; letter-spacing: 1px;
         display: flex; align-items: center;
     }
@@ -218,13 +218,13 @@ import { GET_IDENTIFICACION_LABEL } from '../../../../../core/constants/sri-iva.
     .permission-pill {
         display: flex; align-items: center; gap: 0.75rem;
         padding: 0.5rem 0.75rem; border-radius: 10px;
-        font-size: 0.8rem; font-weight: 600; color: #64748b;
-        background: #f8fafc; border: 1px solid rgba(0,0,0,0.02);
+        font-size: 0.8rem; font-weight: 600; color: var(--text-muted);
+        background: var(--status-neutral-bg); border: 1px solid var(--border-color);
     }
     .permission-pill.enabled {
-        color: #1e293b;
-        background: white;
-        border-color: rgba(22, 29, 53, 0.05);
+        color: var(--text-main);
+        background: var(--bg-main);
+        border-color: var(--border-color);
     }
     
     .companies-container {
@@ -234,23 +234,23 @@ import { GET_IDENTIFICACION_LABEL } from '../../../../../core/constants/sri-iva.
     }
 
     .company-mini-card {
-        background: #ffffff;
-        border: 1px solid #f1f5f9;
+        background: var(--bg-main);
+        border: 1px solid var(--border-color);
         padding: 1rem;
         border-radius: 16px;
         transition: all 0.2s;
     }
-    .company-mini-card:hover { border-color: var(--primary-color); background: #f8fafc; }
+    .company-mini-card:hover { border-color: var(--primary-color); background: var(--status-neutral-bg); }
     
     .company-icon {
         width: 40px; height: 40px;
-        background: #f1f5f9;
+        background: var(--status-neutral-bg);
         border-radius: 12px;
         display: flex; align-items: center; justify-content: center;
-        font-size: 1.2rem; color: #64748b;
+        font-size: 1.2rem; color: var(--text-muted);
     }
 
-    .company-name { font-size: 0.9rem; color: #1e293b; }
+    .company-name { font-size: 0.9rem; color: var(--text-main); }
     
     .badge-mini {
         font-size: 0.6rem; font-weight: 800;
@@ -264,17 +264,17 @@ import { GET_IDENTIFICACION_LABEL } from '../../../../../core/constants/sri-iva.
       border-radius: 14px; font-weight: 700; transition: all 0.2s;
     }
     .btn-close-premium {
-      background: none; border: none; font-size: 1.5rem; color: #94a3b8;
+      background: none; border: none; font-size: 1.5rem; color: var(--text-muted);
     }
     .modal-footer-premium {
       display: flex; justify-content: center; padding: 1.5rem 2rem;
-      background: #f8fafc; border-top: 1px solid #f1f5f9;
+      background: var(--status-neutral-bg); border-top: 1px solid var(--border-color);
     }
     .shadow-premium { box-shadow: 0 40px 80px -20px rgba(22, 29, 53, 0.25); }
     
     .custom-scrollbar::-webkit-scrollbar { width: 4px; }
-    .custom-scrollbar::-webkit-scrollbar-track { background: #f1f5f9; }
-    .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+    .custom-scrollbar::-webkit-scrollbar-track { background: var(--status-neutral-bg); }
+    .custom-scrollbar::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 10px; }
   `],
   standalone: true,
   imports: [CommonModule]

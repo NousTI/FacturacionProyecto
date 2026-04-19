@@ -53,12 +53,12 @@ export type RangoTipo = 'mes_actual' | 'mes_anterior' | 'anio_actual' | 'persona
     
     .select-compact {
       border-radius: 10px;
-      border: 1px solid #e2e8f0;
+      border: 1px solid var(--border-color);
       padding: 0.4rem 0.6rem;
       font-weight: 700;
       font-size: 0.8rem;
-      color: #1e293b;
-      background-color: #f8fafc;
+      color: var(--text-main);
+      background-color: var(--bg-main);
       min-width: 125px;
       max-width: 180px;
       cursor: pointer;
@@ -70,19 +70,19 @@ export type RangoTipo = 'mes_actual' | 'mes_anterior' | 'anio_actual' | 'persona
 
     .control-compact {
       border-radius: 10px;
-      border: 1px solid #e2e8f0;
+      border: 1px solid var(--border-color);
       padding: 0.4rem 0.5rem;
       font-weight: 600;
       font-size: 0.75rem;
-      color: #1e293b;
-      background-color: #f8fafc;
+      color: var(--text-main);
+      background-color: var(--bg-main);
     }
     
     .date-small { width: 115px; }
-    .to-text { font-size: 0.75rem; font-weight: 900; color: #cbd5e1; }
+    .to-text { font-size: 0.75rem; font-weight: 900; color: var(--text-muted); }
 
     .btn-refresh-compact {
-      background: #1e293b; color: #fff; border: none; 
+      background: var(--primary-color); color: #fff; border: none; 
       height: 35px; border-radius: 10px; 
       display: flex; align-items: center; justify-content: center;
       transition: all 0.2s;
@@ -91,7 +91,11 @@ export type RangoTipo = 'mes_actual' | 'mes_anterior' | 'anio_actual' | 'persona
       font-weight: 700;
       font-size: 0.8rem;
     }
-    .btn-refresh-compact:hover:not(:disabled) { background: #000; transform: translateY(-1px); box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
+    .btn-refresh-compact:hover:not(:disabled) { 
+      filter: brightness(1.1);
+      transform: translateY(-1px); 
+      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); 
+    }
     .btn-refresh-compact:disabled { opacity: 0.6; cursor: not-allowed; }
 
     .btn-export-compact {
