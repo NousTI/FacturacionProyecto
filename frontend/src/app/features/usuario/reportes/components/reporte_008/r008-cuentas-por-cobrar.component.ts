@@ -206,12 +206,12 @@ Chart.register(...registerables);
     .kpi-card.red { border-left: 4px solid #ef4444; }
 
     .label   { font-size: 0.65rem; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; }
-    .value   { font-size: 1.6rem; font-weight: 800; color: var(--primary-color); line-height: 1.2; }
+    .value   { font-size: 1.6rem; font-weight: 800; color: black; line-height: 1.2; }
     .subtext { font-size: 0.7rem; color: #94a3b8; font-weight: 500; }
 
     .section-card { background: #fff; border: 1px solid #f1f5f9; border-radius: 20px; padding: 1.5rem; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
     .section-card-table { background: #fff; border: 1px solid #f1f5f9; border-radius: 20px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.03); display: flex; flex-direction: column; }
-    .section-header h5 { font-weight: 800; color: var(--primary-color); margin-bottom: 0.2rem; font-size: 1.1rem; }
+    .section-header h5 { font-weight: 800; color: black; margin-bottom: 0.2rem; font-size: 1.1rem; }
     .section-header p  { font-size: 0.8rem; color: #64748b; }
     
     .tabla-scroll { max-height: 500px; overflow-y: auto; overflow-x: auto; }
@@ -221,15 +221,15 @@ Chart.register(...registerables);
     .form-select-premium-sm { padding: 0.3rem 1.8rem 0.3rem 0.75rem; border-radius: 8px; border: 1px solid #e2e8f0; background-color: #fff; font-size: 0.8rem; font-weight: 700; color: #475569; outline: none; }
     
     .btn-nav-premium { width: 34px; height: 34px; border-radius: 8px; border: 1px solid #e2e8f0; background: white; display: flex; align-items: center; justify-content: center; color: #64748b; transition: all 0.2s; }
-    .btn-nav-premium:hover:not(:disabled) { background: var(--primary-color); color: white; border-color: var(--primary-color); }
-    .page-indicator-premium { min-width: 34px; height: 34px; border-radius: 8px; display: flex; align-items: center; justify-content: center; background: #f1f5f9; color: var(--primary-color); font-weight: 800; font-size: 0.85rem; padding: 0 0.5rem; }
+    .btn-nav-premium:hover:not(:disabled) { background: var(--primary-color); color: white; border-color: black; }
+    .page-indicator-premium { min-width: 34px; height: 34px; border-radius: 8px; display: flex; align-items: center; justify-content: center; background: #f1f5f9; color: black; font-weight: 800; font-size: 0.85rem; padding: 0 0.5rem; }
 
     .chart-wrapper { position: relative; height: 240px; }
     .chart-center-text {
       position: absolute; display: flex; flex-direction: column; align-items: center; justify-content: center;
       top: 48%; left: 50%; transform: translate(-50%, -50%);
     }
-    .chart-center-text .percentage { font-size: 1.4rem; font-weight: 800; color: var(--primary-color); }
+    .chart-center-text .percentage { font-size: 1.4rem; font-weight: 800; color: black; }
     .chart-center-text .desc       { font-size: 0.6rem; font-weight: 700; color: #94a3b8; text-transform: uppercase; }
 
     .modern-table thead th { background: #f8fafc; border-bottom: 1px solid #f1f5f9; font-size: 0.65rem; text-transform: uppercase; color: #94a3b8; font-weight: 800; padding: 1rem; letter-spacing: 0.05em; }
@@ -249,10 +249,10 @@ Chart.register(...registerables);
     
     .fw-600 { font-weight: 600; }
     .font-mono { font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; }
-    .font-bold { font-weight: 800; color: var(--primary-color); }
+    .font-bold { font-weight: 800; color: black; }
     .hover-row:hover { background: #f8fafc; }
     .font-medium { font-weight: 600; color: #334155; }
-    .font-bold   { font-weight: 800; color: var(--primary-color); }
+    .font-bold   { font-weight: 800; color: black; }
     .font-mono   { font-family: monospace; font-size: 0.85rem; color: #334155; }
 
     .badge { padding: 0.5rem 0.75rem; border-radius: 8px; font-weight: 600; font-size: 0.75rem; }
@@ -345,4 +345,5 @@ export class R008CuentasPorCobrarComponent implements OnChanges, OnDestroy {
     this.chart = new Chart(this.doughnutChart.nativeElement, config);
   }
 }
+
 

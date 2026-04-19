@@ -45,11 +45,12 @@ import { Permiso } from '../../../../domain/models/perfil.model';
       &.granted { background: var(--primary-color); color: white; box-shadow: 0 4px 10px -2px rgba(0,0,0,0.2); }
     }
 
-    .permiso-label-title { font-size: 1rem; font-weight: 850; color: var(--primary-color); margin: 0; }
+    .permiso-label-title { font-size: 1rem; font-weight: 850; color: black; margin: 0; }
     .permiso-label-desc { font-size: 0.8rem; color: #64748b; margin: 0.25rem 0 0; font-weight: 600; line-height: 1.5; }
   `]
 })
 export class PermissionItemComponent {
   @Input({ required: true }) permiso!: Permiso;
 }
+
 

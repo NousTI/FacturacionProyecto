@@ -33,7 +33,7 @@ import { Factura } from '../../../../../domain/models/factura.model';
                 </div>
                 <div class="text-end">
                   <span class="d-block text-muted tiny-cap">Monto Total</span>
-                  <span class="fw-bold text-primary">{{ factura.total | currency:'USD' }}</span>
+                  <span class="fw-bold text-dark">{{ factura.total | currency:'USD' }}</span>
                 </div>
               </div>
             </div>
@@ -87,7 +87,7 @@ import { Factura } from '../../../../../domain/models/factura.model';
       color: #64748b;
       transition: all 0.2s;
     }
-    .btn-close-lux:hover { background: #e2e8f0; color: var(--primary-color); }
+    .btn-close-lux:hover { background: #e2e8f0; color: black; }
 
     .invoice-summary-card {
       background: #f8fafc;
@@ -124,12 +124,12 @@ import { Factura } from '../../../../../domain/models/factura.model';
       padding: 0.75rem 1rem 0.75rem 2.75rem;
       font-size: 0.95rem;
       font-weight: 600;
-      color: var(--primary-color);
+      color: black;
       outline: none;
       transition: all 0.2s;
     }
     .input-lux:focus {
-      border-color: var(--primary-color);
+      border-color: black;
       box-shadow: 0 0 0 4px rgba(22, 29, 53, 0.05);
     }
 
@@ -175,4 +175,6 @@ export class EmailFacturaModalComponent implements OnInit {
     }
   }
 }
+
+
 

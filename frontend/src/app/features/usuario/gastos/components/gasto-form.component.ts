@@ -91,7 +91,7 @@ import { SRI_IVA_TARIFAS } from '../../../../core/constants/sri-iva.constants';
           </div>
 
           <div class="total-result-area">
-            <label class="editorial-label text-white-muted">Total a Pagar</label>
+            <label class="editorial-label">Total a Pagar</label>
             <div class="d-flex align-items-center">
               <span class="currency-symbol">$</span>
               <input type="number" class="total-input-clean" formControlName="total" readonly>
@@ -129,14 +129,15 @@ import { SRI_IVA_TARIFAS } from '../../../../core/constants/sri-iva.constants';
     .col-span-2 { grid-column: span 2; }
     .editorial-label { display: block; font-size: 0.7rem; font-weight: 800; text-transform: uppercase; color: #64748b; margin-bottom: 0.5rem; }
     .editorial-input { width: 100%; padding: 0.85rem 1.25rem; border-radius: 12px; border: 1.5px solid #e2e8f0; font-weight: 500; }
-    .editorial-input:focus { outline: none; border-color: #3b82f6; background: white; }
+    .editorial-input:focus { outline: none; border-color: black; background: white; }
     .editorial-input.is-invalid { border-color: #f43f5e; background: #fff1f2; }
     .invalid-feedback-minimal { color: #f43f5e; font-size: 0.75rem; font-weight: 600; margin-top: 0.4rem; display: block; }
     .input-editorial-group { display: flex; align-items: stretch; border-radius: 12px; overflow: hidden; border: 1.5px solid #e2e8f0; }
-    .input-editorial-group:focus-within { border-color: #3b82f6; }
+    .input-editorial-group:focus-within { border-color: black; }
     .addon { background: #f8fafc; padding: 0 1rem; display: flex; align-items: center; border-right: 1.5px solid #e2e8f0; color: #64748b; font-weight: 600; }
     .addon-field { border: none !important; border-radius: 0; flex: 1; padding: 0.85rem 1.25rem; outline: none; font-weight: 500; }
     .total-result-area { background: var(--primary-color); padding: 1rem; border-radius: 16px; color: white; }
+    .total-result-area .editorial-label { color: white; }
     .currency-symbol { font-size: 1rem; color: white; margin-right: 0.5rem; }
     .total-input-clean { background: transparent; border: none; font-size: 1.75rem; font-weight: 900; color: white; width: 100%; outline: none; }
     
@@ -283,3 +284,4 @@ export class GastoFormComponent implements OnInit, OnChanges {
     }
   }
 }
+

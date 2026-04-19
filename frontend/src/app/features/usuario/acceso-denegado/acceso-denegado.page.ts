@@ -76,7 +76,7 @@ import { take } from 'rxjs';
     .title {
       font-size: 2rem;
       font-weight: 850;
-      color: var(--primary-color);
+      color: black;
       margin-bottom: 0.5rem;
       letter-spacing: -0.02em;
     }
@@ -157,4 +157,5 @@ export class AccesoDenegadoPage implements OnInit {
     this.authFacade.logout().subscribe();
   }
 }
+
 

@@ -10,7 +10,7 @@ import { PerfilUsuario } from '../../../../domain/models/perfil.model';
   template: `
     <div class="editorial-card company-business-card p-4 shadow-sm" *ngIf="perfil.empresa">
       <div class="card-header-minimal-editorial mb-3 bg-transparent p-0 border-0">
-        <i class="bi bi-building-check me-2 text-primary"></i> Resumen de Empresa
+        <i class="bi bi-building-check me-2 text-dark"></i> Resumen de Empresa
       </div>
       
       <div class="d-flex align-items-center mb-4 profile-business-top">
@@ -44,7 +44,7 @@ import { PerfilUsuario } from '../../../../domain/models/perfil.model';
     .company-business-card { background: white; border: 1px solid #f1f5f9; border-radius: 24px; }
     
     .card-header-minimal-editorial {
-      font-weight: 900; color: var(--primary-color); font-size: 0.85rem;
+      font-weight: 900; color: black; font-size: 0.85rem;
       text-transform: uppercase; letter-spacing: 0.05em;
     }
     
@@ -57,7 +57,7 @@ import { PerfilUsuario } from '../../../../domain/models/perfil.model';
     }
     .editorial-logo-box img { max-width: 100%; height: auto; border-radius: 6px; }
 
-    .company-display-name-small { font-weight: 850; color: var(--primary-color); margin: 0; font-size: 1.15rem; letter-spacing: -0.01em; }
+    .company-display-name-small { font-weight: 850; color: black; margin: 0; font-size: 1.15rem; letter-spacing: -0.01em; }
     
     .editorial-badge-ruc {
       font-weight: 900; background: #334155; color: #fff;
@@ -78,4 +78,6 @@ import { PerfilUsuario } from '../../../../domain/models/perfil.model';
 export class ProfileBusinessCardComponent {
   @Input() perfil!: PerfilUsuario;
 }
+
+
 

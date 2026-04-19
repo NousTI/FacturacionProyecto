@@ -14,7 +14,7 @@
 .spinner {
   width: 22px; height: 22px;
   border: 2px solid #e2e8f0;
-  border-top-color: #3b82f6;
+  border-top-color: black;
   border-radius: 50%;
   animation: spin 0.7s linear infinite;
 }
@@ -32,7 +32,7 @@
 .tab-title {
   font-size: 1rem;
   font-weight: 800;
-  color: var(--primary-color);
+  color: black;
   margin: 0 0 0.25rem;
 }
 .tab-sub { font-size: 0.8rem; color: #94a3b8; margin: 0; }
@@ -62,7 +62,7 @@
   outline: none;
   cursor: pointer;
 }
-.filter-select:focus { border-color: #3b82f6; }
+.filter-select:focus { border-color: black; }
 
 /* ── Mini stats ───────────────────────────────────────────────────── */
 .mini-stats {
@@ -88,7 +88,7 @@
 .mini-val {
   font-size: 1.6rem;
   font-weight: 800;
-  color: var(--primary-color);
+  color: black;
   line-height: 1;
 }
 .mini-lbl {
@@ -132,7 +132,7 @@
 /* ── Utilities ────────────────────────────────────────────────────── */
 .text-right { text-align: right; }
 .text-muted { color: #94a3b8; }
-.text-blue  { color: #3b82f6; }
+.text-blue  { color: black; }
 .fw-600     { font-weight: 600; }
 .fw-700     { font-weight: 700; }
 .small      { font-size: 0.73rem; }
@@ -145,7 +145,7 @@
   font-size: 0.75rem;
   font-weight: 700;
 }
-.badge-num.blue  { background: #eff6ff; color: #3b82f6; }
+.badge-num.blue  { background: #eff6ff; color: black; }
 .badge-num.green { background: #ecfdf5; color: #10b981; }
 .badge-num.amber { background: #fffbeb; color: #f59e0b; }
 
@@ -157,4 +157,5 @@
   font-size: 0.875rem;
   font-weight: 500;
 }
+
 

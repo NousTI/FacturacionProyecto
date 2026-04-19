@@ -20,7 +20,7 @@ import { ReporteTopClientes } from '../../../../../../../domain/models/cliente.m
     .rank-badge.gold   { background: #fef3c7; color: #b45309; }
     .rank-badge.silver { background: #e2e8f0; color: #475569; }
     .rank-badge.bronze { background: #fef3c7; color: #c2410c; }
-    .client-name    { font-weight: 600; color: var(--primary-color); }
+    .client-name    { font-weight: 600; color: black; }
     .client-contact { font-size: 0.7rem; color: #94a3b8; margin-top: 0.1rem; }
     `],
     template: `
@@ -147,4 +147,5 @@ export class AnaliticaTopComponent implements OnInit, OnDestroy {
         return '';
     }
 }
+
 

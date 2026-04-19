@@ -114,10 +114,10 @@ import { HasPermissionDirective } from '../../../../core/directives/has-permissi
     }
     .form-control-premium-search {
       background: #ffffff; border: 1px solid var(--border-color); border-radius: 14px;
-      padding: 0 2.5rem 0 2.85rem; height: 44px; font-size: 0.95rem; color: var(--primary-color);
+      padding: 0 2.5rem 0 2.85rem; height: 44px; font-size: 0.95rem; color: black;
       transition: all 0.2s; width: 100%; font-weight: 500;
     }
-    .form-control-premium-search:focus { border-color: var(--primary-color); outline: none; box-shadow: 0 0 0 3px rgba(22, 29, 53, 0.06); }
+    .form-control-premium-search:focus { border-color: black; outline: none; box-shadow: 0 0 0 3px rgba(22, 29, 53, 0.06); }
     .btn-clear-search-premium {
       position: absolute; right: 0.75rem; top: 50%; transform: translateY(-50%);
       background: transparent; border: none; color: var(--text-muted); cursor: pointer;
@@ -130,7 +130,7 @@ import { HasPermissionDirective } from '../../../../core/directives/has-permissi
       min-width: 170px; cursor: pointer; text-align: left; font-weight: 600;
       transition: all 0.2s;
     }
-    .form-select-premium:hover { border-color: var(--primary-color); }
+    .form-select-premium:hover { border-color: black; }
 
     .dropdown-menu-premium {
       border-radius: 14px !important; padding: 0.5rem !important; min-width: 200px;
@@ -142,7 +142,7 @@ import { HasPermissionDirective } from '../../../../core/directives/has-permissi
       color: #475569 !important; font-size: 0.85rem !important;
       font-weight: 600 !important; cursor: pointer; transition: all 0.2s;
     }
-    .dropdown-item:hover { background-color: var(--primary-color) !important; color: #ffffff !important; }
+    .dropdown-item:hover { background-color: black !important; color: #ffffff !important; }
 
     .btn-system-action {
       background: var(--primary-color); color: #ffffff; border: none; padding: 0 1.5rem;
@@ -207,4 +207,5 @@ export class UsuariosActionsComponent {
     }
   }
 }
+
 

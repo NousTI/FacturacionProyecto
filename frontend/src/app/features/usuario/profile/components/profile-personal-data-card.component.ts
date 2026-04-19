@@ -12,7 +12,7 @@ import { PerfilUsuario } from '../../../../domain/models/perfil.model';
     <div class="editorial-card mb-4 p-0 shadow-sm" style="overflow: hidden;">
       <div class="card-header-minimal-editorial px-4 d-flex justify-content-between align-items-center">
         <div class="d-flex align-items-center gap-2">
-          <i class="bi bi-person-badge text-primary"></i>
+          <i class="bi bi-person-badge text-dark"></i>
           <span>Identidad Personal</span>
         </div>
         <button *ngIf="!isEditing" class="btn-icon-minimal-editorial" 
@@ -41,7 +41,7 @@ import { PerfilUsuario } from '../../../../domain/models/perfil.model';
             <div class="col-md-6">
               <div class="info-block-editorial">
                 <label>Teléfono Celular</label>
-                <div class="value-display text-primary">{{ perfil.telefono || 'Sin registrar' }}</div>
+                <div class="value-display text-dark">{{ perfil.telefono || 'Sin registrar' }}</div>
               </div>
             </div>
             <div class="col-md-6">
@@ -115,13 +115,13 @@ import { PerfilUsuario } from '../../../../domain/models/perfil.model';
     
     .card-header-minimal-editorial {
       padding: 1.25rem 1.5rem; border-bottom: 1px solid #f1f5f9;
-      font-weight: 900; font-size: 0.85rem; color: var(--primary-color);
+      font-weight: 900; font-size: 0.85rem; color: black;
       background: #f8fafc; text-transform: uppercase; letter-spacing: 0.05em;
     }
     
     .btn-icon-minimal-editorial {
       width: 34px; height: 34px; border-radius: 10px; border: none;
-      background: #eff6ff; color: #3b82f6; display: flex; align-items: center; justify-content: center;
+      background: #eff6ff; color: black; display: flex; align-items: center; justify-content: center;
       transition: all 0.2s;
       &:hover { background: #dbeafe; transform: scale(1.05); }
     }
@@ -136,8 +136,8 @@ import { PerfilUsuario } from '../../../../domain/models/perfil.model';
     .editorial-input-premium {
       width: 100%; padding: 0.75rem 1rem; border-radius: 14px;
       border: 1.5px solid #e2e8f0; background: #f8fafc;
-      font-size: 1rem; font-weight: 700; color: var(--primary-color); transition: all 0.2s;
-      &:focus { outline: none; border-color: #3b82f6; background: white; box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1); }
+      font-size: 1rem; font-weight: 700; color: black; transition: all 0.2s;
+      &:focus { outline: none; border-color: black; background: white; box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1); }
     }
     
     .btn-minimal-editorial {
@@ -219,4 +219,6 @@ export class ProfilePersonalDataCardComponent {
     this.cdr.markForCheck();
   }
 }
+
+
 

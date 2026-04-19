@@ -144,7 +144,7 @@ import { Cliente } from '../../../../../domain/models/cliente.model';
       display: flex; align-items: center; justify-content: center;
       font-size: 1.75rem; font-weight: 800;
     }
-    .brand-text h4 { margin: 0 0 0.5rem 0; font-weight: 800; color: var(--primary-color); font-size: 1.5rem; }
+    .brand-text h4 { margin: 0 0 0.5rem 0; font-weight: 800; color: black; font-size: 1.5rem; }
     .badges { display: flex; gap: 0.5rem; }
     
     .status-badge {
@@ -181,7 +181,7 @@ import { Cliente } from '../../../../../domain/models/cliente.model';
     .info-item { display: flex; flex-direction: column; gap: 0.3rem; }
     .info-item.full { grid-column: span 2; }
     .info-item label { font-size: 0.75rem; font-weight: 700; color: #94a3b8; text-transform: uppercase; }
-    .info-item span { font-size: 1rem; font-weight: 600; color: var(--primary-color); }
+    .info-item span { font-size: 1rem; font-weight: 600; color: black; }
     .email-text { color: var(--status-info-text) !important; text-decoration: underline; }
     .address-text { font-size: 0.9rem !important; color: #64748b !important; line-height: 1.5; }
 
@@ -201,7 +201,7 @@ import { Cliente } from '../../../../../domain/models/cliente.model';
     .audit-row { display: flex; justify-content: space-between; margin-bottom: 0.75rem; }
     .audit-row:last-child { margin-bottom: 0; }
     .a-label { font-size: 0.8rem; font-weight: 600; color: #64748b; }
-    .a-value { font-size: 0.8rem; font-weight: 700; color: var(--primary-color); }
+    .a-value { font-size: 0.8rem; font-weight: 700; color: black; }
 
     .modal-footer { padding: 1.5rem 2.5rem; }
     .btn-primary-premium {
@@ -253,4 +253,5 @@ export class ClienteDetailModalComponent implements OnInit, OnDestroy {
     this.onClose.emit();
   }
 }
+
 

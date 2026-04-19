@@ -142,7 +142,7 @@ import { PaginationState } from '../../super-admin/empresas/components/empresa-p
     .unauthorized-access-premium { flex: 1; display: flex; align-items: center; justify-content: center; padding: 2rem; background: transparent; }
     .unauthorized-container { background: #ffffff; border-radius: 28px; padding: 3.5rem 2.5rem; max-width: 500px; width: 100%; text-align: center; border: 1px solid var(--border-color); }
     .icon-pulse-wrapper { position: relative; width: 88px; height: 88px; background: var(--status-danger-bg); color: var(--status-danger-text); border-radius: 24px; display: flex; align-items: center; justify-content: center; font-size: 2.25rem; margin: 0 auto 2rem; animation: pulse-ring 2s ease-out infinite; }
-    .text-content h2 { font-weight: 850; color: var(--primary-color); margin-bottom: 0.75rem; font-size: 1.5rem; letter-spacing: -0.02em; }
+    .text-content h2 { font-weight: 850; color: black; margin-bottom: 0.75rem; font-size: 1.5rem; letter-spacing: -0.02em; }
     .text-content p { color: var(--text-muted); font-size: 0.95rem; line-height: 1.6; margin-bottom: 2rem; }
     .btn-premium-outline { background: white; color: var(--text-main); border: 1px solid var(--border-color); padding: 0.75rem 1.5rem; border-radius: 14px; font-weight: 700; font-size: 0.9rem; transition: all 0.2s; display: inline-flex; align-items: center; justify-content: center; }
     .btn-premium-outline:hover { background: var(--status-neutral-bg); border-color: var(--border-color); transform: translateY(-1px); }
@@ -427,4 +427,5 @@ export class UsuariosPage implements OnInit, OnDestroy {
       });
   }
 }
+
 

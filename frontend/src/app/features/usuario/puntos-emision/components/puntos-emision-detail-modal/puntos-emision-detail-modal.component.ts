@@ -30,7 +30,7 @@ import { PuntoEmision } from '../../../../../domain/models/punto-emision.model';
             <div class="row g-3">
               <div class="col-md-2">
                 <label class="label-final">Código</label>
-                <div class="detail-value fw-bold text-primary">{{ puntoEmision.codigo }}</div>
+                <div class="detail-value fw-bold text-dark">{{ puntoEmision.codigo }}</div>
               </div>
               <div class="col-md-6">
                 <label class="label-final">Nombre del Punto</label>
@@ -63,7 +63,7 @@ import { PuntoEmision } from '../../../../../domain/models/punto-emision.model';
             <div class="row g-3">
               <div class="col-md-4">
                 <label class="label-final text-uppercase" style="font-size: 0.65rem;">Facturas</label>
-                <div class="detail-value text-primary fw-bold" style="font-size: 1.1rem;">
+                <div class="detail-value text-dark fw-bold" style="font-size: 1.1rem;">
                   {{ ('000000000' + (puntoEmision.secuencial_factura || 0)).slice(-9) }}
                 </div>
               </div>
@@ -176,7 +176,7 @@ import { PuntoEmision } from '../../../../../domain/models/punto-emision.model';
     .modal-title-final {
       font-size: 1.25rem;
       font-weight: 800;
-      color: var(--primary-color);
+      color: black;
       margin: 0;
     }
 
@@ -191,7 +191,7 @@ import { PuntoEmision } from '../../../../../domain/models/punto-emision.model';
     }
 
     .btn-close-final:hover {
-      color: var(--primary-color);
+      color: black;
       transform: rotate(90deg);
     }
 
@@ -233,7 +233,7 @@ import { PuntoEmision } from '../../../../../domain/models/punto-emision.model';
     .section-header-final {
       font-size: 1rem;
       font-weight: 800;
-      color: var(--primary-color);
+      color: black;
       margin-bottom: 1.25rem;
     }
 
@@ -336,4 +336,6 @@ export class PuntosEmisionDetailModalComponent {
     this.onClose.emit();
   }
 }
+
+
 

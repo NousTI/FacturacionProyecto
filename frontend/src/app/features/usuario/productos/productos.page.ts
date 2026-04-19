@@ -154,7 +154,7 @@ import { PaginationState } from '../../super-admin/empresas/components/empresa-p
     }
     .main-tab-btn i { font-size: 1.1rem; }
     .main-tab-btn:hover { color: var(--text-main); }
-    .main-tab-btn.active { color: var(--primary-color); border-bottom-color: var(--primary-color); }
+    .main-tab-btn.active { color: black; border-bottom-color: black; }
 
     .view-section { flex: 1; display: flex; flex-direction: column; gap: 24px; min-height: 0; }
 
@@ -356,3 +356,4 @@ export class ProductosPage implements OnInit, OnDestroy {
     }, 800);
   }
 }
+

@@ -60,7 +60,7 @@ import { CommonModule } from '@angular/common';
     .icon-circle.warning { background: var(--status-orange-bg);  color: var(--status-orange-text); }
     .stat-info { display: flex; flex-direction: column; }
     .stat-label { font-size: 0.65rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
-    .stat-value { font-size: 1.35rem; font-weight: 800; color: var(--primary-color); line-height: 1.2; }
+    .stat-value { font-size: 1.35rem; font-weight: 800; color: black; line-height: 1.2; }
     .stat-value.success { color: var(--status-success-text); }
     .stat-value.warning { color: var(--status-orange-text); }
     .stat-divider { width: 1px; height: 35px; background: var(--border-color); margin: 0 1.5rem; }
@@ -76,4 +76,5 @@ export class ProveedoresStatsComponent {
   @Input() active: number = 0;
   @Input() credit: number = 0;
 }
+
 

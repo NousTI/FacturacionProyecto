@@ -96,14 +96,14 @@ import { HasPermissionDirective } from '../../../../../shared/directives/has-per
       padding: 0.75rem 1rem 0.75rem 2.8rem;
       font-size: 0.9rem;
       font-weight: 600;
-      color: var(--primary-color);
+      color: black;
       width: 100%;
       outline: none;
       transition: all 0.2s;
     }
 
     .search-input-lux:focus {
-      border-color: var(--primary-color);
+      border-color: black;
       background: white;
       box-shadow: 0 0 0 4px rgba(22, 29, 53, 0.05);
     }
@@ -126,7 +126,7 @@ import { HasPermissionDirective } from '../../../../../shared/directives/has-per
     .btn-filter-lux:hover {
       background: #f8fafc;
       border-color: #cbd5e1;
-      color: var(--primary-color);
+      color: black;
     }
 
     .btn-create-lux {
@@ -174,7 +174,7 @@ import { HasPermissionDirective } from '../../../../../shared/directives/has-per
 
     .dropdown-item:hover, .dropdown-item.active {
       background: #f8fafc;
-      color: var(--primary-color);
+      color: black;
     }
   `]
 })
@@ -219,4 +219,5 @@ export class RecurrenteActionsComponent {
     return map[val] || val;
   }
 }
+
 

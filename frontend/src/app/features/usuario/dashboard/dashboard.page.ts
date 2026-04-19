@@ -42,14 +42,14 @@ import { DashboardOverview } from '../../../shared/services/dashboard.service';
       <!-- 1. Spinner de Carga Inicial (Cero datos) -->
       <div *ngIf="(loading$ | async) && !(overview$ | async)" 
            class="d-flex justify-content-center align-items-center initial-loader">
-        <div class="spinner-border text-primary" role="status">
+        <div class="spinner-border text-dark" role="status">
           <span class="visually-hidden">Cargando...</span>
         </div>
       </div>
 
       <!-- 2. Overlay de Carga (Actualizando filtros) -->
       <div *ngIf="(loading$ | async) && (overview$ | async)" class="loading-overlay">
-        <div class="spinner-border text-primary" role="status"></div>
+        <div class="spinner-border text-dark" role="status"></div>
       </div>
 
       <ng-container *ngIf="overview$ | async as overview">
@@ -120,6 +120,12 @@ import { DashboardOverview } from '../../../shared/services/dashboard.service';
     </div>
   `,
   styles: [`
+    :host {
+      display: block;
+      height: 100%;
+      width: 100%;
+      overflow: hidden;
+    }
     .dash-wrap { height: 100%; overflow-y: auto; padding-bottom: 2rem; position: relative; }
     
     .dashboard-main-chart {
@@ -239,3 +245,4 @@ export class DashboardPage implements OnInit {
     });
   }
 }
+

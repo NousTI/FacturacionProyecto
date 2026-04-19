@@ -37,7 +37,7 @@ import { RecurrentePaginacionComponent, PaginationState } from '../recurrente-pa
                   </div>
                 </div>
               </td>
-              <td class="text-center font-monospace fw-bold text-primary">
+              <td class="text-center font-monospace fw-bold text-dark">
                 {{ prog.monto | currency:'USD' }}
               </td>
               <td class="text-center">
@@ -74,7 +74,7 @@ import { RecurrentePaginacionComponent, PaginationState } from '../recurrente-pa
                     </li>
                     <li *hasPermission="['FACTURA_PROGRAMADA_VER', 'FACTURA_PROGRAMADA_VER_PROPIAS']">
                       <button class="dropdown-item" (click)="onAction.emit({type: 'view', data: prog})">
-                        <i class="bi bi-eye me-2 text-primary"></i>Ver Plantilla
+                        <i class="bi bi-eye me-2 text-dark"></i>Ver Plantilla
                       </button>
                     </li>
                     <li *hasPermission="['FACTURA_PROGRAMADA_VER', 'FACTURA_PROGRAMADA_VER_PROPIAS']">
@@ -86,7 +86,7 @@ import { RecurrentePaginacionComponent, PaginationState } from '../recurrente-pa
                     <ng-container *ngIf="canExecuteManual(prog)">
                       <li><hr class="dropdown-divider"></li>
                       <li *hasPermission="['FACTURA_PROGRAMADA_CREAR', 'FACTURA_PROGRAMADA_EDITAR']">
-                        <button class="dropdown-item fw-bold text-primary" (click)="onAction.emit({type: 'execute', data: prog})">
+                        <button class="dropdown-item fw-bold text-dark" (click)="onAction.emit({type: 'execute', data: prog})">
                           <i class="bi bi-lightning-fill me-2 anim-pulse"></i>Ejecutar Ahora
                         </button>
                       </li>
@@ -236,7 +236,7 @@ import { RecurrentePaginacionComponent, PaginationState } from '../recurrente-pa
     }
     .btn-icon-premium:hover {
       background: white;
-      color: var(--primary-color);
+      color: black;
       border-color: #cbd5e1;
       transform: translateY(-2px);
       box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
@@ -256,7 +256,7 @@ import { RecurrentePaginacionComponent, PaginationState } from '../recurrente-pa
     }
     .dropdown-premium .dropdown-trigger:hover {
       background: white;
-      color: var(--primary-color);
+      color: black;
       border-color: #cbd5e1;
       transform: translateY(-2px);
       box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
@@ -284,7 +284,7 @@ import { RecurrentePaginacionComponent, PaginationState } from '../recurrente-pa
     }
     .dropdown-premium .dropdown-item:hover {
       background: #f1f5f9;
-      color: var(--primary-color);
+      color: black;
       transform: translateX(4px);
     }
     .dropdown-premium .dropdown-header {
@@ -338,4 +338,6 @@ export class RecurrenteTableComponent {
     }
   }
 }
+
+
 

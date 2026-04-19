@@ -142,7 +142,7 @@ type Tab = 'resumen' | 'ventas' | 'cartera' | 'iva' | 'mis_ventas';
 
     <!-- LOADING -->
     <div class="loading-state py-5 text-center" *ngIf="loading">
-      <div class="spinner-grow text-primary" role="status"></div>
+      <div class="spinner-grow text-dark" role="status"></div>
       <p class="mt-3 text-muted fw-bold">Consolidando métricas financieras...</p>
     </div>
 
@@ -231,7 +231,7 @@ type Tab = 'resumen' | 'ventas' | 'cartera' | 'iva' | 'mis_ventas';
     .nav-label { display: flex; flex-direction: column; align-items: flex-start; line-height: 1.1; }
     .nav-name  { font-size: 0.82rem; font-weight: 700; }
     .nav-code  { font-size: 0.62rem; font-weight: 600; opacity: 0.55; letter-spacing: 0.03em; }
-    .nav-btn:hover { background: #f1f5f9; color: var(--primary-color); }
+    .nav-btn:hover { background: #f1f5f9; color: black; }
     .nav-btn.active { background: var(--primary-color); color: #fff; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
 
     /* FILTROS */
@@ -239,12 +239,12 @@ type Tab = 'resumen' | 'ventas' | 'cartera' | 'iva' | 'mis_ventas';
 
     .select-compact {
       border-radius: 10px; border: 1px solid #e2e8f0; padding: 0.4rem 0.6rem;
-      font-weight: 700; font-size: 0.8rem; color: var(--primary-color); background: #f8fafc;
+      font-weight: 700; font-size: 0.8rem; color: black; background: #f8fafc;
       min-width: 120px; cursor: pointer; outline: none;
     }
     .control-compact {
       border-radius: 10px; border: 1px solid #e2e8f0; padding: 0.4rem 0.5rem;
-      font-weight: 600; font-size: 0.75rem; color: var(--primary-color); background: #f8fafc; outline: none;
+      font-weight: 600; font-size: 0.75rem; color: black; background: #f8fafc; outline: none;
     }
     .date-small { width: 110px; }
     .sep-text { font-size: 0.75rem; font-weight: 900; color: #cbd5e1; }
@@ -535,4 +535,6 @@ export class ReportesPage implements OnInit {
     this.cdr.detectChanges();
   }
 }
+
+
 

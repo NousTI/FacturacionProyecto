@@ -61,18 +61,18 @@ import { HasPermissionDirective } from '../../../../shared/directives/has-permis
     }
     .role-item-minimal:hover { background: #f8fafc; }
     .role-item-minimal.selected { background: #f1f5f9; }
-    .role-item-name { font-weight: 700; color: var(--primary-color); font-size: 0.9rem; }
+    .role-item-name { font-weight: 700; color: black; font-size: 0.9rem; }
     .role-item-count { font-size: 0.7rem; color: #94a3b8; font-weight: 600; display: block; }
     
     .btn-create-minimal {
       width: 32px; height: 32px; border-radius: 10px; border: none;
-      background: #f1f5f9; color: var(--primary-color); display: flex; align-items: center; justify-content: center;
+      background: #f1f5f9; color: black; display: flex; align-items: center; justify-content: center;
       transition: all 0.2s;
     }
     .btn-create-minimal:hover { background: var(--primary-color); color: #fff; }
 
     .btn-edit-minimal { border: none; background: transparent; color: #cbd5e1; font-size: 0.8rem; }
-    .selected .btn-edit-minimal { color: var(--primary-color); }
+    .selected .btn-edit-minimal { color: black; }
   `]
 })
 export class RoleListComponent {
@@ -87,4 +87,5 @@ export class RoleListComponent {
     this.onEdit.emit(role);
   }
 }
+
 

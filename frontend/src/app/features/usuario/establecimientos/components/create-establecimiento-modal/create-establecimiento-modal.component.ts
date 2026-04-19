@@ -191,7 +191,7 @@ import { Establecimiento } from '../../../../../domain/models/establecimiento.mo
     .modal-title-final {
       font-size: 1.25rem;
       font-weight: 800;
-      color: var(--primary-color);
+      color: black;
       margin: 0;
     }
 
@@ -206,7 +206,7 @@ import { Establecimiento } from '../../../../../domain/models/establecimiento.mo
     }
 
     .btn-close-final:hover:not(:disabled) {
-      color: var(--primary-color);
+      color: black;
       transform: rotate(90deg);
     }
 
@@ -253,7 +253,7 @@ import { Establecimiento } from '../../../../../domain/models/establecimiento.mo
     .section-header-final {
       font-size: 1rem;
       font-weight: 800;
-      color: var(--primary-color);
+      color: black;
       margin-bottom: 1.25rem;
     }
 
@@ -279,7 +279,7 @@ import { Establecimiento } from '../../../../../domain/models/establecimiento.mo
     }
 
     .input-final:focus {
-      border-color: var(--primary-color);
+      border-color: black;
       outline: none;
     }
 
@@ -517,4 +517,5 @@ export class CreateEstablecimientoModalComponent implements OnInit {
     this.onClose.emit();
   }
 }
+
 

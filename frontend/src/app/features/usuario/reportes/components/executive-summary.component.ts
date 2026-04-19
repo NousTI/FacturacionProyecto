@@ -239,7 +239,7 @@ import { Chart, ChartConfiguration } from 'chart.js';
     .dark .value { color: white; }
 
     .label { font-size: 0.75rem; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; display: block; margin-bottom: 0.5rem; }
-    .value { font-size: 1.6rem; font-weight: 800; color: var(--primary-color); display: block; }
+    .value { font-size: 1.6rem; font-weight: 800; color: black; display: block; }
     .trend { font-size: 0.85rem; font-weight: 600; margin-top: 0.5rem; display: flex; align-items: center; gap: 4px; }
     .trend.up { color: #059669; }
     .trend.down { color: #dc2626; }
@@ -256,7 +256,7 @@ import { Chart, ChartConfiguration } from 'chart.js';
     .section-header { margin-bottom: 1.5rem; }
     .title-with-icon { display: flex; gap: 1rem; align-items: center; }
     .title-with-icon i { font-size: 1.8rem; color: #6366f1; background: #eef2ff; width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; border-radius: 14px; }
-    .title-with-icon h5 { margin: 0; font-weight: 800; color: var(--primary-color); }
+    .title-with-icon h5 { margin: 0; font-weight: 800; color: black; }
     .title-with-icon p { margin: 0; font-size: 0.85rem; color: #64748b; }
 
     /* Tables */
@@ -415,4 +415,5 @@ export class ExecutiveSummaryComponent implements AfterViewInit {
     return !this.data.monitor_rentabilidad || this.data.monitor_rentabilidad.length === 0;
   }
 }
+
 

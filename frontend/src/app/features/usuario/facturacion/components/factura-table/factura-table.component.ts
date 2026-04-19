@@ -34,7 +34,7 @@ import { FacturaPaginacionComponent, PaginationState } from '../factura-paginaci
               <!-- Numero y Secuencial -->
               <td class="ps-4">
                 <div class="d-flex align-items-center">
-                  <div class="item-icon-wrapper me-3" style="background: #f1f5f9; color: var(--primary-color);">
+                  <div class="item-icon-wrapper me-3" style="background: #f1f5f9; color: black;">
                     <i class="bi bi-file-earmark-text-fill"></i>
                   </div>
                   <div>
@@ -167,9 +167,9 @@ import { FacturaPaginacionComponent, PaginationState } from '../factura-paginaci
                       <li *ngIf="factura.estado === 'AUTORIZADA'">
                         <a class="dropdown-item py-2" href="javascript:void(0)" (click)="onAction.emit({type: 'abono', factura})">
                           <div class="icon-item bg-soft-primary">
-                             <i class="bi bi-wallet2 text-primary"></i>
+                             <i class="bi bi-wallet2 text-dark"></i>
                           </div>
-                          <span class="ms-2 fw-bold text-primary">Detalle de Pagos / Abonos</span>
+                          <span class="ms-2 fw-bold text-dark">Detalle de Pagos / Abonos</span>
                         </a>
                       </li>
                     </ng-container>
@@ -292,7 +292,7 @@ import { FacturaPaginacionComponent, PaginationState } from '../factura-paginaci
     .price-lux {
       font-size: 0.95rem;
       font-weight: 800;
-      color: var(--primary-color);
+      color: black;
     }
 
     .payment-method-lux {
@@ -361,7 +361,7 @@ import { FacturaPaginacionComponent, PaginationState } from '../factura-paginaci
 
     .btn-trigger-lux:hover, .btn-trigger-lux[aria-expanded="true"] {
       background: #f1f5f9;
-      color: var(--primary-color);
+      color: black;
     }
 
     .dropdown-menu {
@@ -383,7 +383,7 @@ import { FacturaPaginacionComponent, PaginationState } from '../factura-paginaci
 
     .dropdown-item:hover {
       background: #f8fafc;
-      color: var(--primary-color);
+      color: black;
     }
 
     .icon-item {
@@ -494,3 +494,5 @@ export class FacturaTableComponent {
     return factura.estado === 'BORRADOR';
   }
 }
+
+

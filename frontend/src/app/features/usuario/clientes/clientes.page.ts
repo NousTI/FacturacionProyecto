@@ -197,8 +197,8 @@ import { PaginationState } from '../../super-admin/empresas/components/empresa-p
       background: var(--status-neutral-bg);
     }
     .tab-btn.active {
-      color: var(--primary-color);
-      border-bottom-color: var(--primary-color);
+      color: black;
+      border-bottom-color: black;
     }
     .tab-btn i { font-size: 1.1rem; }
 
@@ -238,7 +238,7 @@ import { PaginationState } from '../../super-admin/empresas/components/empresa-p
       margin-bottom: 1.5rem;
       animation: pulse-ring 2s ease-out infinite;
     }
-    .no-permission-container h2 { font-weight: 800; color: var(--primary-color); margin-bottom: 0.5rem; }
+    .no-permission-container h2 { font-weight: 800; color: black; margin-bottom: 0.5rem; }
     .no-permission-container p { color: var(--text-muted); max-width: 400px; margin-bottom: 2rem; line-height: 1.6; }
 
     .btn-retry {
@@ -468,4 +468,5 @@ export class ClientesPage implements OnInit, OnDestroy {
     }, 800);
   }
 }
+
 

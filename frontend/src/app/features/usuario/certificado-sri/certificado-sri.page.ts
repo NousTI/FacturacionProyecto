@@ -105,8 +105,8 @@ import { CONFIGURACION_PERMISSIONS } from '../../../constants/permission-codes';
                         <div class="col-xl-8 col-lg-7">
                             <div class="card-premium h-100">
                                <div class="card-header-glass d-flex justify-content-between align-items-center">
-                                  <h5 class="mb-0 fw-bold d-flex align-items-center gap-2" style="font-size: 0.95rem; color: var(--primary-color);">
-                                     <i class="bi bi-file-earmark-lock-fill text-primary"></i> 
+                                  <h5 class="mb-0 fw-bold d-flex align-items-center gap-2" style="font-size: 0.95rem; color: black;">
+                                     <i class="bi bi-file-earmark-lock-fill text-dark"></i> 
                                      Detalles del Certificado
                                   </h5>
                                   <div class="d-flex align-items-center gap-3">
@@ -142,7 +142,7 @@ import { CONFIGURACION_PERMISSIONS } from '../../../constants/permission-codes';
                                    <div class="row g-4">
                                        <div class="col-sm-4">
                                            <div class="info-block text-center text-sm-start">
-                                              <div class="icon-wrapper mb-2 text-primary bg-primary-soft mx-auto mx-sm-0">
+                                              <div class="icon-wrapper mb-2 text-dark bg-primary-soft mx-auto mx-sm-0">
                                                  <i class="bi bi-calendar-check"></i>
                                               </div>
                                               <span class="info-label">FECHA DE ACTIVACIÓN</span>
@@ -181,7 +181,7 @@ import { CONFIGURACION_PERMISSIONS } from '../../../constants/permission-codes';
                         <div class="col-xl-4 col-lg-5">
                             <div class="card-premium h-100 sri-params-card">
                                <div class="card-header-glass d-flex justify-content-between align-items-center">
-                                  <h5 class="mb-0 fw-bold d-flex align-items-center gap-2" style="font-size: 0.95rem; color: var(--primary-color);">
+                                  <h5 class="mb-0 fw-bold d-flex align-items-center gap-2" style="font-size: 0.95rem; color: black;">
                                      <i class="bi bi-sliders text-dark"></i> 
                                      Parámetros SRI
                                   </h5>
@@ -299,7 +299,7 @@ import { CONFIGURACION_PERMISSIONS } from '../../../constants/permission-codes';
                 <!-- MODAL GUARDAR NUEVO CERTIFICADO -->
                 <div class="modal-overlay" *ngIf="showSaveReplaceModal">
                     <div class="modal-content bg-white border-0 shadow-premium p-4 p-md-5 text-center mx-3" style="border-radius: 20px; max-width: 420px; width: 100%;">
-                        <i class="bi bi-shield-check text-primary mb-3" style="font-size: 3rem;"></i>
+                        <i class="bi bi-shield-check text-dark mb-3" style="font-size: 3rem;"></i>
                         <h4 class="fw-bold mb-3">Confirmar Activación</h4>
                         <p class="text-secondary mb-4" style="font-size: 0.95rem;">
                             Estás a punto de activar tu nueva firma.<br>Esto sobreescribirá los datos del SRI de forma permanente.
@@ -485,7 +485,7 @@ import { CONFIGURACION_PERMISSIONS } from '../../../constants/permission-codes';
         }
 
         .btn-action-light:hover {
-            background: #f8fafc; color: var(--primary-color); border-color: #cbd5e1;
+            background: #f8fafc; color: black; border-color: #cbd5e1;
         }
 
         .param-icon {
@@ -500,10 +500,10 @@ import { CONFIGURACION_PERMISSIONS } from '../../../constants/permission-codes';
         .modern-select {
             padding-left: 2.5rem; border-radius: 12px; border: 1px solid #e2e8f0;
             background-color: #f8fafc; font-size: 0.85rem; font-weight: 600;
-            color: var(--primary-color); box-shadow: none; transition: all 0.2s;
+            color: black; box-shadow: none; transition: all 0.2s;
         }
         .modern-select:focus { 
-            background-color: #ffffff; border-color: var(--primary-color); outline: none; box-shadow: 0 0 0 3px rgba(15, 23, 42, 0.05);
+            background-color: #ffffff; border-color: black; outline: none; box-shadow: 0 0 0 3px rgba(15, 23, 42, 0.05);
         }
         .dropdown-icon {
             position: absolute; left: 1rem; top: 50%; transform: translateY(-50%);
@@ -760,4 +760,6 @@ export class CertificadoSriPage implements OnInit, OnDestroy {
         this.onUpload();
     }
 }
+
+
 

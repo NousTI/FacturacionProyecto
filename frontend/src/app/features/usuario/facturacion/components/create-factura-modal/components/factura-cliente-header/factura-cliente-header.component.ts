@@ -14,8 +14,8 @@ import { CLIENTES_PERMISSIONS } from '../../../../../../../constants/permission-
   template: `
     <div class="section-lux h-100 p-3 border shadow-sm rounded-4 bg-white" [formGroup]="parentForm">
       <div class="d-flex justify-content-between align-items-center mb-3">
-        <div class="section-title-lux mb-0 border-0 p-0" style="color: var(--primary-color);">
-          <i class="bi bi-person-bounding-box me-2 text-primary"></i> Cliente / Receptor
+        <div class="section-title-lux mb-0 border-0 p-0" style="color: black;">
+          <i class="bi bi-person-bounding-box me-2 text-dark"></i> Cliente / Receptor
         </div>
         <button *ngIf="canCreateCliente" type="button" class="btn-create-client-lux btn-sm py-1 px-2" (click)="openCreateClienteModal.emit()" title="Nuevo Cliente">
           <i class="bi bi-person-plus-fill me-1"></i>
@@ -60,7 +60,7 @@ import { CLIENTES_PERMISSIONS } from '../../../../../../../constants/permission-
                   (click)="selectCliente(cli)"
                   class="badge bg-light text-dark border py-2 px-3 rounded-pill text-decoration-none fw-bold"
                   style="font-size: 0.7rem; cursor: pointer; transition: all 0.2s; border-color: #e2e8f0 !important;">
-            <i class="bi bi-person-fill me-1 text-primary"></i> {{ cli.razon_social | slice:0:20 }}{{ cli.razon_social.length > 20 ? '...' : '' }}
+            <i class="bi bi-person-fill me-1 text-dark"></i> {{ cli.razon_social | slice:0:20 }}{{ cli.razon_social.length > 20 ? '...' : '' }}
           </button>
         </div>
       </div>
@@ -187,4 +187,6 @@ export class FacturaClienteHeaderComponent implements OnInit, OnChanges {
     this.isClientDropdownOpen = false;
   }
 }
+
+
 

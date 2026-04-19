@@ -14,7 +14,7 @@ import { InfoTooltipComponent } from '../../../../shared/components/info-tooltip
         <div class="col-lg-8">
           <div class="soft-card p-4 rounded-4 shadow-sm border-0 bg-white">
             <div class="d-flex align-items-center mb-3">
-              <span class="badge bg-primary-subtle text-primary rounded-pill border border-primary-subtle small fw-normal">PROYECCIÓN ESTIMADA</span>
+              <span class="badge bg-primary-subtle text-dark rounded-pill border border-primary-subtle small fw-normal">PROYECCIÓN ESTIMADA</span>
               <app-info-tooltip message="Monto estimado a recibir basado en facturas que aún no vencen. Agrupa los saldos pendientes por su mes de vencimiento futuro (fecha de vencimiento >= hoy)."></app-info-tooltip>
             </div>
             <div class="table-responsive">
@@ -31,7 +31,7 @@ import { InfoTooltipComponent } from '../../../../shared/components/info-tooltip
                   <tr *ngFor="let item of data; let i = index">
                     <td class="fw-bold text-dark font-inter">{{ item.mes | uppercase }}</td>
                     <td class="text-center"><span class="badge bg-light text-dark rounded-circle px-3 py-2 border mb-0">{{ item.facturas_vencen }}</span></td>
-                    <td class="text-end fw-bold text-primary">{{ item.monto_total | currency }}</td>
+                    <td class="text-end fw-bold text-dark">{{ item.monto_total | currency }}</td>
                     <td class="text-end fw-bold text-dark border-start bg-light">{{ getCumulative(i) | currency }}</td>
                   </tr>
                   <tr *ngIf="data.length === 0">
@@ -80,3 +80,4 @@ export class CuentasCobrarProyeccionComponent {
     }));
   }
 }
+

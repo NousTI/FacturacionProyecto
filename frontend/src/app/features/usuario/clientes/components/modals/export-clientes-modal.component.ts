@@ -103,7 +103,7 @@ import { FormsModule } from '@angular/forms';
       background: #eff6ff; color: #2563eb;
       display: flex; align-items: center; justify-content: center; font-size: 1.25rem;
     }
-    .header-text h5 { margin: 0; font-weight: 800; color: var(--primary-color); font-size: 1.15rem; }
+    .header-text h5 { margin: 0; font-weight: 800; color: black; font-size: 1.15rem; }
     .header-text span { font-size: 0.8rem; color: #64748b; font-weight: 500; }
     
     .btn-close-custom {
@@ -123,13 +123,13 @@ import { FormsModule } from '@angular/forms';
       transition: all 0.2s;
     }
     .option-card:hover { border-color: #e2e8f0; background: #f8fafc; }
-    .option-card.active { border-color: #3b82f6; background: #eff6ff; }
+    .option-card.active { border-color: black; background: #eff6ff; }
     
     .card-check { font-size: 1.25rem; color: #cbd5e1; }
-    .option-card.active .card-check { color: #3b82f6; }
+    .option-card.active .card-check { color: black; }
     
     .card-content { display: flex; flex-direction: column; }
-    .card-title { font-weight: 800; color: var(--primary-color); font-size: 0.95rem; }
+    .card-title { font-weight: 800; color: black; font-size: 0.95rem; }
     .card-desc { font-size: 0.8rem; color: #64748b; font-weight: 500; }
 
     /* Date Selector */
@@ -171,4 +171,5 @@ export class ExportClientesModalComponent {
     }
   }
 }
+
 

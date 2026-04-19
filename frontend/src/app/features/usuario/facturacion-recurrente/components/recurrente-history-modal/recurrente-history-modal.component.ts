@@ -64,7 +64,7 @@ import { HasPermissionDirective } from '../../../../../core/directives/has-permi
                     (click)="item.factura_id ? verDetalleFactura(item.factura_id) : null"
                     [title]="item.factura_id ? 'Ver detalles de la factura' : ''"
                   >
-                    <i class="bi bi-eye me-1 text-primary" *ngIf="item.factura_id"></i>
+                    <i class="bi bi-eye me-1 text-dark" *ngIf="item.factura_id"></i>
                     {{ item.numero_factura }}
                   </span>
                   <span *ngIf="!item.numero_factura" class="text-muted small">N/A</span>
@@ -91,7 +91,7 @@ import { HasPermissionDirective } from '../../../../../core/directives/has-permi
                       </ng-container>
 
                       <div *ngIf="item.sri_mensajes && item.sri_mensajes.length > 0">
-                        <button class="btn btn-link p-0 smallest text-primary" (click)="item.showJson = !item.showJson">
+                        <button class="btn btn-link p-0 smallest text-dark" (click)="item.showJson = !item.showJson">
                           {{ item.showJson ? 'Ocultar XML/JSON' : 'Ver respuesta SRI' }}
                         </button>
                       </div>
@@ -168,7 +168,7 @@ import { HasPermissionDirective } from '../../../../../core/directives/has-permi
       font-size: 1.4rem; color: white;
     }
     .bg-premium { background: var(--primary-color); }
-    .header-text h3 { margin: 0; font-size: 1.25rem; font-weight: 800; color: var(--primary-color); }
+    .header-text h3 { margin: 0; font-size: 1.25rem; font-weight: 800; color: black; }
     .header-text p { margin: 0; font-size: 0.85rem; color: #64748b; }
     .btn-close-modal {
       width: 36px; height: 36px;
@@ -178,7 +178,7 @@ import { HasPermissionDirective } from '../../../../../core/directives/has-permi
       font-size: 1.5rem; color: #64748b;
       transition: all 0.2s;
     }
-    .btn-close-modal:hover { background: #e2e8f0; color: var(--primary-color); transform: rotate(90deg); }
+    .btn-close-modal:hover { background: #e2e8f0; color: black; transform: rotate(90deg); }
 
     .modal-body { padding: 1.5rem 2rem; overflow-y: auto; }
     .modal-footer {
@@ -213,7 +213,7 @@ import { HasPermissionDirective } from '../../../../../core/directives/has-permi
       color: #64748b; font-weight: 600; padding: 0.6rem 1.5rem;
       border-radius: 12px; transition: all 0.2s;
     }
-    .btn-secondary-premium:hover { background: #f8fafc; color: var(--primary-color); border-color: #cbd5e1; }
+    .btn-secondary-premium:hover { background: #f8fafc; color: black; border-color: #cbd5e1; }
 
     .premium-spinner {
       width: 40px; height: 40px;
@@ -238,7 +238,7 @@ import { HasPermissionDirective } from '../../../../../core/directives/has-permi
     .cursor-pointer { cursor: pointer; }
     .hover-shadow:hover { 
       box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-      border-color: var(--primary-color) !important;
+      border-color: black !important;
       background: #f8fafc !important;
     }
   `]
@@ -316,4 +316,6 @@ export class RecurrenteHistoryModalComponent implements OnInit {
     this.cdr.detectChanges();
   }
 }
+
+
 

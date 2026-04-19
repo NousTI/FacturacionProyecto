@@ -97,7 +97,7 @@ import { InfoTooltipComponent } from '../../../../shared/components/info-tooltip
             <tbody>
               <tr *ngFor="let item of overview.listado">
                 <td class="fw-medium">{{ item.cliente_nombre }}</td>
-                <td><code class="text-primary">{{ item.numero_documento }}</code></td>
+                <td><code class="text-dark">{{ item.numero_documento }}</code></td>
                 <td>{{ item.fecha_emision | date:'shortDate' }}</td>
                 <td>{{ item.fecha_vencimiento | date:'shortDate' }}</td>
                 <td class="text-end">{{ item.monto_total | currency }}</td>
@@ -171,3 +171,4 @@ export class CuentasCobrarResumenComponent {
     return this.overview.graficos.top_clientes_morosos;
   }
 }
+

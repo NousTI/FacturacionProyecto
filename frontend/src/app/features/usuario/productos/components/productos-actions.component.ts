@@ -85,7 +85,7 @@ import { HasPermissionDirective } from '../../../../core/directives/has-permissi
       border: 1px solid var(--border-color); background: #f8fafc; font-size: 0.9rem;
       font-weight: 500; transition: all 0.2s;
     }
-    .search-input:focus { outline: none; background: white; border-color: var(--primary-color); box-shadow: 0 0 0 3px rgba(22, 29, 53, 0.06); }
+    .search-input:focus { outline: none; background: white; border-color: black; box-shadow: 0 0 0 3px rgba(22, 29, 53, 0.06); }
     .buttons-group { display: flex; align-items: center; gap: 0.75rem; }
     .btn-filter, .btn-primary {
       display: flex; align-items: center; justify-content: center; gap: 0.6rem;
@@ -157,3 +157,4 @@ export class ProductosActionsComponent {
     }
   }
 }
+

@@ -15,7 +15,7 @@ import { SRI_TIPOS_PERSONA, SRI_TIPOS_CONTRIBUYENTE } from '../../../../../core/
         <!-- Header -->
         <div class="modal-header-lux">
           <div class="d-flex align-items-center gap-3">
-            <div class="header-icon bg-primary-subtle text-primary">
+            <div class="header-icon bg-primary-subtle text-dark">
               <i class="bi bi-building"></i>
             </div>
             <div>
@@ -192,7 +192,7 @@ import { SRI_TIPOS_PERSONA, SRI_TIPOS_CONTRIBUYENTE } from '../../../../../core/
       background: var(--status-info-bg); color: var(--status-info-text);
     }
     .modal-title-lux {
-      font-size: 1.25rem; font-weight: 800; color: var(--primary-color); margin: 0;
+      font-size: 1.25rem; font-weight: 800; color: black; margin: 0;
     }
     .modal-subtitle-lux {
       font-size: 0.85rem; color: #64748b; margin: 2px 0 0 0; font-weight: 500;
@@ -219,11 +219,11 @@ import { SRI_TIPOS_PERSONA, SRI_TIPOS_CONTRIBUYENTE } from '../../../../../core/
     }
     .input-lux, .select-lux {
       width: 100%; border: 1.5px solid #e2e8f0; border-radius: 14px;
-      padding: 0.75rem 1rem; font-size: 0.9rem; color: var(--primary-color); font-weight: 600;
+      padding: 0.75rem 1rem; font-size: 0.9rem; color: black; font-weight: 600;
       transition: all 0.2s;
     }
     .input-lux:focus, .select-lux:focus {
-      border-color: var(--primary-color); outline: none; box-shadow: 0 0 0 4px rgba(22, 29, 53, 0.05);
+      border-color: black; outline: none; box-shadow: 0 0 0 4px rgba(22, 29, 53, 0.05);
     }
     .modal-footer-lux {
       padding: 1.5rem 2.5rem; background: #f8fafc; display: flex; justify-content: flex-end; gap: 1rem;
@@ -242,7 +242,7 @@ import { SRI_TIPOS_PERSONA, SRI_TIPOS_CONTRIBUYENTE } from '../../../../../core/
     }
     .btn-cancel-lux:hover { background: #f8fafc; }
 
-    .switch-lux .form-check-input:checked { background-color: var(--primary-color); border-color: var(--primary-color); }
+    .switch-lux .form-check-input:checked { background-color: black; border-color: black; }
 
     .is-invalid-lux {
       border-color: #ef4444 !important;
@@ -321,4 +321,6 @@ export class EditEmpresaModalComponent implements OnInit, OnDestroy {
     }
   }
 }
+
+
 

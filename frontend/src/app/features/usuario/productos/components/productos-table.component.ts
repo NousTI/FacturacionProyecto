@@ -78,7 +78,7 @@ import { EmpresaPaginacionComponent, PaginationState } from '../../../super-admi
                   <ul class="dropdown-menu dropdown-menu-end">
                     <li>
                       <a class="dropdown-item" (click)="onAction.emit({type: 'view', producto: p})">
-                        <i class="bi bi-eye text-primary"></i> Detalles
+                        <i class="bi bi-eye text-dark"></i> Detalles
                       </a>
                     </li>
                     <li *hasPermission="'PRODUCTOS_EDITAR'">
@@ -132,11 +132,11 @@ import { EmpresaPaginacionComponent, PaginationState } from '../../../super-admi
 
     .product-info { display: flex; flex-direction: column; gap: 0.4rem; }
     .product-main { display: flex; flex-direction: column; }
-    .p-name { font-weight: 700; color: var(--primary-color); font-size: 0.95rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .p-name { font-weight: 700; color: black; font-size: 0.95rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .p-code { font-size: 0.72rem; color: var(--text-muted); font-weight: 600; font-family: monospace; }
     .p-type-badge { font-size: 0.65rem; font-weight: 800; color: var(--status-info-text); background: var(--status-info-bg); padding: 0.15rem 0.5rem; border-radius: 4px; width: fit-content; text-transform: uppercase; }
 
-    .price-value { font-weight: 800; color: var(--primary-color); font-size: 1rem; }
+    .price-value { font-weight: 800; color: black; font-size: 1rem; }
 
     .stock-display { display: flex; flex-direction: column; align-items: center; gap: 0.2rem; }
     .stock-badge { display: inline-block; padding: 0.35rem 0.8rem; border-radius: 8px; font-weight: 800; font-size: 0.85rem; }
@@ -166,7 +166,7 @@ import { EmpresaPaginacionComponent, PaginationState } from '../../../super-admi
 
     .empty-state { padding: 4rem 2rem; text-align: center; }
     .empty-icon { width: 64px; height: 64px; background: var(--status-neutral-bg); color: var(--text-muted); border-radius: 20px; display: flex; align-items: center; justify-content: center; font-size: 2rem; margin: 0 auto 1.5rem; }
-    .empty-state h3 { font-weight: 800; color: var(--primary-color); margin-bottom: 0.5rem; }
+    .empty-state h3 { font-weight: 800; color: black; margin-bottom: 0.5rem; }
     .empty-state p { color: var(--text-muted); max-width: 400px; margin: 0 auto; }
   `]
 })
@@ -184,4 +184,6 @@ export class ProductosTableComponent {
     return 'stock-normal';
   }
 }
+
+
 

@@ -139,7 +139,7 @@ import { GET_IVA_PERCENTAGE } from '../../../../../core/constants/sri-iva.consta
                           {{ d.valor_iva | currency:'USD' }}
                           <span class="text-muted" style="font-size:0.75rem;">({{ getIvaPercentage(d.tipo_iva) }}%)</span>
                         </td>
-                        <td class="py-3 px-4 text-end fw-bold text-primary">{{ d.subtotal | currency:'USD' }}</td>
+                        <td class="py-3 px-4 text-end fw-bold text-dark">{{ d.subtotal | currency:'USD' }}</td>
                       </tr>
                     </tbody>
                   </table>
@@ -299,3 +299,4 @@ export class ViewFacturaModalComponent implements OnInit {
     this.onClose.emit();
   }
 }
+

@@ -118,7 +118,7 @@ import { ProfilePermissionsListCardComponent } from './components/profile-permis
 
     .profile-loading-overlay { height: 70vh; display: flex; flex-direction: column; align-items: center; justify-content: center; }
     .editorial-spinner {
-      width: 44px; height: 44px; border: 3.5px solid #f1f5f9; border-top-color: var(--primary-color); border-radius: 50%;
+      width: 44px; height: 44px; border: 3.5px solid #f1f5f9; border-top-color: black; border-radius: 50%;
       animation: spin 0.85s cubic-bezier(0.4, 0, 0.2, 1) infinite;
     }
     @keyframes spin { to { transform: rotate(360deg); } }
@@ -203,4 +203,5 @@ export class ProfilePage implements OnInit, OnDestroy {
     });
   }
 }
+
 

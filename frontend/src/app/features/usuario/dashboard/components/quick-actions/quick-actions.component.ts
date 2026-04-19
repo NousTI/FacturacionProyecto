@@ -48,7 +48,7 @@ import { RouterModule } from '@angular/router';
       padding: 0.9rem 1.25rem;
       font-size: 0.85rem;
       font-weight: 800;
-      color: var(--primary-color);
+      color: black;
       border-bottom: 1px solid #f1f5f9;
       background: #f8fafc;
       display: flex;
@@ -68,7 +68,7 @@ import { RouterModule } from '@angular/router';
       border-bottom: 1px solid #f8fafc;
       transition: background 0.15s;
     }
-    .quick-link:hover { background: #f8fafc; color: var(--primary-color); }
+    .quick-link:hover { background: #f8fafc; color: black; }
     .quick-link:last-child { border-bottom: none; }
     .ql-icon {
       width: 34px; height: 34px;
@@ -80,4 +80,5 @@ import { RouterModule } from '@angular/router';
   `]
 })
 export class QuickActionsComponent {}
+
 

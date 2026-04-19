@@ -53,14 +53,14 @@ export interface PaginationState {
       font-size: 0.85rem; font-weight: 600; color: #475569;
       cursor: pointer; transition: all 0.2s;
     }
-    .form-select-premium-sm:focus { border-color: var(--primary-color); outline: none; }
+    .form-select-premium-sm:focus { border-color: black; outline: none; }
     .btn-nav-premium {
       width: 38px; height: 38px; border-radius: 10px;
       border: 1px solid #e2e8f0; background: white;
       display: flex; align-items: center; justify-content: center;
       color: #64748b; transition: all 0.2s; cursor: pointer;
     }
-    .btn-nav-premium:hover:not(:disabled) { background: #f8fafc; color: var(--primary-color); border-color: #cbd5e1; }
+    .btn-nav-premium:hover:not(:disabled) { background: #f8fafc; color: black; border-color: #cbd5e1; }
     .btn-nav-premium:disabled { opacity: 0.4; cursor: not-allowed; }
     .page-indicator-premium {
       min-width: 38px; height: 38px; border-radius: 10px;
@@ -106,4 +106,5 @@ export class FacturaPaginacionComponent {
     this.pageSizeChange.emit(+this.pagination.pageSize);
   }
 }
+
 

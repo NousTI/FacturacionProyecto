@@ -232,7 +232,7 @@ import { CategoriasActionsComponent } from './components/categorias-actions/cate
       transition: all 0.2s; display: flex; align-items: center; gap: 0.6rem;
     }
     .tab-btn:hover { background: var(--status-neutral-bg); color: var(--text-main); }
-    .tab-btn.active { color: var(--primary-color); border-bottom-color: var(--primary-color); background: var(--status-info-bg); }
+    .tab-btn.active { color: black; border-bottom-color: black; background: var(--status-info-bg); }
 
     .btn-system-action {
       background: var(--primary-color); color: #ffffff; border: none;
@@ -766,3 +766,4 @@ export class GastosPage implements OnInit, OnDestroy {
     });
   }
 }
+

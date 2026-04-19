@@ -181,14 +181,14 @@ import { finalize } from 'rxjs';
       font-size: 1.4rem; color: white;
     }
     .bg-premium { background: var(--primary-color); }
-    .header-text h3 { margin: 0; font-size: 1.25rem; font-weight: 800; color: var(--primary-color); }
+    .header-text h3 { margin: 0; font-size: 1.25rem; font-weight: 800; color: black; }
     .header-text p { margin: 0; font-size: 0.85rem; color: #64748b; }
     .btn-close-modal {
       width: 36px; height: 36px; border-radius: 10px; border: none; background: #f1f5f9;
       display: flex; align-items: center; justify-content: center;
       font-size: 1.5rem; color: #64748b; transition: all 0.2s;
     }
-    .btn-close-modal:hover { background: #e2e8f0; color: var(--primary-color); transform: rotate(90deg); }
+    .btn-close-modal:hover { background: #e2e8f0; color: black; transform: rotate(90deg); }
 
     .modal-body { padding: 2rem; overflow-y: auto; }
     .modal-footer {
@@ -212,10 +212,10 @@ import { finalize } from 'rxjs';
       width: 100%; padding: 0.75rem 1rem 0.75rem 2.8rem;
       border-radius: 12px; border: 1.5px solid #e2e8f0;
       background: #f8fafc; font-size: 0.95rem; font-weight: 500;
-      color: var(--primary-color); transition: all 0.2s;
+      color: black; transition: all 0.2s;
     }
     .form-control-premium:focus, .form-select-premium:focus {
-      border-color: var(--primary-color); background: white;
+      border-color: black; background: white;
       box-shadow: 0 0 0 4px rgba(22, 29, 53, 0.05); outline: none;
     }
     .readonly-field .form-control-premium, .readonly-field .form-select-premium {
@@ -223,7 +223,7 @@ import { finalize } from 'rxjs';
     }
 
     .form-select-premium option {
-      color: var(--primary-color);
+      color: black;
       background-color: white;
     }
 
@@ -243,7 +243,7 @@ import { finalize } from 'rxjs';
       padding: 0.75rem 2rem; border-radius: 14px; font-weight: 700;
       transition: all 0.2s;
     }
-    .btn-secondary-premium:hover { background: #f8fafc; border-color: #cbd5e1; color: var(--primary-color); }
+    .btn-secondary-premium:hover { background: #f8fafc; border-color: #cbd5e1; color: black; }
     .smallest { font-size: 0.7rem; }
   `]
 })
@@ -338,4 +338,5 @@ export class CreateRecurrenteModalComponent implements OnInit {
     }
   }
 }
+
 

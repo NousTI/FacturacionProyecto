@@ -100,11 +100,11 @@ import { HasPermissionDirective } from '../../../../../shared/directives/has-per
     }
     .form-control-premium-search {
       background: #ffffff; border: 1px solid var(--border-color); border-radius: 12px;
-      padding: 0 2.5rem 0 2.75rem; height: 42px; font-size: 0.9rem; color: var(--primary-color);
+      padding: 0 2.5rem 0 2.75rem; height: 42px; font-size: 0.9rem; color: black;
       transition: all 0.2s; width: 100%;
     }
     .form-control-premium-search:focus {
-      border-color: var(--primary-color); outline: none;
+      border-color: black; outline: none;
       box-shadow: 0 0 0 3px rgba(22, 29, 53, 0.06);
     }
     .btn-clear-search-premium {
@@ -117,8 +117,8 @@ import { HasPermissionDirective } from '../../../../../shared/directives/has-per
       padding: 0 1rem; height: 42px; font-size: 0.9rem; color: #475569;
       width: 100%; cursor: pointer; text-align: left; font-weight: 600; transition: all 0.2s;
     }
-    .form-select-premium:hover { border-color: var(--primary-color); }
-    .form-select-premium:focus { border-color: var(--primary-color); outline: none; }
+    .form-select-premium:hover { border-color: black; }
+    .form-select-premium:focus { border-color: black; outline: none; }
     .dropdown-menu-premium {
       border-radius: 12px !important; padding: 0.5rem !important;
       min-width: 100%; margin-top: 0.5rem !important;
@@ -130,7 +130,7 @@ import { HasPermissionDirective } from '../../../../../shared/directives/has-per
       color: #475569 !important; font-size: 0.9rem !important;
       font-weight: 500 !important; cursor: pointer; transition: all 0.2s;
     }
-    .dropdown-item:hover { background-color: var(--primary-color) !important; color: #ffffff !important; }
+    .dropdown-item:hover { background-color: black !important; color: #ffffff !important; }
     .btn-system-action {
       background: var(--primary-color); color: #ffffff; border: none;
       padding: 0 1rem; height: 42px; border-radius: 12px; font-weight: 600;
@@ -190,4 +190,5 @@ export class GastosActionsComponent {
     return labels[this.filterTipo] || 'Tipo';
   }
 }
+
 

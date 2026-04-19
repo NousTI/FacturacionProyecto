@@ -95,7 +95,7 @@ import { HasPermissionDirective } from '../../../../../shared/directives/has-per
       padding: 0 2.5rem 0 2.75rem;
       height: 42px;
       font-size: var(--text-md);
-      color: var(--primary-color);
+      color: black;
       transition: all 0.2s;
       width: 100%;
     }
@@ -205,4 +205,5 @@ export class PuntosEmisionActionsComponent {
     return labels[this.estadoFilter] || 'Estado';
   }
 }
+
 

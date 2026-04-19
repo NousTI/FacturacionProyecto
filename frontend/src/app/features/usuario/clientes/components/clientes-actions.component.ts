@@ -94,7 +94,7 @@ import { HasPermissionDirective } from '../../../../shared/directives/has-permis
     .search-input:focus {
       outline: none;
       background: white;
-      border-color: var(--primary-color);
+      border-color: black;
       box-shadow: 0 0 0 3px rgba(22, 29, 53, 0.06);
     }
     .buttons-group {
@@ -189,3 +189,4 @@ export class ClientesActionsComponent {
     this.onFilterChangeEmit.emit(this.filters);
   }
 }
+

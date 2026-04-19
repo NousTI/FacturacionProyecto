@@ -83,7 +83,7 @@ import { CommonModule } from '@angular/common';
     .stat-value {
       font-size: 1.35rem;
       font-weight: 800;
-      color: var(--primary-color);
+      color: black;
       line-height: 1.2;
     }
     .text-success {
@@ -115,4 +115,5 @@ export class EstablecimientoStatsComponent {
   @Input() active: number = 0;
   @Input() con_puntos_emision: number = 0;
 }
+
 

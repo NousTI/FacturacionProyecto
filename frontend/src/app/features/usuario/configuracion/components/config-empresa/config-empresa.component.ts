@@ -58,7 +58,7 @@ import { Empresa } from '../../../../../domain/models/empresa.model';
             <!-- STATS Compact Row -->
             <div class="stats-compact-row mt-4">
               <div class="stat-item-mini">
-                <div class="icon-circle" style="background: rgba(22, 29, 53, 0.05); color: var(--primary-color);">
+                <div class="icon-circle" style="background: rgba(22, 29, 53, 0.05); color: black;">
                   <i class="bi bi-houses"></i>
                 </div>
                 <div class="stat-info">
@@ -113,7 +113,7 @@ import { Empresa } from '../../../../../domain/models/empresa.model';
                   <i class="bi bi-patch-check-fill"></i>
                 </div>
                 <div>
-                  <p class="m-0 fw-800" style="font-size: 0.95rem; color: var(--primary-color);">Último pago registrado</p>
+                  <p class="m-0 fw-800" style="font-size: 0.95rem; color: black;">Último pago registrado</p>
                   <p class="m-0 text-muted" style="font-size: 0.8rem; font-weight: 500;">Procesado el {{ empresa.ultimo_pago_fecha | date:'dd MMM, yyyy' }}</p>
                 </div>
               </div>
@@ -141,7 +141,7 @@ import { Empresa } from '../../../../../domain/models/empresa.model';
                 <div class="card-content-lux">
                   <div class="detail-row">
                     <span class="label">Plan Actual</span>
-                    <span class="value text-primary">{{ empresa.plan_nombre || 'Plan Gratuito' }}</span>
+                    <span class="value text-dark">{{ empresa.plan_nombre || 'Plan Gratuito' }}</span>
                   </div>
                   <div class="detail-row">
                     <span class="label">Desde</span>
@@ -271,7 +271,7 @@ import { Empresa } from '../../../../../domain/models/empresa.model';
     .stat-value {
       font-size: 1.1rem;
       font-weight: 800;
-      color: var(--primary-color);
+      color: black;
       line-height: 1.2;
     }
     .stat-divider {
@@ -299,7 +299,7 @@ import { Empresa } from '../../../../../domain/models/empresa.model';
     .section-title {
       font-size: 0.9rem;
       font-weight: 900;
-      color: var(--primary-color);
+      color: black;
       text-transform: uppercase;
       letter-spacing: 0.5px;
     }
@@ -332,7 +332,7 @@ import { Empresa } from '../../../../../domain/models/empresa.model';
     }
     .detail-row:last-child { border-bottom: none; }
     .detail-row .label { font-size: 0.85rem; color: #64748b; font-weight: 500; }
-    .detail-row .value { font-size: 0.85rem; color: var(--primary-color); font-weight: 800; }
+    .detail-row .value { font-size: 0.85rem; color: black; font-weight: 800; }
 
     .progress-premium {
       height: 6px;
@@ -378,7 +378,7 @@ import { Empresa } from '../../../../../domain/models/empresa.model';
     }
 
     .spinner-premium {
-      width: 40px; height: 40px; border: 3px solid #f1f5f9; border-top-color: var(--primary-color);
+      width: 40px; height: 40px; border: 3px solid #f1f5f9; border-top-color: black;
       border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto;
     }
 
@@ -515,4 +515,6 @@ export class ConfigEmpresaComponent implements OnInit {
     return GET_CONTRIBUYENTE_LABEL(code);
   }
 }
+
+
 

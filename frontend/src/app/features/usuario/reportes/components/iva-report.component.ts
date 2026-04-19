@@ -53,7 +53,7 @@ import { IVAReport } from '../services/financial-reports.service';
             <hr>
             <div class="resumen-iva-total d-flex justify-content-between">
               <span class="fw-bold">IVA A PAGAR</span>
-              <span class="fw-bold h4 mb-0 text-primary">{{ data.resumen.iva_a_pagar | currency }}</span>
+              <span class="fw-bold h4 mb-0 text-dark">{{ data.resumen.iva_a_pagar | currency }}</span>
             </div>
             <p class="text-muted small mt-4">* Datos basados en facturas autorizadas en el sistema.</p>
           </div>
@@ -71,3 +71,4 @@ import { IVAReport } from '../services/financial-reports.service';
 export class IvaReportComponent {
   @Input() data!: IVAReport;
 }
+

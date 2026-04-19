@@ -12,7 +12,7 @@ import { ProfilePermissionsModalComponent } from './profile-permissions-modal.co
     <div class="editorial-card mb-4 p-0 shadow-sm" style="overflow: hidden;">
       <div class="card-header-minimal-editorial px-4 d-flex justify-content-between align-items-center">
         <div class="d-flex align-items-center gap-2">
-          <i class="bi bi-shield-check text-primary"></i>
+          <i class="bi bi-shield-check text-dark"></i>
           <span>Alcance de Permisos</span>
         </div>
         <div class="header-stats-editorial d-flex gap-2">
@@ -58,7 +58,7 @@ import { ProfilePermissionsModalComponent } from './profile-permissions-modal.co
     .editorial-card { background: white; border: 1px solid #f1f5f9; border-radius: 24px; }
     .card-header-minimal-editorial {
       padding: 1.25rem 1.5rem; border-bottom: 1px solid #f1f5f9;
-      font-weight: 900; font-size: 0.85rem; color: var(--primary-color);
+      font-weight: 900; font-size: 0.85rem; color: black;
       background: #f8fafc; text-transform: uppercase; letter-spacing: 0.05em;
     }
     
@@ -79,14 +79,14 @@ import { ProfilePermissionsModalComponent } from './profile-permissions-modal.co
       border: 1.5px solid #f1f5f9; border-radius: 16px; padding: 1rem 1.25rem;
       cursor: pointer; display: flex; justify-content: space-between; align-items: center;
       background: #fafbfc; transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-      &:hover { border-color: #3b82f6; background: #fff; transform: translateX(5px); box-shadow: 0 4px 20px -5px rgba(0,0,0,0.05); }
+      &:hover { border-color: black; background: #fff; transform: translateX(5px); box-shadow: 0 4px 20px -5px rgba(0,0,0,0.05); }
     }
 
     .module-icon-box {
       width: 44px; height: 44px; border-radius: 12px;
       display: flex; align-items: center; justify-content: center;
       margin-right: 1rem; font-size: 1.2rem; flex-shrink: 0;
-      &.clientes { background: #eff6ff; color: #3b82f6; }
+      &.clientes { background: #eff6ff; color: black; }
       &.productos { background: #fdf2f8; color: #db2777; }
       &.facturas { background: #ecfdf5; color: #10b981; }
       &.configuracion { background: #f1f5f9; color: #64748b; }
@@ -94,7 +94,7 @@ import { ProfilePermissionsModalComponent } from './profile-permissions-modal.co
     }
 
     .module-info-editorial { display: flex; flex-direction: column; }
-    .module-title-editorial { display: block; font-weight: 850; font-size: 0.95rem; color: var(--primary-color); text-transform: uppercase; }
+    .module-title-editorial { display: block; font-weight: 850; font-size: 0.95rem; color: black; text-transform: uppercase; }
     .module-count-editorial { font-size: 0.75rem; color: #94a3b8; font-weight: 700; }
   `]
 })
@@ -133,4 +133,6 @@ export class ProfilePermissionsListCardComponent {
     return 'bi-folder-fill';
   }
 }
+
+
 

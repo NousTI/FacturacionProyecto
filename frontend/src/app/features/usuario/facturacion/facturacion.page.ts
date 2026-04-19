@@ -179,7 +179,7 @@ import { SriConfigService } from '../certificado-sri/services/sri-config.service
     .page-title {
       font-size: 1.75rem;
       font-weight: 900;
-      color: var(--primary-color);
+      color: black;
       margin-bottom: 0.25rem;
     }
     .page-subtitle {
@@ -201,7 +201,7 @@ import { SriConfigService } from '../certificado-sri/services/sri-config.service
     }
     .btn-refresh-premium:hover {
       background: #f8fafc;
-      color: var(--primary-color);
+      color: black;
       border-color: #cbd5e1;
     }
     .spinning i {
@@ -255,7 +255,7 @@ import { SriConfigService } from '../certificado-sri/services/sri-config.service
     .sri-block-title {
       font-size: 1.5rem;
       font-weight: 800;
-      color: var(--primary-color);
+      color: black;
       margin-bottom: 0.75rem;
     }
     .sri-block-message {
@@ -854,4 +854,5 @@ export class FacturacionPage implements OnInit {
     }, 800);
   }
 }
+
 

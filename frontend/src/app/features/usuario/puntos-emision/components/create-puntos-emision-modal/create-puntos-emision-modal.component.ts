@@ -197,7 +197,7 @@ import { Observable } from 'rxjs';
     .modal-title-final {
       font-size: 1.25rem;
       font-weight: 800;
-      color: var(--primary-color);
+      color: black;
       margin: 0;
     }
 
@@ -212,7 +212,7 @@ import { Observable } from 'rxjs';
     }
 
     .btn-close-final:hover:not(:disabled) {
-      color: var(--primary-color);
+      color: black;
       transform: rotate(90deg);
     }
 
@@ -259,7 +259,7 @@ import { Observable } from 'rxjs';
     .section-header-final {
       font-size: 1rem;
       font-weight: 800;
-      color: var(--primary-color);
+      color: black;
       margin-bottom: 1.25rem;
     }
 
@@ -302,7 +302,7 @@ import { Observable } from 'rxjs';
     }
 
     .input-final:focus {
-      border-color: var(--primary-color);
+      border-color: black;
       outline: none;
       box-shadow: 0 0 0 4px rgba(22, 29, 53, 0.05);
     }
@@ -335,7 +335,7 @@ import { Observable } from 'rxjs';
 
     select.input-final option:checked {
       background: linear-gradient(var(--primary-color), var(--primary-color));
-      background-color: var(--primary-color) !important;
+      background-color: black !important;
       color: #ffffff !important;
     }
 
@@ -557,4 +557,5 @@ export class CreatePuntosEmisionModalComponent implements OnInit {
     this.onClose.emit();
   }
 }
+
 

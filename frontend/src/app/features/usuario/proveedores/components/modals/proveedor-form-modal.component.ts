@@ -202,20 +202,20 @@ import { SRI_TIPOS_IDENTIFICACION } from '../../../../../core/constants/sri-iva.
     .modal-overlay { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.4); backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; z-index: 10000; padding: 1rem; }
     .modal-content-container { background: white; border-radius: 24px; width: 100%; max-width: 680px; max-height: 90vh; display: flex; flex-direction: column; overflow: hidden; border: 1px solid #f1f5f9; }
     .modal-header { padding: 1.5rem 2rem; border-bottom: 1px solid #f1f5f9; display: flex; align-items: center; gap: 1.25rem; position: relative; }
-    .header-icon { width: 48px; height: 48px; border-radius: 14px; background: #f8fafc; color: var(--primary-color); display: flex; align-items: center; justify-content: center; font-size: 1.5rem; }
-    .header-text h5 { margin: 0; font-weight: 800; color: var(--primary-color); font-size: 1.25rem; }
+    .header-icon { width: 48px; height: 48px; border-radius: 14px; background: #f8fafc; color: black; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; }
+    .header-text h5 { margin: 0; font-weight: 800; color: black; font-size: 1.25rem; }
     .header-text span { font-size: 0.85rem; color: #64748b; font-weight: 500; }
     .btn-close-custom { position: absolute; right: 1.5rem; top: 1.5rem; width: 32px; height: 32px; border-radius: 10px; border: none; background: #f1f5f9; color: #64748b; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
     .btn-close-custom:hover { background: #fee2e2; color: #ef4444; }
     .modal-body { padding: 2rem; overflow-y: auto; flex: 1; }
     .form-section { margin-bottom: 2.5rem; }
     .form-section.last { margin-bottom: 0; }
-    .section-title { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1.25rem; color: var(--primary-color); }
-    .section-title i { font-size: 1.1rem; color: #3b82f6; }
+    .section-title { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1.25rem; color: black; }
+    .section-title i { font-size: 1.1rem; color: black; }
     .section-title span { font-size: 0.85rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; }
     .form-label { font-size: 0.8rem; font-weight: 700; color: #475569; margin-bottom: 0.5rem; }
     .form-input-premium, .form-select-premium { width: 100%; padding: 0.75rem 1rem; border-radius: 12px; border: 1px solid #e2e8f0; background: #f8fafc; font-size: 0.95rem; font-weight: 500; transition: all 0.2s; }
-    .form-input-premium:focus, .form-select-premium:focus { outline: none; background: white; border-color: #3b82f6; box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1); }
+    .form-input-premium:focus, .form-select-premium:focus { outline: none; background: white; border-color: black; box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1); }
     .form-input-premium.is-invalid, .form-select-premium.is-invalid {
       border-color: #f43f5e; background: #fff1f2;
     }
@@ -226,7 +226,7 @@ import { SRI_TIPOS_IDENTIFICACION } from '../../../../../core/constants/sri-iva.
     .status-toggle span.active { color: #10b981; }
     .actions { display: flex; gap: 1rem; }
     .btn-cancel { padding: 0.75rem 1.5rem; border-radius: 12px; border: none; background: white; color: #64748b; font-weight: 700; transition: all 0.2s; }
-    .btn-cancel:hover { background: #f1f5f9; color: var(--primary-color); }
+    .btn-cancel:hover { background: #f1f5f9; color: black; }
     .btn-save { padding: 0.75rem 2rem; border-radius: 12px; border: none; background: var(--primary-color); color: white; font-weight: 700; transition: all 0.2s; }
     .btn-save:hover:not(:disabled) { background: var(--primary-color); transform: translateY(-2px); }
     .btn-save:disabled { opacity: 0.6; cursor: not-allowed; }
@@ -375,4 +375,5 @@ export class ProveedorFormModalComponent implements OnInit, OnDestroy {
 
   close() { if (!this.loading) this.onClose.emit(); }
 }
+
 

@@ -37,7 +37,7 @@ import { EmpresaPaginacionComponent, PaginationState } from '../../../../super-a
                     <div class="text-truncate">
                       <div class="d-flex align-items-center gap-1 text-truncate">
                         <span class="fw-bold text-main d-block mb-0 text-truncate" [title]="est.nombre">{{ est.nombre }}</span>
-                        <i *ngIf="est.es_matriz" class="bi bi-patch-check-fill text-primary" title="Matriz" style="font-size: 0.8rem;"></i>
+                        <i *ngIf="est.es_matriz" class="bi bi-patch-check-fill text-dark" title="Matriz" style="font-size: 0.8rem;"></i>
                       </div>
                       <small class="text-muted d-block" style="font-size: var(--text-xs); line-height: 1;">{{ est.id | slice:0:8 }}</small>
                     </div>
@@ -269,8 +269,8 @@ import { EmpresaPaginacionComponent, PaginationState } from '../../../../super-a
       color: var(--text-muted);
     }
     .dropdown-item i { font-size: 1rem; color: var(--text-muted); }
-    .dropdown-item:hover { background: var(--bg-main); color: var(--primary-color); }
-    .dropdown-item:hover i { color: var(--primary-color); }
+    .dropdown-item:hover { background: var(--bg-main); color: black; }
+    .dropdown-item:hover i { color: black; }
 
     .dropdown-menu {
       z-index: 1050 !important;
@@ -317,3 +317,5 @@ export class EstablecimientoTableComponent {
     return colors[index];
   }
 }
+
+

@@ -113,7 +113,7 @@ import { ProfilePermissionsListCardComponent } from '../../../profile/components
 
     .profile-loader { height: 50vh; display: flex; flex-direction: column; align-items: center; justify-content: center; }
     .premium-spinner {
-      width: 40px; height: 40px; border: 3px solid #f1f5f9; border-top-color: var(--primary-color);
+      width: 40px; height: 40px; border: 3px solid #f1f5f9; border-top-color: black;
       border-radius: 50%; animation: spin 1s linear infinite;
     }
     @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
@@ -184,4 +184,5 @@ export class ConfigProfileComponent implements OnInit, OnDestroy {
     });
   }
 }
+
 

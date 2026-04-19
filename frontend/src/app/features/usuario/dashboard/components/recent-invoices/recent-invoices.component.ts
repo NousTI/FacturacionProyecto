@@ -43,7 +43,7 @@ import { RouterModule } from '@angular/router';
         </ng-template>
       </table>
       <div class="panel-footer text-center">
-        <a routerLink="/usuario/facturacion" class="text-primary small fw-bold text-decoration-none">
+        <a routerLink="/usuario/facturacion" class="text-dark small fw-bold text-decoration-none">
           Nueva factura <i class="bi bi-plus-circle ms-1"></i>
         </a>
       </div>
@@ -61,7 +61,7 @@ import { RouterModule } from '@angular/router';
       padding: 0.9rem 1.25rem;
       font-size: 0.85rem;
       font-weight: 800;
-      color: var(--primary-color);
+      color: black;
       border-bottom: 1px solid #f1f5f9;
       background: #f8fafc;
       display: flex;
@@ -128,4 +128,6 @@ export class RecentInvoicesComponent {
     return 'badge-borrador';
   }
 }
+
+
 

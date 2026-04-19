@@ -88,7 +88,7 @@ import { CuentasCobrarProyeccionComponent } from './components/cuentas-cobrar-pr
 
         <!-- LOADING STATE -->
         <div *ngIf="loading" class="d-flex flex-column align-items-center justify-content-center py-5">
-          <div class="spinner-grow text-primary" role="status"></div>
+          <div class="spinner-grow text-dark" role="status"></div>
           <span class="text-muted mt-3 small fw-medium">Sincronizando cartera...</span>
         </div>
 
@@ -254,3 +254,4 @@ export class CuentasCobrarPage implements OnInit {
     this.service.getProyeccionCobros().subscribe(data => this.proyeccionData = data);
   }
 }
+

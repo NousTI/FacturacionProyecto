@@ -210,7 +210,7 @@ import { UiService } from '../../../../../shared/services/ui.service';
                       </div>
 
                       <div class="mt-auto pt-4 border-top border-light mt-4 d-flex align-items-center gap-2">
-                          <i class="bi bi-info-circle-fill text-primary"></i>
+                          <i class="bi bi-info-circle-fill text-dark"></i>
                           <p class="m-0 x-small text-muted fw-bold">La configuración afecta a todos los puntos de emisión vinculados.</p>
                       </div>
                   </div>
@@ -281,7 +281,7 @@ import { UiService } from '../../../../../shared/services/ui.service';
     .bg-light-soft { background: #fcfcfd; }
 
     .section-title {
-      font-size: 0.9rem; font-weight: 900; color: var(--primary-color);
+      font-size: 0.9rem; font-weight: 900; color: black;
       text-transform: uppercase; letter-spacing: 0.5px;
     }
 
@@ -298,7 +298,7 @@ import { UiService } from '../../../../../shared/services/ui.service';
       background: #f8fafc; border-radius: 12px; border: 1px solid #e2e8f0;
       padding: 0 1rem; transition: all 0.2s;
     }
-    .input-premium-wrapper:focus-within { border-color: var(--primary-color); background: white; box-shadow: 0 0 0 3px rgba(22, 29, 53, 0.05); }
+    .input-premium-wrapper:focus-within { border-color: black; background: white; box-shadow: 0 0 0 3px rgba(22, 29, 53, 0.05); }
     .input-premium-wrapper i { color: #94a3b8; }
     .input-premium {
       width: 100%; border: none; background: transparent; padding: 0.75rem 1rem;
@@ -335,7 +335,7 @@ import { UiService } from '../../../../../shared/services/ui.service';
       background: transparent; border: none; color: #94a3b8; font-size: 1.1rem;
       transition: color 0.2s; cursor: pointer;
     }
-    .btn-icon-minimal:hover { color: var(--primary-color); }
+    .btn-icon-minimal:hover { color: black; }
 
     /* Icons */
     .icon-circle-large {
@@ -352,7 +352,7 @@ import { UiService } from '../../../../../shared/services/ui.service';
       border: 2px dashed #cbd5e1; border-radius: 20px; padding: 3rem 2rem;
       text-align: center; cursor: pointer; transition: all 0.2s; background: white;
     }
-    .upload-area:hover, .upload-area.is-dragging { border-color: var(--primary-color); background: #fcfcfd; }
+    .upload-area:hover, .upload-area.is-dragging { border-color: black; background: #fcfcfd; }
     .upload-area i { font-size: 2.5rem; color: #cbd5e1; }
 
     /* Statuses */
@@ -364,8 +364,8 @@ import { UiService } from '../../../../../shared/services/ui.service';
     .status-suspendida { background: #fef2f2; color: #ef4444; }
     .pulse-dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
     
-    .value-premium { font-size: 1.1rem; font-weight: 900; color: var(--primary-color); line-height: 1.2; }
-    .text-primary { color: #2563eb !important; }
+    .value-premium { font-size: 1.1rem; font-weight: 900; color: black; line-height: 1.2; }
+    .text-dark { color: #2563eb !important; }
 
     .status-row-premium { display: flex; align-items: center; gap: 1rem; }
     .status-info { display: flex; flex-direction: column; }
@@ -389,7 +389,7 @@ import { UiService } from '../../../../../shared/services/ui.service';
     .success-icon { width: 72px; height: 72px; color: #10b981; font-size: 3rem; margin: 0 auto; }
 
     .spinner-premium {
-      width: 40px; height: 40px; border: 3px solid #f1f5f9; border-top-color: var(--primary-color);
+      width: 40px; height: 40px; border: 3px solid #f1f5f9; border-top-color: black;
       border-radius: 50%; animation: spin 1s linear infinite;
     }
     @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
@@ -537,4 +537,6 @@ export class ConfigSriComponent implements OnInit {
     this.selectedFileName = '';
   }
 }
+
+
 

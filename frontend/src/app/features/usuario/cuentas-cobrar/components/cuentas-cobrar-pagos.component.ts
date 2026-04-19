@@ -27,7 +27,7 @@ import { HistorialPago } from '../../../../domain/models/cuentas-cobrar.model';
               <tr *ngFor="let item of data">
                 <td class="small">{{ item.fecha_pago | date:'shortTime' }} <br> <span class="fw-bold">{{ item.fecha_pago | date:'mediumDate' }}</span></td>
                 <td class="fw-medium text-dark">{{ item.cliente }}</td>
-                <td class="text-center small"><code class="bg-light text-primary px-2 py-1 rounded">{{ item.numero_factura }}</code></td>
+                <td class="text-center small"><code class="bg-light text-dark px-2 py-1 rounded">{{ item.numero_factura }}</code></td>
                 <td class="text-center text-muted small">{{ item.numero_recibo || 'N/A' }}</td>
                 <td class="text-end fw-bold text-success">{{ item.monto_pagado | currency }}</td>
                 <td class="text-center">
@@ -63,3 +63,4 @@ import { HistorialPago } from '../../../../domain/models/cuentas-cobrar.model';
 export class CuentasCobrarPagosComponent {
   @Input() data: HistorialPago[] = [];
 }
+

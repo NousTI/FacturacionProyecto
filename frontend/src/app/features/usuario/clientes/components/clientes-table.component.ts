@@ -88,7 +88,7 @@ import { EmpresaPaginacionComponent, PaginationState } from '../../../super-admi
                   <ul class="dropdown-menu dropdown-menu-end">
                     <li>
                       <a class="dropdown-item" (click)="onAction.emit({type: 'view', cliente})">
-                        <i class="bi bi-eye text-primary"></i> Ver Detalles
+                        <i class="bi bi-eye text-dark"></i> Ver Detalles
                       </a>
                     </li>
                     <li *hasPermission="'CLIENTES_EDITAR'">
@@ -181,7 +181,7 @@ import { EmpresaPaginacionComponent, PaginationState } from '../../../super-admi
     }
     .name {
       font-weight: 700;
-      color: var(--primary-color);
+      color: black;
       font-size: 0.95rem;
     }
     .sub {
@@ -239,7 +239,7 @@ import { EmpresaPaginacionComponent, PaginationState } from '../../../super-admi
     }
     .amount {
       font-weight: 800;
-      color: var(--primary-color);
+      color: black;
       font-size: 0.9rem;
     }
     .days {
@@ -263,7 +263,7 @@ import { EmpresaPaginacionComponent, PaginationState } from '../../../super-admi
     }
     .btn-actions:hover {
       background: #f1f5f9;
-      color: var(--primary-color);
+      color: black;
     }
     .dropdown-menu {
       border-radius: 12px;
@@ -308,7 +308,7 @@ import { EmpresaPaginacionComponent, PaginationState } from '../../../super-admi
     }
     .empty-state h3 {
       font-weight: 800;
-      color: var(--primary-color);
+      color: black;
       margin-bottom: 0.5rem;
     }
     .empty-state p {
@@ -357,4 +357,6 @@ export class ClientesTableComponent {
     return colors[Math.abs(hash) % colors.length];
   }
 }
+
+
 

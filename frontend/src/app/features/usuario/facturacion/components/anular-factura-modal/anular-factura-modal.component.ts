@@ -48,7 +48,7 @@ import { PremiumAlertComponent } from '../../../../../shared/components/premium-
                   </div>
                   <div class="text-end">
                     <span class="text-muted small fw-bold text-uppercase d-block mb-1">Total Factura</span>
-                    <h5 class="fw-900 text-primary mb-0">{{ factura.total | currency:'USD' }}</h5>
+                    <h5 class="fw-900 text-dark mb-0">{{ factura.total | currency:'USD' }}</h5>
                   </div>
                </div>
                
@@ -160,7 +160,7 @@ import { PremiumAlertComponent } from '../../../../../shared/components/premium-
       background: #f1f5f9; border: none; width: 32px; height: 32px; border-radius: 10px;
       display: flex; align-items: center; justify-content: center; color: #64748b; transition: all 0.2s;
     }
-    .btn-close-lux:hover:not(:disabled) { background: #e2e8f0; color: var(--primary-color); }
+    .btn-close-lux:hover:not(:disabled) { background: #e2e8f0; color: black; }
 
     .invoice-summary-card {
       background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 16px; padding: 1.25rem;
@@ -292,4 +292,6 @@ export class AnularFacturaModalComponent implements OnInit {
     });
   }
 }
+
+
 

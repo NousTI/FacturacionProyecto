@@ -8,7 +8,7 @@ import { CommonModule } from '@angular/common';
     template: `
     <div class="stats-compact-row mb-4">
       <div class="stat-item-mini">
-        <div class="icon-circle" style="background: rgba(22, 29, 53, 0.05); color: var(--primary-color);">
+        <div class="icon-circle" style="background: rgba(22, 29, 53, 0.05); color: black;">
           <i class="bi bi-receipt"></i>
         </div>
         <div class="stat-info">
@@ -81,7 +81,7 @@ import { CommonModule } from '@angular/common';
     .stat-value {
       font-size: 1.35rem;
       font-weight: 800;
-      color: var(--primary-color);
+      color: black;
       line-height: 1.2;
     }
     .stat-divider {
@@ -109,4 +109,5 @@ export class FacturaStatsComponent {
     @Input() totalAmount: number = 0;
     @Input() pendingAmount: number = 0;
 }
+
 

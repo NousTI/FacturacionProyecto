@@ -179,14 +179,14 @@ import { PaginationState } from './components/recurrente-paginacion/recurrente-p
       <ng-template #noPermission>
         <div class="no-permission-container d-flex flex-column align-items-center justify-content-center text-center p-5 animate-in" style="min-height: 70vh;">
           <div class="icon-lock-wrapper mb-4">
-            <i class="bi bi-shield-lock-fill" style="font-size: 3.5rem; color: var(--primary-color);"></i>
+            <i class="bi bi-shield-lock-fill" style="font-size: 3.5rem; color: black;"></i>
           </div>
           <h2 class="fw-bold text-dark mb-2">Acceso Restringido</h2>
           <p class="text-muted mb-4 mx-auto" style="max-width: 450px;">
             No dispones de los permisos de visualización necesarios para el módulo de Facturación Programada. 
             Contacta a tu administrador para solicitar acceso.
           </p>
-          <button class="btn btn-primary rounded-pill px-5 py-3 fw-bold shadow-sm" (click)="refreshData()" style="background-color: var(--primary-color); border: none;">
+          <button class="btn btn-primary rounded-pill px-5 py-3 fw-bold shadow-sm" (click)="refreshData()" style="background-color: black; border: none;">
             <i class="bi bi-arrow-clockwise me-2"></i> Reintentar sincronización
           </button>
         </div>
@@ -213,7 +213,7 @@ import { PaginationState } from './components/recurrente-paginacion/recurrente-p
       gap: 24px;
       padding: 0;
     }
-    .page-title { font-size: 1.75rem; font-weight: 900; color: var(--primary-color); margin-bottom: 0.25rem; }
+    .page-title { font-size: 1.75rem; font-weight: 900; color: black; margin-bottom: 0.25rem; }
     .page-subtitle { color: #94a3b8; font-size: 0.95rem; font-weight: 500; }
 
     .btn-refresh-premium {
@@ -222,7 +222,7 @@ import { PaginationState } from './components/recurrente-paginacion/recurrente-p
       display: flex; align-items: center; justify-content: center;
       color: #64748b; transition: all 0.2s;
     }
-    .btn-refresh-premium:hover { background: #f1f5f9; color: var(--primary-color); border-color: #cbd5e1; }
+    .btn-refresh-premium:hover { background: #f1f5f9; color: black; border-color: #cbd5e1; }
     .spinning i { animation: spin 1s linear infinite; }
     @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 
@@ -235,7 +235,7 @@ import { PaginationState } from './components/recurrente-paginacion/recurrente-p
     .btn-create-premium:hover { background: var(--primary-color); transform: translateY(-2px); box-shadow: 0 8px 20px rgba(0,0,0,0.1); }
 
     .btn-bulk-premium {
-      background: #f1f5f9; color: var(--primary-color); border: 1.5px solid var(--primary-color);
+      background: #f1f5f9; color: black; border: 1.5px solid var(--primary-color);
       padding: 0 1.25rem; height: 44px; border-radius: 14px;
       font-weight: 700; display: flex; align-items: center;
       transition: all 0.2s;
@@ -264,7 +264,7 @@ import { PaginationState } from './components/recurrente-paginacion/recurrente-p
       border-radius: 14px; border: 1.5px solid #e2e8f0;
       background: white; font-size: 0.9rem; transition: all 0.2s;
     }
-    .form-control-premium:focus { border-color: var(--primary-color); box-shadow: 0 0 0 4px rgba(22, 29, 53, 0.05); outline: none; }
+    .form-control-premium:focus { border-color: black; box-shadow: 0 0 0 4px rgba(22, 29, 53, 0.05); outline: none; }
 
     .spinner-premium {
       width: 40px; height: 40px; border: 4px solid #f3f3f3;
@@ -288,7 +288,7 @@ import { PaginationState } from './components/recurrente-paginacion/recurrente-p
       font-size: 2.5rem; color: #d97706; margin: 0 auto 1.5rem;
       box-shadow: 0 10px 25px rgba(217, 119, 6, 0.2);
     }
-    .sri-block-title { font-size: 1.5rem; font-weight: 800; color: var(--primary-color); margin-bottom: 0.75rem; }
+    .sri-block-title { font-size: 1.5rem; font-weight: 800; color: black; margin-bottom: 0.75rem; }
     .sri-block-message { font-size: 0.95rem; font-weight: 600; color: #d97706; margin-bottom: 1rem; }
     .sri-block-hint { font-size: 0.875rem; color: #94a3b8; margin-bottom: 2rem; }
     .sri-block-btn {
@@ -628,4 +628,5 @@ export class FacturacionRecurrentePage implements OnInit, OnDestroy {
     });
   }
 }
+
 

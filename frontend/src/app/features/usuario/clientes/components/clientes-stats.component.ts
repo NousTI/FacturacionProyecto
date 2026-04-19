@@ -83,7 +83,7 @@ import { CommonModule } from '@angular/common';
     .stat-value {
       font-size: 1.35rem;
       font-weight: 800;
-      color: var(--primary-color);
+      color: black;
       line-height: 1.2;
     }
     .stat-value.success { color: var(--status-success-text); }
@@ -113,4 +113,5 @@ export class ClientesStatsComponent {
   @Input() active: number = 0;
   @Input() credit: number = 0;
 }
+
 

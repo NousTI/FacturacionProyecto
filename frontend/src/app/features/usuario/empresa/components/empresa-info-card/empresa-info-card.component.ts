@@ -145,7 +145,7 @@ import { CONFIGURACION_PERMISSIONS } from '../../../../../constants/permission-c
     .razon-social {
       font-size: 1.6rem;
       font-weight: 900;
-      color: var(--primary-color);
+      color: black;
       letter-spacing: -0.5px;
     }
 
@@ -172,7 +172,7 @@ import { CONFIGURACION_PERMISSIONS } from '../../../../../constants/permission-c
     .btn-edit-lux:hover {
       background: var(--primary-color);
       color: white;
-      border-color: var(--primary-color);
+      border-color: black;
       transform: translateY(-2px);
     }
 
@@ -222,7 +222,7 @@ import { CONFIGURACION_PERMISSIONS } from '../../../../../constants/permission-c
     .info-content .value {
       font-size: 0.95rem;
       font-weight: 700;
-      color: var(--primary-color);
+      color: black;
       word-break: break-all;
     }
 
@@ -259,4 +259,5 @@ export class EmpresaInfoCardComponent {
     return GET_CONTRIBUYENTE_LABEL(code);
   }
 }
+
 

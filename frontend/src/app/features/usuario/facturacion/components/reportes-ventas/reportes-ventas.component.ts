@@ -23,7 +23,7 @@ import { UiService } from '../../../../../shared/services/ui.service';
             class="btn btn-sm rounded-pill px-3 py-2 border-0"
             [class.bg-white]="selectedReport === r.id"
             [class.shadow-sm]="selectedReport === r.id"
-            [class.text-primary]="selectedReport === r.id"
+            [class.text-dark]="selectedReport === r.id"
             (click)="selectReport(r.id)"
           >
             {{ r.label }}
@@ -89,7 +89,7 @@ import { UiService } from '../../../../../shared/services/ui.service';
               <div class="card border-0 shadow-sm rounded-4 h-100">
                 <div class="card-header bg-transparent border-0 p-4 pb-0 d-flex justify-content-between">
                   <h6 class="fw-bold mb-0">Ventas por Establecimiento</h6>
-                  <i class="bi bi-building text-primary"></i>
+                  <i class="bi bi-building text-dark"></i>
                 </div>
                 <div class="card-body p-4">
                   <div *ngFor="let item of reportData.graficos.por_establecimiento" class="mb-3">
@@ -207,7 +207,7 @@ import { UiService } from '../../../../../shared/services/ui.service';
     .custom-table tbody td {
         padding: 15px;
         font-size: 13px;
-        color: var(--primary-color);
+        color: black;
         border-bottom: 1px solid #f1f5f9;
     }
     .fw-black { font-weight: 900; letter-spacing: -0.02em; }
@@ -358,4 +358,6 @@ export class ReportesVentasComponent implements OnInit {
     });
   }
 }
+
+
 

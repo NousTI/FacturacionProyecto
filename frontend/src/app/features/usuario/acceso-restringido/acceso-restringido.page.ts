@@ -119,7 +119,7 @@ import { environment } from '../../../../environments/environment';
     .title {
       font-size: 1.75rem;
       font-weight: 800;
-      color: var(--primary-color);
+      color: black;
       margin-bottom: 0.5rem;
     }
 
@@ -274,4 +274,5 @@ export class AccesoRestringidoPage implements OnInit {
     this.authFacade.logout().subscribe();
   }
 }
+
 

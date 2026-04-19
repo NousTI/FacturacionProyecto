@@ -96,7 +96,7 @@ import { HasPermissionDirective } from '../../../../shared/directives/has-permis
       display: flex; align-items: center; justify-content: center; font-size: 1.2rem;
       margin-right: 1rem;
     }
-    .module-icon-box.clientes { color: #3b82f6; background: #eff6ff; }
+    .module-icon-box.clientes { color: black; background: #eff6ff; }
     .module-icon-box.productos { color: #ec4899; background: #fdf2f8; }
     .module-icon-box.facturas { color: #10b981; background: #ecfdf5; }
     .module-icon-box.reportes { color: #f59e0b; background: #fff7ed; }
@@ -146,4 +146,5 @@ export class RoleDetailComponent {
     }
   }
 }
+
 

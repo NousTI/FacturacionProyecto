@@ -75,7 +75,7 @@ import { RoleDeleteModalComponent } from './components/role-delete-modal.compone
 
       <ng-template #loadingState>
         <div class="h-100 d-flex flex-column align-items-center justify-content-center">
-          <div class="spinner-border text-primary mb-3" role="status"></div>
+          <div class="spinner-border text-dark mb-3" role="status"></div>
           <span class="text-muted small fw-bold">Sincronizando seguridad...</span>
         </div>
       </ng-template>
@@ -387,3 +387,4 @@ export class RolesPermisosPage implements OnInit {
     });
   }
 }
+

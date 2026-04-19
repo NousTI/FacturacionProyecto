@@ -57,7 +57,7 @@ import { CommonModule } from '@angular/common';
     .modal-form-title {
       font-size: 1.2rem;
       font-weight: 800;
-      color: var(--primary-color);
+      color: black;
       margin: 0;
     }
 
@@ -105,7 +105,7 @@ import { CommonModule } from '@angular/common';
 
     .btn-cancel:hover:not(:disabled) {
       background: #f1f5f9;
-      color: var(--primary-color);
+      color: black;
     }
 
     .btn-cancel:disabled {
@@ -167,4 +167,5 @@ export class ModalFormLayoutComponent {
   @Input() viewOnly = false;
   @Output() onCancel = new EventEmitter<void>();
 }
+
 

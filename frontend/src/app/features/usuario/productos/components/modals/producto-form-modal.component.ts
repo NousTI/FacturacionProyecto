@@ -199,19 +199,19 @@ import { SRI_IVA_TARIFAS, GET_IVA_PERCENTAGE } from '../../../../../core/constan
       padding: 1.75rem 2rem; display: flex; justify-content: space-between; align-items: center;
       border-bottom: 1px solid #f1f5f9;
     }
-    .modal-title { font-size: 1.35rem; font-weight: 800; color: var(--primary-color); margin: 0; }
+    .modal-title { font-size: 1.35rem; font-weight: 800; color: black; margin: 0; }
     .modal-subtitle { font-size: 0.82rem; color: #64748b; margin: 0.25rem 0 0 0; font-weight: 500; }
     .btn-close-editorial {
       width: 40px; height: 40px; border-radius: 12px; border: none; background: #f8fafc;
       color: #64748b; display: flex; align-items: center; justify-content: center; transition: all 0.2s;
     }
-    .btn-close-editorial:hover { background: #f1f5f9; color: var(--primary-color); }
+    .btn-close-editorial:hover { background: #f1f5f9; color: black; }
 
     .modal-editorial-body { padding: 2rem; overflow-y: auto; flex: 1; }
     .form-section-modern { margin-bottom: 2.5rem; padding-bottom: 2.5rem; border-bottom: 1px solid #f1f5f9; }
     .section-title-modern {
       display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1.5rem;
-      font-size: 0.75rem; font-weight: 800; color: #3b82f6; text-transform: uppercase; letter-spacing: 0.05em;
+      font-size: 0.75rem; font-weight: 800; color: black; text-transform: uppercase; letter-spacing: 0.05em;
     }
     .section-title-modern i { font-size: 1rem; }
 
@@ -219,10 +219,10 @@ import { SRI_IVA_TARIFAS, GET_IVA_PERCENTAGE } from '../../../../../core/constan
     .input-group-modern label { font-size: 0.8rem; font-weight: 700; color: #475569; }
     .input-group-modern input, .input-group-modern select, .input-group-modern textarea {
       padding: 0.75rem 1rem; border-radius: 12px; border: 1px solid #e2e8f0; background: #f8fafc;
-      font-size: 0.92rem; font-weight: 600; color: var(--primary-color); transition: all 0.2s;
+      font-size: 0.92rem; font-weight: 600; color: black; transition: all 0.2s;
     }
     .input-group-modern input:focus, .input-group-modern select:focus, .input-group-modern textarea:focus {
-      outline: none; border-color: #3b82f6; background: white; box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+      outline: none; border-color: black; background: white; box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
     }
 
     .input-with-icon { position: relative; }
@@ -275,7 +275,7 @@ import { SRI_IVA_TARIFAS, GET_IVA_PERCENTAGE } from '../../../../../core/constan
       background: transparent; color: #64748b; border: 1px solid #e2e8f0; padding: 0.8rem 2rem; border-radius: 12px;
       font-weight: 700; font-size: 0.9rem; transition: all 0.2s;
     }
-    .btn-editorial-ghost:hover { background: #f1f5f9; color: var(--primary-color); }
+    .btn-editorial-ghost:hover { background: #f1f5f9; color: black; }
 
     .error-text { font-size: 0.72rem; color: #ef4444; font-weight: 700; text-transform: uppercase; margin-top: 0.2rem; }
     .scroll-custom::-webkit-scrollbar { width: 6px; }
@@ -383,4 +383,5 @@ export class ProductoFormModalComponent implements OnInit, OnDestroy {
     return false;
   }
 }
+
 

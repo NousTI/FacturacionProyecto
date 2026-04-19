@@ -11,7 +11,7 @@ import { FormsModule } from '@angular/forms';
     <div class="editorial-card p-0 shadow-sm" style="overflow: hidden;">
       <div class="card-header-minimal-editorial px-4 d-flex justify-content-between align-items-center">
         <div class="d-flex align-items-center gap-2">
-          <i class="bi bi-shield-lock text-primary"></i>
+          <i class="bi bi-shield-lock text-dark"></i>
           <span>Seguridad de la Cuenta</span>
         </div>
         <button *ngIf="!isChanging" class="btn-text-action-editorial" (click)="toggleChange()">
@@ -60,12 +60,12 @@ import { FormsModule } from '@angular/forms';
     
     .card-header-minimal-editorial {
       padding: 1.25rem 1.5rem; border-bottom: 1px solid #f1f5f9;
-      font-weight: 900; font-size: 0.85rem; color: var(--primary-color);
+      font-weight: 900; font-size: 0.85rem; color: black;
       background: #f8fafc; text-transform: uppercase; letter-spacing: 0.05em;
     }
     
     .btn-text-action-editorial {
-      border: none; background: transparent; color: #3b82f6; font-weight: 850;
+      border: none; background: transparent; color: black; font-weight: 850;
       font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.02em; padding: 0.5rem;
       border-radius: 8px; transition: all 0.2s;
       &:hover { background: #eff6ff; }
@@ -83,9 +83,9 @@ import { FormsModule } from '@angular/forms';
     .editorial-input-premium {
       width: 100%; padding: 0.75rem 1rem; border-radius: 14px;
       border: 1.5px solid #e2e8f0; background: #f8fafc;
-      font-size: 1rem; font-weight: 700; color: var(--primary-color); transition: all 0.2s;
+      font-size: 1rem; font-weight: 700; color: black; transition: all 0.2s;
       padding-right: 3rem;
-      &:focus { outline: none; border-color: #3b82f6; background: white; box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1); }
+      &:focus { outline: none; border-color: black; background: white; box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1); }
     }
     
     .btn-eye-toggle-editorial {
@@ -137,4 +137,6 @@ export class ProfileSecurityCardComponent {
     this.cdr.markForCheck();
   }
 }
+
+
 

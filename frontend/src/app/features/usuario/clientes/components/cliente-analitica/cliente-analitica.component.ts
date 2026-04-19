@@ -71,10 +71,11 @@ type Tab = 'nuevos' | 'top' | 'inactivos' | 'analisis';
       white-space: nowrap;
     }
     .tab-btn:hover  { color: #475569; }
-    .tab-btn.active { color: #3b82f6; border-bottom-color: #3b82f6; }
+    .tab-btn.active { color: black; border-bottom-color: black; }
     .tab-body { padding: 1.5rem; }
     `]
 })
 export class ClienteAnaliticaComponent {
     tab: Tab = 'nuevos';
 }
+

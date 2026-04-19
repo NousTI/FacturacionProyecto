@@ -171,9 +171,9 @@ import { PermissionsService } from '../../../../../core/auth/permissions.service
       justify-content: center; font-size: 1.8rem; font-weight: 900; color: white;
     }
     .brand-info { display: flex; flex-direction: column; gap: 0.5rem; }
-    .modal-title { font-size: 1.6rem; font-weight: 900; color: var(--primary-color); margin: 0; }
+    .modal-title { font-size: 1.6rem; font-weight: 900; color: black; margin: 0; }
     .status-tags { display: flex; gap: 0.75rem; }
-    .type-tag { font-size: 0.7rem; font-weight: 800; color: #3b82f6; background: #eff6ff; padding: 0.25rem 0.75rem; border-radius: 6px; text-transform: uppercase; }
+    .type-tag { font-size: 0.7rem; font-weight: 800; color: black; background: #eff6ff; padding: 0.25rem 0.75rem; border-radius: 6px; text-transform: uppercase; }
     .active-tag { font-size: 0.7rem; font-weight: 800; color: #059669; background: #ecfdf5; padding: 0.25rem 0.75rem; border-radius: 6px; text-transform: uppercase; }
     .active-tag.inactive { color: #dc2626; background: #fef2f2; }
 
@@ -181,7 +181,7 @@ import { PermissionsService } from '../../../../../core/auth/permissions.service
       width: 44px; height: 44px; border-radius: 14px; border: none; background: #f8fafc;
       color: #64748b; display: flex; align-items: center; justify-content: center; transition: all 0.2s;
     }
-    .btn-close-editorial:hover { background: #f1f5f9; color: var(--primary-color); }
+    .btn-close-editorial:hover { background: #f1f5f9; color: black; }
 
     .modal-editorial-body { padding: 0 2.5rem 2.5rem; overflow-y: auto; flex: 1; }
     
@@ -190,16 +190,16 @@ import { PermissionsService } from '../../../../../core/auth/permissions.service
       padding: 1.25rem 1.5rem; border-bottom: 1px solid #f1f5f9; color: #64748b;
       display: flex; align-items: center; gap: 0.75rem; font-size: 0.8rem; font-weight: 800; text-transform: uppercase;
     }
-    .card-header-editorial i { color: #3b82f6; font-size: 1rem; }
+    .card-header-editorial i { color: black; font-size: 1rem; }
 
     .detail-grid { padding: 1.5rem; display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem; }
     .detail-item { display: flex; flex-direction: column; gap: 0.25rem; }
     .detail-item.full { grid-column: span 2; }
     .detail-item label { font-size: 0.72rem; font-weight: 700; color: #94a3b8; text-transform: uppercase; }
-    .detail-item .value { font-size: 1rem; font-weight: 700; color: var(--primary-color); }
-    .code-font { font-family: 'JetBrains Mono', monospace; color: #3b82f6 !important; font-size: 1.1rem !important; }
+    .detail-item .value { font-size: 1rem; font-weight: 700; color: black; }
+    .code-font { font-family: 'JetBrains Mono', monospace; color: black !important; font-size: 1.1rem !important; }
     .description { color: #475569 !important; font-weight: 500 !important; line-height: 1.5; }
-    .price { font-size: 1.4rem !important; color: var(--primary-color) !important; font-weight: 900 !important; }
+    .price { font-size: 1.4rem !important; color: black !important; font-weight: 900 !important; }
     .price small { font-size: 0.8rem; opacity: 0.5; margin-left: 2px; }
     .margin.margen-success { color: #059669; }
     .margin.margen-warning { color: #d97706; }
@@ -228,7 +228,7 @@ import { PermissionsService } from '../../../../../core/auth/permissions.service
     .audit-timeline { padding: 1.5rem 1.5rem 0; display: flex; flex-direction: column; gap: 1.5rem; }
     .timeline-point { display: flex; gap: 1rem; }
     .point-marker { width: 12px; height: 12px; border-radius: 50%; border: 3px solid #e2e8f0; margin-top: 0.3rem; flex-shrink: 0; }
-    .point-marker.active { border-color: #3b82f6; background: #3b82f6; box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1); }
+    .point-marker.active { border-color: black; background: #3b82f6; box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1); }
     .point-content { display: flex; flex-direction: column; }
     .point-content label { font-size: 0.7rem; font-weight: 700; color: #94a3b8; text-transform: uppercase; }
     .point-content span { font-size: 0.85rem; font-weight: 700; color: #475569; }
@@ -296,4 +296,5 @@ export class ProductoDetailModalComponent implements OnInit, OnDestroy {
     return colors[Math.abs(hash) % colors.length];
   }
 }
+
 
