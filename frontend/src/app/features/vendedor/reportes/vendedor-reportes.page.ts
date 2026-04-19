@@ -171,7 +171,7 @@ export type ReportTab = 'empresas' | 'comisiones';
     .nav-label { display: flex; flex-direction: column; align-items: flex-start; line-height: 1.1; }
     .nav-name  { font-size: 0.82rem; font-weight: 700; }
     .nav-code  { font-size: 0.62rem; font-weight: 600; opacity: 0.55; letter-spacing: 0.03em; }
-    .nav-btn.active { background: #1e293b; color: #fff; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
+    .nav-btn.active { background: var(--primary-color); color: #fff; box-shadow: 0 4px 6px -1px rgba(67,82,243,0.25); }
     
     .btn-tab-danger.active { background: #fee2e2; color: #dc2626; border: 1px solid #fecaca; }
     .btn-tab-danger:not(.active):hover { background: #fef2f2; color: #991b1b; }

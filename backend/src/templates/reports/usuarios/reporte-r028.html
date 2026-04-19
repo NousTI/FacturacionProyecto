@@ -13,15 +13,6 @@
     .kpi-grid-5 { display: grid; grid-template-columns: repeat(5, 1fr); gap: 14px; margin-bottom: 16px; }
     .kpi-grid-4b { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 30px; }
 
-    .kpi-card { border-top: 3px solid #e5e7eb; }
-    .kpi-card.blue   { border-top-color: #3b82f6; }
-    .kpi-card.teal   { border-top-color: #14b8a6; }
-    .kpi-card.amber  { border-top-color: #f59e0b; }
-    .kpi-card.purple { border-top-color: #8b5cf6; }
-    .kpi-card.red    { border-top-color: #ef4444; }
-    .kpi-card.indigo { border-top-color: #6366f1; }
-    .kpi-card.green  { border-top-color: #10b981; }
-
     .trend-up   { color: #10b981; font-weight: 700; font-size: 11px; }
     .trend-down { color: #ef4444; font-weight: 700; font-size: 11px; }
     .trend-neutral { color: #6b7280; font-size: 11px; }
@@ -77,7 +68,7 @@
     <div class="section-title">Indicadores Financieros</div>
     <div class="kpi-grid-5">
 
-        <div class="kpi-card green">
+        <div class="kpi-card kpi-highlight">
             <div class="label">Dinero Recaudado</div>
             <div class="value">${{ "{:,.2f}".format(data.total_recaudado.valor) }}</div>
             <div class="extra">
@@ -89,7 +80,7 @@
             </div>
         </div>
 
-        <div class="kpi-card blue">
+        <div class="kpi-card">
             <div class="label">Total Facturado</div>
             <div class="value">${{ "{:,.2f}".format(data.total_facturado.valor) }}</div>
             <div class="extra">
@@ -101,7 +92,7 @@
             </div>
         </div>
 
-        <div class="kpi-card teal">
+        <div class="kpi-card">
             <div class="label">Efectivo</div>
             <div class="value">${{ "{:,.2f}".format(data.ingreso_efectivo.valor) }}</div>
             <div class="extra">
@@ -113,7 +104,7 @@
             </div>
         </div>
 
-        <div class="kpi-card amber">
+        <div class="kpi-card">
             <div class="label">Tarjeta</div>
             <div class="value">${{ "{:,.2f}".format(data.ingreso_tarjeta.valor) }}</div>
             <div class="extra">
@@ -125,7 +116,7 @@
             </div>
         </div>
 
-        <div class="kpi-card purple">
+        <div class="kpi-card">
             <div class="label">Otras Formas de Pago</div>
             <div class="value">${{ "{:,.2f}".format(data.ingreso_otras.valor) }}</div>
             <div class="extra">
@@ -142,13 +133,13 @@
     <!-- ─── KPI Row 2: Gestión ─── -->
     <div class="kpi-grid-4b">
 
-        <div class="kpi-card indigo">
+        <div class="kpi-card">
             <div class="label">Por Cobrar Total</div>
             <div class="value">${{ "{:,.2f}".format(data.por_cobrar.total) }}</div>
             <div class="extra">En mora &gt;30d: ${{ "{:,.2f}".format(data.por_cobrar.en_mora) }}</div>
         </div>
 
-        <div class="kpi-card red">
+        <div class="kpi-card">
             <div class="label">Clientes Nuevos</div>
             <div class="value">{{ data.clientes_nuevos.valor }}</div>
             <div class="extra">
@@ -160,13 +151,13 @@
             </div>
         </div>
 
-        <div class="kpi-card amber">
+        <div class="kpi-card">
             <div class="label">Clientes VIP</div>
             <div class="value">{{ data.clientes_vip.valor }}</div>
             <div class="extra"><span class="trend-neutral">{{ data.clientes_vip.periodo }}</span></div>
         </div>
 
-        <div class="kpi-card green">
+        <div class="kpi-card">
             <div class="label">Utilidad Neta</div>
             <div class="value {% if data.utilidad_neta.valor < 0 %}text-neg{% else %}text-pos{% endif %}">
                 ${{ "{:,.2f}".format(data.utilidad_neta.valor) }}

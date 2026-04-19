@@ -20,12 +20,32 @@
 
         /* KPI Cards */
         .kpi-grid { display: grid; gap: 15px; margin-bottom: 30px; }
-        .kpi-card { padding: 15px; border-radius: 8px; border: 1px solid #e5e7eb; background: #f9fafb; }
-        .kpi-card .label { font-size: 10px; text-transform: uppercase; font-weight: 700; color: #6b7280; }
-        .kpi-card .value { font-size: 24px; font-weight: 800; margin-top: 8px; color: #111827; }
-        .kpi-card .extra { font-size: 11px; margin-top: 4px; color: #6b7280; }
+        .kpi-card { padding: 15px; border-radius: 12px; border: 1px solid #f1f5f9; background: #ffffff; box-shadow: 0 1px 3px rgba(0,0,0,0.06); }
+        .kpi-card .label { font-size: 9px; text-transform: uppercase; font-weight: 700; color: #64748b; letter-spacing: 0.05em; }
+        .kpi-card .value { font-size: 22px; font-weight: 800; margin-top: 8px; color: #0f172a; }
+        .kpi-card .extra { font-size: 10px; margin-top: 4px; color: #94a3b8; font-weight: 600; }
         .kpi-card .trend-up   { color: #10b981; font-weight: 700; }
         .kpi-card .trend-down { color: #ef4444; font-weight: 700; }
+
+        /* KPI destacado — gradiente morado */
+        .kpi-card.kpi-highlight { background: linear-gradient(135deg, #7c3aed 0%, #a855f7 100%); border-color: transparent; box-shadow: 0 4px 18px rgba(168,85,247,0.35); }
+        .kpi-card.kpi-highlight .label     { color: rgba(255,255,255,0.8); }
+        .kpi-card.kpi-highlight .value     { color: #ffffff; }
+        .kpi-card.kpi-highlight .extra     { color: rgba(255,255,255,0.75); }
+        .kpi-card.kpi-highlight .trend-up  { color: rgba(255,255,255,0.9); }
+        .kpi-card.kpi-highlight .trend-down{ color: rgba(255,255,255,0.9); }
+
+        /* KPI Upgrade / advertencia */
+        .kpi-card.kpi-warning { background: #fffbeb; border-color: #fef3c7; }
+        .kpi-card.kpi-warning .label { color: #92400e; }
+        .kpi-card.kpi-warning .value { color: #d97706; }
+        .kpi-card.kpi-warning .extra { color: #d97706; }
+
+        /* KPI Riesgo / peligro */
+        .kpi-card.kpi-danger { background: #fef2f2; border-color: #fecaca; }
+        .kpi-card.kpi-danger .label { color: #991b1b; }
+        .kpi-card.kpi-danger .value { color: #dc2626; }
+        .kpi-card.kpi-danger .extra { color: #dc2626; }
 
         /* Tablas */
         table { width: 100%; border-collapse: collapse; margin: 20px 0; }
@@ -38,7 +58,7 @@
 
         /* Gráficas */
         .charts-container { display: grid; grid-template-columns: 1fr; gap: 30px; margin: 30px auto; max-width: 500px; }
-        .chart-box { background: #f9fafb; padding: 20px; border-radius: 8px; border: 1px solid #e5e7eb; page-break-inside: avoid; }
+        .chart-box { background: #ffffff; padding: 20px; border-radius: 16px; border: 1px solid #f1f5f9; page-break-inside: avoid; box-shadow: 0 1px 3px rgba(0,0,0,0.06); }
         .chart-box h3 { margin: 0 0 15px; font-size: 14px; font-weight: 700; color: #111827; }
         .chart-box canvas { max-height: 350px; }
 

@@ -18,7 +18,13 @@
     <!-- KPIs -->
     <div class="kpi-grid">
 
-        <div class="kpi-card" style="border-top: 3px solid #6366f1;">
+        <div class="kpi-card kpi-highlight">
+            <div class="label">Subtotal Sin IVA</div>
+            <div class="value">${{ "{:,.2f}".format(data.subtotal_sin_iva) }}</div>
+            <div class="extra">Base imponible</div>
+        </div>
+
+        <div class="kpi-card">
             <div class="label">Facturas Emitidas</div>
             <div class="value">{{ data.facturas_emitidas.valor }}</div>
             <div class="extra">
@@ -30,21 +36,15 @@
             </div>
         </div>
 
-        <div class="kpi-card" style="border-top: 3px solid #3b82f6;">
-            <div class="label">Subtotal Sin IVA</div>
-            <div class="value">${{ "{:,.2f}".format(data.subtotal_sin_iva) }}</div>
-            <div class="extra">Base imponible</div>
-        </div>
-
         {% for iva in data.iva_desglosado %}
-        <div class="kpi-card" style="border-top: 3px solid #10b981;">
+        <div class="kpi-card">
             <div class="label">IVA Cobrado ({{ iva.tarifa }})</div>
             <div class="value">${{ "{:,.2f}".format(iva.iva_cobrado) }}</div>
             <div class="extra">A declarar al SRI</div>
         </div>
         {% endfor %}
 
-        <div class="kpi-card" style="border-top: 3px solid #f59e0b;">
+        <div class="kpi-card">
             <div class="label">Ticket Promedio</div>
             <div class="value">${{ "{:,.2f}".format(data.ticket_promedio.valor) }}</div>
             <div class="extra">

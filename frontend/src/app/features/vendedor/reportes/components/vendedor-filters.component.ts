@@ -74,14 +74,14 @@ export type RangoTipo = 'mes_actual' | 'mes_anterior' | 'anio_actual' | 'persona
     .to-text { font-size: 0.75rem; font-weight: 900; color: #cbd5e1; }
 
     .btn-refresh-compact {
-      background: #1e293b; color: #fff; border: none; 
-      height: 32px; border-radius: 10px; 
+      background: var(--primary-color); color: #fff; border: none;
+      height: 32px; border-radius: 10px;
       display: flex; align-items: center; justify-content: center;
       transition: all 0.2s;
       white-space: nowrap;
       cursor: pointer;
     }
-    .btn-refresh-compact:hover { background: #000; transform: scale(1.05); }
+    .btn-refresh-compact:hover { filter: brightness(1.15); transform: scale(1.05); }
 
     .btn-export-compact {
       background: #fee2e2; color: #dc2626; border: 1px solid #fecaca;

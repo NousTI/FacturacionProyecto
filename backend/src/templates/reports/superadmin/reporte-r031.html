@@ -8,7 +8,18 @@
 {% block content %}
     <!-- KPIs PRINCIPALES -->
     <div class="kpi-grid">
-        <!-- 1. Empresas Activas -->
+        <!-- 1. Ingresos del Año — DESTACADO -->
+        <div class="kpi-card kpi-highlight">
+            <span class="label">Ingresos del Año</span>
+            <span class="value">${{ "{:,.0f}".format(data.ingresos_anio or 0) }}</span>
+            <span class="extra">
+                <span style="color: rgba(255,255,255,0.9); font-weight: bold;">
+                    {{ "+" if data.variacion_ingresos_anio >= 0 }}{{ data.variacion_ingresos_anio }}%
+                </span> vs prev.
+            </span>
+        </div>
+
+        <!-- 2. Empresas Activas -->
         <div class="kpi-card">
             <span class="label">Empresas Activas</span>
             <span class="value">{{ data.empresas_activas }}</span>
@@ -16,17 +27,6 @@
                 <span style="color: {% if data.variacion_empresas_activas_valor >= 0 %}#10b981{% else %}#ef4444{% endif %}; font-weight: bold;">
                     {{ "+" if data.variacion_empresas_activas_valor >= 0 }}{{ data.variacion_empresas_activas_valor }}
                 </span> este mes
-            </span>
-        </div>
-
-        <!-- 2. Ingresos del Año -->
-        <div class="kpi-card">
-            <span class="label">Ingresos del Año</span>
-            <span class="value">${{ "{:,.0f}".format(data.ingresos_anio or 0) }}</span>
-            <span class="extra">
-                <span style="color: {% if data.variacion_ingresos_anio >= 0 %}#10b981{% else %}#ef4444{% endif %}; font-weight: bold;">
-                    {{ "+" if data.variacion_ingresos_anio >= 0 }}{{ data.variacion_ingresos_anio }}%
-                </span> vs prev.
             </span>
         </div>
 
@@ -76,16 +76,16 @@
         </div>
 
         <!-- 8. Zona Upgrade -->
-        <div class="kpi-card" style="border-bottom: 3px solid #f59e0b; background: #fffbeb;">
+        <div class="kpi-card kpi-warning">
             <span class="label">Zona Upgrade</span>
-            <span class="value" style="color: #f59e0b;">{{ data.zona_upgrade }}</span>
+            <span class="value">{{ data.zona_upgrade }}</span>
             <span class="extra">Para expansión</span>
         </div>
 
         <!-- 9. Zona Rescate -->
-        <div class="kpi-card" style="border-bottom: 3px solid #ef4444; background: #fef2f2;">
+        <div class="kpi-card kpi-danger">
             <span class="label">Zona Rescate</span>
-            <span class="value" style="color: #ef4444;">{{ data.zona_rescate }}</span>
+            <span class="value">{{ data.zona_rescate }}</span>
             <span class="extra">Riesgo de pérdida</span>
         </div>
     </div>

@@ -12,12 +12,6 @@
     /* KPI Row */
     .kpi-grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 26px; }
 
-    .kpi-card { border-top: 3px solid #e5e7eb; }
-    .kpi-card.blue   { border-top-color: #3b82f6; }
-    .kpi-card.teal   { border-top-color: #14b8a6; }
-    .kpi-card.amber  { border-top-color: #f59e0b; }
-    .kpi-card.indigo { border-top-color: #6366f1; }
-
     .trend-up      { color: #10b981; font-weight: 700; font-size: 11px; }
     .trend-down    { color: #ef4444; font-weight: 700; font-size: 11px; }
     .trend-neutral { color: #6b7280; font-size: 11px; }
@@ -78,19 +72,7 @@
     <div class="section-title">Mis Indicadores</div>
     <div class="kpi-grid-4">
 
-        <div class="kpi-card blue">
-            <div class="label">Mis Facturas (período)</div>
-            <div class="value">{{ data.kpis.mis_facturas.valor }}</div>
-            <div class="extra">
-                {% if data.kpis.mis_facturas.variacion >= 0 %}
-                    <span class="trend-up">▲ {{ "{:.1f}".format(data.kpis.mis_facturas.variacion) }}% vs período ant.</span>
-                {% else %}
-                    <span class="trend-down">▼ {{ "{:.1f}".format(data.kpis.mis_facturas.variacion | abs) }}% vs período ant.</span>
-                {% endif %}
-            </div>
-        </div>
-
-        <div class="kpi-card teal">
+        <div class="kpi-card kpi-highlight">
             <div class="label">Total Vendido</div>
             <div class="value">${{ "{:,.2f}".format(data.kpis.total_vendido.valor) }}</div>
             <div class="extra">
@@ -102,7 +84,19 @@
             </div>
         </div>
 
-        <div class="kpi-card amber">
+        <div class="kpi-card">
+            <div class="label">Mis Facturas (período)</div>
+            <div class="value">{{ data.kpis.mis_facturas.valor }}</div>
+            <div class="extra">
+                {% if data.kpis.mis_facturas.variacion >= 0 %}
+                    <span class="trend-up">▲ {{ "{:.1f}".format(data.kpis.mis_facturas.variacion) }}% vs período ant.</span>
+                {% else %}
+                    <span class="trend-down">▼ {{ "{:.1f}".format(data.kpis.mis_facturas.variacion | abs) }}% vs período ant.</span>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="kpi-card">
             <div class="label">Devoluciones</div>
             <div class="value">{{ data.kpis.devoluciones.valor }}</div>
             <div class="extra">
@@ -114,7 +108,7 @@
             </div>
         </div>
 
-        <div class="kpi-card indigo">
+        <div class="kpi-card">
             <div class="label">Mi Ticket Promedio</div>
             <div class="value">${{ "{:,.2f}".format(data.kpis.ticket_promedio.valor) }}</div>
             <div class="extra">

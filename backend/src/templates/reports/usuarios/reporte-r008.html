@@ -11,13 +11,6 @@
 {% block extra_styles %}
     .kpi-grid { grid-template-columns: repeat(4, 1fr); }
 
-    .kpi-card { border-top: 3px solid #e5e7eb; }
-    .kpi-card.indigo { border-top-color: #6366f1; }
-    .kpi-card.amber  { border-top-color: #f59e0b; }
-    .kpi-card.red    { border-top-color: #ef4444; }
-    .kpi-card.green  { border-top-color: #10b981; }
-    .kpi-card.high-risk { border-top-color: #ef4444 !important; }
-
     .section-title {
         font-size: 14px; font-weight: 700; color: #111827;
         margin: 30px 0 10px; border-bottom: 2px solid #e5e7eb; padding-bottom: 8px;
@@ -49,25 +42,25 @@
     <!-- KPIs -->
     <div class="kpi-grid">
 
-        <div class="kpi-card indigo">
+        <div class="kpi-card kpi-highlight">
             <div class="label">Total por Cobrar</div>
             <div class="value">${{ "{:,.2f}".format(data.kpis.total_por_cobrar) }}</div>
             <div class="extra">Saldo pendiente global</div>
         </div>
 
-        <div class="kpi-card amber">
+        <div class="kpi-card kpi-warning">
             <div class="label">Vencido &lt; 30 días</div>
             <div class="value">${{ "{:,.2f}".format(data.kpis.vencido_menor_30) }}</div>
             <div class="extra">Requiere gestión</div>
         </div>
 
-        <div class="kpi-card red">
+        <div class="kpi-card kpi-danger">
             <div class="label">Cartera Crítica &gt; 30 días</div>
             <div class="value">${{ "{:,.2f}".format(data.kpis.cartera_critica) }}</div>
             <div class="extra">En riesgo de pérdida</div>
         </div>
 
-        <div class="kpi-card green{% if data.kpis.indice_morosidad > 50 %} high-risk{% endif %}">
+        <div class="kpi-card{% if data.kpis.indice_morosidad > 50 %} kpi-danger{% endif %}">
             <div class="label">Índice de Morosidad</div>
             <div class="value">{{ "{:.2f}".format(data.kpis.indice_morosidad) }}%</div>
             <div class="extra">De riesgo total</div>

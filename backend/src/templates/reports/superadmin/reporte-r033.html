@@ -5,9 +5,30 @@
     <p>R-033 · Análisis de Adopción por Empresa</p>
 {% endblock %}
 
+{% block extra_styles %}
+    /* Progress bar para % de uso */
+    .progress-wrap { display: flex; align-items: center; gap: 6px; }
+    .progress-track { flex: 1; height: 6px; background: #e2e8f0; border-radius: 10px; overflow: hidden; min-width: 60px; }
+    .progress-fill { height: 100%; border-radius: 10px; }
+    .fill-success { background: #10b981; }
+    .fill-warning { background: #f59e0b; }
+    .fill-danger  { background: #ef4444; }
+    .pct-label { font-size: 9px; font-weight: 700; min-width: 28px; }
+    .text-success { color: #059669; }
+    .text-warning { color: #d97706; }
+    .text-danger  { color: #dc2626; }
+    /* Pill módulos */
+    .modulos-pill { display: inline-block; background: #eff6ff; color: #1e40af; padding: 2px 8px; border-radius: 20px; font-weight: 700; font-size: 9px; border: 1px solid #dbeafe; }
+{% endblock %}
+
 {% block content %}
     <!-- KPIs PRINCIPALES -->
     <div class="kpi-grid">
+        <div class="kpi-card kpi-highlight">
+            <span class="label">Total Empresas en el Sistema</span>
+            <span class="value">{{ data.empresas | length }}</span>
+            <span class="extra">en el sistema</span>
+        </div>
         <div class="kpi-card">
             <span class="label">Promedio Usuarios / Empresa</span>
             <span class="value">{{ "{:.1f}".format(data.promedio_usuarios or 0) }}</span>
@@ -22,11 +43,6 @@
             <span class="label">Mín. Usuarios</span>
             <span class="value">{{ data.min_usuarios or 0 }}</span>
             <span class="extra">usuarios</span>
-        </div>
-        <div class="kpi-card">
-            <span class="label">Total Empresas en el Sistema</span>
-            <span class="value">{{ data.empresas | length }}</span>
-            <span class="extra">en el sistema</span>
         </div>
     </div>
 
@@ -65,12 +81,18 @@
                 <td><span class="badge" style="background:#f1f5f9; color:#475569;">{{ e.plan_nombre or 'Sin Plan' }}</span></td>
                 <td class="text-right">{{ e.usuarios_activos }} / {{ e.total_usuarios }}</td>
                 <td class="text-right">{{ e.facturas_mes }}</td>
-                <td class="text-right">
-                    <span class="badge {% if e.porcentaje_uso > 80 %}badge-info{% else %}badge-success{% endif %}">
-                        {{ "{:.1f}%".format(e.porcentaje_uso) }}
-                    </span>
+                <td>
+                    <div class="progress-wrap">
+                        <div class="progress-track">
+                            <div class="progress-fill {% if e.porcentaje_uso >= 90 %}fill-danger{% elif e.porcentaje_uso >= 70 %}fill-warning{% else %}fill-success{% endif %}"
+                                 style="width: {{ [e.porcentaje_uso, 100] | min }}%"></div>
+                        </div>
+                        <span class="pct-label {% if e.porcentaje_uso >= 90 %}text-danger{% elif e.porcentaje_uso >= 70 %}text-warning{% else %}text-success{% endif %}">
+                            {{ "{:.0f}%".format(e.porcentaje_uso) }}
+                        </span>
+                    </div>
                 </td>
-                <td class="text-right">{{ e.modulos_usados }} / {{ e.modulos_total }}</td>
+                <td class="text-right"><span class="modulos-pill">{{ e.modulos_usados }} / {{ e.modulos_total }}</span></td>
                 <td style="font-size: 8px;">{{ e.ultimo_acceso_fmt or '--' }}</td>
             </tr>
             {% endfor %}

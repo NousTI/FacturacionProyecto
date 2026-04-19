@@ -10,26 +10,23 @@
 
 {% block extra_styles %}
     .kpi-grid { grid-template-columns: repeat(2, 1fr); }
-    .kpi-card { background: #f0fdf4; border: 1px solid #dcfce7; }
-    .kpi-card .label { color: #166534; }
-    .kpi-card .value { color: #064e3b; }
-    .kpi-card .extra { color: #166534; }
-    
     .amount { font-weight: 700; color: #047857; }
-    
-    .chart-container { background: #f9fafb; padding: 20px; border-radius: 8px; border: 1px solid #e5e7eb;
+    .chart-container { background: #ffffff; padding: 20px; border-radius: 16px; border: 1px solid #f1f5f9;
                        margin: 30px auto; display: flex; flex-direction: column; align-items: center;
-                       max-width: 400px; page-break-inside: avoid; }
-    .chart-container h3 { margin: 0 0 15px; font-size: 14px; font-weight: 700; color: #111827; }
+                       max-width: 400px; page-break-inside: avoid; box-shadow: 0 1px 3px rgba(0,0,0,0.06); }
+    .chart-container h3 { margin: 0 0 15px; font-size: 14px; font-weight: 700; color: #1e293b; }
     .chart-container canvas { max-width: 100%; max-height: 250px; }
-
-    .pending-tooltip { position: relative; }
-    /* Tooltip logic simplified for PDF as interaction is not possible */
 {% endblock %}
 
 {% block content %}
     <!-- KPI Grid (4 Cards) -->
     <div class="kpi-grid">
+        <div class="kpi-card kpi-highlight">
+            <div class="label">Total histórico</div>
+            <div class="value">${{ "{:,.2f}".format(data.kpis.total_historico or 0) }}</div>
+            <div class="extra">acumulado</div>
+        </div>
+
         <div class="kpi-card">
             <div class="label">Por cobrar</div>
             <div class="value">${{ "{:,.2f}".format(data.kpis.ya_depositado or 0) }}</div>
@@ -40,12 +37,6 @@
             <div class="label">Pendiente aprobación</div>
             <div class="value">${{ "{:,.2f}".format(data.kpis.pendiente_aprobacion or 0) }}</div>
             <div class="extra">en revisión</div>
-        </div>
-
-        <div class="kpi-card">
-            <div class="label">Total histórico</div>
-            <div class="value">${{ "{:,.2f}".format(data.kpis.total_historico or 0) }}</div>
-            <div class="extra">acumulado</div>
         </div>
 
         <div class="kpi-card">

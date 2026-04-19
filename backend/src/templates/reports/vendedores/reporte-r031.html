@@ -10,16 +10,12 @@
 
 {% block extra_styles %}
     .kpi-grid { grid-template-columns: repeat(3, 1fr); }
-    .kpi-card { background: #f9fafb; }
-    .kpi-card .label { color: #6b7280; }
-    .kpi-card .value { color: #111827; }
-    .kpi-card .extra { color: #6b7280; }
 {% endblock %}
 
 {% block content %}
     <!-- KPI Grid (6 Cards) -->
     <div class="kpi-grid">
-        <div class="kpi-card">
+        <div class="kpi-card kpi-highlight">
             <div class="label">Mis empresas activas</div>
             <div class="value">{{ data.kpis.activas_total or 0 }}</div>
             <div class="extra">+{{ data.kpis.activas_este_mes or 0 }} este mes</div>
