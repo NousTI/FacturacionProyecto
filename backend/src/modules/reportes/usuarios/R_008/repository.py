@@ -44,7 +44,7 @@ class RepositorioR008:
             data['indice_morosidad'] = round((critica / total * 100), 2) if total > 0 else 0.0
             return data
 
-    def obtener_top_clientes_pendientes(self, empresa_id: UUID, fecha_inicio: Optional[str] = None, fecha_fin: Optional[str] = None, limit: int = 10) -> List[Dict[str, Any]]:
+    def obtener_top_clientes_pendientes(self, empresa_id: UUID, fecha_inicio: Optional[str] = None, fecha_fin: Optional[str] = None) -> List[Dict[str, Any]]:
         """Lista de facturas pendientes con saldo, una fila por factura."""
         query = """
             SELECT
@@ -74,8 +74,7 @@ class RepositorioR008:
             query += " AND f.fecha_emision <= %s::timestamp + interval '1 day' - interval '1 second'"
             params.append(fecha_fin)
 
-        query += " ORDER BY dias_vencido DESC LIMIT %s"
-        params.append(limit)
+        query += " ORDER BY dias_vencido DESC"
 
         with self.db.cursor() as cur:
             cur.execute(query, tuple(params))

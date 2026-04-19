@@ -17,7 +17,7 @@ import { InfoTooltipComponent } from '../../../../../shared/components/info-tool
         <div class="stat-body">
           <h2 class="stat-value">{{ data?.activas_total || 0 }}</h2>
           <div class="stat-badge success">
-            <i class="bi bi-plus"></i>{{ data?.activas_este_mes || 0 }} este mes
+            <i class="bi bi-plus"></i>{{ data?.activas_este_mes || 0 }} {{ periodLabel }}
           </div>
         </div>
       </div>
@@ -56,7 +56,7 @@ import { InfoTooltipComponent } from '../../../../../shared/components/info-tool
           <h2 class="stat-value">{{ data?.planes_nuevos_mes || 0 }}</h2>
           <div class="stat-badge" [ngClass]="data?.planes_nuevos_pct >= 0 ? 'success' : 'danger'">
             <i class="bi" [ngClass]="data?.planes_nuevos_pct >= 0 ? 'bi-arrow-up' : 'bi-arrow-down'"></i>
-            {{ data?.planes_nuevos_pct >= 0 ? '+' : '' }}{{ data?.planes_nuevos_pct }}% que el mes ant.
+            {{ data?.planes_nuevos_pct >= 0 ? '+' : '' }}{{ data?.planes_nuevos_pct }}% {{ comparisonLabel }}
           </div>
         </div>
       </div>
@@ -160,10 +160,10 @@ import { InfoTooltipComponent } from '../../../../../shared/components/info-tool
       display: inline-flex;
       align-items: center;
       gap: 0.25rem;
-      font-size: 0.65rem;
+      font-size: 0.75rem;
       font-weight: 700;
-      padding: 0.2rem 0.6rem;
-      border-radius: 8px;
+      padding: 0;
+      border-radius: 0;
       width: fit-content;
     }
 
@@ -176,7 +176,7 @@ import { InfoTooltipComponent } from '../../../../../shared/components/info-tool
     .stat-card.highlight .stat-label { color: rgba(255,255,255,0.8); }
     .stat-card.highlight .stat-value { color: #fff; }
     .stat-card.highlight .stat-icon  { background: rgba(255,255,255,0.2); color: #fff; }
-    .stat-card.highlight .stat-badge { background: rgba(255,255,255,0.2); color: #fff; border: none; }
+    .stat-card.highlight .stat-badge { background: transparent; color: rgba(255,255,255,0.9); border: none; }
 
     /* Colors and Variants */
     .primary .stat-icon { background: var(--status-info-bg); color: var(--status-info); }
@@ -186,12 +186,14 @@ import { InfoTooltipComponent } from '../../../../../shared/components/info-tool
     .purple .stat-icon  { background: var(--status-orange-bg); color: var(--status-orange); }
     .cyan .stat-icon    { background: var(--status-success-bg); color: var(--status-success); }
 
-    .stat-badge.success { background: var(--status-success-bg); color: var(--status-success-text); }
-    .stat-badge.warning { background: var(--status-warning-bg); color: var(--status-warning-text); }
-    .stat-badge.danger  { background: var(--status-danger-bg);  color: var(--status-danger-text); }
-    .stat-badge:not(.success):not(.warning):not(.danger) { background: #f1f5f9; color: #475569; }
+    .stat-badge.success { background: transparent; color: var(--status-success); }
+    .stat-badge.warning { background: transparent; color: var(--status-warning); }
+    .stat-badge.danger  { background: transparent; color: var(--status-danger); }
+    .stat-badge:not(.success):not(.warning):not(.danger) { background: transparent; color: #64748b; }
   `]
 })
 export class R031StatsComponent {
   @Input() data: any = null;
+  @Input() periodLabel: string = 'este mes';
+  @Input() comparisonLabel: string = 'que el mes ant.';
 }

@@ -65,10 +65,19 @@ export type ReportTab = 'empresas' | 'comisiones';
         <!-- KPIs / Stats -->
         <div class="stats-container mb-4">
             <!-- R-031 Stats (Empresas) -->
-            <app-r031-stats *ngIf="tabActivo === 'empresas'" [data]="r031Data"></app-r031-stats>
+            <app-r031-stats 
+              *ngIf="tabActivo === 'empresas'" 
+              [data]="r031Data"
+              [periodLabel]="periodLabel"
+              [comparisonLabel]="comparisonLabel">
+            </app-r031-stats>
             
             <!-- R-032 Stats (Comisiones) -->
-            <app-r032-stats *ngIf="tabActivo === 'comisiones'" [data]="r032Data"></app-r032-stats>
+            <app-r032-stats 
+              *ngIf="tabActivo === 'comisiones'" 
+              [data]="r032Data"
+              [periodLabel]="periodLabel">
+            </app-r032-stats>
         </div>
       </div>
 
@@ -121,7 +130,19 @@ export type ReportTab = 'empresas' | 'comisiones';
     </div>
   `,
   styles: [`
-    .reportes-page-container { padding: 1.5rem; background: #f8fafc; min-height: 100vh; }
+    :host {
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    .reportes-page-container { 
+      flex: 1;
+      overflow-y: auto;
+      padding: 1.5rem; 
+      background: #f8fafc; 
+    }
     
     .page-title { font-weight: 900; color: #0f172a; margin: 0; font-size: 1.75rem; letter-spacing: -0.025em; }
     .page-subtitle { color: #64748b; font-size: 0.95rem; font-weight: 500; margin-top: 0.25rem; }
@@ -307,6 +328,26 @@ export class VendedorReportesPage implements OnInit, OnDestroy {
         fecha_inicio: this.fechaInicio,
         fecha_fin: this.fechaFin
     };
+  }
+
+  get periodLabel(): string {
+    switch (this.rangoTipo) {
+      case 'mes_actual': return 'este mes';
+      case 'mes_anterior': return 'el mes pasado';
+      case 'anio_actual': return 'este año';
+      case 'personalizado': return 'el periodo';
+      default: return 'en el periodo';
+    }
+  }
+
+  get comparisonLabel(): string {
+    switch (this.rangoTipo) {
+      case 'mes_actual': return 'que el mes ant.';
+      case 'mes_anterior': return 'que el mes previo';
+      case 'anio_actual': return 'que el año ant.';
+      case 'personalizado': return 'que el periodo ant.';
+      default: return 'que el periodo ant.';
+    }
   }
 
   private downloadLinkExtracted(url_descarga?: string) {

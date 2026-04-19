@@ -124,8 +124,8 @@ Chart.register(...registerables);
     .stat-value { font-size: 1.35rem; font-weight: 800; color: #0f172a; margin: 0; letter-spacing: -0.03em; }
 
     .stat-badge {
-      display: inline-flex; align-items: center; gap: 0.25rem; font-size: 0.65rem;
-      font-weight: 700; padding: 0.2rem 0.6rem; border-radius: 8px; width: fit-content;
+      display: inline-flex; align-items: center; gap: 0.25rem; font-size: 0.75rem;
+      font-weight: 700; padding: 0; border-radius: 0; width: fit-content;
       text-transform: lowercase;
     }
 
@@ -138,17 +138,17 @@ Chart.register(...registerables);
     .stat-card.highlight .stat-label { color: rgba(255,255,255,0.8); }
     .stat-card.highlight .stat-value { color: #fff; }
     .stat-card.highlight .stat-icon  { background: rgba(255,255,255,0.2); color: #fff; }
-    .stat-card.highlight .stat-badge { background: rgba(255,255,255,0.2); color: #fff; border: none; }
+    .stat-card.highlight .stat-badge { background: transparent; color: rgba(255,255,255,0.9); border: none; }
 
     /* THEMES */
     .success .stat-icon { background: var(--status-success-bg); color: var(--status-success); }
-    .stat-badge.success { background: var(--status-success-bg); color: var(--status-success-text); border: 1px solid var(--status-success-bg); }
+    .stat-badge.success { background: transparent; color: var(--status-success); border: none; }
     .warning .stat-icon { background: var(--status-warning-bg); color: var(--status-warning); }
-    .stat-badge.warning { background: var(--status-warning-bg); color: var(--status-warning-text); border: 1px solid var(--status-warning-bg); }
+    .stat-badge.warning { background: transparent; color: var(--status-warning); border: none; }
     .indigo .stat-icon  { background: var(--status-info-bg); color: var(--status-info); }
-    .stat-badge.indigo  { background: var(--status-info-bg); color: var(--status-info-text); border: 1px solid var(--status-info-bg); }
+    .stat-badge.indigo  { background: transparent; color: var(--status-info); border: none; }
     .danger .stat-icon  { background: var(--status-danger-bg); color: var(--status-danger); }
-    .stat-badge.danger  { background: var(--status-danger-bg); color: var(--status-danger-text); border: 1px solid var(--status-danger-bg); }
+    .stat-badge.danger  { background: transparent; color: var(--status-danger); border: none; }
 
     /* Chart panel */
     .chart-panel {
@@ -179,6 +179,7 @@ Chart.register(...registerables);
 })
 export class R032StatsComponent implements AfterViewInit, OnChanges {
   @Input() data: any = null;
+  @Input() periodLabel: string = 'este mes';
 
   @ViewChild('chartCanvas') chartCanvas!: ElementRef<HTMLCanvasElement>;
   private chart: Chart | null = null;

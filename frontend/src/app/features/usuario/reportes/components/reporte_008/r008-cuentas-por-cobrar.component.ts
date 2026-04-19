@@ -188,8 +188,8 @@ Chart.register(...registerables);
       gap: 1rem;
     }
     .kpi-card {
-      background: #fff; border: 1px solid #f1f5f9; border-radius: 16px; padding: 1.25rem;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.04); display: flex; flex-direction: column; justify-content: center; gap: 0.4rem;
+      background: #fff; border: none; border-radius: 16px; padding: 1.25rem;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.04); display: flex; flex-direction: column; justify-content: center; gap: 0.4rem;
       transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     }
     .kpi-card:hover { transform: translateY(-3px); box-shadow: 0 12px 20px -10px rgba(0,0,0,0.08); border-color: #e2e8f0; }
@@ -202,8 +202,8 @@ Chart.register(...registerables);
     .kpi-card.highlight .value   { color: #fff; }
     .kpi-card.highlight .subtext { color: rgba(255,255,255,0.75); }
 
-    .kpi-card.amber { border-left: 4px solid #f59e0b; }
-    .kpi-card.red { border-left: 4px solid #ef4444; }
+    .kpi-card.amber { /* Removido borde lateral */ }
+    .kpi-card.red { /* Removido borde lateral */ }
 
     .label   { font-size: 0.65rem; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; }
     .value   { font-size: 1.6rem; font-weight: 800; color: black; line-height: 1.2; }
