@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, ChangeDetectorRef, ChangeDetectionStrategy } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, ChangeDetectorRef, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Subject, takeUntil, finalize, Observable, BehaviorSubject, combineLatest, map, startWith } from 'rxjs';
@@ -18,7 +18,7 @@ import { User } from '../../../domain/models/user.model';
 import { AuthService } from '../../../core/auth/auth.service';
 import { PermissionsService } from '../../../core/auth/permissions.service';
 import { USUARIOS_PERMISSIONS } from '../../../constants/permission-codes';
-import { inject } from '@angular/core';
+import { PaginationState } from '../../super-admin/empresas/components/empresa-paginacion/empresa-paginacion.component';
 
 @Component({
   selector: 'app-usuario-usuarios',
@@ -60,9 +60,12 @@ import { inject } from '@angular/core';
 
         <!-- 3. TABLA -->
         <app-usuarios-table
-          [usuarios]="(filteredUsuarios$ | async) || []"
+          [usuarios]="(paginatedUsuarios$ | async) || []"
           [currentUserId]="currentUserId"
+          [pagination]="(pagination$ | async)!"
           (onAction)="handleAction($event)"
+          (pageChange)="onPageChange($event)"
+          (pageSizeChange)="onPageSizeChange($event)"
         ></app-usuarios-table>
 
       </ng-container>
@@ -148,7 +151,10 @@ import { inject } from '@angular/core';
 export class UsuariosPage implements OnInit, OnDestroy {
   stats$: Observable<UsuariosStats>;
   filteredUsuarios$: Observable<User[]>;
+  paginatedUsuarios$: Observable<User[]>;
   isLoading$ = new BehaviorSubject<boolean>(false);
+
+  pagination$ = new BehaviorSubject<PaginationState>({ currentPage: 1, pageSize: 25, totalItems: 0 });
 
   searchQuery: string = '';
   private searchQuery$ = new BehaviorSubject<string>('');
@@ -208,6 +214,24 @@ export class UsuariosPage implements OnInit, OnDestroy {
 
           return matchSearch && matchRol && matchEstado;
         });
+      }),
+      map(filtered => {
+        // Actualizar total items y resetear a página 1 si cambia el total
+        const current = this.pagination$.value;
+        if (current.totalItems !== filtered.length) {
+          this.pagination$.next({ ...current, totalItems: filtered.length, currentPage: 1 });
+        }
+        return filtered;
+      })
+    );
+
+    this.paginatedUsuarios$ = combineLatest([
+      this.filteredUsuarios$,
+      this.pagination$
+    ]).pipe(
+      map(([filtered, pagination]) => {
+        const start = (pagination.currentPage - 1) * pagination.pageSize;
+        return filtered.slice(start, start + pagination.pageSize);
       })
     );
   }
@@ -247,6 +271,21 @@ export class UsuariosPage implements OnInit, OnDestroy {
 
   handleFilters(filters: any) {
     this.filters$.next(filters);
+    this.resetPagination();
+  }
+
+  onPageChange(page: number) {
+    this.pagination$.next({ ...this.pagination$.value, currentPage: page });
+    this.cd.markForCheck();
+  }
+
+  onPageSizeChange(size: number) {
+    this.pagination$.next({ ...this.pagination$.value, pageSize: size, currentPage: 1 });
+    this.cd.markForCheck();
+  }
+
+  private resetPagination() {
+    this.pagination$.next({ ...this.pagination$.value, currentPage: 1 });
   }
 
   refreshData() {

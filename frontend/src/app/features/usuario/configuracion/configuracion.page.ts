@@ -127,13 +127,16 @@ interface ConfigSection {
     </div>
   `,
   styles: [`
+    :host { display: flex; flex-direction: column; flex: 1; min-height: 0; width: 100%; border: none !important; }
     .config-page {
       display: flex;
-      min-height: calc(100vh - 80px);
+      flex: 1;
+      height: 100%;
       background: var(--bg-main, #ffffff);
       margin: 0;
       padding: 0;
       overflow: hidden;
+      min-height: 0;
     }
 
     /* SIDEBAR */
@@ -242,7 +245,7 @@ interface ConfigSection {
     .config-content {
       flex: 1;
       height: 100%;
-      overflow-y: auto;
+      overflow: hidden;
       background: white;
       display: flex;
       flex-direction: column;
@@ -251,6 +254,10 @@ interface ConfigSection {
     .content-pane {
       width: 100%;
       padding: 2rem;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
     }
 
     .content-header {
@@ -265,6 +272,12 @@ interface ConfigSection {
       margin-bottom: 0.75rem;
     }
 
+    .content-body {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+    }
     .section-subtitle {
       font-size: 1.1rem;
       color: var(--text-muted);

@@ -3,11 +3,12 @@ import { CommonModule } from '@angular/common';
 import { Cliente } from '../../../../domain/models/cliente.model';
 import { HasPermissionDirective } from '../../../../shared/directives/has-permission.directive';
 import { GET_IDENTIFICACION_LABEL } from '../../../../core/constants/sri-iva.constants';
+import { EmpresaPaginacionComponent, PaginationState } from '../../../super-admin/empresas/components/empresa-paginacion/empresa-paginacion.component';
 
 @Component({
   selector: 'app-clientes-table',
   standalone: true,
-  imports: [CommonModule, HasPermissionDirective],
+  imports: [CommonModule, HasPermissionDirective, EmpresaPaginacionComponent],
   template: `
     <div class="table-premium-container">
       <div class="table-responsive">
@@ -120,15 +121,19 @@ import { GET_IDENTIFICACION_LABEL } from '../../../../core/constants/sri-iva.con
           <p>No hay registros que coincidan con los criterios de búsqueda o filtros aplicados.</p>
         </div>
       </div>
+
+      <!-- Paginación integrada -->
+      <app-empresa-paginacion
+        [pagination]="pagination"
+        (pageChange)="pageChange.emit($event)"
+        (pageSizeChange)="pageSizeChange.emit($event)"
+      ></app-empresa-paginacion>
     </div>
   `,
   styles: [`
-    .table-premium-container {
-      background: white;
-      border-radius: 20px;
-      border: 1px solid var(--border-color);
-      overflow: hidden;
-    }
+    :host { display: flex; flex-direction: column; flex: 1; min-height: 0; width: 100%; }
+    .table-premium-container { flex: 1; display: flex; flex-direction: column; min-height: 0; background: white; border-radius: 20px; border: 1px solid var(--border-color); overflow: hidden; }
+    .table-responsive { flex: 1; overflow-y: auto; overflow-x: auto; overscroll-behavior: contain; }
     .table-premium {
       width: 100%;
       border-collapse: separate;
@@ -327,7 +332,11 @@ import { GET_IDENTIFICACION_LABEL } from '../../../../core/constants/sri-iva.con
 })
 export class ClientesTableComponent {
   @Input() clientes: Cliente[] = [];
+  @Input() pagination: PaginationState = { currentPage: 1, pageSize: 25, totalItems: 0 };
+  
   @Output() onAction = new EventEmitter<{ type: string, cliente: Cliente }>();
+  @Output() pageChange = new EventEmitter<number>();
+  @Output() pageSizeChange = new EventEmitter<number>();
 
   getTipoIdLabel(code: string): string {
     return GET_IDENTIFICACION_LABEL(code);

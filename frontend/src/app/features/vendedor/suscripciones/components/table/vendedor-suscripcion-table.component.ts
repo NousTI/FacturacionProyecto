@@ -1,7 +1,7 @@
 import { Component, Input, Output, EventEmitter, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Suscripcion } from '../../services/vendedor-suscripcion.service';
-import { EmpresaPaginacionComponent, PaginationState } from '../../../../../super-admin/empresas/components/empresa-paginacion/empresa-paginacion.component';
+import { EmpresaPaginacionComponent, PaginationState } from '../../../../super-admin/empresas/components/empresa-paginacion/empresa-paginacion.component';
 
 @Component({
   selector: 'app-vendedor-suscripcion-table',

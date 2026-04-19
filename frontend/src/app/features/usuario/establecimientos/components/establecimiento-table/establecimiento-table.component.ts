@@ -2,12 +2,13 @@ import { Component, Input, Output, EventEmitter, ChangeDetectionStrategy } from 
 import { CommonModule } from '@angular/common';
 import { Establecimiento } from '../../../../../domain/models/establecimiento.model';
 import { HasPermissionDirective } from '../../../../../shared/directives/has-permission.directive';
+import { EmpresaPaginacionComponent, PaginationState } from '../../../../super-admin/empresas/components/empresa-paginacion/empresa-paginacion.component';
 
 @Component({
   selector: 'app-establecimiento-table',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, HasPermissionDirective],
+  imports: [CommonModule, HasPermissionDirective, EmpresaPaginacionComponent],
   template: `
     <section class="module-table-premium">
       <div class="table-container-premium">
@@ -105,6 +106,12 @@ import { HasPermissionDirective } from '../../../../../shared/directives/has-per
           </table>
         </div>
       </div>
+
+      <app-empresa-paginacion
+        [pagination]="pagination"
+        (pageChange)="pageChange.emit($event)"
+        (pageSizeChange)="pageSizeChange.emit($event)"
+      ></app-empresa-paginacion>
     </section>
   `,
   styles: [`
@@ -116,27 +123,26 @@ import { HasPermissionDirective } from '../../../../../shared/directives/has-per
       width: 100%;
     }
     .module-table-premium {
+      flex: 1;
       display: flex;
       flex-direction: column;
-      height: auto;
-      max-height: 100%;
       min-height: 0;
       background: var(--bg-main);
       border-radius: 24px;
       border: 1px solid var(--border-color);
-      margin-bottom: 2rem;
+      margin-bottom: 0;
       overflow: hidden;
       font-family: var(--font-main);
-      flex: 0 1 auto;
     }
     .table-container-premium {
+      flex: 1;
       display: flex;
       flex-direction: column;
       min-height: 0;
       overflow: hidden;
-      flex: 0 1 auto;
     }
     .table-responsive-premium {
+      flex: 1;
       overflow-y: auto;
       overflow-x: auto;
       min-height: 0;
@@ -276,10 +282,19 @@ import { HasPermissionDirective } from '../../../../../shared/directives/has-per
 })
 export class EstablecimientoTableComponent {
   @Input() establecimientos: Establecimiento[] = [];
+  @Input() pagination: PaginationState = {
+    currentPage: 1,
+    pageSize: 25,
+    totalItems: 0
+  };
+
   @Output() onAction = new EventEmitter<{
     type: 'view' | 'edit' | 'delete';
     establecimiento: Establecimiento;
   }>();
+
+  @Output() pageChange = new EventEmitter<number>();
+  @Output() pageSizeChange = new EventEmitter<number>();
 
   getInitials(name: string): string {
     return name

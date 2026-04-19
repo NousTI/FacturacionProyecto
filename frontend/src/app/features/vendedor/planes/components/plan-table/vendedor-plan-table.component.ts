@@ -1,7 +1,7 @@
 import { Component, Input, Output, EventEmitter, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Plan } from '../../../../super-admin/planes/services/plan.service';
-import { EmpresaPaginacionComponent, PaginationState } from '../../../../../super-admin/empresas/components/empresa-paginacion/empresa-paginacion.component';
+import { EmpresaPaginacionComponent, PaginationState } from '../../../../super-admin/empresas/components/empresa-paginacion/empresa-paginacion.component';
 
 @Component({
   selector: 'app-vendedor-plan-table',

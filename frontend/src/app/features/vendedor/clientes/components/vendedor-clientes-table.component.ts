@@ -1,6 +1,6 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { EmpresaPaginacionComponent, PaginationState } from '../../../../super-admin/empresas/components/empresa-paginacion/empresa-paginacion.component';
+import { EmpresaPaginacionComponent, PaginationState } from '../../../super-admin/empresas/components/empresa-paginacion/empresa-paginacion.component';
 
 @Component({
   selector: 'app-vendedor-clientes-table',
@@ -94,6 +94,8 @@ import { EmpresaPaginacionComponent, PaginationState } from '../../../../super-a
           </div>
         </div>
       </div>
+
+      <!-- PAGINACIÓN -->
       <app-empresa-paginacion
         [pagination]="pagination"
         (pageChange)="pageChange.emit($event)"

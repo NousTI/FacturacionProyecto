@@ -2,12 +2,13 @@ import { Component, Input, Output, EventEmitter, ChangeDetectionStrategy } from 
 import { CommonModule } from '@angular/common';
 import { CategoriaGasto } from '../../../../../domain/models/categoria-gasto.model';
 import { HasPermissionDirective } from '../../../../../shared/directives/has-permission.directive';
+import { EmpresaPaginacionComponent, PaginationState } from '../../../../super-admin/empresas/components/empresa-paginacion/empresa-paginacion.component';
 
 @Component({
   selector: 'app-categorias-table',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, HasPermissionDirective],
+  imports: [CommonModule, HasPermissionDirective, EmpresaPaginacionComponent],
   template: `
     <section class="module-table-premium">
       <div class="table-container-premium">
@@ -78,15 +79,19 @@ import { HasPermissionDirective } from '../../../../../shared/directives/has-per
           </table>
         </div>
       </div>
+
+      <app-empresa-paginacion
+        [pagination]="pagination"
+        (pageChange)="pageChange.emit($event)"
+        (pageSizeChange)="pageSizeChange.emit($event)"
+      ></app-empresa-paginacion>
     </section>
   `,
   styles: [`
-    :host { display: block; width: 100%; }
-    .module-table-premium {
-      background: white; border-radius: 24px; border: 1px solid #f1f5f9; overflow: hidden;
-    }
-    .table-container-premium { display: flex; flex-direction: column; }
-    .table-responsive-premium { overflow-x: auto; }
+    :host { display: flex; flex-direction: column; flex: 1; min-height: 0; width: 100%; }
+    .module-table-premium { flex: 1; display: flex; flex-direction: column; min-height: 0; background: white; border-radius: 24px; border: 1px solid #f1f5f9; overflow: hidden; }
+    .table-container-premium { flex: 1; display: flex; flex-direction: column; min-height: 0; }
+    .table-responsive-premium { flex: 1; overflow-y: auto; overflow-x: auto; }
     
     .table-editorial { width: 100%; border-collapse: separate; border-spacing: 0; }
     .table-editorial th {
@@ -123,9 +128,17 @@ import { HasPermissionDirective } from '../../../../../shared/directives/has-per
 })
 export class CategoriasTableComponent {
   @Input() categorias: CategoriaGasto[] = [];
+  @Input() pagination: PaginationState = {
+    currentPage: 1,
+    pageSize: 25,
+    totalItems: 0
+  };
   
   @Output() onAction = new EventEmitter<{
     type: 'edit' | 'delete';
     data: CategoriaGasto;
   }>();
+
+  @Output() pageChange = new EventEmitter<number>();
+  @Output() pageSizeChange = new EventEmitter<number>();
 }

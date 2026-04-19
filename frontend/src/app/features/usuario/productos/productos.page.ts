@@ -19,6 +19,7 @@ import { inject } from '@angular/core';
 import { PermissionsService } from '../../../core/auth/permissions.service';
 import { PRODUCTOS_PERMISSIONS } from '../../../constants/permission-codes';
 import { Producto, ProductoStats } from '../../../domain/models/producto.model';
+import { PaginationState } from '../../super-admin/empresas/components/empresa-paginacion/empresa-paginacion.component';
 
 @Component({
   selector: 'app-usuario-productos',
@@ -76,7 +77,10 @@ import { Producto, ProductoStats } from '../../../domain/models/producto.model';
           <!-- 3. TABLA -->
           <app-productos-table
             [productos]="filteredProductos"
+            [pagination]="pagination"
             (onAction)="handleAction($event)"
+            (pageChange)="onPageChange($event)"
+            (pageSizeChange)="onPageSizeChange($event)"
           ></app-productos-table>
         </div>
 
@@ -188,6 +192,7 @@ export class ProductosPage implements OnInit, OnDestroy {
 
   filteredProductos: Producto[] = [];
   private _allProductos: Producto[] = [];
+  pagination: PaginationState = { currentPage: 1, pageSize: 25, totalItems: 0 };
 
   searchQuery: string = '';
   filters = { tipo: 'ALL', estado: 'ALL', tipo_iva: 'ALL' };
@@ -237,7 +242,7 @@ export class ProductosPage implements OnInit, OnDestroy {
   }
 
   applyFilters() {
-    this.filteredProductos = this._allProductos.filter(p => {
+    const filtered = this._allProductos.filter(p => {
       const query = this.searchQuery.toLowerCase();
       const matchSearch = !query ||
         p.nombre.toLowerCase().includes(query) ||
@@ -253,7 +258,27 @@ export class ProductosPage implements OnInit, OnDestroy {
 
       return matchSearch && matchTipo && matchEstado && matchIva;
     });
+
+    if (this.pagination.totalItems !== filtered.length) {
+      this.pagination.totalItems = filtered.length;
+      this.pagination.currentPage = 1;
+    }
+
+    const start = (this.pagination.currentPage - 1) * this.pagination.pageSize;
+    this.filteredProductos = filtered.slice(start, start + this.pagination.pageSize);
+    
     this.cd.detectChanges();
+  }
+
+  onPageChange(page: number) {
+    this.pagination.currentPage = page;
+    this.applyFilters();
+  }
+
+  onPageSizeChange(size: number) {
+    this.pagination.pageSize = size;
+    this.pagination.currentPage = 1;
+    this.applyFilters();
   }
 
   handleFilters(filters: any) {

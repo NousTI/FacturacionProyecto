@@ -1,7 +1,8 @@
 import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Subject, takeUntil, finalize, Observable, BehaviorSubject, combineLatest } from 'rxjs';
+import { Subject, takeUntil, finalize, Observable, BehaviorSubject, combineLatest, map, tap } from 'rxjs';
+import { PaginationState } from '../../super-admin/empresas/components/empresa-paginacion/empresa-paginacion.component';
 
 import { ProveedoresStatsComponent } from './components/proveedores-stats.component';
 import { ProveedoresActionsComponent } from './components/proveedores-actions.component';
@@ -56,8 +57,11 @@ import { PROVEEDORES_PERMISSIONS } from '../../../constants/permission-codes';
 
         <!-- 3. TABLA -->
         <app-proveedores-table
-          [proveedores]="filteredProveedores"
+          [proveedores]="(paginatedProveedores$ | async) || []"
+          [pagination]="(pagination$ | async)!"
           (onAction)="handleAction($event)"
+          (pageChange)="onPageChange($event)"
+          (pageSizeChange)="onPageSizeChange($event)"
         ></app-proveedores-table>
 
         <!-- MODALES -->
@@ -173,11 +177,14 @@ export class ProveedoresPage implements OnInit, OnDestroy {
     }
 
     private _allProveedores: Proveedor[] = [];
-    filteredProveedores: Proveedor[] = [];
     
     // Observables
-    proveedores$: Observable<Proveedor[]>;
-    stats$: Observable<any>;
+    proveedores$!: Observable<Proveedor[]>;
+    filteredProveedores$!: Observable<Proveedor[]>;
+    paginatedProveedores$!: Observable<Proveedor[]>;
+    stats$!: Observable<any>;
+
+    pagination$ = new BehaviorSubject<PaginationState>({ currentPage: 1, pageSize: 25, totalItems: 0 });
 
     searchQuery: string = '';
     filters = { estado: 'ALL' };
@@ -206,18 +213,30 @@ export class ProveedoresPage implements OnInit, OnDestroy {
     }
 
     ngOnInit() {
-        this.uiService.setPageHeader('Gestión de Proveedores', 'Administra el directorio de proveedores de tu empresa');
         this.proveedoresService.loadInitialData();
 
-        combineLatest([
+        this.filteredProveedores$ = combineLatest([
             this.proveedores$,
             this.filterTrigger$
-        ])
-        .pipe(takeUntil(this.destroy$))
-        .subscribe(([proveedores]) => {
-            this.filteredProveedores = this.applyFilters(proveedores);
-            this.cdr.markForCheck();
-        });
+        ]).pipe(
+            map(([proveedores]) => this.applyFilters(proveedores)),
+            tap(filtered => {
+                const current = this.pagination$.value;
+                if (current.totalItems !== filtered.length) {
+                    this.pagination$.next({ ...current, totalItems: filtered.length, currentPage: 1 });
+                }
+            })
+        );
+
+        this.paginatedProveedores$ = combineLatest([
+            this.filteredProveedores$,
+            this.pagination$
+        ]).pipe(
+            map(([filtered, pagination]) => {
+                const start = (pagination.currentPage - 1) * pagination.pageSize;
+                return filtered.slice(start, start + pagination.pageSize);
+            })
+        );
     }
 
     ngOnDestroy() {
@@ -227,6 +246,7 @@ export class ProveedoresPage implements OnInit, OnDestroy {
 
     onSearchTrigger() {
         this.filterTrigger$.next();
+        this.resetPagination();
     }
 
     applyFilters(data: Proveedor[]): Proveedor[] {
@@ -248,6 +268,21 @@ export class ProveedoresPage implements OnInit, OnDestroy {
     handleFilters(filters: any) {
         this.filters = filters;
         this.filterTrigger$.next();
+        this.resetPagination();
+    }
+
+    onPageChange(page: number) {
+        this.pagination$.next({ ...this.pagination$.value, currentPage: page });
+        this.cdr.markForCheck();
+    }
+
+    onPageSizeChange(size: number) {
+        this.pagination$.next({ ...this.pagination$.value, pageSize: size, currentPage: 1 });
+        this.cdr.markForCheck();
+    }
+
+    private resetPagination() {
+        this.pagination$.next({ ...this.pagination$.value, currentPage: 1 });
     }
 
     openCreateModal() {

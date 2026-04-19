@@ -120,7 +120,7 @@ import { DashboardOverview } from '../../../shared/services/dashboard.service';
     </div>
   `,
   styles: [`
-    .dash-wrap { min-height: 100vh; padding-bottom: 2rem; position: relative; }
+    .dash-wrap { height: 100%; overflow-y: auto; padding-bottom: 2rem; position: relative; }
     
     .dashboard-main-chart {
       display: block;

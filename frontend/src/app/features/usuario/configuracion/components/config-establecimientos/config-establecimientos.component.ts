@@ -14,6 +14,7 @@ import { ToastComponent } from '../../../../../shared/components/toast/toast.com
 import { EstablecimientosService } from '../../../establecimientos/services/establecimientos.service';
 import { UiService } from '../../../../../shared/services/ui.service';
 import { Establecimiento } from '../../../../../domain/models/establecimiento.model';
+import { PaginationState } from '../../../../super-admin/empresas/components/empresa-paginacion/empresa-paginacion.component';
 
 @Component({
   selector: 'app-config-establecimientos',
@@ -51,7 +52,10 @@ import { Establecimiento } from '../../../../../domain/models/establecimiento.mo
       <div class="table-container-lux">
         <app-establecimiento-table
           [establecimientos]="filteredEstablecimientos"
+          [pagination]="pagination"
           (onAction)="handleAction($event)"
+          (pageChange)="onPageChange($event)"
+          (pageSizeChange)="onPageSizeChange($event)"
         ></app-establecimiento-table>
       </div>
 
@@ -88,14 +92,20 @@ import { Establecimiento } from '../../../../../domain/models/establecimiento.mo
     </div>
   `,
   styles: [`
-    .config-establecimientos-wrapper { width: 100%; padding: 4px; }
-    .table-container-lux { margin-top: 1rem; }
+    :host { display: flex; flex-direction: column; flex: 1; min-height: 0; width: 100%; }
+    .config-establecimientos-wrapper { flex: 1; display: flex; flex-direction: column; min-height: 0; width: 100%; padding: 4px; }
+    .table-container-lux { flex: 1; display: flex; flex-direction: column; min-height: 0; margin-top: 1rem; }
   `]
 })
 export class ConfigEstablecimientosComponent implements OnInit, OnDestroy {
   // Data State
   filteredEstablecimientos: Establecimiento[] = [];
   stats = { total: 0, activos: 0, con_puntos_emision: 0 };
+  pagination: PaginationState = {
+    currentPage: 1,
+    pageSize: 10,
+    totalItems: 0
+  };
 
   // UI State
   searchQuery: string = '';
@@ -125,6 +135,10 @@ export class ConfigEstablecimientosComponent implements OnInit, OnDestroy {
     .subscribe(([data, statsData]) => {
       this.stats = statsData || { total: 0, activos: 0, con_puntos_emision: 0 };
       this.filteredEstablecimientos = this.applyFilters(data);
+      this.pagination = {
+        ...this.pagination,
+        totalItems: this.filteredEstablecimientos.length
+      };
       this.cdr.markForCheck();
     });
   }
@@ -135,7 +149,17 @@ export class ConfigEstablecimientosComponent implements OnInit, OnDestroy {
   }
 
   onSearchQueryChange() { this.filterTrigger$.next(); }
-  handleFilters(event: any) { this.filters.estado = event.estado; this.filterTrigger$.next(); }
+  handleFilters(event: any) { this.filters.estado = event.estado; this.pagination = { ...this.pagination, currentPage: 1 }; this.filterTrigger$.next(); }
+
+  onPageChange(page: number) {
+    this.pagination = { ...this.pagination, currentPage: page };
+    this.cdr.markForCheck();
+  }
+
+  onPageSizeChange(size: number) {
+    this.pagination = { ...this.pagination, pageSize: size, currentPage: 1 };
+    this.cdr.markForCheck();
+  }
 
   applyFilters(data: Establecimiento[]): Establecimiento[] {
     return data.filter(est => {

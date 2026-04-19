@@ -53,7 +53,7 @@ import { SidebarService } from '../../components/sidebar/sidebar.service';
     .content-body {
       padding: 24px;
       flex-grow: 1;
-      overflow-y: auto;
+      overflow: hidden;
       background-color: var(--bg-main);
       display: flex;
       flex-direction: column;

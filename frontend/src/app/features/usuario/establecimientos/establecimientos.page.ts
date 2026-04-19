@@ -16,6 +16,7 @@ import { UiService } from '../../../shared/services/ui.service';
 import { Establecimiento } from '../../../domain/models/establecimiento.model';
 import { PermissionsService } from '../../../core/auth/permissions.service';
 import { ESTABLECIMIENTOS_PERMISSIONS } from '../../../constants/permission-codes';
+import { PaginationState } from '../../super-admin/empresas/components/empresa-paginacion/empresa-paginacion.component';
 
 interface EstablecimientoStats {
   total: number;
@@ -60,7 +61,10 @@ interface EstablecimientoStats {
         <div class="table-flex-grow">
           <app-establecimiento-table
             [establecimientos]="filteredEstablecimientos"
+            [pagination]="pagination"
             (onAction)="handleAction($event)"
+            (pageChange)="onPageChange($event)"
+            (pageSizeChange)="onPageSizeChange($event)"
           ></app-establecimiento-table>
         </div>
 
@@ -168,6 +172,11 @@ export class EstablecimientosPage implements OnInit, OnDestroy {
   // UI State
   searchQuery: string = '';
   filters = { estado: 'ALL' };
+  pagination: PaginationState = {
+    currentPage: 1,
+    pageSize: 25,
+    totalItems: 0
+  };
   showCreateModal: boolean = false;
   showDetailModal: boolean = false;
   showConfirmModal: boolean = false;
@@ -227,6 +236,7 @@ export class EstablecimientosPage implements OnInit, OnDestroy {
    */
   handleFilters(event: any) {
     this.filters.estado = event.estado;
+    this.pagination.currentPage = 1;
     this.filterTrigger$.next();
   }
 
@@ -234,6 +244,7 @@ export class EstablecimientosPage implements OnInit, OnDestroy {
    * Maneja cambios en el input de búsqueda
    */
   onSearchQueryChange() {
+    this.pagination.currentPage = 1;
     this.filterTrigger$.next();
   }
 
@@ -241,7 +252,7 @@ export class EstablecimientosPage implements OnInit, OnDestroy {
    * Aplica filtros de búsqueda y estado
    */
   applyFilters(data: Establecimiento[]): Establecimiento[] {
-    return data.filter(est => {
+    const filtered = data.filter(est => {
       // Filtro por estado
       if (this.filters.estado !== 'ALL') {
         const estadoMatch = this.filters.estado === 'ACTIVO' ? est.activo : !est.activo;
@@ -260,6 +271,21 @@ export class EstablecimientosPage implements OnInit, OnDestroy {
 
       return true;
     });
+
+    this.pagination.totalItems = filtered.length;
+    const startIndex = (this.pagination.currentPage - 1) * this.pagination.pageSize;
+    return filtered.slice(startIndex, startIndex + this.pagination.pageSize);
+  }
+
+  onPageChange(page: number) {
+    this.pagination.currentPage = page;
+    this.filterTrigger$.next();
+  }
+
+  onPageSizeChange(size: number) {
+    this.pagination.pageSize = size;
+    this.pagination.currentPage = 1;
+    this.filterTrigger$.next();
   }
 
   /**

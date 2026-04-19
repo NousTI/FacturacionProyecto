@@ -12,6 +12,7 @@ import { Gasto, GastoStats } from '../../../domain/models/gasto.model';
 import { CategoriaGasto } from '../../../domain/models/categoria-gasto.model';
 import { PagoGasto } from '../../../domain/models/pago-gasto.model';
 import { Proveedor } from '../../../domain/models/proveedor.model';
+import { PaginationState } from '../../super-admin/empresas/components/empresa-paginacion/empresa-paginacion.component';
 
 // Shared Components
 import { ConfirmModalComponent } from '../../../shared/components/confirm-modal/confirm-modal.component';
@@ -51,7 +52,7 @@ import { CategoriasActionsComponent } from './components/categorias-actions/cate
     CategoriaFormComponent
   ],
   template: `
-    <div class="page-container" style="display: flex; flex-direction: column; gap: 24px;">
+    <div class="page-container" style="display: flex; flex-direction: column; gap: 24px; flex: 1; min-height: 0;">
       
       <ng-container *ngIf="canViewModule; else noPermission">
         <!-- Stats -->
@@ -71,10 +72,10 @@ import { CategoriasActionsComponent } from './components/categorias-actions/cate
             </button>
           </div>
 
-          <div [ngSwitch]="activeTab" class="tab-content" style="padding-top: 0;">
+          <div [ngSwitch]="activeTab" class="tab-content" style="padding-top: 0; flex: 1; display: flex; flex-direction: column; min-height: 0;">
             
             <!-- SECCIÓN 1: GASTOS GENERALES -->
-            <div *ngSwitchCase="'general'" class="fade-in" style="display: flex; flex-direction: column; gap: 20px;">
+            <div *ngSwitchCase="'general'" class="fade-in" style="display: flex; flex-direction: column; gap: 20px; flex: 1; min-height: 0;">
               <ng-container *ngIf="canViewGeneral">
                 <!-- Acciones y Filtros -->
                 <app-gastos-actions 
@@ -86,16 +87,19 @@ import { CategoriasActionsComponent } from './components/categorias-actions/cate
 
                 <!-- Tabla de Gastos -->
                 <app-gastos-table 
-                  [gastos]="(filteredGastos$ | async) ?? []" 
+                  [gastos]="(paginatedGastos$ | async) ?? []" 
                   [categorias]="categorias" 
                   [proveedores]="proveedores"
+                  [pagination]="(paginationGastos$ | async)!"
                   (onAction)="handleTableAction($event)"
+                  (pageChange)="onPageChange('gastos', $event)"
+                  (pageSizeChange)="onPageSizeChange('gastos', $event)"
                 ></app-gastos-table>
               </ng-container>
             </div>
 
             <!-- SECCIÓN 2: PAGOS -->
-            <div *ngSwitchCase="'pagos'" class="fade-in" style="display: flex; flex-direction: column; gap: 20px;">
+            <div *ngSwitchCase="'pagos'" class="fade-in" style="display: flex; flex-direction: column; gap: 20px; flex: 1; min-height: 0;">
               <ng-container *ngIf="canViewPagos">
                 <!-- Acciones y Filtros Pagos -->
                 <app-pagos-actions
@@ -105,15 +109,18 @@ import { CategoriasActionsComponent } from './components/categorias-actions/cate
                 ></app-pagos-actions>
                 
                 <app-pagos-table 
-                  [pagos]="(filteredPagos$ | async) ?? []" 
+                  [pagos]="(paginatedPagos$ | async) ?? []" 
                   [gastos]="gastos"
+                  [pagination]="(paginationPagos$ | async)!"
                   (onAction)="handlePagoTableAction($event)"
+                  (pageChange)="onPageChange('pagos', $event)"
+                  (pageSizeChange)="onPageSizeChange('pagos', $event)"
                 ></app-pagos-table>
               </ng-container>
             </div>
 
             <!-- SECCIÓN 3: CATEGORÍAS -->
-            <div *ngSwitchCase="'categorias'" class="fade-in" style="display: flex; flex-direction: column; gap: 20px;">
+            <div *ngSwitchCase="'categorias'" class="fade-in" style="display: flex; flex-direction: column; gap: 20px; flex: 1; min-height: 0;">
               <ng-container *ngIf="canViewCategorias">
                 <!-- Acciones y Filtros Categorías -->
                 <app-categorias-actions
@@ -124,8 +131,11 @@ import { CategoriasActionsComponent } from './components/categorias-actions/cate
                 ></app-categorias-actions>
 
                 <app-categorias-table 
-                  [categorias]="(filteredCategorias$ | async) ?? []"
+                  [categorias]="(paginatedCategorias$ | async) ?? []"
+                  [pagination]="(paginationCategorias$ | async)!"
                   (onAction)="handleCatTableAction($event)"
+                  (pageChange)="onPageChange('categorias', $event)"
+                  (pageSizeChange)="onPageSizeChange('categorias', $event)"
                 ></app-categorias-table>
               </ng-container>
             </div>
@@ -207,8 +217,9 @@ import { CategoriasActionsComponent } from './components/categorias-actions/cate
     </div>
   `,
   styles: [`
+    :host { display: flex; flex-direction: column; flex: 1; min-height: 0; width: 100%; overflow: hidden; }
     .main-content-card {
-      background: transparent; border: none; padding: 0;
+      flex: 1; display: flex; flex-direction: column; min-height: 0; background: transparent; border: none; padding: 0;
     }
 
     .tabs-minimal-premium {
@@ -275,6 +286,15 @@ export class GastosPage implements OnInit, OnDestroy {
   filteredGastos$: Observable<Gasto[]>;
   filteredPagos$: Observable<PagoGasto[]>;
   filteredCategorias$: Observable<CategoriaGasto[]>;
+  
+  paginatedGastos$: Observable<Gasto[]>;
+  paginatedPagos$: Observable<PagoGasto[]>;
+  paginatedCategorias$: Observable<CategoriaGasto[]>;
+
+  // Pagination States
+  paginationGastos$ = new BehaviorSubject<PaginationState>({ currentPage: 1, pageSize: 25, totalItems: 0 });
+  paginationPagos$ = new BehaviorSubject<PaginationState>({ currentPage: 1, pageSize: 25, totalItems: 0 });
+  paginationCategorias$ = new BehaviorSubject<PaginationState>({ currentPage: 1, pageSize: 25, totalItems: 0 });
 
   // Data Local
   public gastos: Gasto[] = [];
@@ -331,6 +351,10 @@ export class GastosPage implements OnInit, OnDestroy {
     this.filteredGastos$ = this.createFilteredObservable();
     this.filteredPagos$ = this.createFilteredPagosObservable();
     this.filteredCategorias$ = this.createFilteredCategoriasObservable();
+
+    this.paginatedGastos$ = this.createPaginatedObservable(this.filteredGastos$, this.paginationGastos$);
+    this.paginatedPagos$ = this.createPaginatedObservable(this.filteredPagos$, this.paginationPagos$);
+    this.paginatedCategorias$ = this.createPaginatedObservable(this.filteredCategorias$, this.paginationCategorias$);
   }
 
   ngOnInit() {
@@ -415,7 +439,31 @@ export class GastosPage implements OnInit, OnDestroy {
   set filterTipoCategorias(val: string) { this.filterTipoCategorias$.next(val); }
 
   get filterActivoCategorias(): string { return this.filterActivoCategorias$.value; }
-  set filterActivoCategorias(val: string) { this.filterActivoCategorias$.next(val); }
+  set filterActivoCategorias(val: string) { 
+    this.filterActivoCategorias$.next(val);
+    this.resetPagination('categorias');
+  }
+
+  resetPagination(type: 'gastos' | 'pagos' | 'categorias') {
+    const subject = type === 'gastos' ? this.paginationGastos$ : 
+                    type === 'pagos' ? this.paginationPagos$ : 
+                    this.paginationCategorias$;
+    subject.next({ ...subject.value, currentPage: 1 });
+  }
+
+  onPageChange(type: 'gastos' | 'pagos' | 'categorias', page: number) {
+    const subject = type === 'gastos' ? this.paginationGastos$ : 
+                    type === 'pagos' ? this.paginationPagos$ : 
+                    this.paginationCategorias$;
+    subject.next({ ...subject.value, currentPage: page });
+  }
+
+  onPageSizeChange(type: 'gastos' | 'pagos' | 'categorias', size: number) {
+    const subject = type === 'gastos' ? this.paginationGastos$ : 
+                    type === 'pagos' ? this.paginationPagos$ : 
+                    this.paginationCategorias$;
+    subject.next({ ...subject.value, pageSize: size, currentPage: 1 });
+  }
 
   // --- Event Handlers for Modular Components ---
   handleTableAction(event: any) {
@@ -450,6 +498,7 @@ export class GastosPage implements OnInit, OnDestroy {
       this.filterTipoGastos$,
       this.service.categorias$
     ]).pipe(
+      tap(() => this.resetPagination('gastos')),
       map(([gastos, searchTerm, filterEstado, filterTipo, categorias]) => {
         let filtered = [...gastos];
         
@@ -485,6 +534,7 @@ export class GastosPage implements OnInit, OnDestroy {
       this.searchTermPagos$,
       this.filterMetodoPagos$
     ]).pipe(
+      tap(() => this.resetPagination('pagos')),
       map(([pagos, searchTerm, filterMetodo]) => {
         let filtered = [...pagos];
         
@@ -513,6 +563,7 @@ export class GastosPage implements OnInit, OnDestroy {
       this.filterTipoCategorias$,
       this.filterActivoCategorias$
     ]).pipe(
+      tap(() => this.resetPagination('categorias')),
       map(([categorias, searchTerm, filterTipo, filterActivo]) => {
         let filtered = [...categorias];
         
@@ -531,6 +582,28 @@ export class GastosPage implements OnInit, OnDestroy {
         }
         
         return filtered;
+      }),
+      tap(() => this.cd.markForCheck())
+    );
+  }
+
+  private createPaginatedObservable<T>(filtered$: Observable<T[]>, paginationSubject$: BehaviorSubject<PaginationState>): Observable<T[]> {
+    return combineLatest([filtered$, paginationSubject$]).pipe(
+      map(([data, pagination]) => {
+        const totalItems = data.length;
+        
+        // Actualizar totalItems de forma reactiva si ha cambiado
+        if (pagination.totalItems !== totalItems) {
+          setTimeout(() => {
+            paginationSubject$.next({
+              ...pagination,
+              totalItems: totalItems
+            });
+          });
+        }
+        
+        const startIndex = (pagination.currentPage - 1) * (pagination.pageSize || 25);
+        return data.slice(startIndex, startIndex + (pagination.pageSize || 25));
       }),
       tap(() => this.cd.markForCheck())
     );

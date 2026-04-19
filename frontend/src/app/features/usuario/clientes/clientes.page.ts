@@ -20,6 +20,7 @@ import { UiService } from '../../../shared/services/ui.service';
 import { Cliente, ClienteStats } from '../../../domain/models/cliente.model';
 import { PermissionsService } from '../../../core/auth/permissions.service';
 import { CLIENTES_PERMISSIONS } from '../../../constants/permission-codes';
+import { PaginationState } from '../../super-admin/empresas/components/empresa-paginacion/empresa-paginacion.component';
 
 @Component({
   selector: 'app-usuario-clientes',
@@ -79,7 +80,10 @@ import { CLIENTES_PERMISSIONS } from '../../../constants/permission-codes';
           <!-- 3. Table -->
           <app-clientes-table
             [clientes]="filteredClientes"
+            [pagination]="pagination"
             (onAction)="handleAction($event)"
+            (pageChange)="onPageChange($event)"
+            (pageSizeChange)="onPageSizeChange($event)"
           ></app-clientes-table>
 
         </ng-container>
@@ -268,6 +272,7 @@ export class ClientesPage implements OnInit, OnDestroy {
 
   // Local filtered list
   filteredClientes: Cliente[] = [];
+  pagination: PaginationState = { currentPage: 1, pageSize: 25, totalItems: 0 };
 
   // UI State
   searchQuery: string = '';
@@ -325,7 +330,7 @@ export class ClientesPage implements OnInit, OnDestroy {
   }
 
   applyFilters() {
-    this.filteredClientes = this._allClientes.filter(c => {
+    const filtered = this._allClientes.filter(c => {
       const query = this.searchQuery.toLowerCase();
       const matchSearch = !query ||
         c.razon_social.toLowerCase().includes(query) ||
@@ -338,7 +343,27 @@ export class ClientesPage implements OnInit, OnDestroy {
 
       return matchSearch && matchEstado;
     });
+
+    if (this.pagination.totalItems !== filtered.length) {
+      this.pagination.totalItems = filtered.length;
+      this.pagination.currentPage = 1;
+    }
+
+    const start = (this.pagination.currentPage - 1) * this.pagination.pageSize;
+    this.filteredClientes = filtered.slice(start, start + this.pagination.pageSize);
+    
     this.cd.detectChanges();
+  }
+
+  onPageChange(page: number) {
+    this.pagination.currentPage = page;
+    this.applyFilters();
+  }
+
+  onPageSizeChange(size: number) {
+    this.pagination.pageSize = size;
+    this.pagination.currentPage = 1;
+    this.applyFilters();
   }
 
   handleFilters(filters: any) {

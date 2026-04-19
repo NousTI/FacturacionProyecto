@@ -16,6 +16,7 @@ import { UiService } from '../../../shared/services/ui.service';
 import { PuntoEmision } from '../../../domain/models/punto-emision.model';
 import { PermissionsService } from '../../../core/auth/permissions.service';
 import { PUNTOS_EMISION_PERMISSIONS } from '../../../constants/permission-codes';
+import { PaginationState } from '../../super-admin/empresas/components/empresa-paginacion/empresa-paginacion.component';
 
 interface PuntosEmisionStats {
   total: number;
@@ -60,7 +61,10 @@ interface PuntosEmisionStats {
         <div class="table-flex-grow">
           <app-puntos-emision-table
             [puntosEmision]="filteredPuntosEmision"
+            [pagination]="pagination"
             (onAction)="handleAction($event)"
+            (pageChange)="onPageChange($event)"
+            (pageSizeChange)="onPageSizeChange($event)"
           ></app-puntos-emision-table>
         </div>
 
@@ -168,6 +172,11 @@ export class PuntosEmisionPage implements OnInit, OnDestroy {
   // UI State
   searchQuery: string = '';
   filters = { estado: 'ALL' };
+  pagination: PaginationState = {
+    currentPage: 1,
+    pageSize: 25,
+    totalItems: 0
+  };
   showCreateModal: boolean = false;
   showDetailModal: boolean = false;
   showConfirmModal: boolean = false;
@@ -227,6 +236,7 @@ export class PuntosEmisionPage implements OnInit, OnDestroy {
    */
   handleFilters(event: any) {
     this.filters.estado = event.estado;
+    this.pagination.currentPage = 1;
     this.filterTrigger$.next();
   }
 
@@ -234,6 +244,7 @@ export class PuntosEmisionPage implements OnInit, OnDestroy {
    * Maneja cambios en el input de búsqueda
    */
   onSearchQueryChange() {
+    this.pagination.currentPage = 1;
     this.filterTrigger$.next();
   }
 
@@ -241,7 +252,7 @@ export class PuntosEmisionPage implements OnInit, OnDestroy {
    * Aplica filtros de búsqueda y estado
    */
   applyFilters(data: PuntoEmision[]): PuntoEmision[] {
-    return data.filter(pe => {
+    const filtered = data.filter(pe => {
       // Filtro por estado
       if (this.filters.estado !== 'ALL') {
         const estadoMatch = this.filters.estado === 'ACTIVO' ? pe.activo : !pe.activo;
@@ -259,6 +270,21 @@ export class PuntosEmisionPage implements OnInit, OnDestroy {
 
       return true;
     });
+
+    this.pagination.totalItems = filtered.length;
+    const startIndex = (this.pagination.currentPage - 1) * this.pagination.pageSize;
+    return filtered.slice(startIndex, startIndex + this.pagination.pageSize);
+  }
+
+  onPageChange(page: number) {
+    this.pagination.currentPage = page;
+    this.filterTrigger$.next();
+  }
+
+  onPageSizeChange(size: number) {
+    this.pagination.pageSize = size;
+    this.pagination.currentPage = 1;
+    this.filterTrigger$.next();
   }
 
   /**

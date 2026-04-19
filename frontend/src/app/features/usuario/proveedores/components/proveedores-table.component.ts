@@ -3,12 +3,13 @@ import { CommonModule } from '@angular/common';
 import { Proveedor } from '../../../../domain/models/proveedor.model';
 import { HasPermissionDirective } from '../../../../shared/directives/has-permission.directive';
 import { GET_IDENTIFICACION_LABEL } from '../../../../core/constants/sri-iva.constants';
+import { EmpresaPaginacionComponent, PaginationState } from '../../../super-admin/empresas/components/empresa-paginacion/empresa-paginacion.component';
 
 @Component({
   selector: 'app-proveedores-table',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, HasPermissionDirective],
+  imports: [CommonModule, HasPermissionDirective, EmpresaPaginacionComponent],
   template: `
     <section class="module-table-premium">
       <div class="table-container-premium">
@@ -131,14 +132,21 @@ import { GET_IDENTIFICACION_LABEL } from '../../../../core/constants/sri-iva.con
             </tbody>
           </table>
         </div>
+
+        <!-- Paginación integrada -->
+        <app-empresa-paginacion
+          [pagination]="pagination"
+          (pageChange)="pageChange.emit($event)"
+          (pageSizeChange)="pageSizeChange.emit($event)"
+        ></app-empresa-paginacion>
       </div>
     </section>
   `,
   styles: [`
-    :host { display: block; width: 100%; flex: 1; min-height: 0; }
-    .module-table-premium { background: white; border-radius: 24px; border: 1px solid var(--border-color); overflow: hidden; }
-    .table-container-premium { display: flex; flex-direction: column; }
-    .table-responsive-premium { overflow-x: auto; overscroll-behavior: contain; }
+    :host { display: flex; flex-direction: column; flex: 1; min-height: 0; width: 100%; }
+    .module-table-premium { flex: 1; display: flex; flex-direction: column; min-height: 0; background: white; border-radius: 24px; border: 1px solid var(--border-color); overflow: hidden; }
+    .table-container-premium { flex: 1; display: flex; flex-direction: column; min-height: 0; }
+    .table-responsive-premium { flex: 1; overflow-y: auto; overflow-x: auto; overscroll-behavior: contain; }
     .table-editorial { width: 100%; border-collapse: separate; border-spacing: 0; table-layout: fixed; }
 
     .table-editorial th {
@@ -189,7 +197,11 @@ import { GET_IDENTIFICACION_LABEL } from '../../../../core/constants/sri-iva.con
 })
 export class ProveedoresTableComponent {
   @Input() proveedores: Proveedor[] = [];
+  @Input() pagination: PaginationState = { currentPage: 1, pageSize: 25, totalItems: 0 };
+
   @Output() onAction = new EventEmitter<{ type: string, proveedor: Proveedor }>();
+  @Output() pageChange = new EventEmitter<number>();
+  @Output() pageSizeChange = new EventEmitter<number>();
 
   getTipoIdLabel(code: string): string {
     return GET_IDENTIFICACION_LABEL(code);

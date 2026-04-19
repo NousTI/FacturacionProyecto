@@ -2,11 +2,12 @@ import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Producto } from '../../../../domain/models/producto.model';
 import { HasPermissionDirective } from '../../../../core/directives/has-permission.directive';
+import { EmpresaPaginacionComponent, PaginationState } from '../../../super-admin/empresas/components/empresa-paginacion/empresa-paginacion.component';
 
 @Component({
   selector: 'app-productos-table',
   standalone: true,
-  imports: [CommonModule, HasPermissionDirective],
+  imports: [CommonModule, HasPermissionDirective, EmpresaPaginacionComponent],
   template: `
     <div class="table-premium-container">
       <div class="table-responsive">
@@ -110,10 +111,19 @@ import { HasPermissionDirective } from '../../../../core/directives/has-permissi
           <p>No hay productos o servicios registrados que coincidan con los filtros.</p>
         </div>
       </div>
+
+      <!-- Paginación integrada -->
+      <app-empresa-paginacion
+        [pagination]="pagination"
+        (pageChange)="pageChange.emit($event)"
+        (pageSizeChange)="pageSizeChange.emit($event)"
+      ></app-empresa-paginacion>
     </div>
   `,
   styles: [`
-    .table-premium-container { background: white; border-radius: 20px; border: 1px solid var(--border-color); overflow: hidden; }
+    :host { display: flex; flex-direction: column; flex: 1; min-height: 0; width: 100%; }
+    .table-premium-container { flex: 1; display: flex; flex-direction: column; min-height: 0; background: white; border-radius: 20px; border: 1px solid var(--border-color); overflow: hidden; }
+    .table-responsive { flex: 1; overflow-y: auto; overflow-x: auto; overscroll-behavior: contain; }
     .table-premium { width: 100%; border-collapse: separate; border-spacing: 0; table-layout: fixed; }
     .table-premium thead th { background: var(--bg-main); padding: 1.25rem 1.5rem; font-size: 0.72rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; border-bottom: 1px solid var(--border-color); }
     .table-row { transition: all 0.2s; }
@@ -160,7 +170,11 @@ import { HasPermissionDirective } from '../../../../core/directives/has-permissi
 })
 export class ProductosTableComponent {
   @Input() productos: Producto[] = [];
+  @Input() pagination: PaginationState = { currentPage: 1, pageSize: 25, totalItems: 0 };
+
   @Output() onAction = new EventEmitter<{ type: string, producto: Producto }>();
+  @Output() pageChange = new EventEmitter<number>();
+  @Output() pageSizeChange = new EventEmitter<number>();
 
   getStockClass(p: Producto): string {
     if (p.stock_actual <= 0) return 'stock-danger';
