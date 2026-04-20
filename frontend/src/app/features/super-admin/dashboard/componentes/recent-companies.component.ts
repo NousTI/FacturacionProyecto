@@ -88,7 +88,7 @@ import { InfoTooltipComponent } from '../../../../shared/components/info-tooltip
     .panel-title {
       font-size: 1rem;
       font-weight: 800;
-      color: var(--primary-color);
+      color: #000000;
       line-height: 1.2;
     }
 

@@ -42,7 +42,7 @@ import { EmpresaPaginacionComponent, PaginationState } from '../empresa-paginaci
                 </td>
                 <td>
                   <div class="d-flex flex-column">
-                    <span class="text-corporate fw-800" style="font-size: var(--text-base);" *ngIf="empresa.suscripcion_estado === 'ACTIVA' || empresa.suscripcion_estado === 'PRUEBA'">{{ empresa.plan || 'Sin Plan' }}</span>
+                    <span class="text-dark fw-800" style="font-size: var(--text-base);" *ngIf="empresa.suscripcion_estado === 'ACTIVA' || empresa.suscripcion_estado === 'PRUEBA'">{{ empresa.plan || 'Sin Plan' }}</span>
                     <span class="text-danger fw-800" style="font-size: var(--text-base);" *ngIf="empresa.suscripcion_estado && empresa.suscripcion_estado !== 'ACTIVA' && empresa.suscripcion_estado !== 'PRUEBA'">{{ empresa.suscripcion_estado }}</span>
                     <span class="text-muted fw-800" style="font-size: var(--text-base);" *ngIf="!empresa.suscripcion_estado">Sin Suscripción</span>
                     

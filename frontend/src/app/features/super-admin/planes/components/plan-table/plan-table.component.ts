@@ -185,7 +185,7 @@ import { Plan } from '../../services/plan.service';
     }
     .subs-count {
       font-weight: 800;
-      color: var(--status-info-text);
+      color: #000000;
       font-size: 1.1rem;
     }
     .badge-status-premium {

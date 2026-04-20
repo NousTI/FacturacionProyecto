@@ -55,7 +55,6 @@ import { InfoTooltipComponent } from '../../../../shared/components/info-tooltip
         </app-chart-card>
       </div>
     </ng-container>
-ontainer>
   `,
   styles: [`
     :host { 

@@ -46,7 +46,7 @@ Chart.register(...registerables);
   `,
   styles: [`
     .card-graf { border: 1px solid #e2e8f0; border-radius: 6px; padding: 1.25rem; background: #ffffff; height: 100%; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
-    .graf-title { font-size: 0.85rem; font-weight: 700; color: var(--primary-color); margin-bottom: 1rem; text-transform: uppercase; letter-spacing: 0.5px; text-align: center; }
+    .graf-title { font-size: 0.85rem; font-weight: 700; color: #000000; margin-bottom: 1rem; text-transform: uppercase; letter-spacing: 0.5px; text-align: center; }
     
     .chart-container-pie { position: relative; height: 200px; width: 100%; display: flex; justify-content: center; }
     

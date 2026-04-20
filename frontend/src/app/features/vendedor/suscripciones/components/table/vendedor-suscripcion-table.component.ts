@@ -41,7 +41,7 @@ import { EmpresaPaginacionComponent, PaginationState } from '../../../../super-a
                 <!-- PLAN -->
                 <td>
                   <div class="d-flex flex-column">
-                    <span class="text-corporate fw-700 mb-0" style="font-size: 0.85rem;">{{ sub.plan_nombre || 'Sin Plan' }}</span>
+                    <span class="fw-700 mb-0" style="font-size: 0.85rem; color: #000000;">{{ sub.plan_nombre || 'Sin Plan' }}</span>
                     <small class="text-muted fw-bold" style="font-size: 0.73rem;">
                        {{ sub.precio_plan | currency:'USD' }} / año
                     </small>

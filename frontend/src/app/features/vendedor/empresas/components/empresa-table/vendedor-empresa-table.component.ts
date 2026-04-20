@@ -42,7 +42,7 @@ import { EmpresaPaginacionComponent, PaginationState } from '../../../../super-a
                 </td>
                 <td>
                   <div class="d-flex flex-column">
-                    <span class="text-corporate fw-700" style="font-size: 0.85rem;">{{ empresa.plan || 'Sin Plan' }}</span>
+                    <span class="fw-700" style="font-size: 0.85rem; color: #000000;">{{ empresa.plan || 'Sin Plan' }}</span>
                   </div>
                 </td>
                 <td>

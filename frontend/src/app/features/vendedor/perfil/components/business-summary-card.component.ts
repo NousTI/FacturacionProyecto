@@ -35,10 +35,10 @@ import { CommonModule } from '@angular/common';
   styles: [`
     .editorial-card { max-width: none !important; margin: 0 !important; padding: 1.5rem !important; }
     .card-header-minimal {
-      font-weight: 800; font-size: 0.9rem; color: var(--primary-color);
+      font-weight: 800; font-size: 0.9rem; color: #000000;
     }
     .info-row label { font-size: 0.65rem; color: #94a3b8; font-weight: 700; text-transform: uppercase; margin-bottom: 2px; display: block; }
-    .value-highlight { font-size: 1.5rem; font-weight: 800; color: var(--primary-color); line-height: 1.2; }
+    .value-highlight { font-size: 1.5rem; font-weight: 800; color: #000000; line-height: 1.2; }
     .value-small { font-size: 0.9rem; font-weight: 600; color: #64748b; }
     .border-top { border-top: 1px solid var(--border-color) !important; }
   `]

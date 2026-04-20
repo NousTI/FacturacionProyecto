@@ -16,20 +16,20 @@ import { CommonModule } from '@angular/common';
       <div class="status-summary border-top pt-4 text-start">
         <div class="info-row d-flex justify-content-between align-items-center mb-3">
           <label class="mb-0">Estado de Cuenta</label>
-          <div class="d-flex align-items-center fw-bold text-corporate small">
+          <div class="d-flex align-items-center fw-bold text-dark small">
             <span class="status-indicator me-2" [class.active]="activo"></span>
             {{ activo ? 'ACTIVA' : 'INACTIVA' }}
           </div>
         </div>
         <div class="info-row d-flex justify-content-between align-items-center mb-3">
           <label class="mb-0">Tipo de Comisión</label>
-          <div class="fw-bold text-corporate small">
+          <div class="fw-bold text-dark small">
             {{ tipoComision }}
           </div>
         </div>
         <div class="info-row d-flex justify-content-between align-items-center">
           <label class="mb-0">Identificación</label>
-          <div class="fw-bold text-corporate small">
+          <div class="fw-bold text-dark small">
             {{ identificacion }}
           </div>
         </div>

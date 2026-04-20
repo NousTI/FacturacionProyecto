@@ -35,7 +35,7 @@ import { EmpresaPaginacionComponent, PaginationState } from '../../../super-admi
                   </div>
                 </td>
                 <td>
-                  <span class="text-corporate fw-700" style="font-size: 0.85rem;">{{ cliente.empresa_nombre || 'N/A' }}</span>
+                  <span class="fw-700" style="font-size: 0.85rem; color: #000000;">{{ cliente.empresa_nombre || 'N/A' }}</span>
                 </td>
                 <td>
                   <span class="badge-role-premium">

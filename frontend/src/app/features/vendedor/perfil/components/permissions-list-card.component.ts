@@ -31,7 +31,7 @@ import { CommonModule } from '@angular/common';
     .editorial-card { max-width: none !important; margin: 0 !important; padding: 0 !important; }
     .card-header-minimal {
       padding: 1rem 1.5rem; border-bottom: 1px solid var(--border-color);
-      font-weight: 800; font-size: 0.9rem; color: var(--primary-color); background: #f8fafc;
+      font-weight: 800; font-size: 0.9rem; color: #000000; background: #f8fafc;
     }
     .permission-item {
        border: 1.5px solid #f1f5f9; border-radius: 14px; background: #fafbfc;

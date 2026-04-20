@@ -36,7 +36,7 @@ import { FormsModule } from '@angular/forms';
             <div class="col-md-6">
               <div class="info-row">
                 <label class="editorial-label">Correo Electrónico</label>
-                <div class="value text-corporate">{{ email }}</div>
+                <div class="value text-dark">{{ email }}</div>
               </div>
             </div>
             <div class="col-md-6">
@@ -91,7 +91,7 @@ import { FormsModule } from '@angular/forms';
               <div class="col-md-6">
                 <div class="info-row">
                   <label class="editorial-label">Email (No editable)</label>
-                  <div class="value text-corporate opacity-50">{{ email }}</div>
+                  <div class="value text-dark opacity-50">{{ email }}</div>
                 </div>
               </div>
             </div>
@@ -113,11 +113,11 @@ import { FormsModule } from '@angular/forms';
     .editorial-card { max-width: none !important; margin: 0 !important; padding: 0 !important; }
     .card-header-minimal {
       padding: 1rem 1.5rem; border-bottom: 1px solid var(--border-color);
-      font-weight: 800; font-size: 0.9rem; color: var(--primary-color); background: #f8fafc;
+      font-weight: 800; font-size: 0.9rem; color: #000000; background: #f8fafc;
     }
     .edit-btn-circle { width: 32px; height: 32px; padding: 0; display: flex; align-items: center; justify-content: center; }
     .info-row label { font-size: 0.65rem; color: #94a3b8; font-weight: 700; text-transform: uppercase; margin-bottom: 2px; display: block; }
-    .info-row .value { font-size: 1.1rem; font-weight: 700; color: var(--primary-color); }
+    .info-row .value { font-size: 1.1rem; font-weight: 700; color: #000000; }
     .border-top { border-top: 1px solid var(--border-color) !important; }
     
     .editorial-input.is-invalid-editorial {

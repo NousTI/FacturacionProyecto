@@ -18,7 +18,6 @@ import { EmpresaPaginacionComponent, PaginationState } from '../../../../super-a
                 <th class="ps-4">Nombre del Plan</th>
                 <th>Costo</th>
                 <th>Empresas</th>
-                <th>Categoría</th>
                 <th>Público</th>
                 <th>Estado</th>
                 <th class="text-end pe-4">Acciones</th>
@@ -52,13 +51,6 @@ import { EmpresaPaginacionComponent, PaginationState } from '../../../../super-a
                     <span class="fw-800 text-dark me-2">{{ plan.activeCompanies || 0 }}</span>
                     <i class="bi bi-arrow-right-short text-muted"></i>
                   </div>
-                </td>
-
-                <!-- Categoría Badge -->
-                <td>
-                  <span class="badge-role-premium" [ngClass]="getCategoryClass(plan.name)">
-                    {{ getCategoryLabel(plan.name) }}
-                  </span>
                 </td>
 
                 <!-- Público Badge -->
