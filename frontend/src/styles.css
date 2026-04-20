@@ -4,9 +4,10 @@
 :root {
   /* Brand Colors */
   --primary-color: #161d35;
+  /* --primary-color: #4a56f4; */
   --primary-color: #1d4ed8;
   --primary-hover: #6366F1;
-  
+
   /* Typography - Unified Inter */
   --font-main: 'Inter', sans-serif;
   --text-xs: 0.65rem;
@@ -158,7 +159,7 @@ body {
 
 /* Override browser autofill color (the ugly light blue/yellow) */
 .editorial-input:-webkit-autofill,
-.editorial-input:-webkit-autofill:hover, 
+.editorial-input:-webkit-autofill:hover,
 .editorial-input:-webkit-autofill:focus {
   -webkit-text-fill-color: var(--text-main);
   -webkit-box-shadow: 0 0 0px 1000px #ffffff inset;
