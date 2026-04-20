@@ -121,7 +121,7 @@
          </button>
 
          <button type="button" class="btn-emit-sri-lux ms-3"
-                 *ngIf="!isViewOnly && !facturaId && canEnviarSri"
+                 *ngIf="!isViewOnly && !facturaId && canEnviarSri && mode !== 'RECURRENTE'"
                  [disabled]="facturaForm.invalid || isSaving || isEmitting || detalles.length === 0 || isLoadingData || !canSave"
                  (click)="saveAndEmit()">
            <span *ngIf="isEmitting" class="spinner-border spinner-border-sm me-2"></span>

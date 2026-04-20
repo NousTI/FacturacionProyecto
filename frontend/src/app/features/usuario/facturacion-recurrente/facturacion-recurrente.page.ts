@@ -527,36 +527,32 @@ export class FacturacionRecurrentePage implements OnInit, OnDestroy {
       this.isViewOnly = event.type === 'view';
       this.selectedFacturaId = undefined;
       
-      if (this.isViewOnly) {
-        this.showViewTemplateModal = true;
-      } else {
-        this.showCreateModal = true;
-      }
-      
       this.isLoadingEdit = true;
       this.cdr.detectChanges();
 
-      // Resolver el ID de la plantilla en paralelo
+      // Resolver el ID de la plantilla antes de abrir el modal
       this.service.obtenerIdPlantilla(event.data.id).subscribe({
         next: (res: any) => {
           this.isLoadingEdit = false;
           const facturaId = typeof res === 'string' ? res : (res?.data ?? null);
-          
+
           if (!facturaId) {
-            this.showCreateModal = false;
-            this.showViewTemplateModal = false;
             this.uiService.showToast('No se encontró la factura plantilla para esta programación', 'warning');
             this.cdr.detectChanges();
             return;
           }
-          
+
           this.selectedFacturaId = facturaId;
+
+          if (this.isViewOnly) {
+            this.showViewTemplateModal = true;
+          } else {
+            this.showCreateModal = true;
+          }
           this.cdr.detectChanges();
         },
         error: (err) => {
           this.isLoadingEdit = false;
-          this.showCreateModal = false;
-          this.showViewTemplateModal = false;
           this.uiService.showError(err, 'Error al obtener factura plantilla');
           this.cdr.detectChanges();
         }
