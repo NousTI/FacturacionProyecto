@@ -1,1 +1,24 @@
+# General
 /no-guardar
+.DS_Store
+Thumbs.db
+*.tmp
+*.bak
+*.log
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+
+# Node
+node_modules/
+dist/
+.env
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+.venv/
