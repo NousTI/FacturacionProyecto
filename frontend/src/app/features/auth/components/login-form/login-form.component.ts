@@ -18,6 +18,9 @@ import { CommonModule } from '@angular/common';
           <input type="email" class="editorial-input" formControlName="email"
                  placeholder="nombre@ejemplo.com"
                  [ngClass]="{'is-invalid': isInvalid('email')}">
+          <div *ngIf="isInvalid('email')" class="error-feedback-premium animate-fade-in">
+            {{ getErrorMessage('email') }}
+          </div>
         </div>
         
         <div class="editorial-input-group position-relative">
@@ -32,6 +35,9 @@ import { CommonModule } from '@angular/common';
                   (click)="togglePassword()">
             <i class="bi" [ngClass]="showPassword ? 'bi-eye-slash' : 'bi-eye'"></i>
           </button>
+          <div *ngIf="isInvalid('password')" class="error-feedback-premium animate-fade-in">
+            {{ getErrorMessage('password') }}
+          </div>
         </div>
 
         <button type="submit" class="btn-editorial mt-4" [disabled]="loginForm.invalid || isLoading">
@@ -46,7 +52,7 @@ import { CommonModule } from '@angular/common';
     .btn-toggle-password {
       position: absolute;
       right: 20px;
-      bottom: 12px;
+      top: 36px;
       background: none;
       border: none;
       color: #9e9e9e;
@@ -55,6 +61,15 @@ import { CommonModule } from '@angular/common';
       display: flex;
       align-items: center;
       z-index: 10;
+    }
+
+    .animate-fade-in {
+      animation: fadeIn 0.2s ease-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-5px); }
+      to { opacity: 1; transform: translateY(0); }
     }
   `]
 })
@@ -84,5 +99,15 @@ export class LoginFormComponent {
   isInvalid(field: string): boolean {
     const control = this.loginForm.get(field);
     return !!(control && control.invalid && (control.dirty || control.touched));
+  }
+
+  getErrorMessage(field: string): string {
+    const control = this.loginForm.get(field);
+    if (!control || !control.errors) return '';
+
+    if (control.errors['required']) return 'Este campo es obligatorio';
+    if (control.errors['email']) return 'Ingrese un correo electrónico válido';
+    
+    return 'Campo inválido';
   }
 }

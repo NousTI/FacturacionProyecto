@@ -34,9 +34,10 @@
   --status-danger-bg: #fee2e2;
   --status-danger-text: #b91c1c;
 
-  --status-warning: #f59e0b;
-  --status-warning-bg: #fef9c3;
-  --status-warning-text: #a16207;
+  /* --status-warning: #ffc45e; */
+  --status-warning: #ffffea;
+  --status-warning-bg: #ffffea;
+  --status-warning-text: #bd7a1d;
 
   --status-orange: #f97316;
   --status-orange-bg: #ffedd5;
@@ -164,6 +165,30 @@ body {
   -webkit-text-fill-color: var(--text-main);
   -webkit-box-shadow: 0 0 0px 1000px #ffffff inset;
   transition: background-color 5000s ease-in-out 0s;
+}
+
+/* Validation Styles */
+.editorial-input.is-invalid {
+  border-color: var(--status-danger) !important;
+  background-color: var(--status-danger-bg) !important;
+}
+
+.editorial-input.is-invalid:focus {
+  border-color: var(--status-danger) !important;
+  box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.1) !important;
+}
+
+.error-feedback-premium {
+  color: var(--status-danger-text);
+  font-size: 0.7rem;
+  font-weight: 600;
+  margin-top: 0.35rem;
+  text-align: left;
+  display: block;
+  width: 100%;
+  padding-left: 0.5rem;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
 }
 
 .editorial-card {

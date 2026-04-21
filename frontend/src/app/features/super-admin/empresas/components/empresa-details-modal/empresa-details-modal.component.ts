@@ -296,7 +296,7 @@ import { CommonModule } from '@angular/common';
     
     .status-indicator { width: 12px; height: 12px; border-radius: 50%; background: var(--status-danger); }
     .status-indicator.success { background: var(--status-success); }
-    .badge-ambient { font-size: var(--text-sm); font-weight: 800; color: var(--status-warning); }
+    .badge-ambient { font-size: var(--text-sm); font-weight: 800; color: var(--status-warning-text); }
     .badge-ambient.prod { color: #8b5cf6; }
 
     .modal-footer-premium { padding: 1.75rem 2.5rem; background: var(--bg-main); display: flex; justify-content: flex-end; gap: 1rem; border-top: 1px solid var(--border-color); }

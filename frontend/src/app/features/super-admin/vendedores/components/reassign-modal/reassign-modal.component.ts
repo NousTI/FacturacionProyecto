@@ -13,7 +13,7 @@ import { Vendedor } from '../../services/vendedor.service';
           <div>
             <h2 class="modal-title-premium text-dark fw-bold mb-0">
                 <i class="bi bi-arrow-repeat me-2 text-primary"></i>
-                Trasladar Clientes
+                Trasladar Empresas
             </h2>
             <p class="text-muted small mb-0">Selecciona las empresas que deseas reasignar a otro vendedor.</p>
           </div>

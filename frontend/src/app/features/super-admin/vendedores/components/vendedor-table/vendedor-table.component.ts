@@ -74,9 +74,9 @@ import { VendedorPaginacionComponent, PaginationState } from '../vendedor-pagina
                       </li>
                       <li><hr class="dropdown-divider mx-2"></li>
                       <li>
-                        <a class="dropdown-item rounded-3 py-2" [class.text-danger]="v.activo" (click)="onAction.emit({type: 'toggle_status', vendedor: v})">
+                        <a class="dropdown-item rounded-3 py-2" (click)="onAction.emit({type: 'toggle_status', vendedor: v})">
                           <i class="bi me-2" [ngClass]="v.activo ? 'bi-toggle-off text-muted' : 'bi-toggle-on text-corporate'"></i>
-                          {{ v.activo ? 'Desactivar Acceso' : 'Activar Vendedor' }}
+                          {{ v.activo ? 'Bloquear Acceso' : 'Desbloquear Acceso' }}
                         </a>
                       </li>
                       <li><hr class="dropdown-divider mx-2"></li>
@@ -216,11 +216,16 @@ import { VendedorPaginacionComponent, PaginationState } from '../vendedor-pagina
       border-radius: 8px !important;
       font-size: var(--text-base);
       font-weight: 500;
-      color: var(--text-muted); padding: 0.5rem 1rem;
+      color: var(--text-main); padding: 0.5rem 1rem;
       display: flex; align-items: center;
       cursor: pointer;
+      transition: all 0.2s;
     }
-    .dropdown-item:hover { background: var(--status-neutral-bg); color: var(--text-main); }
+    .dropdown-item:hover { 
+      background: var(--primary-color) !important; 
+      color: #ffffff !important; 
+    }
+    .dropdown-item:hover i { color: #ffffff !important; }
     .text-corporate { color: var(--primary-color) !important; }
   `],
   standalone: true,

@@ -133,7 +133,7 @@ import { EmpresaPaginacionComponent, PaginationState } from '../empresa-paginaci
                         </a>
                       </li>
                       <li>
-                        <a class="dropdown-item rounded-3 py-2 text-corporate fw-bold" href="javascript:void(0)" (click)="onAction.emit({type: 'support_access', empresa})">
+                        <a class="dropdown-item rounded-3 py-2" href="javascript:void(0)" (click)="onAction.emit({type: 'support_access', empresa})">
                           <i class="bi bi-shield-lock"></i>
                           <span class="ms-2">Acceso de Soporte</span>
                         </a>
@@ -277,11 +277,16 @@ import { EmpresaPaginacionComponent, PaginationState } from '../empresa-paginaci
       border-radius: 8px !important;
       font-size: var(--text-base);
       font-weight: 500;
-      color: var(--text-muted); padding: 0.5rem 1rem;
+      color: var(--text-main); padding: 0.5rem 1rem;
       display: flex; align-items: center;
       cursor: pointer;
+      transition: all 0.2s;
     }
-    .dropdown-item:hover { background: var(--status-neutral-bg); color: var(--text-main); }
+    .dropdown-item:hover { 
+      background: var(--primary-color) !important; 
+      color: #ffffff !important; 
+    }
+    .dropdown-item:hover i { color: #ffffff !important; }
     .dropdown-item i { font-size: 1.1rem; margin-right: 0.75rem; }
     
     .fw-800 { font-weight: 800; }

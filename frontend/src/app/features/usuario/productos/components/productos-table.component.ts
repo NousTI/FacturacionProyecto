@@ -78,7 +78,7 @@ import { EmpresaPaginacionComponent, PaginationState } from '../../../super-admi
                   <ul class="dropdown-menu dropdown-menu-end">
                     <li>
                       <a class="dropdown-item" (click)="onAction.emit({type: 'view', producto: p})">
-                        <i class="bi bi-eye text-dark"></i> Detalles
+                        <i class="bi bi-eye text-dark"></i>Ver Detalles
                       </a>
                     </li>
                     <li *hasPermission="'PRODUCTOS_EDITAR'">

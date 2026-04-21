@@ -237,7 +237,23 @@ type Tab = 'resumen' | 'ventas' | 'cartera' | 'iva' | 'mis_ventas';
     .nav-btn.active { background: var(--primary-color); color: #fff; box-shadow: 0 4px 6px -1px rgba(67,82,243,0.25); }
 
     /* FILTROS */
-    .filters-actions { flex-shrink: 0; }
+    .filters-actions {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      justify-content: flex-end;
+    }
+
+    .filters-actions > div {
+      overflow-x: auto;
+      overflow-y: hidden;
+      padding-bottom: 5px;
+      scrollbar-width: thin;
+    }
+
+    .filters-actions > div::-webkit-scrollbar { height: 4px; }
+    .filters-actions > div::-webkit-scrollbar-track { background: transparent; }
+    .filters-actions > div::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
 
     .select-compact {
       border-radius: 10px; border: 1px solid #e2e8f0; padding: 0.4rem 0.6rem;
