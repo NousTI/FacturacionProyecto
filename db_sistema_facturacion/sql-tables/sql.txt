@@ -1,0 +1,1393 @@
+-- sistema_facturacion.empresa_permisos definition
+
+-- Drop table
+
+-- DROP TABLE sistema_facturacion.empresa_permisos;
+
+CREATE TABLE sistema_facturacion.empresa_permisos (
+	id uuid DEFAULT gen_random_uuid() NOT NULL,
+	codigo text NOT NULL,
+	nombre text NOT NULL,
+	modulo text NOT NULL,
+	descripcion text NULL,
+	created_at timestamptz DEFAULT now() NOT NULL,
+	updated_at timestamptz DEFAULT now() NOT NULL,
+	CONSTRAINT empresa_permisos_codigo_key UNIQUE (codigo),
+	CONSTRAINT empresa_permisos_pkey PRIMARY KEY (id)
+);
+
+
+-- sistema_facturacion.modulo definition
+
+-- Drop table
+
+-- DROP TABLE sistema_facturacion.modulo;
+
+CREATE TABLE sistema_facturacion.modulo (
+	id uuid DEFAULT gen_random_uuid() NOT NULL,
+	codigo text NOT NULL,
+	nombre text NOT NULL,
+	descripcion text NULL,
+	icono text NULL,
+	categoria text NULL,
+	orden int4 DEFAULT 0 NOT NULL,
+	activo bool DEFAULT true NOT NULL,
+	created_at timestamptz DEFAULT now() NOT NULL,
+	updated_at timestamptz DEFAULT now() NOT NULL,
+	CONSTRAINT modulo_codigo_key UNIQUE (codigo),
+	CONSTRAINT modulo_orden_check CHECK ((orden >= 0)),
+	CONSTRAINT modulo_pkey PRIMARY KEY (id)
+);
+
+
+-- sistema_facturacion.planes definition
+
+-- Drop table
+
+-- DROP TABLE sistema_facturacion.planes;
+
+CREATE TABLE sistema_facturacion.planes (
+	id uuid DEFAULT gen_random_uuid() NOT NULL,
+	codigo text NOT NULL,
+	nombre text NOT NULL,
+	descripcion text NOT NULL,
+	precio_anual numeric(10, 2) DEFAULT 0.00 NOT NULL,
+	max_usuarios int4 NOT NULL,
+	max_facturas_mes int4 NOT NULL,
+	max_establecimientos int4 NOT NULL,
+	max_programaciones int4 NOT NULL,
+	caracteristicas jsonb NULL,
+	visible_publico bool DEFAULT true NOT NULL,
+	activo bool DEFAULT true NOT NULL,
+	orden int4 DEFAULT 0 NOT NULL,
+	created_at timestamptz DEFAULT now() NOT NULL,
+	updated_at timestamptz DEFAULT now() NOT NULL,
+	CONSTRAINT planes_codigo_key UNIQUE (codigo),
+	CONSTRAINT planes_pkey PRIMARY KEY (id)
+);
+
+
+-- sistema_facturacion.tipo_movimiento definition
+
+-- Drop table
+
+-- DROP TABLE sistema_facturacion.tipo_movimiento;
+
+CREATE TABLE sistema_facturacion.tipo_movimiento (
+	id uuid DEFAULT gen_random_uuid() NOT NULL,
+	nombre varchar(20) NOT NULL,
+	created_at timestamptz DEFAULT now() NOT NULL,
+	CONSTRAINT tipo_movimiento_nombre_check CHECK (((nombre)::text = ANY ((ARRAY['COMPRA'::character varying, 'VENTA'::character varying, 'DEVOLUCION'::character varying])::text[]))),
+	CONSTRAINT tipo_movimiento_nombre_key UNIQUE (nombre),
+	CONSTRAINT tipo_movimiento_pkey PRIMARY KEY (id)
+);
+
+
+-- sistema_facturacion.unidad_medida definition
+
+-- Drop table
+
+-- DROP TABLE sistema_facturacion.unidad_medida;
+
+CREATE TABLE sistema_facturacion.unidad_medida (
+	id uuid DEFAULT gen_random_uuid() NOT NULL,
+	nombre varchar(20) NOT NULL,
+	created_at timestamptz DEFAULT now() NOT NULL,
+	CONSTRAINT unidad_medida_nombre_check CHECK (((nombre)::text = ANY ((ARRAY['UNIDAD'::character varying, 'CAJA'::character varying, 'BULTO'::character varying, 'KILO'::character varying, 'METRO'::character varying, 'LITRO'::character varying])::text[]))),
+	CONSTRAINT unidad_medida_nombre_key UNIQUE (nombre),
+	CONSTRAINT unidad_medida_pkey PRIMARY KEY (id)
+);
+
+
+-- sistema_facturacion.users definition
+
+-- Drop table
+
+-- DROP TABLE sistema_facturacion.users;
+
+CREATE TABLE sistema_facturacion.users (
+	id uuid DEFAULT gen_random_uuid() NOT NULL,
+	email text NOT NULL,
+	password_hash text NOT NULL,
+	estado text DEFAULT 'ACTIVA'::text NOT NULL,
+	ultimo_acceso timestamptz NULL,
+	created_at timestamptz DEFAULT now() NOT NULL,
+	updated_at timestamptz DEFAULT now() NOT NULL,
+	"role" text DEFAULT 'USUARIO'::text NOT NULL,
+	requiere_cambio_password bool DEFAULT false NOT NULL,
+	CONSTRAINT users_email_key UNIQUE (email),
+	CONSTRAINT users_estado_check CHECK ((estado = ANY (ARRAY['ACTIVA'::text, 'BLOQUEADA'::text, 'DESHABILITADA'::text]))),
+	CONSTRAINT users_pkey PRIMARY KEY (id),
+	CONSTRAINT users_role_check CHECK ((role = ANY (ARRAY['SUPERADMIN'::text, 'VENDEDOR'::text, 'USUARIO'::text])))
+);
+
+
+-- sistema_facturacion.modulo_plan definition
+
+-- Drop table
+
+-- DROP TABLE sistema_facturacion.modulo_plan;
+
+CREATE TABLE sistema_facturacion.modulo_plan (
+	id uuid DEFAULT gen_random_uuid() NOT NULL,
+	plan_id uuid NOT NULL,
+	modulo_id uuid NOT NULL,
+	incluido bool DEFAULT true NOT NULL,
+	created_at timestamptz DEFAULT now() NOT NULL,
+	updated_at timestamptz DEFAULT now() NOT NULL,
+	CONSTRAINT modulo_plan_pkey PRIMARY KEY (id),
+	CONSTRAINT uq_modulo_plan UNIQUE (plan_id, modulo_id),
+	CONSTRAINT modulo_plan_modulo_id_fkey FOREIGN KEY (modulo_id) REFERENCES sistema_facturacion.modulo(id) ON DELETE CASCADE,
+	CONSTRAINT modulo_plan_plan_id_fkey FOREIGN KEY (plan_id) REFERENCES sistema_facturacion.planes(id) ON DELETE CASCADE
+);
+CREATE INDEX idx_modulo_plan_modulo_id ON sistema_facturacion.modulo_plan USING btree (modulo_id);
+CREATE INDEX idx_modulo_plan_plan_id ON sistema_facturacion.modulo_plan USING btree (plan_id);
+
+
+-- sistema_facturacion.notificaciones definition
+
+-- Drop table
+
+-- DROP TABLE sistema_facturacion.notificaciones;
+
+CREATE TABLE sistema_facturacion.notificaciones (
+	id uuid DEFAULT gen_random_uuid() NOT NULL,
+	user_id uuid NOT NULL,
+	titulo text NOT NULL,
+	mensaje text NOT NULL,
+	tipo text DEFAULT 'RENOVACION'::text NOT NULL,
+	prioridad text DEFAULT 'MEDIA'::text NOT NULL,
+	metadata jsonb NULL,
+	leido bool DEFAULT false NOT NULL,
+	leido_at timestamptz NULL,
+	created_at timestamptz DEFAULT now() NOT NULL,
+	updated_at timestamptz DEFAULT now() NOT NULL,
+	CONSTRAINT notificaciones_pkey PRIMARY KEY (id),
+	CONSTRAINT notificaciones_prioridad_check CHECK ((prioridad = ANY (ARRAY['BAJA'::text, 'MEDIA'::text, 'ALTA'::text]))),
+	CONSTRAINT notificaciones_tipo_check CHECK ((tipo = ANY (ARRAY['RENOVACION'::text, 'PAGO'::text, 'SISTEMA'::text, 'OTRO'::text, 'UPGRADE'::text]))),
+	CONSTRAINT notificaciones_user_id_fkey FOREIGN KEY (user_id) REFERENCES sistema_facturacion.users(id) ON DELETE CASCADE
+);
+CREATE INDEX idx_notificaciones_tipo ON sistema_facturacion.notificaciones USING btree (tipo);
+CREATE INDEX idx_notificaciones_user_leido ON sistema_facturacion.notificaciones USING btree (user_id, leido);
+
+
+-- sistema_facturacion.superadmin definition
+
+-- Drop table
+
+-- DROP TABLE sistema_facturacion.superadmin;
+
+CREATE TABLE sistema_facturacion.superadmin (
+	id uuid DEFAULT gen_random_uuid() NOT NULL,
+	user_id uuid NOT NULL,
+	nombres text NOT NULL,
+	apellidos text NOT NULL,
+	activo bool DEFAULT true NOT NULL,
+	created_at timestamptz DEFAULT now() NOT NULL,
+	updated_at timestamptz DEFAULT now() NOT NULL,
+	telefono text NULL,
+	CONSTRAINT superadmin_pkey PRIMARY KEY (id),
+	CONSTRAINT superadmin_user_id_key UNIQUE (user_id),
+	CONSTRAINT superadmin_user_id_fkey FOREIGN KEY (user_id) REFERENCES sistema_facturacion.users(id) ON DELETE CASCADE
+);
+
+
+-- sistema_facturacion.suscripciones_log definition
+
+-- Drop table
+
+-- DROP TABLE sistema_facturacion.suscripciones_log;
+
+CREATE TABLE sistema_facturacion.suscripciones_log (
+	id uuid DEFAULT gen_random_uuid() NOT NULL,
+	suscripcion_id uuid NOT NULL,
+	estado_anterior text NULL,
+	estado_nuevo text NOT NULL,
+	plan_anterior uuid NULL,
+	plan_nuevo uuid NULL,
+	fecha_inicio_anterior timestamptz NULL,
+	fecha_fin_anterior timestamptz NULL,
+	fecha_inicio_nuevo timestamptz NULL,
+	fecha_fin_nuevo timestamptz NULL,
+	cambiado_por uuid NULL,
+	origen text DEFAULT 'SISTEMA'::text NOT NULL,
+	motivo text NULL,
+	created_at timestamptz DEFAULT now() NOT NULL,
+	CONSTRAINT suscripciones_log_estado_nuevo_check CHECK ((estado_nuevo = ANY (ARRAY['ACTIVA'::text, 'CANCELADA'::text, 'SUSPENDIDA'::text, 'VENCIDA'::text]))),
+	CONSTRAINT suscripciones_log_origen_check CHECK ((origen = ANY (ARRAY['SISTEMA'::text, 'ADMIN'::text, 'USUARIO'::text]))),
+	CONSTRAINT suscripciones_log_pkey PRIMARY KEY (id),
+	CONSTRAINT suscripciones_log_cambiado_por_fkey FOREIGN KEY (cambiado_por) REFERENCES sistema_facturacion.users(id) ON DELETE SET NULL,
+	CONSTRAINT suscripciones_log_plan_anterior_fkey FOREIGN KEY (plan_anterior) REFERENCES sistema_facturacion.planes(id) ON DELETE SET NULL,
+	CONSTRAINT suscripciones_log_plan_nuevo_fkey FOREIGN KEY (plan_nuevo) REFERENCES sistema_facturacion.planes(id) ON DELETE SET NULL
+);
+CREATE INDEX idx_suscripciones_log_cambiado_por ON sistema_facturacion.suscripciones_log USING btree (cambiado_por);
+CREATE INDEX idx_suscripciones_log_created_at ON sistema_facturacion.suscripciones_log USING btree (created_at);
+CREATE INDEX idx_suscripciones_log_estado_nuevo ON sistema_facturacion.suscripciones_log USING btree (estado_nuevo);
+CREATE INDEX idx_suscripciones_log_origen ON sistema_facturacion.suscripciones_log USING btree (origen);
+CREATE INDEX idx_suscripciones_log_suscripcion ON sistema_facturacion.suscripciones_log USING btree (suscripcion_id);
+CREATE INDEX idx_suscripciones_log_suscripcion_fecha ON sistema_facturacion.suscripciones_log USING btree (suscripcion_id, created_at DESC);
+
+
+-- sistema_facturacion.user_sessions definition
+
+-- Drop table
+
+-- DROP TABLE sistema_facturacion.user_sessions;
+
+CREATE TABLE sistema_facturacion.user_sessions (
+	id uuid DEFAULT gen_random_uuid() NOT NULL,
+	user_id uuid NOT NULL,
+	is_valid bool DEFAULT true NOT NULL,
+	created_at timestamptz DEFAULT now() NOT NULL,
+	expires_at timestamptz NOT NULL,
+	revoked_at timestamptz NULL,
+	revoked_reason text NULL,
+	ip_address text NULL,
+	user_agent text NULL,
+	CONSTRAINT user_sessions_pkey PRIMARY KEY (id),
+	CONSTRAINT user_sessions_revoked_reason_check CHECK ((revoked_reason = ANY (ARRAY['LOGOUT'::text, 'BLOQUEO_CUENTA'::text, 'PASSWORD_CAMBIADA'::text, 'SEGURIDAD'::text, 'EXPIRADA'::text]))),
+	CONSTRAINT user_sessions_user_id_fkey FOREIGN KEY (user_id) REFERENCES sistema_facturacion.users(id) ON DELETE CASCADE
+);
+CREATE INDEX idx_user_sessions_expires ON sistema_facturacion.user_sessions USING btree (expires_at);
+CREATE INDEX idx_user_sessions_user ON sistema_facturacion.user_sessions USING btree (user_id);
+CREATE INDEX idx_user_sessions_valid ON sistema_facturacion.user_sessions USING btree (is_valid);
+
+
+-- sistema_facturacion.users_logs definition
+
+-- Drop table
+
+-- DROP TABLE sistema_facturacion.users_logs;
+
+CREATE TABLE sistema_facturacion.users_logs (
+	id uuid DEFAULT gen_random_uuid() NOT NULL,
+	user_id uuid NULL,
+	evento text NOT NULL,
+	origen text DEFAULT 'SISTEMA'::text NOT NULL,
+	ip_address text NULL,
+	user_agent text NULL,
+	motivo text NULL,
+	created_at timestamptz DEFAULT now() NOT NULL,
+	CONSTRAINT users_logs_evento_check CHECK ((evento = ANY (ARRAY['LOGIN_OK'::text, 'LOGIN_FALLIDO'::text, 'LOGOUT'::text, 'PASSWORD_CAMBIADA'::text, 'CUENTA_BLOQUEADA'::text, 'CUENTA_DESBLOQUEADA'::text, 'CUENTA_DESHABILITADA'::text, 'SRI_CERTIFICADO_ACTUALIZADO'::text, 'SRI_CERTIFICADO_FALLIDO'::text]))),
+	CONSTRAINT users_logs_origen_check CHECK ((origen = ANY (ARRAY['SISTEMA'::text, 'SUPERADMIN'::text, 'USUARIO'::text]))),
+	CONSTRAINT users_logs_pkey PRIMARY KEY (id),
+	CONSTRAINT users_logs_user_id_fkey FOREIGN KEY (user_id) REFERENCES sistema_facturacion.users(id) ON DELETE SET NULL
+);
+CREATE INDEX idx_users_logs_created_at ON sistema_facturacion.users_logs USING btree (created_at);
+CREATE INDEX idx_users_logs_evento ON sistema_facturacion.users_logs USING btree (evento);
+CREATE INDEX idx_users_logs_user ON sistema_facturacion.users_logs USING btree (user_id);
+
+
+-- sistema_facturacion.vendedores definition
+
+-- Drop table
+
+-- DROP TABLE sistema_facturacion.vendedores;
+
+CREATE TABLE sistema_facturacion.vendedores (
+	id uuid DEFAULT gen_random_uuid() NOT NULL,
+	user_id uuid NOT NULL,
+	nombres text NOT NULL,
+	apellidos text NOT NULL,
+	telefono text NULL,
+	identificacion text NOT NULL,
+	porcentaje_comision numeric(5, 2) NULL,
+	porcentaje_comision_inicial numeric(5, 2) NULL,
+	porcentaje_comision_recurrente numeric(5, 2) NULL,
+	tipo_comision text NULL,
+	puede_crear_empresas bool DEFAULT false NOT NULL,
+	puede_gestionar_planes bool DEFAULT false NOT NULL,
+	puede_acceder_empresas bool DEFAULT false NOT NULL,
+	puede_ver_reportes bool DEFAULT false NOT NULL,
+	activo bool DEFAULT true NOT NULL,
+	configuracion jsonb NULL,
+	fecha_registro timestamptz DEFAULT now() NOT NULL,
+	created_at timestamptz DEFAULT now() NOT NULL,
+	updated_at timestamptz DEFAULT now() NOT NULL,
+	tipo_identificacion text DEFAULT '05'::text NOT NULL,
+	CONSTRAINT uq_vendedor_identificacion UNIQUE (identificacion),
+	CONSTRAINT vendedores_pkey PRIMARY KEY (id),
+	CONSTRAINT vendedores_tipo_comision_check CHECK ((tipo_comision = ANY (ARRAY['FIJA'::text, 'PORCENTAJE'::text]))),
+	CONSTRAINT vendedores_tipo_identificacion_check CHECK ((tipo_identificacion = ANY (ARRAY['04'::text, '05'::text, '06'::text, '07'::text, '08'::text]))),
+	CONSTRAINT vendedores_user_id_key UNIQUE (user_id),
+	CONSTRAINT vendedores_user_id_fkey FOREIGN KEY (user_id) REFERENCES sistema_facturacion.users(id) ON DELETE CASCADE
+);
+
+
+-- sistema_facturacion.empresas definition
+
+-- Drop table
+
+-- DROP TABLE sistema_facturacion.empresas;
+
+CREATE TABLE sistema_facturacion.empresas (
+	id uuid DEFAULT gen_random_uuid() NOT NULL,
+	vendedor_id uuid NULL,
+	ruc text NULL,
+	razon_social text NOT NULL,
+	nombre_comercial text NULL,
+	email text NOT NULL,
+	telefono text NULL,
+	direccion text NOT NULL,
+	logo_url text NULL,
+	activo bool DEFAULT true NOT NULL,
+	tipo_contribuyente text NOT NULL,
+	obligado_contabilidad bool DEFAULT false NOT NULL,
+	created_at timestamptz DEFAULT now() NOT NULL,
+	updated_at timestamptz DEFAULT now() NOT NULL,
+	tipo_persona text NOT NULL,
+	CONSTRAINT empresas_pkey PRIMARY KEY (id),
+	CONSTRAINT empresas_ruc_key UNIQUE (ruc),
+	CONSTRAINT empresas_tipo_contribuyente_check CHECK ((tipo_contribuyente = ANY (ARRAY['REGIMEN_GENERAL'::text, 'RIMPE_EMPRENDEDOR'::text, 'RIMPE_POPULAR'::text]))),
+	CONSTRAINT empresas_tipo_persona_check CHECK ((tipo_persona = ANY (ARRAY['NATURAL'::text, 'JURIDICA'::text]))),
+	CONSTRAINT ruc_format_check CHECK ((ruc ~ '^[0-9]{10}001$'::text)),
+	CONSTRAINT empresas_vendedor_id_fkey FOREIGN KEY (vendedor_id) REFERENCES sistema_facturacion.vendedores(id) ON DELETE SET NULL
+);
+
+
+-- sistema_facturacion.establecimientos definition
+
+-- Drop table
+
+-- DROP TABLE sistema_facturacion.establecimientos;
+
+CREATE TABLE sistema_facturacion.establecimientos (
+	id uuid DEFAULT gen_random_uuid() NOT NULL,
+	empresa_id uuid NOT NULL,
+	codigo text NOT NULL,
+	nombre text NOT NULL,
+	direccion text NOT NULL,
+	activo bool DEFAULT true NOT NULL,
+	created_at timestamptz DEFAULT now() NOT NULL,
+	updated_at timestamptz DEFAULT now() NOT NULL,
+	es_matriz bool DEFAULT false NOT NULL,
+	CONSTRAINT establecimientos_codigo_check CHECK ((codigo ~ '^\d{3}$'::text)),
+	CONSTRAINT establecimientos_pkey PRIMARY KEY (id),
+	CONSTRAINT uq_establecimientos_empresa_codigo UNIQUE (empresa_id, codigo),
+	CONSTRAINT establecimientos_empresa_id_fkey FOREIGN KEY (empresa_id) REFERENCES sistema_facturacion.empresas(id) ON DELETE CASCADE
+);
+CREATE INDEX idx_establecimientos_empresa_id ON sistema_facturacion.establecimientos USING btree (empresa_id);
+
+
+-- sistema_facturacion.modulo_empresa definition
+
+-- Drop table
+
+-- DROP TABLE sistema_facturacion.modulo_empresa;
+
+CREATE TABLE sistema_facturacion.modulo_empresa (
+	id uuid DEFAULT gen_random_uuid() NOT NULL,
+	empresa_id uuid NOT NULL,
+	modulo_id uuid NOT NULL,
+	activo bool DEFAULT true NOT NULL,
+	fecha_activacion date DEFAULT CURRENT_DATE NOT NULL,
+	fecha_vencimiento date NULL,
+	created_at timestamptz DEFAULT now() NOT NULL,
+	updated_at timestamptz DEFAULT now() NOT NULL,
+	CONSTRAINT modulo_empresa_pkey PRIMARY KEY (id),
+	CONSTRAINT uq_modulo_empresa UNIQUE (empresa_id, modulo_id),
+	CONSTRAINT modulo_empresa_empresa_id_fkey FOREIGN KEY (empresa_id) REFERENCES sistema_facturacion.empresas(id) ON DELETE CASCADE,
+	CONSTRAINT modulo_empresa_modulo_id_fkey FOREIGN KEY (modulo_id) REFERENCES sistema_facturacion.modulo(id) ON DELETE CASCADE
+);
+CREATE INDEX idx_modulo_empresa_empresa_id ON sistema_facturacion.modulo_empresa USING btree (empresa_id);
+CREATE INDEX idx_modulo_empresa_modulo_id ON sistema_facturacion.modulo_empresa USING btree (modulo_id);
+
+
+-- sistema_facturacion.pagos_suscripciones definition
+
+-- Drop table
+
+-- DROP TABLE sistema_facturacion.pagos_suscripciones;
+
+CREATE TABLE sistema_facturacion.pagos_suscripciones (
+	id uuid DEFAULT gen_random_uuid() NOT NULL,
+	empresa_id uuid NOT NULL,
+	plan_id uuid NOT NULL,
+	monto numeric(10, 2) NOT NULL,
+	fecha_pago timestamptz NOT NULL,
+	fecha_inicio_periodo timestamptz NOT NULL,
+	fecha_fin_periodo timestamptz NOT NULL,
+	metodo_pago text NOT NULL,
+	estado text DEFAULT 'PENDIENTE'::text NOT NULL,
+	numero_comprobante text NULL,
+	comprobante_url text NULL,
+	observaciones text NULL,
+	registrado_por uuid NULL,
+	created_at timestamptz DEFAULT now() NOT NULL,
+	updated_at timestamptz DEFAULT now() NOT NULL,
+	tipo_pago varchar(20) DEFAULT 'NUEVO'::character varying NULL,
+	CONSTRAINT pagos_suscripciones_estado_check CHECK ((estado = ANY (ARRAY['PENDIENTE'::text, 'PAGADO'::text, 'ANULADO'::text, 'REEMBOLSADO'::text]))),
+	CONSTRAINT pagos_suscripciones_monto_check CHECK ((monto >= (0)::numeric)),
+	CONSTRAINT pagos_suscripciones_pkey PRIMARY KEY (id),
+	CONSTRAINT pagos_suscripciones_empresa_id_fkey FOREIGN KEY (empresa_id) REFERENCES sistema_facturacion.empresas(id) ON DELETE CASCADE,
+	CONSTRAINT pagos_suscripciones_plan_id_fkey FOREIGN KEY (plan_id) REFERENCES sistema_facturacion.planes(id) ON DELETE RESTRICT,
+	CONSTRAINT pagos_suscripciones_registrado_por_fkey FOREIGN KEY (registrado_por) REFERENCES sistema_facturacion.users(id) ON DELETE SET NULL
+);
+
+
+-- sistema_facturacion.productos definition
+
+-- Drop table
+
+-- DROP TABLE sistema_facturacion.productos;
+
+CREATE TABLE sistema_facturacion.productos (
+	id uuid DEFAULT gen_random_uuid() NOT NULL,
+	empresa_id uuid NOT NULL,
+	codigo text NOT NULL,
+	nombre text NOT NULL,
+	descripcion text NULL,
+	precio numeric(12, 2) NOT NULL,
+	costo numeric(12, 2) NOT NULL,
+	stock_actual numeric(12, 3) DEFAULT 0 NOT NULL,
+	stock_minimo numeric(12, 3) DEFAULT 0 NOT NULL,
+	tipo_iva text NOT NULL,
+	porcentaje_iva numeric(5, 2) NOT NULL,
+	maneja_inventario bool DEFAULT true NOT NULL,
+	tipo text NULL,
+	unidad_medida text NULL,
+	activo bool DEFAULT true NOT NULL,
+	created_at timestamptz DEFAULT now() NOT NULL,
+	updated_at timestamptz DEFAULT now() NOT NULL,
+	CONSTRAINT productos_costo_check CHECK ((costo >= (0)::numeric)),
+	CONSTRAINT productos_pkey PRIMARY KEY (id),
+	CONSTRAINT productos_porcentaje_iva_check CHECK ((porcentaje_iva >= (0)::numeric)),
+	CONSTRAINT productos_precio_check CHECK ((precio >= (0)::numeric)),
+	CONSTRAINT productos_stock_actual_check CHECK ((stock_actual >= (0)::numeric)),
+	CONSTRAINT productos_stock_minimo_check CHECK ((stock_minimo >= (0)::numeric)),
+	CONSTRAINT productos_tipo_iva_check CHECK ((tipo_iva = ANY (ARRAY['0'::text, '2'::text, '3'::text, '4'::text, '5'::text, '6'::text, '7'::text, '8'::text, '10'::text]))),
+	CONSTRAINT uq_productos_empresa_codigo UNIQUE (empresa_id, codigo),
+	CONSTRAINT productos_empresa_id_fkey FOREIGN KEY (empresa_id) REFERENCES sistema_facturacion.empresas(id) ON DELETE CASCADE
+);
+CREATE INDEX idx_productos_empresa_id ON sistema_facturacion.productos USING btree (empresa_id);
+
+
+-- sistema_facturacion.proveedores definition
+
+-- Drop table
+
+-- DROP TABLE sistema_facturacion.proveedores;
+
+CREATE TABLE sistema_facturacion.proveedores (
+	id uuid DEFAULT gen_random_uuid() NOT NULL,
+	empresa_id uuid NOT NULL,
+	identificacion text NOT NULL,
+	tipo_identificacion text NOT NULL,
+	razon_social text NOT NULL,
+	nombre_comercial text NULL,
+	email text NULL,
+	telefono text NULL,
+	direccion text NULL,
+	ciudad text NULL,
+	provincia text NULL,
+	dias_credito int4 DEFAULT 0 NOT NULL,
+	activo bool DEFAULT true NOT NULL,
+	created_at timestamptz DEFAULT now() NOT NULL,
+	updated_at timestamptz DEFAULT now() NOT NULL,
+	CONSTRAINT proveedores_pkey PRIMARY KEY (id),
+	CONSTRAINT proveedores_tipo_identificacion_check CHECK ((tipo_identificacion = ANY (ARRAY['04'::text, '05'::text, '06'::text, '07'::text, '08'::text]))),
+	CONSTRAINT uq_proveedor_empresa_identificacion UNIQUE (empresa_id, identificacion),
+	CONSTRAINT proveedores_empresa_id_fkey FOREIGN KEY (empresa_id) REFERENCES sistema_facturacion.empresas(id) ON DELETE CASCADE
+);
+
+
+-- sistema_facturacion.puntos_emision definition
+
+-- Drop table
+
+-- DROP TABLE sistema_facturacion.puntos_emision;
+
+CREATE TABLE sistema_facturacion.puntos_emision (
+	id uuid DEFAULT gen_random_uuid() NOT NULL,
+	establecimiento_id uuid NOT NULL,
+	codigo text NOT NULL,
+	nombre text NOT NULL,
+	activo bool DEFAULT true NOT NULL,
+	created_at timestamptz DEFAULT now() NOT NULL,
+	updated_at timestamptz DEFAULT now() NOT NULL,
+	telefono text NULL,
+	secuencial_factura int4 DEFAULT 1 NOT NULL,
+	secuencial_nota_credito int4 DEFAULT 1 NOT NULL,
+	secuencial_nota_debito int4 DEFAULT 1 NOT NULL,
+	secuencial_retencion int4 DEFAULT 1 NOT NULL,
+	secuencial_guia_remision int4 DEFAULT 1 NOT NULL,
+	CONSTRAINT puntos_emision_codigo_check CHECK ((codigo ~ '^\d{3}$'::text)),
+	CONSTRAINT puntos_emision_pkey PRIMARY KEY (id),
+	CONSTRAINT puntos_emision_secuencial_factura_check CHECK ((secuencial_factura > 0)),
+	CONSTRAINT puntos_emision_secuencial_guia_remision_check CHECK ((secuencial_guia_remision > 0)),
+	CONSTRAINT puntos_emision_secuencial_nota_credito_check CHECK ((secuencial_nota_credito > 0)),
+	CONSTRAINT puntos_emision_secuencial_nota_debito_check CHECK ((secuencial_nota_debito > 0)),
+	CONSTRAINT puntos_emision_secuencial_retencion_check CHECK ((secuencial_retencion > 0)),
+	CONSTRAINT uq_punto_emision_establecimiento_codigo UNIQUE (establecimiento_id, codigo),
+	CONSTRAINT puntos_emision_establecimiento_id_fkey FOREIGN KEY (establecimiento_id) REFERENCES sistema_facturacion.establecimientos(id) ON DELETE CASCADE
+);
+CREATE INDEX idx_puntos_emision_establecimiento_id ON sistema_facturacion.puntos_emision USING btree (establecimiento_id);
+
+
+-- sistema_facturacion.suscripciones definition
+
+-- Drop table
+
+-- DROP TABLE sistema_facturacion.suscripciones;
+
+CREATE TABLE sistema_facturacion.suscripciones (
+	id uuid DEFAULT gen_random_uuid() NOT NULL,
+	empresa_id uuid NOT NULL,
+	plan_id uuid NOT NULL,
+	fecha_inicio timestamptz NOT NULL,
+	fecha_fin timestamptz NOT NULL,
+	estado text DEFAULT 'ACTIVA'::text NOT NULL,
+	actualizado_por uuid NULL,
+	observaciones text NULL,
+	created_at timestamptz DEFAULT now() NOT NULL,
+	updated_at timestamptz DEFAULT now() NOT NULL,
+	CONSTRAINT suscripciones_empresa_id_key UNIQUE (empresa_id),
+	CONSTRAINT suscripciones_estado_check CHECK ((estado = ANY (ARRAY['ACTIVA'::text, 'CANCELADA'::text, 'SUSPENDIDA'::text, 'VENCIDA'::text]))),
+	CONSTRAINT suscripciones_pkey PRIMARY KEY (id),
+	CONSTRAINT suscripciones_actualizado_por_fkey FOREIGN KEY (actualizado_por) REFERENCES sistema_facturacion.users(id) ON DELETE SET NULL,
+	CONSTRAINT suscripciones_empresa_id_fkey FOREIGN KEY (empresa_id) REFERENCES sistema_facturacion.empresas(id) ON DELETE CASCADE,
+	CONSTRAINT suscripciones_plan_id_fkey FOREIGN KEY (plan_id) REFERENCES sistema_facturacion.planes(id) ON DELETE RESTRICT
+);
+
+
+-- sistema_facturacion.categoria_gasto definition
+
+-- Drop table
+
+-- DROP TABLE sistema_facturacion.categoria_gasto;
+
+CREATE TABLE sistema_facturacion.categoria_gasto (
+	id uuid DEFAULT gen_random_uuid() NOT NULL,
+	empresa_id uuid NOT NULL,
+	codigo text NOT NULL,
+	nombre text NOT NULL,
+	descripcion text NULL,
+	tipo text NOT NULL,
+	activo bool DEFAULT true NOT NULL,
+	created_at timestamptz DEFAULT now() NOT NULL,
+	updated_at timestamptz DEFAULT now() NOT NULL,
+	CONSTRAINT categoria_gasto_pkey PRIMARY KEY (id),
+	CONSTRAINT categoria_gasto_tipo_check CHECK ((tipo = ANY (ARRAY['fijo'::text, 'variable'::text, 'operativo'::text, 'financiero'::text]))),
+	CONSTRAINT uq_categoria_gasto_empresa_codigo UNIQUE (empresa_id, codigo),
+	CONSTRAINT categoria_gasto_empresa_id_fkey FOREIGN KEY (empresa_id) REFERENCES sistema_facturacion.empresas(id) ON DELETE CASCADE
+);
+CREATE INDEX idx_categoria_gasto_empresa ON sistema_facturacion.categoria_gasto USING btree (empresa_id);
+
+
+-- sistema_facturacion.clientes definition
+
+-- Drop table
+
+-- DROP TABLE sistema_facturacion.clientes;
+
+CREATE TABLE sistema_facturacion.clientes (
+	id uuid DEFAULT gen_random_uuid() NOT NULL,
+	empresa_id uuid NOT NULL,
+	identificacion text NOT NULL,
+	tipo_identificacion text NOT NULL,
+	razon_social text NOT NULL,
+	nombre_comercial text NULL,
+	email text NULL,
+	telefono text NULL,
+	direccion text NULL,
+	ciudad text NULL,
+	provincia text NULL,
+	dias_credito int4 DEFAULT 0 NOT NULL,
+	limite_credito numeric(12, 2) DEFAULT 0 NOT NULL,
+	activo bool DEFAULT true NOT NULL,
+	created_at timestamptz DEFAULT now() NOT NULL,
+	updated_at timestamptz DEFAULT now() NOT NULL,
+	CONSTRAINT clientes_pkey PRIMARY KEY (id),
+	CONSTRAINT clientes_tipo_identificacion_check CHECK ((tipo_identificacion = ANY (ARRAY['04'::text, '05'::text, '06'::text, '07'::text, '08'::text]))),
+	CONSTRAINT uq_cliente_empresa_identificacion UNIQUE (empresa_id, identificacion),
+	CONSTRAINT clientes_empresa_id_fkey FOREIGN KEY (empresa_id) REFERENCES sistema_facturacion.empresas(id) ON DELETE CASCADE
+);
+
+
+-- sistema_facturacion.comisiones definition
+
+-- Drop table
+
+-- DROP TABLE sistema_facturacion.comisiones;
+
+CREATE TABLE sistema_facturacion.comisiones (
+	id uuid DEFAULT gen_random_uuid() NOT NULL,
+	vendedor_id uuid NOT NULL,
+	pago_suscripcion_id uuid NOT NULL,
+	monto numeric(10, 2) NOT NULL,
+	porcentaje_aplicado numeric(5, 2) NOT NULL,
+	estado text DEFAULT 'PENDIENTE'::text NOT NULL,
+	fecha_generacion timestamptz DEFAULT now() NOT NULL,
+	fecha_aprobacion timestamptz NULL,
+	fecha_pago timestamptz NULL,
+	metodo_pago text NULL,
+	observaciones text NULL,
+	aprobado_por uuid NULL,
+	created_at timestamptz DEFAULT now() NOT NULL,
+	updated_at timestamptz DEFAULT now() NOT NULL,
+	CONSTRAINT comisiones_estado_check CHECK ((estado = ANY (ARRAY['PENDIENTE'::text, 'APROBADA'::text, 'RECHAZADA'::text, 'PAGADA'::text]))),
+	CONSTRAINT comisiones_monto_check CHECK ((monto >= (0)::numeric)),
+	CONSTRAINT comisiones_pkey PRIMARY KEY (id),
+	CONSTRAINT comisiones_porcentaje_aplicado_check CHECK ((porcentaje_aplicado >= (0)::numeric)),
+	CONSTRAINT uq_comision_pago UNIQUE (pago_suscripcion_id),
+	CONSTRAINT comisiones_aprobado_por_fkey FOREIGN KEY (aprobado_por) REFERENCES sistema_facturacion.users(id) ON DELETE SET NULL,
+	CONSTRAINT comisiones_pago_suscripcion_id_fkey FOREIGN KEY (pago_suscripcion_id) REFERENCES sistema_facturacion.pagos_suscripciones(id) ON DELETE CASCADE,
+	CONSTRAINT comisiones_vendedor_id_fkey FOREIGN KEY (vendedor_id) REFERENCES sistema_facturacion.vendedores(id) ON DELETE RESTRICT
+);
+
+
+-- sistema_facturacion.comisiones_logs definition
+
+-- Drop table
+
+-- DROP TABLE sistema_facturacion.comisiones_logs;
+
+CREATE TABLE sistema_facturacion.comisiones_logs (
+	id uuid DEFAULT gen_random_uuid() NOT NULL,
+	comision_id uuid NOT NULL,
+	responsable_id uuid NULL,
+	rol_responsable text NOT NULL,
+	estado_anterior text NULL,
+	estado_nuevo text NOT NULL,
+	datos_snapshot jsonb NULL,
+	observaciones text NULL,
+	created_at timestamptz DEFAULT now() NOT NULL,
+	CONSTRAINT comisiones_logs_estado_anterior_check CHECK ((estado_anterior = ANY (ARRAY['PENDIENTE'::text, 'APROBADA'::text, 'RECHAZADA'::text, 'PAGADA'::text]))),
+	CONSTRAINT comisiones_logs_estado_nuevo_check CHECK ((estado_nuevo = ANY (ARRAY['PENDIENTE'::text, 'APROBADA'::text, 'RECHAZADA'::text, 'PAGADA'::text]))),
+	CONSTRAINT comisiones_logs_pkey PRIMARY KEY (id),
+	CONSTRAINT comisiones_logs_rol_responsable_check CHECK ((rol_responsable = ANY (ARRAY['SUPERADMIN'::text, 'SISTEMA'::text]))),
+	CONSTRAINT comisiones_logs_comision_id_fkey FOREIGN KEY (comision_id) REFERENCES sistema_facturacion.comisiones(id) ON DELETE CASCADE,
+	CONSTRAINT comisiones_logs_responsable_id_fkey FOREIGN KEY (responsable_id) REFERENCES sistema_facturacion.users(id) ON DELETE SET NULL
+);
+
+
+-- sistema_facturacion.configuraciones_sri definition
+
+-- Drop table
+
+-- DROP TABLE sistema_facturacion.configuraciones_sri;
+
+CREATE TABLE sistema_facturacion.configuraciones_sri (
+	id uuid DEFAULT gen_random_uuid() NOT NULL,
+	empresa_id uuid NOT NULL,
+	ambiente text NOT NULL,
+	tipo_emision text NOT NULL,
+	certificado_digital bytea NOT NULL,
+	clave_certificado bytea NOT NULL,
+	fecha_activacion_cert timestamptz NOT NULL,
+	fecha_expiracion_cert timestamptz NOT NULL,
+	estado text DEFAULT 'ACTIVO'::text NOT NULL,
+	cert_serial text NULL,
+	cert_emisor text NULL,
+	cert_sujeto text NULL,
+	created_at timestamptz DEFAULT now() NOT NULL,
+	updated_at timestamptz DEFAULT now() NOT NULL,
+	CONSTRAINT configuraciones_sri_ambiente_check CHECK ((ambiente = ANY (ARRAY['PRUEBAS'::text, 'PRODUCCION'::text]))),
+	CONSTRAINT configuraciones_sri_estado_check CHECK ((estado = ANY (ARRAY['ACTIVO'::text, 'INACTIVO'::text, 'EXPIRADO'::text, 'REVOCADO'::text]))),
+	CONSTRAINT configuraciones_sri_pkey PRIMARY KEY (id),
+	CONSTRAINT configuraciones_sri_tipo_emision_check CHECK ((tipo_emision = ANY (ARRAY['NORMAL'::text, 'CONTINGENCIA'::text]))),
+	CONSTRAINT uq_configuracion_sri_empresa UNIQUE (empresa_id),
+	CONSTRAINT configuraciones_sri_empresa_id_fkey FOREIGN KEY (empresa_id) REFERENCES sistema_facturacion.empresas(id) ON DELETE CASCADE
+);
+
+
+-- sistema_facturacion.configuraciones_sri_audit_logs definition
+
+-- Drop table
+
+-- DROP TABLE sistema_facturacion.configuraciones_sri_audit_logs;
+
+CREATE TABLE sistema_facturacion.configuraciones_sri_audit_logs (
+	id uuid DEFAULT gen_random_uuid() NOT NULL,
+	configuracion_sri_id uuid NOT NULL,
+	empresa_id uuid NOT NULL,
+	user_id uuid NULL,
+	rol_empresa text NULL,
+	rol_sistema text NULL,
+	accion text NOT NULL,
+	snapshot_before jsonb NULL,
+	snapshot_after jsonb NULL,
+	ip_origen inet NULL,
+	user_agent text NULL,
+	created_at timestamptz DEFAULT now() NOT NULL,
+	CONSTRAINT configuraciones_sri_audit_logs_accion_check CHECK ((accion = ANY (ARRAY['CREATE'::text, 'UPDATE'::text, 'DELETE'::text]))),
+	CONSTRAINT configuraciones_sri_audit_logs_pkey PRIMARY KEY (id),
+	CONSTRAINT configuraciones_sri_audit_logs_empresa_id_fkey FOREIGN KEY (empresa_id) REFERENCES sistema_facturacion.empresas(id) ON DELETE CASCADE,
+	CONSTRAINT configuraciones_sri_audit_logs_user_id_fkey FOREIGN KEY (user_id) REFERENCES sistema_facturacion.users(id)
+);
+CREATE INDEX idx_sri_audit_logs_config ON sistema_facturacion.configuraciones_sri_audit_logs USING btree (configuracion_sri_id);
+CREATE INDEX idx_sri_audit_logs_empresa ON sistema_facturacion.configuraciones_sri_audit_logs USING btree (empresa_id);
+CREATE INDEX idx_sri_audit_logs_fecha ON sistema_facturacion.configuraciones_sri_audit_logs USING btree (created_at);
+CREATE INDEX idx_sri_audit_logs_user ON sistema_facturacion.configuraciones_sri_audit_logs USING btree (user_id);
+
+
+-- sistema_facturacion.empresa_roles definition
+
+-- Drop table
+
+-- DROP TABLE sistema_facturacion.empresa_roles;
+
+CREATE TABLE sistema_facturacion.empresa_roles (
+	id uuid DEFAULT gen_random_uuid() NOT NULL,
+	empresa_id uuid NOT NULL,
+	codigo text NOT NULL,
+	nombre text NOT NULL,
+	descripcion text NULL,
+	es_sistema bool DEFAULT false NOT NULL,
+	activo bool DEFAULT true NOT NULL,
+	created_at timestamptz DEFAULT now() NOT NULL,
+	updated_at timestamptz DEFAULT now() NOT NULL,
+	CONSTRAINT empresa_roles_pkey PRIMARY KEY (id),
+	CONSTRAINT uq_rol_empresa_codigo UNIQUE (empresa_id, codigo),
+	CONSTRAINT empresa_roles_empresa_id_fkey FOREIGN KEY (empresa_id) REFERENCES sistema_facturacion.empresas(id) ON DELETE CASCADE
+);
+
+
+-- sistema_facturacion.empresa_roles_permisos definition
+
+-- Drop table
+
+-- DROP TABLE sistema_facturacion.empresa_roles_permisos;
+
+CREATE TABLE sistema_facturacion.empresa_roles_permisos (
+	rol_id uuid NOT NULL,
+	permiso_id uuid NOT NULL,
+	activo bool DEFAULT true NOT NULL,
+	created_at timestamptz DEFAULT now() NOT NULL,
+	updated_at timestamptz DEFAULT now() NOT NULL,
+	CONSTRAINT empresa_roles_permisos_pkey PRIMARY KEY (rol_id, permiso_id),
+	CONSTRAINT empresa_roles_permisos_permiso_id_fkey FOREIGN KEY (permiso_id) REFERENCES sistema_facturacion.empresa_permisos(id) ON DELETE CASCADE,
+	CONSTRAINT empresa_roles_permisos_rol_id_fkey FOREIGN KEY (rol_id) REFERENCES sistema_facturacion.empresa_roles(id) ON DELETE CASCADE
+);
+
+
+-- sistema_facturacion.gastos definition
+
+-- Drop table
+
+-- DROP TABLE sistema_facturacion.gastos;
+
+CREATE TABLE sistema_facturacion.gastos (
+	id uuid DEFAULT gen_random_uuid() NOT NULL,
+	empresa_id uuid NOT NULL,
+	proveedor_id uuid NULL,
+	categoria_gasto_id uuid NOT NULL,
+	user_id uuid NOT NULL,
+	numero_factura text NULL,
+	fecha_emision date NOT NULL,
+	fecha_vencimiento date NULL,
+	concepto text NOT NULL,
+	subtotal numeric(15, 2) NOT NULL,
+	total numeric(15, 2) NOT NULL,
+	estado_pago text NOT NULL,
+	comprobante_url text NULL,
+	observaciones text NULL,
+	created_at timestamptz DEFAULT now() NOT NULL,
+	updated_at timestamptz DEFAULT now() NOT NULL,
+	deleted_at timestamptz NULL,
+	tipo_iva text DEFAULT '2'::text NOT NULL,
+	CONSTRAINT gastos_estado_pago_check CHECK ((estado_pago = ANY (ARRAY['pendiente'::text, 'parcial'::text, 'pagado'::text, 'vencido'::text, 'cancelado'::text, 'reembolsado'::text]))),
+	CONSTRAINT gastos_pkey PRIMARY KEY (id),
+	CONSTRAINT gastos_subtotal_check CHECK ((subtotal >= (0)::numeric)),
+	CONSTRAINT gastos_total_check CHECK ((total >= (0)::numeric)),
+	CONSTRAINT gastos_categoria_gasto_id_fkey FOREIGN KEY (categoria_gasto_id) REFERENCES sistema_facturacion.categoria_gasto(id) ON DELETE RESTRICT,
+	CONSTRAINT gastos_empresa_id_fkey FOREIGN KEY (empresa_id) REFERENCES sistema_facturacion.empresas(id) ON DELETE CASCADE,
+	CONSTRAINT gastos_proveedor_id_fkey FOREIGN KEY (proveedor_id) REFERENCES sistema_facturacion.proveedores(id) ON DELETE SET NULL,
+	CONSTRAINT gastos_user_id_fkey FOREIGN KEY (user_id) REFERENCES sistema_facturacion.users(id) ON DELETE RESTRICT
+);
+CREATE INDEX idx_gastos_categoria ON sistema_facturacion.gastos USING btree (categoria_gasto_id);
+CREATE INDEX idx_gastos_empresa ON sistema_facturacion.gastos USING btree (empresa_id);
+CREATE INDEX idx_gastos_estado_pago ON sistema_facturacion.gastos USING btree (estado_pago);
+CREATE INDEX idx_gastos_fecha_emision ON sistema_facturacion.gastos USING btree (fecha_emision);
+CREATE INDEX idx_gastos_usuario ON sistema_facturacion.gastos USING btree (user_id);
+
+
+-- sistema_facturacion.pago_gasto definition
+
+-- Drop table
+
+-- DROP TABLE sistema_facturacion.pago_gasto;
+
+CREATE TABLE sistema_facturacion.pago_gasto (
+	id uuid DEFAULT gen_random_uuid() NOT NULL,
+	gasto_id uuid NOT NULL,
+	user_id uuid NOT NULL,
+	numero_comprobante text NULL,
+	fecha_pago date NOT NULL,
+	monto numeric(15, 2) NOT NULL,
+	metodo_pago text NOT NULL,
+	numero_referencia text NULL,
+	observaciones text NULL,
+	created_at timestamptz DEFAULT now() NOT NULL,
+	updated_at timestamptz DEFAULT now() NOT NULL,
+	CONSTRAINT pago_gasto_metodo_pago_check CHECK ((metodo_pago = ANY (ARRAY['01'::text, '15'::text, '16'::text, '17'::text, '18'::text, '19'::text, '20'::text, '21'::text]))),
+	CONSTRAINT pago_gasto_monto_check CHECK ((monto >= (0)::numeric)),
+	CONSTRAINT pago_gasto_pkey PRIMARY KEY (id),
+	CONSTRAINT pago_gasto_gasto_id_fkey FOREIGN KEY (gasto_id) REFERENCES sistema_facturacion.gastos(id) ON DELETE CASCADE,
+	CONSTRAINT pago_gasto_user_id_fkey FOREIGN KEY (user_id) REFERENCES sistema_facturacion.users(id) ON DELETE RESTRICT
+);
+CREATE INDEX idx_pago_gasto_fecha ON sistema_facturacion.pago_gasto USING btree (fecha_pago);
+CREATE INDEX idx_pago_gasto_gasto ON sistema_facturacion.pago_gasto USING btree (gasto_id);
+CREATE INDEX idx_pago_gasto_usuario ON sistema_facturacion.pago_gasto USING btree (user_id);
+
+
+-- sistema_facturacion.solicitudes_renovacion definition
+
+-- Drop table
+
+-- DROP TABLE sistema_facturacion.solicitudes_renovacion;
+
+CREATE TABLE sistema_facturacion.solicitudes_renovacion (
+	id uuid DEFAULT gen_random_uuid() NOT NULL,
+	empresa_id uuid NOT NULL,
+	suscripcion_id uuid NOT NULL,
+	plan_id uuid NOT NULL,
+	vendedor_id uuid NULL,
+	estado text DEFAULT 'PENDIENTE'::text NOT NULL,
+	comprobante_url text NULL,
+	procesado_por uuid NULL,
+	motivo_rechazo text NULL,
+	fecha_solicitud timestamptz DEFAULT now() NOT NULL,
+	fecha_procesamiento timestamptz NULL,
+	created_at timestamptz DEFAULT now() NOT NULL,
+	updated_at timestamptz DEFAULT now() NOT NULL,
+	tipo text DEFAULT 'RENOVACION'::text NOT NULL,
+	CONSTRAINT check_tipo_solicitud CHECK ((tipo = ANY (ARRAY['RENOVACION'::text, 'UPGRADE'::text]))),
+	CONSTRAINT solicitudes_renovacion_estado_check CHECK ((estado = ANY (ARRAY['PENDIENTE'::text, 'ACEPTADA'::text, 'RECHAZADA'::text]))),
+	CONSTRAINT solicitudes_renovacion_pkey PRIMARY KEY (id),
+	CONSTRAINT solicitudes_renovacion_empresa_id_fkey FOREIGN KEY (empresa_id) REFERENCES sistema_facturacion.empresas(id) ON DELETE CASCADE,
+	CONSTRAINT solicitudes_renovacion_plan_id_fkey FOREIGN KEY (plan_id) REFERENCES sistema_facturacion.planes(id) ON DELETE RESTRICT,
+	CONSTRAINT solicitudes_renovacion_procesado_por_fkey FOREIGN KEY (procesado_por) REFERENCES sistema_facturacion.users(id) ON DELETE SET NULL,
+	CONSTRAINT solicitudes_renovacion_suscripcion_id_fkey FOREIGN KEY (suscripcion_id) REFERENCES sistema_facturacion.suscripciones(id) ON DELETE CASCADE,
+	CONSTRAINT solicitudes_renovacion_vendedor_id_fkey FOREIGN KEY (vendedor_id) REFERENCES sistema_facturacion.vendedores(id) ON DELETE SET NULL
+);
+CREATE INDEX idx_solicitudes_renovacion_empresa ON sistema_facturacion.solicitudes_renovacion USING btree (empresa_id);
+CREATE INDEX idx_solicitudes_renovacion_estado ON sistema_facturacion.solicitudes_renovacion USING btree (estado);
+CREATE INDEX idx_solicitudes_renovacion_vendedor ON sistema_facturacion.solicitudes_renovacion USING btree (vendedor_id);
+
+
+-- sistema_facturacion.usuarios definition
+
+-- Drop table
+
+-- DROP TABLE sistema_facturacion.usuarios;
+
+CREATE TABLE sistema_facturacion.usuarios (
+	id uuid DEFAULT gen_random_uuid() NOT NULL,
+	user_id uuid NOT NULL,
+	empresa_id uuid NOT NULL,
+	empresa_rol_id uuid NOT NULL,
+	nombres text NOT NULL,
+	apellidos text NOT NULL,
+	telefono text NOT NULL,
+	avatar_url text NULL,
+	activo bool DEFAULT true NOT NULL,
+	created_at timestamptz DEFAULT now() NOT NULL,
+	updated_at timestamptz DEFAULT now() NOT NULL,
+	CONSTRAINT usuarios_pkey PRIMARY KEY (id),
+	CONSTRAINT usuarios_user_id_key UNIQUE (user_id),
+	CONSTRAINT usuarios_empresa_id_fkey FOREIGN KEY (empresa_id) REFERENCES sistema_facturacion.empresas(id) ON DELETE CASCADE,
+	CONSTRAINT usuarios_empresa_rol_id_fkey FOREIGN KEY (empresa_rol_id) REFERENCES sistema_facturacion.empresa_roles(id) ON DELETE RESTRICT,
+	CONSTRAINT usuarios_user_id_fkey FOREIGN KEY (user_id) REFERENCES sistema_facturacion.users(id) ON DELETE CASCADE
+);
+
+
+-- sistema_facturacion.facturacion_programada definition
+
+-- Drop table
+
+-- DROP TABLE sistema_facturacion.facturacion_programada;
+
+CREATE TABLE sistema_facturacion.facturacion_programada (
+	id uuid DEFAULT gen_random_uuid() NOT NULL,
+	empresa_id uuid NOT NULL,
+	cliente_id uuid NOT NULL,
+	usuario_id uuid NOT NULL,
+	tipo_frecuencia text NOT NULL,
+	dia_emision int4 NULL,
+	monto numeric(12, 2) NOT NULL,
+	concepto text NOT NULL,
+	fecha_inicio date NOT NULL,
+	fecha_fin date NULL,
+	ultima_emision date NULL,
+	proxima_emision date NULL,
+	total_emisiones int4 DEFAULT 0 NOT NULL,
+	emisiones_exitosas int4 DEFAULT 0 NOT NULL,
+	emisiones_fallidas int4 DEFAULT 0 NOT NULL,
+	activo bool DEFAULT true NOT NULL,
+	enviar_email bool DEFAULT true NOT NULL,
+	configuracion jsonb NULL,
+	created_at timestamptz DEFAULT now() NOT NULL,
+	updated_at timestamptz DEFAULT now() NOT NULL,
+	CONSTRAINT facturacion_programada_check CHECK (((fecha_fin IS NULL) OR (fecha_fin >= fecha_inicio))),
+	CONSTRAINT facturacion_programada_dia_emision_check CHECK (((dia_emision >= 1) AND (dia_emision <= 31))),
+	CONSTRAINT facturacion_programada_monto_check CHECK ((monto >= (0)::numeric)),
+	CONSTRAINT facturacion_programada_pkey PRIMARY KEY (id),
+	CONSTRAINT facturacion_programada_tipo_frecuencia_check CHECK ((tipo_frecuencia = ANY (ARRAY['MENSUAL'::text, 'TRIMESTRAL'::text, 'ANUAL'::text]))),
+	CONSTRAINT facturacion_programada_cliente_id_fkey FOREIGN KEY (cliente_id) REFERENCES sistema_facturacion.clientes(id) ON DELETE RESTRICT,
+	CONSTRAINT facturacion_programada_empresa_id_fkey FOREIGN KEY (empresa_id) REFERENCES sistema_facturacion.empresas(id) ON DELETE CASCADE,
+	CONSTRAINT facturacion_programada_usuario_id_fkey FOREIGN KEY (usuario_id) REFERENCES sistema_facturacion.usuarios(id) ON DELETE RESTRICT
+);
+
+
+-- sistema_facturacion.facturas definition
+
+-- Drop table
+
+-- DROP TABLE sistema_facturacion.facturas;
+
+CREATE TABLE sistema_facturacion.facturas (
+	id uuid DEFAULT gen_random_uuid() NOT NULL,
+	empresa_id uuid NOT NULL,
+	establecimiento_id uuid NOT NULL,
+	punto_emision_id uuid NOT NULL,
+	cliente_id uuid NOT NULL,
+	usuario_id uuid NOT NULL,
+	facturacion_programada_id uuid NULL,
+	numero_factura text NULL,
+	secuencial_punto_emision int4 NULL,
+	clave_acceso varchar(49) NULL,
+	numero_autorizacion varchar(49) NULL,
+	tipo_documento varchar(2) DEFAULT '01'::character varying NULL,
+	ambiente int4 DEFAULT 1 NULL,
+	tipo_emision int4 DEFAULT 1 NULL,
+	fecha_emision timestamptz NOT NULL,
+	fecha_vencimiento date NULL,
+	fecha_autorizacion timestamptz NULL,
+	subtotal_sin_iva numeric(12, 2) DEFAULT 0 NOT NULL,
+	subtotal_con_iva numeric(12, 2) DEFAULT 0 NOT NULL,
+	iva numeric(12, 2) DEFAULT 0 NOT NULL,
+	descuento numeric(12, 2) DEFAULT 0 NOT NULL,
+	propina numeric(12, 2) DEFAULT 0 NOT NULL,
+	retencion_iva numeric(12, 2) DEFAULT 0 NULL,
+	retencion_renta numeric(12, 2) DEFAULT 0 NULL,
+	total numeric(12, 2) NOT NULL,
+	estado varchar(20) DEFAULT 'BORRADOR'::character varying NOT NULL,
+	estado_pago varchar(20) DEFAULT 'PENDIENTE'::character varying NOT NULL,
+	origen varchar(50) NULL,
+	observaciones text NULL,
+	razon_anulacion text NULL,
+	created_at timestamptz DEFAULT now() NOT NULL,
+	updated_at timestamptz DEFAULT now() NOT NULL,
+	guia_remision text NULL,
+	subtotal_no_objeto_iva numeric(12, 2) DEFAULT 0 NULL,
+	subtotal_exento_iva numeric(12, 2) DEFAULT 0 NULL,
+	total_sin_impuestos numeric(12, 2) DEFAULT 0 NULL,
+	snapshot_empresa jsonb NULL,
+	snapshot_cliente jsonb NULL,
+	snapshot_establecimiento jsonb NULL,
+	snapshot_punto_emision jsonb NULL,
+	snapshot_usuario jsonb NULL,
+	mensajes jsonb DEFAULT '[]'::jsonb NULL,
+	client_info jsonb DEFAULT '{}'::jsonb NULL,
+	CONSTRAINT chk_facturas_estado_pago CHECK (((estado_pago)::text = ANY ((ARRAY['PENDIENTE'::character varying, 'PAGADO'::character varying, 'PARCIAL'::character varying, 'VENCIDO'::character varying, 'ANULADO'::character varying])::text[]))),
+	CONSTRAINT facturas_ambiente_check CHECK ((ambiente = ANY (ARRAY[1, 2]))),
+	CONSTRAINT facturas_clave_acceso_key UNIQUE (clave_acceso),
+	CONSTRAINT facturas_descuento_check CHECK ((descuento >= (0)::numeric)),
+	CONSTRAINT facturas_estado_check CHECK (((estado)::text = ANY (ARRAY[('BORRADOR'::character varying)::text, ('EN_PROCESO'::character varying)::text, ('AUTORIZADA'::character varying)::text, ('DEVUELTA'::character varying)::text, ('NO_AUTORIZADA'::character varying)::text, ('ANULADA'::character varying)::text, ('ERROR_TECNICO'::character varying)::text]))),
+	CONSTRAINT facturas_iva_check CHECK ((iva >= (0)::numeric)),
+	CONSTRAINT facturas_numero_autorizacion_unique UNIQUE (numero_autorizacion),
+	CONSTRAINT facturas_numero_factura_check CHECK (((numero_factura IS NULL) OR (numero_factura ~ '^\d{3}-\d{3}-\d{9}$'::text))),
+	CONSTRAINT facturas_numero_factura_key UNIQUE (numero_factura),
+	CONSTRAINT facturas_origen_check CHECK (((origen)::text = ANY (ARRAY[('MANUAL'::character varying)::text, ('IMPORTADO'::character varying)::text, ('API'::character varying)::text, ('FACTURACION_PROGRAMADA'::character varying)::text]))),
+	CONSTRAINT facturas_pkey PRIMARY KEY (id),
+	CONSTRAINT facturas_propina_check CHECK ((propina >= (0)::numeric)),
+	CONSTRAINT facturas_retencion_iva_check CHECK ((retencion_iva >= (0)::numeric)),
+	CONSTRAINT facturas_retencion_renta_check CHECK ((retencion_renta >= (0)::numeric)),
+	CONSTRAINT facturas_subtotal_con_iva_check CHECK ((subtotal_con_iva >= (0)::numeric)),
+	CONSTRAINT facturas_subtotal_sin_iva_check CHECK ((subtotal_sin_iva >= (0)::numeric)),
+	CONSTRAINT facturas_tipo_documento_check CHECK (((tipo_documento)::text = ANY (ARRAY[('01'::character varying)::text, ('04'::character varying)::text, ('05'::character varying)::text]))),
+	CONSTRAINT facturas_tipo_emision_check CHECK ((tipo_emision = ANY (ARRAY[1, 2]))),
+	CONSTRAINT facturas_total_check_sri CHECK ((total = round(((((((subtotal_sin_iva + subtotal_con_iva) + subtotal_no_objeto_iva) + subtotal_exento_iva) + iva) + propina) - (retencion_iva + retencion_renta)), 2))),
+	CONSTRAINT facturas_cliente_id_fkey FOREIGN KEY (cliente_id) REFERENCES sistema_facturacion.clientes(id) ON DELETE RESTRICT,
+	CONSTRAINT facturas_empresa_id_fkey FOREIGN KEY (empresa_id) REFERENCES sistema_facturacion.empresas(id) ON DELETE CASCADE,
+	CONSTRAINT facturas_establecimiento_id_fkey FOREIGN KEY (establecimiento_id) REFERENCES sistema_facturacion.establecimientos(id) ON DELETE RESTRICT,
+	CONSTRAINT facturas_facturacion_programada_id_fkey FOREIGN KEY (facturacion_programada_id) REFERENCES sistema_facturacion.facturacion_programada(id) ON DELETE SET NULL,
+	CONSTRAINT facturas_punto_emision_id_fkey FOREIGN KEY (punto_emision_id) REFERENCES sistema_facturacion.puntos_emision(id) ON DELETE RESTRICT,
+	CONSTRAINT facturas_usuario_id_fkey FOREIGN KEY (usuario_id) REFERENCES sistema_facturacion.usuarios(id) ON DELETE RESTRICT
+);
+
+
+-- sistema_facturacion.facturas_detalle definition
+
+-- Drop table
+
+-- DROP TABLE sistema_facturacion.facturas_detalle;
+
+CREATE TABLE sistema_facturacion.facturas_detalle (
+	id uuid DEFAULT gen_random_uuid() NOT NULL,
+	factura_id uuid NOT NULL,
+	producto_id uuid NULL,
+	codigo_producto text NOT NULL,
+	nombre text NOT NULL,
+	descripcion text NOT NULL,
+	cantidad int4 NOT NULL,
+	precio_unitario numeric(12, 2) NOT NULL,
+	descuento numeric(12, 2) DEFAULT 0 NOT NULL,
+	subtotal numeric(12, 2) NOT NULL,
+	tipo_iva text NOT NULL,
+	valor_iva numeric(12, 2) DEFAULT 0 NOT NULL,
+	costo_unitario numeric(12, 2) NULL,
+	created_at timestamptz DEFAULT now() NOT NULL,
+	updated_at timestamptz DEFAULT now() NOT NULL,
+	codigo_impuesto varchar(1) DEFAULT '2'::character varying NULL,
+	tarifa_iva numeric(5, 2) DEFAULT 0 NULL,
+	base_imponible numeric(12, 2) DEFAULT 0 NULL,
+	CONSTRAINT facturas_detalle_cantidad_check CHECK ((cantidad > 0)),
+	CONSTRAINT facturas_detalle_descuento_check CHECK ((descuento >= (0)::numeric)),
+	CONSTRAINT facturas_detalle_pkey PRIMARY KEY (id),
+	CONSTRAINT facturas_detalle_precio_unitario_check CHECK ((precio_unitario >= (0)::numeric)),
+	CONSTRAINT facturas_detalle_subtotal_check CHECK ((subtotal >= (0)::numeric)),
+	CONSTRAINT facturas_detalle_valor_iva_check CHECK ((valor_iva >= (0)::numeric)),
+	CONSTRAINT facturas_detalle_factura_id_fkey FOREIGN KEY (factura_id) REFERENCES sistema_facturacion.facturas(id) ON DELETE CASCADE,
+	CONSTRAINT facturas_detalle_producto_id_fkey FOREIGN KEY (producto_id) REFERENCES sistema_facturacion.productos(id) ON DELETE SET NULL
+);
+
+
+-- sistema_facturacion.formas_pago definition
+
+-- Drop table
+
+-- DROP TABLE sistema_facturacion.formas_pago;
+
+CREATE TABLE sistema_facturacion.formas_pago (
+	id uuid DEFAULT gen_random_uuid() NOT NULL,
+	factura_id uuid NOT NULL,
+	valor numeric(12, 2) NOT NULL,
+	plazo int4 NULL,
+	unidad_tiempo varchar(20) NULL,
+	forma_pago_sri bpchar(2) DEFAULT '01'::bpchar NOT NULL,
+	created_at timestamptz DEFAULT now() NOT NULL,
+	CONSTRAINT formas_pago_forma_pago_sri_check CHECK ((forma_pago_sri = ANY (ARRAY['01'::bpchar, '15'::bpchar, '16'::bpchar, '17'::bpchar, '18'::bpchar, '19'::bpchar, '20'::bpchar, '21'::bpchar]))),
+	CONSTRAINT formas_pago_pkey PRIMARY KEY (id),
+	CONSTRAINT formas_pago_plazo_check CHECK ((plazo >= 0)),
+	CONSTRAINT formas_pago_unidad_tiempo_check CHECK (((unidad_tiempo)::text = ANY ((ARRAY['DIAS'::character varying, 'MESES'::character varying, 'ANIOS'::character varying])::text[]))),
+	CONSTRAINT formas_pago_valor_check CHECK ((valor >= (0)::numeric)),
+	CONSTRAINT formas_pago_factura_id_fkey FOREIGN KEY (factura_id) REFERENCES sistema_facturacion.facturas(id) ON DELETE CASCADE
+);
+
+
+-- sistema_facturacion.log_emision_facturas definition
+
+-- Drop table
+
+-- DROP TABLE sistema_facturacion.log_emision_facturas;
+
+CREATE TABLE sistema_facturacion.log_emision_facturas (
+	id uuid DEFAULT gen_random_uuid() NOT NULL,
+	factura_id uuid NOT NULL,
+	facturacion_programada_id uuid NULL,
+	ambiente int2 NOT NULL,
+	tipo_intento varchar(30) DEFAULT 'INICIAL'::character varying NOT NULL,
+	intento_numero int4 DEFAULT 1 NOT NULL,
+	clave_acceso varchar(49) NULL,
+	estado varchar(30) NOT NULL,
+	sri_estado_raw varchar(30) NULL,
+	fase_falla varchar(30) NULL,
+	duracion_ms int4 NULL,
+	mensajes jsonb DEFAULT '[]'::jsonb NOT NULL,
+	client_info jsonb DEFAULT '{}'::jsonb NOT NULL,
+	notificado_cliente bool DEFAULT false NULL,
+	mensaje_notificacion text NULL,
+	xml_enviado text NULL,
+	xml_respuesta text NULL,
+	usuario_id uuid NOT NULL,
+	"timestamp" timestamptz DEFAULT now() NOT NULL,
+	observaciones text NULL,
+	CONSTRAINT log_emision_facturas_ambiente_check CHECK ((ambiente = ANY (ARRAY[1, 2]))),
+	CONSTRAINT log_emision_facturas_estado_check CHECK (((estado)::text = ANY (ARRAY[('EN_PROCESO'::character varying)::text, ('EXITOSO'::character varying)::text, ('ERROR_VALIDACION'::character varying)::text, ('ERROR_CONECTIVIDAD'::character varying)::text, ('ERROR_SISTEMA'::character varying)::text]))),
+	CONSTRAINT log_emision_facturas_fase_falla_check CHECK (((fase_falla)::text = ANY (ARRAY[('RECEPCION'::character varying)::text, ('AUTORIZACION'::character varying)::text, ('FIRMA'::character varying)::text, ('SISTEMA'::character varying)::text, ('AUTORIZACION_CONSULTA'::character varying)::text]))),
+	CONSTRAINT log_emision_facturas_intento_numero_check CHECK ((intento_numero >= 0)),
+	CONSTRAINT log_emision_facturas_pkey PRIMARY KEY (id),
+	CONSTRAINT log_emision_facturas_tipo_intento_check CHECK (((tipo_intento)::text = ANY (ARRAY[('INICIAL'::character varying)::text, ('REINTENTO'::character varying)::text, ('CONTINGENCIA'::character varying)::text, ('RECTIFICACION'::character varying)::text, ('CONSULTA'::character varying)::text]))),
+	CONSTRAINT log_emision_facturas_factura_id_fkey FOREIGN KEY (factura_id) REFERENCES sistema_facturacion.facturas(id) ON DELETE CASCADE,
+	CONSTRAINT log_emision_facturas_facturacion_programada_id_fkey FOREIGN KEY (facturacion_programada_id) REFERENCES sistema_facturacion.facturacion_programada(id) ON DELETE SET NULL,
+	CONSTRAINT log_emision_facturas_usuario_id_fkey FOREIGN KEY (usuario_id) REFERENCES sistema_facturacion.usuarios(id) ON DELETE RESTRICT
+);
+CREATE INDEX idx_log_clave_acceso ON sistema_facturacion.log_emision_facturas USING btree (clave_acceso);
+CREATE INDEX idx_log_estado_time ON sistema_facturacion.log_emision_facturas USING btree (estado, "timestamp");
+CREATE INDEX idx_log_factura_id ON sistema_facturacion.log_emision_facturas USING btree (factura_id);
+
+
+-- sistema_facturacion.movimiento_inventario definition
+
+-- Drop table
+
+-- DROP TABLE sistema_facturacion.movimiento_inventario;
+
+CREATE TABLE sistema_facturacion.movimiento_inventario (
+	id uuid DEFAULT gen_random_uuid() NOT NULL,
+	empresa_id uuid NOT NULL,
+	producto_id uuid NOT NULL,
+	usuario_id uuid NOT NULL,
+	tipo_movimiento varchar(20) NOT NULL,
+	cantidad numeric(12, 3) NOT NULL,
+	stock_anterior numeric(12, 3) NOT NULL,
+	stock_nuevo numeric(12, 3) NOT NULL,
+	costo_unitario numeric(12, 2) NULL,
+	costo_total numeric(12, 2) NULL,
+	documento_referencia varchar(50) NULL,
+	factura_id uuid NULL,
+	observaciones text NULL,
+	fecha_movimiento timestamptz DEFAULT now() NOT NULL,
+	created_at timestamptz DEFAULT now() NOT NULL,
+	CONSTRAINT movimiento_inventario_cantidad_check CHECK ((cantidad > (0)::numeric)),
+	CONSTRAINT movimiento_inventario_pkey PRIMARY KEY (id),
+	CONSTRAINT movimiento_inventario_tipo_movimiento_check CHECK (((tipo_movimiento)::text = ANY ((ARRAY['entrada'::character varying, 'salida'::character varying, 'ajuste'::character varying, 'devolucion'::character varying])::text[]))),
+	CONSTRAINT movimiento_inventario_empresa_id_fkey FOREIGN KEY (empresa_id) REFERENCES sistema_facturacion.empresas(id) ON DELETE CASCADE,
+	CONSTRAINT movimiento_inventario_producto_id_fkey FOREIGN KEY (producto_id) REFERENCES sistema_facturacion.productos(id) ON DELETE CASCADE,
+	CONSTRAINT movimiento_inventario_usuario_id_fkey FOREIGN KEY (usuario_id) REFERENCES sistema_facturacion.usuarios(id) ON DELETE RESTRICT
+);
+CREATE INDEX idx_movimiento_inv_empresa ON sistema_facturacion.movimiento_inventario USING btree (empresa_id);
+CREATE INDEX idx_movimiento_inv_fecha ON sistema_facturacion.movimiento_inventario USING btree (fecha_movimiento);
+CREATE INDEX idx_movimiento_inv_producto ON sistema_facturacion.movimiento_inventario USING btree (producto_id);
+
+
+-- sistema_facturacion.notas_credito definition
+
+-- Drop table
+
+-- DROP TABLE sistema_facturacion.notas_credito;
+
+CREATE TABLE sistema_facturacion.notas_credito (
+	id uuid DEFAULT gen_random_uuid() NOT NULL,
+	factura_id uuid NOT NULL,
+	establecimiento bpchar(3) NOT NULL,
+	punto_emision bpchar(3) NOT NULL,
+	secuencial bpchar(9) NOT NULL,
+	clave_acceso varchar(49) NULL,
+	numero_autorizacion varchar(49) NULL,
+	fecha_emision timestamptz DEFAULT now() NOT NULL,
+	estado_sri varchar(20) DEFAULT 'PENDIENTE'::character varying NOT NULL,
+	ambiente int4 DEFAULT 1 NULL,
+	tipo_emision int4 DEFAULT 1 NULL,
+	cod_doc_modificado varchar(2) DEFAULT '01'::character varying NOT NULL,
+	num_doc_modificado varchar(17) NOT NULL,
+	fecha_emision_docs_modificado date NOT NULL,
+	motivo_anulacion text NOT NULL,
+	subtotal_15_iva numeric(12, 2) DEFAULT 0.00 NOT NULL,
+	subtotal_0_iva numeric(12, 2) DEFAULT 0.00 NOT NULL,
+	iva_total numeric(12, 2) DEFAULT 0.00 NOT NULL,
+	valor_total_anulado numeric(12, 2) NOT NULL,
+	created_at timestamptz DEFAULT now() NOT NULL,
+	updated_at timestamptz DEFAULT now() NOT NULL,
+	CONSTRAINT notas_credito_ambiente_check CHECK ((ambiente = ANY (ARRAY[1, 2]))),
+	CONSTRAINT notas_credito_clave_acceso_key UNIQUE (clave_acceso),
+	CONSTRAINT notas_credito_cod_doc_modificado_check CHECK (((cod_doc_modificado)::text = '01'::text)),
+	CONSTRAINT notas_credito_estado_sri_check CHECK (((estado_sri)::text = ANY ((ARRAY['PENDIENTE'::character varying, 'RECIBIDO'::character varying, 'AUTORIZADO'::character varying, 'RECHAZADO'::character varying, 'DEVUELTA'::character varying, 'ANULADA'::character varying])::text[]))),
+	CONSTRAINT notas_credito_iva_total_check CHECK ((iva_total >= (0)::numeric)),
+	CONSTRAINT notas_credito_numero_autorizacion_key UNIQUE (numero_autorizacion),
+	CONSTRAINT notas_credito_pkey PRIMARY KEY (id),
+	CONSTRAINT notas_credito_subtotal_0_iva_check CHECK ((subtotal_0_iva >= (0)::numeric)),
+	CONSTRAINT notas_credito_subtotal_15_iva_check CHECK ((subtotal_15_iva >= (0)::numeric)),
+	CONSTRAINT notas_credito_tipo_emision_check CHECK ((tipo_emision = ANY (ARRAY[1, 2]))),
+	CONSTRAINT notas_credito_valor_total_anulado_check CHECK ((valor_total_anulado >= (0)::numeric)),
+	CONSTRAINT notas_credito_factura_id_fkey FOREIGN KEY (factura_id) REFERENCES sistema_facturacion.facturas(id) ON DELETE RESTRICT
+);
+CREATE INDEX idx_nc_factura_id ON sistema_facturacion.notas_credito USING btree (factura_id);
+
+
+-- sistema_facturacion.notas_credito_detalle definition
+
+-- Drop table
+
+-- DROP TABLE sistema_facturacion.notas_credito_detalle;
+
+CREATE TABLE sistema_facturacion.notas_credito_detalle (
+	id uuid DEFAULT gen_random_uuid() NOT NULL,
+	nota_credito_id uuid NOT NULL,
+	factura_detalle_id uuid NULL,
+	producto_id uuid NULL,
+	codigo_producto text NOT NULL,
+	nombre text NOT NULL,
+	cantidad int4 NOT NULL,
+	precio_unitario numeric(16, 6) NOT NULL,
+	descuento numeric(12, 2) DEFAULT 0 NOT NULL,
+	subtotal numeric(12, 2) NOT NULL,
+	valor_iva numeric(12, 2) DEFAULT 0 NOT NULL,
+	created_at timestamptz DEFAULT now() NOT NULL,
+	CONSTRAINT notas_credito_detalle_cantidad_check CHECK ((cantidad > 0)),
+	CONSTRAINT notas_credito_detalle_pkey PRIMARY KEY (id),
+	CONSTRAINT notas_credito_detalle_precio_unitario_check CHECK ((precio_unitario >= (0)::numeric)),
+	CONSTRAINT notas_credito_detalle_subtotal_check CHECK ((subtotal >= (0)::numeric)),
+	CONSTRAINT notas_credito_detalle_factura_detalle_id_fkey FOREIGN KEY (factura_detalle_id) REFERENCES sistema_facturacion.facturas_detalle(id) ON DELETE SET NULL,
+	CONSTRAINT notas_credito_detalle_nota_credito_id_fkey FOREIGN KEY (nota_credito_id) REFERENCES sistema_facturacion.notas_credito(id) ON DELETE CASCADE,
+	CONSTRAINT notas_credito_detalle_producto_id_fkey FOREIGN KEY (producto_id) REFERENCES sistema_facturacion.productos(id) ON DELETE SET NULL
+);
+CREATE INDEX idx_ncd_nc_id ON sistema_facturacion.notas_credito_detalle USING btree (nota_credito_id);
+
+
+-- sistema_facturacion.usuario_creacion_logs definition
+
+-- Drop table
+
+-- DROP TABLE sistema_facturacion.usuario_creacion_logs;
+
+CREATE TABLE sistema_facturacion.usuario_creacion_logs (
+	id uuid DEFAULT gen_random_uuid() NOT NULL,
+	usuario_id uuid NOT NULL,
+	actor_user_id uuid NULL,
+	actor_rol_sistema text NOT NULL,
+	actor_rol_empresa text NULL,
+	empresa_id uuid NULL,
+	origen text NOT NULL,
+	metadata jsonb NULL,
+	created_at timestamptz DEFAULT now() NOT NULL,
+	CONSTRAINT usuario_creacion_logs_origen_check CHECK ((origen = ANY (ARRAY['superadmin'::text, 'vendedor'::text, 'usuario_empresa'::text, 'sistema'::text]))),
+	CONSTRAINT usuario_creacion_logs_pkey PRIMARY KEY (id),
+	CONSTRAINT usuario_creacion_logs_actor_user_id_fkey FOREIGN KEY (actor_user_id) REFERENCES sistema_facturacion.users(id) ON DELETE SET NULL,
+	CONSTRAINT usuario_creacion_logs_empresa_id_fkey FOREIGN KEY (empresa_id) REFERENCES sistema_facturacion.empresas(id) ON DELETE SET NULL,
+	CONSTRAINT usuario_creacion_logs_usuario_id_fkey FOREIGN KEY (usuario_id) REFERENCES sistema_facturacion.usuarios(id) ON DELETE CASCADE
+);
+
+
+-- sistema_facturacion.autorizaciones_sri definition
+
+-- Drop table
+
+-- DROP TABLE sistema_facturacion.autorizaciones_sri;
+
+CREATE TABLE sistema_facturacion.autorizaciones_sri (
+	id uuid DEFAULT gen_random_uuid() NOT NULL,
+	factura_id uuid NOT NULL,
+	numero_autorizacion varchar(49) NULL,
+	fecha_autorizacion timestamptz NULL,
+	estado varchar(30) NOT NULL,
+	mensajes jsonb NULL,
+	xml_enviado text NULL,
+	xml_respuesta text NULL,
+	created_at timestamptz DEFAULT now() NOT NULL,
+	updated_at timestamptz DEFAULT now() NOT NULL,
+	CONSTRAINT autorizaciones_sri_estado_check CHECK (((estado)::text = ANY (ARRAY[('AUTORIZADO'::character varying)::text, ('NO_AUTORIZADO'::character varying)::text, ('DEVUELTA'::character varying)::text, ('DEVUELTO'::character varying)::text, ('CANCELADO'::character varying)::text, ('EN_PROCESO'::character varying)::text, ('DESCONOCIDO'::character varying)::text]))),
+	CONSTRAINT autorizaciones_sri_pkey PRIMARY KEY (id),
+	CONSTRAINT uq_autorizacion_sri_factura UNIQUE (factura_id),
+	CONSTRAINT autorizaciones_sri_factura_id_fkey FOREIGN KEY (factura_id) REFERENCES sistema_facturacion.facturas(id) ON DELETE CASCADE
+);
+CREATE INDEX idx_autorizacion_sri_factura_id ON sistema_facturacion.autorizaciones_sri USING btree (factura_id);
+CREATE INDEX idx_autorizacion_sri_numero ON sistema_facturacion.autorizaciones_sri USING btree (numero_autorizacion);
+
+
+-- sistema_facturacion.autorizaciones_sri_notas_credito definition
+
+-- Drop table
+
+-- DROP TABLE sistema_facturacion.autorizaciones_sri_notas_credito;
+
+CREATE TABLE sistema_facturacion.autorizaciones_sri_notas_credito (
+	id uuid DEFAULT gen_random_uuid() NOT NULL,
+	nota_credito_id uuid NOT NULL,
+	numero_autorizacion varchar(49) NOT NULL,
+	fecha_autorizacion timestamptz NOT NULL,
+	estado varchar(30) NOT NULL,
+	mensajes jsonb NULL,
+	xml_enviado text NULL,
+	xml_respuesta text NULL,
+	created_at timestamptz DEFAULT now() NOT NULL,
+	updated_at timestamptz DEFAULT now() NOT NULL,
+	CONSTRAINT autorizaciones_sri_notas_credito_estado_check CHECK (((estado)::text = ANY ((ARRAY['AUTORIZADO'::character varying, 'NO_AUTORIZADO'::character varying, 'DEVUELTO'::character varying, 'CANCELADO'::character varying])::text[]))),
+	CONSTRAINT autorizaciones_sri_notas_credito_pkey PRIMARY KEY (id),
+	CONSTRAINT uq_autorizacion_sri_nc UNIQUE (nota_credito_id),
+	CONSTRAINT autorizaciones_sri_notas_credito_nota_credito_id_fkey FOREIGN KEY (nota_credito_id) REFERENCES sistema_facturacion.notas_credito(id) ON DELETE CASCADE
+);
+CREATE INDEX idx_autorizacion_sri_nc_id ON sistema_facturacion.autorizaciones_sri_notas_credito USING btree (nota_credito_id);
+
+
+-- sistema_facturacion.cuentas_cobrar definition
+
+-- Drop table
+
+-- DROP TABLE sistema_facturacion.cuentas_cobrar;
+
+CREATE TABLE sistema_facturacion.cuentas_cobrar (
+	id uuid DEFAULT gen_random_uuid() NOT NULL,
+	empresa_id uuid NOT NULL,
+	factura_id uuid NOT NULL,
+	cliente_id uuid NOT NULL,
+	numero_documento text NOT NULL,
+	fecha_emision date NOT NULL,
+	fecha_vencimiento date NOT NULL,
+	monto_total numeric(12, 2) NOT NULL,
+	monto_pagado numeric(12, 2) DEFAULT 0 NOT NULL,
+	saldo_pendiente numeric(12, 2) NOT NULL,
+	estado text DEFAULT 'pendiente'::text NOT NULL,
+	dias_vencido int4 DEFAULT 0 NOT NULL,
+	observaciones text NULL,
+	created_at timestamptz DEFAULT now() NOT NULL,
+	updated_at timestamptz DEFAULT now() NOT NULL,
+	CONSTRAINT chk_montos_consistencia CHECK (((monto_pagado <= monto_total) AND (saldo_pendiente = (monto_total - monto_pagado)))),
+	CONSTRAINT cuentas_cobrar_check CHECK ((fecha_vencimiento >= fecha_emision)),
+	CONSTRAINT cuentas_cobrar_dias_vencido_check CHECK ((dias_vencido >= 0)),
+	CONSTRAINT cuentas_cobrar_estado_check CHECK ((estado = ANY (ARRAY['pendiente'::text, 'pagado'::text, 'vencido'::text, 'anulado'::text]))),
+	CONSTRAINT cuentas_cobrar_monto_pagado_check CHECK ((monto_pagado >= (0)::numeric)),
+	CONSTRAINT cuentas_cobrar_monto_total_check CHECK ((monto_total >= (0)::numeric)),
+	CONSTRAINT cuentas_cobrar_pkey PRIMARY KEY (id),
+	CONSTRAINT cuentas_cobrar_saldo_pendiente_check CHECK ((saldo_pendiente >= (0)::numeric)),
+	CONSTRAINT uq_cuenta_cobrar_factura UNIQUE (factura_id),
+	CONSTRAINT cuentas_cobrar_cliente_id_fkey FOREIGN KEY (cliente_id) REFERENCES sistema_facturacion.clientes(id) ON DELETE RESTRICT,
+	CONSTRAINT cuentas_cobrar_empresa_id_fkey FOREIGN KEY (empresa_id) REFERENCES sistema_facturacion.empresas(id) ON DELETE CASCADE,
+	CONSTRAINT cuentas_cobrar_factura_id_fkey FOREIGN KEY (factura_id) REFERENCES sistema_facturacion.facturas(id) ON DELETE CASCADE
+);
+
+
+-- sistema_facturacion.log_emision_notas_credito definition
+
+-- Drop table
+
+-- DROP TABLE sistema_facturacion.log_emision_notas_credito;
+
+CREATE TABLE sistema_facturacion.log_emision_notas_credito (
+	id uuid DEFAULT gen_random_uuid() NOT NULL,
+	nota_credito_id uuid NOT NULL,
+	ambiente int2 NOT NULL,
+	tipo_intento varchar(30) DEFAULT 'INICIAL'::character varying NOT NULL,
+	intento_numero int4 DEFAULT 1 NOT NULL,
+	clave_acceso varchar(49) NULL,
+	estado varchar(30) NOT NULL,
+	sri_estado_raw varchar(30) NULL,
+	fase_falla varchar(30) NULL,
+	duracion_ms int4 NULL,
+	mensajes jsonb DEFAULT '[]'::jsonb NOT NULL,
+	client_info jsonb DEFAULT '{}'::jsonb NOT NULL,
+	notificado_cliente bool DEFAULT false NULL,
+	mensaje_notificacion text NULL,
+	xml_enviado text NULL,
+	xml_respuesta text NULL,
+	usuario_id uuid NOT NULL,
+	"timestamp" timestamptz DEFAULT now() NOT NULL,
+	CONSTRAINT log_emision_notas_credito_ambiente_check CHECK ((ambiente = ANY (ARRAY[1, 2]))),
+	CONSTRAINT log_emision_notas_credito_estado_check CHECK (((estado)::text = ANY ((ARRAY['EN_PROCESO'::character varying, 'EXITOSO'::character varying, 'ERROR_VALIDACION'::character varying, 'ERROR_CONECTIVIDAD'::character varying, 'ERROR_SISTEMA'::character varying])::text[]))),
+	CONSTRAINT log_emision_notas_credito_fase_falla_check CHECK (((fase_falla)::text = ANY ((ARRAY['RECEPCION'::character varying, 'AUTORIZACION'::character varying, 'FIRMA'::character varying, 'SISTEMA'::character varying, 'AUTORIZACION_CONSULTA'::character varying])::text[]))),
+	CONSTRAINT log_emision_notas_credito_intento_numero_check CHECK ((intento_numero >= 0)),
+	CONSTRAINT log_emision_notas_credito_pkey PRIMARY KEY (id),
+	CONSTRAINT log_emision_notas_credito_tipo_intento_check CHECK (((tipo_intento)::text = ANY ((ARRAY['INICIAL'::character varying, 'REINTENTO'::character varying, 'CONTINGENCIA'::character varying, 'RECTIFICACION'::character varying, 'CONSULTA'::character varying])::text[]))),
+	CONSTRAINT log_emision_notas_credito_nota_credito_id_fkey FOREIGN KEY (nota_credito_id) REFERENCES sistema_facturacion.notas_credito(id) ON DELETE CASCADE,
+	CONSTRAINT log_emision_notas_credito_usuario_id_fkey FOREIGN KEY (usuario_id) REFERENCES sistema_facturacion.usuarios(id) ON DELETE RESTRICT
+);
+CREATE INDEX idx_log_nc_id ON sistema_facturacion.log_emision_notas_credito USING btree (nota_credito_id);
+
+
+-- sistema_facturacion.pagos_factura definition
+
+-- Drop table
+
+-- DROP TABLE sistema_facturacion.pagos_factura;
+
+CREATE TABLE sistema_facturacion.pagos_factura (
+	id uuid DEFAULT gen_random_uuid() NOT NULL,
+	cuenta_cobrar_id uuid NOT NULL,
+	usuario_id uuid NOT NULL,
+	numero_recibo text NOT NULL,
+	fecha_pago date DEFAULT CURRENT_DATE NOT NULL,
+	monto numeric(12, 2) NOT NULL,
+	metodo_pago_sri bpchar(2) NOT NULL,
+	numero_referencia text NULL,
+	comprobante_url text NULL,
+	observaciones text NULL,
+	created_at timestamptz DEFAULT now() NOT NULL,
+	CONSTRAINT pagos_factura_metodo_pago_sri_check CHECK ((metodo_pago_sri = ANY (ARRAY['01'::bpchar, '15'::bpchar, '16'::bpchar, '17'::bpchar, '18'::bpchar, '19'::bpchar, '20'::bpchar, '21'::bpchar]))),
+	CONSTRAINT pagos_factura_monto_check CHECK ((monto > (0)::numeric)),
+	CONSTRAINT pagos_factura_numero_recibo_key UNIQUE (numero_recibo),
+	CONSTRAINT pagos_factura_pkey PRIMARY KEY (id),
+	CONSTRAINT pagos_factura_cuenta_cobrar_id_fkey FOREIGN KEY (cuenta_cobrar_id) REFERENCES sistema_facturacion.cuentas_cobrar(id) ON DELETE CASCADE,
+	CONSTRAINT pagos_factura_usuario_id_fkey FOREIGN KEY (usuario_id) REFERENCES sistema_facturacion.usuarios(id) ON DELETE RESTRICT
+);
