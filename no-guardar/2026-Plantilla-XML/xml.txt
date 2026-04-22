@@ -1,0 +1,105 @@
+# Resumen ejecutivo  
+En el sistema de comprobantes electrónicos del SRI existen dos fechas clave: la **fecha de emisión** (cuando el emisor genera el comprobante) y la **fecha de autorización** (cuando el SRI aprueba el comprobante). Por normativa reciente (Resolución  NAC-DGERCGC25-00000017 de 2025) se exige transmisión en tiempo real, de modo que la fecha de emisión **debe coincidir con la fecha real de la operación**【46†L285-L293】. En la práctica, los comprobantes electrónicos incluyen siempre su `<fechaEmision>` en el XML obligatorio【84†L1-L4】, pero las respuestas de autorización sólo reportan la fecha/hora de autorización otorgada por el SRI【26†L900-L907】. Es decir, el SRI **no filtra ni registra por separado** la fecha de emisión en sus “registros de autorizaciones” (excepto como parte de la clave de acceso)【26†L900-L907】【86†L604-L611】. Como evidencia, la interfaz de consulta en línea del SRI muestra **sólo la fecha de autorización** en los resultados【20†L25-L30】. 
+
+En este informe se analizan las normas vigentes, guías técnicas y reglas de validación asociadas a estas fechas, con ejemplos de XML y un flujo de validación. Se incluye una tabla comparativa “Fecha de emisión vs Fecha de autorización” indicando dónde se usa cada una (obligatorio, opcional o ignorado). Finalmente, se detallan las implicaciones para emisores/integradores y recomendaciones de implementación.  
+
+## Normativa y resoluciones recientes  
+- **Emisión en tiempo real (2026):** La Resolución NAC-DGERCGC25-00000017 (firmada en julio 2025) estipula que, desde el 1 de enero de 2026, las facturas electrónicas se deben transmitir al SRI “en tiempo real”, de modo que la **fecha de emisión del comprobante** coincida con la fecha actual de la operación【46†L285-L293】. Esto refuerza que no se admitan emisiones retroactivas.  
+- **Plazo de transmisión:** Previamente, el SRI permitía transmitir comprobantes hasta 72 horas tras la emisión. En noviembre de 2024 la Resolución NAC-DGERCGC24-00000035 extendió ese plazo a **4 días hábiles**【79†L10-L18】 (por emergencia eléctrica), pero a partir de 2026 nuevamente debe ser inmediato.  
+- **Anulación y plazos:** La Resolución NAC-DGERCGC25-00000014 (junio 2025) fija plazos de anulación basados en la fecha de emisión. Por ejemplo, las facturas electrónicas sólo se pueden anular hasta el día 10 del mes siguiente a la **fecha de emisión**【81†L133-L142】. Esto demuestra que, en normativa oficial, la fecha de emisión es un dato legalmente relevante (p.ej. para plazos).  
+- **Otros antecedents:** La Resolución NAC-DGERCGC18-00000233 (junio 2018) regula el envío de comprobantes electrónicos. Durante la emergencia eléctrica de 2024 se permitió un límite de emisión física, pero en general se promueve la emisión electrónica respetando los plazos anteriores.  
+
+En resumen, la **fecha de emisión** es clave para efectos legales (plazos de emisión/anulación), pero en el registro de autorizaciones electrónicas del SRI el dato principal es la **fecha de autorización** que genera el SRI al aprobar el comprobante. No existe, tras 2026, un campo aparte de “fecha de emisión” en dichos registros de autorización, salvo como parte de la clave de acceso.  
+
+## Guías técnicas y campos de esquema  
+Según la ficha técnica vigente (esquema off-line v2.31, abril 2025)【84†L1-L4】【86†L604-L611】:  
+- En el XML de cada comprobante (**factura, retención, guía, etc.**) existe siempre un elemento `<infoFactura><fechaEmision>DD/MM/AAAA</fechaEmision>…`. Este campo es **obligatorio** en el esquema de factura electrónica【84†L1-L4】. Corresponde a la fecha en que el emisor expidió el documento.  
+- La **clave de acceso** (código único del comprobante) incluye la fecha de emisión como sus primeros 8 dígitos (formato `ddmmaaaa`)【86†L604-L611】. Ejemplo: `<claveAcceso>2808201400179210439400110010010000000091234567812</claveAcceso>`, donde “28082014” indica la fecha de emisión.  
+- En la **respuesta del servicio web de autorización** (`autorizacionComprobanteResponse`), el SRI devuelve: `<estado>`, `<numeroAutorizacion>`, `<fechaAutorizacion>…</fechaAutorizacion>`, `<ambiente>`, y el contenido `<comprobante><![CDATA[…]]></comprobante>` con el comprobante original. **No incluye un campo `<fechaEmision>` independiente**. En el ejemplo autorizado oficial se ve claramente que sólo aparece `<fechaAutorizacion>2012-03-05T16:57:34.997-05:00</fechaAutorizacion>`【26†L900-L907】, mientras que la información de emisión se encuentra dentro del CDATA del `<comprobante>` (en `<infoFactura><fechaEmision>`).  
+- En el **WS de recepción**, al validar el comprobante, se aplican reglas de fecha: por ejemplo, la ficha técnica lista el error 65 “*Fecha de emisión extemporánea*” si el documento se envía fuera del plazo permitido【49†L31-L39】. Asimismo, en anulaciones existe el código 6005 “ANULACION_FECHA_DIFERENTE_HOY” si la fecha de emisión no coincide con el día de la solicitud de anulación【49†L43-L49】. Estas validaciones demuestran que el SRI chequea plazos basados en la fecha de emisión proporcionada.  
+
+En cuanto a **esquema JSON** (utilizado en algunas librerías o APIs REST), se usan campos equivalentes. Por ejemplo, el proyecto *Open Factura* muestra `"fechaEmision": "01/12/2024"` dentro de la estructura `infoFactura` en JSON【62†L366-L372】, y `"fechaAutorizacion"` en la respuesta de autorización. Pero el estándar oficial está definido en XML XSD como se citó.  
+
+## Tabla comparativa: Fecha de emisión vs Fecha de autorización  
+
+| Contexto / Uso                    | **Fecha de emisión**                                  | **Fecha de autorización**                              |
+|-----------------------------------|-------------------------------------------------------|--------------------------------------------------------|
+| XML del comprobante (factura)     | Obligatorio en `<infoFactura><fechaEmision>dd/MM/AAAA</fechaEmision>`【84†L1-L4】. Marca la fecha real del comprobante. | No existe en el XML original; la autorización la genera después el SRI. |
+| Clave de acceso                   | Incluida como los 8 primeros dígitos de la clave (formato DDMMYYYY)【86†L604-L611】. | No figura directamente (solo el último dígito verificador, calculado). |
+| Respuesta WS “autorizarComprobante” | *Implícita:* no hay tag, pero el `<comprobante><![CDATA[…]]>` contiene el comprobante original con su fechaEmision. | Campo `<fechaAutorizacion>` presente en cada `<autorizacion>` devuelta【26†L900-L907】【27†L945-L953】. Siempre se informa la fecha/hora de aprobación. |
+| Consulta en línea SRI (validez CE) | No se puede buscar o mostrar la fecha de emisión. El filtro es por claveAcceso o N° autorización. | Aparece en el resultado final (columna “Fecha autorización”)【20†L25-L30】. La interfaz sólo muestra esta fecha como referencia. |
+| RIDE (representación impresa)     | Aparece siempre (fecha del comprobante emitido). Es parte del contenido del comprobante. | Se puede imprimir opcionalmente en el RIDE. El SRI indica que los RIDE descargados del portal incluyen hora/fecha de autorización, aunque el emisor no está obligado a incluirla【58†L37-L40】. |
+| Validaciones / Errores SRI        | Verificada en recepción (p.ej. error 65 “emisión extemporánea” si fuera de plazo)【49†L31-L39】. <br> Importante para plazos legales (anulación, etc.)【81†L133-L142】. | No aplica en recepción. Sí se verifica en anulación (error 6005 si no coincide con la fecha de hoy)【49†L43-L49】. |
+
+## Ejemplos de XML
+
+- *Ejemplo de factura electrónica (parcial)* con fecha de emisión:  
+  ```xml
+  <factura id="comprobante" version="1.0.0">
+    <infoTributaria>
+      <ruc>1790012345001</ruc>
+      <!-- otros datos tributarios -->
+    </infoTributaria>
+    <infoFactura>
+      <fechaEmision>30/03/2026</fechaEmision>
+      <!-- otros campos de factura -->
+    </infoFactura>
+    <!-- detalles, totales, etc. -->
+  </factura>
+  ```  
+  Aquí `<fechaEmision>` indica el día de emisión (formato DD/MM/AAAA)【84†L1-L4】.
+
+- *Ejemplo de respuesta autorizada (parcial)*:  
+  ```xml
+  <autorizacion>
+    <estado>AUTORIZADO</estado>
+    <numeroAutorizacion>0123456789001</numeroAutorizacion>
+    <fechaAutorizacion>2026-03-30T14:30:00-05:00</fechaAutorizacion>
+    <ambiente>PRODUCCION</ambiente>
+    <comprobante><![CDATA[
+      <factura id="comprobante" version="1.0.0">
+        <infoTributaria>
+          <ruc>1790012345001</ruc>
+        </infoTributaria>
+        <infoFactura>
+          <fechaEmision>30/03/2026</fechaEmision>
+          <!-- resto del comprobante -->
+        </infoFactura>
+      </factura>
+    ]]></comprobante>
+  </autorizacion>
+  ```  
+  Observe que la etiqueta `<fechaAutorizacion>` contiene la fecha/hora de aprobación por el SRI. La fecha de emisión original queda dentro del CDATA del comprobante. En caso de rechazo la estructura `<autorizacion>` mostraría `<estado>RECHAZADO</estado>` y aún así incluiría `<fechaAutorizacion>` (la fecha en que se procesó la solicitud)【27†L945-L953】.
+
+## Esquema de validación (WS)  
+```mermaid
+flowchart LR
+    A[Envío al WS de Recepción] --> B{Validaciones en SRI}
+    B --> B1[Esquema XSD válido]
+    B --> B2[Cédula/RUC y firma válidos]
+    B --> B3[Fecha de emisión dentro de plazo (error 65 si extemporánea)【49†L31-L39】]
+    B --> C{Resultado Recepción}
+    C -->|RECIBIDA| D[Esperar autorizaciones]
+    C -->|DEVUELTA| E[Motivos de rechazo]    
+    D --> F[WS de Autorización (claveAcceso)]
+    F --> G{Estado en SRI}
+    G -->|AUTORIZADO| H[Devuelve <autorizacion> con fechaAutorización【26†L900-L907】]
+    G -->|NO AUTORIZADO| I[Devuelve <autorizacion> con <estado>RECHAZADO】
+```
+Este diagrama muestra que, tras recibir el comprobante, el SRI primero valida el esquema y la *fecha de emisión* (y otros datos). Si pasa, se marca como `RECIBIDA`. Luego, mediante la consulta de autorización, el sistema devuelve el resultado final con el **estado** y la **fecha de autorización**. Si el comprobante no cumple (por ejemplo, es extemporáneo), se rechaza (errores 35, 65, etc.) y no se genera autorización.
+
+## Implicaciones para emisores e integradores  
+- **Emisores:** Deben ajustar sus sistemas para generar las facturas con la fecha real del día. Tras la resolución 2026, emitir con fecha anterior o futura podría causar rechazos (código 65 en la recepción) o problemas en la conciliación tributaria. En los comprobantes impresos (RIDE) es usual mostrar ambas fechas: la de emisión (siempre) y, opcionalmente, la de autorización. Al generar la clave de acceso, asegúrese de usar correctamente la fecha de emisión en el formato `DDMMAAAA`【86†L604-L611】.  
+- **Integradores y sistemas contables:** Deben almacenar tanto la fecha de emisión (proporcionada por el emisor) como la fecha de autorización (devuelta por el SRI). Para validaciones internas, tengan en cuenta que la **consulta de validez** de un comprobante electrónico en el portal del SRI sólo usa clave de acceso o número de autorización, y muestra *fechaAutorización*【20†L25-L30】. No hay consulta pública por fecha de emisión. Además, se ha observado que el servicio de consulta del SRI a veces no devuelve facturas muy antiguas (plazo típico ~10 días desde emisión), por lo que conviene obtener los XML autorizados lo antes posible. Para la anulación de comprobantes, recuerde usar la misma fecha de emisión para la solicitud: de lo contrario, la SRI rechazará la petición (error “ANULACION_FECHA_DIFERENTE_HOY”【49†L43-L49】).  
+
+## Recomendaciones de implementación  
+1. **Validar internamente la fecha:** Antes de enviar el XML al SRI, confirme que `fechaEmision` coincide con la fecha del sistema (o con la fecha real de operación) para evitar errores.  
+2. **Generar correctamente la clave de acceso:** Use la fecha de emisión en formato ddmmaaaa como indicativo único【86†L604-L611】.  
+3. **Consumir WS de autorización oportunamente:** Tras recibir estado `RECIBIDA`, espere el tiempo recomendado y consulte `autorizacionComprobante` usando la clave de acceso. Esto proveerá la `<fechaAutorizacion>`【26†L900-L907】.  
+4. **Registrar ambas fechas:** En su base de datos, mantenga `fecha_emision` (fecha contable del comprobante) y `fecha_autorizacion` (respuesta del SRI) por separado. No dependa de la consulta del SRI para la fecha de emisión.  
+5. **Manejar errores de fecha:** Si el SRI reporta error 65, revise que la emisión no exceda el plazo; en anulaciones, evite el error 6005 enviando la fecha correcta.  
+6. **Monitorear cambios normativos:** Aunque no deben hacerse suposiciones más allá de marzo 2026, manténganse atentos a futuras actualizaciones del SRI (resoluciones o guías) respecto a plazos de emisión y autorización.  
+
+Con estas medidas, los emisores e integradores garantizarán un proceso robusto de facturación electrónica, alineado con la normativa y los requerimientos técnicos actuales del SRI, evitando rechazos innecesarios por fechas y aprovechando correctamente la información de autorización. 
+
+**Fuentes:** Documentación técnica oficial del SRI【84†L1-L4】【86†L604-L611】【26†L900-L907】【27†L945-L953】【49†L31-L39】【49†L43-L49】, portal de consultas del SRI【20†L25-L30】, y boletines/resoluciones SRI【79†L10-L18】【81†L133-L142】.

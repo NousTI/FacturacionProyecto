@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Factura NOUS</title>
+    <style>
+        @page {
+            size: A4;
+            margin: 1cm;
+        }
+        body {
+            font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+            font-size: 8pt;
+            color: #333333;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .text-center { text-align: center; }
+        .text-right { text-align: right; }
+        .text-left { text-align: left; }
+        .font-bold { font-weight: bold; }
+        
+        /* Contenedor de Información Factura */
+        .info-box {
+            border: 1px solid #d1d5db;
+            border-radius: 8px; /* xhtml2pdf lo renderiza a su manera */
+            padding: 10px;
+            background-color: #fafafa;
+        }
+        .info-box-title {
+            text-align: center;
+            font-size: 11pt;
+            font-weight: bold;
+            margin-bottom: 12px;
+            color: #000;
+        }
+        
+        /* Contenedor Cliente */
+        .client-box {
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            padding: 10px;
+            margin-top: 15px;
+            margin-bottom: 15px;
+            background-color: #ffffff;
+        }
+
+        /* Tabla de Detalles */
+        .items-header th {
+            background-color: #374151; /* Gris oscuro idéntico a la imagen */
+            color: #ffffff;
+            padding: 8px 6px;
+            text-align: left;
+            font-size: 8pt;
+            font-weight: bold;
+        }
+        .items-row td {
+            padding: 8px 6px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        /* Tabla Totales */
+        .totals-table td {
+            padding: 6px;
+            border: 1px solid #e5e7eb;
+        }
+        .totals-label {
+            font-weight: bold;
+            text-align: right;
+            background-color: #f9fafb;
+            color: #111827;
+            text-transform: uppercase;
+            font-size: 7.5pt;
+        }
+        .totals-value {
+            text-align: right;
+            width: 80px;
+        }
+        .totals-final {
+            background-color: #f3f4f6;
+            font-weight: bold;
+        }
+        
+        /* Tabla Forma de pago */
+        .payment-header th {
+            background-color: #374151; 
+            color: #ffffff;
+            padding: 8px 6px;
+            text-align: left;
+        }
+        .payment-row td {
+            padding: 8px 6px;
+            border: 1px solid #e5e7eb;
+        }
+
+        /* Espaciados Generales */
+        .mb-2 { margin-bottom: 4px; }
+        .mb-4 { margin-bottom: 8px; }
+        .mt-4 { margin-top: 8px; }
+        .pl-2 { padding-left: 8px; }
+        
+        /* Código de Barras */
+        .barcode {
+            text-align: center;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- CABECERA PRINCIPAL -->
+    <table>
+        <tr>
+            <!-- Lado Emisor (Izquierda) -->
+            <td style="width: 50%; vertical-align: top; padding-right: 20px;">
+                <!-- Imagen placeholder fijada a 200x80 -->
+                <div class="mb-4">
+                    <img src="https://via.placeholder.com/200x80.png?text=LOGO+EMPRESA" style="width: 200px; height: 80px;" alt="Logo placeholder"/>
+                </div>
+                
+                <table style="width: 100%; margin-top: 15px;">
+                    <tr>
+                        <td style="width: 35%;" class="font-bold mb-2">Razón Social:</td>
+                        <td>{{ factura.snapshot_empresa.razon_social }}</td>
+                    </tr>
+                    <tr>
+                        <td class="font-bold mb-2">Dir. Matriz:</td>
+                        <td>{{ factura.snapshot_empresa.direccion }}</td>
+                    </tr>
+                    <tr>
+                        <td class="font-bold mb-2">Dir. Sucursal:</td>
+                        <td>{{ factura.snapshot_establecimiento.direccion or '--' }}</td>
+                    </tr>
+                    <tr>
+                        <td class="font-bold mb-2">Obligado A Llevar Contabilidad:</td>
+                        <td>{{ 'SI' if factura.snapshot_empresa.obligado_contabilidad else 'NO' }}</td>
+                    </tr>
+                    <tr>
+                        <td class="font-bold mb-2">Contribuyente Régimen:</td>
+                        <td>
+                            {% if factura.leyendas_regimen %}
+                                {% for leyenda in factura.leyendas_regimen %}{{ leyenda }} {% endfor %}
+                            {% else %}
+                                --
+                            {% endif %}
+                        </td>
+                    </tr>
+                </table>
+            </td>
+            
+            <!-- Lado SRI (Derecha) -->
+            <td style="width: 50%; vertical-align: top;">
+                <div class="info-box">
+                    <div class="info-box-title">INFORMACIÓN FACTURA</div>
+                    
+                    <table style="width: 100%; margin-bottom: 5px;">
+                        <tr>
+                            <td style="width: 45%;" class="font-bold mb-2">RUC:</td>
+                            <td>{{ factura.snapshot_empresa.ruc }}</td>
+                        </tr>
+                        <tr>
+                            <td class="font-bold mb-2">NUMERO:</td>
+                            <td>{{ factura.numero_factura or '--' }}</td>
+                        </tr>
+                        <tr>
+                            <td class="font-bold mb-2">FECHA EMISIÓN:</td>
+                            <td>{{ factura.fecha_emision }}</td>
+                        </tr>
+                        <tr>
+                            <td class="font-bold mb-2">ESTADO:</td>
+                            <td>{{ factura.estado }}</td>
+                        </tr>
+                        <tr>
+                            <td class="font-bold mb-2">FECHA Y HORA DE AUTORIZACIÓN:</td>
+                            <!-- Evito romper si viene None -->
+                            <td>{{ factura.fecha_autorizacion|string if factura.fecha_autorizacion else '--' }}</td>
+                        </tr>
+                    </table>
+                    
+                    <table style="width: 100%; margin-bottom: 5px;">
+                        <tr>
+                            <td class="font-bold" style="width: 25%;">AMBIENTE:</td>
+                            <td style="width: 25%;">{{ 'Producción' if factura.ambiente == 2 else 'Pruebas' }}</td>
+                            <td class="font-bold" style="width: 20%; padding-left: 5px;">EMISIÓN:</td>
+                            <td style="width: 30%;">{{ 'Normal' if factura.tipo_emision == 1 else 'Contingencia' }}</td>
+                        </tr>
+                    </table>
+
+                    <table style="width: 100%; margin-bottom: 12px;">
+                        <tr>
+                            <td class="font-bold" style="width: 40%;">ESTABLECIMIENTO:</td>
+                            <td style="width: 10%;">--</td>
+                            <td class="font-bold" style="width: 40%; padding-left: 5px;">PTO. EMISIÓN:</td>
+                            <td style="width: 10%;">--</td>
+                        </tr>
+                    </table>
+                    
+                    <div class="text-center font-bold" style="font-size: 7.5pt; margin-bottom: 4px;">
+                        NUMERO DE AUTORIZACIÓN / CLAVE DE ACCESO
+                    </div>
+                    {% if factura.clave_acceso %}
+                        <div style="font-family: monospace; font-size: 8pt; text-align: center; margin-bottom: 4px;">
+                            {{ factura.clave_acceso }}
+                        </div>
+                        <div class="barcode">
+                            <barcode code="{{ factura.clave_acceso }}" type="code128" barheight="30" />
+                        </div>
+                    {% else %}
+                        <div class="text-center" style="padding: 10px; color: #9ca3af; font-family: monospace;">-- PENDIENTE --</div>
+                    {% endif %}
+                </div>
+            </td>
+        </tr>
+    </table>
+
+    <!-- BLOQUE CLIENTE -->
+    <div class="client-box">
+        <table style="width: 100%;">
+            <tr>
+                <td class="font-bold" style="width: 22%; padding-bottom: 6px;">Razón Social o Nombre Cliente:</td>
+                <td style="width: 43%; padding-bottom: 6px;">{{ factura.snapshot_cliente.razon_social }}</td>
+                <td class="font-bold pl-2" style="width: 10%; padding-bottom: 6px;">RUC:</td>
+                <td style="width: 25%; padding-bottom: 6px;">{{ factura.snapshot_cliente.identificacion }}</td>
+            </tr>
+            <tr>
+                <td class="font-bold" style="padding-bottom: 6px;">Dirección:</td>
+                <td style="padding-bottom: 6px;">{{ factura.snapshot_cliente.direccion }}</td>
+                <td class="font-bold pl-2" style="padding-bottom: 6px;">Guía de Remisión:</td>
+                <td style="padding-bottom: 6px;">{{ factura.guia_remision or '--' }}</td>
+            </tr>
+            <tr>
+                <td class="font-bold">Correo:</td>
+                <td>{{ factura.snapshot_cliente.email }}</td>
+                <td class="font-bold pl-2">Teléfono:</td>
+                <td>--</td>
+            </tr>
+        </table>
+    </div>
+
+    <!-- TABLA DE ITEMS -->
+    <table class="mb-4">
+        <thead class="items-header">
+            <tr>
+                <th style="width: 12%;">Código</th>
+                <th style="width: 45%;">Descripción</th>
+                <th style="width: 8%; text-align: center;">Cant.</th>
+                <th style="width: 12%; text-align: right;">Precio U.</th>
+                <th style="width: 8%; text-align: right;">% Desc.</th>
+                <th style="width: 15%; text-align: right;">Precio Total</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Bucle Items Jinja2 -->
+            {% for detalle in factura.detalles %}
+            <tr class="items-row">
+                <td>{{ detalle.codigo_producto or detalle.producto_sku or '--' }}</td>
+                <td>{{ detalle.nombre or detalle.producto_nombre }}</td>
+                <td class="text-center">{{ detalle.cantidad }}</td>
+                <td class="text-right">${{ "%.2f"|format(detalle.precio_unitario) }}</td>
+                <td class="text-right">--</td>
+                <td class="text-right">${{ "%.2f"|format(detalle.subtotal) }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <!-- BLOQUES INFERIORES: FORMA PAGO Y TOTALES -->
+    <table>
+        <tr>
+            <!-- Izquierda: Forma de Pago -->
+            <td style="width: 55%; vertical-align: top; padding-right: 20px;">
+                <table style="width: 100%;">
+                    <thead class="payment-header">
+                        <tr>
+                            <th style="width: 50%;">Forma de pago</th>
+                            <th style="width: 20%; text-align: right;">Valor</th>
+                            <th style="width: 15%; text-align: center;">Plazo</th>
+                            <th style="width: 15%; text-align: center;">Tiempo</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="payment-row">
+                            <td>{{ factura.forma_pago_descripcion }}</td>
+                            <td class="text-right">${{ "%.2f"|format(factura.total) if factura.total is number else '--' }}</td>
+                            <td class="text-center">{{ factura.plazo or '0' }}</td>
+                            <td class="text-center">{{ factura.unidad_tiempo or 'Días' }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </td>
+            
+            <!-- Derecha: Totales -->
+            <td style="width: 45%; vertical-align: top;">
+                <table class="totals-table">
+                    <tr>
+                        <td class="totals-label">SUBTOTAL 15%</td>
+                        <td class="totals-value">--</td>
+                    </tr>
+                    <tr>
+                        <td class="totals-label">SUBTOTAL 0%</td>
+                        <td class="totals-value">--</td>
+                    </tr>
+                    <tr>
+                        <td class="totals-label">SUBTOTAL NO OBJETO DE IVA</td>
+                        <td class="totals-value">--</td>
+                    </tr>
+                    <tr>
+                        <td class="totals-label">SUBTOTAL EXENTO DE IVA</td>
+                        <td class="totals-value">--</td>
+                    </tr>
+                    <tr>
+                        <td class="totals-label">SUBTOTAL SIN IMPUESTOS</td>
+                        <td class="totals-value">${{ "%.2f"|format((factura.subtotal_sin_iva or 0) + (factura.subtotal_con_iva or 0)) }}</td>
+                    </tr>
+                    <tr>
+                        <td class="totals-label">DESCUENTO</td>
+                        <td class="totals-value">${{ "%.2f"|format(factura.descuento or 0) }}</td>
+                    </tr>
+                    <tr>
+                        <td class="totals-label">ICE</td>
+                        <td class="totals-value">--</td>
+                    </tr>
+                    <tr>
+                        <td class="totals-label">IVA 15%</td>
+                        <td class="totals-value">${{ "%.2f"|format(factura.iva or 0) }}</td>
+                    </tr>
+                    <tr>
+                        <td class="totals-label">PROPINA</td>
+                        <td class="totals-value">${{ "%.2f"|format(factura.propina or 0) }}</td>
+                    </tr>
+                    <tr class="totals-final">
+                        <td class="totals-label totals-final" style="padding-top: 8px;">VALOR TOTAL</td>
+                        <td class="totals-value totals-final" style="padding-top: 8px;">${{ "%.2f"|format(factura.total or 0) }}</td>
+                    </tr>
+                    <tr class="totals-final">
+                        <td class="totals-label totals-final">TOTAL A PAGAR</td>
+                        <td class="totals-value totals-final">${{ "%.2f"|format(factura.total or 0) }}</td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+
+    <!-- FOOTER ESTÁTICO DEL SOFTWARE -->
+    <!-- Se usa un div al final, no absolute para garantizar renderizado compatible en xhtml2pdf -->
+    <div style="margin-top: 40px; text-align: center; font-size: 8pt; color: #4b5563;">
+        Generado por 
+        <img src="https://via.placeholder.com/60x20.png?text=NOUS" style="width: 60px; height: 20px; vertical-align: middle; margin: 0 5px;" alt="NOUS"> 
+        www.nous.ec
+    </div>
+
+</body>
+</html>

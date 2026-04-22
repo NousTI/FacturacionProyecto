@@ -1,0 +1,19 @@
+1. Validacion de firma 1 mes antes, para agregar boton de pedir renovacion de firma digital por Whatsapp
+2. Validar siempre que la firma este dentro de un plazo validado para facturar ( CRITICO )
+
+
+
+1. Secuencialidad: No saltarte números de factura. Si la 100 falló, debes reintentar la 100 o anularla, pero no saltar a la 101.
+
+2. Autorización Offline (72 horas): Si emites en contingencia ("offline"), tienes máximo 72 horas para transmitir al SRI. Configura una alerta crítica si tienes facturas pendientes de más de 24h.
+
+3. Identificación Cliente: Valida algoritmos de RUC/Cédula (Módulo 11) antes de enviar. Un RUC mal formado rechaza facturas y genera retrasos.
+
+4. Entrega RIDE/XML: Estás obligado a enviar el PDF (RIDE) y XML al cliente inmediatamente. No basta con que el SRI lo tenga; tú debes probar la entrega (email).
+
+5. Anulaciones: Si anulas una factura en tu sistema, DEBES anularla en el portal del SRI. Una "anulación local" sin aviso al SRI es evasión.
+
+6. Autorización Offline y Alertas
+
+
+Revisar porque debo elegir si o si metood de pago para que se autorice la factura

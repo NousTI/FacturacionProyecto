@@ -1,0 +1,15 @@
+taskkill /IM python.exe /F
+taskkill /IM node.exe /F
+
+Pass: 7pGx9090
+
+Notas: Revisar autenticacion fantasma ()
+
+python -m venv venv
+venv\Scripts\Activate
+
+pip install -r requirements.txt
+
+git reset --hard #
+
+git reset --hard 77b7ccceba945d1fb53cd0053ffa3f4379fb3a73
